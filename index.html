@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+    <style>html,body{background:#0a0a0f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDFASDFA - The Optimistic Burn Protocol on Solana</title>
+    <meta name="description" content="The utility coin with automated buyback and burn. Creator rewards fuel the flywheel. Built for holders and believers. THIS IS FINE.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alonisthe.dev/">
+    <meta property="og:title" content="ASDFASDFA - The Optimistic Burn Protocol on Solana">
+    <meta property="og:description" content="The utility coin with automated buyback and burn. Creator rewards fuel the flywheel. Built for holders and believers.">
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
+    <meta property="og:site_name" content="ASDFASDFA">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://alonisthe.dev/">
+    <meta name="twitter:title" content="ASDFASDFA - The Optimistic Burn Protocol on Solana">
+    <meta name="twitter:description" content="The utility coin with automated buyback and burn. Creator rewards fuel the flywheel.">
+    <meta name="twitter:image" content="https://alonisthe.dev/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://*.solana.com https://api.asdf-games.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Prefetch other pages for instant navigation -->
+    <link rel="prefetch" href="learn.html">
+    <link rel="prefetch" href="build.html">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container nav-content">
+            <a href="#" class="nav-logo">
+                <span class="nav-logo-icon">🔥</span>
+                <span class="nav-logo-text">ASDFASDFA</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="learn.html" style="color: var(--accent-fire);">Learn ASDF</a></li>
+                <li><a href="learn.html#view-games">Games</a></li>
+                <li><a href="#comparison">Why ASDF</a></li>
+                <li><a href="#ecosystem">Ecosystem</a></li>
+                <li><a href="#analytics">Analytics</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-dropdown-trigger">Tools <span class="dropdown-arrow">▼</span></a>
+                    <div class="nav-dropdown-menu">
+                        <a href="https://www.alonisthe.dev/ignition" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🚀</span> Ignition
+                        </a>
+                        <a href="https://www.alonisthe.dev/asdforecast" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🎯</span> Forecast
+                        </a>
+                        <a href="https://www.alonisthe.dev/burns" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🔥</span> Burns
+                        </a>
+                        <a href="https://www.alonisthe.dev/holdex" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">📈</span> HolDEX
+                        </a>
+                    </div>
+                </li>
+                <li><a href="#transparency">Verify</a></li>
+            </ul>
+
+            <a href="https://www.alonisthe.dev/holdex" class="btn btn-primary">Launch App</a>
+
+            <button class="nav-toggle">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-tagline">
+                    🐕 THIS IS FINE 🔥
+                </div>
+
+                <h1>ASDFASDFA</h1>
+
+                <p class="hero-subtitle">
+                    The Optimistic Burn Protocol on Solana.<br>
+                    Creator rewards fuel the flywheel. Tokens get burned. Supply goes down.<br>
+                    Built for holders and believers.
+                </p>
+
+                <div class="hero-buttons">
+                    <a href="https://www.alonisthe.dev/holdex" class="btn btn-primary">
+                        Open HolDEX
+                    </a>
+                    <a href="#how-it-works" class="btn">
+                        How It Works
+                    </a>
+                    <a href="https://solscan.io" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+                        Verify on Solscan ↗
+                    </a>
+                </div>
+
+                <!-- Live stats from API - No fake numbers -->
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-value">
+                            <span class="status-live">
+                                <span class="status-dot"></span>
+                                Live
+                            </span>
+                        </div>
+                        <div class="hero-stat-label">Daemon Status</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="stat-burned">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="hero-stat-label">Tokens Burned</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="stat-collected">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="hero-stat-label">SOL Collected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Learning CTA -->
+    <section style="padding: 40px 0; background: linear-gradient(135deg, var(--bg-charred), var(--bg-dark)); border-bottom: 2px solid var(--accent-fire);">
+        <div class="container" style="text-align: center;">
+            <div style="display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; background: rgba(234, 88, 12, 0.15); border: 2px solid var(--accent-fire); border-radius: 12px; margin-bottom: 16px;">
+                <span style="font-size: 24px;">📚</span>
+                <span style="font-family: var(--font-display); font-size: 18px; font-weight: 700;">New: Interactive Tutorial</span>
+            </div>
+            <h2 style="font-family: var(--font-display); font-size: 28px; margin-bottom: 12px;">Learn ASDF in 5 Progressive Levels</h2>
+            <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px; font-size: 14px;">
+                From basics to advanced concepts. Unlock knowledge as you progress. Quiz yourself and track your journey.
+            </p>
+            <a href="learn.html" class="btn btn-primary" style="box-shadow: 0 0 20px rgba(234, 88, 12, 0.4);">
+                Start Learning →
+            </a>
+        </div>
+    </section>
+
+    <!-- Marquee -->
+    <div class="marquee">
+        <div class="marquee-content">
+            <span class="marquee-item">🔥 THIS IS FINE</span>
+            <span class="marquee-item">🐕 BUILT FOR HOLDERS</span>
+            <span class="marquee-item">✓ VERIFY EVERYTHING</span>
+            <span class="marquee-item">🔥 ~5% BURNT TO DATE</span>
+            <span class="marquee-item">🐕 THIS IS FINE</span>
+            <span class="marquee-item">✓ FUEL THE FLYWHEEL</span>
+            <span class="marquee-item">🔥 THIS IS FINE</span>
+            <span class="marquee-item">🐕 BUILT FOR HOLDERS</span>
+            <span class="marquee-item">✓ VERIFY EVERYTHING</span>
+            <span class="marquee-item">🔥 ~5% BURNT TO DATE</span>
+            <span class="marquee-item">🐕 THIS IS FINE</span>
+            <span class="marquee-item">✓ FUEL THE FLYWHEEL</span>
+        </div>
+    </div>
+
+    <!-- What is ASDF -->
+    <section class="explanation" id="what-is">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">What is this?</h2>
+                <p class="section-subtitle">
+                    An automated system that collects trading fees and burns tokens. That's it.
+                </p>
+            </div>
+
+            <div class="explanation-grid">
+                <div class="card explanation-card">
+                    <div class="explanation-icon">💸</div>
+                    <h3>Fees are collected</h3>
+                    <p>
+                        When people trade tokens on Pump.fun, creator fees are generated.
+                        These fees flow to the treasury wallet automatically.
+                    </p>
+                </div>
+
+                <div class="card explanation-card">
+                    <div class="explanation-icon">🔄</div>
+                    <h3>Tokens are bought</h3>
+                    <p>
+                        Collected SOL is used to purchase $ASDF tokens from the open market.
+                        No promises about timing or amounts - just when thresholds are met.
+                    </p>
+                </div>
+
+                <div class="card explanation-card">
+                    <div class="explanation-icon">🔥</div>
+                    <h3>Tokens are burned</h3>
+                    <p>
+                        Don't worry, drink your coffee, we burn the token. This is fine.
+                    </p>
+                </div>
+
+                <div class="card explanation-card">
+                    <div class="explanation-icon">📊</div>
+                    <h3>Everything is public</h3>
+                    <p>
+                        All transactions are on-chain. All code is open-source.
+                        Don't trust us. Verify yourself.
+                    </p>
+                </div>
+
+                <div class="card explanation-card">
+                    <div class="explanation-icon">🤝</div>
+                    <h3>Built for holders</h3>
+                    <p>
+                        More than a token - a network of aligned believers.
+                        Every app in the ecosystem feeds the burn. Every holder benefits.
+                    </p>
+                </div>
+
+                <div class="card explanation-card">
+                    <div class="explanation-icon">👨‍💻</div>
+                    <h3>Open-source builders</h3>
+                    <p>
+                        Code is open. Contributions welcome.
+                        No secret team. Devs building in public.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="process" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Process</h2>
+                <p class="section-subtitle">
+                    Automated and verifiable
+                </p>
+            </div>
+
+            <div class="process-grid">
+                <div class="process-step">
+                    <div class="process-number">1</div>
+                    <h3>Trading happens</h3>
+                    <p>People buy/sell tokens. Pump.fun generates creator fees.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-number">2</div>
+                    <h3>Fees collected</h3>
+                    <p>Daemon detects and collects fees to treasury wallet.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-number">3</div>
+                    <h3>Buyback executed</h3>
+                    <p>When threshold met, SOL buys $ASDF on market.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-number">4</div>
+                    <h3>Tokens burned</h3>
+                    <p>$ASDF sent to burn address. Supply reduced forever.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-number">5</div>
+                    <h3>Holders win</h3>
+                    <p>No trading needed. Just hold and let the burns do the work.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison With/Without -->
+    <section class="comparison" id="comparison">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why ASDF?</h2>
+                <p class="section-subtitle">
+                    The difference between a regular memecoin and the ASDF flywheel
+                </p>
+            </div>
+
+            <div class="comparison-table">
+                <div class="comparison-card without">
+                    <div class="comparison-header">
+                        <span style="font-size: 24px;">❌</span>
+                        <h3>Regular Memecoin</h3>
+                    </div>
+                    <ul class="comparison-list">
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>Creator fees go straight to their pocket</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>Supply stays the same or increases</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>Only way to profit: sell higher</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>Holders vs Traders - zero sum game</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>No real utility after the pump</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✗</span>
+                            <span>Anonymous team, closed source</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="comparison-card with">
+                    <div class="comparison-header">
+                        <span style="font-size: 24px;">🔥</span>
+                        <h3>With ASDF Burn Protocol</h3>
+                    </div>
+                    <ul class="comparison-list">
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>Creator rewards fuel buyback & burn</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>Supply decreases with every burn cycle</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>Holders benefit without selling</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>All holders benefit from volume</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>Ecosystem of apps feeding the burn</span>
+                        </li>
+                        <li>
+                            <span class="comparison-icon">✓</span>
+                            <span>100% open-source, verifiable on-chain</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Documentation -->
+    <section class="tools-section" id="ecosystem">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ecosystem</h2>
+                <p class="section-subtitle">
+                    Apps that fuel the flywheel. Small fees, big burns.
+                </p>
+            </div>
+
+            <!-- Tool Selector -->
+            <div class="tools-selector">
+                <button class="tool-tab active" data-tool="holdex">
+                    📈 HolDEX
+                    <span class="status-badge live">LIVE</span>
+                </button>
+                <button class="tool-tab" data-tool="ignition">
+                    🚀 Ignition
+                    <span class="status-badge live">LIVE</span>
+                </button>
+                <button class="tool-tab" data-tool="burn">
+                    🔥 Burn Engine
+                    <span class="status-badge live">LIVE</span>
+                </button>
+                <button class="tool-tab" data-tool="forecast">
+                    🎯 ASDForecast
+                    <span class="status-badge live">LIVE</span>
+                </button>
+                <button class="tool-tab" data-tool="control">
+                    ⚙️ Control
+                    <span class="status-badge building">SOON</span>
+                </button>
+            </div>
+
+            <!-- Tool Contents -->
+            <div class="tool-content active" id="tool-holdex">
+                <div class="card tool-doc">
+                    <div class="tool-info">
+                        <h3>📈 HolDEX</h3>
+                        <div class="tool-tagline">DEX Screener Built for Holders</div>
+                        <p>
+                            Like DexScreener, but ours. Open-source token explorer
+                            where small fees fuel the flywheel instead of going to some corp.
+                        </p>
+                        <ul class="tool-features">
+                            <li><span>📊</span> Real-time charts via API</li>
+                            <li><span>🔍</span> Search by address or symbol</li>
+                            <li><span>📱</span> Mobile-friendly interface</li>
+                            <li><span>🔗</span> Direct Solscan links</li>
+                            <li><span>🔥</span> Live burn stats</li>
+                        </ul>
+                        <div class="tool-links">
+                            <a href="https://www.alonisthe.dev/holdex" class="btn btn-primary">Open HolDEX</a>
+                            <a href="https://github.com/sollama58/HolDex" class="btn" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                        </div>
+                    </div>
+                    <div class="tool-preview">
+                        <div class="tool-preview-box">
+                            <span class="icon">📈</span>
+                            <span class="text">alonisthe.dev/holdex</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tool-control">
+                <div class="card tool-doc">
+                    <div class="tool-info">
+                        <h3>⚙️ Control</h3>
+                        <div class="tool-tagline">Admin Panel for Creators</div>
+                        <p>
+                            Dashboard for token creators to manage their burns.
+                            View stats, configure settings, track your treasury.
+                        </p>
+                        <ul class="tool-features">
+                            <li><span>🔐</span> Secure wallet connect</li>
+                            <li><span>📊</span> Analytics dashboard</li>
+                            <li><span>⚡</span> Manual force flush</li>
+                            <li><span>🔔</span> Configurable alerts</li>
+                            <li><span>📜</span> Transaction history</li>
+                        </ul>
+                        <div class="tool-links">
+                            <a href="#" class="btn" style="opacity: 0.5; pointer-events: none;">Coming Soon</a>
+                            <a href="https://github.com/zeyxx" class="btn" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                        </div>
+                    </div>
+                    <div class="tool-preview">
+                        <div class="tool-preview-box">
+                            <span class="icon">⚙️</span>
+                            <span class="text">In Development</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tool-ignition">
+                <div class="card tool-doc">
+                    <div class="tool-info">
+                        <h3>🚀 Ignition</h3>
+                        <div class="tool-tagline">Token Launch Platform</div>
+                        <p>
+                            Launch a Pump.fun coin where creator rewards fuel an airdrop.
+                            95% of fees go to holder airdrops. 5% fuels the $ASDF burn.
+                        </p>
+                        <ul class="tool-features">
+                            <li><span>🎯</span> One-click token launch</li>
+                            <li><span>🔥</span> Pre-configured burn engine</li>
+                            <li><span>🎁</span> Auto airdrops to holders</li>
+                            <li><span>📈</span> Auto-listed on HolDEX</li>
+                            <li><span>💰</span> 5% fees to $ASDF buyback</li>
+                        </ul>
+                        <div class="tool-links">
+                            <a href="https://www.alonisthe.dev/ignition" class="btn btn-primary">Launch Ignition</a>
+                            <a href="https://github.com/sollama58/ASDev" class="btn" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                        </div>
+                    </div>
+                    <div class="tool-preview">
+                        <div class="tool-preview-box">
+                            <span class="icon">🚀</span>
+                            <span class="text">alonisthe.dev/ignition</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tool-burn">
+                <div class="card tool-doc">
+                    <div class="tool-info">
+                        <h3>🔥 Burn Engine</h3>
+                        <div class="tool-tagline">Automated Buyback & Burn Protocol</div>
+                        <p>
+                            The core of ASDF. Collects creator fees, buys back tokens
+                            from the market, and burns them forever. Fully automated daemon.
+                        </p>
+                        <ul class="tool-features">
+                            <li><span>🤖</span> Automated daemon 24/7</li>
+                            <li><span>💰</span> Fee collection on-chain</li>
+                            <li><span>🔄</span> Market buyback execution</li>
+                            <li><span>🔥</span> Permanent token burns</li>
+                            <li><span>📊</span> Live tracking dashboard</li>
+                        </ul>
+                        <div class="tool-links">
+                            <a href="https://alonisthe.dev/burns" class="btn btn-primary">View Burns</a>
+                            <a href="https://github.com/zeyxx/asdf-burn-engine" class="btn" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                        </div>
+                    </div>
+                    <div class="tool-preview">
+                        <div class="tool-preview-box">
+                            <span class="icon">🔥</span>
+                            <span class="text">alonisthe.dev/burns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tool-forecast">
+                <div class="card tool-doc">
+                    <div class="tool-info">
+                        <h3>🎯 ASDForecast</h3>
+                        <div class="tool-tagline">Prediction Market</div>
+                        <p>
+                            The FIRST prediction market on a Pump.fun coin.
+                            Bet on crypto events with SOL. Fees fuel the burn.
+                        </p>
+                        <ul class="tool-features">
+                            <li><span>🎲</span> Bet with SOL</li>
+                            <li><span>📊</span> Crypto & IRL markets</li>
+                            <li><span>🏆</span> Leaderboards & rewards</li>
+                            <li><span>🔥</span> Fees → ASDF Burn</li>
+                            <li><span>🌐</span> On-chain resolution</li>
+                        </ul>
+                        <div class="tool-links">
+                            <a href="https://www.alonisthe.dev/asdforecast" class="btn btn-primary">Open ASDForecast</a>
+                            <a href="https://github.com/sollama58/ASDForecast" class="btn" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+                        </div>
+                    </div>
+                    <div class="tool-preview">
+                        <div class="tool-preview-box">
+                            <span class="icon">🎯</span>
+                            <span class="text">alonisthe.dev/asdforecast</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Burn Analytics -->
+    <section class="burn-analytics-section" id="analytics">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Burn Analytics</h2>
+                <p class="section-subtitle">
+                    On-chain truth. Real data. Verifiable burns.
+                </p>
+            </div>
+
+            <div class="card burn-analytics">
+                <!-- Live Metrics Grid -->
+                <div class="analytics-grid">
+                    <div class="analytics-card primary">
+                        <div class="analytics-icon">🔥</div>
+                        <div class="analytics-value" id="analytics-total-burned">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="analytics-label">Total Burned</div>
+                        <div class="analytics-sub" id="analytics-burned-pct">--% of supply</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">📊</div>
+                        <div class="analytics-value" id="analytics-burn-rate-24h">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="analytics-label">Burn Rate (24h)</div>
+                        <div class="analytics-sub">tokens/day</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">⏱️</div>
+                        <div class="analytics-value" id="analytics-last-burn">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="analytics-label">Last Burn</div>
+                        <div class="analytics-sub" id="analytics-last-burn-amount">--</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">🔄</div>
+                        <div class="analytics-value" id="analytics-cycles">
+                            <span class="loading"></span>
+                        </div>
+                        <div class="analytics-label">Burn Cycles</div>
+                        <div class="analytics-sub">completed</div>
+                    </div>
+                </div>
+
+                <!-- Historical Burn Rates -->
+                <div class="analytics-history">
+                    <h3 class="analytics-section-title">
+                        <span>📈</span> Historical Burn Rates
+                    </h3>
+                    <div class="history-grid">
+                        <div class="history-item">
+                            <div class="history-period">7 Days</div>
+                            <div class="history-value" id="analytics-rate-7d">--</div>
+                            <div class="history-bar">
+                                <div class="history-bar-fill" id="analytics-bar-7d" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-period">30 Days</div>
+                            <div class="history-value" id="analytics-rate-30d">--</div>
+                            <div class="history-bar">
+                                <div class="history-bar-fill" id="analytics-bar-30d" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-period">90 Days</div>
+                            <div class="history-value" id="analytics-rate-90d">--</div>
+                            <div class="history-bar">
+                                <div class="history-bar-fill" id="analytics-bar-90d" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-period">All Time</div>
+                            <div class="history-value" id="analytics-rate-all">--</div>
+                            <div class="history-bar">
+                                <div class="history-bar-fill" id="analytics-bar-all" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational Projections -->
+                <div class="analytics-projections">
+                    <h3 class="analytics-section-title">
+                        <span>🔮</span> Educational Projections
+                        <span class="projection-badge">Based on historical data</span>
+                    </h3>
+                    <p class="projection-disclaimer">
+                        If the current 30-day burn rate continues unchanged (it won't 😉)...
+                    </p>
+                    <div class="projection-grid">
+                        <div class="projection-item">
+                            <div class="projection-timeframe">In 6 months</div>
+                            <div class="projection-value" id="projection-6m">--</div>
+                            <div class="projection-label">additional tokens burned</div>
+                        </div>
+                        <div class="projection-item">
+                            <div class="projection-timeframe">In 1 year</div>
+                            <div class="projection-value" id="projection-1y">--</div>
+                            <div class="projection-label">additional tokens burned</div>
+                        </div>
+                        <div class="projection-item highlight">
+                            <div class="projection-timeframe">Supply reduction</div>
+                            <div class="projection-value" id="projection-reduction">--</div>
+                            <div class="projection-label">projected in 1 year</div>
+                        </div>
+                    </div>
+                    <div class="projection-note">
+                        <span>⚠️</span>
+                        <span>These projections are for <strong>educational purposes only</strong>.
+                        Future burns depend on trading volume which is unpredictable.
+                        The only truth is on-chain. <a href="https://alonisthe.dev/burns" target="_blank" rel="noopener noreferrer">Verify burns →</a></span>
+                    </div>
+                </div>
+
+                <!-- Verify CTA -->
+                <div class="analytics-verify">
+                    <span class="verify-text">Don't trust. Verify.</span>
+                    <a href="https://alonisthe.dev/burns" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        View All Burns on Solscan 🔍
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Data -->
+    <section class="live-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Live Data</h2>
+                <p class="section-subtitle">
+                    Real numbers from the daemon. Refresh to update.
+                </p>
+            </div>
+
+            <div class="live-grid">
+                <div class="card live-card">
+                    <div class="live-header">
+                        <div class="live-title">
+                            <span>📊</span>
+                            <h3>Burn Engine Stats</h3>
+                        </div>
+                        <span class="status-live">
+                            <span class="status-dot"></span>
+                            Live
+                        </span>
+                    </div>
+
+                    <div class="live-metric">
+                        <div class="live-metric-label">Total Tokens Burned</div>
+                        <div class="live-metric-value" id="live-burned">Loading...</div>
+                    </div>
+
+                    <div class="live-metric">
+                        <div class="live-metric-label">SOL Collected</div>
+                        <div class="live-metric-value" id="live-collected">Loading...</div>
+                    </div>
+
+                    <div class="live-metric">
+                        <div class="live-metric-label">Success Rate</div>
+                        <div class="live-metric-value" id="live-rate">Loading...</div>
+                    </div>
+
+                    <div class="live-metric">
+                        <div class="live-metric-label">Cycles Completed</div>
+                        <div class="live-metric-value" id="live-cycles">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="card live-card">
+                    <div class="live-header">
+                        <div class="live-title">
+                            <span>🔥</span>
+                            <h3>Recent Burns</h3>
+                        </div>
+                        <span class="status-live">
+                            <span class="status-dot"></span>
+                            Live
+                        </span>
+                    </div>
+
+                    <div class="feed-list" id="feed-list">
+                        <div class="feed-empty">
+                            Loading recent activity...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Transparency -->
+    <section class="transparency" id="transparency">
+        <div class="container">
+            <div class="transparency-content">
+                <h2>Verify Everything</h2>
+                <p>
+                    We don't ask you to trust us. All transactions are on-chain.
+                    All code is open-source. Check it yourself.
+                </p>
+                <div class="transparency-links">
+                    <a href="https://alonisthe.dev/burns" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        Burn Tracker 🔥
+                    </a>
+                    <a href="https://github.com/zeyxx/asdf-burn-engine" class="btn" target="_blank" rel="noopener noreferrer">
+                        GitHub ↗
+                    </a>
+                    <a href="https://solscan.io" class="btn" target="_blank" rel="noopener noreferrer">
+                        Solscan ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>🔥 THIS IS FINE 🔥</h2>
+                <p>
+                    A cult was born. Now we build.
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://www.alonisthe.dev/holdex" class="btn btn-primary">
+                        Launch HolDEX
+                    </a>
+                    <a href="https://pump.fun" class="btn" target="_blank" rel="noopener noreferrer">
+                        Trade on Pump.fun ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="nav-logo">
+                        <span class="nav-logo-icon">🔥</span>
+                        <span class="nav-logo-text">ASDFASDFA</span>
+                    </a>
+                    <p>
+                        The Optimistic Burn Protocol. Creator rewards fuel the flywheel.
+                        Open source. Verifiable on-chain.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#comparison">Why ASDF</a></li>
+                        <li><a href="#ecosystem">Ecosystem</a></li>
+                        <li><a href="#analytics">Burn Analytics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Apps</h4>
+                    <ul>
+                        <li><a href="https://www.alonisthe.dev/holdex">HolDEX</a></li>
+                        <li><a href="https://www.alonisthe.dev/ignition">Ignition</a></li>
+                        <li><a href="https://alonisthe.dev/burns">Burn Tracker</a></li>
+                        <li><a href="https://www.alonisthe.dev/asdforecast">Forecast</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Builders</h4>
+                    <ul>
+                        <li><a href="https://github.com/zeyxx" target="_blank" rel="noopener noreferrer">zeyxx</a></li>
+                        <li><a href="https://github.com/sollama58" target="_blank" rel="noopener noreferrer">sollama58</a></li>
+                        <li><a href="https://github.com/Ragnar-no-sleep" target="_blank" rel="noopener noreferrer">Ragnar</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Developers</h4>
+                    <ul>
+                        <li><a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem/blob/main/docs/API.md" target="_blank" rel="noopener noreferrer">API Docs</a></li>
+                        <li><a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener noreferrer">GitHub Repo</a></li>
+                        <li><a href="https://solscan.io" target="_blank" rel="noopener noreferrer">Solscan</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>Open source. Verifiable. THIS IS FINE.</p>
+                <div class="footer-social">
+                    <a href="https://x.com/i/chat/group_join/g2003056813512577366/52RDE5IO0J" target="_blank" rel="noopener noreferrer" title="Join X Group">𝕏</a>
+                    <a href="https://solscan.io" target="_blank" rel="noopener noreferrer" title="Solscan">🔍</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- External JavaScript - CSP compliant -->
+    <script src="js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Security Policy for ASDF Ecosystem
+# See https://securitytxt.org/ for more information
+
+# Contact information for security researchers
+Contact: mailto:security@alonisthe.dev
+Contact: https://github.com/stasiufr/Landing-Page-ASDF-Ecosystem/security/advisories/new
+
+# Security policy document
+Policy: https://github.com/stasiufr/Landing-Page-ASDF-Ecosystem/blob/main/SECURITY.md
+
+# Preferred languages for security reports
+Preferred-Languages: en, fr
+
+# Canonical URL for this security.txt file
+Canonical: https://alonisthe.dev/.well-known/security.txt
+
+# Expiration date (update annually)
+Expires: 2026-12-31T23:59:59.000Z

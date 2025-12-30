@@ -1,0 +1,86 @@
+const express = require('express');
+const helmet = require('helmet');
+const path = require('path');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Rate limiting - 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many requests, please try again later.',
+});
+app.use(limiter);
+
+// Security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "https://*.solana.com", "https://asdforecast.onrender.com", "https://burns.onrender.com"],
+            // Allow embedding in Squarespace (alonisthe.dev)
+            frameAncestors: ["'self'", "https://alonisthe.dev", "https://*.squarespace.com", "https://*.squarespace-cdn.com"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+    // Disable X-Frame-Options to allow iframe embedding (CSP frame-ancestors handles this)
+    frameguard: false,
+}));
+
+// Compression
+app.use(compression());
+
+// Serve static files
+app.use(express.static(__dirname, {
+    maxAge: '1d',
+    etag: true,
+}));
+
+// Health check endpoint for UptimeRobot / monitoring
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// Route /story to learn.html (old homepage)
+app.get('/story', (req, res) => {
+    res.sendFile(path.join(__dirname, 'learn.html'));
+});
+
+// Route /widget - Dedicated embeddable endpoint (like sollama58 pattern)
+// Used by Squarespace and other sites embedding ASDF content
+app.get('/widget', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Route /ignition to games.html
+app.get('/ignition', (req, res) => {
+    res.sendFile(path.join(__dirname, 'games.html'));
+});
+
+// SPA fallback - serve index.html for unknown routes
+app.get('*', (req, res) => {
+    // If it's a file request that doesn't exist, 404
+    if (path.extname(req.path)) {
+        return res.status(404).send('Not found');
+    }
+    // Otherwise serve index.html
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`🔥 ASDF Web running on port ${PORT}`);
+    console.log(`   http://localhost:${PORT}`);
+});

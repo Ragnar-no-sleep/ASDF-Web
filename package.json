@@ -1,0 +1,29 @@
+{
+  "name": "asdf-web",
+  "version": "1.0.0",
+  "description": "ASDF Web - Official website for ASDFASDFA ecosystem",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx serve . -p 3000 -C",
+    "preview": "npx serve . -p 3000"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^8.0.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ragnar-no-sleep/ASDF-Web.git"
+  },
+  "author": "ASDF Team",
+  "license": "MIT"
+}

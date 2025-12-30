@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: asdf-web
+    env: node
+    region: frankfurt
+    plan: free
+    rootDir: apps/web
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production

@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+    <style>html,body{background:#0a0a0f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn ASDF | The Optimistic Burn Protocol</title>
+    <meta name="description" content="Interactive guide to understand the ASDF ecosystem. From basics to advanced concepts. Earn badges and track your progress.">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="Learn ASDF - Interactive Crypto Tutorial">
+    <meta property="og:description" content="Master the Optimistic Burn Protocol in 5 levels. Earn badges. Join the movement.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://alonisthe.dev/asdf-learn-og.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Prefetch other pages for instant navigation -->
+    <link rel="prefetch" href="build.html">
+    <link rel="prefetch" href="index.html">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- GitHub avatars -->
+    <link rel="preconnect" href="https://github.com">
+    <link rel="dns-prefetch" href="https://github.com">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="css/learn.css">
+    <link rel="stylesheet" href="css/games.css">
+
+</head>
+<body>
+    <!-- Achievement Popup -->
+    <div class="achievement-popup" id="achievement-popup">
+        <div class="achievement-header">
+            <span class="achievement-icon" id="achievement-icon">🏆</span>
+            <div>
+                <div class="achievement-title" id="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-subtitle" id="achievement-subtitle">You earned a new badge</div>
+            </div>
+        </div>
+        <div class="achievement-xp" id="achievement-xp">+50 XP</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <span style="font-size: 20px;">🔥</span>
+                <span class="nav-logo-text">Learn ASDF</span>
+            </a>
+
+            <div class="nav-tabs">
+                <button class="nav-tab active">Learn</button>
+                <div class="nav-tab-dropdown">
+                    <button class="nav-tab nav-tab-trigger">Tools <span class="tab-dropdown-arrow">▼</span></button>
+                    <div class="nav-tab-dropdown-menu">
+                        <a href="https://www.alonisthe.dev/ignition" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🚀</span> Ignition
+                            <span class="tool-status live">LIVE</span>
+                        </a>
+                        <a href="https://www.alonisthe.dev/asdforecast" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🎯</span> Forecast
+                            <span class="tool-status live">LIVE</span>
+                        </a>
+                        <a href="https://www.alonisthe.dev/burns" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">🔥</span> Burns
+                            <span class="tool-status live">LIVE</span>
+                        </a>
+                        <a href="https://www.alonisthe.dev/holdex" target="_blank" rel="noopener noreferrer">
+                            <span class="dropdown-icon">📈</span> HolDEX
+                            <span class="tool-status live">LIVE</span>
+                        </a>
+                    </div>
+                </div>
+                <button class="nav-tab">Build</button>
+                <button class="nav-tab">Play</button>
+                <button class="nav-tab">Games</button>
+                <button class="nav-tab">FAQ/Glossary</button>
+            </div>
+
+            <div class="nav-right">
+                <!-- Course Progress 1-2-3-4-5 -->
+                <div class="nav-progress" id="nav-progress-bar">
+                    <div class="nav-level current" data-level="1" title="Level 1: The Spark">1</div>
+                    <div class="nav-connector"></div>
+                    <div class="nav-level locked" data-level="2" title="Level 2: The Flames">2</div>
+                    <div class="nav-connector"></div>
+                    <div class="nav-level locked" data-level="3" title="Level 3: The Engine">3</div>
+                    <div class="nav-connector"></div>
+                    <div class="nav-level locked" data-level="4" title="Level 4: The Forge">4</div>
+                    <div class="nav-connector"></div>
+                    <div class="nav-level locked" data-level="5" title="Level 5: The Core">5</div>
+                </div>
+
+                <div class="nav-stats">
+                    <div class="nav-xp">
+                        <span>⭐</span>
+                        <span id="total-xp">0 XP</span>
+                    </div>
+                    <!-- Easter Egg: Home Link (unlocked after pill choice) -->
+                    <a href="/story" class="nav-home-link" id="nav-home-link">
+                        <span>🏠</span>
+                    </a>
+                </div>
+
+                <!-- Easter Egg: Completion Badge (unlocked after finishing Learn) -->
+                <div class="completion-badge" id="completion-badge" title="Click to reveal your reward">
+                    <span>🎓</span>
+                    <span>Now you can understand</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="main-layout">
+            <!-- LEFT SIDEBAR: Badges & Mini-Games -->
+            <aside class="sidebar">
+                <!-- Daily Streak -->
+                <div class="streak-panel">
+                    <div class="streak-title">🔥 Daily Streak</div>
+                    <div class="streak-days" id="streak-days">
+                        <div class="streak-day" data-day="1">1</div>
+                        <div class="streak-day" data-day="2">2</div>
+                        <div class="streak-day" data-day="3">3</div>
+                        <div class="streak-day" data-day="4">4</div>
+                        <div class="streak-day" data-day="5">5</div>
+                        <div class="streak-day" data-day="6">6</div>
+                        <div class="streak-day today" data-day="7">7</div>
+                    </div>
+                </div>
+
+                <!-- Badges Panel -->
+                <div class="badges-panel">
+                    <div class="badges-title">🏆 Badges</div>
+                    <div class="badges-grid" id="badges-grid">
+                        <div class="badge-item locked" id="badge-spark">
+                            <div class="badge-icon">🔥</div>
+                            <div class="badge-name">The Spark</div>
+                            <div class="badge-desc">Level 1</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-flames">
+                            <div class="badge-icon">🌋</div>
+                            <div class="badge-name">The Flames</div>
+                            <div class="badge-desc">Level 2</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-engine">
+                            <div class="badge-icon">⚙️</div>
+                            <div class="badge-name">The Engine</div>
+                            <div class="badge-desc">Level 3</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-forge">
+                            <div class="badge-icon">🛠️</div>
+                            <div class="badge-name">The Forge</div>
+                            <div class="badge-desc">Level 4</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-core">
+                            <div class="badge-icon">💎</div>
+                            <div class="badge-name">The Core</div>
+                            <div class="badge-desc">Level 5</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-speed">
+                            <div class="badge-icon">⚡</div>
+                            <div class="badge-name">Speed Runner</div>
+                            <div class="badge-desc">&lt;10 min</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-perfect">
+                            <div class="badge-icon">🎯</div>
+                            <div class="badge-name">Perfect</div>
+                            <div class="badge-desc">No errors</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-master">
+                            <div class="badge-icon">👑</div>
+                            <div class="badge-name">Master</div>
+                            <div class="badge-desc">All badges</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-catcher">
+                            <div class="badge-icon">🪣</div>
+                            <div class="badge-name">Catcher</div>
+                            <div class="badge-desc">Score 500</div>
+                        </div>
+                        <div class="badge-item locked" id="badge-memory">
+                            <div class="badge-icon">🧠</div>
+                            <div class="badge-name">Memory</div>
+                            <div class="badge-desc">Level 10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High Scores -->
+                <div class="badges-panel">
+                    <div class="badges-title">🏅 High Scores</div>
+                    <div style="font-size: 11px; color: var(--text-muted); max-height: 280px; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🪣 Catcher</span>
+                            <span id="hs-catcher" style="color: var(--gold);">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🔄 Sequence</span>
+                            <span id="hs-sequence" style="color: var(--gold);">Lvl 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🃏 Match</span>
+                            <span id="hs-match" style="color: var(--gold);">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🔥 Burns</span>
+                            <span id="hs-clicker" style="color: var(--gold);">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🐕 Fighter</span>
+                            <span id="hs-fighter" style="color: var(--gold);">Wave 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🏎️ Racer</span>
+                            <span id="hs-racer" style="color: var(--gold);">0m</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🎯 Blaster</span>
+                            <span id="hs-blaster" style="color: var(--gold);">Wave 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-rust);">
+                            <span>🏰 Defense</span>
+                            <span id="hs-defense" style="color: var(--gold);">Wave 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                            <span>🏗️ Stacker</span>
+                            <span id="hs-stacker" style="color: var(--gold);">0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT AREA -->
+            <div class="content-area">
+
+        <!-- ============================================
+             LEARN VIEW (Contains all levels)
+             ============================================ -->
+        <div class="view-section active" id="view-learn">
+
+            <!-- LEVEL 1: THE SPARK -->
+            <section class="level-section level-1 active" id="level-1">
+                <div class="level-header">
+                    <div class="level-badge">Level 1</div>
+                    <h1 class="level-title">The Spark</h1>
+                    <p class="level-subtitle">What is ASDF and why should you care?</p>
+                    <div class="level-xp">⭐ +100 XP</div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🐕 THIS IS FINE</h3>
+                    <p>You know the meme. The dog sitting in a burning room, coffee in hand, saying "This is fine." That's not just our mascot - it's our philosophy.</p>
+                    <p>In the chaos of crypto, most tokens launch, pump, and die. Creator fees go straight to the dev's pocket. Holders get nothing. The room keeps burning.</p>
+                    <div class="highlight-box">
+                        <strong>ASDF is different.</strong> Creator fees don't disappear - they fuel an automated buyback and burn mechanism. The room is still on fire, but now the fire is working for you.
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🔥 The One-Sentence Pitch</h3>
+                    <p style="font-size: 16px; color: var(--text-cream); text-align: center; padding: 12px 0;">
+                        "Trading fees buy tokens. Bought tokens get burned. Supply goes down. THIS IS FINE."
+                    </p>
+                </div>
+
+                <div class="reveal-box">
+                    <div class="reveal-trigger">
+                        <h4>📊 What does "burn" actually mean?</h4>
+                        <span class="reveal-arrow">▼</span>
+                    </div>
+                    <div class="reveal-content">
+                        <div class="reveal-content-inner">
+                            <p>In crypto, "burning" means sending tokens to an address with no private key. Once there, they're gone forever. No one can access them.</p>
+                            <p>Think of it like throwing money into a volcano. When supply decreases while demand stays the same, basic economics suggests each remaining token becomes more valuable.</p>
+                            <p style="color: var(--accent-bright);">All burns are on-chain and publicly verifiable on Solscan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <span style="font-size: 18px;">🧠</span>
+                        <div class="quiz-xp">+25 XP</div>
+                    </div>
+                    <div class="quiz-question">Quick Check: What happens to ASDF trading fees?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" data-correct="false">They go to the development team</div>
+                        <div class="quiz-option" data-correct="true">They buy back and burn ASDF tokens</div>
+                        <div class="quiz-option" data-correct="false">They're distributed to holders as dividends</div>
+                        <div class="quiz-option" data-correct="false">They fund marketing campaigns</div>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-1"></div>
+                </div>
+
+                <div class="level-actions">
+                    <button class="btn btn-primary" id="unlock-level-2" disabled>Continue to Level 2 →</button>
+                </div>
+            </section>
+
+            <!-- LEVEL 2: THE FLAMES -->
+            <section class="level-section level-2" id="level-2">
+                <div class="level-header">
+                    <div class="level-badge">Level 2</div>
+                    <h1 class="level-title">The Flames</h1>
+                    <p class="level-subtitle">Understanding the mechanics: where fees come from and go.</p>
+                    <div class="level-xp">⭐ +150 XP</div>
+                </div>
+
+                <div class="content-card">
+                    <h3>💸 The Fee Source: Pump.fun</h3>
+                    <p>Pump.fun is Solana's biggest memecoin launchpad. When you create a token there, you receive a small percentage of every trade as "creator fees."</p>
+                    <p>Most creators pocket these fees. But ASDF's creator fees flow into a treasury wallet controlled by automated contracts - not humans.</p>
+                </div>
+
+                <div class="visual-flow">
+                    <div class="flow-step">
+                        <div class="icon">🔄</div>
+                        <div class="label">Trading</div>
+                        <div class="sublabel">Pump.fun</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="icon">💰</div>
+                        <div class="label">Fees</div>
+                        <div class="sublabel">Creator %</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="icon">🏦</div>
+                        <div class="label">Treasury</div>
+                        <div class="sublabel">Collected</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="icon">🛒</div>
+                        <div class="label">Buyback</div>
+                        <div class="sublabel">Market Buy</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="icon">🔥</div>
+                        <div class="label">Burn</div>
+                        <div class="sublabel">Forever</div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🔁 The Flywheel Effect</h3>
+                    <div class="highlight-box">
+                        <strong>More Trading</strong> → More Fees → <strong>More Buybacks</strong> → More Burns → <strong>Less Supply</strong> → More Value → <strong>More Trading</strong>... repeat.
+                    </div>
+                    <p>Every trade, buy or sell, contributes to the burn. Sellers aren't enemies - they're fuel. That's why "THIS IS FINE" even when the chart dips.</p>
+                </div>
+
+                <div class="reveal-box">
+                    <div class="reveal-trigger">
+                        <h4>🧮 The 44.8% Routing</h4>
+                        <span class="reveal-arrow">▼</span>
+                    </div>
+                    <div class="reveal-content">
+                        <div class="reveal-content-inner">
+                            <p>The ecosystem supports multiple tokens. <strong>44.8%</strong> of all processed fees route to the $ASDF buyback - the "root token" at the center.</p>
+                            <p>This creates a reinforcing loop: the more the ecosystem grows, the more $ASDF gets burned.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <span style="font-size: 18px;">🧠</span>
+                        <div class="quiz-xp">+25 XP</div>
+                    </div>
+                    <div class="quiz-question">What happens when someone sells ASDF?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" data-correct="false">The burn mechanism stops</div>
+                        <div class="quiz-option" data-correct="false">Holders lose money and nothing else</div>
+                        <div class="quiz-option" data-correct="true">Fees are still collected for future burns</div>
+                        <div class="quiz-option" data-correct="false">The token becomes worthless</div>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-2"></div>
+                </div>
+
+                <div class="level-actions">
+                    <button class="btn">← Back</button>
+                    <button class="btn btn-primary" id="unlock-level-3" disabled>Continue to Level 3 →</button>
+                </div>
+            </section>
+
+            <!-- LEVEL 3: THE ENGINE -->
+            <section class="level-section level-3" id="level-3">
+                <div class="level-header">
+                    <div class="level-badge">Level 3</div>
+                    <h1 class="level-title">The Engine</h1>
+                    <p class="level-subtitle">Meet the Daemon: the automated system behind burns.</p>
+                    <div class="level-xp">⭐ +200 XP</div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🤖 What is the Daemon?</h3>
+                    <p>The "Daemon" is an automated program running 24/7, monitoring the blockchain for creator fees. It's not a person - it's deterministic code.</p>
+                    <p>When fees accumulate past a threshold, the daemon:</p>
+                    <ol style="margin-left: 20px; color: var(--text-muted); font-size: 13px;">
+                        <li style="margin: 6px 0;">Detects accumulated fees in the treasury</li>
+                        <li style="margin: 6px 0;">Collects and consolidates them</li>
+                        <li style="margin: 6px 0;">Executes a market buy for $ASDF</li>
+                        <li style="margin: 6px 0;">Sends purchased tokens to the burn address</li>
+                        <li style="margin: 6px 0;">Logs everything on-chain</li>
+                    </ol>
+                </div>
+
+                <div class="architecture-box">
+                    <div class="arch-title">Daemon Architecture</div>
+                    <div class="arch-layers">
+                        <div class="arch-layer">
+                            <div class="layer-name">🔍 Fee Detector</div>
+                            <div class="layer-tech">Solana RPC</div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="layer-name">📊 Validator</div>
+                            <div class="layer-tech">PoH Tracking</div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="layer-name">💱 Swap Engine</div>
+                            <div class="layer-tech">Jupiter</div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="layer-name">🔥 Burn Executor</div>
+                            <div class="layer-tech">SPL Token</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reveal-box">
+                    <div class="reveal-trigger">
+                        <h4>🛡️ What if the daemon fails?</h4>
+                        <span class="reveal-arrow">▼</span>
+                    </div>
+                    <div class="reveal-content">
+                        <div class="reveal-content-inner">
+                            <p>The daemon has failure tolerance:</p>
+                            <ul style="margin-left: 20px; color: var(--text-muted);">
+                                <li style="margin: 6px 0;"><strong>Retry Logic:</strong> Exponential backoff on failures</li>
+                                <li style="margin: 6px 0;"><strong>Deferred Tokens:</strong> Failed swaps retry next cycle</li>
+                                <li style="margin: 6px 0;"><strong>Health Monitoring:</strong> /health endpoint for status</li>
+                            </ul>
+                            <p>Fees don't disappear if the daemon is down - they accumulate until it's restored.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <span style="font-size: 18px;">🧠</span>
+                        <div class="quiz-xp">+25 XP</div>
+                    </div>
+                    <div class="quiz-question">The daemon is best described as:</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" data-correct="false">A person manually executing trades</div>
+                        <div class="quiz-option" data-correct="true">An automated program running 24/7</div>
+                        <div class="quiz-option" data-correct="false">A smart contract on Ethereum</div>
+                        <div class="quiz-option" data-correct="false">A Discord bot</div>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-3"></div>
+                </div>
+
+                <div class="level-actions">
+                    <button class="btn">← Back</button>
+                    <button class="btn btn-primary" id="unlock-level-4" disabled>Continue to Level 4 →</button>
+                </div>
+            </section>
+
+            <!-- LEVEL 4: THE FORGE -->
+            <section class="level-section level-4" id="level-4">
+                <div class="level-header">
+                    <div class="level-badge">Level 4</div>
+                    <h1 class="level-title">The Forge</h1>
+                    <p class="level-subtitle">The ecosystem: apps that fuel the burn.</p>
+                    <div class="level-xp">⭐ +250 XP</div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🌐 More Than a Token</h3>
+                    <p>ASDF is the center of an ecosystem. Multiple apps contribute fees to the burn. The more usage, the more burns happen.</p>
+                </div>
+
+                <div class="ecosystem-grid">
+                    <div class="eco-card" data-url="https://www.alonisthe.dev/holdex">
+                        <div class="icon">📈</div>
+                        <h4>HolDEX</h4>
+                        <p>Open-source DexScreener alternative</p>
+                        <span class="status status-live">LIVE</span>
+                    </div>
+                    <div class="eco-card" data-url="https://www.alonisthe.dev/ignition">
+                        <div class="icon">🚀</div>
+                        <h4>Ignition</h4>
+                        <p>Token launch with holder airdrops</p>
+                        <span class="status status-live">LIVE</span>
+                    </div>
+                    <div class="eco-card" data-url="https://www.alonisthe.dev/asdforecast">
+                        <div class="icon">🎯</div>
+                        <h4>ASDForecast</h4>
+                        <p>Prediction market for Solana</p>
+                        <span class="status status-live">LIVE</span>
+                    </div>
+                    <div class="eco-card" data-url="https://www.alonisthe.dev/burns">
+                        <div class="icon">🔥</div>
+                        <h4>Burns</h4>
+                        <p>Live burn tracker dashboard</p>
+                        <span class="status status-live">LIVE</span>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🔗 How Apps Feed the Burn</h3>
+                    <div class="highlight-box">
+                        <strong>HolDEX:</strong> Token update fees → ASDF Burn<br>
+                        <strong>Ignition:</strong> 5% of launched token fees → ASDF Burn<br>
+                        <strong>ASDForecast:</strong> Prediction fees → ASDF Burn<br>
+                        <strong>Burns:</strong> Track all burns in real-time
+                    </div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <span style="font-size: 18px;">🧠</span>
+                        <div class="quiz-xp">+25 XP</div>
+                    </div>
+                    <div class="quiz-question">What makes ASDF different from a typical memecoin?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" data-correct="false">It has a cute mascot</div>
+                        <div class="quiz-option" data-correct="false">It's on Solana instead of Ethereum</div>
+                        <div class="quiz-option" data-correct="true">An ecosystem of apps contributing to burns</div>
+                        <div class="quiz-option" data-correct="false">It promises 1000x returns</div>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-4"></div>
+                </div>
+
+                <div class="level-actions">
+                    <button class="btn">← Back</button>
+                    <button class="btn btn-primary" id="unlock-level-5" disabled>Continue to Level 5 →</button>
+                </div>
+            </section>
+
+            <!-- LEVEL 5: THE CORE -->
+            <section class="level-section level-5" id="level-5">
+                <div class="level-header">
+                    <div class="level-badge">Level 5</div>
+                    <h1 class="level-title">The Core</h1>
+                    <p class="level-subtitle">Verification, transparency, and the philosophy.</p>
+                    <div class="level-xp">⭐ +300 XP</div>
+                </div>
+
+                <div class="content-card">
+                    <h3>🔍 "Assume Nothing. Verify Everything."</h3>
+                    <p>The core philosophy. In crypto, trust is a liability. ASDF is built around verifiability:</p>
+                    <ul style="margin-left: 20px; color: var(--text-muted); font-size: 13px;">
+                        <li style="margin: 6px 0;">Every burn is on-chain, verifiable on Solscan</li>
+                        <li style="margin: 6px 0;">Daemon exposes public APIs (/stats, /health)</li>
+                        <li style="margin: 6px 0;">All code is open-source on GitHub</li>
+                        <li style="margin: 6px 0;">No promises about price - only verifiable mechanism</li>
+                    </ul>
+                </div>
+
+                <div class="content-card">
+                    <h3>📊 How to Verify</h3>
+                    <div class="highlight-box">
+                        <strong>1.</strong> Check burns at <a href="https://alonisthe.dev/burns" target="_blank" rel="noopener noreferrer" style="color: var(--accent-fire);">alonisthe.dev/burns</a><br>
+                        <strong>2.</strong> Read code on GitHub<br>
+                        <strong>3.</strong> Query the /stats API<br>
+                        <strong>4.</strong> Verify transactions on Solscan
+                    </div>
+                </div>
+
+                <div class="reveal-box">
+                    <div class="reveal-trigger">
+                        <h4>⚠️ What This Is NOT</h4>
+                        <span class="reveal-arrow">▼</span>
+                    </div>
+                    <div class="reveal-content">
+                        <div class="reveal-content-inner">
+                            <ul style="margin-left: 20px; color: var(--text-muted);">
+                                <li style="margin: 6px 0;"><strong>Not financial advice.</strong> Experimental memecoin.</li>
+                                <li style="margin: 6px 0;"><strong>Not a guaranteed return.</strong> Price depends on demand.</li>
+                                <li style="margin: 6px 0;"><strong>Not risk-free.</strong> Smart contracts can have bugs.</li>
+                            </ul>
+                            <p style="color: var(--accent-bright); margin-top: 12px;">DYOR. This is crypto. The room is on fire. THIS IS FINE.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <span style="font-size: 18px;">🧠</span>
+                        <div class="quiz-xp">+25 XP</div>
+                    </div>
+                    <div class="quiz-question">Final Question: What's the core philosophy of ASDF?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" data-correct="false">Trust the team blindly</div>
+                        <div class="quiz-option" data-correct="false">Buy and hold forever</div>
+                        <div class="quiz-option" data-correct="true">Assume nothing, verify everything</div>
+                        <div class="quiz-option" data-correct="false">Marketing is everything</div>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-5"></div>
+                </div>
+
+                <div class="completion-banner" id="completion-banner" style="display: none;">
+                    <h2>🎉 Congratulations!</h2>
+                    <p>You've completed the ASDF Learning Path and earned all level badges!</p>
+                    <div class="completion-buttons">
+                        <button class="btn btn-share">Share on 𝕏 →</button>
+                        <a href="https://www.alonisthe.dev/holdex" class="btn btn-primary">Launch HolDEX →</a>
+                        <button class="btn">🔄 Reset Progress</button>
+                    </div>
+                </div>
+
+                <div class="level-actions" id="level-5-actions">
+                    <button class="btn">← Back</button>
+                    <button class="btn btn-success" id="complete-course" disabled>Complete Course 🎓</button>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ============================================
+             TOOLS VIEW (Coming Soon)
+             ============================================ -->
+        <div class="view-section" id="view-tools" role="region" aria-labelledby="tools-title">
+            <section class="tools-coming-soon" style="padding: 80px 24px; text-align: center;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div style="font-size: 64px; margin-bottom: 24px;">🛠️</div>
+                    <h1 id="tools-title" style="font-family: var(--font-display); font-size: 36px; margin-bottom: 16px;">Tools</h1>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 32px;">
+                        A collection of useful utilities for the ASDF ecosystem.<br>
+                        Coming soon...
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                        <div style="padding: 20px 32px; background: var(--bg-charred); border: 2px dashed var(--border-rust); border-radius: 12px; opacity: 0.6;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">📊</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">Analytics</div>
+                        </div>
+                        <div style="padding: 20px 32px; background: var(--bg-charred); border: 2px dashed var(--border-rust); border-radius: 12px; opacity: 0.6;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">Explorer</div>
+                        </div>
+                        <div style="padding: 20px 32px; background: var(--bg-charred); border: 2px dashed var(--border-rust); border-radius: 12px; opacity: 0.6;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">Alerts</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================
+             BUILD VIEW (Redirects to build.html)
+             ============================================ -->
+        <div class="view-section" id="view-build" role="region" aria-labelledby="build-title">
+            <section style="padding: 80px 24px; text-align: center; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div style="max-width: 700px; margin: 0 auto;">
+                    <div style="font-size: 80px; margin-bottom: 24px;">🌳</div>
+                    <h1 id="build-title" style="font-family: var(--font-display); font-size: 42px; margin-bottom: 16px; background: linear-gradient(135deg, var(--green) 0%, var(--green-light) 50%, var(--gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Build the Ecosystem</h1>
+                    <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 40px; line-height: 1.7;">
+                        Explore the Yggdrasil world tree to discover all ASDF projects,<br>
+                        or meet the builders in the Marketplace.
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                        <a href="build.html#yggdrasil" style="display: inline-flex; align-items: center; gap: 12px; padding: 20px 40px; background: linear-gradient(135deg, var(--green), var(--green-light)); color: #000; font-family: var(--font-display); font-size: 18px; font-weight: 700; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4); transition: all 0.3s ease;">
+                            🌳 Yggdrasil
+                        </a>
+                        <a href="build.html#marketplace" style="display: inline-flex; align-items: center; gap: 12px; padding: 20px 40px; background: linear-gradient(135deg, var(--accent-fire), var(--accent-bright)); color: #fff; font-family: var(--font-display); font-size: 18px; font-weight: 700; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4); transition: all 0.3s ease;">
+                            🏪 Marketplace
+                        </a>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 12px; margin-top: 32px;">
+                        Click either button to explore the full Build section
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Technical Documentation Modals -->
+        <div class="doc-modal" id="doc-modal">
+            <div class="doc-content">
+                <div class="doc-header">
+                    <h2 class="doc-title" id="doc-modal-title">Documentation</h2>
+                    <button class="doc-close">&times;</button>
+                </div>
+                <div id="doc-modal-body">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Deep Learn Modal -->
+        <div class="deep-learn-modal" id="deep-learn-modal">
+            <div class="deep-learn-content">
+                <div class="deep-learn-header">
+                    <h2 class="deep-learn-title" id="deep-learn-title">Deep Learn</h2>
+                    <button class="doc-close">&times;</button>
+                </div>
+                <div class="deep-learn-nav" id="deep-learn-nav">
+                    <!-- Navigation tabs injected by JS -->
+                </div>
+                <div id="deep-learn-body">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ============================================
+             PLAY VIEW (Mini-Games)
+             ============================================ -->
+        <div class="view-section" id="view-play">
+            <div class="section-header">
+                <h1 class="section-title">🎮 Mini-Games</h1>
+                <p class="section-subtitle">Learn ASDF mechanics through fun, addictive games!</p>
+            </div>
+
+            <div class="play-grid">
+                <!-- Token Catcher Card -->
+                <div class="game-card" data-game="catcher">
+                    <div class="game-card-icon">🪣</div>
+                    <div class="game-card-content">
+                        <h3>Token Catcher</h3>
+                        <p>Catch falling ASDF tokens with your basket. Avoid scam tokens!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+50 XP max</span>
+                            <span class="game-time">30 sec</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: <span id="play-hs-catcher">0</span> pts
+                        </div>
+                    </div>
+                    <div class="game-card-play">PLAY →</div>
+                </div>
+
+                <!-- Burn Sequence Card -->
+                <div class="game-card" data-game="sequence">
+                    <div class="game-card-icon">🔄</div>
+                    <div class="game-card-content">
+                        <h3>Burn Sequence</h3>
+                        <p>Memorize the burn cycle: Collect → Swap → Burn → Verify</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+75 XP max</span>
+                            <span class="game-time">Memory</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: Level <span id="play-hs-sequence">0</span>
+                        </div>
+                    </div>
+                    <div class="game-card-play">PLAY →</div>
+                </div>
+
+                <!-- Speed Match Card -->
+                <div class="game-card" data-game="match">
+                    <div class="game-card-icon">🃏</div>
+                    <div class="game-card-content">
+                        <h3>Speed Match</h3>
+                        <p>Match ASDF terms with their meanings as fast as possible!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+60 XP max</span>
+                            <span class="game-time">Timed</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: <span id="play-hs-match">--</span>
+                        </div>
+                    </div>
+                    <div class="game-card-play">PLAY →</div>
+                </div>
+
+                <!-- Burn Clicker Card -->
+                <div class="game-card" data-game="clicker">
+                    <div class="game-card-icon">🔥</div>
+                    <div class="game-card-content">
+                        <h3>Burn Clicker</h3>
+                        <p>Idle clicker game! Click to burn, buy upgrades, go infinite!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">Infinite XP</span>
+                            <span class="game-time">Idle</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Total: <span id="play-hs-clicker">0</span> burns
+                        </div>
+                    </div>
+                    <div class="game-card-play">PLAY →</div>
+                </div>
+
+                <!-- Burn Fighter Card -->
+                <div class="game-card" data-game="fighter">
+                    <div class="game-card-icon">⚔️</div>
+                    <div class="game-card-content">
+                        <h3>Burn Fighter</h3>
+                        <p>Combat 2D! Fight scam tokens and protect ASDF!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+80 XP max</span>
+                            <span class="game-time">Combat</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: Wave <span id="play-hs-fighter">0</span>
+                        </div>
+                    </div>
+                    <div class="game-card-play">FIGHT →</div>
+                </div>
+
+                <!-- Token Racer Card -->
+                <div class="game-card" data-game="racer">
+                    <div class="game-card-icon">🏎️</div>
+                    <div class="game-card-content">
+                        <h3>Token Racer</h3>
+                        <p>Race through the blockchain! Collect tokens, avoid rugs!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+70 XP max</span>
+                            <span class="game-time">Racing</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: <span id="play-hs-racer">0</span> m
+                        </div>
+                    </div>
+                    <div class="game-card-play">RACE →</div>
+                </div>
+
+                <!-- Scam Blaster Card -->
+                <div class="game-card" data-game="blaster">
+                    <div class="game-card-icon">🎯</div>
+                    <div class="game-card-content">
+                        <h3>Scam Blaster</h3>
+                        <p>Shoot down scam tokens before they escape!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+65 XP max</span>
+                            <span class="game-time">Shooter</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: Wave <span id="play-hs-blaster">0</span>
+                        </div>
+                    </div>
+                    <div class="game-card-play">BLAST →</div>
+                </div>
+
+                <!-- Treasury Defense Card -->
+                <div class="game-card" data-game="defense">
+                    <div class="game-card-icon">🏰</div>
+                    <div class="game-card-content">
+                        <h3>Treasury Defense</h3>
+                        <p>Tower defense! Build towers to protect the treasury!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+90 XP max</span>
+                            <span class="game-time">Strategy</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: Wave <span id="play-hs-defense">0</span>
+                        </div>
+                    </div>
+                    <div class="game-card-play">DEFEND →</div>
+                </div>
+
+                <!-- Token Stacker Card -->
+                <div class="game-card" data-game="stacker">
+                    <div class="game-card-icon">🏗️</div>
+                    <div class="game-card-content">
+                        <h3>Token Stacker</h3>
+                        <p>Stack tokens to build the tallest tower!</p>
+                        <div class="game-card-meta">
+                            <span class="game-xp">+55 XP max</span>
+                            <span class="game-time">Building</span>
+                        </div>
+                        <div class="game-card-highscore">
+                            Best: <span id="play-hs-stacker">0</span> floors
+                        </div>
+                    </div>
+                    <div class="game-card-play">BUILD →</div>
+                </div>
+            </div>
+
+            <!-- How Games Work -->
+            <div class="content-card" style="margin-top: 32px;">
+                <h3>🏆 How It Works</h3>
+                <p>Play mini-games to earn XP and unlock exclusive badges!</p>
+                <div class="highlight-box">
+                    <strong>🪣 Token Catcher:</strong> Score 500+ to unlock the "Catcher" badge<br>
+                    <strong>🔄 Burn Sequence:</strong> Reach Level 10 to unlock the "Memory" badge<br>
+                    <strong>🃏 Speed Match:</strong> Beat your best time to climb the leaderboard<br>
+                    <strong>🔥 Burn Clicker:</strong> Earn +10 XP every 100 burns (up to 100 XP)<br>
+                    <strong>🐕 Burn Fighter:</strong> Defeat waves of enemies to earn XP<br>
+                    <strong>🏎️ Token Racer:</strong> Race and collect coins, avoid obstacles<br>
+                    <strong>🎯 Scam Blaster:</strong> Destroy scam tokens, avoid skulls!<br>
+                    <strong>🏰 Treasury Defense:</strong> Defend the treasury from invaders<br>
+                    <strong>🏗️ Token Stacker:</strong> Stack blocks perfectly to build higher
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             FAQ & GLOSSARY VIEW (Combined)
+             ============================================ -->
+        <div class="view-section" id="view-faq-glossary">
+            <div class="section-header">
+                <h1 class="section-title">FAQ & Glossary</h1>
+                <p class="section-subtitle">Frequently asked questions and crypto terms explained</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="faq-glossary-tabs" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 32px;">
+                <button class="faq-tab active" data-tab="faq-content" style="padding: 12px 24px; background: var(--accent-fire); border: 2px solid var(--accent-fire); border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                    ❓ FAQ
+                </button>
+                <button class="faq-tab" data-tab="glossary-content" style="padding: 12px 24px; background: var(--bg-charred); border: 2px solid var(--border-rust); border-radius: 8px; color: var(--text-muted); font-weight: 600; cursor: pointer;">
+                    📖 Glossary
+                </button>
+            </div>
+
+            <!-- FAQ Content -->
+            <div class="faq-tab-content active" id="faq-content">
+
+            <div class="faq-section">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What is the burn address? Is it really inaccessible?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            The burn address is a Solana address with no known private key. Once tokens are sent there, they cannot be recovered by anyone - ever. You can verify this on Solscan by checking that the address has never signed any transactions (only received).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How often do burns happen?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Burns happen in "cycles" when accumulated fees reach a threshold. The frequency depends on trading volume. During high activity, burns can happen multiple times per day. During low activity, it might take longer. You can monitor cycles via the /stats API.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Can the team "rug" or stop the burns?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            The daemon is automated code running independently. While maintainers can pause/resume it for maintenance, they cannot access the treasury funds directly. All transactions are transparent and on-chain. The code is open-source - anyone can audit it.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What's the total supply and how much has been burned?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            The initial supply was 1 billion tokens. Current burn statistics are available in real-time at <a href="https://alonisthe.dev/burns" target="_blank" rel="noopener noreferrer">alonisthe.dev/burns</a>. Approximately 5% has been burned to date, but this number increases constantly.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How is ASDF different from other deflationary tokens?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Most deflationary tokens take a % from each transfer. ASDF burns are funded by creator fees from Pump.fun trading - an external revenue source. This means burns happen regardless of ASDF-specific trading activity. Plus, the ecosystem apps contribute additional revenue.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Is this a good investment?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            We don't give financial advice. ASDF is a memecoin with experimental tokenomics. Burns reduce supply, but price depends on market demand. Do your own research, understand the risks, and never invest more than you can afford to lose.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How can I contribute to the ecosystem?
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            All code is open-source! You can contribute on GitHub, build apps that integrate with the burn mechanism, or simply spread the word. The community grows through genuine participation, not paid promotions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Glossary Content -->
+            <div class="faq-tab-content" id="glossary-content" style="display: none;">
+
+            <div class="glossary-section">
+                <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms...">
+
+                <div class="glossary-grid" id="glossary-grid">
+                    <div class="glossary-item" data-term="burn">
+                        <div class="glossary-term">🔥 Burn</div>
+                        <div class="glossary-def">Permanently removing tokens from circulation by sending them to an inaccessible address. Reduces total supply.</div>
+                    </div>
+                    <div class="glossary-item" data-term="buyback">
+                        <div class="glossary-term">🛒 Buyback</div>
+                        <div class="glossary-def">Using collected fees to purchase tokens from the open market. The bought tokens are then burned.</div>
+                    </div>
+                    <div class="glossary-item" data-term="daemon">
+                        <div class="glossary-term">🤖 Daemon</div>
+                        <div class="glossary-def">An automated program running 24/7 that monitors and executes the burn mechanism without human intervention.</div>
+                    </div>
+                    <div class="glossary-item" data-term="creator fees">
+                        <div class="glossary-term">💸 Creator Fees</div>
+                        <div class="glossary-def">A percentage of each trade on Pump.fun that goes to the token creator. ASDF routes these to burns.</div>
+                    </div>
+                    <div class="glossary-item" data-term="flywheel">
+                        <div class="glossary-term">🔁 Flywheel</div>
+                        <div class="glossary-def">A self-reinforcing cycle: more trading → more fees → more burns → less supply → more value → more trading.</div>
+                    </div>
+                    <div class="glossary-item" data-term="treasury">
+                        <div class="glossary-term">🏦 Treasury</div>
+                        <div class="glossary-def">The wallet where collected fees accumulate before being used for buybacks.</div>
+                    </div>
+                    <div class="glossary-item" data-term="cycle">
+                        <div class="glossary-term">⏱️ Cycle</div>
+                        <div class="glossary-def">A complete execution of the collect → buyback → burn sequence. Triggered when fees reach a threshold.</div>
+                    </div>
+                    <div class="glossary-item" data-term="deflationary">
+                        <div class="glossary-term">📉 Deflationary</div>
+                        <div class="glossary-def">A tokenomics model where total supply decreases over time, potentially increasing scarcity.</div>
+                    </div>
+                    <div class="glossary-item" data-term="solscan">
+                        <div class="glossary-term">🔍 Solscan</div>
+                        <div class="glossary-def">A blockchain explorer for Solana. Used to verify transactions and burns.</div>
+                    </div>
+                    <div class="glossary-item" data-term="jupiter">
+                        <div class="glossary-term">💱 Jupiter</div>
+                        <div class="glossary-def">Solana's leading DEX aggregator. The daemon uses it to execute buybacks at the best available price.</div>
+                    </div>
+                    <div class="glossary-item" data-term="root token">
+                        <div class="glossary-term">🌳 Root Token</div>
+                        <div class="glossary-def">$ASDF - the central token of the ecosystem. 44.8% of all processed fees route to its buyback.</div>
+                    </div>
+                    <div class="glossary-item" data-term="poh">
+                        <div class="glossary-term">📜 Proof-of-History</div>
+                        <div class="glossary-def">Solana's cryptographic clock that provides verifiable ordering of events. The validator uses it for fee tracking.</div>
+                    </div>
+                    <div class="glossary-item" data-term="validator">
+                        <div class="glossary-term">✅ Validator</div>
+                        <div class="glossary-def">A program that tracks and verifies creator fees for Pump.fun tokens using Proof-of-History chain.</div>
+                    </div>
+                    <div class="glossary-item" data-term="oracle">
+                        <div class="glossary-term">🔮 Oracle</div>
+                        <div class="glossary-def">K-Metric dashboard for tracking holder conviction. Provides on-chain analytics and insights.</div>
+                    </div>
+                    <div class="glossary-item" data-term="holdex">
+                        <div class="glossary-term">💹 HolDex</div>
+                        <div class="glossary-def">An open-source DexScreener alternative powered by ASDFASDFA. Community-built trading interface.</div>
+                    </div>
+                    <div class="glossary-item" data-term="vanity grinder">
+                        <div class="glossary-term">🎰 Vanity Grinder</div>
+                        <div class="glossary-def">A Rust utility that generates custom Solana wallet addresses with specific prefixes or patterns.</div>
+                    </div>
+                    <div class="glossary-item" data-term="asdev">
+                        <div class="glossary-term">🚀 ASDev</div>
+                        <div class="glossary-def">A Pump.fun launching platform with built-in airdrop rewards for the ASDF community.</div>
+                    </div>
+                    <div class="glossary-item" data-term="asdforecast">
+                        <div class="glossary-term">📈 ASDForecast</div>
+                        <div class="glossary-def">Prediction market for Solana built for ASDFASDFA. All fees route towards ASDF BBB (BuyBack & Burn).</div>
+                    </div>
+                    <div class="glossary-item" data-term="helius">
+                        <div class="glossary-term">🌐 Helius</div>
+                        <div class="glossary-def">Enterprise-grade RPC infrastructure for Solana. Provides webhooks, APIs, and reliable transaction processing.</div>
+                    </div>
+                    <div class="glossary-item" data-term="anchor">
+                        <div class="glossary-term">⚓ Anchor</div>
+                        <div class="glossary-def">A framework for Solana smart contract development. Simplifies program creation with Rust macros and IDL generation.</div>
+                    </div>
+                    <div class="glossary-item" data-term="pda">
+                        <div class="glossary-term">🔑 PDA</div>
+                        <div class="glossary-def">Program Derived Address. A deterministic address derived from a program ID and seeds, used for on-chain state management.</div>
+                    </div>
+                    <div class="glossary-item" data-term="cpi">
+                        <div class="glossary-term">🔗 CPI</div>
+                        <div class="glossary-def">Cross-Program Invocation. Allows one Solana program to call another program's instructions.</div>
+                    </div>
+                    <div class="glossary-item" data-term="spl token">
+                        <div class="glossary-term">🪙 SPL Token</div>
+                        <div class="glossary-def">Solana Program Library Token standard. The protocol for creating and managing fungible tokens on Solana.</div>
+                    </div>
+                    <div class="glossary-item" data-term="yggdrasil">
+                        <div class="glossary-term">🌳 Yggdrasil</div>
+                        <div class="glossary-def">The World Tree in Norse mythology. Used as the visual representation of the ASDF ecosystem structure.</div>
+                    </div>
+                    <div class="glossary-item" data-term="midgard">
+                        <div class="glossary-term">🌿 Midgard</div>
+                        <div class="glossary-def">The realm of humans in Norse mythology. In ASDF, represents live/production projects in the canopy.</div>
+                    </div>
+                    <div class="glossary-item" data-term="rpc">
+                        <div class="glossary-term">📡 RPC</div>
+                        <div class="glossary-def">Remote Procedure Call. API endpoints that allow applications to interact with the Solana blockchain.</div>
+                    </div>
+                    <div class="glossary-item" data-term="webhook">
+                        <div class="glossary-term">🪝 Webhook</div>
+                        <div class="glossary-def">HTTP callbacks that notify your server when blockchain events occur. Used for real-time burn tracking.</div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             GAMES VIEW (SPA Integration)
+             ============================================ -->
+        <div class="view-section" id="view-games">
+            <!-- Games Header with Wallet Controls -->
+            <div class="games-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; background: var(--bg-charred); border-bottom: 1px solid var(--border-rust);">
+                <!-- Competitive Timer Display -->
+                <div id="competitive-timer-global" class="competitive-timer-display" style="display: none;">
+                    <span class="timer-label">Temps compétitif:</span>
+                    <span id="competitive-time-remaining" class="timer-value">30:00</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
+                    <button id="dev-mode-btn" class="dev-mode-btn" title="Toggle Developer Mode" style="padding: 4px 8px; font-size: 10px; background: var(--bg-ember); border: 1px solid var(--border-rust); color: var(--text-muted); border-radius: 4px; cursor: pointer;">DEV</button>
+                    <span id="user-badge" class="visitor-badge" role="status" aria-live="polite" style="padding: 4px 12px; font-size: 11px; background: var(--bg-ember); border: 1px solid var(--border-rust); color: var(--text-muted); border-radius: 20px;">VISITOR</span>
+                    <button id="wallet-btn" class="wallet-btn" aria-label="Connect Phantom wallet" style="padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #ab47bc, #7c4dff); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        <span id="wallet-btn-text">Connect Wallet</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-content container">
+                    <div class="gotw-badge">
+                        <span>GAME OF THE WEEK</span>
+                    </div>
+
+                    <div id="featured-game-icon" class="hero-game-icon"></div>
+                    <h1 id="featured-game-name">Loading...</h1>
+                    <p class="hero-description" id="featured-game-desc">The featured game rotates every Monday at 00:00 UTC</p>
+
+                    <div class="hero-countdown">
+                        <div class="countdown-item">
+                            <span id="countdown-days" class="countdown-value">0</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="countdown-hours" class="countdown-value">0</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="countdown-mins" class="countdown-value">0</span>
+                            <span class="countdown-label">Mins</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="countdown-secs" class="countdown-value">0</span>
+                            <span class="countdown-label">Secs</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-buttons">
+                        <button id="play-featured-btn" class="btn btn-primary">
+                            PLAY NOW
+                        </button>
+                        <button id="view-all-games-btn" class="btn">
+                            View All Games
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Access Info Bar -->
+            <div class="access-bar container" id="access-bar">
+                <div class="access-item" id="access-gotw">
+                    <span class="access-icon"></span>
+                    <span>Game of the Week: <strong id="access-gotw-status">Available</strong></span>
+                </div>
+                <div class="access-item locked" id="access-all">
+                    <span class="access-icon"></span>
+                    <span>All 9 Games: <strong>Holders Only</strong></span>
+                </div>
+            </div>
+
+            <!-- All Games Section -->
+            <section class="games-section" id="games-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">All Games</h2>
+                        <p class="section-subtitle">9 unique games, 1 featured each week. Hold 1M+ $asdfasdfa to unlock all.</p>
+                    </div>
+
+                    <div class="games-grid" id="games-grid">
+                        <!-- Games will be rendered by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Global Leaderboard Section -->
+            <section class="leaderboard-global-section" id="leaderboard-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title">Leaderboard</h2>
+                        <p class="section-subtitle">Top competitive players. 30 minutes daily to prove your skills!</p>
+                    </div>
+
+                    <div class="leaderboard-tabs">
+                        <button class="leaderboard-tab active" data-period="weekly">This Week</button>
+                        <button class="leaderboard-tab" data-period="cycle">This Cycle</button>
+                    </div>
+
+                    <div class="leaderboard-content">
+                        <div id="weekly-leaderboard" class="leaderboard-list active">
+                            <div class="leaderboard-loading">Loading...</div>
+                        </div>
+                        <div id="cycle-leaderboard" class="leaderboard-list">
+                            <div class="leaderboard-loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pump Arena Special Section -->
+            <section class="pump-arena-section" style="padding: 60px 20px; background: linear-gradient(180deg, var(--bg-charred) 0%, rgba(234, 88, 12, 0.1) 50%, var(--bg-charred) 100%);">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 class="section-title" style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+                            <span style="font-size: 40px;">📈</span>
+                            Pump Arena
+                            <span style="background: linear-gradient(90deg, var(--gold), var(--accent-fire)); padding: 4px 12px; border-radius: 20px; font-size: 12px; text-transform: uppercase;">Always Available</span>
+                        </h2>
+                        <p class="section-subtitle">Master the art of trading! Practice your skills with virtual $1000.</p>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; max-width: 400px; margin: 30px auto 0;">
+                        <!-- Classic Mode -->
+                        <div class="game-card" style="background: linear-gradient(135deg, var(--bg-burnt) 0%, rgba(34, 197, 94, 0.1) 100%); border: 2px solid var(--green); width: 100%;">
+                            <div class="game-icon">🎮</div>
+                            <h3 class="game-name">Classic Mode</h3>
+                            <p class="game-type">Practice Trading</p>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0;">Free to play. Practice your trading skills with virtual $1000. Compete for leaderboard spots!</p>
+                            <button id="pump-classic-btn" class="btn game-play-btn" data-mode="classic" style="background: var(--green); border-color: var(--green-light);">
+                                PLAY FREE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pump Arena Modal -->
+            <div class="game-modal" id="modal-pumparena">
+                <div class="game-modal-content">
+                    <div class="game-modal-header">
+                        <h2 class="game-modal-title">
+                            <span>📈</span>
+                            <span>Pump Arena</span>
+                            <span id="pump-mode-badge" style="background: var(--green); padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px;">CLASSIC</span>
+                        </h2>
+                        <button id="close-pumparena-btn" class="game-modal-close" data-game="pumparena">&times;</button>
+                    </div>
+                    <div class="game-modal-body">
+                        <div class="game-arena" id="arena-pumparena">
+                            <div class="game-start-overlay" id="overlay-pumparena">
+                                <div class="game-instructions">
+                                    <h3>Pump Arena</h3>
+                                    <p>Buy low, sell high on a volatile chart. Time your trades perfectly!</p>
+                                </div>
+                                <button id="start-pumparena-btn" class="btn btn-primary" data-game="pumparena">
+                                    START GAME
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-controls">
+                        <div class="game-stats">
+                            <div class="game-stat">
+                                <div class="game-stat-value" id="score-pumparena">0</div>
+                                <div class="game-stat-label">Profit</div>
+                            </div>
+                            <div class="game-stat">
+                                <div class="game-stat-value" id="best-pumparena">0</div>
+                                <div class="game-stat-label">Best</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Modals Container -->
+            <div id="game-modals">
+                <!-- Modals will be generated by JavaScript -->
+            </div>
+        </div>
+
+            </div> <!-- End content-area -->
+        </div> <!-- End main-layout -->
+    </main>
+
+    <!-- GAME MODALS -->
+
+    <!-- Token Catcher Modal -->
+    <div class="game-modal" id="game-catcher">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🪣 Token Catcher</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Catch falling ASDF tokens with your basket!<br>
+                    Avoid scam tokens (💀) - they cost you points.<br>
+                    <strong>Use ← → arrow keys or touch to move</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Score</div>
+                        <div class="score-value" id="catcher-score">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Time</div>
+                        <div class="score-value gold" id="catcher-time">30</div>
+                    </div>
+                </div>
+                <div class="game-area catcher-area" id="catcher-area">
+                    <div class="catcher-basket" id="catcher-basket">🔥</div>
+                </div>
+                <button class="game-start-btn" id="catcher-start">START GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Burn Sequence Modal (Simon Says) -->
+    <div class="game-modal" id="game-sequence">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🔄 Burn Sequence</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Learn the burn cycle by memory!<br>
+                    Watch the sequence, then repeat it correctly.<br>
+                    <strong>Collect → Swap → Burn → Verify</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Level</div>
+                        <div class="score-value" id="sequence-level">1</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Score</div>
+                        <div class="score-value gold" id="sequence-score">0</div>
+                    </div>
+                </div>
+                <div class="sequence-display" id="sequence-display">Press START to begin</div>
+                <div class="game-area" style="min-height: auto; background: transparent; border: none;">
+                    <div class="sequence-grid">
+                        <button class="sequence-btn" data-step="collect">💰</button>
+                        <button class="sequence-btn" data-step="swap">💱</button>
+                        <button class="sequence-btn" data-step="burn">🔥</button>
+                        <button class="sequence-btn" data-step="verify">✓</button>
+                    </div>
+                </div>
+                <button class="game-start-btn" id="sequence-start">START GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speed Match Modal -->
+    <div class="game-modal" id="game-match">
+        <div class="game-container" style="max-width: 750px;">
+            <div class="game-header">
+                <div class="game-title">🃏 Speed Match</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Match ASDF terms with their meanings!<br>
+                    Find all 8 pairs as fast as you can.<br>
+                    <strong>Click cards to flip them</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Pairs</div>
+                        <div class="score-value" id="match-pairs">0/8</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Time</div>
+                        <div class="score-value gold" id="match-time">0:00</div>
+                    </div>
+                </div>
+                <div class="game-area" style="min-height: auto; padding: 0;">
+                    <div class="match-container">
+                        <div class="match-legend">
+                            <div class="match-legend-title">📖 Legend</div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">🔥</span>
+                                <span class="legend-text">Burn</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">💰</span>
+                                <span class="legend-text">Fees</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">🔄</span>
+                                <span class="legend-text">Cycle</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">🤖</span>
+                                <span class="legend-text">Daemon</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">🏦</span>
+                                <span class="legend-text">Treasury</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">💱</span>
+                                <span class="legend-text">Swap</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">📉</span>
+                                <span class="legend-text">Deflation</span>
+                            </div>
+                            <div class="match-legend-item">
+                                <span class="legend-icon">🔍</span>
+                                <span class="legend-text">Verify</span>
+                            </div>
+                        </div>
+                        <div class="match-grid" id="match-grid"></div>
+                    </div>
+                </div>
+                <button class="game-start-btn" id="match-start">START GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Burn Clicker Modal -->
+    <div class="game-modal" id="game-clicker">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🔥 Burn Clicker</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Click to burn tokens! Upgrade your burn power.<br>
+                    Every 100 burns = +10 XP (max 100 XP/session)
+                </div>
+                <div class="game-area clicker-area" id="clicker-area">
+                    <div class="burn-counter" id="clicker-count">0</div>
+                    <button class="burn-clicker-btn" id="clicker-btn">🔥</button>
+                    <div class="clicker-upgrades">
+                        <button class="upgrade-btn" id="upgrade-power">
+                            <span class="up-name">+1 Burn Power</span>
+                            <span class="up-cost">Cost: 50 burns</span>
+                        </button>
+                        <button class="upgrade-btn" id="upgrade-auto">
+                            <span class="up-name">Auto Burner</span>
+                            <span class="up-cost">Cost: 200 burns</span>
+                        </button>
+                        <button class="upgrade-btn" id="upgrade-multi">
+                            <span class="up-name">2x Multiplier</span>
+                            <span class="up-cost">Cost: 500 burns</span>
+                        </button>
+                        <button class="upgrade-btn" id="upgrade-frenzy">
+                            <span class="up-name">Burn Frenzy (10s)</span>
+                            <span class="up-cost">Cost: 1000 burns</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Burn Fighter Modal (2D Combat) -->
+    <div class="game-modal" id="game-fighter">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">⚔️ Burn Fighter</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Fight scam tokens! Use A/D to move, J to punch, K for special attack.<br>
+                    <strong>Defeat enemies to protect ASDF!</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Wave</div>
+                        <div class="score-value" id="fighter-wave">1</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Combo</div>
+                        <div class="score-value gold" id="fighter-combo">0</div>
+                    </div>
+                </div>
+                <div class="game-area" style="display: flex; gap: 15px;">
+                    <div class="fighter-legend" style="width: 120px; padding: 10px; background: var(--bg-charred); border-radius: 8px; font-size: 11px;">
+                        <div style="font-weight: bold; margin-bottom: 10px; color: var(--accent-fire);">CONTROLS</div>
+                        <div style="margin-bottom: 6px;">🎮 <b>Move</b></div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">Q ← Left</div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">D → Right</div>
+                        <div style="margin: 8px 0 6px;">⬆️ <b>Jump</b></div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">Z</div>
+                        <div style="margin: 8px 0 6px;">🛡️ <b>Block</b></div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">F (hold)</div>
+                        <div style="margin: 8px 0 6px;">👊 <b>Attack</b></div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">Left Click</div>
+                        <div style="margin: 8px 0 6px;">🔥 <b>Special</b></div>
+                        <div style="margin-left: 20px; color: var(--text-muted);">Right Click</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="fighter-arena" id="fighter-arena" style="cursor: crosshair;">
+                            <div class="fighter-health-bar player">
+                                <div class="fighter-health-fill" id="fighter-player-health" style="width: 100%"></div>
+                            </div>
+                            <div class="fighter-health-bar enemy">
+                                <div class="fighter-health-fill" id="fighter-enemy-health" style="width: 100%"></div>
+                            </div>
+                            <div class="fighter-player" id="fighter-player">🐕</div>
+                            <div class="fighter-enemy" id="fighter-enemy">🐱</div>
+                            <div class="fighter-ground"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="game-start-btn" id="fighter-start">START FIGHT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Racer Modal (Car Game) -->
+    <div class="game-modal" id="game-racer">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🏎️ Token Racer</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Race through the blockchain! Use ← → arrows to steer.<br>
+                    <strong>Collect tokens 🪙, avoid rugs 🚨!</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Distance</div>
+                        <div class="score-value" id="racer-distance">0m</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Coins</div>
+                        <div class="score-value gold" id="racer-coins">0</div>
+                    </div>
+                </div>
+                <div class="game-area racer-track" id="racer-track">
+                    <div class="racer-road">
+                        <div class="racer-line" style="top: 50px;"></div>
+                        <div class="racer-line" style="top: 150px;"></div>
+                        <div class="racer-line" style="top: 250px;"></div>
+                    </div>
+                    <div class="racer-car" id="racer-car">🏎️</div>
+                    <div class="racer-speed" id="racer-speed">0 km/h</div>
+                </div>
+                <button class="game-start-btn" id="racer-start">START RACE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scam Blaster Modal (Shooting Game) -->
+    <div class="game-modal" id="game-blaster">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🎯 Scam Blaster</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Click on scam tokens to destroy them!<br>
+                    <strong>Don't let them escape! Avoid hitting good tokens 🔥</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Score</div>
+                        <div class="score-value" id="blaster-score">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Wave</div>
+                        <div class="score-value gold" id="blaster-wave">1</div>
+                    </div>
+                </div>
+                <div class="game-area blaster-arena" id="blaster-arena">
+                    <div class="blaster-wave">Wave <span id="blaster-wave-display">1</span></div>
+                </div>
+                <button class="game-start-btn" id="blaster-start">START BLASTING</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treasury Defense Modal (Strategy) -->
+    <div class="game-modal" id="game-defense">
+        <div class="game-container" style="max-width: 700px;">
+            <div class="game-header">
+                <div class="game-title">🏰 Treasury Defense</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Build towers to defend the treasury! Click cells to place towers.<br>
+                    <strong>Don't let enemies reach the 🏦 treasury!</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Wave</div>
+                        <div class="score-value" id="defense-wave">1</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Gold</div>
+                        <div class="score-value gold" id="defense-gold">150</div>
+                    </div>
+                </div>
+                <div class="defense-lives" id="defense-lives">
+                    <span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span>
+                </div>
+                <div class="game-area defense-field" id="defense-field"></div>
+                <div class="defense-sidebar">
+                    <button class="defense-tower-btn selected" id="tower-fire">
+                        <span class="tower-icon">🔥</span>
+                        <span>Fire (25dmg)</span>
+                        <span class="tower-cost">40g</span>
+                    </button>
+                    <button class="defense-tower-btn" id="tower-ice">
+                        <span class="tower-icon">❄️</span>
+                        <span>Ice (slow)</span>
+                        <span class="tower-cost">60g</span>
+                    </button>
+                    <button class="defense-tower-btn" id="tower-lightning">
+                        <span class="tower-icon">⚡</span>
+                        <span>Bolt (40dmg)</span>
+                        <span class="tower-cost">80g</span>
+                    </button>
+                    <button class="game-start-btn" id="defense-start" style="margin: 0; padding: 10px 20px;">START PREP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Stacker Modal (Build Game) -->
+    <div class="game-modal" id="game-stacker">
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">🏗️ Token Stacker</div>
+                <div class="game-header-buttons">
+                    <button class="game-refresh" title="Restart">↻</button>
+                    <button class="game-close">✕</button>
+                </div>
+            </div>
+            <div class="game-content">
+                <div class="game-instructions">
+                    Click or press SPACE to drop the block!<br>
+                    <strong>Stack perfectly for bonus points!</strong>
+                </div>
+                <div class="game-score">
+                    <div class="score-item">
+                        <div class="score-label">Height</div>
+                        <div class="score-value" id="stacker-height">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Score</div>
+                        <div class="score-value gold" id="stacker-score">0</div>
+                    </div>
+                </div>
+                <div class="game-area stacker-area" id="stacker-area">
+                    <div class="stacker-height">Height: <span id="stacker-height-display">0</span></div>
+                    <div class="stacker-viewport" id="stacker-viewport">
+                        <div class="stacker-platform"></div>
+                    </div>
+                </div>
+                <button class="game-start-btn" id="stacker-start">START STACKING</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Easter Egg: Pill Modal -->
+    <div class="pill-modal" id="pill-modal">
+        <div class="pill-modal-content">
+            <div class="pill-modal-icon">💊</div>
+            <h2 class="pill-modal-title">Would you take the pill?</h2>
+            <p class="pill-modal-text">
+                You've completed the Learn journey. You now understand the mechanics.<br><br>
+                But there's one more secret to unlock...<br>
+                <strong>The choice is yours.</strong>
+            </p>
+            <div class="pill-buttons">
+                <button class="pill-btn yes" id="pill-yes">Yes</button>
+                <button class="pill-btn no" id="pill-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            Open source. Verifiable. <a href="https://github.com/zeyxx/asdf-burn-engine" target="_blank" rel="noopener noreferrer">GitHub</a> |
+            <a href="https://www.alonisthe.dev/holdex" target="_blank" rel="noopener noreferrer">HolDEX</a> |
+            <a href="index.html">Landing Page</a> |
+            THIS IS FINE.
+        </p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/learn.js"></script>
+    <script src="js/learn-init.js"></script>
+
+    <!-- Solana Web3.js for Games -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"
+            integrity="sha384-frt8Dafwfh70NeaBS1T4CRjuekut3aQwBwRGErSdQ+htbmU6sT8P2lc07CA03Kix"
+            crossorigin="anonymous"></script>
+
+    <!-- ASDF Games Scripts -->
+    <script src="js/games/utils.js"></script>
+    <script src="js/games/config.js"></script>
+    <script src="js/games/solana.js"></script>
+    <script src="js/games/api.js"></script>
+    <script src="js/games/state.js"></script>
+    <script src="js/games/ui.js"></script>
+    <script src="js/games/engine.js"></script>
+    <script src="js/games/main.js"></script>
+</body>
+</html>

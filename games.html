@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+    <style>html,body{background:#0a0a0f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of the Week | ASDF Ecosystem</title>
+    <meta name="description" content="Play weekly games and compete for top scores. Token-gated gaming for $asdfasdfa holders.">
+    <!-- Redirect to SPA games view - keep this page for SEO/backwards compatibility -->
+    <link rel="canonical" href="https://alonisthe.dev/learn#view-games">
+    <script>window.location.replace('learn.html#view-games');</script>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alonisthe.dev/games">
+    <meta property="og:title" content="ASDF Game of the Week">
+    <meta property="og:description" content="Weekly gaming competition for the ASDF community. Hold tokens, play games, earn rewards.">
+    <meta property="og:image" content="https://alonisthe.dev/og-games.png">
+    <meta property="og:site_name" content="ASDFASDFA">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://alonisthe.dev/games">
+    <meta name="twitter:title" content="ASDF Game of the Week">
+    <meta name="twitter:description" content="Weekly gaming competition for the ASDF community. Hold tokens, play games, earn rewards.">
+    <meta name="twitter:image" content="https://alonisthe.dev/og-games.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Prefetch other pages for instant navigation -->
+    <link rel="prefetch" href="learn.html">
+    <link rel="prefetch" href="build.html">
+    <link rel="prefetch" href="index.html">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/games.css">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link" style="position: absolute; left: -9999px; top: 0; z-index: 9999; padding: 8px 16px; background: var(--accent-fire); color: #fff; text-decoration: none;">Skip to main content</a>
+
+    <!-- ============================================
+         NAVIGATION
+         ============================================ -->
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <span style="font-size: 20px;">🔥</span>
+                <span class="nav-logo-text">ASDF Games</span>
+            </a>
+
+            <div class="nav-tabs">
+                <a href="learn.html#view-learn" class="nav-tab" style="text-decoration: none;">Learn</a>
+                <a href="learn.html#view-tools" class="nav-tab" style="text-decoration: none;">Tools</a>
+                <a href="build.html" class="nav-tab" style="text-decoration: none;">Build</a>
+                <a href="learn.html#view-play" class="nav-tab" style="text-decoration: none;">Play</a>
+                <a href="games.html" class="nav-tab active" style="text-decoration: none;">Games</a>
+                <a href="learn.html#view-faq-glossary" class="nav-tab" style="text-decoration: none;">FAQ/Glossary</a>
+            </div>
+
+            <div class="nav-right">
+                <button id="dev-mode-btn" class="dev-mode-btn" title="Toggle Developer Mode">DEV</button>
+                <span id="user-badge" class="visitor-badge" role="status" aria-live="polite">VISITOR</span>
+                <button id="wallet-btn" class="wallet-btn" aria-label="Connect Phantom wallet">
+                    <span id="wallet-btn-text">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <main id="main-content" class="main" role="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content container">
+                <div class="gotw-badge">
+                    <span>GAME OF THE WEEK</span>
+                </div>
+
+                <div id="featured-game-icon" class="hero-game-icon"></div>
+                <h1 id="featured-game-name">Loading...</h1>
+                <p class="hero-description" id="featured-game-desc">The featured game rotates every Monday at 00:00 UTC</p>
+
+                <div class="hero-countdown">
+                    <div class="countdown-item">
+                        <span id="countdown-days" class="countdown-value">0</span>
+                        <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span id="countdown-hours" class="countdown-value">0</span>
+                        <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span id="countdown-mins" class="countdown-value">0</span>
+                        <span class="countdown-label">Mins</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span id="countdown-secs" class="countdown-value">0</span>
+                        <span class="countdown-label">Secs</span>
+                    </div>
+                </div>
+
+                <div class="hero-buttons">
+                    <button id="play-featured-btn" class="btn btn-primary">
+                        PLAY NOW
+                    </button>
+                    <button id="view-all-games-btn" class="btn">
+                        View All Games
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Access Info Bar -->
+        <div class="access-bar container" id="access-bar">
+            <div class="access-item" id="access-gotw">
+                <span class="access-icon"></span>
+                <span>Game of the Week: <strong id="access-gotw-status">Available</strong></span>
+            </div>
+            <div class="access-item locked" id="access-all">
+                <span class="access-icon"></span>
+                <span>All 9 Games: <strong>Holders Only</strong></span>
+            </div>
+        </div>
+
+        <!-- All Games Section -->
+        <section class="games-section" id="games-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">All Games</h2>
+                    <p class="section-subtitle">9 unique games, 1 featured each week. Hold 1M+ $asdfasdfa to unlock all.</p>
+                </div>
+
+                <div class="games-grid" id="games-grid">
+                    <!-- Games will be rendered by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Pump Arena Special Section -->
+        <section class="pump-arena-section" style="padding: 60px 20px; background: linear-gradient(180deg, var(--bg-charred) 0%, rgba(234, 88, 12, 0.1) 50%, var(--bg-charred) 100%);">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title" style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+                        <span style="font-size: 40px;">📈</span>
+                        Pump Arena
+                        <span style="background: linear-gradient(90deg, var(--gold), var(--accent-fire)); padding: 4px 12px; border-radius: 20px; font-size: 12px; text-transform: uppercase;">Always Available</span>
+                    </h2>
+                    <p class="section-subtitle">Master the art of trading! Practice your skills with virtual $1000.</p>
+                </div>
+
+                <div style="display: flex; justify-content: center; max-width: 400px; margin: 30px auto 0;">
+                    <!-- Classic Mode -->
+                    <div class="game-card" style="background: linear-gradient(135deg, var(--bg-burnt) 0%, rgba(34, 197, 94, 0.1) 100%); border: 2px solid var(--green); width: 100%;">
+                        <div class="game-icon">🎮</div>
+                        <h3 class="game-name">Classic Mode</h3>
+                        <p class="game-type">Practice Trading</p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0;">Free to play. Practice your trading skills with virtual $1000. Compete for leaderboard spots!</p>
+                        <button id="pump-classic-btn" class="btn game-play-btn" data-mode="classic" style="background: var(--green); border-color: var(--green-light);">
+                            PLAY FREE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pump Arena Modal -->
+        <div class="game-modal" id="modal-pumparena">
+            <div class="game-modal-content">
+                <div class="game-modal-header">
+                    <h2 class="game-modal-title">
+                        <span>📈</span>
+                        <span>Pump Arena</span>
+                        <span id="pump-mode-badge" style="background: var(--green); padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px;">CLASSIC</span>
+                    </h2>
+                    <button id="close-pumparena-btn" class="game-modal-close" data-game="pumparena">&times;</button>
+                </div>
+                <div class="game-modal-body">
+                    <div class="game-arena" id="arena-pumparena">
+                        <div class="game-start-overlay" id="overlay-pumparena">
+                            <div class="game-instructions">
+                                <h3>Pump Arena</h3>
+                                <p>Buy low, sell high on a volatile chart. Time your trades perfectly!</p>
+                            </div>
+                            <button id="start-pumparena-btn" class="btn btn-primary" data-game="pumparena">
+                                START GAME
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <div class="game-stats">
+                        <div class="game-stat">
+                            <div class="game-stat-value" id="score-pumparena">0</div>
+                            <div class="game-stat-label">Profit</div>
+                        </div>
+                        <div class="game-stat">
+                            <div class="game-stat-value" id="best-pumparena">0</div>
+                            <div class="game-stat-label">Best</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+
+    <!-- Game Modals Container -->
+    <div id="game-modals">
+        <!-- Modals will be generated by JavaScript -->
+    </div>
+
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <!-- Solana Web3.js for blockchain transactions (with Subresource Integrity) -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"
+            integrity="sha384-frt8Dafwfh70NeaBS1T4CRjuekut3aQwBwRGErSdQ+htbmU6sT8P2lc07CA03Kix"
+            crossorigin="anonymous"></script>
+
+    <!-- ASDF Games - Modular Architecture -->
+    <script src="js/games/utils.js"></script>
+    <script src="js/games/config.js"></script>
+    <script src="js/games/solana.js"></script>
+    <script src="js/games/api.js"></script>
+    <script src="js/games/state.js"></script>
+    <script src="js/games/ui.js"></script>
+    <script src="js/games/engine.js"></script>
+    <script src="js/games/main.js"></script>
+
+</body>
+</html>
