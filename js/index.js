@@ -5,8 +5,8 @@
 
 'use strict';
 
-// API endpoint - replace with your actual daemon URL
-const API_URL = 'https://your-daemon-api.com'; // Update this
++ // Burn Engine API endpoint
++ const API_URL = 'https://burns.onrender.com';
 
 // Format numbers safely
 function formatNumber(num) {
