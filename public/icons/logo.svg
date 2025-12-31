@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="102" fill="#0a0a0f"/>
+
+  <!-- Inner glow -->
+  <rect x="32" y="32" width="448" height="448" rx="80" fill="#12121a"/>
+
+  <!-- H Letter - Left bar -->
+  <rect x="112" y="128" width="48" height="256" rx="8" fill="#a855f7"/>
+
+  <!-- H Letter - Right bar -->
+  <rect x="352" y="128" width="48" height="256" rx="8" fill="#a855f7"/>
+
+  <!-- H Letter - Middle bar -->
+  <rect x="160" y="224" width="192" height="48" rx="8" fill="#a855f7"/>
+
+  <!-- Accent dots (data points) -->
+  <circle cx="136" cy="112" r="12" fill="#22c55e"/>
+  <circle cx="376" cy="112" r="12" fill="#22c55e"/>
+  <circle cx="256" cy="400" r="12" fill="#ec4899"/>
+
+  <!-- K-Score indicator -->
+  <rect x="200" y="320" width="112" height="32" rx="16" fill="#1a1a24" stroke="#a855f7" stroke-width="2"/>
+  <text x="256" y="342" font-family="SF Mono, monospace" font-size="16" font-weight="bold" fill="#a855f7" text-anchor="middle">K-SCORE</text>
+</svg>
