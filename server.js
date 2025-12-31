@@ -39,7 +39,23 @@ app.use(helmet({
 // Compression
 app.use(compression());
 
-// Serve static files
+// Serve static files from public/ directory (icons, manifest)
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '1d',
+    etag: true,
+}));
+
+// Serve .well-known for Android Asset Links (TWA)
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), {
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/json');
+        }
+    }
+}));
+
+// Serve static files from root
 app.use(express.static(__dirname, {
     maxAge: '1d',
     etag: true,
