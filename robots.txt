@@ -1,15 +1,14 @@
-# robots.txt for ASDF Ecosystem Landing Page
-# https://www.robotstxt.org/
+# robots.txt for ASDF Web
+  # https://www.robotstxt.org/
 
-User-agent: *
-Allow: /
+  User-agent: *
+  Allow: /
 
-# Disallow backend API directories (if accidentally exposed)
-Disallow: /backend/
-Disallow: /skills-backend/
-Disallow: /node_modules/
-Disallow: /.git/
-Disallow: /.env
+  # Disallow sensitive paths
+  Disallow: /node_modules/
+  Disallow: /.git/
+  Disallow: /.env
+  Disallow: /.well-known/
 
-# Sitemap (update with actual URL when deployed)
-# Sitemap: https://your-domain.com/sitemap.xml
+  # Sitemap
+  Sitemap: https://asdf-web.onrender.com/sitemap.xml
