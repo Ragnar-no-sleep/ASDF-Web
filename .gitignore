@@ -26,3 +26,12 @@ dist/
 
 # Render
 .render/
+
+# Internal docs (never commit)
+CLAUDE.md
+DEV_STATE.md
+*ROADMAP*.md
+*roadmap*.md
+SECURITY_PRODUCTION.md
+PENTEST_REPORT.md
+*-internal.md
