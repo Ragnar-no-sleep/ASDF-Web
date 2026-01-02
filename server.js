@@ -14,6 +14,7 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     message: 'Too many requests, please try again later.',
+    skip: (req) => req.path === '/health', // Exclude health check from rate limiting
 });
 app.use(limiter);
 
