@@ -86,6 +86,11 @@ app.get('/ignition', (req, res) => {
     res.sendFile(path.join(__dirname, 'games.html'));
 });
 
+// Route /privacy to privacy.html (for Play Store requirement)
+app.get('/privacy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'privacy.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
     // If it's a file request that doesn't exist, 404
