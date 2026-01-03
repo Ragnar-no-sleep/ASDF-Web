@@ -30,6 +30,10 @@ const { getHealthStatus: getDbHealth } = require('./services/database');
 const { verifyWebhookSignature: verifyHeliusSignature, processWebhookEvent, getWebhookMetrics, registerWebhook, listWebhooks } = require('./services/webhooks');
 const { getWalletNFTs, verifyNFTOwnership, verifyCollectionOwnership, getTokenBalances: getDASTokenBalances, getAssetDetails, checkRateLimit: checkAssetRateLimit, getAssetMetrics } = require('./services/assets');
 const { getUnlockedAchievements, getAchievementProgress, getDetailedAchievements, recordBurnForAchievements, recordGameForAchievements, updateStreak, grantAchievement, getAchievementLeaderboard, getAchievementMetrics } = require('./services/achievements');
+const { NOTIFICATION_TYPES, createNotification, getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, getPreferences: getNotificationPreferences, updatePreferences: updateNotificationPreferences, notifyAchievementUnlocked, getNotificationMetrics } = require('./services/notifications');
+const { buildBurnTransaction, buildTransferTransaction, verifyTransaction, completeTransaction, getTransactionMetrics } = require('./services/transactions');
+const { getOrCreateReferralCode, validateCode: validateReferralCode, processReferral, getReferralStats, getReferralLeaderboard, getReferralMetrics } = require('./services/referrals');
+const { EVENTS, subscribe: subscribeEvent, publish: publishEvent, emitBurnConfirmed, emitAchievementUnlocked, emitPurchaseCompleted, getEventBusMetrics } = require('./services/eventBus');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -192,17 +196,22 @@ app.get('/health', async (req, res) => {
     const webhookMetrics = getWebhookMetrics();
     const assetMetrics = getAssetMetrics();
     const achievementMetrics = getAchievementMetrics();
+    const notificationMetrics = getNotificationMetrics();
+    const transactionMetrics = getTransactionMetrics();
+    const referralMetrics = getReferralMetrics();
+    const eventBusMetrics = getEventBusMetrics();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.1.0',
+        version: '1.2.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
             heliusEnhanced: heliusHealth.details?.enhancedApi || false,
             database: dbHealth.type,
-            webhooks: webhookMetrics.config.hasSecret
+            webhooks: webhookMetrics.config.hasSecret,
+            eventBus: eventBusMetrics.registeredEvents > 0
         },
         latency: {
             helius: heliusHealth.latency
@@ -224,6 +233,20 @@ app.get('/health', async (req, res) => {
             achievements: {
                 totalPlayers: achievementMetrics.playersWithAchievements,
                 totalUnlocks: achievementMetrics.totalUnlocks
+            },
+            notifications: {
+                users: notificationMetrics.usersWithNotifications,
+                unread: notificationMetrics.totalUnread
+            },
+            transactions: {
+                pending: transactionMetrics.pendingCount
+            },
+            referrals: {
+                totalCodes: referralMetrics.totalCodes,
+                totalReferrals: referralMetrics.totalReferrals
+            },
+            eventBus: {
+                handlers: eventBusMetrics.totalHandlers
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -1347,6 +1370,308 @@ app.post('/api/user/activity', authMiddleware, walletRateLimiter, async (req, re
 
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'record-activity') });
+    }
+});
+
+// ============================================
+// NOTIFICATION ROUTES
+// ============================================
+
+/**
+ * Get user notifications
+ * GET /api/notifications
+ */
+app.get('/api/notifications', authMiddleware, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const offset = parseInt(req.query.offset) || 0;
+        const unreadOnly = req.query.unread === 'true';
+
+        const result = getNotifications(req.user.wallet, { limit, offset, unreadOnly });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-notifications') });
+    }
+});
+
+/**
+ * Get unread notification count
+ * GET /api/notifications/unread-count
+ */
+app.get('/api/notifications/unread-count', authMiddleware, async (req, res) => {
+    try {
+        const count = getUnreadCount(req.user.wallet);
+        res.json({ unreadCount: count });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'unread-count') });
+    }
+});
+
+/**
+ * Mark notification as read
+ * POST /api/notifications/:id/read
+ */
+app.post('/api/notifications/:id/read', authMiddleware, async (req, res) => {
+    try {
+        const success = markAsRead(req.user.wallet, req.params.id);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Notification not found' });
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'mark-read') });
+    }
+});
+
+/**
+ * Mark all notifications as read
+ * POST /api/notifications/read-all
+ */
+app.post('/api/notifications/read-all', authMiddleware, async (req, res) => {
+    try {
+        const count = markAllAsRead(req.user.wallet);
+        res.json({ success: true, markedCount: count });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'mark-all-read') });
+    }
+});
+
+/**
+ * Delete notification
+ * DELETE /api/notifications/:id
+ */
+app.delete('/api/notifications/:id', authMiddleware, async (req, res) => {
+    try {
+        const success = deleteNotification(req.user.wallet, req.params.id);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Notification not found' });
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'delete-notification') });
+    }
+});
+
+/**
+ * Get notification preferences
+ * GET /api/notifications/preferences
+ */
+app.get('/api/notifications/preferences', authMiddleware, async (req, res) => {
+    try {
+        const prefs = getNotificationPreferences(req.user.wallet);
+        res.json(prefs);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-prefs') });
+    }
+});
+
+/**
+ * Update notification preferences
+ * PUT /api/notifications/preferences
+ */
+app.put('/api/notifications/preferences', authMiddleware, async (req, res) => {
+    try {
+        const updated = updateNotificationPreferences(req.user.wallet, req.body);
+        res.json(updated);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'update-prefs') });
+    }
+});
+
+// ============================================
+// TRANSACTION BUILDER ROUTES
+// ============================================
+
+/**
+ * Build burn transaction
+ * POST /api/transactions/burn
+ */
+app.post('/api/transactions/burn', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { amount, priorityLevel } = req.body;
+
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({ error: 'Valid amount required' });
+        }
+
+        const transaction = await buildBurnTransaction(
+            req.user.wallet,
+            amount,
+            { priorityLevel }
+        );
+
+        res.json(transaction);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'build-burn-tx') });
+    }
+});
+
+/**
+ * Build transfer transaction
+ * POST /api/transactions/transfer
+ */
+app.post('/api/transactions/transfer', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { toWallet, mint, amount, priorityLevel } = req.body;
+
+        if (!toWallet || !isValidAddress(toWallet)) {
+            return res.status(400).json({ error: 'Valid destination wallet required' });
+        }
+
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({ error: 'Valid amount required' });
+        }
+
+        const transaction = await buildTransferTransaction(
+            req.user.wallet,
+            toWallet,
+            mint || process.env.ASDF_TOKEN_MINT,
+            amount,
+            { priorityLevel }
+        );
+
+        res.json(transaction);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'build-transfer-tx') });
+    }
+});
+
+/**
+ * Verify signed transaction
+ * POST /api/transactions/verify
+ */
+app.post('/api/transactions/verify', authMiddleware, async (req, res) => {
+    try {
+        const { transactionId, signature } = req.body;
+
+        if (!transactionId || !signature) {
+            return res.status(400).json({ error: 'Transaction ID and signature required' });
+        }
+
+        const result = verifyTransaction(transactionId, signature, req.user.wallet);
+
+        if (!result.valid) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'verify-tx') });
+    }
+});
+
+// ============================================
+// REFERRAL ROUTES
+// ============================================
+
+/**
+ * Get or create referral code
+ * GET /api/referrals/code
+ */
+app.get('/api/referrals/code', authMiddleware, async (req, res) => {
+    try {
+        const result = getOrCreateReferralCode(req.user.wallet);
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-referral-code') });
+    }
+});
+
+/**
+ * Get referral stats
+ * GET /api/referrals/stats
+ */
+app.get('/api/referrals/stats', authMiddleware, async (req, res) => {
+    try {
+        const stats = getReferralStats(req.user.wallet);
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'referral-stats') });
+    }
+});
+
+/**
+ * Apply referral code
+ * POST /api/referrals/apply
+ */
+app.post('/api/referrals/apply', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { code } = req.body;
+
+        if (!code || typeof code !== 'string') {
+            return res.status(400).json({ error: 'Referral code required' });
+        }
+
+        const result = processReferral(req.user.wallet, code);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        // Emit event for other services
+        publishEvent(EVENTS.REFERRAL_COMPLETED, {
+            referrer: result.referrerWallet,
+            referee: req.user.wallet,
+            rewards: result.rewards
+        });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'apply-referral') });
+    }
+});
+
+/**
+ * Validate referral code (public)
+ * GET /api/referrals/validate/:code
+ */
+app.get('/api/referrals/validate/:code', async (req, res) => {
+    try {
+        const result = validateReferralCode(req.params.code);
+        res.json({
+            valid: result.valid,
+            error: result.error || null
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'validate-code') });
+    }
+});
+
+/**
+ * Get referral leaderboard
+ * GET /api/referrals/leaderboard
+ */
+app.get('/api/referrals/leaderboard', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const leaderboard = getReferralLeaderboard(limit);
+
+        res.json({
+            entries: leaderboard,
+            count: leaderboard.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'referral-leaderboard') });
     }
 });
 
