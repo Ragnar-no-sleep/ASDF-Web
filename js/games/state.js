@@ -254,6 +254,11 @@ async function disconnectWallet() {
     renderGamesGrid();
 }
 
+/**
+ * Check token balance via API (not direct RPC)
+ * SECURITY: Balance and isHolder are verified server-side via Helius RPC
+ * This prevents client-side spoofing of holder status
+ */
 async function checkTokenBalance(publicKey) {
     try {
         if (!isValidSolanaAddress(publicKey)) {
@@ -261,35 +266,48 @@ async function checkTokenBalance(publicKey) {
             return;
         }
 
-        if (!RateLimiter.canMakeCall('solana-rpc')) {
+        if (!RateLimiter.canMakeCall('api-balance')) {
             console.warn('Rate limited - please wait before checking balance again');
             return;
         }
 
-        const response = await fetch(CONFIG.SOLANA_RPC, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'getTokenAccountsByOwner',
-                params: [
-                    publicKey,
-                    { mint: CONFIG.ASDF_TOKEN_MINT },
-                    { encoding: 'jsonParsed' }
-                ]
-            })
+        // Use API endpoint instead of direct RPC call
+        // The API uses Helius RPC with proper rate limiting and caching
+        const response = await fetch(`${CONFIG.API_BASE}/ecosystem/stats`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
         });
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
 
-        if (data.result?.value?.length > 0) {
-            const tokenAccount = data.result.value[0];
-            const balance = tokenAccount.account.data.parsed.info.tokenAmount.uiAmount || 0;
+        // For authenticated balance, we should use the auth flow
+        // But for initial display, we'll check if user is authenticated
+        const token = localStorage.getItem('asdf_jwt');
+        if (token) {
+            // Use authenticated endpoint for verified balance
+            const profileResponse = await fetch(`${CONFIG.API_BASE}/user/profile`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-            appState.balance = balance;
-            appState.isHolder = balance >= CONFIG.MIN_HOLDER_BALANCE;
+            if (profileResponse.ok) {
+                const profile = await profileResponse.json();
+                appState.balance = profile.balance || 0;
+                appState.isHolder = profile.isHolder || false;
+            } else {
+                // Token expired or invalid, clear it
+                localStorage.removeItem('asdf_jwt');
+                appState.balance = 0;
+                appState.isHolder = false;
+            }
         } else {
+            // No auth token - user needs to authenticate for verified holder status
+            // For display only, show 0 balance until authenticated
             appState.balance = 0;
             appState.isHolder = false;
         }
@@ -300,6 +318,8 @@ async function checkTokenBalance(publicKey) {
 
     } catch (error) {
         console.error('Failed to check token balance:', error);
+        appState.balance = 0;
+        appState.isHolder = false;
         updateAccessUI();
         renderGamesGrid();
     }

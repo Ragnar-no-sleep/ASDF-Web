@@ -1,0 +1,14 @@
+# ASDF Shop Assets Directory Structure
+#
+# This directory contains avatar cosmetic assets organized by layer:
+#
+# /background - Background images (layer 0)
+# /aura       - Aura effects (layer 1)
+# /skin       - Base character skins (layer 2)
+# /outfit     - Clothing/outfits (layer 3)
+# /eyes       - Eye modifications (layer 4)
+# /head       - Hats/hair/headwear (layer 5)
+# /held       - Held items (layer 6)
+#
+# Each asset should be a PNG file with transparency.
+# Recommended size: 512x512 or 1024x1024 pixels.

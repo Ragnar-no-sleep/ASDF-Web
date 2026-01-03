@@ -1,5 +1,13 @@
 /**
  * ASDF Games - Solana Payment System
+ *
+ * SECURITY NOTE: This module uses direct RPC for transaction signing only.
+ * - Balance checks should use the API (/api/user/profile)
+ * - Purchases should use the Shop API flow (/api/shop/purchase)
+ * - This module is for legacy SOL transfers only
+ *
+ * For new features, use the API endpoints which use Helius RPC
+ * with proper rate limiting, caching, and security.
  */
 
 'use strict';

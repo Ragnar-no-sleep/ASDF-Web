@@ -163,6 +163,25 @@ async function endGame(gameId, finalScore) {
         }
     }
 
+    // Award XP from game score (ASDF Engage integration)
+    let xpResult = null;
+    if (safeScore > 0 && typeof addXpFromGame === 'function') {
+        xpResult = addXpFromGame(safeScore);
+        if (xpResult.success) {
+            // Show XP notification
+            if (typeof showXpNotification === 'function') {
+                showXpNotification(xpResult.xpGained, gameId);
+            }
+            // Show tier up celebration if applicable
+            if (xpResult.tieredUp && typeof showTierUpCelebration === 'function') {
+                showTierUpCelebration(
+                    ASDF.engageTierNames[xpResult.tier.index - 1],
+                    xpResult.tier.name
+                );
+            }
+        }
+    }
+
     let apiResult = null;
     let submitError = null;
 
@@ -215,6 +234,24 @@ async function endGame(gameId, finalScore) {
         }
 
         gameOverDiv.appendChild(scoreDiv);
+
+        // Show XP gained from this game
+        if (xpResult && xpResult.success && xpResult.xpGained > 0) {
+            const xpDiv = document.createElement('div');
+            xpDiv.className = 'game-over-xp';
+            xpDiv.textContent = `+${xpResult.xpGained} XP`;
+            gameOverDiv.appendChild(xpDiv);
+
+            // Show current tier progress
+            const tierDiv = document.createElement('div');
+            tierDiv.className = 'game-over-tier';
+            const tier = xpResult.tier;
+            tierDiv.innerHTML = `<span class="tier-name" style="color: ${ASDF.getTierColor(tier.index, 'engage')}">${tier.name}</span>`;
+            if (!tier.isMax) {
+                tierDiv.innerHTML += ` <span class="tier-progress">${Math.round(tier.progress * 100)}%</span>`;
+            }
+            gameOverDiv.appendChild(tierDiv);
+        }
 
         if (isCompetitive && apiResult?.rank) {
             const rankDiv = document.createElement('div');

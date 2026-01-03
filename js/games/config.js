@@ -73,10 +73,14 @@ const CONFIG = {
         ? 'http://localhost:3001/api'
         : 'https://api.asdf-games.com/api',
 
-    // Solana RPC (environment-specific)
+    // DEPRECATED: Direct RPC calls from frontend
+    // All RPC calls should go through the API (which uses Helius with proper rate limiting)
+    // This is kept only for legacy payment functions that require client-side transaction signing
+    // DO NOT use for balance checks or any data that affects access control
     SOLANA_RPC: Environment.isDev
         ? 'https://api.devnet.solana.com'
         : 'https://api.mainnet-beta.solana.com',
+    _SOLANA_RPC_DEPRECATED: true,
 
     // Rotation settings
     ROTATION_EPOCH: new Date(DEFAULT_CONFIG.ROTATION_EPOCH),

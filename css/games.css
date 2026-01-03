@@ -1733,3 +1733,516 @@
     border-color: var(--accent-bright) !important;
     color: white !important;
 }
+
+/* ============================================
+   ASDF ENGAGE - XP & TIER SYSTEM
+   ============================================ */
+
+/* Engage tier colors */
+:root {
+    --tier-ember: #78716c;
+    --tier-spark: #fbbf24;
+    --tier-flame: #f97316;
+    --tier-blaze: #ef4444;
+    --tier-inferno: #dc2626;
+    --accent-spark: var(--tier-spark);
+    --accent-flame: var(--tier-flame);
+    --accent-blaze: var(--tier-blaze);
+    --accent-inferno: var(--tier-inferno);
+}
+
+/* XP Notification Container */
+.xp-notification-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+/* XP Notification */
+.xp-notification {
+    background: linear-gradient(135deg, var(--bg-charred), var(--bg-burnt));
+    border: 1px solid var(--accent-fire);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-bright);
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.3);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+.xp-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.xp-notification.fade {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.xp-notification .xp-source {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Tier Up Overlay */
+.tier-up-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tier-up-overlay.show {
+    opacity: 1;
+}
+
+.tier-up-modal {
+    background: linear-gradient(135deg, var(--bg-dark), var(--bg-charred));
+    border: 2px solid var(--accent-fire);
+    border-radius: 16px;
+    padding: 40px 60px;
+    text-align: center;
+    animation: tierUpPulse 0.5s ease-out;
+}
+
+@keyframes tierUpPulse {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.tier-up-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    animation: tierUpBounce 0.6s ease infinite;
+}
+
+@keyframes tierUpBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.tier-up-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-bright);
+    text-shadow: 0 0 20px var(--accent-fire);
+    margin-bottom: 20px;
+}
+
+.tier-up-progression {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.tier-from {
+    color: var(--text-muted);
+}
+
+.tier-arrow {
+    color: var(--accent-fire);
+}
+
+.tier-to {
+    text-shadow: 0 0 10px currentColor;
+}
+
+.tier-up-benefits {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    color: var(--text-cream);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.tier-up-close {
+    background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tier-up-close:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4);
+}
+
+/* Game Over XP Display */
+.game-over-xp {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-bright);
+    margin: 12px 0 8px;
+    text-shadow: 0 0 10px var(--accent-fire);
+}
+
+.game-over-tier {
+    font-size: 14px;
+    color: var(--text-cream);
+    margin-bottom: 16px;
+}
+
+.game-over-tier .tier-name {
+    font-weight: 700;
+}
+
+.game-over-tier .tier-progress {
+    color: var(--text-muted);
+    margin-left: 8px;
+}
+
+/* Engage Stats Bar */
+.engage-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--bg-charred);
+    border-radius: 8px;
+    border: 1px solid var(--border-rust);
+}
+
+.engage-tier-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.engage-xp-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.engage-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-fire), var(--accent-bright));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.engage-xp-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 80px;
+    text-align: right;
+}
+
+/* ============================================
+   ASDF SHOP - COSMETIC SYSTEM
+   ============================================ */
+
+/* Shop tier colors */
+.tier-common { color: #808080; }
+.tier-uncommon { color: #1eff00; }
+.tier-rare { color: #0070dd; }
+.tier-epic { color: #a855f7; }
+.tier-legendary { color: #ff8000; }
+.tier-mythic { color: #e6cc80; }
+.tier-divine { color: #00ccff; }
+.tier-cosmic { color: #ff00ff; }
+.tier-eternal { color: #ffffff; text-shadow: 0 0 5px white; }
+.tier-transcendent { color: #ff4500; text-shadow: 0 0 10px #ff4500; }
+
+/* Shop Grid */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px;
+}
+
+/* Shop Item Card */
+.shop-item {
+    background: var(--bg-charred);
+    border: 1px solid var(--border-rust);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shop-item:hover {
+    border-color: var(--accent-fire);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.2);
+}
+
+.shop-item.owned {
+    border-color: var(--green);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.shop-item.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.shop-item-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.shop-item-preview img,
+.shop-item-preview canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.shop-item-name {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.shop-item-tier {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.shop-item-price {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--accent-bright);
+}
+
+.shop-item-price.discounted {
+    color: var(--green);
+}
+
+.shop-item-price .original {
+    text-decoration: line-through;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.shop-item-owned {
+    color: var(--green);
+    font-weight: 700;
+}
+
+/* Avatar Display */
+.avatar-display {
+    position: relative;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.avatar-canvas {
+    display: block;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: var(--text-muted);
+}
+
+/* Avatar Editor */
+.avatar-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background: var(--bg-dark);
+    border-radius: 16px;
+}
+
+.avatar-editor-preview {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-charred);
+    border-radius: 12px;
+}
+
+.avatar-editor-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.avatar-tab {
+    background: var(--bg-charred);
+    border: 1px solid var(--border-rust);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.avatar-tab:hover {
+    border-color: var(--accent-fire);
+    color: var(--text-cream);
+}
+
+.avatar-tab.active {
+    background: var(--accent-fire);
+    border-color: var(--accent-fire);
+    color: white;
+}
+
+.avatar-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+}
+
+.avatar-item {
+    background: var(--bg-charred);
+    border: 2px solid var(--border-rust);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.avatar-item:hover {
+    border-color: var(--accent-fire);
+}
+
+.avatar-item.equipped {
+    border-color: var(--green);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.avatar-item.avatar-item-locked {
+    opacity: 0.5;
+}
+
+.avatar-item-unequip {
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.avatar-item-name {
+    font-size: 10px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.avatar-item-price {
+    font-size: 10px;
+    color: var(--accent-bright);
+}
+
+/* Layer Preview */
+.layer-preview {
+    background: var(--bg-dark);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.layer-preview canvas {
+    display: block;
+}
+
+.layer-empty,
+.layer-error {
+    font-size: 20px;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .xp-notification-container {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+        left: 10px;
+    }
+
+    .xp-notification {
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+
+    .tier-up-modal {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+
+    .tier-up-title {
+        font-size: 24px;
+    }
+
+    .tier-up-progression {
+        font-size: 18px;
+    }
+
+    .shop-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .avatar-editor-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

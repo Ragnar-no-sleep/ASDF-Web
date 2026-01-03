@@ -1,0 +1,408 @@
+/**
+ * ASDF API - Main Entry Point
+ *
+ * Production-ready API server for ASDF Games
+ * - Wallet authentication
+ * - Shop with real burns
+ * - Game score validation
+ * - Leaderboards
+ */
+
+'use strict';
+
+require('dotenv').config();
+
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+
+// Services
+const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
+const { getTokenBalance, getTokenSupply, getRecentBurns, healthCheck, isValidAddress } = require('./services/helius');
+const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer } = require('./services/shop');
+
+const app = express();
+const PORT = process.env.API_PORT || 3001;
+
+// ============================================
+// MIDDLEWARE
+// ============================================
+
+// Security headers
+app.use(helmet());
+
+// CORS
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'https://alonisthe.dev'],
+    credentials: true
+}));
+
+// Body parsing
+app.use(express.json({ limit: '1mb' }));
+
+// Rate limiting by IP
+const generalLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 60,
+    message: { error: 'Too many requests, please try again later' }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    message: { error: 'Too many auth attempts, please try again later' }
+});
+
+const purchaseLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    message: { error: 'Too many purchase attempts, please try again later' }
+});
+
+app.use('/api', generalLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/shop/purchase', purchaseLimiter);
+
+// ============================================
+// HEALTH CHECK
+// ============================================
+
+app.get('/health', async (req, res) => {
+    const heliusHealth = await healthCheck();
+
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        services: {
+            api: true,
+            helius: heliusHealth.healthy
+        },
+        latency: {
+            helius: heliusHealth.latency
+        }
+    });
+});
+
+// ============================================
+// AUTHENTICATION ROUTES
+// ============================================
+
+/**
+ * Request authentication challenge
+ * POST /api/auth/challenge
+ */
+app.post('/api/auth/challenge', (req, res) => {
+    try {
+        const { wallet } = req.body;
+
+        if (!wallet || !isValidAddress(wallet)) {
+            return res.status(400).json({ error: 'Invalid wallet address' });
+        }
+
+        const challenge = generateChallenge(wallet);
+        res.json(challenge);
+
+    } catch (error) {
+        console.error('Challenge error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Verify signature and get JWT
+ * POST /api/auth/verify
+ */
+app.post('/api/auth/verify', async (req, res) => {
+    try {
+        const { wallet, signature } = req.body;
+
+        if (!wallet || !signature) {
+            return res.status(400).json({ error: 'Wallet and signature required' });
+        }
+
+        const result = await verifyAndAuthenticate(wallet, signature);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Auth error:', error);
+        res.status(401).json({ error: error.message });
+    }
+});
+
+/**
+ * Refresh JWT with updated balance
+ * GET /api/auth/refresh
+ */
+app.get('/api/auth/refresh', authMiddleware, async (req, res) => {
+    try {
+        const token = req.headers.authorization.substring(7);
+        const result = await refreshToken(token);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Refresh error:', error);
+        res.status(401).json({ error: error.message });
+    }
+});
+
+// ============================================
+// USER ROUTES
+// ============================================
+
+/**
+ * Get user profile
+ * GET /api/user/profile
+ */
+app.get('/api/user/profile', authMiddleware, async (req, res) => {
+    try {
+        const { wallet } = req.user;
+
+        // Get fresh balance
+        const balanceInfo = await getTokenBalance(wallet);
+
+        // Get inventory and equipped
+        const inventory = await getInventory(wallet);
+        const equipped = await getEquipped(wallet);
+
+        res.json({
+            wallet,
+            balance: balanceInfo.balance,
+            isHolder: balanceInfo.isHolder,
+            tier: req.user.tier,
+            tierIndex: req.user.tierIndex,
+            inventory,
+            equipped
+        });
+
+    } catch (error) {
+        console.error('Profile error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// SHOP ROUTES
+// ============================================
+
+/**
+ * Get shop catalog with prices
+ * GET /api/shop/catalog
+ */
+app.get('/api/shop/catalog', optionalAuthMiddleware, async (req, res) => {
+    try {
+        const engageTier = req.user?.tierIndex || 0;
+        const catalog = await getCatalogWithPrices(engageTier);
+
+        // If authenticated, mark owned items
+        if (req.user) {
+            const inventory = await getInventory(req.user.wallet);
+            catalog.forEach(item => {
+                item.owned = inventory.includes(item.id);
+            });
+        }
+
+        res.json({ items: catalog });
+
+    } catch (error) {
+        console.error('Catalog error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get user's inventory
+ * GET /api/shop/inventory
+ */
+app.get('/api/shop/inventory', authMiddleware, async (req, res) => {
+    try {
+        const inventory = await getInventory(req.user.wallet);
+        const equipped = await getEquipped(req.user.wallet);
+
+        res.json({ inventory, equipped });
+
+    } catch (error) {
+        console.error('Inventory error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Initiate purchase (returns transaction to sign)
+ * POST /api/shop/purchase
+ */
+app.post('/api/shop/purchase', authMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.body;
+
+        if (!itemId) {
+            return res.status(400).json({ error: 'Item ID required' });
+        }
+
+        const inventory = await getInventory(req.user.wallet);
+
+        const result = await initiatePurchase(
+            req.user.wallet,
+            itemId,
+            req.user.tierIndex,
+            inventory
+        );
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Purchase init error:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * Confirm purchase after signing
+ * POST /api/shop/purchase/confirm
+ */
+app.post('/api/shop/purchase/confirm', authMiddleware, async (req, res) => {
+    try {
+        const { purchaseId, signature } = req.body;
+
+        if (!purchaseId || !signature) {
+            return res.status(400).json({ error: 'Purchase ID and signature required' });
+        }
+
+        const result = await confirmPurchase(purchaseId, signature);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Purchase confirm error:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * Equip an item
+ * POST /api/shop/equip
+ */
+app.post('/api/shop/equip', authMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.body;
+        const inventory = await getInventory(req.user.wallet);
+
+        const result = await equipItem(req.user.wallet, itemId, inventory);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Equip error:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+/**
+ * Unequip a layer
+ * POST /api/shop/unequip
+ */
+app.post('/api/shop/unequip', authMiddleware, async (req, res) => {
+    try {
+        const { layer } = req.body;
+
+        const result = await unequipLayer(req.user.wallet, layer);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Unequip error:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// ============================================
+// ECOSYSTEM ROUTES
+// ============================================
+
+/**
+ * Get ecosystem stats
+ * GET /api/ecosystem/stats
+ */
+app.get('/api/ecosystem/stats', async (req, res) => {
+    try {
+        const supply = await getTokenSupply();
+
+        res.json({
+            currentSupply: supply.current,
+            totalBurned: supply.burned,
+            initialSupply: 1_000_000_000,
+            burnPercent: ((supply.burned / 1_000_000_000) * 100).toFixed(4)
+        });
+
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get recent burns
+ * GET /api/ecosystem/burns
+ */
+app.get('/api/ecosystem/burns', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const burns = await getRecentBurns(limit);
+
+        res.json({ burns });
+
+    } catch (error) {
+        console.error('Burns error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// PUBLIC CONFIG
+// ============================================
+
+/**
+ * Get public configuration
+ * GET /api/config/public
+ */
+app.get('/api/config/public', async (req, res) => {
+    try {
+        const supply = await getTokenSupply();
+
+        res.json({
+            tokenMint: process.env.ASDF_TOKEN_MINT || '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+            minHolderBalance: 1_000_000,
+            currentSupply: supply.current,
+            totalBurned: supply.burned,
+            cycleWeeks: 9,
+            rotationEpoch: '2024-01-01T00:00:00Z'
+        });
+
+    } catch (error) {
+        console.error('Config error:', error);
+        // Return defaults on error
+        res.json({
+            tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+            minHolderBalance: 1_000_000,
+            cycleWeeks: 9,
+            rotationEpoch: '2024-01-01T00:00:00Z'
+        });
+    }
+});
+
+// ============================================
+// ERROR HANDLING
+// ============================================
+
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
+
+// ============================================
+// START SERVER
+// ============================================
+
+app.listen(PORT, () => {
+    console.log(`🔥 ASDF API running on port ${PORT}`);
+    console.log(`   Health: http://localhost:${PORT}/health`);
+});
+
+module.exports = app;
