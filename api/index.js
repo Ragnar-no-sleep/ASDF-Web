@@ -50,6 +50,10 @@ const { registerServer, registerCleanup, middleware: shutdownMiddleware, initiat
 const { middleware: versioningMiddleware, getVersionInfo, getStats: getVersioningStats, detectVersion, validateVersion } = require('./services/versioning');
 const { createBatchHandler, getStats: getBatchingStats, getRunningBatches } = require('./services/batching');
 const { middleware: compressionMiddleware, getStats: getCompressionStats, clearCache: clearCompressionCache } = require('./services/compression');
+const { registerEndpoint, executeRequest, executeEnhancedRequest, getAllEndpointsStatus, checkAllEndpointsHealth, getStats: getRpcStats, ENDPOINT_TYPES } = require('./services/rpcFailover');
+const { trackTransaction, getTransactionStatus, getActiveTransactions, getHistory: getTxHistory, getWalletHistory: getTxWalletHistory, getStats: getTxMonitorStats, TX_STATES, TX_TYPES } = require('./services/txMonitor');
+const { getEstimate: getPriorityFeeEstimateV2, getAccountFeeEstimate, getCongestionAnalysis, getHistory: getFeeHistory, getHourlyAverages: getFeeHourlyAverages, estimateComputeUnits, getStats: getPriorityFeeStats, PRIORITY_LEVELS } = require('./services/priorityFee');
+const { connect: wsConnect, getConnectionStatus: getWsStatus, subscribeAccount, subscribeSignature, getSubscriptions: getWsSubscriptions, getStats: getWsStats, shutdown: wsShutdown } = require('./services/wsManager');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -241,11 +245,15 @@ app.get('/health', async (req, res) => {
     const versioningStats = getVersioningStats();
     const batchingStats = getBatchingStats();
     const compressionStats = getCompressionStats();
+    const rpcStats = getRpcStats();
+    const txMonitorStats = getTxMonitorStats();
+    const priorityFeeStats = getPriorityFeeStats();
+    const wsStats = getWsStats();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.6.0',
+        version: '1.7.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
@@ -353,6 +361,23 @@ app.get('/health', async (req, res) => {
             compression: {
                 compressed: compressionStats.compressedResponses,
                 savings: compressionStats.savingsPercent
+            },
+            rpc: {
+                endpoints: rpcStats.endpoints?.total || 0,
+                healthy: rpcStats.endpoints?.healthy || 0,
+                failovers: rpcStats.failovers
+            },
+            txMonitor: {
+                active: txMonitorStats.active,
+                confirmed: txMonitorStats.confirmed
+            },
+            priorityFee: {
+                congestion: priorityFeeStats.congestion?.level || 'unknown',
+                avgFee: priorityFeeStats.avgFeeRecommended
+            },
+            websocket: {
+                state: wsStats.connectionState,
+                subscriptions: wsStats.activeSubscriptions
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -2780,6 +2805,258 @@ app.post('/api/admin/compression/clear-cache', authMiddleware, requireAdmin, asy
 });
 
 // ============================================
+// RPC FAILOVER ROUTES
+// ============================================
+
+/**
+ * Get RPC endpoints status (admin only)
+ * GET /api/admin/rpc
+ */
+app.get('/api/admin/rpc', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const endpoints = getAllEndpointsStatus();
+        const stats = getRpcStats();
+
+        res.json({ endpoints, stats });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'rpc-status') });
+    }
+});
+
+/**
+ * Trigger health check on all endpoints (admin only)
+ * POST /api/admin/rpc/health-check
+ */
+app.post('/api/admin/rpc/health-check', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const results = await checkAllEndpointsHealth();
+        res.json({ results: Object.fromEntries(results) });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'rpc-health-check') });
+    }
+});
+
+// ============================================
+// TRANSACTION MONITOR ROUTES
+// ============================================
+
+/**
+ * Track a transaction
+ * POST /api/transactions/track
+ */
+app.post('/api/transactions/track', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { signature, type, amount, metadata } = req.body;
+
+        if (!signature) {
+            return res.status(400).json({ error: 'Transaction signature required' });
+        }
+
+        const tracker = trackTransaction(signature, {
+            wallet: req.user.wallet,
+            type: type || TX_TYPES.CUSTOM,
+            amount,
+            metadata
+        });
+
+        res.json({
+            signature: tracker.signature,
+            state: tracker.state,
+            tracking: true
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'track-tx') });
+    }
+});
+
+/**
+ * Get transaction status
+ * GET /api/transactions/status/:signature
+ */
+app.get('/api/transactions/status/:signature', async (req, res) => {
+    try {
+        const status = getTransactionStatus(req.params.signature);
+
+        if (!status) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        res.json(status);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'tx-status') });
+    }
+});
+
+/**
+ * Get user's transaction history
+ * GET /api/transactions/history
+ */
+app.get('/api/transactions/history', authMiddleware, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const history = getTxWalletHistory(req.user.wallet, limit);
+
+        res.json({ history, count: history.length });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'tx-history') });
+    }
+});
+
+/**
+ * Get active transactions (admin only)
+ * GET /api/admin/transactions/active
+ */
+app.get('/api/admin/transactions/active', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const active = getActiveTransactions();
+        const stats = getTxMonitorStats();
+
+        res.json({ active, stats });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'active-tx') });
+    }
+});
+
+// ============================================
+// PRIORITY FEE ROUTES
+// ============================================
+
+/**
+ * Get priority fee estimate (v2 with full analysis)
+ * GET /api/priority-fee
+ */
+app.get('/api/priority-fee', async (req, res) => {
+    try {
+        const priorityLevel = req.query.level || 'medium';
+        const computeUnits = parseInt(req.query.computeUnits) || 200000;
+
+        const estimate = await getPriorityFeeEstimateV2({
+            priorityLevel,
+            computeUnits
+        });
+
+        res.json(estimate);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'priority-fee') });
+    }
+});
+
+/**
+ * Get priority fee for specific accounts
+ * POST /api/priority-fee/accounts
+ */
+app.post('/api/priority-fee/accounts', async (req, res) => {
+    try {
+        const { accountKeys, priorityLevel } = req.body;
+
+        if (!accountKeys || !Array.isArray(accountKeys)) {
+            return res.status(400).json({ error: 'accountKeys array required' });
+        }
+
+        const estimate = await getAccountFeeEstimate(accountKeys, priorityLevel || 'medium');
+
+        res.json(estimate);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'account-fee') });
+    }
+});
+
+/**
+ * Get network congestion analysis
+ * GET /api/priority-fee/congestion
+ */
+app.get('/api/priority-fee/congestion', async (req, res) => {
+    try {
+        const analysis = getCongestionAnalysis();
+        res.json(analysis);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'congestion') });
+    }
+});
+
+/**
+ * Get compute unit estimate for transaction type
+ * GET /api/priority-fee/compute-units
+ */
+app.get('/api/priority-fee/compute-units', (req, res) => {
+    try {
+        const txType = req.query.type || 'transfer';
+        const computeUnits = estimateComputeUnits(txType);
+
+        res.json({ txType, computeUnits });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'compute-units') });
+    }
+});
+
+/**
+ * Get fee history (admin only)
+ * GET /api/admin/priority-fee
+ */
+app.get('/api/admin/priority-fee', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getPriorityFeeStats();
+        const history = getFeeHistory(50);
+        const hourly = getFeeHourlyAverages(24);
+
+        res.json({ stats, history, hourlyAverages: hourly });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'fee-admin') });
+    }
+});
+
+// ============================================
+// WEBSOCKET STATUS ROUTES
+// ============================================
+
+/**
+ * Get WebSocket connection status
+ * GET /api/admin/websocket
+ */
+app.get('/api/admin/websocket', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const status = getWsStatus();
+        const stats = getWsStats();
+        const subscriptions = getWsSubscriptions();
+
+        res.json({ status, stats, subscriptions });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'ws-status') });
+    }
+});
+
+/**
+ * Reconnect WebSocket (admin only)
+ * POST /api/admin/websocket/reconnect
+ */
+app.post('/api/admin/websocket/reconnect', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        await wsConnect();
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            action: 'websocket_reconnect'
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, status: getWsStatus() });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'ws-reconnect') });
+    }
+});
+
+// ============================================
 // ANALYTICS TRACKING MIDDLEWARE
 // ============================================
 
@@ -2831,7 +3108,7 @@ const server = app.listen(PORT, async () => {
     console.log(`🔥 ASDF API running on port ${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
     console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
-    console.log(`   Version: 1.6.0`);
+    console.log(`   Version: 1.7.0`);
 
     // Register server with shutdown service
     registerServer(server);
