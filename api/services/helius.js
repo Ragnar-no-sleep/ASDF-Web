@@ -33,15 +33,29 @@ const RETRY_CONFIG = {
     maxDelayMs: 10000
 };
 
-// Cache configuration
+// Cache configuration (Fibonacci-based TTLs in seconds × 1000)
 const CACHE_TTL = {
     tokenSupply: 60 * 1000,      // 1 minute
     tokenBalance: 30 * 1000,     // 30 seconds
-    recentBurns: 2 * 60 * 1000   // 2 minutes
+    recentBurns: 2 * 60 * 1000,  // 2 minutes
+    priorityFee: 10 * 1000,      // 10 seconds (network conditions change fast)
+    burnHistory: 5 * 60 * 1000   // 5 minutes
 };
 
-// Priority fee (microLamports) - adjust based on network conditions
-const PRIORITY_FEE = 50000; // ~0.00005 SOL
+// Priority fee configuration
+const PRIORITY_FEE_CONFIG = {
+    default: 50000,      // Default: 50k microLamports (~0.00005 SOL)
+    min: 10000,          // Minimum: 10k microLamports
+    max: 500000,         // Maximum: 500k microLamports (~0.0005 SOL)
+    percentile: 'medium' // Helius priority level: low, medium, high, veryHigh
+};
+
+// Transaction confirmation config
+const CONFIRMATION_CONFIG = {
+    maxRetries: 30,          // Max confirmation checks
+    retryDelayMs: 2000,      // 2 seconds between checks
+    commitment: 'confirmed'  // confirmed or finalized
+};
 
 // ============================================
 // CACHE IMPLEMENTATION
@@ -111,7 +125,8 @@ async function withRetry(fn, operation = 'RPC call') {
 
     for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
         try {
-            return await fn();
+            const result = await fn();
+            return result;
         } catch (error) {
             lastError = error;
 
@@ -125,6 +140,12 @@ async function withRetry(fn, operation = 'RPC call') {
 
             if (noRetryErrors.some(msg => error.message?.includes(msg))) {
                 throw error;
+            }
+
+            // Report RPC connection failures for failover
+            const rpcErrors = ['fetch failed', 'ECONNREFUSED', 'ETIMEDOUT', '503', '502', '429'];
+            if (rpcErrors.some(msg => error.message?.includes(msg))) {
+                reportConnectionFailure();
             }
 
             // Calculate delay with exponential backoff + jitter
@@ -145,23 +166,247 @@ async function withRetry(fn, operation = 'RPC call') {
 }
 
 // ============================================
-// CONNECTION MANAGEMENT
+// CONNECTION MANAGEMENT WITH FAILOVER
 // ============================================
 
-let connection = null;
+// Connection pool for resilience
+const connectionPool = {
+    primary: null,
+    backup: null,
+    currentIndex: 0,
+    failureCount: 0,
+    lastFailure: 0
+};
+
+// Failover configuration
+const FAILOVER_CONFIG = {
+    maxFailures: 3,           // Failures before switching
+    cooldownMs: 30 * 1000,    // 30 seconds before retrying primary
+    backupRpcUrl: process.env.BACKUP_RPC_URL || null
+};
 
 /**
- * Get Helius connection
+ * Get Helius connection with automatic failover
  * @returns {Connection}
  */
 function getConnection() {
-    if (!connection) {
-        if (!HELIUS_API_KEY) {
-            throw new Error('HELIUS_API_KEY not configured');
-        }
-        connection = new Connection(HELIUS_RPC_URL, 'confirmed');
+    if (!HELIUS_API_KEY) {
+        throw new Error('HELIUS_API_KEY not configured');
     }
-    return connection;
+
+    // Initialize connections if needed
+    if (!connectionPool.primary) {
+        connectionPool.primary = new Connection(HELIUS_RPC_URL, {
+            commitment: 'confirmed',
+            confirmTransactionInitialTimeout: 60000
+        });
+    }
+
+    if (!connectionPool.backup && FAILOVER_CONFIG.backupRpcUrl) {
+        connectionPool.backup = new Connection(FAILOVER_CONFIG.backupRpcUrl, {
+            commitment: 'confirmed',
+            confirmTransactionInitialTimeout: 60000
+        });
+    }
+
+    // Check if we should try primary again after cooldown
+    const now = Date.now();
+    if (connectionPool.currentIndex === 1 && connectionPool.backup) {
+        if (now - connectionPool.lastFailure > FAILOVER_CONFIG.cooldownMs) {
+            console.log('[Helius] Attempting to return to primary RPC');
+            connectionPool.currentIndex = 0;
+            connectionPool.failureCount = 0;
+        }
+    }
+
+    return connectionPool.currentIndex === 0 || !connectionPool.backup
+        ? connectionPool.primary
+        : connectionPool.backup;
+}
+
+/**
+ * Report connection failure for failover logic
+ */
+function reportConnectionFailure() {
+    connectionPool.failureCount++;
+    connectionPool.lastFailure = Date.now();
+
+    if (connectionPool.failureCount >= FAILOVER_CONFIG.maxFailures && connectionPool.backup) {
+        if (connectionPool.currentIndex === 0) {
+            console.warn('[Helius] Primary RPC failed, switching to backup');
+            connectionPool.currentIndex = 1;
+            connectionPool.failureCount = 0;
+        }
+    }
+}
+
+/**
+ * Reset connection pool (useful for testing or manual recovery)
+ */
+function resetConnectionPool() {
+    connectionPool.primary = null;
+    connectionPool.backup = null;
+    connectionPool.currentIndex = 0;
+    connectionPool.failureCount = 0;
+    connectionPool.lastFailure = 0;
+    console.log('[Helius] Connection pool reset');
+}
+
+// ============================================
+// PRIORITY FEE ESTIMATION (Helius Feature)
+// ============================================
+
+/**
+ * Get dynamic priority fee based on network conditions
+ * Uses Helius Priority Fee API for accurate estimates
+ * @param {string[]} accountKeys - Account keys involved in transaction
+ * @returns {Promise<number>} Priority fee in microLamports
+ */
+async function getPriorityFeeEstimate(accountKeys = []) {
+    const cacheKey = 'priorityFee';
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                id: 'priority-fee',
+                method: 'getPriorityFeeEstimate',
+                params: [{
+                    accountKeys: accountKeys.length > 0 ? accountKeys : [ASDF_TOKEN_MINT],
+                    options: {
+                        priorityLevel: PRIORITY_FEE_CONFIG.percentile
+                    }
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Priority fee API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.warn('[Helius] Priority fee API error:', data.error.message);
+            return PRIORITY_FEE_CONFIG.default;
+        }
+
+        // Clamp fee to configured bounds
+        const fee = Math.max(
+            PRIORITY_FEE_CONFIG.min,
+            Math.min(data.result?.priorityFeeEstimate || PRIORITY_FEE_CONFIG.default, PRIORITY_FEE_CONFIG.max)
+        );
+
+        cache.set(cacheKey, fee, CACHE_TTL.priorityFee);
+        console.log(`[Helius] Priority fee estimate: ${fee} microLamports`);
+
+        return fee;
+    } catch (error) {
+        console.warn('[Helius] Failed to get priority fee, using default:', error.message);
+        return PRIORITY_FEE_CONFIG.default;
+    }
+}
+
+// ============================================
+// TRANSACTION CONFIRMATION TRACKING
+// ============================================
+
+/**
+ * Wait for transaction confirmation with polling
+ * @param {string} signature - Transaction signature
+ * @param {string} commitment - Commitment level (confirmed/finalized)
+ * @returns {Promise<{confirmed: boolean, slot?: number, error?: string}>}
+ */
+async function waitForConfirmation(signature, commitment = CONFIRMATION_CONFIG.commitment) {
+    const conn = getConnection();
+
+    for (let attempt = 0; attempt < CONFIRMATION_CONFIG.maxRetries; attempt++) {
+        try {
+            const status = await conn.getSignatureStatus(signature);
+
+            if (status?.value) {
+                if (status.value.err) {
+                    return {
+                        confirmed: false,
+                        error: 'Transaction failed on-chain',
+                        slot: status.value.slot
+                    };
+                }
+
+                const isConfirmed = commitment === 'confirmed'
+                    ? status.value.confirmationStatus === 'confirmed' || status.value.confirmationStatus === 'finalized'
+                    : status.value.confirmationStatus === 'finalized';
+
+                if (isConfirmed) {
+                    return {
+                        confirmed: true,
+                        slot: status.value.slot,
+                        confirmationStatus: status.value.confirmationStatus
+                    };
+                }
+            }
+
+            // Wait before next check
+            await new Promise(r => setTimeout(r, CONFIRMATION_CONFIG.retryDelayMs));
+
+        } catch (error) {
+            console.warn(`[Helius] Confirmation check failed (attempt ${attempt + 1}):`, error.message);
+        }
+    }
+
+    return {
+        confirmed: false,
+        error: 'Confirmation timeout'
+    };
+}
+
+// ============================================
+// BATCH OPERATIONS
+// ============================================
+
+/**
+ * Get token balances for multiple wallets efficiently
+ * @param {string[]} walletAddresses - Array of wallet addresses
+ * @returns {Promise<Map<string, {balance: number, isHolder: boolean}>>}
+ */
+async function getBatchTokenBalances(walletAddresses) {
+    const results = new Map();
+    const uncached = [];
+
+    // Check cache first
+    for (const wallet of walletAddresses) {
+        const cacheKey = `balance:${wallet}`;
+        const cached = cache.get(cacheKey);
+        if (cached) {
+            results.set(wallet, cached);
+        } else {
+            uncached.push(wallet);
+        }
+    }
+
+    // Fetch uncached in parallel (with concurrency limit)
+    const BATCH_SIZE = 5; // Fibonacci number
+    for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
+        const batch = uncached.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.allSettled(
+            batch.map(wallet => getTokenBalance(wallet))
+        );
+
+        batchResults.forEach((result, index) => {
+            const wallet = batch[index];
+            if (result.status === 'fulfilled') {
+                results.set(wallet, result.value);
+            } else {
+                results.set(wallet, { balance: 0, rawBalance: '0', isHolder: false, error: result.reason.message });
+            }
+        });
+    }
+
+    return results;
 }
 
 /**
@@ -247,10 +492,10 @@ async function getTokenSupply() {
 
 /**
  * Build a burn transaction for the user to sign
- * Includes priority fee for better success during congestion
+ * Uses dynamic priority fee based on network conditions
  * @param {string} walletAddress - User's wallet
  * @param {number} amount - Amount to burn (UI amount, not raw)
- * @returns {Promise<{transaction: string, blockhash: string}>}
+ * @returns {Promise<{transaction: string, blockhash: string, priorityFee: number}>}
  */
 async function buildBurnTransaction(walletAddress, amount) {
     return withRetry(async () => {
@@ -265,9 +510,20 @@ async function buildBurnTransaction(walletAddress, amount) {
         // Convert to raw amount
         const rawAmount = BigInt(Math.floor(amount * Math.pow(10, TOKEN_DECIMALS)));
 
-        // Create priority fee instruction for better success rate
+        // Get dynamic priority fee based on current network conditions
+        const priorityFee = await getPriorityFeeEstimate([
+            mint.toBase58(),
+            tokenAccount.toBase58()
+        ]);
+
+        // Create priority fee instruction
         const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
-            microLamports: PRIORITY_FEE
+            microLamports: priorityFee
+        });
+
+        // Set compute unit limit (burn is ~5000 CU, but set higher for safety)
+        const computeLimitInstruction = ComputeBudgetProgram.setComputeUnitLimit({
+            units: 50000
         });
 
         // Create burn instruction
@@ -287,7 +543,8 @@ async function buildBurnTransaction(walletAddress, amount) {
             lastValidBlockHeight: lastValidBlockHeight
         });
 
-        // Priority fee first, then burn
+        // Order: compute limit, priority fee, then burn
+        transaction.add(computeLimitInstruction);
         transaction.add(priorityFeeInstruction);
         transaction.add(burnInstruction);
 
@@ -440,6 +697,73 @@ async function getRecentBurns(limit = 20) {
 }
 
 /**
+ * Get burn history for a specific wallet
+ * Uses Helius Enhanced API to fetch wallet's burn transactions
+ * @param {string} walletAddress - Wallet to get history for
+ * @param {number} limit - Max burns to return
+ * @returns {Promise<{burns: Array, totalBurned: number}>}
+ */
+async function getWalletBurnHistory(walletAddress, limit = 50) {
+    // Check cache first
+    const cacheKey = `burnHistory:${walletAddress}`;
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+
+    return withRetry(async () => {
+        if (!HELIUS_API_KEY) {
+            throw new Error('HELIUS_API_KEY not configured');
+        }
+
+        // Use Helius Enhanced Transactions API for wallet
+        const response = await fetch(
+            `https://api.helius.xyz/v0/addresses/${walletAddress}/transactions?api-key=${HELIUS_API_KEY}&type=BURN`,
+            {
+                headers: { 'Accept': 'application/json' }
+            }
+        );
+
+        if (!response.ok) {
+            if (response.status === 429) {
+                throw new Error('Helius rate limit exceeded');
+            }
+            throw new Error(`Helius API error: ${response.status}`);
+        }
+
+        const transactions = await response.json();
+
+        // Filter for ASDF token burns only
+        const asdfBurns = transactions.filter(tx => {
+            const transfer = tx.tokenTransfers?.find(t =>
+                t.mint === ASDF_TOKEN_MINT && t.tokenAmount < 0
+            );
+            return transfer !== undefined;
+        });
+
+        const burns = asdfBurns.slice(0, limit).map(tx => {
+            const transfer = tx.tokenTransfers.find(t => t.mint === ASDF_TOKEN_MINT);
+            return {
+                signature: tx.signature,
+                amount: Math.abs(transfer?.tokenAmount || 0),
+                timestamp: tx.timestamp,
+                slot: tx.slot
+            };
+        });
+
+        const totalBurned = burns.reduce((sum, b) => sum + b.amount, 0);
+
+        const result = {
+            burns,
+            totalBurned,
+            burnCount: burns.length
+        };
+
+        // Cache the result
+        cache.set(cacheKey, result, CACHE_TTL.burnHistory);
+        return result;
+    }, 'getWalletBurnHistory');
+}
+
+/**
  * Validate Solana address format
  * @param {string} address - Address to validate
  * @returns {boolean}
@@ -526,6 +850,16 @@ module.exports = {
     buildBurnTransaction,
     verifyBurnTransaction,
     getRecentBurns,
+    getWalletBurnHistory,
+
+    // Advanced Helius features
+    getPriorityFeeEstimate,
+    waitForConfirmation,
+    getBatchTokenBalances,
+
+    // Connection management
+    resetConnectionPool,
+    reportConnectionFailure,
 
     // Utilities
     isValidAddress,
@@ -536,5 +870,8 @@ module.exports = {
     // Constants
     ASDF_TOKEN_MINT,
     TOKEN_DECIMALS,
-    MIN_HOLDER_BALANCE
+    MIN_HOLDER_BALANCE,
+    PRIORITY_FEE_CONFIG,
+    CONFIRMATION_CONFIG,
+    FAILOVER_CONFIG
 };

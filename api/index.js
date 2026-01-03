@@ -20,7 +20,7 @@ const rateLimit = require('express-rate-limit');
 
 // Services
 const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
-const { getTokenBalance, getTokenSupply, getRecentBurns, healthCheck, isValidAddress } = require('./services/helius');
+const { getTokenBalance, getTokenSupply, getRecentBurns, getWalletBurnHistory, getBatchTokenBalances, getPriorityFeeEstimate, healthCheck, isValidAddress } = require('./services/helius');
 const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
 
 const app = express();
@@ -114,6 +114,55 @@ const purchaseLimiter = rateLimit({
     max: 5,
     message: { error: 'Too many purchase attempts, please try again later' }
 });
+
+// Per-wallet rate limiting for sensitive operations
+const walletRateLimits = new Map();
+const WALLET_RATE_CONFIG = {
+    windowMs: 60 * 1000,    // 1 minute window
+    maxRequests: 30,        // 30 requests per wallet per minute
+    cleanupInterval: 5 * 60 * 1000  // Cleanup every 5 minutes
+};
+
+/**
+ * Per-wallet rate limiter middleware
+ * Tracks requests by wallet address in JWT
+ */
+function walletRateLimiter(req, res, next) {
+    if (!req.user?.wallet) {
+        return next(); // No wallet, use IP-based limiting
+    }
+
+    const wallet = req.user.wallet;
+    const now = Date.now();
+
+    let walletData = walletRateLimits.get(wallet);
+    if (!walletData || now - walletData.windowStart > WALLET_RATE_CONFIG.windowMs) {
+        walletData = { windowStart: now, count: 0 };
+    }
+
+    walletData.count++;
+    walletRateLimits.set(wallet, walletData);
+
+    if (walletData.count > WALLET_RATE_CONFIG.maxRequests) {
+        console.warn(`[RateLimit] Wallet ${wallet.slice(0, 8)}... exceeded limit`);
+        return res.status(429).json({
+            error: 'Too many requests from this wallet',
+            retryAfter: Math.ceil((walletData.windowStart + WALLET_RATE_CONFIG.windowMs - now) / 1000)
+        });
+    }
+
+    next();
+}
+
+// Cleanup wallet rate limits periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [wallet, data] of walletRateLimits.entries()) {
+        if (now - data.windowStart > WALLET_RATE_CONFIG.windowMs) {
+            walletRateLimits.delete(wallet);
+        }
+    }
+}, WALLET_RATE_CONFIG.cleanupInterval);
 
 app.use('/api', generalLimiter);
 app.use('/api/auth', authLimiter);
@@ -408,6 +457,98 @@ app.get('/api/ecosystem/burns', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'burns') });
+    }
+});
+
+/**
+ * Get current priority fee estimate
+ * GET /api/ecosystem/priority-fee
+ */
+app.get('/api/ecosystem/priority-fee', async (req, res) => {
+    try {
+        const fee = await getPriorityFeeEstimate();
+
+        res.json({
+            priorityFee: fee,
+            unit: 'microLamports',
+            estimatedCost: (fee * 50000 / 1e9).toFixed(9) // Estimated SOL cost for burn tx
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'priority-fee') });
+    }
+});
+
+// ============================================
+// USER BURN HISTORY
+// ============================================
+
+/**
+ * Get authenticated user's burn history
+ * GET /api/user/burns
+ */
+app.get('/api/user/burns', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const history = await getWalletBurnHistory(req.user.wallet, limit);
+
+        res.json({
+            wallet: req.user.wallet,
+            ...history
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'user-burns') });
+    }
+});
+
+// ============================================
+// BATCH OPERATIONS
+// ============================================
+
+/**
+ * Get balances for multiple wallets
+ * POST /api/batch/balances
+ * Rate limited and requires auth to prevent abuse
+ */
+app.post('/api/batch/balances', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { wallets } = req.body;
+
+        if (!Array.isArray(wallets)) {
+            return res.status(400).json({ error: 'wallets must be an array' });
+        }
+
+        // Limit batch size (Fibonacci number)
+        const MAX_BATCH = 21;
+        if (wallets.length > MAX_BATCH) {
+            return res.status(400).json({ error: `Maximum ${MAX_BATCH} wallets per request` });
+        }
+
+        // Validate all addresses
+        const invalidWallets = wallets.filter(w => !isValidAddress(w));
+        if (invalidWallets.length > 0) {
+            return res.status(400).json({
+                error: 'Invalid wallet addresses',
+                invalid: invalidWallets
+            });
+        }
+
+        const balances = await getBatchTokenBalances(wallets);
+
+        // Convert Map to object for JSON response
+        const result = {};
+        for (const [wallet, data] of balances) {
+            result[wallet] = data;
+        }
+
+        res.json({
+            balances: result,
+            count: wallets.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'batch-balances') });
     }
 });
 
