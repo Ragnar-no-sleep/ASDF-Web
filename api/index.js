@@ -22,6 +22,8 @@ const rateLimit = require('express-rate-limit');
 const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
 const { getTokenBalance, getTokenSupply, getRecentBurns, getWalletBurnHistory, getBatchTokenBalances, getPriorityFeeEstimate, healthCheck, isValidAddress } = require('./services/helius');
 const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
+const { getTopBurners, getXPLeaderboard, getUserRank, getStatistics, recordBurn, logAudit, syncFromBlockchain } = require('./services/leaderboard');
+const { startGameSession, submitScore, getPlayerStats, getValidationMetrics } = require('./services/gameValidation');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -175,6 +177,7 @@ app.use('/api/shop/purchase', purchaseLimiter);
 app.get('/health', async (req, res) => {
     const heliusHealth = await healthCheck();
     const shopMetrics = getShopMetrics();
+    const gameMetrics = getValidationMetrics();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
@@ -189,6 +192,7 @@ app.get('/health', async (req, res) => {
         },
         metrics: {
             shop: shopMetrics,
+            game: gameMetrics,
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
     });
@@ -585,6 +589,172 @@ app.get('/api/config/public', async (req, res) => {
 });
 
 // ============================================
+// LEADERBOARD ROUTES
+// ============================================
+
+/**
+ * Get top burners leaderboard
+ * GET /api/leaderboard/burns
+ */
+app.get('/api/leaderboard/burns', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const timeframe = ['all', 'month', 'week', 'day'].includes(req.query.timeframe)
+            ? req.query.timeframe
+            : 'all';
+
+        const leaderboard = getTopBurners(limit, timeframe);
+
+        res.json({
+            timeframe,
+            entries: leaderboard,
+            count: leaderboard.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'leaderboard-burns') });
+    }
+});
+
+/**
+ * Get XP/tier leaderboard
+ * GET /api/leaderboard/xp
+ */
+app.get('/api/leaderboard/xp', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const leaderboard = getXPLeaderboard(limit);
+
+        res.json({
+            entries: leaderboard,
+            count: leaderboard.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'leaderboard-xp') });
+    }
+});
+
+/**
+ * Get user's rank and stats
+ * GET /api/leaderboard/rank
+ */
+app.get('/api/leaderboard/rank', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const rank = getUserRank(req.user.wallet);
+        res.json(rank);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'user-rank') });
+    }
+});
+
+/**
+ * Get ecosystem statistics
+ * GET /api/stats
+ */
+app.get('/api/stats', async (req, res) => {
+    try {
+        const stats = getStatistics();
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'stats') });
+    }
+});
+
+// ============================================
+// GAME VALIDATION ROUTES
+// ============================================
+
+// Game session rate limiter (5 sessions per minute per wallet)
+const gameSessionLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    keyGenerator: (req) => req.user?.wallet || req.ip,
+    message: { error: 'Too many game sessions, please wait' }
+});
+
+/**
+ * Start a new game session
+ * POST /api/game/start
+ */
+app.post('/api/game/start', authMiddleware, gameSessionLimiter, async (req, res) => {
+    try {
+        const { gameType } = req.body;
+
+        // Validate game type
+        const validTypes = ['flappy', 'snake', 'default'];
+        const type = validTypes.includes(gameType) ? gameType : 'default';
+
+        const session = startGameSession(req.user.wallet, type);
+
+        res.json({
+            sessionId: session.sessionId,
+            token: session.token,
+            gameType: session.gameType,
+            startTime: session.startTime
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'game-start') });
+    }
+});
+
+/**
+ * Submit game score
+ * POST /api/game/submit
+ */
+app.post('/api/game/submit', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { sessionId, token, score, gameData } = req.body;
+
+        if (!sessionId || !token || typeof score !== 'number') {
+            return res.status(400).json({ error: 'Session ID, token, and score required' });
+        }
+
+        const result = submitScore(sessionId, token, score, gameData || {});
+
+        if (!result.valid) {
+            // Log suspicious activity
+            if (result.suspicious) {
+                logAudit('suspicious_score', {
+                    wallet: req.user.wallet.slice(0, 8) + '...',
+                    error: result.error
+                });
+            }
+            return res.status(400).json({ error: result.error, suspicious: result.suspicious });
+        }
+
+        res.json({
+            success: true,
+            score: result.score,
+            duration: result.duration,
+            percentile: result.percentile
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'game-submit') });
+    }
+});
+
+/**
+ * Get player's game statistics
+ * GET /api/game/stats
+ */
+app.get('/api/game/stats', authMiddleware, async (req, res) => {
+    try {
+        const gameType = req.query.gameType || 'default';
+        const stats = getPlayerStats(req.user.wallet, gameType);
+
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'game-stats') });
+    }
+});
+
+// ============================================
 // HELIUS WEBHOOK - REAL-TIME BURN TRACKING
 // ============================================
 
@@ -645,6 +815,7 @@ app.post('/api/webhook/helius', express.raw({ type: 'application/json' }), async
         const events = JSON.parse(payload);
 
         // Process each burn event
+        let processedBurns = 0;
         for (const event of events) {
             if (event.type === 'BURN' || event.tokenTransfers?.some(t => t.tokenAmount < 0)) {
                 const burn = {
@@ -655,11 +826,20 @@ app.post('/api/webhook/helius', express.raw({ type: 'application/json' }), async
                     slot: event.slot
                 };
 
-                console.log(`[Webhook] Burn detected: ${burn.wallet?.slice(0, 8)}... burned ${burn.amount} tokens`);
+                if (burn.wallet && burn.amount > 0) {
+                    // Record to leaderboard
+                    recordBurn(burn.wallet, burn.amount, burn.signature);
+                    processedBurns++;
 
-                // In production: Record to database, update stats, notify clients via WebSocket
-                // await db.query('INSERT INTO burns ...', [burn]);
-                // await redis.publish('burns', JSON.stringify(burn));
+                    // Audit log
+                    logAudit('webhook_burn', {
+                        wallet: burn.wallet.slice(0, 8) + '...',
+                        amount: burn.amount,
+                        signature: burn.signature.slice(0, 16) + '...'
+                    });
+
+                    console.log(`[Webhook] Burn recorded: ${burn.wallet.slice(0, 8)}... burned ${burn.amount} tokens`);
+                }
             }
         }
 
@@ -694,9 +874,18 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🔥 ASDF API running on port ${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
+    console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
+
+    // Sync leaderboard from blockchain on startup
+    try {
+        await syncFromBlockchain();
+        console.log('   Leaderboard: synced from blockchain');
+    } catch (error) {
+        console.warn('   Leaderboard: sync failed -', error.message);
+    }
 });
 
 module.exports = app;
