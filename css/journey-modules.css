@@ -1445,3 +1445,483 @@
         width: 100%;
     }
 }
+
+/* ============================================
+   PRODUCTION CURRICULUM STYLES
+   ============================================ */
+
+/* Curriculum Section */
+.jm-curriculum-section {
+    animation: fadeIn 0.3s ease;
+}
+
+.jm-curriculum-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-curriculum-header h3 {
+    color: var(--jm-accent-fire);
+    font-size: 1.5rem;
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-curriculum-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+/* Tabs */
+.jm-curriculum-tabs {
+    display: flex;
+    gap: var(--jm-space-sm);
+    margin-bottom: var(--jm-space-xl);
+    border-bottom: 1px solid var(--jm-border);
+    padding-bottom: var(--jm-space-sm);
+}
+
+.jm-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-sm);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: transparent;
+    border: none;
+    color: var(--jm-text-muted);
+    cursor: pointer;
+    border-radius: var(--jm-radius-md) var(--jm-radius-md) 0 0;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.jm-tab:hover {
+    color: var(--jm-text);
+    background: var(--jm-bg-charred);
+}
+
+.jm-tab.active {
+    color: var(--jm-accent-fire);
+    background: var(--jm-bg-charred);
+    border-bottom: 2px solid var(--jm-accent-fire);
+}
+
+.jm-tab-icon {
+    font-size: 1.1rem;
+}
+
+.jm-tab-panel {
+    display: none;
+}
+
+.jm-tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Production Module Cards */
+.jm-production-module-card {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    margin-bottom: var(--jm-space-lg);
+    transition: all 0.3s ease;
+}
+
+.jm-production-module-card:hover {
+    border-color: var(--jm-accent-fire);
+    box-shadow: 0 4px 20px rgba(234, 88, 12, 0.1);
+}
+
+.jm-prod-card-header {
+    display: flex;
+    gap: var(--jm-space-lg);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-prod-badge {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-md);
+    flex-shrink: 0;
+}
+
+.jm-prod-title-area {
+    flex: 1;
+}
+
+.jm-prod-title-area h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-xs);
+    font-size: 1.1rem;
+}
+
+.jm-prod-title-area p {
+    color: var(--jm-text-muted);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.jm-prod-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jm-space-lg);
+    margin-bottom: var(--jm-space-lg);
+    padding: var(--jm-space-md) 0;
+    border-top: 1px solid var(--jm-border);
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-prod-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-xs);
+    color: var(--jm-text-muted);
+    font-size: 0.8rem;
+}
+
+.jm-meta-icon {
+    font-size: 0.9rem;
+}
+
+.jm-start-module {
+    width: 100%;
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-accent-fire);
+    border: none;
+    color: white;
+    border-radius: var(--jm-radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.jm-start-module:hover {
+    background: var(--jm-accent-ember);
+    transform: translateY(-2px);
+}
+
+/* Production Module Content */
+.jm-prod-module-content {
+    margin-top: var(--jm-space-xl);
+    padding-top: var(--jm-space-xl);
+    border-top: 1px solid var(--jm-border);
+}
+
+.jm-prod-lessons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jm-space-md);
+}
+
+.jm-prod-lesson {
+    background: var(--jm-bg-void);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    overflow: hidden;
+}
+
+.jm-lesson-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-lg);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.jm-lesson-header:hover {
+    background: var(--jm-bg-charred);
+}
+
+.jm-lesson-header.expanded {
+    background: var(--jm-bg-charred);
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-lesson-num {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--jm-accent-fire);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.jm-lesson-header h5 {
+    flex: 1;
+    margin: 0;
+    color: var(--jm-text);
+    font-size: 0.95rem;
+}
+
+.jm-lesson-toggle {
+    color: var(--jm-text-muted);
+    font-size: 0.8rem;
+}
+
+.jm-lesson-content {
+    padding: var(--jm-space-xl);
+    color: var(--jm-text);
+    line-height: 1.7;
+}
+
+.jm-lesson-content h4 {
+    color: var(--jm-accent-fire);
+    margin: var(--jm-space-xl) 0 var(--jm-space-md);
+}
+
+.jm-lesson-content h4:first-child {
+    margin-top: 0;
+}
+
+.jm-lesson-content ul,
+.jm-lesson-content ol {
+    margin: var(--jm-space-md) 0;
+    padding-left: var(--jm-space-xl);
+}
+
+.jm-lesson-content li {
+    margin-bottom: var(--jm-space-sm);
+}
+
+.jm-lesson-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--jm-space-lg) 0;
+}
+
+.jm-lesson-content th,
+.jm-lesson-content td {
+    padding: var(--jm-space-md);
+    border: 1px solid var(--jm-border);
+    text-align: left;
+}
+
+.jm-lesson-content th {
+    background: var(--jm-bg-charred);
+    color: var(--jm-accent-fire);
+}
+
+/* Key Takeaways */
+.jm-key-points {
+    background: rgba(251, 191, 36, 0.1);
+    border-left: 3px solid var(--jm-accent-spark);
+    padding: var(--jm-space-lg);
+    margin-top: var(--jm-space-xl);
+    border-radius: 0 var(--jm-radius-md) var(--jm-radius-md) 0;
+}
+
+.jm-key-points h6 {
+    color: var(--jm-accent-spark);
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-key-points ul {
+    margin: 0;
+    padding-left: var(--jm-space-lg);
+}
+
+/* Practical Project */
+.jm-practical-project {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    border: 2px solid var(--jm-accent-fire);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    margin-top: var(--jm-space-xl);
+}
+
+.jm-project-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-project-icon {
+    font-size: 1.5rem;
+}
+
+.jm-project-header h5 {
+    color: var(--jm-accent-fire);
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.jm-practical-project > p {
+    color: var(--jm-text-muted);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-project-requirements,
+.jm-evaluation-criteria {
+    margin: var(--jm-space-lg) 0;
+}
+
+.jm-project-requirements h6,
+.jm-evaluation-criteria h6 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-sm);
+}
+
+/* Capstone Section */
+.jm-capstone-section {
+    margin-top: var(--jm-space-xl);
+    padding-top: var(--jm-space-xl);
+    border-top: 2px solid var(--jm-accent-fire);
+}
+
+.jm-capstone-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-capstone-header h3 {
+    color: var(--jm-accent-fire);
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-capstone-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-capstone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--jm-space-lg);
+}
+
+.jm-capstone-card {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.jm-capstone-card:hover {
+    border-color: var(--jm-accent-fire);
+    transform: translateY(-4px);
+}
+
+.jm-capstone-badge {
+    font-size: 3rem;
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-capstone-card h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-capstone-card > p {
+    color: var(--jm-text-muted);
+    font-size: 0.875rem;
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-capstone-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--jm-space-xs);
+    color: var(--jm-text-muted);
+    font-size: 0.8rem;
+    margin-bottom: var(--jm-space-md);
+}
+
+.jm-capstone-cert {
+    background: var(--jm-bg-void);
+    padding: var(--jm-space-md);
+    border-radius: var(--jm-radius-md);
+    font-size: 0.85rem;
+    color: var(--jm-accent-spark);
+}
+
+/* Warning/Best Practice boxes */
+.jm-warning {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    margin: var(--jm-space-lg) 0;
+    border-radius: 0 var(--jm-radius-sm) var(--jm-radius-sm) 0;
+    color: var(--jm-text);
+}
+
+.jm-warning strong {
+    color: #ef4444;
+}
+
+.jm-best-practice {
+    background: rgba(34, 197, 94, 0.1);
+    border-left: 3px solid #22c55e;
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    margin: var(--jm-space-lg) 0;
+    border-radius: 0 var(--jm-radius-sm) var(--jm-radius-sm) 0;
+}
+
+.jm-best-practice h4 {
+    color: #22c55e;
+    margin: 0 0 var(--jm-space-md);
+}
+
+/* Tables in content */
+.jm-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--jm-space-lg) 0;
+}
+
+.jm-table th,
+.jm-table td {
+    padding: var(--jm-space-md);
+    border: 1px solid var(--jm-border);
+    text-align: left;
+}
+
+.jm-table th {
+    background: var(--jm-bg-void);
+    color: var(--jm-accent-fire);
+    font-weight: 600;
+}
+
+.jm-table tr:hover td {
+    background: var(--jm-bg-charred);
+}
+
+/* Responsive for production modules */
+@media (max-width: 768px) {
+    .jm-curriculum-tabs {
+        flex-direction: column;
+    }
+
+    .jm-tab {
+        justify-content: center;
+    }
+
+    .jm-prod-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .jm-prod-meta {
+        flex-direction: column;
+        gap: var(--jm-space-sm);
+    }
+
+    .jm-capstone-grid {
+        grid-template-columns: 1fr;
+    }
+}

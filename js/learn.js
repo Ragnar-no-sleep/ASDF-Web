@@ -10596,14 +10596,18 @@ tokenomics if you have them."</pre>
         // ============================================
         function renderAdvancedInteractiveContent(mod) {
             const container = document.getElementById('yj-advanced-interactive');
-            if (!container || typeof window.JourneyAdvanced === 'undefined') return;
+            if (!container) return;
 
             const JA = window.JourneyAdvanced;
+            const JP = window.JourneyProduction;
             const JM = window.JourneyModules;
             const pillar = journeyState.currentPillar;
 
+            // Check if any advanced module system is available
+            if (!JA && !JP) return;
+
             // Map module IDs to JourneyAdvanced content (using actual module IDs)
-            const moduleMapping = {
+            const advancedMapping = {
                 // Code & Dev Advanced
                 'code-a1': ['code-adv-patterns'],
                 'code-a2': ['code-adv-defi'],
@@ -10619,101 +10623,354 @@ tokenomics if you have them."</pre>
                 'community-a2': ['community-adv-ecosystem']
             };
 
-            const advancedKeys = moduleMapping[mod.id];
-            if (!advancedKeys || advancedKeys.length === 0) return;
+            // Map module IDs to JourneyProduction content
+            const productionMapping = {
+                // Code & Dev Advanced → Production modules
+                'code-a1': ['prod-code-testing', 'prod-code-cicd'],
+                'code-a2': ['prod-code-performance'],
+                'code-a3': ['prod-code-security', 'prod-code-monitoring'],
+                // Design & UX Advanced → Production modules
+                'design-a1': ['prod-design-system'],
+                'design-a2': ['prod-design-research'],
+                // Content Advanced → Production modules
+                'content-a1': ['prod-content-strategy'],
+                'content-a2': ['prod-content-analytics'],
+                // Community Advanced → Production modules
+                'community-a1': ['prod-community-ops'],
+                'community-a2': ['prod-community-ambassadors']
+            };
+
+            const advancedKeys = advancedMapping[mod.id] || [];
+            const productionKeys = productionMapping[mod.id] || [];
+
+            if (advancedKeys.length === 0 && productionKeys.length === 0) return;
 
             // Get the corresponding module data
-            const modules = JA.getModulesForPillar(pillar);
-            const relevantModules = modules.filter(m => advancedKeys.includes(m.id));
+            const advancedModules = JA ? JA.getModulesForPillar(pillar).filter(m => advancedKeys.includes(m.id)) : [];
+            const productionModules = JP ? JP.getModulesForPillar(pillar).filter(m => productionKeys.includes(m.id)) : [];
 
-            if (relevantModules.length === 0) return;
+            if (advancedModules.length === 0 && productionModules.length === 0) return;
 
-            // Build interactive content
+            // Build interactive content with tabs
             container.innerHTML = `
-                <div class="jm-advanced-section">
-                    <div class="jm-advanced-header">
-                        <h3>🔥 Interactive Deep Dive</h3>
-                        <p>Put your knowledge to the test with these challenges.</p>
+                <div class="jm-curriculum-section">
+                    <div class="jm-curriculum-header">
+                        <h3>🔥 Builder Curriculum</h3>
+                        <p>Master production-level skills with comprehensive modules.</p>
                     </div>
-                    <div class="jm-advanced-modules" id="jm-advanced-modules-list"></div>
+
+                    <div class="jm-curriculum-tabs">
+                        <button class="jm-tab active" data-tab="advanced">
+                            <span class="jm-tab-icon">⚡</span> Deep Dive
+                        </button>
+                        <button class="jm-tab" data-tab="production">
+                            <span class="jm-tab-icon">🚀</span> Production Ready
+                        </button>
+                    </div>
+
+                    <div class="jm-curriculum-content">
+                        <div class="jm-tab-panel active" id="tab-advanced">
+                            <div class="jm-advanced-modules" id="jm-advanced-modules-list"></div>
+                        </div>
+                        <div class="jm-tab-panel" id="tab-production">
+                            <div class="jm-production-modules" id="jm-production-modules-list"></div>
+                        </div>
+                    </div>
                 </div>
             `;
 
-            const modulesList = container.querySelector('#jm-advanced-modules-list');
-
-            relevantModules.forEach(advModule => {
-                const moduleCard = document.createElement('div');
-                moduleCard.className = 'jm-advanced-module-card';
-                moduleCard.innerHTML = `
-                    <div class="jm-module-card-header">
-                        <h4>${JM ? JM.escapeHtml(advModule.title) : advModule.title}</h4>
-                        <p>${JM ? JM.escapeHtml(advModule.description) : advModule.description}</p>
-                    </div>
-                    <button class="jm-expand-module btn btn-secondary" data-module-id="${advModule.id}">
-                        Explore Module →
-                    </button>
-                    <div class="jm-module-expanded-content" id="expanded-${advModule.id}" style="display: none;"></div>
-                `;
-                modulesList.appendChild(moduleCard);
-
-                // Add expand handler
-                const expandBtn = moduleCard.querySelector('.jm-expand-module');
-                expandBtn.addEventListener('click', function() {
-                    const expandedContent = moduleCard.querySelector('.jm-module-expanded-content');
-                    const isExpanded = expandedContent.style.display !== 'none';
-
-                    if (isExpanded) {
-                        expandedContent.style.display = 'none';
-                        this.textContent = 'Explore Module →';
-                    } else {
-                        expandedContent.style.display = 'block';
-                        this.textContent = 'Collapse ↑';
-                        JA.renderAdvancedModule(expandedContent, advModule);
-                    }
+            // Tab switching
+            container.querySelectorAll('.jm-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    container.querySelectorAll('.jm-tab').forEach(t => t.classList.remove('active'));
+                    container.querySelectorAll('.jm-tab-panel').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    container.querySelector(`#tab-${this.dataset.tab}`).classList.add('active');
                 });
             });
 
-            // Add master challenge if all modules are viewed
-            if (JA.CHALLENGES && JA.CHALLENGES.masterChallenge && JM) {
-                const challengeSection = document.createElement('div');
-                challengeSection.className = 'jm-master-challenge-section';
-                challengeSection.innerHTML = `
-                    <div class="jm-challenge-teaser">
-                        <div class="jm-challenge-icon">🏆</div>
-                        <div class="jm-challenge-info">
-                            <h4>ASDF Master Challenge</h4>
-                            <p>Test all your advanced skills in a timed challenge!</p>
-                        </div>
-                        <button class="jm-start-master-challenge btn btn-primary" id="start-master-challenge">
-                            Start Challenge
-                        </button>
+            // Render Advanced modules
+            const advancedList = container.querySelector('#jm-advanced-modules-list');
+            advancedModules.forEach(advModule => {
+                renderModuleCard(advancedList, advModule, 'advanced', JA, JM);
+            });
+
+            // Render Production modules
+            const productionList = container.querySelector('#jm-production-modules-list');
+            productionModules.forEach(prodModule => {
+                renderProductionModuleCard(productionList, prodModule, JM);
+            });
+
+            // Add master challenge
+            if (JA && JA.CHALLENGES && JA.CHALLENGES.masterChallenge && JM) {
+                renderMasterChallenge(container, JA, JM);
+            }
+
+            // Add capstone projects if production modules exist
+            if (JP && productionModules.length > 0) {
+                renderCapstoneSection(container, JP);
+            }
+        }
+
+        // Helper: Render a module card
+        function renderModuleCard(container, module, type, JA, JM) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'jm-advanced-module-card';
+            const safeTitle = JM ? JM.escapeHtml(module.title) : module.title;
+            const safeDesc = JM ? JM.escapeHtml(module.description) : module.description;
+
+            moduleCard.innerHTML = `
+                <div class="jm-module-card-header">
+                    <h4>${safeTitle}</h4>
+                    <p>${safeDesc}</p>
+                </div>
+                <button class="jm-expand-module btn btn-secondary" data-module-id="${module.id}">
+                    Explore Module →
+                </button>
+                <div class="jm-module-expanded-content" id="expanded-${module.id}" style="display: none;"></div>
+            `;
+            container.appendChild(moduleCard);
+
+            const expandBtn = moduleCard.querySelector('.jm-expand-module');
+            expandBtn.addEventListener('click', function() {
+                const expandedContent = moduleCard.querySelector('.jm-module-expanded-content');
+                const isExpanded = expandedContent.style.display !== 'none';
+
+                if (isExpanded) {
+                    expandedContent.style.display = 'none';
+                    this.textContent = 'Explore Module →';
+                } else {
+                    expandedContent.style.display = 'block';
+                    this.textContent = 'Collapse ↑';
+                    if (JA && JA.renderAdvancedModule) {
+                        JA.renderAdvancedModule(expandedContent, module);
+                    }
+                }
+            });
+        }
+
+        // Helper: Render a production module card with detailed structure
+        function renderProductionModuleCard(container, module, JM) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'jm-production-module-card';
+            const safeTitle = JM ? JM.escapeHtml(module.title) : module.title;
+            const safeDesc = JM ? JM.escapeHtml(module.description) : module.description;
+
+            const lessonsCount = module.lessons ? module.lessons.length : 0;
+            const hasProject = module.practicalProject ? true : false;
+            const hasQuiz = module.quiz ? true : false;
+
+            moduleCard.innerHTML = `
+                <div class="jm-prod-card-header">
+                    <div class="jm-prod-badge">${module.theme === 'verify' ? '✓' : module.theme === 'fibonacci' ? '🌀' : module.theme === 'burn' ? '🔥' : '📚'}</div>
+                    <div class="jm-prod-title-area">
+                        <h4>${safeTitle}</h4>
+                        <p>${safeDesc}</p>
                     </div>
-                    <div class="jm-master-challenge-container" id="master-challenge-container" style="display: none;"></div>
-                `;
-                container.appendChild(challengeSection);
+                </div>
+                <div class="jm-prod-meta">
+                    <span class="jm-prod-meta-item">
+                        <span class="jm-meta-icon">📖</span> ${lessonsCount} lessons
+                    </span>
+                    <span class="jm-prod-meta-item">
+                        <span class="jm-meta-icon">⏱️</span> ${module.estimatedTime || '2-3 hours'}
+                    </span>
+                    ${hasProject ? '<span class="jm-prod-meta-item"><span class="jm-meta-icon">🛠️</span> Project</span>' : ''}
+                    ${hasQuiz ? '<span class="jm-prod-meta-item"><span class="jm-meta-icon">📝</span> Quiz</span>' : ''}
+                </div>
+                <button class="jm-start-module btn btn-primary" data-module-id="${module.id}">
+                    Start Learning →
+                </button>
+                <div class="jm-prod-module-content" id="prod-content-${module.id}" style="display: none;"></div>
+            `;
+            container.appendChild(moduleCard);
 
-                document.getElementById('start-master-challenge').addEventListener('click', function() {
-                    const challengeContainer = document.getElementById('master-challenge-container');
-                    challengeContainer.style.display = 'block';
-                    this.style.display = 'none';
+            const startBtn = moduleCard.querySelector('.jm-start-module');
+            startBtn.addEventListener('click', function() {
+                const contentArea = moduleCard.querySelector('.jm-prod-module-content');
+                const isExpanded = contentArea.style.display !== 'none';
 
-                    const challenge = JA.CHALLENGES.masterChallenge;
-                    const timedQuiz = JM.createTimedQuiz({
-                        id: challenge.id,
-                        title: challenge.title,
-                        timeLimit: challenge.timeLimit,
-                        questions: challenge.questions,
-                        onComplete: (result) => {
-                            console.log('Master challenge completed:', result);
-                            if (result.percentage >= 70) {
-                                addXP(200);
-                                showAchievement('🏆', 'Master Builder', 'Completed the advanced challenge!');
-                            }
-                        }
-                    });
-                    challengeContainer.appendChild(timedQuiz);
+                if (isExpanded) {
+                    contentArea.style.display = 'none';
+                    this.textContent = 'Start Learning →';
+                } else {
+                    contentArea.style.display = 'block';
+                    this.textContent = 'Close Module ↑';
+                    renderProductionModuleContent(contentArea, module, JM);
+                }
+            });
+        }
+
+        // Helper: Render production module content
+        function renderProductionModuleContent(container, module, JM) {
+            if (container.dataset.loaded === 'true') return;
+            container.dataset.loaded = 'true';
+
+            let html = '<div class="jm-prod-lessons">';
+
+            // Render lessons
+            if (module.lessons) {
+                module.lessons.forEach((lesson, index) => {
+                    const safeTitle = JM ? JM.escapeHtml(lesson.title) : lesson.title;
+                    html += `
+                        <div class="jm-prod-lesson">
+                            <div class="jm-lesson-header" data-lesson="${index}">
+                                <span class="jm-lesson-num">${index + 1}</span>
+                                <h5>${safeTitle}</h5>
+                                <span class="jm-lesson-toggle">▼</span>
+                            </div>
+                            <div class="jm-lesson-content" id="lesson-${module.id}-${index}" style="display: none;">
+                                ${lesson.content}
+                                ${lesson.keyPoints ? `
+                                    <div class="jm-key-points">
+                                        <h6>Key Takeaways:</h6>
+                                        <ul>
+                                            ${lesson.keyPoints.map(p => `<li>${JM ? JM.escapeHtml(p) : p}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
                 });
             }
+
+            html += '</div>';
+
+            // Render practical project
+            if (module.practicalProject) {
+                const proj = module.practicalProject;
+                html += `
+                    <div class="jm-practical-project">
+                        <div class="jm-project-header">
+                            <span class="jm-project-icon">🛠️</span>
+                            <h5>${JM ? JM.escapeHtml(proj.title) : proj.title}</h5>
+                        </div>
+                        <p>${JM ? JM.escapeHtml(proj.description) : proj.description}</p>
+
+                        <div class="jm-project-requirements">
+                            <h6>Requirements:</h6>
+                            <ul>
+                                ${proj.requirements.map(r => `<li>${JM ? JM.escapeHtml(r) : r}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        ${proj.starterCode ? `
+                            <div class="jm-code-block">
+                                <div class="jm-code-title">Starter Code</div>
+                                <pre><code>${JM ? JM.escapeHtml(proj.starterCode) : proj.starterCode}</code></pre>
+                            </div>
+                        ` : ''}
+
+                        <div class="jm-evaluation-criteria">
+                            <h6>Evaluation Criteria:</h6>
+                            <ul>
+                                ${proj.evaluationCriteria.map(c => `<li>${JM ? JM.escapeHtml(c) : c}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            // Add lesson toggle handlers
+            container.querySelectorAll('.jm-lesson-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const lessonIndex = this.dataset.lesson;
+                    const content = container.querySelector(`#lesson-${module.id}-${lessonIndex}`);
+                    const toggle = this.querySelector('.jm-lesson-toggle');
+
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        toggle.textContent = '▲';
+                        this.classList.add('expanded');
+                    } else {
+                        content.style.display = 'none';
+                        toggle.textContent = '▼';
+                        this.classList.remove('expanded');
+                    }
+                });
+            });
+        }
+
+        // Helper: Render master challenge section
+        function renderMasterChallenge(container, JA, JM) {
+            const challengeSection = document.createElement('div');
+            challengeSection.className = 'jm-master-challenge-section';
+            challengeSection.innerHTML = `
+                <div class="jm-challenge-teaser">
+                    <div class="jm-challenge-icon">🏆</div>
+                    <div class="jm-challenge-info">
+                        <h4>ASDF Master Challenge</h4>
+                        <p>Test all your advanced skills in a timed challenge!</p>
+                    </div>
+                    <button class="jm-start-master-challenge btn btn-primary" id="start-master-challenge">
+                        Start Challenge
+                    </button>
+                </div>
+                <div class="jm-master-challenge-container" id="master-challenge-container" style="display: none;"></div>
+            `;
+            container.appendChild(challengeSection);
+
+            document.getElementById('start-master-challenge').addEventListener('click', function() {
+                const challengeContainer = document.getElementById('master-challenge-container');
+                challengeContainer.style.display = 'block';
+                this.style.display = 'none';
+
+                const challenge = JA.CHALLENGES.masterChallenge;
+                const timedQuiz = JM.createTimedQuiz({
+                    id: challenge.id,
+                    title: challenge.title,
+                    timeLimit: challenge.timeLimit,
+                    questions: challenge.questions,
+                    onComplete: (result) => {
+                        console.log('Master challenge completed:', result);
+                        if (result.percentage >= 70) {
+                            addXP(200);
+                            showAchievement('🏆', 'Master Builder', 'Completed the advanced challenge!');
+                        }
+                    }
+                });
+                challengeContainer.appendChild(timedQuiz);
+            });
+        }
+
+        // Helper: Render capstone projects section
+        function renderCapstoneSection(container, JP) {
+            const capstones = JP.getCapstoneProjects();
+            if (!capstones || capstones.length === 0) return;
+
+            const capstoneSection = document.createElement('div');
+            capstoneSection.className = 'jm-capstone-section';
+
+            let html = `
+                <div class="jm-capstone-header">
+                    <h3>🎓 Capstone Projects</h3>
+                    <p>Complete a capstone to earn your certification.</p>
+                </div>
+                <div class="jm-capstone-grid">
+            `;
+
+            capstones.forEach(cap => {
+                html += `
+                    <div class="jm-capstone-card">
+                        <div class="jm-capstone-badge">${cap.certification.badge}</div>
+                        <h4>${cap.title}</h4>
+                        <p>${cap.description}</p>
+                        <div class="jm-capstone-time">
+                            <span class="jm-time-icon">⏱️</span> ${cap.estimatedTime}
+                        </div>
+                        <div class="jm-capstone-cert">
+                            <strong>Certification:</strong> ${cap.certification.name}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            capstoneSection.innerHTML = html;
+            container.appendChild(capstoneSection);
         }
 
         // Legacy module rendering (for old format modules)
