@@ -152,6 +152,64 @@ app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 // ============================================
+// REQUEST VALIDATION MIDDLEWARE
+// ============================================
+
+/**
+ * Validate Content-Type header for JSON endpoints
+ * Security: Prevents content-type confusion attacks
+ */
+app.use('/api', (req, res, next) => {
+    // Skip for GET, HEAD, OPTIONS
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+        return next();
+    }
+
+    // Require Content-Type for POST/PUT/PATCH/DELETE with body
+    const contentType = req.headers['content-type'];
+    if (req.body && Object.keys(req.body).length > 0) {
+        if (!contentType || !contentType.includes('application/json')) {
+            return res.status(415).json({
+                error: 'Unsupported Media Type',
+                message: 'Content-Type must be application/json'
+            });
+        }
+    }
+
+    next();
+});
+
+/**
+ * Add request ID for tracing
+ * Security: Helps with audit logging and debugging
+ */
+app.use('/api', (req, res, next) => {
+    req.requestId = req.headers['x-request-id'] ||
+        `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    res.setHeader('X-Request-ID', req.requestId);
+    next();
+});
+
+/**
+ * Sanitize common request parameters
+ * Security: Prevents injection in query parameters
+ */
+app.use('/api', (req, res, next) => {
+    // Sanitize query parameters
+    for (const key of Object.keys(req.query)) {
+        if (typeof req.query[key] === 'string') {
+            // Remove null bytes and control characters
+            req.query[key] = req.query[key].replace(/[\x00-\x1F\x7F]/g, '');
+            // Limit length
+            if (req.query[key].length > 1000) {
+                req.query[key] = req.query[key].substring(0, 1000);
+            }
+        }
+    }
+    next();
+});
+
+// ============================================
 // JWT COOKIE CONFIGURATION
 // ============================================
 
