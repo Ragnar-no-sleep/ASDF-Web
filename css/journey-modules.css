@@ -1,0 +1,1224 @@
+/**
+ * ASDF Journey Modules - Styles
+ * "THIS IS FINE" Theme
+ *
+ * Follows ASDF design philosophy:
+ * - Fire palette colors
+ * - Fibonacci-based spacing
+ * - Dark mode first
+ */
+
+/* ============================================
+   CSS VARIABLES
+   ============================================ */
+
+:root {
+    /* Fire Palette */
+    --jm-bg-void: #0a0a0f;
+    --jm-bg-charred: #1a0a00;
+    --jm-bg-warm: #2a1005;
+    --jm-accent-fire: #ea580c;
+    --jm-accent-ember: #f97316;
+    --jm-accent-spark: #fbbf24;
+    --jm-accent-flame: #ef4444;
+    --jm-text: #f5f5f5;
+    --jm-text-muted: #9ca3af;
+    --jm-border: #374151;
+    --jm-success: #22c55e;
+    --jm-warning: #fbbf24;
+    --jm-error: #ef4444;
+    --jm-purple: #a855f7;
+
+    /* Fibonacci spacing (3, 5, 8, 13, 21, 34) */
+    --jm-space-xs: 3px;
+    --jm-space-sm: 5px;
+    --jm-space-md: 8px;
+    --jm-space-lg: 13px;
+    --jm-space-xl: 21px;
+    --jm-space-xxl: 34px;
+
+    /* Borders & Radius */
+    --jm-radius-sm: 5px;
+    --jm-radius-md: 8px;
+    --jm-radius-lg: 13px;
+    --jm-radius-xl: 21px;
+
+    /* Transitions */
+    --jm-transition: 0.2s ease;
+    --jm-transition-slow: 0.3s ease;
+}
+
+/* ============================================
+   BASE QUIZ STYLES
+   ============================================ */
+
+.jm-quiz {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-quiz-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-quiz-title {
+    color: var(--jm-accent-fire);
+    font-size: 1.5rem;
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-quiz-instruction {
+    color: var(--jm-text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.jm-quiz-actions {
+    display: flex;
+    gap: var(--jm-space-lg);
+    justify-content: center;
+    margin-top: var(--jm-space-xl);
+}
+
+.jm-btn {
+    background: linear-gradient(135deg, var(--jm-accent-fire), var(--jm-accent-ember));
+    border: none;
+    border-radius: var(--jm-radius-md);
+    color: white;
+    padding: var(--jm-space-md) var(--jm-space-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--jm-transition);
+}
+
+.jm-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+}
+
+.jm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.jm-btn-reset {
+    background: var(--jm-bg-warm);
+    border: 1px solid var(--jm-border);
+}
+
+.jm-btn-small {
+    padding: var(--jm-space-sm) var(--jm-space-lg);
+    font-size: 0.875rem;
+}
+
+.jm-quiz-feedback {
+    margin-top: var(--jm-space-xl);
+}
+
+.jm-feedback {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-lg);
+    padding: var(--jm-space-lg);
+    border-radius: var(--jm-radius-md);
+    animation: slideIn 0.3s ease;
+}
+
+.jm-feedback.success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--jm-success);
+}
+
+.jm-feedback.warning {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid var(--jm-warning);
+}
+
+.jm-feedback-icon {
+    font-size: 2rem;
+}
+
+.jm-feedback-text strong {
+    display: block;
+    color: var(--jm-text);
+    margin-bottom: var(--jm-space-xs);
+}
+
+.jm-feedback-text p {
+    margin: 0;
+    color: var(--jm-text-muted);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   DRAG & DROP QUIZ
+   ============================================ */
+
+.jm-drag-drop .jm-drag-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-lg);
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-md);
+    min-height: 60px;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-drag-item {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-warm);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    cursor: grab;
+    transition: var(--jm-transition);
+    user-select: none;
+}
+
+.jm-drag-item:hover {
+    border-color: var(--jm-accent-fire);
+    transform: scale(1.02);
+}
+
+.jm-drag-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.jm-drag-item.correct {
+    border-color: var(--jm-success);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.jm-drag-item.incorrect {
+    border-color: var(--jm-error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.jm-drag-icon {
+    font-size: 1.25rem;
+}
+
+.jm-drag-label {
+    color: var(--jm-text);
+    font-weight: 500;
+}
+
+.jm-drop-zones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--jm-space-lg);
+}
+
+.jm-drop-zone {
+    background: var(--jm-bg-void);
+    border: 2px dashed var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-lg);
+    min-height: 120px;
+    transition: var(--jm-transition);
+}
+
+.jm-drop-zone.drag-over {
+    border-color: var(--jm-accent-fire);
+    background: rgba(234, 88, 12, 0.05);
+}
+
+.jm-zone-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-lg);
+    padding-bottom: var(--jm-space-md);
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-zone-icon {
+    font-size: 1.25rem;
+}
+
+.jm-zone-name {
+    color: var(--jm-text);
+    font-weight: 600;
+}
+
+.jm-zone-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jm-space-md);
+}
+
+/* ============================================
+   MATCHING QUIZ
+   ============================================ */
+
+.jm-matching .jm-match-container {
+    display: flex;
+    gap: var(--jm-space-xl);
+    align-items: flex-start;
+}
+
+.jm-match-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--jm-space-md);
+}
+
+.jm-match-item {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-warm);
+    border: 2px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    cursor: pointer;
+    transition: var(--jm-transition);
+}
+
+.jm-match-item:hover {
+    border-color: var(--jm-accent-spark);
+}
+
+.jm-match-item.selected {
+    border-color: var(--jm-accent-fire);
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.3);
+}
+
+.jm-match-item.matched {
+    border-color: var(--jm-purple);
+    background: rgba(168, 85, 247, 0.1);
+}
+
+.jm-match-icon {
+    font-size: 1rem;
+    color: var(--jm-text-muted);
+}
+
+.jm-match-text {
+    flex: 1;
+    color: var(--jm-text);
+}
+
+.jm-match-lines {
+    width: 60px;
+    position: relative;
+}
+
+.jm-match-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.jm-match-line {
+    stroke: var(--jm-purple);
+    stroke-width: 2;
+    fill: none;
+    transition: var(--jm-transition);
+}
+
+.jm-match-line.correct {
+    stroke: var(--jm-success);
+    stroke-width: 3;
+}
+
+.jm-match-line.incorrect {
+    stroke: var(--jm-error);
+    stroke-dasharray: 5, 5;
+}
+
+/* ============================================
+   TIMED QUIZ
+   ============================================ */
+
+.jm-timed .jm-timed-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--jm-space-xxl);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-stat {
+    text-align: center;
+}
+
+.jm-stat-icon {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: var(--jm-space-xs);
+}
+
+.jm-stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--jm-accent-fire);
+    display: block;
+}
+
+.jm-stat-label {
+    font-size: 0.75rem;
+    color: var(--jm-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.jm-timed-progress {
+    height: 8px;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--jm-accent-fire), var(--jm-accent-spark));
+    transition: width 1s linear;
+    border-radius: var(--jm-radius-sm);
+}
+
+.jm-progress-bar.warning {
+    background: linear-gradient(90deg, var(--jm-error), var(--jm-warning));
+    animation: pulse 0.5s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.jm-timed-question {
+    text-align: center;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jm-btn-start {
+    font-size: 1.25rem;
+    padding: var(--jm-space-lg) var(--jm-space-xxl);
+}
+
+.jm-timed-q {
+    width: 100%;
+}
+
+.jm-q-text {
+    font-size: 1.25rem;
+    color: var(--jm-text);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-timed-input {
+    display: flex;
+    gap: var(--jm-space-md);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.jm-answer-input {
+    flex: 1;
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-void);
+    border: 2px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    color: var(--jm-text);
+    font-size: 1rem;
+}
+
+.jm-answer-input:focus {
+    outline: none;
+    border-color: var(--jm-accent-fire);
+}
+
+.jm-btn-submit {
+    width: 50px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jm-flash {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    animation: flashIn 0.3s ease;
+    pointer-events: none;
+}
+
+.jm-flash-correct {
+    color: var(--jm-success);
+}
+
+.jm-flash-incorrect {
+    color: var(--jm-error);
+}
+
+@keyframes flashIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+.jm-timed-results {
+    text-align: center;
+}
+
+.jm-result-icon {
+    font-size: 4rem;
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-timed-results h4 {
+    color: var(--jm-accent-fire);
+    font-size: 1.5rem;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-result-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--jm-space-xxl);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-result-stat {
+    text-align: center;
+}
+
+.jm-result-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--jm-accent-spark);
+}
+
+.jm-result-label {
+    font-size: 0.875rem;
+    color: var(--jm-text-muted);
+}
+
+.jm-btn-retry {
+    margin-top: var(--jm-space-lg);
+}
+
+/* ============================================
+   SKILL QUESTIONNAIRE
+   ============================================ */
+
+.jm-questionnaire {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+}
+
+.jm-quest-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-quest-title {
+    color: var(--jm-accent-fire);
+    font-size: 1.5rem;
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-quest-desc {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-quest-progress {
+    display: flex;
+    justify-content: center;
+    gap: var(--jm-space-xl);
+    margin-bottom: var(--jm-space-xxl);
+    flex-wrap: wrap;
+}
+
+.jm-quest-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--jm-space-sm);
+    opacity: 0.4;
+    transition: var(--jm-transition);
+}
+
+.jm-quest-step.active {
+    opacity: 1;
+}
+
+.jm-quest-step.completed {
+    opacity: 0.8;
+}
+
+.jm-quest-step.completed .jm-step-icon {
+    background: var(--jm-success);
+}
+
+.jm-step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--jm-bg-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 2px solid var(--jm-border);
+}
+
+.jm-quest-step.active .jm-step-icon {
+    border-color: var(--jm-accent-fire);
+    background: var(--jm-accent-fire);
+}
+
+.jm-step-name {
+    font-size: 0.75rem;
+    color: var(--jm-text-muted);
+    text-align: center;
+}
+
+.jm-quest-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.jm-quest-category {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-cat-icon {
+    font-size: 1.5rem;
+}
+
+.jm-cat-name {
+    color: var(--jm-accent-spark);
+    font-weight: 600;
+}
+
+.jm-quest-bar {
+    height: 4px;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+    margin-bottom: var(--jm-space-xl);
+    overflow: hidden;
+}
+
+.jm-quest-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--jm-accent-fire), var(--jm-accent-spark));
+    transition: width 0.3s ease;
+}
+
+.jm-quest-question {
+    text-align: center;
+}
+
+.jm-quest-question .jm-q-text {
+    font-size: 1.25rem;
+    color: var(--jm-text);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-quest-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jm-space-md);
+}
+
+.jm-quest-option {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-lg);
+    padding: var(--jm-space-lg);
+    background: var(--jm-bg-warm);
+    border: 2px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    cursor: pointer;
+    transition: var(--jm-transition);
+    text-align: left;
+    width: 100%;
+}
+
+.jm-quest-option:hover {
+    border-color: var(--jm-accent-fire);
+    transform: translateX(5px);
+}
+
+.jm-opt-emoji {
+    font-size: 1.5rem;
+}
+
+.jm-opt-text {
+    flex: 1;
+    color: var(--jm-text);
+}
+
+/* Results */
+.jm-results-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xxl);
+}
+
+.jm-tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-md) var(--jm-space-xl);
+    border-radius: var(--jm-radius-xl);
+    color: white;
+    font-weight: 600;
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-tier-icon {
+    font-size: 1.25rem;
+}
+
+.jm-results-header h4 {
+    color: var(--jm-text);
+    margin: var(--jm-space-lg) 0 var(--jm-space-md);
+}
+
+.jm-results-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-skill-chart {
+    margin-bottom: var(--jm-space-xxl);
+}
+
+.jm-skill-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-lg);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-skill-label {
+    width: 120px;
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+}
+
+.jm-skill-icon {
+    font-size: 1.25rem;
+}
+
+.jm-skill-name {
+    color: var(--jm-text);
+    font-size: 0.875rem;
+}
+
+.jm-skill-track {
+    flex: 1;
+    height: 12px;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+    overflow: hidden;
+}
+
+.jm-skill-fill {
+    height: 100%;
+    border-radius: var(--jm-radius-sm);
+    transition: width 0.5s ease;
+}
+
+.jm-skill-level {
+    width: 80px;
+    text-align: right;
+    color: var(--jm-text-muted);
+    font-size: 0.75rem;
+    text-transform: capitalize;
+}
+
+.jm-recommendations {
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+}
+
+.jm-recommendations h5 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-rec-card {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-lg);
+    padding: var(--jm-space-lg);
+    background: var(--jm-bg-warm);
+    border-radius: var(--jm-radius-md);
+    margin-bottom: var(--jm-space-md);
+}
+
+.jm-rec-icon {
+    font-size: 1.5rem;
+}
+
+.jm-rec-info {
+    flex: 1;
+}
+
+.jm-rec-info strong {
+    display: block;
+    color: var(--jm-text);
+    margin-bottom: var(--jm-space-xs);
+}
+
+.jm-rec-info p {
+    margin: 0;
+    color: var(--jm-text-muted);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   EDUCATIONAL GRAPHICS
+   ============================================ */
+
+.jm-fibonacci-spiral {
+    display: block;
+    margin: 0 auto var(--jm-space-xl);
+    border-radius: var(--jm-radius-lg);
+}
+
+/* Burn Chart */
+.jm-burn-chart {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+}
+
+.jm-burn-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-burn-icon {
+    font-size: 1.5rem;
+}
+
+.jm-burn-header h4 {
+    color: var(--jm-text);
+    margin: 0;
+}
+
+.jm-burn-visual {
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-burn-track {
+    position: relative;
+    height: 40px;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-xl);
+    overflow: visible;
+}
+
+.jm-burn-fill {
+    position: relative;
+    height: 100%;
+    background: linear-gradient(90deg, var(--jm-accent-flame), var(--jm-accent-fire), var(--jm-accent-spark));
+    border-radius: var(--jm-radius-xl);
+    transition: width 1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: var(--jm-space-md);
+}
+
+.jm-burn-flame {
+    font-size: 1.25rem;
+    animation: flicker 0.5s ease infinite alternate;
+}
+
+@keyframes flicker {
+    0% { transform: scale(1) rotate(-5deg); }
+    100% { transform: scale(1.1) rotate(5deg); }
+}
+
+.jm-burn-milestone {
+    position: absolute;
+    top: -8px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.jm-milestone-marker {
+    width: 12px;
+    height: 12px;
+    background: var(--jm-border);
+    border-radius: 50%;
+    border: 2px solid var(--jm-bg-charred);
+}
+
+.jm-burn-milestone.reached .jm-milestone-marker {
+    background: var(--jm-success);
+}
+
+.jm-milestone-label {
+    position: absolute;
+    top: 50px;
+    font-size: 0.75rem;
+    color: var(--jm-text-muted);
+    white-space: nowrap;
+}
+
+.jm-burn-stats {
+    display: flex;
+    justify-content: space-around;
+}
+
+.jm-burn-stat {
+    text-align: center;
+}
+
+.jm-burn-stat .jm-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--jm-accent-fire);
+    display: block;
+}
+
+.jm-burn-stat .jm-stat-label {
+    font-size: 0.75rem;
+    color: var(--jm-text-muted);
+}
+
+/* Tier Chart */
+.jm-tier-chart {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+}
+
+.jm-tier-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-tier-header h4 {
+    color: var(--jm-text);
+    margin: 0;
+}
+
+.jm-tier-track {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
+.jm-tier-track::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    right: 30px;
+    height: 4px;
+    background: var(--jm-border);
+    z-index: 0;
+}
+
+.jm-tier-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+
+.jm-tier-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--jm-bg-void);
+    border: 3px solid var(--jm-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--jm-text-muted);
+    transition: var(--jm-transition);
+}
+
+.jm-tier-node.completed .jm-tier-marker {
+    background: var(--tier-color);
+    border-color: var(--tier-color);
+    color: white;
+}
+
+.jm-tier-node.active .jm-tier-marker {
+    border-color: var(--tier-color);
+    color: var(--tier-color);
+    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.2);
+}
+
+.jm-tier-name {
+    margin-top: var(--jm-space-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--jm-text-muted);
+}
+
+.jm-tier-node.active .jm-tier-name,
+.jm-tier-node.completed .jm-tier-name {
+    color: var(--tier-color);
+}
+
+.jm-tier-xp {
+    font-size: 0.625rem;
+    color: var(--jm-text-muted);
+}
+
+.jm-tier-progress {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+    overflow: hidden;
+}
+
+.jm-tier-progress-fill {
+    height: 100%;
+    background: var(--jm-accent-fire);
+}
+
+/* ============================================
+   THEMED LESSON CARDS
+   ============================================ */
+
+.jm-lesson {
+    background: var(--theme-bg, var(--jm-bg-charred));
+    border: 1px solid var(--theme-primary, var(--jm-accent-fire));
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xxl);
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-lesson-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+    padding-bottom: var(--jm-space-xl);
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-lesson-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-sm) var(--jm-space-lg);
+    background: var(--theme-primary, var(--jm-accent-fire));
+    border-radius: var(--jm-radius-xl);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-badge-icon {
+    font-size: 1rem;
+}
+
+.jm-lesson-title {
+    color: var(--jm-text);
+    font-size: 1.75rem;
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-lesson-motto {
+    color: var(--theme-accent, var(--jm-accent-spark));
+    font-style: italic;
+    margin: 0;
+}
+
+.jm-lesson-content {
+    color: var(--jm-text);
+    line-height: 1.7;
+}
+
+.jm-lesson-content p {
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-lesson-content h4 {
+    color: var(--theme-primary, var(--jm-accent-fire));
+    margin: var(--jm-space-xl) 0 var(--jm-space-lg);
+}
+
+.jm-lesson-content ul,
+.jm-lesson-content ol {
+    margin: var(--jm-space-lg) 0;
+    padding-left: var(--jm-space-xl);
+}
+
+.jm-lesson-content li {
+    margin-bottom: var(--jm-space-md);
+}
+
+.jm-lesson-keypoints {
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-md);
+    padding: var(--jm-space-xl);
+    margin-top: var(--jm-space-xl);
+}
+
+.jm-lesson-keypoints h4 {
+    color: var(--theme-accent, var(--jm-accent-spark));
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-lesson-keypoints ul {
+    margin: 0;
+    padding-left: var(--jm-space-xl);
+}
+
+.jm-lesson-keypoints li {
+    margin-bottom: var(--jm-space-md);
+    color: var(--jm-text);
+}
+
+.jm-lesson-practice {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(249, 115, 22, 0.1));
+    border: 1px solid var(--theme-primary, var(--jm-accent-fire));
+    border-radius: var(--jm-radius-md);
+    padding: var(--jm-space-xl);
+    margin-top: var(--jm-space-xl);
+}
+
+.jm-lesson-practice h4 {
+    color: var(--theme-primary, var(--jm-accent-fire));
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-lesson-practice p {
+    margin: 0;
+    color: var(--jm-text);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .jm-quiz {
+        padding: var(--jm-space-lg);
+    }
+
+    .jm-matching .jm-match-container {
+        flex-direction: column;
+    }
+
+    .jm-match-lines {
+        display: none;
+    }
+
+    .jm-timed-stats {
+        gap: var(--jm-space-lg);
+    }
+
+    .jm-stat-value {
+        font-size: 1.25rem;
+    }
+
+    .jm-quest-progress {
+        gap: var(--jm-space-md);
+    }
+
+    .jm-step-name {
+        display: none;
+    }
+
+    .jm-skill-bar {
+        flex-wrap: wrap;
+    }
+
+    .jm-skill-label {
+        width: 100%;
+        margin-bottom: var(--jm-space-sm);
+    }
+
+    .jm-skill-level {
+        width: auto;
+    }
+
+    .jm-tier-track {
+        flex-wrap: wrap;
+        gap: var(--jm-space-lg);
+        justify-content: center;
+    }
+
+    .jm-tier-track::before {
+        display: none;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.jm-quiz,
+.jm-questionnaire,
+.jm-lesson {
+    animation: scaleIn 0.3s ease;
+}
