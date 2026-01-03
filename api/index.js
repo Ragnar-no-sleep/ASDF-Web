@@ -22,8 +22,11 @@ const rateLimit = require('express-rate-limit');
 const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
 const { getTokenBalance, getTokenSupply, getRecentBurns, getWalletBurnHistory, getBatchTokenBalances, getPriorityFeeEstimate, healthCheck, isValidAddress } = require('./services/helius');
 const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
-const { getTopBurners, getXPLeaderboard, getUserRank, getStatistics, recordBurn, logAudit, syncFromBlockchain } = require('./services/leaderboard');
+const { getTopBurners, getXPLeaderboard, getUserRank, getStatistics, recordBurn, logAudit, syncFromBlockchain, getAuditLog } = require('./services/leaderboard');
 const { startGameSession, submitScore, getPlayerStats, getValidationMetrics } = require('./services/gameValidation');
+const { requireAdmin, getSecurityMetrics, generateNonce, isAdmin } = require('./services/security');
+const { metricsMiddleware, getSummaryMetrics, getDetailedMetrics, getPrometheusMetrics } = require('./services/metrics');
+const { getHealthStatus: getDbHealth } = require('./services/database');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -97,6 +100,9 @@ app.use(cors({
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+
+// Metrics collection (before rate limiting)
+app.use(metricsMiddleware);
 
 // Rate limiting by IP
 const generalLimiter = rateLimit({
@@ -178,14 +184,18 @@ app.get('/health', async (req, res) => {
     const heliusHealth = await healthCheck();
     const shopMetrics = getShopMetrics();
     const gameMetrics = getValidationMetrics();
+    const dbHealth = getDbHealth();
+    const securityMetrics = getSecurityMetrics();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
+        version: '1.0.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
-            heliusEnhanced: heliusHealth.details?.enhancedApi || false
+            heliusEnhanced: heliusHealth.details?.enhancedApi || false,
+            database: dbHealth.type
         },
         latency: {
             helius: heliusHealth.latency
@@ -193,6 +203,10 @@ app.get('/health', async (req, res) => {
         metrics: {
             shop: shopMetrics,
             game: gameMetrics,
+            database: dbHealth.stats,
+            security: {
+                activeNonces: securityMetrics.activeNonces
+            },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
     });
@@ -751,6 +765,139 @@ app.get('/api/game/stats', authMiddleware, async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'game-stats') });
+    }
+});
+
+// ============================================
+// METRICS ROUTES
+// ============================================
+
+/**
+ * Get API metrics (public summary)
+ * GET /api/metrics
+ */
+app.get('/api/metrics', async (req, res) => {
+    try {
+        const metrics = getSummaryMetrics();
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'metrics') });
+    }
+});
+
+/**
+ * Get Prometheus metrics
+ * GET /api/metrics/prometheus
+ */
+app.get('/api/metrics/prometheus', async (req, res) => {
+    try {
+        const metrics = getPrometheusMetrics();
+        res.set('Content-Type', 'text/plain');
+        res.send(metrics);
+    } catch (error) {
+        res.status(500).send('# Error getting metrics');
+    }
+});
+
+// ============================================
+// SECURITY ROUTES
+// ============================================
+
+/**
+ * Generate a nonce for signed requests
+ * GET /api/security/nonce
+ */
+app.get('/api/security/nonce', authMiddleware, (req, res) => {
+    try {
+        const nonce = generateNonce();
+        res.json({
+            nonce,
+            expiresIn: '10 minutes',
+            usage: 'Include in X-ASDF-Nonce header for signed requests'
+        });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'nonce') });
+    }
+});
+
+// ============================================
+// ADMIN ROUTES
+// ============================================
+
+/**
+ * Get detailed metrics (admin only)
+ * GET /api/admin/metrics
+ */
+app.get('/api/admin/metrics', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const metrics = getDetailedMetrics();
+        const security = getSecurityMetrics();
+        const database = getDbHealth();
+
+        res.json({
+            api: metrics,
+            security,
+            database,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'admin-metrics') });
+    }
+});
+
+/**
+ * Get audit log (admin only)
+ * GET /api/admin/audit
+ */
+app.get('/api/admin/audit', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+        const action = req.query.action || null;
+
+        const logs = getAuditLog(limit, action);
+
+        res.json({
+            logs,
+            count: logs.length,
+            filter: action
+        });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'admin-audit') });
+    }
+});
+
+/**
+ * Check admin status
+ * GET /api/admin/status
+ */
+app.get('/api/admin/status', authMiddleware, (req, res) => {
+    const adminStatus = isAdmin(req.user.wallet);
+
+    res.json({
+        wallet: req.user.wallet,
+        isAdmin: adminStatus,
+        tier: req.user.tier
+    });
+});
+
+/**
+ * Sync leaderboard from blockchain (admin only)
+ * POST /api/admin/sync-leaderboard
+ */
+app.post('/api/admin/sync-leaderboard', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        await syncFromBlockchain();
+
+        logAudit('admin_sync_leaderboard', {
+            wallet: req.user.wallet.slice(0, 8) + '...'
+        });
+
+        res.json({
+            success: true,
+            message: 'Leaderboard synced from blockchain'
+        });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'admin-sync') });
     }
 });
 
