@@ -1,6 +1,6 @@
 # Security Policy for ASDF Web
 # See https://securitytxt.org/ for more information
-# Version: 1.9.0 (Updated 2026-01-03)
+# Version: 2.0.0 (Updated 2026-01-03)
 
 # Contact information for security researchers
 Contact: mailto:security@alonisthe.dev
@@ -22,52 +22,62 @@ Acknowledgments: https://github.com/Ragnar-no-sleep/ASDF-Web/blob/main/SECURITY.
 Expires: 2027-01-03T23:59:59.000Z
 
 # ============================================
-# Security Measures Implemented (v1.9.0)
+# Security Measures Implemented (v2.0.0)
 # ============================================
 #
-# Authentication & Session (NEW in v1.9.0):
+# Authentication & Session:
 # - httpOnly cookies for JWT storage (XSS protection)
 # - SameSite=strict cookie attribute (CSRF protection)
 # - Secure cookie flag in production (HTTPS only)
 # - Cookie path restriction (/api)
 # - credentials: 'include' for cross-origin auth
-# - Legacy Authorization header fallback (migration period)
-#
-# API Security:
-# - JWT authentication with HS256 algorithm enforcement
 # - Token revocation/blacklist mechanism for logout
+#
+# API Security (Phase 3-4):
+# - JWT authentication with HS256 algorithm enforcement
 # - Request timeouts (30s) to prevent DoS
 # - Webhook payload size limits (1MB)
-# - Rate limiting per endpoint with health endpoint protection
+# - Multi-tier rate limiting (general, auth, purchase, wallet, game)
 # - ALLOWED_ORIGINS enforcement in production (fail-fast)
-# - Content-Type validation middleware
+# - Content-Type validation middleware (415 for non-JSON)
+# - Request ID tracking (X-Request-ID header)
+# - Query parameter sanitization (control chars, length limits)
 # - Request signing with HMAC and nonce replay protection
 # - Admin wallet format validation at startup
 # - Mutex-protected challenge/nonce cleanup
-# - Global error handlers for uncaught exceptions
-# - Process-level error handlers (uncaughtException, unhandledRejection)
-# - CORS with credentials support for cookie auth
+# - Webhook secret fail-secure in production
+# - Input validation helpers (validateId, validateName, validateWalletAddress)
 #
-# Web Security:
-# - Content Security Policy (CSP) with strict directives
+# Web Security (CSP Enhanced):
+# - Content Security Policy with strict directives
+# - scriptSrc: self + CDNs (unpkg, cdnjs) with SRI validation
+# - connectSrc: restricted to known API endpoints
+# - objectSrc: none (blocks plugins)
+# - blockAllMixedContent in production
 # - HTTPS enforcement with HSTS (1 year, preload)
-# - XSS protection via DOM API (no innerHTML with user data)
+# - XSS protection via textContent (not innerHTML for user data)
 # - DOMPurify integration for user-generated content
-# - Static file serving restrictions (.env, .json, etc. blocked)
-# - CSRF token validation with fallback mechanisms
-# - JWT expiration check before API requests
+# - Subresource Integrity (SRI) on all external scripts
 #
 # Client Security:
 # - Server-managed JWT via httpOnly cookie
 # - Authentication state tracking (server is source of truth)
 # - Automatic session invalidation on 401
 # - Rate limiting on client-side API calls
+# - SecurityUtils module (escapeHtml, sanitizeText, validateNumber)
 #
 # Data Protection:
 # - isHolder and balance NEVER trusted from localStorage
 # - On-chain verification required for holder status
 # - State integrity hashing for tamper detection
 # - Schema validation for stored data
+# - Truncated wallet addresses in logs (privacy)
+#
+# Error Handling:
+# - sanitizeError() for production error messages
+# - Global error handler for unhandled exceptions
+# - Process-level handlers (uncaughtException, unhandledRejection)
+# - Context-aware error logging
 #
 # Infrastructure:
 # - Environment variable validation at startup
@@ -77,16 +87,21 @@ Expires: 2027-01-03T23:59:59.000Z
 # - Comprehensive .gitignore (secrets, internal docs)
 #
 # ============================================
-# Comprehensive Audit Findings (2026-01-03)
+# Security Audit Summary (2026-01-03)
 # ============================================
+#
+# Phase 1: Critical vulnerability fixes (10 issues)
+# Phase 2: Hardening (token revocation, mutex, httpOnly cookies)
+# Phase 3: Audit fixes (PRIORITY_FEE, webhook validation, input sanitization)
+# Phase 4: CSP enhancement, request validation middleware, error review
 #
 # VERIFIED SECURE:
 # - No sensitive files tracked in git
-# - .env files properly excluded
-# - Internal documentation patterns excluded
-# - api/.env.example intentionally tracked (template only)
+# - All external scripts have SRI hashes
+# - Logs use truncated wallet addresses
+# - CSRF protection via SameSite=strict
 #
-# SECURITY BY DESIGN PRINCIPLES APPLIED:
+# SECURITY BY DESIGN PRINCIPLES:
 # - Defense in depth (multiple layers)
 # - Fail-secure defaults
 # - Least privilege
