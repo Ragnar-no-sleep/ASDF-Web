@@ -1222,3 +1222,226 @@
 .jm-lesson {
     animation: scaleIn 0.3s ease;
 }
+
+/* ============================================
+   ADVANCED INTERACTIVE SECTIONS
+   ============================================ */
+
+.yj-advanced-interactive-container {
+    margin-top: var(--jm-space-xl);
+    padding-top: var(--jm-space-xl);
+    border-top: 1px solid var(--jm-border);
+}
+
+.jm-advanced-section {
+    animation: fadeIn 0.3s ease;
+}
+
+.jm-advanced-header {
+    text-align: center;
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-advanced-header h3 {
+    color: var(--jm-accent-fire);
+    font-size: 1.5rem;
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-advanced-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-advanced-modules {
+    display: grid;
+    gap: var(--jm-space-lg);
+}
+
+.jm-advanced-module-card {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    transition: border-color 0.3s ease;
+}
+
+.jm-advanced-module-card:hover {
+    border-color: var(--jm-accent-fire);
+}
+
+.jm-module-card-header {
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-module-card-header h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-sm);
+    font-size: 1.1rem;
+}
+
+.jm-module-card-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.jm-expand-module {
+    width: 100%;
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-void);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    color: var(--jm-text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.jm-expand-module:hover {
+    background: var(--jm-accent-fire);
+    border-color: var(--jm-accent-fire);
+    color: white;
+}
+
+.jm-module-expanded-content {
+    margin-top: var(--jm-space-xl);
+    padding-top: var(--jm-space-xl);
+    border-top: 1px solid var(--jm-border);
+}
+
+/* Advanced Header in expanded content */
+.jm-adv-header {
+    margin-bottom: var(--jm-space-xl);
+}
+
+.jm-adv-header h2 {
+    color: var(--jm-accent-fire);
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-adv-header p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-adv-quiz-section,
+.jm-adv-challenge-section {
+    margin-top: var(--jm-space-xl);
+    padding-top: var(--jm-space-xl);
+    border-top: 1px solid var(--jm-border);
+}
+
+.jm-adv-quiz-section h3,
+.jm-adv-challenge-section h3 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-lg);
+}
+
+/* Master Challenge Section */
+.jm-master-challenge-section {
+    margin-top: var(--jm-space-xl);
+    padding: var(--jm-space-xl);
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%);
+    border: 2px solid var(--jm-accent-fire);
+    border-radius: var(--jm-radius-lg);
+}
+
+.jm-challenge-teaser {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-xl);
+}
+
+.jm-challenge-icon {
+    font-size: 2.5rem;
+}
+
+.jm-challenge-info {
+    flex: 1;
+}
+
+.jm-challenge-info h4 {
+    color: var(--jm-accent-fire);
+    margin: 0 0 var(--jm-space-xs);
+    font-size: 1.25rem;
+}
+
+.jm-challenge-info p {
+    color: var(--jm-text-muted);
+    margin: 0;
+}
+
+.jm-start-master-challenge {
+    background: var(--jm-accent-fire);
+    border: none;
+    color: white;
+    padding: var(--jm-space-md) var(--jm-space-xl);
+    border-radius: var(--jm-radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.jm-start-master-challenge:hover {
+    background: var(--jm-accent-ember);
+    transform: translateY(-2px);
+}
+
+.jm-master-challenge-container {
+    margin-top: var(--jm-space-xl);
+}
+
+/* Code blocks in advanced content */
+.jm-code-block {
+    background: var(--jm-bg-void);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    margin: var(--jm-space-lg) 0;
+    overflow: hidden;
+}
+
+.jm-code-title {
+    background: var(--jm-bg-charred);
+    padding: var(--jm-space-sm) var(--jm-space-md);
+    color: var(--jm-text-muted);
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-code-block pre {
+    margin: 0;
+    padding: var(--jm-space-lg);
+    overflow-x: auto;
+}
+
+.jm-code-block code {
+    color: var(--jm-text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+}
+
+/* Tips and Info boxes */
+.jm-tip {
+    background: rgba(251, 191, 36, 0.1);
+    border-left: 3px solid var(--jm-accent-spark);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    margin: var(--jm-space-lg) 0;
+    border-radius: 0 var(--jm-radius-sm) var(--jm-radius-sm) 0;
+    color: var(--jm-text);
+}
+
+.jm-tip strong {
+    color: var(--jm-accent-spark);
+}
+
+/* Responsive for advanced sections */
+@media (max-width: 768px) {
+    .jm-challenge-teaser {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .jm-start-master-challenge {
+        width: 100%;
+    }
+}

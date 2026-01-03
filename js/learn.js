@@ -10591,6 +10591,131 @@ tokenomics if you have them."</pre>
             return levelModules || [];
         }
 
+        // ============================================
+        // ADVANCED INTERACTIVE CONTENT RENDERER
+        // ============================================
+        function renderAdvancedInteractiveContent(mod) {
+            const container = document.getElementById('yj-advanced-interactive');
+            if (!container || typeof window.JourneyAdvanced === 'undefined') return;
+
+            const JA = window.JourneyAdvanced;
+            const JM = window.JourneyModules;
+            const pillar = journeyState.currentPillar;
+
+            // Map module IDs to JourneyAdvanced content (using actual module IDs)
+            const moduleMapping = {
+                // Code & Dev Advanced
+                'code-a1': ['code-adv-patterns'],
+                'code-a2': ['code-adv-defi'],
+                'code-a3': ['code-adv-security'],
+                // Design & UX Advanced
+                'design-a1': ['design-adv-systems'],
+                'design-a2': ['design-adv-dataviz'],
+                // Content Advanced
+                'content-a1': ['content-adv-threads'],
+                'content-a2': ['content-adv-edu'],
+                // Community Advanced
+                'community-a1': ['community-adv-gov'],
+                'community-a2': ['community-adv-ecosystem']
+            };
+
+            const advancedKeys = moduleMapping[mod.id];
+            if (!advancedKeys || advancedKeys.length === 0) return;
+
+            // Get the corresponding module data
+            const modules = JA.getModulesForPillar(pillar);
+            const relevantModules = modules.filter(m => advancedKeys.includes(m.id));
+
+            if (relevantModules.length === 0) return;
+
+            // Build interactive content
+            container.innerHTML = `
+                <div class="jm-advanced-section">
+                    <div class="jm-advanced-header">
+                        <h3>🔥 Interactive Deep Dive</h3>
+                        <p>Put your knowledge to the test with these challenges.</p>
+                    </div>
+                    <div class="jm-advanced-modules" id="jm-advanced-modules-list"></div>
+                </div>
+            `;
+
+            const modulesList = container.querySelector('#jm-advanced-modules-list');
+
+            relevantModules.forEach(advModule => {
+                const moduleCard = document.createElement('div');
+                moduleCard.className = 'jm-advanced-module-card';
+                moduleCard.innerHTML = `
+                    <div class="jm-module-card-header">
+                        <h4>${JM ? JM.escapeHtml(advModule.title) : advModule.title}</h4>
+                        <p>${JM ? JM.escapeHtml(advModule.description) : advModule.description}</p>
+                    </div>
+                    <button class="jm-expand-module btn btn-secondary" data-module-id="${advModule.id}">
+                        Explore Module →
+                    </button>
+                    <div class="jm-module-expanded-content" id="expanded-${advModule.id}" style="display: none;"></div>
+                `;
+                modulesList.appendChild(moduleCard);
+
+                // Add expand handler
+                const expandBtn = moduleCard.querySelector('.jm-expand-module');
+                expandBtn.addEventListener('click', function() {
+                    const expandedContent = moduleCard.querySelector('.jm-module-expanded-content');
+                    const isExpanded = expandedContent.style.display !== 'none';
+
+                    if (isExpanded) {
+                        expandedContent.style.display = 'none';
+                        this.textContent = 'Explore Module →';
+                    } else {
+                        expandedContent.style.display = 'block';
+                        this.textContent = 'Collapse ↑';
+                        JA.renderAdvancedModule(expandedContent, advModule);
+                    }
+                });
+            });
+
+            // Add master challenge if all modules are viewed
+            if (JA.CHALLENGES && JA.CHALLENGES.masterChallenge && JM) {
+                const challengeSection = document.createElement('div');
+                challengeSection.className = 'jm-master-challenge-section';
+                challengeSection.innerHTML = `
+                    <div class="jm-challenge-teaser">
+                        <div class="jm-challenge-icon">🏆</div>
+                        <div class="jm-challenge-info">
+                            <h4>ASDF Master Challenge</h4>
+                            <p>Test all your advanced skills in a timed challenge!</p>
+                        </div>
+                        <button class="jm-start-master-challenge btn btn-primary" id="start-master-challenge">
+                            Start Challenge
+                        </button>
+                    </div>
+                    <div class="jm-master-challenge-container" id="master-challenge-container" style="display: none;"></div>
+                `;
+                container.appendChild(challengeSection);
+
+                document.getElementById('start-master-challenge').addEventListener('click', function() {
+                    const challengeContainer = document.getElementById('master-challenge-container');
+                    challengeContainer.style.display = 'block';
+                    this.style.display = 'none';
+
+                    const challenge = JA.CHALLENGES.masterChallenge;
+                    const timedQuiz = JM.createTimedQuiz({
+                        id: challenge.id,
+                        title: challenge.title,
+                        timeLimit: challenge.timeLimit,
+                        questions: challenge.questions,
+                        onComplete: (result) => {
+                            console.log('Master challenge completed:', result);
+                            if (result.percentage >= 70) {
+                                addXP(200);
+                                showAchievement('🏆', 'Master Builder', 'Completed the advanced challenge!');
+                            }
+                        }
+                    });
+                    challengeContainer.appendChild(timedQuiz);
+                });
+            }
+        }
+
         // Legacy module rendering (for old format modules)
         function renderLegacyModule(mod, modules) {
             const hasSections = mod.sections && mod.sections.length > 0;
@@ -10599,6 +10724,10 @@ tokenomics if you have them."</pre>
             document.getElementById('yj-module-title').textContent = mod.title;
 
             let contentHtml = '';
+
+            // Check if this is an advanced level module with interactive content
+            const isAdvancedLevel = journeyState.currentLevel === 'advanced';
+            const hasAdvancedInteractives = isAdvancedLevel && typeof window.JourneyAdvanced !== 'undefined';
 
             if (hasSections) {
                 const sectionIndex = journeyState.currentSubIndex;
@@ -10612,6 +10741,9 @@ tokenomics if you have them."</pre>
                         `).join('')}
                     </div>
                     <div class="yj-section-content">${section.content}</div>
+                    ${hasAdvancedInteractives ? `
+                        <div class="yj-advanced-interactive-container" id="yj-advanced-interactive"></div>
+                    ` : ''}
                     <div class="yj-section-nav">
                         <button class="yj-section-prev btn btn-secondary" ${sectionIndex === 0 ? 'disabled' : ''}>← Previous</button>
                         <span>${sectionIndex + 1} / ${mod.sections.length}</span>
@@ -10620,9 +10752,17 @@ tokenomics if you have them."</pre>
                 `;
             } else {
                 contentHtml = mod.content || '';
+                if (hasAdvancedInteractives) {
+                    contentHtml += '<div class="yj-advanced-interactive-container" id="yj-advanced-interactive"></div>';
+                }
             }
 
             safeInnerHTML(document.getElementById('yj-module-content'), contentHtml);
+
+            // Render advanced interactive content if available
+            if (hasAdvancedInteractives) {
+                renderAdvancedInteractiveContent(mod);
+            }
 
             // Initialize interactive elements (flashcards, scenarios)
             initInteractiveElements();
