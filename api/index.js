@@ -34,6 +34,10 @@ const { NOTIFICATION_TYPES, createNotification, getNotifications, getUnreadCount
 const { buildBurnTransaction, buildTransferTransaction, verifyTransaction, completeTransaction, getTransactionMetrics } = require('./services/transactions');
 const { getOrCreateReferralCode, validateCode: validateReferralCode, processReferral, getReferralStats, getReferralLeaderboard, getReferralMetrics } = require('./services/referrals');
 const { EVENTS, subscribe: subscribeEvent, publish: publishEvent, emitBurnConfirmed, emitAchievementUnlocked, emitPurchaseCompleted, getEventBusMetrics } = require('./services/eventBus');
+const { get: cacheGet, set: cacheSet, del: cacheDel, wrap: cacheWrap, invalidateTag, getStats: getCacheStats } = require('./services/cache');
+const { registerHandler: registerJobHandler, enqueue: enqueueJob, getJob, getJobsByStatus, getQueueStats, PRIORITY: JOB_PRIORITY } = require('./services/queue');
+const { track: trackAnalytics, trackPageView, trackAction, getAggregatedMetrics, getFunnelAnalysis, getAnalyticsMetrics, EVENT_TYPES: ANALYTICS_EVENTS } = require('./services/analytics');
+const { schedule: scheduleTask, scheduleInterval, getAllTasks, getHistory: getTaskHistory, getSchedulerMetrics, SCHEDULES } = require('./services/scheduler');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -200,11 +204,15 @@ app.get('/health', async (req, res) => {
     const transactionMetrics = getTransactionMetrics();
     const referralMetrics = getReferralMetrics();
     const eventBusMetrics = getEventBusMetrics();
+    const cacheStats = getCacheStats();
+    const queueStats = getQueueStats();
+    const analyticsMetrics = getAnalyticsMetrics();
+    const schedulerMetrics = getSchedulerMetrics();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.2.0',
+        version: '1.3.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
@@ -247,6 +255,22 @@ app.get('/health', async (req, res) => {
             },
             eventBus: {
                 handlers: eventBusMetrics.totalHandlers
+            },
+            cache: {
+                entries: cacheStats.entries,
+                hitRate: cacheStats.hitRate
+            },
+            queue: {
+                pending: queueStats.totalQueued,
+                active: queueStats.activeJobs
+            },
+            analytics: {
+                events: analyticsMetrics.rawEvents,
+                sessions: analyticsMetrics.activeSessions
+            },
+            scheduler: {
+                tasks: schedulerMetrics.taskCount,
+                running: schedulerMetrics.runningTasks
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -1673,6 +1697,212 @@ app.get('/api/referrals/leaderboard', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'referral-leaderboard') });
     }
+});
+
+// ============================================
+// ADMIN - CACHE ROUTES
+// ============================================
+
+/**
+ * Get cache statistics (admin only)
+ * GET /api/admin/cache
+ */
+app.get('/api/admin/cache', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getCacheStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'cache-stats') });
+    }
+});
+
+/**
+ * Invalidate cache by tag (admin only)
+ * POST /api/admin/cache/invalidate
+ */
+app.post('/api/admin/cache/invalidate', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { tag } = req.body;
+
+        if (!tag) {
+            return res.status(400).json({ error: 'Tag required' });
+        }
+
+        const count = await invalidateTag(tag);
+
+        logAudit('cache_invalidated', {
+            admin: req.user.wallet.slice(0, 8) + '...',
+            tag,
+            count
+        });
+
+        res.json({ success: true, invalidatedCount: count });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'cache-invalidate') });
+    }
+});
+
+// ============================================
+// ADMIN - QUEUE ROUTES
+// ============================================
+
+/**
+ * Get queue statistics (admin only)
+ * GET /api/admin/queue
+ */
+app.get('/api/admin/queue', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getQueueStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'queue-stats') });
+    }
+});
+
+/**
+ * Get jobs by status (admin only)
+ * GET /api/admin/queue/jobs
+ */
+app.get('/api/admin/queue/jobs', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const status = req.query.status || 'pending';
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+
+        const jobs = getJobsByStatus(status, limit);
+        res.json({ jobs, count: jobs.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'queue-jobs') });
+    }
+});
+
+/**
+ * Get specific job (admin only)
+ * GET /api/admin/queue/jobs/:id
+ */
+app.get('/api/admin/queue/jobs/:id', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const job = getJob(req.params.id);
+
+        if (!job) {
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        res.json(job);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'queue-job') });
+    }
+});
+
+// ============================================
+// ADMIN - ANALYTICS ROUTES
+// ============================================
+
+/**
+ * Get analytics overview (admin only)
+ * GET /api/admin/analytics
+ */
+app.get('/api/admin/analytics', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const metrics = getAnalyticsMetrics();
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'analytics') });
+    }
+});
+
+/**
+ * Get aggregated metrics (admin only)
+ * GET /api/admin/analytics/metrics
+ */
+app.get('/api/admin/analytics/metrics', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const interval = req.query.interval || 'hour';
+        const count = Math.min(parseInt(req.query.count) || 24, 168);
+
+        const metrics = getAggregatedMetrics(interval, count);
+        res.json({ interval, metrics });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'analytics-metrics') });
+    }
+});
+
+/**
+ * Get funnel analysis (admin only)
+ * GET /api/admin/analytics/funnel/:name
+ */
+app.get('/api/admin/analytics/funnel/:name', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const analysis = getFunnelAnalysis(req.params.name);
+
+        if (!analysis) {
+            return res.status(404).json({ error: 'Funnel not found' });
+        }
+
+        res.json(analysis);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'funnel-analysis') });
+    }
+});
+
+// ============================================
+// ADMIN - SCHEDULER ROUTES
+// ============================================
+
+/**
+ * Get scheduled tasks (admin only)
+ * GET /api/admin/scheduler
+ */
+app.get('/api/admin/scheduler', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const tasks = getAllTasks();
+        const metrics = getSchedulerMetrics();
+
+        res.json({ tasks, metrics });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'scheduler') });
+    }
+});
+
+/**
+ * Get task execution history (admin only)
+ * GET /api/admin/scheduler/history
+ */
+app.get('/api/admin/scheduler/history', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const taskId = req.query.taskId || null;
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+
+        const history = getTaskHistory(taskId, limit);
+        res.json({ history, count: history.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'scheduler-history') });
+    }
+});
+
+// ============================================
+// ANALYTICS TRACKING MIDDLEWARE
+// ============================================
+
+// Track API requests for analytics (non-blocking)
+app.use((req, res, next) => {
+    // Skip health checks and static files
+    if (req.path === '/health' || req.path.startsWith('/static')) {
+        return next();
+    }
+
+    // Track asynchronously to not block request
+    setImmediate(() => {
+        trackAnalytics(ANALYTICS_EVENTS.PAGE_VIEW, {
+            path: req.path,
+            method: req.method
+        }, {
+            wallet: req.user?.wallet,
+            userAgent: req.headers['user-agent'],
+            ip: req.ip
+        });
+    });
+
+    next();
 });
 
 // ============================================
