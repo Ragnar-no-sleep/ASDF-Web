@@ -10809,9 +10809,6 @@ tokenomics if you have them."</pre>
                     <span class="jm-prod-meta-item">
                         <span class="jm-meta-icon">📖</span> ${lessonsCount} lessons
                     </span>
-                    <span class="jm-prod-meta-item">
-                        <span class="jm-meta-icon">⏱️</span> ${module.estimatedTime || '2-3 hours'}
-                    </span>
                     ${hasProject ? '<span class="jm-prod-meta-item"><span class="jm-meta-icon">🛠️</span> Project</span>' : ''}
                     ${hasQuiz ? '<span class="jm-prod-meta-item"><span class="jm-meta-icon">📝</span> Quiz</span>' : ''}
                 </div>
@@ -10995,9 +10992,6 @@ tokenomics if you have them."</pre>
                         <div class="jm-capstone-badge">${cap.certification.badge}</div>
                         <h4>${cap.title}</h4>
                         <p>${cap.description}</p>
-                        <div class="jm-capstone-time">
-                            <span class="jm-time-icon">⏱️</span> ${cap.estimatedTime}
-                        </div>
                         <div class="jm-capstone-cert">
                             <strong>Certification:</strong> ${cap.certification.name}
                         </div>
@@ -11036,9 +11030,6 @@ tokenomics if you have them."</pre>
                 <div class="jm-cert-meta">
                     <span class="jm-cert-meta-item">
                         <span class="jm-meta-icon">📖</span> ${lessonsCount} lessons
-                    </span>
-                    <span class="jm-cert-meta-item">
-                        <span class="jm-meta-icon">⏱️</span> ${module.estimatedTime || '4-6 hours'}
                     </span>
                     <span class="jm-cert-meta-item cert-level">
                         <span class="jm-meta-icon">🎯</span> Expert Level

@@ -25,7 +25,6 @@ const JourneyProduction = (function() {
             title: 'Testing for Production',
             theme: 'verify',
             description: 'Build bulletproof code with comprehensive testing strategies.',
-            estimatedTime: '4-6 hours',
             prerequisites: ['code-adv-patterns'],
 
             lessons: [
@@ -458,7 +457,6 @@ export async function getTokenBalance(
             title: 'CI/CD for Solana Projects',
             theme: 'fibonacci',
             description: 'Automate your build, test, and deploy pipeline for reliable releases.',
-            estimatedTime: '3-4 hours',
             prerequisites: ['prod-code-testing'],
 
             lessons: [
@@ -801,7 +799,6 @@ anchor idl set-authority --new-authority [PAUSE_AUTHORITY]</code></pre>
             title: 'Production Monitoring & Observability',
             theme: 'thisIsFine',
             description: 'Know when things break before your users do.',
-            estimatedTime: '3-4 hours',
             prerequisites: ['prod-code-cicd'],
 
             lessons: [
@@ -1125,7 +1122,6 @@ sum by (error_type) (
             title: 'Production Security Hardening',
             theme: 'burn',
             description: 'Protect your users and their funds with defense in depth.',
-            estimatedTime: '5-6 hours',
             prerequisites: ['code-adv-security'],
 
             lessons: [
@@ -1429,7 +1425,6 @@ let total = amount.checked_add(fee)
             title: 'Performance at Scale',
             theme: 'fibonacci',
             description: 'Build fast, efficient applications that scale.',
-            estimatedTime: '4-5 hours',
             prerequisites: ['prod-code-monitoring'],
 
             lessons: [
@@ -1752,7 +1747,6 @@ async function sendWithLUT(instructions: TransactionInstruction[]) {
             title: 'Complete Design System',
             theme: 'fibonacci',
             description: 'Build a comprehensive design system for consistent, scalable UI.',
-            estimatedTime: '6-8 hours',
 
             lessons: [
                 {
@@ -2044,7 +2038,6 @@ Button.displayName = 'Button';</code></pre>
             title: 'User Research for Crypto Products',
             theme: 'verify',
             description: 'Validate designs with real users before building.',
-            estimatedTime: '4-5 hours',
 
             lessons: [
                 {
@@ -2206,7 +2199,6 @@ Success criteria: User locates tx list within 30 seconds</code></pre>
             title: 'Content Strategy for Crypto',
             theme: 'burn',
             description: 'Build a content engine that grows your community.',
-            estimatedTime: '4-5 hours',
 
             lessons: [
                 {
@@ -2340,7 +2332,6 @@ Success criteria: User locates tx list within 30 seconds</code></pre>
             title: 'Analytics & Growth Hacking',
             theme: 'fibonacci',
             description: 'Measure what matters and grow strategically.',
-            estimatedTime: '3-4 hours',
 
             lessons: [
                 {
@@ -2461,7 +2452,6 @@ analytics.track('first_transaction', {
             title: 'Community Operations at Scale',
             theme: 'thisIsFine',
             description: 'Manage large communities efficiently and effectively.',
-            estimatedTime: '4-5 hours',
 
             lessons: [
                 {
@@ -2604,7 +2594,6 @@ Questions? [Where to ask]</code></pre>
             title: 'Ambassador & Contributor Programs',
             theme: 'burn',
             description: 'Scale community through empowered contributors.',
-            estimatedTime: '3-4 hours',
 
             lessons: [
                 {
@@ -2702,7 +2691,6 @@ Questions? [Where to ask]</code></pre>
             id: 'capstone-dapp',
             title: 'Full-Stack dApp Capstone',
             description: 'Build a complete production-ready dApp from scratch.',
-            estimatedTime: '40-60 hours',
 
             requirements: [
                 'Smart contract with full test coverage',
@@ -2733,7 +2721,6 @@ Questions? [Where to ask]</code></pre>
             id: 'capstone-community',
             title: 'Community Building Capstone',
             description: 'Launch and grow a crypto community from zero.',
-            estimatedTime: '30-40 hours',
 
             requirements: [
                 'Community strategy document',

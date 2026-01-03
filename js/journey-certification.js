@@ -25,7 +25,6 @@ const JourneyCertification = (function() {
             title: 'Production Architecture Patterns',
             theme: 'fibonacci',
             description: 'Design scalable, maintainable systems for real-world dApps.',
-            estimatedTime: '6-8 hours',
 
             lessons: [
                 {
@@ -499,7 +498,6 @@ app.get('/transactions', async (req, res) => {
             title: 'Advanced Solana Development',
             theme: 'verify',
             description: 'Master advanced Solana patterns for production applications.',
-            estimatedTime: '8-10 hours',
 
             lessons: [
                 {
@@ -919,7 +917,6 @@ async function handleTransfer(event: HeliusTransferEvent) {
             title: 'Motion Design for dApps',
             theme: 'fibonacci',
             description: 'Create fluid, purposeful animations that enhance UX.',
-            estimatedTime: '4-5 hours',
 
             lessons: [
                 {
@@ -1136,7 +1133,6 @@ function celebrateSuccess() {
             title: 'Critical Design Review',
             theme: 'verify',
             description: 'Evaluate and improve designs systematically.',
-            estimatedTime: '3-4 hours',
 
             lessons: [
                 {
@@ -1205,7 +1201,6 @@ function celebrateSuccess() {
             title: 'Video & Audio Content',
             theme: 'burn',
             description: 'Expand your content reach with multimedia.',
-            estimatedTime: '4-5 hours',
 
             lessons: [
                 {
@@ -1273,7 +1268,6 @@ function celebrateSuccess() {
             title: 'Multi-Platform Publishing',
             theme: 'fibonacci',
             description: 'Reach audiences across all platforms efficiently.',
-            estimatedTime: '3-4 hours',
 
             lessons: [
                 {
@@ -1354,7 +1348,6 @@ function celebrateSuccess() {
             title: 'DAO Operations & Governance',
             theme: 'burn',
             description: 'Run decentralized organizations effectively.',
-            estimatedTime: '5-6 hours',
 
             lessons: [
                 {
@@ -1474,6 +1467,115 @@ function celebrateSuccess() {
                         'Diversify to reduce volatility risk',
                         'Transparent reporting builds trust'
                     ]
+                },
+                {
+                    title: 'Conflict Resolution in DAOs',
+                    content: `
+                        <h4>Handling Community Conflicts</h4>
+
+                        <div class="jm-conflict-framework">
+                            <div class="jm-conflict-step">
+                                <span class="jm-step-icon">👂</span>
+                                <h5>1. Listen First</h5>
+                                <p>Understand all perspectives before acting. Most conflicts stem from miscommunication.</p>
+                            </div>
+                            <div class="jm-conflict-step">
+                                <span class="jm-step-icon">📋</span>
+                                <h5>2. Document Everything</h5>
+                                <p>Keep records of incidents, decisions, and reasoning for transparency.</p>
+                            </div>
+                            <div class="jm-conflict-step">
+                                <span class="jm-step-icon">⚖️</span>
+                                <h5>3. Apply Rules Consistently</h5>
+                                <p>Fair enforcement builds trust. No special treatment.</p>
+                            </div>
+                            <div class="jm-conflict-step">
+                                <span class="jm-step-icon">🤝</span>
+                                <h5>4. Seek Resolution</h5>
+                                <p>Focus on solutions, not blame. Enable parties to move forward.</p>
+                            </div>
+                        </div>
+
+                        <h4>Escalation Path</h4>
+                        <div class="jm-escalation">
+                            <div class="jm-esc-level">Community Moderators</div>
+                            <div class="jm-esc-arrow">↓</div>
+                            <div class="jm-esc-level">Core Contributors</div>
+                            <div class="jm-esc-arrow">↓</div>
+                            <div class="jm-esc-level">Governance Council</div>
+                            <div class="jm-esc-arrow">↓</div>
+                            <div class="jm-esc-level">Community Vote</div>
+                        </div>
+
+                        <div class="jm-best-practice">
+                            <h4>Prevention > Resolution</h4>
+                            <ul>
+                                <li>Clear community guidelines</li>
+                                <li>Code of conduct</li>
+                                <li>Regular mod training</li>
+                                <li>Open communication channels</li>
+                            </ul>
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Listen before acting',
+                        'Document for transparency',
+                        'Consistent rule enforcement',
+                        'Focus on solutions'
+                    ]
+                },
+                {
+                    title: 'DAO Legal Considerations',
+                    content: `
+                        <h4>Legal Landscape for DAOs</h4>
+
+                        <div class="jm-warning">
+                            <strong>Disclaimer:</strong> This is educational content, not legal advice. Consult qualified legal counsel for your specific situation.
+                        </div>
+
+                        <h4>Common Legal Structures</h4>
+                        <table class="jm-table">
+                            <tr>
+                                <th>Structure</th>
+                                <th>Jurisdiction</th>
+                                <th>Use Case</th>
+                            </tr>
+                            <tr>
+                                <td>Wyoming DAO LLC</td>
+                                <td>USA (Wyoming)</td>
+                                <td>US-based operations</td>
+                            </tr>
+                            <tr>
+                                <td>Marshall Islands DAO</td>
+                                <td>Marshall Islands</td>
+                                <td>Global DAOs</td>
+                            </tr>
+                            <tr>
+                                <td>Swiss Association</td>
+                                <td>Switzerland</td>
+                                <td>European operations</td>
+                            </tr>
+                            <tr>
+                                <td>Cayman Foundation</td>
+                                <td>Cayman Islands</td>
+                                <td>Investment DAOs</td>
+                            </tr>
+                        </table>
+
+                        <h4>Key Considerations</h4>
+                        <ul>
+                            <li><strong>Liability protection:</strong> Shield members from personal liability</li>
+                            <li><strong>Tax obligations:</strong> Understand reporting requirements</li>
+                            <li><strong>Securities laws:</strong> Token classification matters</li>
+                            <li><strong>Contracts:</strong> How DAOs can enter legal agreements</li>
+                        </ul>
+                    `,
+                    keyPoints: [
+                        'Legal structure provides protection',
+                        'Jurisdiction matters for compliance',
+                        'Consult legal professionals',
+                        'Plan for regulatory changes'
+                    ]
                 }
             ]
         },
@@ -1483,7 +1585,6 @@ function celebrateSuccess() {
             title: 'Community Metrics & KPIs',
             theme: 'fibonacci',
             description: 'Measure community health with meaningful metrics.',
-            estimatedTime: '3-4 hours',
 
             lessons: [
                 {
@@ -1539,6 +1640,417 @@ function celebrateSuccess() {
                         'DAU/MAU ratio shows real activity',
                         'Track trends, not just snapshots'
                     ]
+                },
+                {
+                    title: 'Community Analytics Tools',
+                    content: `
+                        <h4>Essential Analytics Stack</h4>
+
+                        <div class="jm-tools-grid">
+                            <div class="jm-tool-card">
+                                <h5>Discord Analytics</h5>
+                                <ul>
+                                    <li>Statbot - server statistics</li>
+                                    <li>Discord Analytics Bot</li>
+                                    <li>Member activity tracking</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tool-card">
+                                <h5>Twitter/X Analytics</h5>
+                                <ul>
+                                    <li>Native Twitter Analytics</li>
+                                    <li>TweetDeck for monitoring</li>
+                                    <li>Engagement rate tracking</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tool-card">
+                                <h5>On-chain Analytics</h5>
+                                <ul>
+                                    <li>Dune Analytics dashboards</li>
+                                    <li>Holder distribution</li>
+                                    <li>Transaction patterns</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tool-card">
+                                <h5>Survey Tools</h5>
+                                <ul>
+                                    <li>Typeform for feedback</li>
+                                    <li>NPS surveys</li>
+                                    <li>Quarterly community polls</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h4>Dashboard Template</h4>
+                        <div class="jm-dashboard-template">
+                            <div class="jm-dash-section">
+                                <h5>Weekly Review</h5>
+                                <ul>
+                                    <li>New members vs churned</li>
+                                    <li>Active conversation threads</li>
+                                    <li>Support tickets resolved</li>
+                                    <li>Content engagement rates</li>
+                                </ul>
+                            </div>
+                            <div class="jm-dash-section">
+                                <h5>Monthly Review</h5>
+                                <ul>
+                                    <li>DAU/MAU trend</li>
+                                    <li>Top contributors</li>
+                                    <li>Sentiment analysis</li>
+                                    <li>Growth vs retention</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Use multiple data sources',
+                        'Create consistent dashboards',
+                        'Review metrics regularly',
+                        'Act on insights'
+                    ]
+                },
+                {
+                    title: 'Building Feedback Loops',
+                    content: `
+                        <h4>Continuous Improvement Cycle</h4>
+
+                        <div class="jm-feedback-cycle">
+                            <div class="jm-cycle-step">
+                                <span class="jm-cycle-num">1</span>
+                                <h5>Collect</h5>
+                                <p>Gather feedback through surveys, discussions, support tickets</p>
+                            </div>
+                            <div class="jm-cycle-arrow">→</div>
+                            <div class="jm-cycle-step">
+                                <span class="jm-cycle-num">2</span>
+                                <h5>Analyze</h5>
+                                <p>Identify patterns, prioritize issues, spot opportunities</p>
+                            </div>
+                            <div class="jm-cycle-arrow">→</div>
+                            <div class="jm-cycle-step">
+                                <span class="jm-cycle-num">3</span>
+                                <h5>Act</h5>
+                                <p>Implement changes, communicate decisions</p>
+                            </div>
+                            <div class="jm-cycle-arrow">→</div>
+                            <div class="jm-cycle-step">
+                                <span class="jm-cycle-num">4</span>
+                                <h5>Close Loop</h5>
+                                <p>Share results, thank contributors, measure impact</p>
+                            </div>
+                        </div>
+
+                        <h4>Feedback Channels</h4>
+                        <ul>
+                            <li><strong>#suggestions:</strong> Public feature requests</li>
+                            <li><strong>AMA sessions:</strong> Direct team interaction</li>
+                            <li><strong>Governance forum:</strong> Formal proposals</li>
+                            <li><strong>Anonymous surveys:</strong> Honest feedback</li>
+                            <li><strong>1:1 interviews:</strong> Deep user research</li>
+                        </ul>
+
+                        <div class="jm-best-practice">
+                            <h4>Golden Rule</h4>
+                            <p>Always close the loop. If you ask for feedback, report back what you did with it. Nothing kills engagement faster than feeling unheard.</p>
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Create clear feedback channels',
+                        'Analyze before acting',
+                        'Always close the loop',
+                        'Thank contributors publicly'
+                    ]
+                }
+            ]
+        },
+
+        eventManagement: {
+            id: 'cert-community-events',
+            title: 'Community Events & Programs',
+            theme: 'verify',
+            description: 'Run successful community events and engagement programs.',
+
+            lessons: [
+                {
+                    title: 'Planning Community Events',
+                    content: `
+                        <h4>Event Types for Crypto Communities</h4>
+
+                        <div class="jm-event-types">
+                            <div class="jm-event-type">
+                                <h5>🎤 AMAs (Ask Me Anything)</h5>
+                                <p>Direct team-community interaction. Great for updates and transparency.</p>
+                                <div class="jm-event-tips">
+                                    <strong>Tips:</strong> Collect questions beforehand, time-box, record for async viewing
+                                </div>
+                            </div>
+                            <div class="jm-event-type">
+                                <h5>🏆 Competitions & Hackathons</h5>
+                                <p>Drive engagement and surface talent. Build with rewards.</p>
+                                <div class="jm-event-tips">
+                                    <strong>Tips:</strong> Clear rules, fair judging, meaningful prizes
+                                </div>
+                            </div>
+                            <div class="jm-event-type">
+                                <h5>📚 Educational Workshops</h5>
+                                <p>Teach skills, increase competence. Builds loyalty.</p>
+                                <div class="jm-event-tips">
+                                    <strong>Tips:</strong> Record everything, provide resources, follow up
+                                </div>
+                            </div>
+                            <div class="jm-event-type">
+                                <h5>🎮 Social Events</h5>
+                                <p>Game nights, meme contests, celebrations. Pure community fun.</p>
+                                <div class="jm-event-tips">
+                                    <strong>Tips:</strong> Keep it light, inclusive, celebrate wins
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4>Event Planning Checklist</h4>
+                        <div class="jm-checklist">
+                            <div class="jm-check-item">☐ Define clear objectives</div>
+                            <div class="jm-check-item">☐ Set date/time (consider timezones)</div>
+                            <div class="jm-check-item">☐ Prepare content/speakers</div>
+                            <div class="jm-check-item">☐ Promote 1-2 weeks ahead</div>
+                            <div class="jm-check-item">☐ Test tech setup</div>
+                            <div class="jm-check-item">☐ Have backup plans</div>
+                            <div class="jm-check-item">☐ Record for archives</div>
+                            <div class="jm-check-item">☐ Follow up with recap</div>
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Match event type to goals',
+                        'Plan with timezone awareness',
+                        'Always record events',
+                        'Follow up is crucial'
+                    ]
+                },
+                {
+                    title: 'Ambassador & Contributor Programs',
+                    content: `
+                        <h4>Building a Contributor Ecosystem</h4>
+
+                        <div class="jm-contributor-tiers">
+                            <div class="jm-tier">
+                                <h5>🌱 Newcomers</h5>
+                                <p>First-time contributors</p>
+                                <ul>
+                                    <li>Welcome resources</li>
+                                    <li>Easy first tasks</li>
+                                    <li>Mentorship pairing</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tier">
+                                <h5>⭐ Active Contributors</h5>
+                                <p>Regular participants</p>
+                                <ul>
+                                    <li>Specialized roles</li>
+                                    <li>Access to resources</li>
+                                    <li>Recognition badges</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tier">
+                                <h5>🏅 Ambassadors</h5>
+                                <p>Community leaders</p>
+                                <ul>
+                                    <li>Official representation</li>
+                                    <li>Compensation/rewards</li>
+                                    <li>Direct team access</li>
+                                </ul>
+                            </div>
+                            <div class="jm-tier">
+                                <h5>💎 Core Contributors</h5>
+                                <p>Essential team members</p>
+                                <ul>
+                                    <li>Full-time engagement</li>
+                                    <li>Decision-making power</li>
+                                    <li>Token allocation</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h4>Ambassador Program Structure</h4>
+                        <table class="jm-table">
+                            <tr>
+                                <th>Component</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>Application Process</td>
+                                <td>Clear criteria, fair selection</td>
+                            </tr>
+                            <tr>
+                                <td>Onboarding</td>
+                                <td>Training, resources, expectations</td>
+                            </tr>
+                            <tr>
+                                <td>Tasks & KPIs</td>
+                                <td>Clear deliverables, measurable impact</td>
+                            </tr>
+                            <tr>
+                                <td>Rewards</td>
+                                <td>Tokens, merch, recognition, access</td>
+                            </tr>
+                            <tr>
+                                <td>Evaluation</td>
+                                <td>Regular reviews, feedback, growth paths</td>
+                            </tr>
+                        </table>
+                    `,
+                    keyPoints: [
+                        'Create clear progression paths',
+                        'Reward consistent contributors',
+                        'Provide real responsibilities',
+                        'Build genuine relationships'
+                    ]
+                }
+            ]
+        },
+
+        crisisManagement: {
+            id: 'cert-community-crisis',
+            title: 'Crisis Management',
+            theme: 'burn',
+            description: 'Handle community crises and protect your project.',
+
+            lessons: [
+                {
+                    title: 'Crisis Response Framework',
+                    content: `
+                        <h4>Types of Community Crises</h4>
+
+                        <div class="jm-crisis-types">
+                            <div class="jm-crisis">
+                                <span class="jm-crisis-icon">🔐</span>
+                                <h5>Security Incidents</h5>
+                                <p>Hacks, exploits, vulnerabilities</p>
+                            </div>
+                            <div class="jm-crisis">
+                                <span class="jm-crisis-icon">📉</span>
+                                <h5>Market Events</h5>
+                                <p>Price crashes, liquidity crises</p>
+                            </div>
+                            <div class="jm-crisis">
+                                <span class="jm-crisis-icon">🗣️</span>
+                                <h5>FUD Campaigns</h5>
+                                <p>Coordinated attacks, misinformation</p>
+                            </div>
+                            <div class="jm-crisis">
+                                <span class="jm-crisis-icon">⚠️</span>
+                                <h5>Team Issues</h5>
+                                <p>Departures, disputes, misconduct</p>
+                            </div>
+                        </div>
+
+                        <h4>ASDF Crisis Response Protocol</h4>
+                        <div class="jm-protocol">
+                            <div class="jm-protocol-step critical">
+                                <h5>🔴 IMMEDIATE (0-1 hour)</h5>
+                                <ul>
+                                    <li>Assess severity and scope</li>
+                                    <li>Activate response team</li>
+                                    <li>Secure assets if needed</li>
+                                    <li>Draft initial statement</li>
+                                </ul>
+                            </div>
+                            <div class="jm-protocol-step urgent">
+                                <h5>🟠 SHORT-TERM (1-24 hours)</h5>
+                                <ul>
+                                    <li>Communicate to community</li>
+                                    <li>Investigate root cause</li>
+                                    <li>Implement immediate fixes</li>
+                                    <li>Monitor sentiment</li>
+                                </ul>
+                            </div>
+                            <div class="jm-protocol-step important">
+                                <h5>🟡 MEDIUM-TERM (1-7 days)</h5>
+                                <ul>
+                                    <li>Detailed post-mortem</li>
+                                    <li>Compensation if needed</li>
+                                    <li>Process improvements</li>
+                                    <li>Rebuild confidence</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="jm-warning">
+                            <strong>Golden Rule:</strong> Communicate early, even if you don't have all the answers. Silence is worse than uncertainty.
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Speed of response matters',
+                        'Communicate transparently',
+                        'Take responsibility',
+                        'Learn and improve'
+                    ]
+                },
+                {
+                    title: 'Communication During Crisis',
+                    content: `
+                        <h4>Crisis Communication Framework</h4>
+
+                        <div class="jm-comm-framework">
+                            <div class="jm-comm-principle">
+                                <h5>🎯 Be Direct</h5>
+                                <p>State the facts clearly. No spin, no minimizing.</p>
+                            </div>
+                            <div class="jm-comm-principle">
+                                <h5>⏰ Be Timely</h5>
+                                <p>First update within 1 hour, even if just acknowledging.</p>
+                            </div>
+                            <div class="jm-comm-principle">
+                                <h5>🔄 Be Consistent</h5>
+                                <p>Same message across all channels. Single source of truth.</p>
+                            </div>
+                            <div class="jm-comm-principle">
+                                <h5>❤️ Be Human</h5>
+                                <p>Acknowledge impact on community. Show you care.</p>
+                            </div>
+                        </div>
+
+                        <h4>Statement Template</h4>
+                        <div class="jm-template">
+                            <div class="jm-template-section">
+                                <strong>1. Acknowledge:</strong>
+                                <p>"We are aware of [situation] affecting [scope]."</p>
+                            </div>
+                            <div class="jm-template-section">
+                                <strong>2. Current Status:</strong>
+                                <p>"We are currently [actions being taken]."</p>
+                            </div>
+                            <div class="jm-template-section">
+                                <strong>3. Impact:</strong>
+                                <p>"This affects [who/what]. Funds are [safe/at risk]."</p>
+                            </div>
+                            <div class="jm-template-section">
+                                <strong>4. Next Steps:</strong>
+                                <p>"We will provide an update by [time]."</p>
+                            </div>
+                            <div class="jm-template-section">
+                                <strong>5. Where to Follow:</strong>
+                                <p>"Follow [official channel] for updates."</p>
+                            </div>
+                        </div>
+
+                        <div class="jm-best-practice">
+                            <h4>What NOT to Do</h4>
+                            <ul>
+                                <li>❌ Delete negative comments</li>
+                                <li>❌ Blame others before investigation</li>
+                                <li>❌ Make promises you can't keep</li>
+                                <li>❌ Go silent for extended periods</li>
+                                <li>❌ Let multiple people post conflicting info</li>
+                            </ul>
+                        </div>
+                    `,
+                    keyPoints: [
+                        'Speed beats perfection',
+                        'Honesty builds trust',
+                        'One voice, one message',
+                        'Keep community updated'
+                    ]
                 }
             ]
         }
@@ -1553,7 +2065,6 @@ function celebrateSuccess() {
         title: 'ASDF Certified Builder',
         theme: 'burn',
         description: 'Complete the final assessment to earn your certification.',
-        estimatedTime: '10-15 hours',
         isCapstone: true,
 
         overview: {
