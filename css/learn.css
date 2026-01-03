@@ -56,10 +56,13 @@
             min-height: 100vh;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-charred); }
-        ::-webkit-scrollbar-thumb { background: var(--border-rust); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-fire); }
+        /* Scrollbar styling - Webkit (Chrome, Safari, Edge) */
+        @supports selector(::-webkit-scrollbar) {
+            ::-webkit-scrollbar { width: 8px; }
+            ::-webkit-scrollbar-track { background: var(--bg-charred); }
+            ::-webkit-scrollbar-thumb { background: var(--border-rust); border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: var(--accent-fire); }
+        }
 
         /* ============================================
            NAVIGATION BAR
@@ -1991,9 +1994,10 @@
             transform: translateX(400px);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
         }
 
-        .achievement-popup.show { transform: translateX(0); }
+        .achievement-popup.show { transform: translateX(0); pointer-events: auto; }
 
         .achievement-header {
             display: flex;
@@ -5909,12 +5913,41 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-weight: 500;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            border: none;
+        }
+
+        .yj-section-prev {
+            background: var(--bg-charred);
+            border: 1px solid var(--border-rust);
+            color: var(--text-muted);
+        }
+
+        .yj-section-prev:hover:not(:disabled) {
+            border-color: var(--accent-fire);
+            color: var(--text-cream);
+        }
+
+        .yj-section-next {
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+            color: #fff;
+        }
+
+        .yj-section-next:hover:not(:disabled) {
+            transform: translateX(2px);
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
         }
 
         .yj-section-prev:disabled, .yj-section-next:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .yj-section-nav span {
+            color: var(--text-muted);
+            font-size: 12px;
         }
 
         /* Educational Content Elements */
@@ -6429,6 +6462,796 @@
         .yj-stats-btn:hover {
             border-color: var(--gold);
             color: var(--text-cream);
+        }
+
+        /* ============================================
+           CHANGE PATH BUTTON & LEVEL SELECTOR
+           ============================================ */
+
+        .yj-change-path-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, var(--bg-burnt), var(--bg-charred));
+            border: 2px solid var(--accent-fire);
+            border-radius: 12px;
+            color: var(--accent-bright);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .yj-change-path-btn:hover {
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4);
+        }
+
+        .yj-change-path-icon {
+            font-size: 18px;
+            animation: rotate-subtle 3s ease-in-out infinite;
+        }
+
+        @keyframes rotate-subtle {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .yj-level-selector {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: var(--bg-burnt);
+            border: 1px solid var(--border-rust);
+            border-radius: 12px;
+        }
+
+        .yj-level-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .yj-level-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .yj-level-tab {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-charred);
+            border: 1px solid var(--border-rust);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yj-level-tab:hover {
+            color: var(--text-cream);
+            border-color: var(--accent-fire);
+        }
+
+        .yj-level-tab.active {
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+            border-color: var(--accent-fire);
+            color: #fff;
+        }
+
+        .yj-level-tab.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ============================================
+           PATH SELECTOR PANEL
+           ============================================ */
+
+        .yj-path-selector {
+            animation: slideInUp 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .yj-path-selector-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-rust);
+        }
+
+        .yj-path-selector-icon {
+            font-size: 48px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .yj-path-selector-header h2 {
+            font-size: 28px;
+            font-family: var(--font-display);
+            color: var(--text-cream);
+            margin: 0;
+        }
+
+        .yj-path-selector-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        .yj-path-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .yj-path-card {
+            position: relative;
+            display: flex;
+            gap: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--bg-burnt), var(--bg-charred));
+            border: 2px solid var(--border-rust);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .yj-path-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-fire), var(--accent-ember));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .yj-path-card:hover {
+            border-color: var(--accent-fire);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(234, 88, 12, 0.3);
+        }
+
+        .yj-path-card:hover::before {
+            opacity: 1;
+        }
+
+        .yj-path-card.current {
+            border-color: var(--green);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), var(--bg-charred));
+        }
+
+        .yj-path-card.current::before {
+            opacity: 1;
+            background: linear-gradient(90deg, var(--green), var(--green-light));
+        }
+
+        .yj-path-card.current::after {
+            content: '✓ Current';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 10px;
+            background: var(--green);
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 100px;
+        }
+
+        .yj-path-card-icon {
+            font-size: 42px;
+            flex-shrink: 0;
+        }
+
+        .yj-path-card-content {
+            flex: 1;
+        }
+
+        .yj-path-card-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-cream);
+            margin: 0 0 8px 0;
+            font-family: var(--font-display);
+        }
+
+        .yj-path-card-content p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+        }
+
+        .yj-path-card-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+        }
+
+        .yj-path-modules {
+            color: var(--accent-ember);
+        }
+
+        .yj-path-difficulty {
+            color: var(--text-muted);
+        }
+
+        .yj-path-card-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--border-rust);
+        }
+
+        .yj-path-card-progress::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: var(--progress, 0%);
+            background: linear-gradient(90deg, var(--green), var(--green-light));
+            transition: width 0.5s ease;
+        }
+
+        .yj-path-selector-footer {
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-rust);
+        }
+
+        /* ============================================
+           INTERACTIVE EDUCATIONAL COMPONENTS
+           ============================================ */
+
+        /* Interactive Chart / Visualization */
+        .yj-chart-container {
+            background: var(--bg-burnt);
+            border: 1px solid var(--border-rust);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .yj-chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-cream);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yj-bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .yj-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .yj-bar-label {
+            min-width: 80px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .yj-bar-track {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-charred);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .yj-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .yj-bar-fill.orange { background: linear-gradient(90deg, var(--accent-fire), var(--accent-ember)); }
+        .yj-bar-fill.green { background: linear-gradient(90deg, var(--green), var(--green-light)); }
+        .yj-bar-fill.blue { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+        .yj-bar-fill.purple { background: linear-gradient(90deg, var(--purple), #c084fc); }
+        .yj-bar-fill.gold { background: linear-gradient(90deg, var(--gold), #fcd34d); }
+
+        /* Interactive Diagram */
+        .yj-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 24px;
+            background: var(--bg-burnt);
+            border: 1px solid var(--border-rust);
+            border-radius: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .yj-diagram-block {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--bg-charred), var(--bg-burnt));
+            border: 2px solid var(--accent-fire);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-cream);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .yj-diagram-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(234, 88, 12, 0.3);
+        }
+
+        .yj-diagram-block small {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .yj-diagram-arrow {
+            font-size: 24px;
+            color: var(--accent-ember);
+            animation: arrow-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes arrow-pulse {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(3px); }
+        }
+
+        /* Comparison Table */
+        .yj-comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+
+        .yj-comparison-table th {
+            background: var(--bg-charred);
+            color: var(--text-cream);
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-rust);
+        }
+
+        .yj-comparison-table td {
+            padding: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-rust);
+        }
+
+        .yj-comparison-table td.highlight {
+            color: var(--green-light);
+            font-weight: 700;
+        }
+
+        .yj-comparison-table tr:hover td {
+            background: rgba(234, 88, 12, 0.1);
+        }
+
+        /* Scenario Cards - Interactive Decision Making */
+        .yj-scenario-container {
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .yj-scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .yj-scenario-icon {
+            font-size: 32px;
+        }
+
+        .yj-scenario-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-cream);
+        }
+
+        .yj-scenario-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg-charred);
+            border-radius: 8px;
+        }
+
+        .yj-scenario-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .yj-scenario-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-charred);
+            border: 2px solid var(--border-rust);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .yj-scenario-option:hover {
+            border-color: var(--accent-fire);
+            transform: translateX(4px);
+        }
+
+        .yj-scenario-option.selected {
+            border-color: var(--green);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .yj-scenario-option.correct {
+            border-color: var(--green);
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        .yj-scenario-option.wrong {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .yj-scenario-option-icon {
+            font-size: 20px;
+        }
+
+        .yj-scenario-option-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-cream);
+        }
+
+        .yj-scenario-feedback {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .yj-scenario-feedback.show {
+            display: block;
+        }
+
+        .yj-scenario-feedback.success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid var(--green);
+            color: var(--green-light);
+        }
+
+        .yj-scenario-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--red);
+            color: #fca5a5;
+        }
+
+        /* Progress Tracker Visual */
+        .yj-progress-visual {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 16px;
+            background: var(--bg-burnt);
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .yj-progress-step {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-charred);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .yj-progress-step.completed {
+            background: linear-gradient(90deg, var(--green), var(--green-light));
+        }
+
+        .yj-progress-step.current {
+            background: linear-gradient(90deg, var(--accent-fire), var(--accent-ember));
+            animation: step-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes step-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Interactive Flashcard */
+        .yj-flashcard {
+            perspective: 1000px;
+            height: 200px;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .yj-flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .yj-flashcard.flipped .yj-flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .yj-flashcard-front,
+        .yj-flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .yj-flashcard-front {
+            background: linear-gradient(135deg, var(--bg-burnt), var(--bg-charred));
+            border: 2px solid var(--accent-fire);
+        }
+
+        .yj-flashcard-front h3 {
+            font-size: 16px;
+            color: var(--text-cream);
+            margin-bottom: 8px;
+        }
+
+        .yj-flashcard-front .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .yj-flashcard-back {
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+            border: 2px solid var(--accent-bright);
+            transform: rotateY(180deg);
+        }
+
+        .yj-flashcard-back p {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Animated Statistics */
+        .yj-stat-counter {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .yj-stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-ember);
+            font-family: var(--font-mono);
+        }
+
+        .yj-stat-suffix {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        /* Skill Tree Visualization */
+        .yj-skill-tree {
+            padding: 24px;
+            background: var(--bg-burnt);
+            border: 1px solid var(--border-rust);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+
+        .yj-skill-level {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .yj-skill-level::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 24px;
+            background: var(--border-rust);
+        }
+
+        .yj-skill-level:last-child::after {
+            display: none;
+        }
+
+        .yj-skill-node {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-charred);
+            border: 3px solid var(--border-rust);
+            transition: all 0.3s ease;
+        }
+
+        .yj-skill-node.unlocked {
+            border-color: var(--green);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .yj-skill-node.current {
+            border-color: var(--accent-fire);
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.4);
+            animation: skill-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes skill-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .yj-skill-icon {
+            font-size: 24px;
+        }
+
+        .yj-skill-name {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Interactive Quiz with Visual Feedback */
+        .yj-visual-quiz {
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .yj-visual-quiz-question {
+            font-size: 16px;
+            color: var(--text-cream);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .yj-visual-quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .yj-visual-quiz-option {
+            padding: 20px;
+            background: var(--bg-charred);
+            border: 2px solid var(--border-rust);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .yj-visual-quiz-option:hover {
+            border-color: var(--accent-fire);
+            transform: translateY(-2px);
+        }
+
+        .yj-visual-quiz-option .option-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .yj-visual-quiz-option .option-text {
+            font-size: 13px;
+            color: var(--text-cream);
+        }
+
+        /* Responsive for path selector and interactive elements */
+        @media (max-width: 768px) {
+            .yj-path-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .yj-path-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .yj-diagram {
+                flex-direction: column;
+            }
+
+            .yj-diagram-arrow {
+                transform: rotate(90deg);
+            }
+
+            .yj-visual-quiz-options {
+                grid-template-columns: 1fr;
+            }
+
+            .yj-level-tabs {
+                flex-direction: column;
+            }
         }
 
         /* Stats Panel */

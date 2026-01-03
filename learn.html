@@ -806,12 +806,28 @@
                             </div>
                         </div>
 
+                        <!-- Change Path Button -->
+                        <button class="yj-change-path-btn" id="yj-change-path-btn" style="display: none;">
+                            <span class="yj-change-path-icon">🔄</span>
+                            <span>Change Path</span>
+                        </button>
+
                         <div class="yj-progress-overview">
                             <div class="yj-progress-label">Overall Progress</div>
                             <div class="yj-progress-bar-wrap">
                                 <div class="yj-progress-bar" id="yj-overall-progress"></div>
                             </div>
                             <div class="yj-progress-text" id="yj-progress-text">0/12 modules</div>
+                        </div>
+
+                        <!-- Level Selector -->
+                        <div class="yj-level-selector" id="yj-level-selector" style="display: none;">
+                            <div class="yj-level-label">Current Level</div>
+                            <div class="yj-level-tabs">
+                                <button class="yj-level-tab active" data-level="beginner">🌱 Beginner</button>
+                                <button class="yj-level-tab" data-level="intermediate">🌿 Intermediate</button>
+                                <button class="yj-level-tab" data-level="advanced">🌳 Advanced</button>
+                            </div>
                         </div>
 
                         <nav class="yj-roadmap" id="yj-roadmap">
@@ -849,6 +865,75 @@
                                     <span class="yj-pillar-name">Community</span>
                                     <span class="yj-pillar-desc">Moderation, support, growth</span>
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Path Selector Panel (hidden by default) -->
+                        <div class="yj-path-selector" id="yj-path-selector" style="display: none;">
+                            <div class="yj-path-selector-header">
+                                <span class="yj-path-selector-icon">🎯</span>
+                                <div>
+                                    <h2>Choose Your Path</h2>
+                                    <p>Select a different learning track to explore new skills</p>
+                                </div>
+                            </div>
+
+                            <div class="yj-path-grid">
+                                <button class="yj-path-card" data-pillar="code">
+                                    <div class="yj-path-card-icon">💻</div>
+                                    <div class="yj-path-card-content">
+                                        <h3>Code & Dev</h3>
+                                        <p>Build tools, bots, and smart contracts for the ASDF ecosystem</p>
+                                        <div class="yj-path-card-meta">
+                                            <span class="yj-path-modules">12 modules</span>
+                                            <span class="yj-path-difficulty">All levels</span>
+                                        </div>
+                                    </div>
+                                    <div class="yj-path-card-progress" id="yj-path-progress-code"></div>
+                                </button>
+
+                                <button class="yj-path-card" data-pillar="design">
+                                    <div class="yj-path-card-icon">🎨</div>
+                                    <div class="yj-path-card-content">
+                                        <h3>Design & UX</h3>
+                                        <p>Create visuals, interfaces, and brand experiences</p>
+                                        <div class="yj-path-card-meta">
+                                            <span class="yj-path-modules">9 modules</span>
+                                            <span class="yj-path-difficulty">All levels</span>
+                                        </div>
+                                    </div>
+                                    <div class="yj-path-card-progress" id="yj-path-progress-design"></div>
+                                </button>
+
+                                <button class="yj-path-card" data-pillar="content">
+                                    <div class="yj-path-card-icon">✍️</div>
+                                    <div class="yj-path-card-content">
+                                        <h3>Content Creation</h3>
+                                        <p>Write, create videos, and educate the community</p>
+                                        <div class="yj-path-card-meta">
+                                            <span class="yj-path-modules">9 modules</span>
+                                            <span class="yj-path-difficulty">All levels</span>
+                                        </div>
+                                    </div>
+                                    <div class="yj-path-card-progress" id="yj-path-progress-content"></div>
+                                </button>
+
+                                <button class="yj-path-card" data-pillar="community">
+                                    <div class="yj-path-card-icon">🤝</div>
+                                    <div class="yj-path-card-content">
+                                        <h3>Community Building</h3>
+                                        <p>Grow, moderate, and engage the ASDF community</p>
+                                        <div class="yj-path-card-meta">
+                                            <span class="yj-path-modules">9 modules</span>
+                                            <span class="yj-path-difficulty">All levels</span>
+                                        </div>
+                                    </div>
+                                    <div class="yj-path-card-progress" id="yj-path-progress-community"></div>
+                                </button>
+                            </div>
+
+                            <div class="yj-path-selector-footer">
+                                <button class="yj-btn yj-btn-secondary" id="yj-path-cancel">← Back to Course</button>
                             </div>
                         </div>
 
@@ -2038,7 +2123,7 @@
     <!-- JavaScript -->
     <!-- DOMPurify for XSS protection -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
-            integrity="sha512-5g1wRsV5K1gYvLTuEI7BtZyG0S7q2bV0l3DhHZOdcJLgDaAXxLz/VNpvi9dBwWjGr/RzT5dJhzF7eiUKos9ABw=="
+            integrity="sha512-5g2Nj3mqLOgClHi20oat1COW7jWvf7SyqnvwWUsMDwhjHeqeTl0C+uzjucLweruQxHbhDwiPLXlm8HBO0011pA=="
             crossorigin="anonymous"
             referrerpolicy="no-referrer"></script>
     <script src="js/learn.js"></script>

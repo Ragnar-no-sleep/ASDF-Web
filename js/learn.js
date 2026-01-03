@@ -5493,6 +5493,7 @@ Play at alonisthe.dev/learn #ASDF #ThisIsFine`;
             initClicker();
             initDefenseField();
             initJourney();
+            initPathSelector();
 
             // Go to current level
             goToLevel(state.currentLevel);
@@ -7055,7 +7056,7 @@ async function getPoolInfo(poolAddress) {
                             course: [
                                 {
                                     title: "Welcome to ASDF Design",
-                                    content: \`
+                                    content: `
                                         <p>Welcome to the Design path! As an ASDF designer, you'll create visuals that build trust, explain concepts, and unite our community.</p>
                                         <div class="yj-objectives">
                                             <h4>What You'll Learn</h4>
@@ -7070,11 +7071,11 @@ async function getPoolInfo(poolAddress) {
                                             <strong>The Designer's Mission</strong>
                                             <p>In crypto, design isn't just aesthetics - it's communication. Your work helps people understand, trust, and connect with ASDF.</p>
                                         </div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Why Design Matters in Crypto",
-                                    content: \`
+                                    content: `
                                         <p>In a space full of scams and complexity, design serves critical functions:</p>
                                         <div class="yj-feature-cards">
                                             <div class="yj-feature-card">
@@ -7104,11 +7105,11 @@ async function getPoolInfo(poolAddress) {
                                             <tr><td>Information</td><td class="highlight">Clear</td><td>Confusing</td></tr>
                                             <tr><td>Sharing</td><td class="highlight">Likely</td><td>Unlikely</td></tr>
                                         </table>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "The CRAP Design Principles",
-                                    content: \`
+                                    content: `
                                         <p>Every great design follows these four principles (yes, it spells CRAP!):</p>
                                         <h4>C - Contrast</h4>
                                         <p>Make important elements stand out. If things are different, make them VERY different.</p>
@@ -7126,11 +7127,11 @@ Bad: Two similar font sizes competing</pre>
                                         <h4>P - Proximity</h4>
                                         <p>Group related items together. Items near each other are perceived as related.</p>
                                         <div class="yj-tip"><strong>Golden Rule:</strong> When in doubt, simplify. Remove elements until your design breaks, then add one back.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Essential Design Tools",
-                                    content: \`
+                                    content: `
                                         <p>Here's your design toolkit - all free to start:</p>
                                         <div class="yj-tools-grid">
                                             <div class="yj-tool-item">
@@ -7155,11 +7156,11 @@ Bad: Two similar font sizes competing</pre>
                                             </div>
                                         </div>
                                         <div class="yj-info"><strong>Start Here:</strong> Begin with Canva for quick wins, then graduate to Figma as you grow.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "ASDF Brand Identity",
-                                    content: \`
+                                    content: `
                                         <p>Understanding our brand is essential for creating cohesive ASDF designs.</p>
                                         <h4>The ASDF Story</h4>
                                         <p>ASDF is inspired by the "This is Fine" meme - staying calm while everything burns. This represents:</p>
@@ -7180,7 +7181,7 @@ Bad: Two similar font sizes competing</pre>
                                             <strong>Brand Personality</strong>
                                             <p>We embrace the chaos. Designs should feel controlled but on fire - professional with a spark of meme energy.</p>
                                         </div>
-                                    \`
+                                    `
                                 }
                             ],
 
@@ -7220,7 +7221,7 @@ Bad: Two similar font sizes competing</pre>
                             deepContent: [
                                 {
                                     title: "Advanced Color Theory for Crypto",
-                                    content: \`
+                                    content: `
                                         <h4>The Psychology of Colors</h4>
                                         <p>Colors evoke specific emotions and associations in crypto:</p>
                                         <ul>
@@ -7238,11 +7239,11 @@ Bad: Two similar font sizes competing</pre>
                                             <li>Test with colorblind simulators</li>
                                         </ul>
                                         <div class="yj-warning"><strong>Pro Tip:</strong> Use WebAIM's contrast checker to verify your color combinations are accessible.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Typography Deep Dive",
-                                    content: \`
+                                    content: `
                                         <h4>Font Pairing Rules</h4>
                                         <p>Great typography follows these patterns:</p>
                                         <ul>
@@ -7267,7 +7268,7 @@ Code: Space Mono (monospace)</pre>
                                             <li>Body: 16-18px (readable paragraphs)</li>
                                             <li>Caption: 12-14px (supporting text)</li>
                                         </ul>
-                                    \`
+                                    `
                                 }
                             ],
 
@@ -7861,7 +7862,7 @@ network fee (0.00001 SOL needed).
                             course: [
                                 {
                                     title: "Welcome to Content Creation",
-                                    content: \`
+                                    content: `
                                         <p>Welcome to the Content Creator path! You're the storytellers of the ASDF ecosystem - you help people understand, engage, and believe in what we're building.</p>
                                         <div class="yj-objectives">
                                             <h4>What You'll Learn</h4>
@@ -7894,11 +7895,11 @@ network fee (0.00001 SOL needed).
                                                 <p>Articles, docs, newsletters</p>
                                             </div>
                                         </div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Understanding Your Audience",
-                                    content: \`
+                                    content: `
                                         <p>Different audiences need different content approaches:</p>
                                         <div class="yj-audience-grid">
                                             <div class="yj-audience-card">
@@ -7924,11 +7925,11 @@ network fee (0.00001 SOL needed).
                                             <strong>The Audience Check</strong>
                                             <p>Before every piece: Who am I writing for? What do they already know? What do they want to learn?</p>
                                         </div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Content Planning Framework",
-                                    content: \`
+                                    content: `
                                         <p>Great content starts with planning. Use the HOOK framework:</p>
                                         <h4>H - Hook</h4>
                                         <p>Start with something that grabs attention. A question, surprising stat, or bold statement.</p>
@@ -7946,11 +7947,11 @@ Tweet 5: Why this is bullish
 Tweet 6: Call to action - "Follow for more ASDF alpha"</pre>
                                         </div>
                                         <div class="yj-warning"><strong>Research First:</strong> Never make claims you can't verify. Check on-chain data, cite sources.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Writing for Crypto",
-                                    content: \`
+                                    content: `
                                         <p>Crypto is full of jargon. Great content makes complex ideas simple:</p>
                                         <div class="yj-code-example">
                                             <div class="yj-code-title">Complex vs Simple</div>
@@ -7970,11 +7971,11 @@ keeps shrinking over time."</pre>
                                             <li><strong>Use active voice:</strong> "The contract burned tokens" not "Tokens were burned"</li>
                                             <li><strong>Show, don't tell:</strong> Use specific numbers and examples</li>
                                         </ul>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Finding Your Voice",
-                                    content: \`
+                                    content: `
                                         <p>Your unique voice makes you memorable. Consider these elements:</p>
                                         <table class="yj-comparison-table">
                                             <tr><th>Element</th><th>Options</th><th>Examples</th></tr>
@@ -7991,11 +7992,11 @@ keeps shrinking over time."</pre>
                                             <li><strong>Behind-the-scenes:</strong> Show your journey and process</li>
                                         </ul>
                                         <div class="yj-tip"><strong>Authenticity beats imitation.</strong> Don't copy someone else's style - develop your own through experimentation.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Twitter/X Mastery",
-                                    content: \`
+                                    content: `
                                         <p>Twitter/X is the heart of crypto discourse. Master these formats:</p>
                                         <h4>Thread Anatomy</h4>
                                         <ul>
@@ -8018,7 +8019,7 @@ Stat: "2.5 billion ASDF tokens. Gone forever. Here's the story..."
 
 Bold claim: "Most deflationary tokens are scams. ASDF is different. Here's why..."</pre>
                                         </div>
-                                    \`
+                                    `
                                 }
                             ],
 
@@ -8058,7 +8059,7 @@ Bold claim: "Most deflationary tokens are scams. ASDF is different. Here's why..
                             deepContent: [
                                 {
                                     title: "Advanced Thread Strategies",
-                                    content: \`
+                                    content: `
                                         <h4>The Thread Formula</h4>
                                         <p>High-performing threads follow patterns:</p>
                                         <ul>
@@ -8074,11 +8075,11 @@ Bold claim: "Most deflationary tokens are scams. ASDF is different. Here's why..
                                             <li>20+ tweets: Comprehensive guides (use sparingly)</li>
                                         </ul>
                                         <div class="yj-warning"><strong>Quality over quantity.</strong> A 5-tweet thread with great content beats a 20-tweet thread with fluff.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Building Your Content Brand",
-                                    content: \`
+                                    content: `
                                         <h4>Personal Branding Elements</h4>
                                         <ul>
                                             <li><strong>Consistent handle:</strong> Same username across platforms</li>
@@ -8098,7 +8099,7 @@ Bold claim: "Most deflationary tokens are scams. ASDF is different. Here's why..
                                             <strong>The 80/20 Rule</strong>
                                             <p>80% of your content should provide value (educate, entertain). 20% can promote ASDF directly.</p>
                                         </div>
-                                    \`
+                                    `
                                 }
                             ],
 
@@ -8510,7 +8511,7 @@ supply keeps shrinking over time."</pre>
                             course: [
                                 {
                                     title: "Welcome to Community Building",
-                                    content: \`
+                                    content: `
                                         <p>Welcome to the Community Builder path! Community is what makes crypto projects survive and thrive. As a community builder, you're essential to ASDF's success.</p>
                                         <div class="yj-objectives">
                                             <h4>What You'll Learn</h4>
@@ -8547,12 +8548,73 @@ supply keeps shrinking over time."</pre>
                                             <strong>The Golden Rule</strong>
                                             <p>Always ask "How can I help?" before "What can I get?" - this mindset builds lasting communities.</p>
                                         </div>
-                                    \`
+
+                                        <div class="yj-skill-tree">
+                                            <div class="yj-chart-title">🌳 Your Community Builder Journey</div>
+                                            <div class="yj-skill-level">
+                                                <div class="yj-skill-node current">
+                                                    <span class="yj-skill-icon">🌱</span>
+                                                    <span class="yj-skill-name">Basics</span>
+                                                </div>
+                                            </div>
+                                            <div class="yj-skill-level">
+                                                <div class="yj-skill-node">
+                                                    <span class="yj-skill-icon">👋</span>
+                                                    <span class="yj-skill-name">Welcome</span>
+                                                </div>
+                                                <div class="yj-skill-node">
+                                                    <span class="yj-skill-icon">🛡️</span>
+                                                    <span class="yj-skill-name">Protect</span>
+                                                </div>
+                                            </div>
+                                            <div class="yj-skill-level">
+                                                <div class="yj-skill-node">
+                                                    <span class="yj-skill-icon">🎯</span>
+                                                    <span class="yj-skill-name">Events</span>
+                                                </div>
+                                                <div class="yj-skill-node">
+                                                    <span class="yj-skill-icon">📈</span>
+                                                    <span class="yj-skill-name">Growth</span>
+                                                </div>
+                                            </div>
+                                            <div class="yj-skill-level">
+                                                <div class="yj-skill-node">
+                                                    <span class="yj-skill-icon">👑</span>
+                                                    <span class="yj-skill-name">Leader</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `
                                 },
                                 {
                                     title: "Understanding Our Platforms",
-                                    content: \`
+                                    content: `
                                         <p>ASDF community exists across multiple platforms, each with its own culture:</p>
+
+                                        <div class="yj-chart-container">
+                                            <div class="yj-chart-title">📊 Community Engagement by Platform</div>
+                                            <div class="yj-bar-chart">
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Discord</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill purple" style="width: 85%;">85%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Telegram</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill blue" style="width: 65%;">65%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Twitter/X</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill orange" style="width: 75%;">75%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="yj-platform-grid">
                                             <div class="yj-platform-card">
                                                 <h4>Discord</h4>
@@ -8582,12 +8644,31 @@ supply keeps shrinking over time."</pre>
                                                 </ul>
                                             </div>
                                         </div>
+
+                                        <div class="yj-diagram">
+                                            <div class="yj-diagram-block">
+                                                Newcomer<small>Joins via X</small>
+                                            </div>
+                                            <span class="yj-diagram-arrow">→</span>
+                                            <div class="yj-diagram-block">
+                                                Telegram<small>Quick questions</small>
+                                            </div>
+                                            <span class="yj-diagram-arrow">→</span>
+                                            <div class="yj-diagram-block">
+                                                Discord<small>Deep engagement</small>
+                                            </div>
+                                            <span class="yj-diagram-arrow">→</span>
+                                            <div class="yj-diagram-block">
+                                                Active Member<small>Contributing</small>
+                                            </div>
+                                        </div>
+
                                         <div class="yj-tip"><strong>Pro Tip:</strong> Each platform has different norms. What works on Telegram may not work on Discord. Adapt your approach.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Being an Excellent Community Member",
-                                    content: \`
+                                    content: `
                                         <p>Your behavior sets the tone for the entire community. Lead by example:</p>
                                         <h4>The Do's ✓</h4>
                                         <ul>
@@ -8610,11 +8691,11 @@ supply keeps shrinking over time."</pre>
                                             <tr><td>Price drop</td><td>"We're all gonna make it!!!"</td><td>"Focus on the burns - fundamentals are strong"</td></tr>
                                             <tr><td>FUD post</td><td>"FUD! Ban this person!"</td><td>"Here's the on-chain data that addresses this concern"</td></tr>
                                         </table>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Welcoming Newcomers",
-                                    content: \`
+                                    content: `
                                         <p>New members are the lifeblood of community growth. Make their first experience positive:</p>
                                         <h4>Common Newcomer Questions</h4>
                                         <ol>
@@ -8642,11 +8723,11 @@ Here's our beginner guide: [link]
 Feel free to ask anything else - we're
 happy to help!</pre>
                                         </div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Understanding FUD",
-                                    content: \`
+                                    content: `
                                         <p><strong>FUD</strong> = Fear, Uncertainty, and Doubt. But not all criticism is FUD:</p>
                                         <div class="yj-feature-cards">
                                             <div class="yj-feature-card">
@@ -8665,6 +8746,34 @@ happy to help!</pre>
                                                 <p>Intentional attacks to harm the project</p>
                                             </div>
                                         </div>
+
+                                        <div class="yj-scenario-container" id="fud-scenario-1" data-scenario-id="fud-scenario-1">
+                                            <div class="yj-scenario-header">
+                                                <span class="yj-scenario-icon">🎯</span>
+                                                <span class="yj-scenario-title">Interactive Scenario</span>
+                                            </div>
+                                            <p class="yj-scenario-text">
+                                                Someone posts in chat: "This project is dead! No updates in weeks, devs abandoned it!"
+                                                <br><br>
+                                                How should you respond?
+                                            </p>
+                                            <div class="yj-scenario-options">
+                                                <div class="yj-scenario-option" data-option="0" data-correct="false">
+                                                    <span class="yj-scenario-option-icon">😤</span>
+                                                    <span class="yj-scenario-option-text">"Stop spreading FUD! Get out of here!"</span>
+                                                </div>
+                                                <div class="yj-scenario-option" data-option="1" data-correct="true">
+                                                    <span class="yj-scenario-option-icon">🤝</span>
+                                                    <span class="yj-scenario-option-text">"I understand the concern. Here are the latest commits/burns from this week: [link]"</span>
+                                                </div>
+                                                <div class="yj-scenario-option" data-option="2" data-correct="false">
+                                                    <span class="yj-scenario-option-icon">🙈</span>
+                                                    <span class="yj-scenario-option-text">Ignore it completely</span>
+                                                </div>
+                                            </div>
+                                            <div class="yj-scenario-feedback" id="fud-scenario-1-feedback"></div>
+                                        </div>
+
                                         <h4>The CALM Framework for Responding</h4>
                                         <ul>
                                             <li><strong>C - Consider:</strong> Is this legitimate concern or bad faith?</li>
@@ -8673,12 +8782,43 @@ happy to help!</pre>
                                             <li><strong>M - Move on:</strong> Don't get into endless arguments</li>
                                         </ul>
                                         <div class="yj-warning"><strong>Key Insight:</strong> Sometimes criticism is valid. Dismissing all concerns as "FUD" makes us look like we're hiding something.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Protecting Against Scams",
-                                    content: \`
+                                    content: `
                                         <p>Scammers aggressively target crypto communities. Learn to protect yourself and others:</p>
+
+                                        <div class="yj-chart-container">
+                                            <div class="yj-chart-title">🚨 Scam Types by Frequency</div>
+                                            <div class="yj-bar-chart">
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Fake DMs</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill orange" style="width: 90%;">90%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Phishing</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill purple" style="width: 75%;">75%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Fake Airdrops</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill blue" style="width: 60%;">60%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="yj-bar-item">
+                                                    <span class="yj-bar-label">Giveaways</span>
+                                                    <div class="yj-bar-track">
+                                                        <div class="yj-bar-fill gold" style="width: 45%;">45%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <h4>Common Scam Types</h4>
                                         <ul>
                                             <li><strong>Fake Admin DMs:</strong> "Admin" asking for wallet/funds</li>
@@ -8687,6 +8827,7 @@ happy to help!</pre>
                                             <li><strong>Impersonation:</strong> Fake accounts mimicking real people</li>
                                             <li><strong>Giveaway Scams:</strong> "Send ETH for double back"</li>
                                         </ul>
+
                                         <h4>Red Flags to Watch For</h4>
                                         <ul>
                                             <li>Unsolicited DMs (admins never DM first!)</li>
@@ -8695,11 +8836,24 @@ happy to help!</pre>
                                             <li>Requests for private keys or seed phrases</li>
                                             <li>Slightly misspelled usernames</li>
                                         </ul>
-                                        <div class="yj-key-concept">
-                                            <strong>Golden Rule</strong>
-                                            <p>NEVER share your seed phrase or private key. No legitimate admin, support, or airdrop will ever ask for it.</p>
+
+                                        <div class="yj-flashcard" data-interactive="flashcard">
+                                            <div class="yj-flashcard-inner">
+                                                <div class="yj-flashcard-front">
+                                                    <h3>Click to reveal the Golden Rule</h3>
+                                                    <span class="hint">Tap to flip</span>
+                                                </div>
+                                                <div class="yj-flashcard-back">
+                                                    <p><strong>NEVER</strong> share your seed phrase or private key. No legitimate admin, support, or airdrop will <strong>EVER</strong> ask for it.</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    \`
+
+                                        <div class="yj-key-concept">
+                                            <strong>Remember</strong>
+                                            <p>If something seems too good to be true, it probably is. When in doubt, ask in the public chat first.</p>
+                                        </div>
+                                    `
                                 }
                             ],
 
@@ -8739,7 +8893,7 @@ happy to help!</pre>
                             deepContent: [
                                 {
                                     title: "Advanced Community Management",
-                                    content: \`
+                                    content: `
                                         <h4>Building Community Culture</h4>
                                         <p>Culture isn't created by rules - it's created by consistent behavior:</p>
                                         <ul>
@@ -8756,11 +8910,11 @@ happy to help!</pre>
                                             <li><strong>Member leaving:</strong> Wish them well, don't burn bridges</li>
                                         </ul>
                                         <div class="yj-tip"><strong>Leadership Tip:</strong> How you handle hard times defines community culture more than how you handle good times.</div>
-                                    \`
+                                    `
                                 },
                                 {
                                     title: "Scaling Your Impact",
-                                    content: \`
+                                    content: `
                                         <h4>From Member to Leader</h4>
                                         <p>As you grow, your impact should scale:</p>
                                         <ul>
@@ -8781,7 +8935,7 @@ happy to help!</pre>
                                             <strong>10x Impact</strong>
                                             <p>Teaching 10 people to answer questions is better than answering 100 questions yourself.</p>
                                         </div>
-                                    \`
+                                    `
                                 }
                             ],
 
@@ -9392,6 +9546,9 @@ tokenomics if you have them."</pre>
             document.getElementById('yj-welcome').style.display = 'block';
             document.getElementById('yj-module').style.display = 'none';
             document.getElementById('yj-quiz').style.display = 'none';
+            document.getElementById('yj-path-selector').style.display = 'none';
+            document.getElementById('yj-change-path-btn').style.display = 'none';
+            document.getElementById('yj-level-selector').style.display = 'none';
             renderJourneyRoadmap();
         }
 
@@ -9399,10 +9556,29 @@ tokenomics if you have them."</pre>
             document.getElementById('yj-welcome').style.display = 'none';
             document.getElementById('yj-module').style.display = 'block';
             document.getElementById('yj-quiz').style.display = 'none';
+            document.getElementById('yj-path-selector').style.display = 'none';
+
+            // Show change path button and level selector
+            document.getElementById('yj-change-path-btn').style.display = 'flex';
+            document.getElementById('yj-level-selector').style.display = 'block';
+
+            // Update level tabs
+            updateLevelTabs();
 
             updateJourneyProfile();
             renderJourneyRoadmap();
             renderCurrentModule();
+        }
+
+        function updateLevelTabs() {
+            const tabs = document.querySelectorAll('.yj-level-tab');
+            tabs.forEach(tab => {
+                const level = tab.dataset.level;
+                tab.classList.remove('active');
+                if (level === journeyState.currentLevel) {
+                    tab.classList.add('active');
+                }
+            });
         }
 
         function updateJourneyProfile() {
@@ -9525,6 +9701,9 @@ tokenomics if you have them."</pre>
             }
 
             safeInnerHTML(document.getElementById('yj-module-content'), contentHtml);
+
+            // Initialize interactive elements (flashcards, scenarios)
+            initInteractiveElements();
 
             // Attach event handlers
             attachStepHandlers(mod, modules);
@@ -9985,6 +10164,10 @@ tokenomics if you have them."</pre>
                 if (!journeyState.entryQuizResults[mod.id]) {
                     journeyState.entryQuizResults[mod.id] = { score: 0, total: 0, answers: [] };
                 }
+                // Ensure answers array exists (for older localStorage data)
+                if (!journeyState.entryQuizResults[mod.id].answers) {
+                    journeyState.entryQuizResults[mod.id].answers = [];
+                }
                 journeyState.entryQuizResults[mod.id].total++;
                 if (isCorrect) journeyState.entryQuizResults[mod.id].score++;
                 journeyState.entryQuizResults[mod.id].answers.push({
@@ -9995,6 +10178,10 @@ tokenomics if you have them."</pre>
             } else if (step === LEARNING_STEPS.KNOWLEDGE_QUIZ) {
                 if (!journeyState.quizPassed[mod.id]) {
                     journeyState.quizPassed[mod.id] = { score: 0, total: 0, answers: [] };
+                }
+                // Ensure answers array exists (for older localStorage data)
+                if (!journeyState.quizPassed[mod.id].answers) {
+                    journeyState.quizPassed[mod.id].answers = [];
                 }
                 journeyState.quizPassed[mod.id].total++;
                 if (isCorrect) journeyState.quizPassed[mod.id].score++;
@@ -10437,8 +10624,74 @@ tokenomics if you have them."</pre>
 
             safeInnerHTML(document.getElementById('yj-module-content'), contentHtml);
 
-            // Attach legacy handlers...
-            // (keeping this minimal for now)
+            // Initialize interactive elements (flashcards, scenarios)
+            initInteractiveElements();
+
+            // Attach legacy handlers for section navigation
+            if (hasSections) {
+                const prevBtn = document.querySelector('.yj-section-prev');
+                const nextBtn = document.querySelector('.yj-section-next');
+                const dots = document.querySelectorAll('.yj-section-dot');
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        if (journeyState.currentSubIndex > 0) {
+                            journeyState.currentSubIndex--;
+                            renderCurrentModule();
+                        }
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        const sectionIndex = journeyState.currentSubIndex;
+                        if (sectionIndex >= mod.sections.length - 1) {
+                            // Last section - go to quiz or complete module
+                            if (mod.quiz) {
+                                showJourneyQuiz();
+                            } else {
+                                completeCurrentModule();
+                            }
+                        } else {
+                            journeyState.currentSubIndex++;
+                            renderCurrentModule();
+                        }
+                    });
+                }
+
+                dots.forEach((dot, i) => {
+                    dot.addEventListener('click', () => {
+                        journeyState.currentSubIndex = i;
+                        renderCurrentModule();
+                    });
+                });
+            }
+
+            // Show main nav buttons for legacy modules
+            document.getElementById('yj-prev-module').style.display = journeyState.currentModuleIndex > 0 ? 'inline-flex' : 'none';
+            document.getElementById('yj-next-module').style.display = 'inline-flex';
+        }
+
+        function completeCurrentModule() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const mod = modules[journeyState.currentModuleIndex];
+
+            if (!journeyState.completedModules.includes(mod.id)) {
+                journeyState.completedModules.push(mod.id);
+                addXP(50);
+                saveJourneyState();
+            }
+
+            // Check if level complete
+            const allComplete = modules.every(m => journeyState.completedModules.includes(m.id));
+            if (allComplete) {
+                showLevelComplete();
+            } else if (journeyState.currentModuleIndex < modules.length - 1) {
+                journeyState.currentModuleIndex++;
+                journeyState.currentSubIndex = 0;
+                showJourneyContent();
+            }
         }
 
         function goToJourneyModule(index) {
@@ -10472,6 +10725,75 @@ tokenomics if you have them."</pre>
             } else {
                 showJourneyQuiz();
             }
+        }
+
+        // ============================================
+        // INTERACTIVE SCENARIO HANDLER
+        // ============================================
+        function checkScenario(scenarioId, optionIndex, isCorrect) {
+            // Input validation
+            if (typeof scenarioId !== 'string' || !scenarioId) return;
+            if (typeof optionIndex !== 'number' || optionIndex < 0) return;
+
+            const container = document.getElementById(scenarioId);
+            if (!container) return;
+
+            const options = container.querySelectorAll('.yj-scenario-option');
+            if (optionIndex >= options.length) return;
+
+            const feedback = document.getElementById(scenarioId + '-feedback');
+
+            // Reset all options
+            options.forEach((opt, i) => {
+                opt.classList.remove('correct', 'wrong', 'selected');
+                if (i === optionIndex) {
+                    opt.classList.add(isCorrect ? 'correct' : 'wrong');
+                }
+            });
+
+            // Show feedback
+            if (feedback) {
+                feedback.className = 'yj-scenario-feedback show ' + (isCorrect ? 'success' : 'error');
+                if (isCorrect) {
+                    safeInnerHTML(feedback, '<strong>Correct!</strong> Responding with facts and empathy builds trust and addresses concerns effectively.');
+                    // Award XP for correct scenario
+                    addXP(15);
+                } else {
+                    safeInnerHTML(feedback, '<strong>Not quite.</strong> This approach might escalate the situation. Try using the CALM framework: acknowledge, provide facts, and move on.');
+                }
+            }
+        }
+
+        // Initialize interactive educational elements (CSP compliant)
+        function initInteractiveElements() {
+            // Flashcards
+            document.querySelectorAll('.yj-flashcard, [data-interactive="flashcard"]').forEach(card => {
+                if (card.dataset.initialized) return;
+                card.dataset.initialized = 'true';
+                card.addEventListener('click', function() {
+                    this.classList.toggle('flipped');
+                });
+            });
+
+            // Scenario options
+            document.querySelectorAll('.yj-scenario-container').forEach(container => {
+                if (container.dataset.initialized) return;
+                container.dataset.initialized = 'true';
+                const scenarioId = container.dataset.scenarioId || container.id;
+
+                container.querySelectorAll('.yj-scenario-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        const optionIndex = parseInt(this.dataset.option, 10);
+                        const isCorrect = this.dataset.correct === 'true';
+                        checkScenario(scenarioId, optionIndex, isCorrect);
+                    });
+                });
+            });
+        }
+
+        // Legacy alias for backwards compatibility
+        function initFlashcards() {
+            initInteractiveElements();
         }
 
         function showJourneyQuiz() {
@@ -10646,6 +10968,123 @@ tokenomics if you have them."</pre>
         }
 
         // ============================================
+        // PATH SELECTOR - Change Path at Any Time
+        // ============================================
+
+        function showPathSelector() {
+            document.getElementById('yj-welcome').style.display = 'none';
+            document.getElementById('yj-module').style.display = 'none';
+            document.getElementById('yj-quiz').style.display = 'none';
+            document.getElementById('yj-level-complete').style.display = 'none';
+            document.getElementById('yj-path-selector').style.display = 'block';
+
+            // Update progress for each path card
+            updatePathCardProgress();
+
+            // Mark current path
+            const pathCards = document.querySelectorAll('.yj-path-card');
+            pathCards.forEach(card => {
+                card.classList.remove('current');
+                if (card.dataset.pillar === journeyState.currentPillar) {
+                    card.classList.add('current');
+                }
+            });
+        }
+
+        function hidePathSelector() {
+            document.getElementById('yj-path-selector').style.display = 'none';
+            if (journeyState.currentPillar) {
+                showJourneyContent();
+            } else {
+                showJourneyWelcome();
+            }
+        }
+
+        function updatePathCardProgress() {
+            Object.keys(JOURNEY_PILLARS).forEach(pillarKey => {
+                const pillar = JOURNEY_PILLARS[pillarKey];
+                const progressEl = document.getElementById(`yj-path-progress-${pillarKey}`);
+                if (!progressEl) return;
+
+                // Count total and completed modules across all levels
+                let totalModules = 0;
+                let completedModules = 0;
+
+                ['beginner', 'intermediate', 'advanced'].forEach(level => {
+                    const modules = pillar.modules[level] || [];
+                    totalModules += modules.length;
+                    modules.forEach(mod => {
+                        if (journeyState.completedModules.includes(mod.id)) {
+                            completedModules++;
+                        }
+                    });
+                });
+
+                const progress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+                progressEl.style.setProperty('--progress', `${progress}%`);
+            });
+        }
+
+        function changeToPath(pillar) {
+            if (!JOURNEY_PILLARS[pillar]) return;
+
+            journeyState.currentPillar = pillar;
+            journeyState.currentLevel = 'beginner';
+            journeyState.currentModuleIndex = 0;
+            journeyState.currentStep = LEARNING_STEPS.ENTRY_QUIZ;
+            journeyState.currentSubIndex = 0;
+            saveJourneyState();
+
+            hidePathSelector();
+        }
+
+        function changeLevel(level) {
+            if (!['beginner', 'intermediate', 'advanced'].includes(level)) return;
+
+            journeyState.currentLevel = level;
+            journeyState.currentModuleIndex = 0;
+            journeyState.currentStep = LEARNING_STEPS.ENTRY_QUIZ;
+            journeyState.currentSubIndex = 0;
+            saveJourneyState();
+
+            updateLevelTabs();
+            updateJourneyProfile();
+            renderJourneyRoadmap();
+            renderCurrentModule();
+        }
+
+        // Initialize path selector event listeners
+        function initPathSelector() {
+            // Change path button
+            const changePathBtn = document.getElementById('yj-change-path-btn');
+            if (changePathBtn) {
+                changePathBtn.addEventListener('click', showPathSelector);
+            }
+
+            // Path cancel button
+            const pathCancelBtn = document.getElementById('yj-path-cancel');
+            if (pathCancelBtn) {
+                pathCancelBtn.addEventListener('click', hidePathSelector);
+            }
+
+            // Path cards
+            document.querySelectorAll('.yj-path-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const pillar = this.dataset.pillar;
+                    changeToPath(pillar);
+                });
+            });
+
+            // Level tabs
+            document.querySelectorAll('.yj-level-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const level = this.dataset.level;
+                    changeLevel(level);
+                });
+            });
+        }
+
+        // ============================================
         // STATS PANEL
         // ============================================
         function openStatsPanel() {
@@ -10755,11 +11194,18 @@ tokenomics if you have them."</pre>
         window.openYourJourney = openYourJourney;
         window.closeYourJourney = closeYourJourney;
         window.selectJourneyPillar = selectJourneyPillar;
+        window.showPathSelector = showPathSelector;
+        window.hidePathSelector = hidePathSelector;
+        window.changeToPath = changeToPath;
+        window.changeLevel = changeLevel;
         window.openStatsPanel = openStatsPanel;
         window.closeStatsPanel = closeStatsPanel;
         window.goToJourneyModule = goToJourneyModule;
         window.journeyPrevModule = journeyPrevModule;
         window.journeyNextModule = journeyNextModule;
+        window.checkScenario = checkScenario;
+        window.initFlashcards = initFlashcards;
+        window.initInteractiveElements = initInteractiveElements;
         window.showPillModal = showPillModal;
         window.hidePillModal = hidePillModal;
         window.unlockHome = unlockHome;

@@ -1,0 +1,1234 @@
+/**
+ * Pump Arena RPG - Inventory System
+ * Items, tools, consumables, and collectibles management
+ *
+ * PHILOSOPHY: ASDF Integration
+ * - All prices derived from Fibonacci sequence
+ * - Tier discounts reduce prices
+ * - Sell prices are fib[n-2] of buy price index
+ */
+
+'use strict';
+
+// ============================================
+// ASDF FIBONACCI HELPER
+// ============================================
+
+const INV_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181];
+
+function getInvFib(n) {
+    if (typeof window.PumpArenaState !== 'undefined' && window.PumpArenaState.getFib) {
+        return window.PumpArenaState.getFib(n);
+    }
+    if (n < 0) return 0;
+    if (n < INV_FIB.length) return INV_FIB[n];
+    return INV_FIB[INV_FIB.length - 1];
+}
+
+/**
+ * Get tier discount for purchases (ASDF Philosophy)
+ * Higher tiers get fib[tier] percent discount
+ */
+function getTierDiscount() {
+    if (typeof window.PumpArenaState !== 'undefined' && window.PumpArenaState.getTierDiscount) {
+        return window.PumpArenaState.getTierDiscount();
+    }
+    return 0;
+}
+
+/**
+ * Get price with tier discount applied
+ */
+function getDiscountedPrice(basePrice) {
+    const discount = getTierDiscount();
+    return Math.floor(basePrice * (1 - discount));
+}
+
+// ============================================
+// ITEM TYPES
+// ============================================
+
+const ITEM_TYPES = {
+    TOOL: 'tool',           // Permanent equipment with bonuses
+    CONSUMABLE: 'consumable', // Single-use items
+    COLLECTIBLE: 'collectible', // Rare items for achievements
+    MATERIAL: 'material'    // Crafting/upgrade materials
+};
+
+// Rarity with Fibonacci-based multipliers
+const ITEM_RARITY = {
+    COMMON: { id: 'common', name: 'Common', color: '#9ca3af', fibIndex: 7, multiplier: 1 },      // base fib[7]=13 * 10 = 130
+    UNCOMMON: { id: 'uncommon', name: 'Uncommon', color: '#22c55e', fibIndex: 9, multiplier: 1.5 },  // fib[9]=34 * 10 = 340
+    RARE: { id: 'rare', name: 'Rare', color: '#3b82f6', fibIndex: 11, multiplier: 2 },           // fib[11]=89 * 10 = 890
+    EPIC: { id: 'epic', name: 'Epic', color: '#a855f7', fibIndex: 13, multiplier: 3 },           // fib[13]=233 * 10 = 2330
+    LEGENDARY: { id: 'legendary', name: 'Legendary', color: '#f97316', fibIndex: 15, multiplier: 5 } // fib[15]=610 * 10 = 6100
+};
+
+/**
+ * Calculate item price based on rarity (ASDF Philosophy)
+ * Price = fib[rarity.fibIndex] * 10
+ * Sell = fib[rarity.fibIndex - 2] * 10
+ */
+function calculateItemPrice(rarity) {
+    const rarityData = typeof rarity === 'string' ? ITEM_RARITY[rarity.toUpperCase()] : rarity;
+    if (!rarityData) return { buy: 100, sell: 25 };
+    return {
+        buy: getInvFib(rarityData.fibIndex) * 10,
+        sell: getInvFib(rarityData.fibIndex - 2) * 10
+    };
+}
+
+// ============================================
+// ITEMS DATABASE
+// ============================================
+
+const ITEMS = {
+    // ==========================================
+    // TOOLS (Permanent Equipment)
+    // ==========================================
+
+    // Developer Tools
+    laptop_basic: {
+        id: 'laptop_basic',
+        name: 'Basic Laptop',
+        icon: '&#128187;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'common',
+        description: 'A reliable machine for everyday coding.',
+        effect: { stat: 'dev', bonus: 2 },
+        price: 100,
+        sellPrice: 25
+    },
+    laptop_pro: {
+        id: 'laptop_pro',
+        name: 'Pro Workstation',
+        icon: '&#128421;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'rare',
+        description: 'High-performance machine for serious developers.',
+        effect: { stat: 'dev', bonus: 5, xpBonus: 0.05 },
+        price: 500,
+        sellPrice: 125
+    },
+    mechanical_keyboard: {
+        id: 'mechanical_keyboard',
+        name: 'Mechanical Keyboard',
+        icon: '&#9000;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'uncommon',
+        description: 'The satisfying click of productivity.',
+        effect: { stat: 'dev', bonus: 3, taskSpeedBonus: 0.1 },
+        price: 200,
+        sellPrice: 50
+    },
+
+    // Community Tools
+    microphone: {
+        id: 'microphone',
+        name: 'Streaming Mic',
+        icon: '&#127908;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'uncommon',
+        description: 'Crystal clear communication with your community.',
+        effect: { stat: 'com', bonus: 3, stat2: 'cha', bonus2: 2 },
+        price: 250,
+        sellPrice: 60
+    },
+    ring_light: {
+        id: 'ring_light',
+        name: 'Ring Light',
+        icon: '&#128161;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'common',
+        description: 'Look good on camera, feel confident.',
+        effect: { stat: 'cha', bonus: 3 },
+        price: 100,
+        sellPrice: 25
+    },
+
+    // Marketing Tools
+    analytics_suite: {
+        id: 'analytics_suite',
+        name: 'Analytics Suite',
+        icon: '&#128202;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'rare',
+        description: 'Data-driven insights for growth hacking.',
+        effect: { stat: 'mkt', bonus: 4, stat2: 'str', bonus2: 3 },
+        price: 400,
+        sellPrice: 100
+    },
+    social_scheduler: {
+        id: 'social_scheduler',
+        name: 'Social Scheduler',
+        icon: '&#128197;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'uncommon',
+        description: 'Never miss the perfect posting time.',
+        effect: { stat: 'mkt', bonus: 3, influenceRegenBonus: 0.1 },
+        price: 200,
+        sellPrice: 50
+    },
+
+    // Strategy Tools
+    whiteboard: {
+        id: 'whiteboard',
+        name: 'Digital Whiteboard',
+        icon: '&#128203;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'common',
+        description: 'Visualize your grand plans.',
+        effect: { stat: 'str', bonus: 2 },
+        price: 100,
+        sellPrice: 25
+    },
+    market_terminal: {
+        id: 'market_terminal',
+        name: 'Market Terminal',
+        icon: '&#128200;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'epic',
+        description: 'Real-time data from every exchange.',
+        effect: { stat: 'str', bonus: 6, stat2: 'lck', bonus2: 3, eventBonusChance: 0.1 },
+        price: 1000,
+        sellPrice: 250
+    },
+
+    // Legendary Tools
+    satoshi_notebook: {
+        id: 'satoshi_notebook',
+        name: "Satoshi's Notebook",
+        icon: '&#128213;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'legendary',
+        description: 'Rumored to contain the original Bitcoin notes.',
+        effect: { allStatsBonus: 3, xpBonus: 0.15 },
+        price: 5000,
+        sellPrice: 1250
+    },
+    vitalik_hoodie: {
+        id: 'vitalik_hoodie',
+        name: "Vitalik's Hoodie",
+        icon: '&#129509;',
+        type: ITEM_TYPES.TOOL,
+        rarity: 'legendary',
+        description: 'The iconic grey hoodie. Imbued with Ethereum energy.',
+        effect: { stat: 'dev', bonus: 10, stat2: 'str', bonus2: 5 },
+        price: 5000,
+        sellPrice: 1250
+    },
+
+    // ==========================================
+    // CONSUMABLES (Single-use)
+    // ==========================================
+
+    coffee: {
+        id: 'coffee',
+        name: 'Coffee',
+        icon: '&#9749;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'common',
+        description: 'A quick energy boost.',
+        effect: { influenceRestore: 15 },
+        price: 20,
+        sellPrice: 5,
+        stackable: true,
+        maxStack: 10
+    },
+    energy_drink: {
+        id: 'energy_drink',
+        name: 'Energy Drink',
+        icon: '&#9889;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'uncommon',
+        description: 'Serious energy for serious builders.',
+        effect: { influenceRestore: 35 },
+        price: 50,
+        sellPrice: 12,
+        stackable: true,
+        maxStack: 5
+    },
+    power_smoothie: {
+        id: 'power_smoothie',
+        name: 'Power Smoothie',
+        icon: '&#127865;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'rare',
+        description: 'The ultimate productivity fuel.',
+        effect: { influenceRestore: 60, tempStatBoost: { all: 2, duration: 300 } },
+        price: 150,
+        sellPrice: 40,
+        stackable: true,
+        maxStack: 3
+    },
+    vacation_ticket: {
+        id: 'vacation_ticket',
+        name: 'Vacation Ticket',
+        icon: '&#127965;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'epic',
+        description: 'Full mental reset. Come back refreshed.',
+        effect: { influenceRestoreFull: true, bonusXP: 100 },
+        price: 500,
+        sellPrice: 125,
+        stackable: true,
+        maxStack: 2
+    },
+
+    // XP Boosters
+    xp_scroll_small: {
+        id: 'xp_scroll_small',
+        name: 'XP Scroll (Small)',
+        icon: '&#128220;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'common',
+        description: 'Grants a small amount of experience.',
+        effect: { grantXP: 50 },
+        price: 30,
+        sellPrice: 8,
+        stackable: true,
+        maxStack: 10
+    },
+    xp_scroll_medium: {
+        id: 'xp_scroll_medium',
+        name: 'XP Scroll (Medium)',
+        icon: '&#128220;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'uncommon',
+        description: 'Grants a moderate amount of experience.',
+        effect: { grantXP: 150 },
+        price: 80,
+        sellPrice: 20,
+        stackable: true,
+        maxStack: 5
+    },
+    xp_scroll_large: {
+        id: 'xp_scroll_large',
+        name: 'XP Scroll (Large)',
+        icon: '&#128220;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'rare',
+        description: 'Grants a large amount of experience.',
+        effect: { grantXP: 400 },
+        price: 200,
+        sellPrice: 50,
+        stackable: true,
+        maxStack: 3
+    },
+
+    // Reputation Boosters
+    reputation_badge: {
+        id: 'reputation_badge',
+        name: 'Reputation Badge',
+        icon: '&#127942;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'uncommon',
+        description: 'Instant street cred.',
+        effect: { grantReputation: 50 },
+        price: 100,
+        sellPrice: 25,
+        stackable: true,
+        maxStack: 5
+    },
+    viral_moment: {
+        id: 'viral_moment',
+        name: 'Viral Moment',
+        icon: '&#128293;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'rare',
+        description: 'Capture lightning in a bottle.',
+        effect: { grantReputation: 150, grantXP: 100 },
+        price: 300,
+        sellPrice: 75,
+        stackable: true,
+        maxStack: 2
+    },
+
+    // Special Consumables
+    lucky_charm: {
+        id: 'lucky_charm',
+        name: 'Lucky Charm',
+        icon: '&#127808;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'rare',
+        description: 'Temporary boost to luck for better event outcomes.',
+        effect: { tempStatBoost: { lck: 10, duration: 600 } },
+        price: 200,
+        sellPrice: 50,
+        stackable: true,
+        maxStack: 3
+    },
+    fud_shield_potion: {
+        id: 'fud_shield_potion',
+        name: 'FUD Shield Potion',
+        icon: '&#128737;',
+        type: ITEM_TYPES.CONSUMABLE,
+        rarity: 'rare',
+        description: 'Protects against the next negative event.',
+        effect: { negativeEventShield: 1 },
+        price: 250,
+        sellPrice: 60,
+        stackable: true,
+        maxStack: 3
+    },
+
+    // ==========================================
+    // COLLECTIBLES (Rare Achievement Items)
+    // ==========================================
+
+    genesis_block: {
+        id: 'genesis_block',
+        name: 'Genesis Block Shard',
+        icon: '&#129689;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'legendary',
+        description: 'A fragment from the very first Bitcoin block.',
+        lore: 'January 3, 2009. "Chancellor on brink of second bailout for banks."',
+        achievement: 'genesis_collector'
+    },
+    eth_merge_coin: {
+        id: 'eth_merge_coin',
+        name: 'Merge Commemorative Coin',
+        icon: '&#128142;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'epic',
+        description: 'Celebrating the historic Ethereum merge.',
+        lore: 'September 15, 2022. The day Ethereum went green.',
+        achievement: 'eth_historian'
+    },
+    doge_plushie: {
+        id: 'doge_plushie',
+        name: 'Doge Plushie',
+        icon: '&#128054;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'rare',
+        description: 'Much wow. Very collect. So rare.',
+        lore: 'A reminder that memes can move markets.',
+        achievement: 'meme_lord'
+    },
+    nft_frame: {
+        id: 'nft_frame',
+        name: 'First NFT Frame',
+        icon: '&#128444;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'epic',
+        description: 'Display your most prized digital art.',
+        lore: 'Digital ownership, eternally on-chain.',
+        achievement: 'art_collector'
+    },
+    rug_pull_survivor: {
+        id: 'rug_pull_survivor',
+        name: 'Rug Pull Survivor Badge',
+        icon: '&#129526;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'rare',
+        description: 'You lived to tell the tale.',
+        lore: 'Battle scars are the best teachers.',
+        achievement: 'survivor'
+    },
+    diamond_hands: {
+        id: 'diamond_hands',
+        name: 'Diamond Hands Trophy',
+        icon: '&#128142;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'epic',
+        description: 'Proof that you never sold.',
+        lore: 'Through crashes and FUD, you held strong.',
+        achievement: 'diamond_hands'
+    },
+    whale_tooth: {
+        id: 'whale_tooth',
+        name: 'Whale Tooth',
+        icon: '&#129435;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'legendary',
+        description: 'A gift from a crypto whale.',
+        lore: 'They said the whales would never notice us...',
+        achievement: 'whale_friend'
+    },
+    golden_key: {
+        id: 'golden_key',
+        name: 'Golden Private Key',
+        icon: '&#128477;',
+        type: ITEM_TYPES.COLLECTIBLE,
+        rarity: 'legendary',
+        description: 'Not your keys, not your crypto. This one is yours.',
+        lore: 'The ultimate symbol of self-custody.',
+        achievement: 'master_builder'
+    },
+
+    // ==========================================
+    // MATERIALS (For future crafting)
+    // ==========================================
+
+    code_fragment: {
+        id: 'code_fragment',
+        name: 'Code Fragment',
+        icon: '&#128190;',
+        type: ITEM_TYPES.MATERIAL,
+        rarity: 'common',
+        description: 'A snippet of useful code.',
+        price: 10,
+        sellPrice: 2,
+        stackable: true,
+        maxStack: 99
+    },
+    smart_contract_template: {
+        id: 'smart_contract_template',
+        name: 'Smart Contract Template',
+        icon: '&#128221;',
+        type: ITEM_TYPES.MATERIAL,
+        rarity: 'uncommon',
+        description: 'A reusable contract foundation.',
+        price: 50,
+        sellPrice: 12,
+        stackable: true,
+        maxStack: 20
+    },
+    audit_report: {
+        id: 'audit_report',
+        name: 'Audit Report',
+        icon: '&#128269;',
+        type: ITEM_TYPES.MATERIAL,
+        rarity: 'rare',
+        description: 'Professional security documentation.',
+        price: 150,
+        sellPrice: 40,
+        stackable: true,
+        maxStack: 10
+    }
+};
+
+// ============================================
+// SHOP CATEGORIES
+// ============================================
+
+const SHOP_CATEGORIES = {
+    tools: {
+        name: 'Tools',
+        icon: '&#128295;',
+        items: ['laptop_basic', 'laptop_pro', 'mechanical_keyboard', 'microphone', 'ring_light',
+                'analytics_suite', 'social_scheduler', 'whiteboard', 'market_terminal']
+    },
+    consumables: {
+        name: 'Consumables',
+        icon: '&#127873;',
+        items: ['coffee', 'energy_drink', 'power_smoothie', 'vacation_ticket',
+                'xp_scroll_small', 'xp_scroll_medium', 'xp_scroll_large',
+                'reputation_badge', 'viral_moment', 'lucky_charm', 'fud_shield_potion']
+    },
+    legendary: {
+        name: 'Legendary',
+        icon: '&#11088;',
+        items: ['satoshi_notebook', 'vitalik_hoodie'],
+        requiresLevel: 25
+    }
+};
+
+// ============================================
+// INVENTORY MANAGER
+// ============================================
+
+const PumpArenaInventory = {
+    // Get item definition
+    getItem(itemId) {
+        return ITEMS[itemId] || null;
+    },
+
+    // Get all items of a type
+    getItemsByType(type) {
+        return Object.values(ITEMS).filter(item => item.type === type);
+    },
+
+    // Get player inventory
+    getInventory() {
+        const state = window.PumpArenaState?.get();
+        return state?.inventory || { tools: [], consumables: [], collectibles: [], materials: [] };
+    },
+
+    // Check if player has item
+    hasItem(itemId) {
+        const inventory = this.getInventory();
+        return [...inventory.tools, ...inventory.consumables, ...inventory.collectibles, ...inventory.materials]
+            .some(item => item.id === itemId);
+    },
+
+    // Get item count (for stackables)
+    getItemCount(itemId) {
+        const inventory = this.getInventory();
+        const allItems = [...inventory.tools, ...inventory.consumables, ...inventory.collectibles, ...inventory.materials];
+        const item = allItems.find(i => i.id === itemId);
+        return item?.quantity || 0;
+    },
+
+    // Add item to inventory
+    addItem(itemId, quantity = 1) {
+        const state = window.PumpArenaState?.get();
+        if (!state) return { success: false, message: 'No game state' };
+
+        const itemDef = this.getItem(itemId);
+        if (!itemDef) return { success: false, message: 'Item not found' };
+
+        // Determine category
+        let category;
+        switch (itemDef.type) {
+            case ITEM_TYPES.TOOL: category = 'tools'; break;
+            case ITEM_TYPES.CONSUMABLE: category = 'consumables'; break;
+            case ITEM_TYPES.COLLECTIBLE: category = 'collectibles'; break;
+            case ITEM_TYPES.MATERIAL: category = 'materials'; break;
+            default: return { success: false, message: 'Invalid item type' };
+        }
+
+        // Initialize category if needed
+        if (!state.inventory[category]) {
+            state.inventory[category] = [];
+        }
+
+        // Check if stackable and already exists
+        if (itemDef.stackable) {
+            const existing = state.inventory[category].find(i => i.id === itemId);
+            if (existing) {
+                const maxStack = itemDef.maxStack || 99;
+                const newQty = Math.min(existing.quantity + quantity, maxStack);
+                const added = newQty - existing.quantity;
+                existing.quantity = newQty;
+                window.PumpArenaState.save();
+                return { success: true, message: `Added ${added}x ${itemDef.name}`, added };
+            }
+        }
+
+        // Add new item
+        state.inventory[category].push({
+            id: itemId,
+            quantity: quantity,
+            acquired: Date.now()
+        });
+
+        // Apply tool effect immediately if it's equipment
+        if (itemDef.type === ITEM_TYPES.TOOL && itemDef.effect) {
+            this.applyToolEffect(itemDef);
+        }
+
+        window.PumpArenaState.save();
+
+        // Check for collectible achievements
+        if (itemDef.type === ITEM_TYPES.COLLECTIBLE && itemDef.achievement) {
+            document.dispatchEvent(new CustomEvent('pumparena:collectible-found', {
+                detail: { item: itemDef }
+            }));
+        }
+
+        return { success: true, message: `Acquired: ${itemDef.name}` };
+    },
+
+    // Remove item from inventory
+    removeItem(itemId, quantity = 1) {
+        const state = window.PumpArenaState?.get();
+        if (!state) return { success: false, message: 'No game state' };
+
+        const itemDef = this.getItem(itemId);
+        if (!itemDef) return { success: false, message: 'Item not found' };
+
+        let category;
+        switch (itemDef.type) {
+            case ITEM_TYPES.TOOL: category = 'tools'; break;
+            case ITEM_TYPES.CONSUMABLE: category = 'consumables'; break;
+            case ITEM_TYPES.COLLECTIBLE: category = 'collectibles'; break;
+            case ITEM_TYPES.MATERIAL: category = 'materials'; break;
+            default: return { success: false, message: 'Invalid item type' };
+        }
+
+        const index = state.inventory[category]?.findIndex(i => i.id === itemId);
+        if (index === -1 || index === undefined) {
+            return { success: false, message: 'Item not in inventory' };
+        }
+
+        const item = state.inventory[category][index];
+        if (item.quantity > quantity) {
+            item.quantity -= quantity;
+        } else {
+            state.inventory[category].splice(index, 1);
+            // Remove tool effect if it was equipment
+            if (itemDef.type === ITEM_TYPES.TOOL && itemDef.effect) {
+                this.removeToolEffect(itemDef);
+            }
+        }
+
+        window.PumpArenaState.save();
+        return { success: true, message: `Removed: ${itemDef.name}` };
+    },
+
+    // Apply tool effect to stats
+    applyToolEffect(itemDef) {
+        const state = window.PumpArenaState?.get();
+        if (!state || !itemDef.effect) return;
+
+        const effect = itemDef.effect;
+        if (effect.stat && effect.bonus) {
+            state.stats[effect.stat] = (state.stats[effect.stat] || 0) + effect.bonus;
+        }
+        if (effect.stat2 && effect.bonus2) {
+            state.stats[effect.stat2] = (state.stats[effect.stat2] || 0) + effect.bonus2;
+        }
+        if (effect.allStatsBonus) {
+            Object.keys(state.stats).forEach(stat => {
+                state.stats[stat] = (state.stats[stat] || 0) + effect.allStatsBonus;
+            });
+        }
+        window.PumpArenaState.save();
+    },
+
+    // Remove tool effect from stats
+    removeToolEffect(itemDef) {
+        const state = window.PumpArenaState?.get();
+        if (!state || !itemDef.effect) return;
+
+        const effect = itemDef.effect;
+        if (effect.stat && effect.bonus) {
+            state.stats[effect.stat] = Math.max(0, (state.stats[effect.stat] || 0) - effect.bonus);
+        }
+        if (effect.stat2 && effect.bonus2) {
+            state.stats[effect.stat2] = Math.max(0, (state.stats[effect.stat2] || 0) - effect.bonus2);
+        }
+        if (effect.allStatsBonus) {
+            Object.keys(state.stats).forEach(stat => {
+                state.stats[stat] = Math.max(0, (state.stats[stat] || 0) - effect.allStatsBonus);
+            });
+        }
+        window.PumpArenaState.save();
+    },
+
+    // Use consumable item
+    useItem(itemId) {
+        const state = window.PumpArenaState?.get();
+        if (!state) return { success: false, message: 'No game state' };
+
+        const itemDef = this.getItem(itemId);
+        if (!itemDef) return { success: false, message: 'Item not found' };
+        if (itemDef.type !== ITEM_TYPES.CONSUMABLE) {
+            return { success: false, message: 'Item is not consumable' };
+        }
+
+        // Check if player has item
+        if (!this.hasItem(itemId)) {
+            return { success: false, message: 'Item not in inventory' };
+        }
+
+        // Apply effects
+        const rewards = this.applyConsumableEffect(itemDef);
+
+        // Remove from inventory
+        this.removeItem(itemId, 1);
+
+        return { success: true, message: `Used: ${itemDef.name}`, rewards };
+    },
+
+    // Apply consumable effect
+    applyConsumableEffect(itemDef) {
+        const state = window.PumpArenaState?.get();
+        if (!state || !itemDef.effect) return {};
+
+        const effect = itemDef.effect;
+        const rewards = {};
+
+        // Influence restore
+        if (effect.influenceRestore) {
+            const maxInfluence = window.PumpArenaState.getMaxInfluence();
+            const oldInfluence = state.resources.influence;
+            state.resources.influence = Math.min(oldInfluence + effect.influenceRestore, maxInfluence);
+            rewards.influence = state.resources.influence - oldInfluence;
+        }
+
+        // Full influence restore
+        if (effect.influenceRestoreFull) {
+            const maxInfluence = window.PumpArenaState.getMaxInfluence();
+            rewards.influence = maxInfluence - state.resources.influence;
+            state.resources.influence = maxInfluence;
+        }
+
+        // Grant XP
+        if (effect.grantXP) {
+            window.PumpArenaState.addXP(effect.grantXP);
+            rewards.xp = effect.grantXP;
+        }
+        if (effect.bonusXP) {
+            window.PumpArenaState.addXP(effect.bonusXP);
+            rewards.xp = (rewards.xp || 0) + effect.bonusXP;
+        }
+
+        // Grant reputation
+        if (effect.grantReputation) {
+            window.PumpArenaState.addReputation(effect.grantReputation);
+            rewards.reputation = effect.grantReputation;
+        }
+
+        // Temporary stat boost
+        if (effect.tempStatBoost) {
+            this.applyTempBoost(effect.tempStatBoost);
+            rewards.tempBoost = effect.tempStatBoost;
+        }
+
+        // Negative event shield
+        if (effect.negativeEventShield) {
+            if (!state.buffs) state.buffs = {};
+            state.buffs.negativeEventShield = (state.buffs.negativeEventShield || 0) + effect.negativeEventShield;
+            rewards.shield = effect.negativeEventShield;
+        }
+
+        window.PumpArenaState.save();
+        return rewards;
+    },
+
+    // Apply temporary stat boost
+    applyTempBoost(boost) {
+        const state = window.PumpArenaState?.get();
+        if (!state) return;
+
+        if (!state.tempBoosts) state.tempBoosts = [];
+
+        const duration = boost.duration || 300; // Default 5 minutes
+        const expiry = Date.now() + (duration * 1000);
+
+        if (boost.all) {
+            state.tempBoosts.push({ type: 'all', bonus: boost.all, expiry });
+        }
+        if (boost.lck) {
+            state.tempBoosts.push({ type: 'lck', bonus: boost.lck, expiry });
+        }
+
+        window.PumpArenaState.save();
+    },
+
+    // Buy item from shop (ASDF Philosophy: tier discounts)
+    buyItem(itemId, quantity = 1) {
+        // Input validation (Security by Design)
+        if (typeof itemId !== 'string' || itemId.length === 0 || itemId.length > 100) {
+            return { success: false, message: 'Invalid item ID' };
+        }
+
+        // Validate quantity
+        if (typeof quantity !== 'number' || !Number.isFinite(quantity)) {
+            return { success: false, message: 'Invalid quantity type' };
+        }
+        quantity = Math.floor(quantity);
+        if (quantity <= 0 || quantity > 999) {
+            return { success: false, message: 'Quantity must be between 1 and 999' };
+        }
+
+        const state = window.PumpArenaState?.get();
+        if (!state) return { success: false, message: 'No game state' };
+
+        const itemDef = this.getItem(itemId);
+        if (!itemDef) return { success: false, message: 'Item not found' };
+        if (!itemDef.price || typeof itemDef.price !== 'number') {
+            return { success: false, message: 'Item not for sale' };
+        }
+
+        // Apply tier discount (ASDF Philosophy)
+        const basePrice = itemDef.price * quantity;
+        const totalCost = getDiscountedPrice(basePrice);
+        const savings = basePrice - totalCost;
+
+        if (state.resources.tokens < totalCost) {
+            return { success: false, message: `Not enough tokens (need ${totalCost})` };
+        }
+
+        // Check level requirement for legendary (ASDF: requires BLAZE tier = level 35)
+        if (itemDef.rarity === 'legendary' && state.progression.level < 35) {
+            return { success: false, message: 'Requires BLAZE tier (level 35)' };
+        }
+
+        // Deduct tokens
+        state.resources.tokens -= totalCost;
+        window.PumpArenaState.save();
+
+        // Add item
+        const result = this.addItem(itemId, quantity);
+        if (!result.success) {
+            // Refund if failed
+            state.resources.tokens += totalCost;
+            window.PumpArenaState.save();
+            return result;
+        }
+
+        const message = savings > 0
+            ? `Purchased: ${itemDef.name} (saved ${savings} tokens with tier discount!)`
+            : `Purchased: ${itemDef.name}`;
+
+        return { success: true, message, cost: totalCost, savings };
+    },
+
+    // Sell item (Security by Design)
+    sellItem(itemId, quantity = 1) {
+        // Input validation
+        if (typeof itemId !== 'string' || itemId.length === 0 || itemId.length > 100) {
+            return { success: false, message: 'Invalid item ID' };
+        }
+
+        // Validate quantity
+        if (typeof quantity !== 'number' || !Number.isFinite(quantity)) {
+            return { success: false, message: 'Invalid quantity type' };
+        }
+        quantity = Math.floor(quantity);
+        if (quantity <= 0 || quantity > 999) {
+            return { success: false, message: 'Quantity must be between 1 and 999' };
+        }
+
+        const state = window.PumpArenaState?.get();
+        if (!state) return { success: false, message: 'No game state' };
+
+        const itemDef = this.getItem(itemId);
+        if (!itemDef) return { success: false, message: 'Item not found' };
+        if (!itemDef.sellPrice || typeof itemDef.sellPrice !== 'number') {
+            return { success: false, message: 'Item cannot be sold' };
+        }
+        if (itemDef.type === ITEM_TYPES.COLLECTIBLE) {
+            return { success: false, message: 'Collectibles cannot be sold' };
+        }
+
+        // Check if player has enough
+        const currentCount = this.getItemCount(itemId);
+        if (currentCount < quantity) {
+            return { success: false, message: 'Not enough items' };
+        }
+
+        // Remove items
+        const removeResult = this.removeItem(itemId, quantity);
+        if (!removeResult.success) return removeResult;
+
+        // Add tokens
+        const totalValue = itemDef.sellPrice * quantity;
+        state.resources.tokens += totalValue;
+        window.PumpArenaState.save();
+
+        return { success: true, message: `Sold ${quantity}x ${itemDef.name} for ${totalValue} tokens`, earned: totalValue };
+    },
+
+    // Get equipped tools bonuses
+    getToolBonuses() {
+        const inventory = this.getInventory();
+        const bonuses = {
+            xpBonus: 0,
+            taskSpeedBonus: 0,
+            influenceRegenBonus: 0,
+            eventBonusChance: 0
+        };
+
+        for (const tool of inventory.tools) {
+            const itemDef = this.getItem(tool.id);
+            if (itemDef?.effect) {
+                if (itemDef.effect.xpBonus) bonuses.xpBonus += itemDef.effect.xpBonus;
+                if (itemDef.effect.taskSpeedBonus) bonuses.taskSpeedBonus += itemDef.effect.taskSpeedBonus;
+                if (itemDef.effect.influenceRegenBonus) bonuses.influenceRegenBonus += itemDef.effect.influenceRegenBonus;
+                if (itemDef.effect.eventBonusChance) bonuses.eventBonusChance += itemDef.effect.eventBonusChance;
+            }
+        }
+
+        return bonuses;
+    },
+
+    // ==========================================
+    // UI RENDERING
+    // ==========================================
+
+    renderInventoryPanel(container) {
+        const inventory = this.getInventory();
+        const state = window.PumpArenaState?.get();
+
+        container.innerHTML = `
+            <div class="inventory-container">
+                <div class="inventory-header">
+                    <div class="inventory-tabs">
+                        <button class="inv-tab active" data-tab="tools">&#128295; Tools</button>
+                        <button class="inv-tab" data-tab="consumables">&#127873; Items</button>
+                        <button class="inv-tab" data-tab="collectibles">&#128142; Collection</button>
+                        <button class="inv-tab" data-tab="shop">&#128176; Shop</button>
+                    </div>
+                    <div class="inventory-tokens">
+                        <span class="token-icon">&#129689;</span>
+                        <span class="token-value">${state?.resources?.tokens || 0}</span>
+                    </div>
+                </div>
+
+                <div class="inventory-content" id="inv-content">
+                    ${this.renderToolsTab(inventory.tools)}
+                </div>
+            </div>
+        `;
+
+        // Tab switching
+        container.querySelectorAll('.inv-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                container.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                const content = container.querySelector('#inv-content');
+
+                switch (tabId) {
+                    case 'tools':
+                        content.innerHTML = this.renderToolsTab(inventory.tools);
+                        break;
+                    case 'consumables':
+                        content.innerHTML = this.renderConsumablesTab(inventory.consumables);
+                        this.attachConsumableListeners(content);
+                        break;
+                    case 'collectibles':
+                        content.innerHTML = this.renderCollectiblesTab(inventory.collectibles);
+                        break;
+                    case 'shop':
+                        content.innerHTML = this.renderShopTab();
+                        this.attachShopListeners(content, container);
+                        break;
+                }
+            });
+        });
+    },
+
+    renderToolsTab(tools) {
+        if (!tools || tools.length === 0) {
+            return `
+                <div class="inv-empty">
+                    <div class="empty-icon">&#128295;</div>
+                    <p>No tools equipped yet.</p>
+                    <p class="empty-hint">Visit the shop to get started!</p>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="inv-grid tools-grid">
+                ${tools.map(item => {
+                    const def = this.getItem(item.id);
+                    if (!def) return '';
+                    const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    return `
+                        <div class="inv-item tool-item" style="border-color: ${rarity.color}">
+                            <div class="item-icon">${def.icon}</div>
+                            <div class="item-info">
+                                <div class="item-name" style="color: ${rarity.color}">${def.name}</div>
+                                <div class="item-desc">${def.description}</div>
+                                <div class="item-effect">${this.formatEffect(def.effect)}</div>
+                            </div>
+                            <div class="item-rarity" style="background: ${rarity.color}">${rarity.name}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    renderConsumablesTab(consumables) {
+        if (!consumables || consumables.length === 0) {
+            return `
+                <div class="inv-empty">
+                    <div class="empty-icon">&#127873;</div>
+                    <p>No items in your bag.</p>
+                    <p class="empty-hint">Buy consumables from the shop!</p>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="inv-grid consumables-grid">
+                ${consumables.map(item => {
+                    const def = this.getItem(item.id);
+                    if (!def) return '';
+                    const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    return `
+                        <div class="inv-item consumable-item" data-item="${item.id}" style="border-color: ${rarity.color}">
+                            <div class="item-quantity">${item.quantity}x</div>
+                            <div class="item-icon">${def.icon}</div>
+                            <div class="item-info">
+                                <div class="item-name" style="color: ${rarity.color}">${def.name}</div>
+                                <div class="item-effect">${this.formatConsumableEffect(def.effect)}</div>
+                            </div>
+                            <button class="btn-use-item" data-item="${item.id}">Use</button>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    renderCollectiblesTab(collectibles) {
+        const allCollectibles = Object.values(ITEMS).filter(i => i.type === ITEM_TYPES.COLLECTIBLE);
+        const ownedIds = (collectibles || []).map(c => c.id);
+
+        return `
+            <div class="collectibles-header">
+                <span>Collection: ${ownedIds.length} / ${allCollectibles.length}</span>
+            </div>
+            <div class="inv-grid collectibles-grid">
+                ${allCollectibles.map(def => {
+                    const owned = ownedIds.includes(def.id);
+                    const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    return `
+                        <div class="inv-item collectible-item ${owned ? 'owned' : 'locked'}" style="border-color: ${owned ? rarity.color : 'var(--rpg-border)'}">
+                            <div class="item-icon ${owned ? '' : 'locked-icon'}">${owned ? def.icon : '&#10067;'}</div>
+                            <div class="item-info">
+                                <div class="item-name" style="color: ${owned ? rarity.color : 'var(--rpg-text-muted)'}">
+                                    ${owned ? def.name : '???'}
+                                </div>
+                                ${owned ? `
+                                    <div class="item-desc">${def.description}</div>
+                                    <div class="item-lore">"${def.lore}"</div>
+                                ` : `
+                                    <div class="item-locked-hint">Find this collectible in-game</div>
+                                `}
+                            </div>
+                            ${owned ? `<div class="item-rarity" style="background: ${rarity.color}">${rarity.name}</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    renderShopTab() {
+        const state = window.PumpArenaState?.get();
+        const playerLevel = state?.progression?.level || 1;
+
+        return `
+            <div class="shop-container">
+                ${Object.entries(SHOP_CATEGORIES).map(([catId, cat]) => {
+                    const locked = cat.requiresLevel && playerLevel < cat.requiresLevel;
+                    return `
+                        <div class="shop-category ${locked ? 'locked' : ''}">
+                            <div class="category-header">
+                                <span class="category-icon">${cat.icon}</span>
+                                <span class="category-name">${cat.name}</span>
+                                ${locked ? `<span class="category-lock">Lv.${cat.requiresLevel}</span>` : ''}
+                            </div>
+                            ${!locked ? `
+                                <div class="shop-items">
+                                    ${cat.items.map(itemId => {
+                                        const def = this.getItem(itemId);
+                                        if (!def) return '';
+                                        const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                                        const owned = this.hasItem(itemId) && def.type === ITEM_TYPES.TOOL;
+                                        return `
+                                            <div class="shop-item ${owned ? 'owned' : ''}" data-item="${itemId}" style="border-color: ${rarity.color}">
+                                                <div class="shop-item-icon">${def.icon}</div>
+                                                <div class="shop-item-info">
+                                                    <div class="shop-item-name" style="color: ${rarity.color}">${def.name}</div>
+                                                    <div class="shop-item-desc">${def.description}</div>
+                                                </div>
+                                                <div class="shop-item-price">
+                                                    ${owned ? '<span class="owned-label">Owned</span>' : `
+                                                        <span class="price-value">&#129689; ${def.price}</span>
+                                                        <button class="btn-buy" data-item="${itemId}">Buy</button>
+                                                    `}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            ` : `
+                                <div class="category-locked-msg">Reach level ${cat.requiresLevel} to unlock</div>
+                            `}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    attachConsumableListeners(container) {
+        container.querySelectorAll('.btn-use-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = btn.dataset.item;
+                const result = this.useItem(itemId);
+
+                if (result.success) {
+                    if (window.PumpArenaRPG?.showNotification) {
+                        let msg = result.message;
+                        if (result.rewards) {
+                            const parts = [];
+                            if (result.rewards.influence) parts.push(`+${result.rewards.influence} Influence`);
+                            if (result.rewards.xp) parts.push(`+${result.rewards.xp} XP`);
+                            if (result.rewards.reputation) parts.push(`+${result.rewards.reputation} Rep`);
+                            if (parts.length) msg += ' - ' + parts.join(', ');
+                        }
+                        window.PumpArenaRPG.showNotification(msg, 'success');
+                    }
+                    // Refresh tab
+                    const inventory = this.getInventory();
+                    container.innerHTML = this.renderConsumablesTab(inventory.consumables);
+                    this.attachConsumableListeners(container);
+                } else {
+                    if (window.PumpArenaRPG?.showNotification) {
+                        window.PumpArenaRPG.showNotification(result.message, 'error');
+                    }
+                }
+            });
+        });
+    },
+
+    attachShopListeners(content, container) {
+        content.querySelectorAll('.btn-buy').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = btn.dataset.item;
+                const result = this.buyItem(itemId);
+
+                if (result.success) {
+                    if (window.PumpArenaRPG?.showNotification) {
+                        window.PumpArenaRPG.showNotification(result.message, 'success');
+                    }
+                    // Refresh panel
+                    this.renderInventoryPanel(container);
+                    // Switch to shop tab
+                    container.querySelector('[data-tab="shop"]').click();
+                } else {
+                    if (window.PumpArenaRPG?.showNotification) {
+                        window.PumpArenaRPG.showNotification(result.message, 'error');
+                    }
+                }
+            });
+        });
+    },
+
+    formatEffect(effect) {
+        if (!effect) return '';
+        const parts = [];
+        const statNames = { dev: 'DEV', com: 'COM', mkt: 'MKT', str: 'STR', cha: 'CHA', lck: 'LCK' };
+
+        if (effect.stat && effect.bonus) parts.push(`+${effect.bonus} ${statNames[effect.stat] || effect.stat}`);
+        if (effect.stat2 && effect.bonus2) parts.push(`+${effect.bonus2} ${statNames[effect.stat2] || effect.stat2}`);
+        if (effect.allStatsBonus) parts.push(`+${effect.allStatsBonus} ALL`);
+        if (effect.xpBonus) parts.push(`+${Math.round(effect.xpBonus * 100)}% XP`);
+        if (effect.taskSpeedBonus) parts.push(`+${Math.round(effect.taskSpeedBonus * 100)}% Speed`);
+        if (effect.influenceRegenBonus) parts.push(`+${Math.round(effect.influenceRegenBonus * 100)}% Regen`);
+        if (effect.eventBonusChance) parts.push(`+${Math.round(effect.eventBonusChance * 100)}% Events`);
+
+        return parts.join(' | ');
+    },
+
+    formatConsumableEffect(effect) {
+        if (!effect) return '';
+        const parts = [];
+
+        if (effect.influenceRestore) parts.push(`+${effect.influenceRestore} Influence`);
+        if (effect.influenceRestoreFull) parts.push('Full Influence');
+        if (effect.grantXP) parts.push(`+${effect.grantXP} XP`);
+        if (effect.bonusXP) parts.push(`+${effect.bonusXP} XP`);
+        if (effect.grantReputation) parts.push(`+${effect.grantReputation} Rep`);
+        if (effect.tempStatBoost) parts.push('Temp Buff');
+        if (effect.negativeEventShield) parts.push('FUD Shield');
+
+        return parts.join(' | ');
+    }
+};
+
+// Export for global access
+if (typeof window !== 'undefined') {
+    window.PumpArenaInventory = PumpArenaInventory;
+    window.ITEMS = ITEMS;
+    window.ITEM_RARITY = ITEM_RARITY;
+
+    // ASDF Philosophy helpers
+    window.PumpArenaInventory.getDiscountedPrice = getDiscountedPrice;
+    window.PumpArenaInventory.getTierDiscount = getTierDiscount;
+    window.PumpArenaInventory.calculateItemPrice = calculateItemPrice;
+}
