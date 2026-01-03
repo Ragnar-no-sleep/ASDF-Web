@@ -11,7 +11,7 @@
     "security-check": "npm audit && npm outdated"
   },
   "dependencies": {
-    "@solana/spl-token": "^0.4.9",
+    "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.95.0",
     "bs58": "^5.0.0",
     "cookie-parser": "^1.4.6",

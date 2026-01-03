@@ -1,6 +1,6 @@
 # Security Policy for ASDF Web
 # See https://securitytxt.org/ for more information
-# Version: 1.8.0 (Updated 2026-01-03)
+# Version: 1.9.0 (Updated 2026-01-03)
 
 # Contact information for security researchers
 Contact: mailto:security@alonisthe.dev
@@ -22,8 +22,16 @@ Acknowledgments: https://github.com/Ragnar-no-sleep/ASDF-Web/blob/main/SECURITY.
 Expires: 2027-01-03T23:59:59.000Z
 
 # ============================================
-# Security Measures Implemented (v1.8.0)
+# Security Measures Implemented (v1.9.0)
 # ============================================
+#
+# Authentication & Session (NEW in v1.9.0):
+# - httpOnly cookies for JWT storage (XSS protection)
+# - SameSite=strict cookie attribute (CSRF protection)
+# - Secure cookie flag in production (HTTPS only)
+# - Cookie path restriction (/api)
+# - credentials: 'include' for cross-origin auth
+# - Legacy Authorization header fallback (migration period)
 #
 # API Security:
 # - JWT authentication with HS256 algorithm enforcement
@@ -38,6 +46,7 @@ Expires: 2027-01-03T23:59:59.000Z
 # - Mutex-protected challenge/nonce cleanup
 # - Global error handlers for uncaught exceptions
 # - Process-level error handlers (uncaughtException, unhandledRejection)
+# - CORS with credentials support for cookie auth
 #
 # Web Security:
 # - Content Security Policy (CSP) with strict directives
@@ -49,13 +58,37 @@ Expires: 2027-01-03T23:59:59.000Z
 # - JWT expiration check before API requests
 #
 # Client Security:
-# - JWT token expiration validation before use
-# - Automatic token cleanup on expiration
-# - Secure auth cache with time-based expiry
+# - Server-managed JWT via httpOnly cookie
+# - Authentication state tracking (server is source of truth)
+# - Automatic session invalidation on 401
 # - Rate limiting on client-side API calls
+#
+# Data Protection:
+# - isHolder and balance NEVER trusted from localStorage
+# - On-chain verification required for holder status
+# - State integrity hashing for tamper detection
+# - Schema validation for stored data
 #
 # Infrastructure:
 # - Environment variable validation at startup
 # - Production fail-fast for missing critical configs
 # - Graceful shutdown handling
 # - 404 handler for unknown API routes
+# - Comprehensive .gitignore (secrets, internal docs)
+#
+# ============================================
+# Comprehensive Audit Findings (2026-01-03)
+# ============================================
+#
+# VERIFIED SECURE:
+# - No sensitive files tracked in git
+# - .env files properly excluded
+# - Internal documentation patterns excluded
+# - api/.env.example intentionally tracked (template only)
+#
+# SECURITY BY DESIGN PRINCIPLES APPLIED:
+# - Defense in depth (multiple layers)
+# - Fail-secure defaults
+# - Least privilege
+# - Input validation at boundaries
+# - Server-side authority for sensitive operations
