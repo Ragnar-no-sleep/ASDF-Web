@@ -46,6 +46,10 @@ const { getCircuit, execute: circuitExecute, wrap: circuitWrap, getAllCircuits, 
 const { startTrace, startSpan, endSpan, getCurrentTrace, createMiddleware: createTracingMiddleware, getTrace, searchTraces, getSlowTraces, getErrorTraces, getRecentTraces, getStats: getTracingStats, setSampleRate } = require('./services/tracing');
 const { registerCheck, runAllChecks, livenessProbe, readinessProbe, startupProbe, getDetailedHealth, getHistory: getHealthHistory, getTrend: getHealthTrend, getStats: getHealthStats, CHECK_TYPES } = require('./services/healthcheck');
 const { get: getConfig, set: setConfig, getAll: getAllConfig, onChange: onConfigChange, getHistory: getConfigHistory, getStats: getConfigStats, defineSchema: defineConfigSchema } = require('./services/config');
+const { registerServer, registerCleanup, middleware: shutdownMiddleware, initiateShutdown, getHealthState: getShutdownState, getStats: getShutdownStats, isAcceptingTraffic } = require('./services/shutdown');
+const { middleware: versioningMiddleware, getVersionInfo, getStats: getVersioningStats, detectVersion, validateVersion } = require('./services/versioning');
+const { createBatchHandler, getStats: getBatchingStats, getRunningBatches } = require('./services/batching');
+const { middleware: compressionMiddleware, getStats: getCompressionStats, clearCache: clearCompressionCache } = require('./services/compression');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -119,6 +123,15 @@ app.use(cors({
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+
+// Response compression
+app.use(compressionMiddleware());
+
+// Graceful shutdown middleware
+app.use(shutdownMiddleware());
+
+// API versioning middleware
+app.use('/api', versioningMiddleware({ strict: false, warnDeprecated: true }));
 
 // Metrics collection (before rate limiting)
 app.use(metricsMiddleware);
@@ -224,11 +237,15 @@ app.get('/health', async (req, res) => {
     const tracingStats = getTracingStats();
     const healthStats = getHealthStats();
     const configStats = getConfigStats();
+    const shutdownStats = getShutdownStats();
+    const versioningStats = getVersioningStats();
+    const batchingStats = getBatchingStats();
+    const compressionStats = getCompressionStats();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.5.0',
+        version: '1.6.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
@@ -320,6 +337,22 @@ app.get('/health', async (req, res) => {
             config: {
                 total: configStats.totalConfigs,
                 schemas: configStats.totalSchemas
+            },
+            shutdown: {
+                state: shutdownStats.currentState,
+                connections: shutdownStats.activeConnections
+            },
+            versioning: {
+                current: versioningStats.currentVersion,
+                requests: versioningStats.totalRequests
+            },
+            batching: {
+                batches: batchingStats.totalBatches,
+                running: batchingStats.runningBatches
+            },
+            compression: {
+                compressed: compressionStats.compressedResponses,
+                savings: compressionStats.savingsPercent
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -2600,6 +2633,153 @@ app.get('/api/admin/config/history', authMiddleware, requireAdmin, async (req, r
 });
 
 // ============================================
+// REQUEST BATCHING
+// ============================================
+
+/**
+ * Batch multiple API requests
+ * POST /api/batch
+ */
+app.post('/api/batch', authMiddleware, walletRateLimiter, createBatchHandler(app));
+
+// ============================================
+// API VERSION INFO
+// ============================================
+
+/**
+ * Get API version information
+ * GET /api/version
+ */
+app.get('/api/version', (req, res) => {
+    const versionInfo = getVersionInfo();
+    res.json(versionInfo);
+});
+
+// ============================================
+// ADMIN - SHUTDOWN ROUTES
+// ============================================
+
+/**
+ * Get shutdown status (admin only)
+ * GET /api/admin/shutdown
+ */
+app.get('/api/admin/shutdown', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getShutdownStats();
+        const state = getShutdownState();
+
+        res.json({ stats, state });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shutdown-stats') });
+    }
+});
+
+/**
+ * Initiate graceful shutdown (admin only)
+ * POST /api/admin/shutdown
+ */
+app.post('/api/admin/shutdown', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { reason } = req.body;
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            action: 'shutdown_initiated',
+            reason: reason || 'admin_request'
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({
+            success: true,
+            message: 'Graceful shutdown initiated',
+            reason: reason || 'admin_request'
+        });
+
+        // Initiate shutdown after response
+        setImmediate(() => {
+            initiateShutdown(reason || 'admin_request');
+        });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'initiate-shutdown') });
+    }
+});
+
+// ============================================
+// ADMIN - VERSIONING ROUTES
+// ============================================
+
+/**
+ * Get versioning statistics (admin only)
+ * GET /api/admin/versioning
+ */
+app.get('/api/admin/versioning', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getVersioningStats();
+        const info = getVersionInfo();
+
+        res.json({ stats, info });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'versioning-stats') });
+    }
+});
+
+// ============================================
+// ADMIN - BATCHING ROUTES
+// ============================================
+
+/**
+ * Get batching statistics (admin only)
+ * GET /api/admin/batching
+ */
+app.get('/api/admin/batching', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getBatchingStats();
+        const running = getRunningBatches();
+
+        res.json({ stats, runningBatches: running });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'batching-stats') });
+    }
+});
+
+// ============================================
+// ADMIN - COMPRESSION ROUTES
+// ============================================
+
+/**
+ * Get compression statistics (admin only)
+ * GET /api/admin/compression
+ */
+app.get('/api/admin/compression', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getCompressionStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'compression-stats') });
+    }
+});
+
+/**
+ * Clear compression cache (admin only)
+ * POST /api/admin/compression/clear-cache
+ */
+app.post('/api/admin/compression/clear-cache', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        clearCompressionCache();
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            action: 'compression_cache_cleared'
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, message: 'Compression cache cleared' });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'clear-compression-cache') });
+    }
+});
+
+// ============================================
 // ANALYTICS TRACKING MIDDLEWARE
 // ============================================
 
@@ -2647,10 +2827,15 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ============================================
 
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
     console.log(`🔥 ASDF API running on port ${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
     console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
+    console.log(`   Version: 1.6.0`);
+
+    // Register server with shutdown service
+    registerServer(server);
+    console.log('   Graceful shutdown: enabled');
 
     // Sync leaderboard from blockchain on startup
     try {
