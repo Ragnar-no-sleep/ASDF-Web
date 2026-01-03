@@ -22,7 +22,7 @@
     <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self';
+        script-src 'self' https://cdnjs.cloudflare.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https:;
@@ -1416,6 +1416,11 @@
         </div>
     </footer>
 
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
+            integrity="sha512-5g1wRsV5K1gYvLTuEI7BtZyG0S7q2bV0l3DhHZOdcJLgDaAXxLz/VNpvi9dBwWjGr/RzT5dJhzF7eiUKos9ABw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
     <script src="js/build.js"></script>
 </body>
 </html>

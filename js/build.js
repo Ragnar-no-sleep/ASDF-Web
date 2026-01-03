@@ -6,6 +6,73 @@
 
 'use strict';
 
+// ============================================
+// SECURITY UTILITIES - XSS Protection
+// ============================================
+
+/**
+ * Escape HTML special characters to prevent XSS
+ */
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+/**
+ * Sanitize HTML content using DOMPurify
+ */
+function sanitizeHtml(html) {
+    if (typeof html !== 'string') return '';
+    if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: [
+                'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'div',
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+                'a', 'img', 'figure', 'figcaption',
+                'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+                'pre', 'code', 'blockquote', 'hr',
+                'svg', 'path', 'circle', 'rect', 'line', 'g', 'defs',
+                'linearGradient', 'radialGradient', 'stop', 'marker', 'polygon',
+                'text', 'textPath', 'use', 'tspan'
+            ],
+            ALLOWED_ATTR: [
+                'href', 'src', 'alt', 'title', 'class', 'id', 'style',
+                'data-*', 'type', 'value', 'placeholder', 'disabled',
+                'target', 'rel', 'width', 'height',
+                'viewBox', 'd', 'fill', 'stroke', 'stroke-width', 'stroke-linecap',
+                'stroke-dasharray', 'opacity', 'transform', 'preserveAspectRatio',
+                'cx', 'cy', 'r', 'x', 'y', 'x1', 'y1', 'x2', 'y2',
+                'font-family', 'font-size', 'font-weight', 'text-anchor',
+                'startOffset', 'offset', 'stop-color', 'stop-opacity',
+                'markerWidth', 'markerHeight', 'refX', 'refY', 'orient', 'points',
+                'rx', 'ry'
+            ],
+            ALLOW_DATA_ATTR: true,
+            ADD_ATTR: ['target'],
+            FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+        });
+    }
+    console.warn('[Security] DOMPurify not loaded, using basic escaping');
+    return escapeHtml(html);
+}
+
+/**
+ * Safely set innerHTML with sanitization
+ */
+function safeInnerHTML(element, html) {
+    if (!element) return;
+    element.innerHTML = sanitizeHtml(html);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
     // ============================================
@@ -1894,23 +1961,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Generate SVG diagram based on component type
         if (conceptDiagram) {
-            conceptDiagram.innerHTML = generateConceptDiagram(component, project);
+            safeInnerHTML(conceptDiagram, generateConceptDiagram(component, project));
         }
 
         if (conceptExplanation) {
-            conceptExplanation.innerHTML = generateConceptExplanation(component, project);
+            safeInnerHTML(conceptExplanation, generateConceptExplanation(component, project));
         }
 
         if (codeExamples) {
-            codeExamples.innerHTML = generateCodeExamples(component, project);
+            safeInnerHTML(codeExamples, generateCodeExamples(component, project));
+            // Attach copy button handler (replaces inline onclick)
+            var copyBtn = codeExamples.querySelector('.copy-code-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function() {
+                    var codeEl = codeExamples.querySelector('code');
+                    if (codeEl) {
+                        navigator.clipboard.writeText(codeEl.innerText).then(function() {
+                            copyBtn.textContent = '✓ Copied!';
+                            setTimeout(function() { copyBtn.textContent = '📋 Copy'; }, 2000);
+                        });
+                    }
+                });
+            }
         }
 
         if (tipsList) {
-            tipsList.innerHTML = generateTips(component, project);
+            safeInnerHTML(tipsList, generateTips(component, project));
         }
 
         if (readmeContent) {
-            readmeContent.innerHTML = generateReadme(component, project);
+            safeInnerHTML(readmeContent, generateReadme(component, project));
         }
     }
 
@@ -1978,19 +2058,19 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '<div>' +
             '<h4 style="color: var(--accent-fire); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">' +
             '<span>🎯</span> Core Concept</h4>' +
-            '<p style="color: var(--text-muted); line-height: 1.6;">' + (component.what || 'This component handles a key function in the ecosystem.') + '</p>' +
+            '<p style="color: var(--text-muted); line-height: 1.6;">' + escapeHtml(component.what || 'This component handles a key function in the ecosystem.') + '</p>' +
             '</div>';
 
         html += '<div>' +
             '<h4 style="color: var(--accent-fire); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">' +
             '<span>⚙️</span> Technical Implementation</h4>' +
-            '<p style="color: var(--text-muted); line-height: 1.6;">' + (component.how || 'Implementation details for this component.') + '</p>' +
+            '<p style="color: var(--text-muted); line-height: 1.6;">' + escapeHtml(component.how || 'Implementation details for this component.') + '</p>' +
             '</div>';
 
         html += '<div>' +
             '<h4 style="color: var(--accent-fire); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">' +
             '<span>💡</span> Why It Matters</h4>' +
-            '<p style="color: var(--text-muted); line-height: 1.6;">' + (component.why || 'Understanding the importance of this component.') + '</p>' +
+            '<p style="color: var(--text-muted); line-height: 1.6;">' + escapeHtml(component.why || 'Understanding the importance of this component.') + '</p>' +
             '</div>';
 
         html += '</div>';
@@ -2093,10 +2173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         return '<div class="code-header">' +
-            '<span class="code-lang">' + lang + '</span>' +
-            '<button class="btn btn-sm" style="padding: 4px 12px; font-size: 11px;" onclick="navigator.clipboard.writeText(this.closest(\'.code-examples\').querySelector(\'code\').innerText)">📋 Copy</button>' +
+            '<span class="code-lang">' + escapeHtml(lang) + '</span>' +
+            '<button class="btn btn-sm copy-code-btn" style="padding: 4px 12px; font-size: 11px;">📋 Copy</button>' +
             '</div>' +
-            '<pre style="margin: 0; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.5;"><code style="color: #e2e8f0; font-family: \'JetBrains Mono\', monospace;">' + code + '</code></pre>';
+            '<pre style="margin: 0; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.5;"><code style="color: #e2e8f0; font-family: \'JetBrains Mono\', monospace;">' + escapeHtml(code) + '</code></pre>';
     }
 
     // Generate tips
@@ -2152,19 +2232,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const name = sanitizeText(component.name);
         const projectTitle = sanitizeText(project.title);
 
-        var html = '<h2>' + component.icon + ' ' + name + '</h2>' +
+        var html = '<h2>' + escapeHtml(component.icon) + ' ' + name + '</h2>' +
             '<p style="font-size: 16px; color: var(--text-light); margin-bottom: 20px;">' +
             'Part of the <strong>' + projectTitle + '</strong> ecosystem component.' +
             '</p>';
 
         html += '<h3>📋 Overview</h3>' +
-            '<p>' + (component.what || 'This component provides essential functionality for the ecosystem.') + '</p>';
+            '<p>' + escapeHtml(component.what || 'This component provides essential functionality for the ecosystem.') + '</p>';
 
         html += '<h3>⚙️ How It Works</h3>' +
-            '<p>' + (component.how || 'Technical implementation details for this component.') + '</p>';
+            '<p>' + escapeHtml(component.how || 'Technical implementation details for this component.') + '</p>';
 
         html += '<h3>🎯 Purpose</h3>' +
-            '<p>' + (component.why || 'Understanding why this component is essential.') + '</p>';
+            '<p>' + escapeHtml(component.why || 'Understanding why this component is essential.') + '</p>';
 
         html += '<h3>📦 Dependencies</h3>' +
             '<ul>' +
@@ -2173,13 +2253,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (project.tech) {
             project.tech.forEach(function(tech) {
-                html += '<li><code>' + tech + '</code></li>';
+                html += '<li><code>' + escapeHtml(tech) + '</code></li>';
             });
         }
         html += '</ul>';
 
         html += '<h3>🚀 Future Development</h3>' +
-            '<p>' + (component.future || 'Future improvements and roadmap for this component.') + '</p>';
+            '<p>' + escapeHtml(component.future || 'Future improvements and roadmap for this component.') + '</p>';
 
         html += '<h3>🔗 Related Components</h3>' +
             '<ul>';
@@ -2187,8 +2267,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (project.miniTree) {
             project.miniTree.forEach(function(item) {
                 if (item.name !== component.name) {
-                    html += '<li>' + item.icon + ' <strong>' + sanitizeText(item.name) + '</strong> - ' +
-                        '<span style="color: var(--text-muted);">' + item.status + '</span></li>';
+                    html += '<li>' + escapeHtml(item.icon) + ' <strong>' + sanitizeText(item.name) + '</strong> - ' +
+                        '<span style="color: var(--text-muted);">' + escapeHtml(item.status) + '</span></li>';
                 }
             });
         }
@@ -2196,7 +2276,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         html += '<h3>📚 Additional Resources</h3>' +
             '<ul>' +
-            '<li><a href="' + (project.github || '#') + '" target="_blank" style="color: var(--accent-fire);">GitHub Repository</a></li>' +
+            '<li><a href="' + escapeHtml(project.github || '#') + '" target="_blank" style="color: var(--accent-fire);">GitHub Repository</a></li>' +
             '<li><a href="https://docs.solana.com" target="_blank" style="color: var(--accent-fire);">Solana Documentation</a></li>' +
             '<li><a href="https://www.anchor-lang.com" target="_blank" style="color: var(--accent-fire);">Anchor Framework Docs</a></li>' +
             '</ul>';
@@ -2284,10 +2364,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Core node
             const core = document.createElement('div');
             core.className = 'mini-tree-core';
-            core.innerHTML = '<span class="mini-tree-core-icon">' + project.icon + '</span>' +
+            safeInnerHTML(core, '<span class="mini-tree-core-icon">' + escapeHtml(project.icon) + '</span>' +
                 '<div class="mini-tree-core-info">' +
                 '<div class="mini-tree-core-name">' + sanitizeText(project.title) + '</div>' +
-                '<div class="mini-tree-core-desc">Click a component for details</div></div>';
+                '<div class="mini-tree-core-desc">Click a component for details</div></div>');
             tree.appendChild(core);
 
             // Branches
@@ -2297,10 +2377,10 @@ document.addEventListener('DOMContentLoaded', function() {
             project.miniTree.forEach(function(item, index) {
                 const branch = document.createElement('div');
                 branch.className = 'mini-tree-branch clickable';
-                branch.innerHTML = '<span class="mini-tree-branch-icon">' + item.icon + '</span>' +
+                safeInnerHTML(branch, '<span class="mini-tree-branch-icon">' + escapeHtml(item.icon) + '</span>' +
                     '<div class="mini-tree-branch-info">' +
                     '<div class="mini-tree-branch-name">' + sanitizeText(item.name) + '</div></div>' +
-                    '<span class="mini-tree-branch-status ' + item.status + '">' + item.status.replace('-', ' ').toUpperCase() + '</span>';
+                    '<span class="mini-tree-branch-status ' + escapeHtml(item.status) + '">' + escapeHtml(item.status.replace('-', ' ').toUpperCase()) + '</span>');
 
                 // Make clickable if has documentation
                 if (item.what || item.how || item.why) {
@@ -2326,8 +2406,8 @@ document.addEventListener('DOMContentLoaded', function() {
             project.roadmap.forEach(function(item) {
                 const div = document.createElement('div');
                 div.className = 'roadmap-item';
-                div.innerHTML = '<span class="roadmap-item-phase">' + item.phase + '</span>' +
-                    '<span class="roadmap-item-text">' + sanitizeText(item.text) + '</span>';
+                safeInnerHTML(div, '<span class="roadmap-item-phase">' + escapeHtml(item.phase) + '</span>' +
+                    '<span class="roadmap-item-text">' + sanitizeText(item.text) + '</span>');
                 roadmap.appendChild(div);
             });
         }
