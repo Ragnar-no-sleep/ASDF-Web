@@ -18,6 +18,127 @@ const PUMPARENA_INTEGRITY_KEY = 'asdf_pumparena_integrity_v2';
 const PUMPARENA_VERSION = '2.0.0';
 
 // ============================================
+// RATE LIMITING (Security by Design)
+// ============================================
+
+/**
+ * Client-side rate limiter to prevent action abuse
+ * Limits based on action type with Fibonacci-scaled cooldowns
+ */
+const ActionRateLimiter = {
+    // Track last action timestamps per action type
+    _actionTimestamps: {},
+
+    // Cooldowns in milliseconds (Fibonacci-based: fib[n] * 100ms)
+    _cooldowns: {
+        burn: 2100,          // fib[8] * 100 = 21 * 100 = 2100ms
+        buy: 1300,           // fib[7] * 100 = 13 * 100 = 1300ms
+        sell: 1300,          // fib[7] * 100 = 1300ms
+        save: 500,           // fib[5] * 100 = 5 * 100 = 500ms
+        relationship: 800,   // fib[6] * 100 = 8 * 100 = 800ms
+        xp: 300,             // fib[4] * 100 = 3 * 100 = 300ms
+        quest: 1300          // fib[7] * 100 = 1300ms
+    },
+
+    // Action counters for burst detection
+    _actionCounts: {},
+    _countWindowStart: {},
+
+    // Burst limits (max actions per 60 seconds)
+    _burstLimits: {
+        burn: 10,
+        buy: 20,
+        sell: 20,
+        save: 60,
+        relationship: 30,
+        xp: 100,
+        quest: 15
+    },
+
+    /**
+     * Check if an action is allowed
+     * @param {string} actionType - Type of action (burn, buy, sell, etc.)
+     * @returns {Object} { allowed: boolean, waitTime: number, message: string }
+     */
+    checkAction(actionType) {
+        const now = Date.now();
+        const cooldown = this._cooldowns[actionType] || 1000;
+        const lastAction = this._actionTimestamps[actionType] || 0;
+        const elapsed = now - lastAction;
+
+        // Check cooldown
+        if (elapsed < cooldown) {
+            const waitTime = cooldown - elapsed;
+            return {
+                allowed: false,
+                waitTime,
+                message: `Please wait ${Math.ceil(waitTime / 100) / 10}s`
+            };
+        }
+
+        // Check burst limit
+        const windowStart = this._countWindowStart[actionType] || 0;
+        const burstLimit = this._burstLimits[actionType] || 30;
+
+        // Reset window every 60 seconds
+        if (now - windowStart > 60000) {
+            this._actionCounts[actionType] = 0;
+            this._countWindowStart[actionType] = now;
+        }
+
+        const currentCount = this._actionCounts[actionType] || 0;
+        if (currentCount >= burstLimit) {
+            const windowRemaining = 60000 - (now - windowStart);
+            return {
+                allowed: false,
+                waitTime: windowRemaining,
+                message: `Rate limit exceeded. Wait ${Math.ceil(windowRemaining / 1000)}s`
+            };
+        }
+
+        return { allowed: true, waitTime: 0, message: '' };
+    },
+
+    /**
+     * Record an action (call after action succeeds)
+     * @param {string} actionType - Type of action
+     */
+    recordAction(actionType) {
+        const now = Date.now();
+        this._actionTimestamps[actionType] = now;
+
+        // Initialize count window if needed
+        if (!this._countWindowStart[actionType] || now - this._countWindowStart[actionType] > 60000) {
+            this._countWindowStart[actionType] = now;
+            this._actionCounts[actionType] = 0;
+        }
+
+        this._actionCounts[actionType] = (this._actionCounts[actionType] || 0) + 1;
+    },
+
+    /**
+     * Get remaining cooldown for an action
+     * @param {string} actionType - Type of action
+     * @returns {number} Remaining cooldown in ms (0 if ready)
+     */
+    getRemainingCooldown(actionType) {
+        const now = Date.now();
+        const cooldown = this._cooldowns[actionType] || 1000;
+        const lastAction = this._actionTimestamps[actionType] || 0;
+        return Math.max(0, cooldown - (now - lastAction));
+    },
+
+    /**
+     * Reset rate limiter (for testing or admin)
+     */
+    reset() {
+        this._actionTimestamps = {};
+        this._actionCounts = {};
+        this._countWindowStart = {};
+    }
+};
+
+// ============================================
 // ASDF INTEGRATION - Fibonacci Constants
 // ============================================
 
@@ -250,11 +371,16 @@ function validateRPGSchema(data) {
     if (!data.character || typeof data.character !== 'object') return false;
     if (data.character.name && typeof data.character.name !== 'string') return false;
     if (data.character.name && data.character.name.length > 20) return false;
+    // Sanitize character name against XSS patterns
+    if (data.character.name && /[<>\"\'&]/.test(data.character.name)) return false;
 
     // Progression validation
     if (!data.progression || typeof data.progression !== 'object') return false;
     if (typeof data.progression.level !== 'number' || data.progression.level < 1) return false;
     if (typeof data.progression.xp !== 'number' || data.progression.xp < 0) return false;
+    // Level cap validation (prevent absurd values)
+    if (data.progression.level > 999) return false;
+    if (data.progression.xp > Number.MAX_SAFE_INTEGER) return false;
 
     // Stats validation
     if (!data.stats || typeof data.stats !== 'object') return false;
@@ -263,6 +389,8 @@ function validateRPGSchema(data) {
         if (typeof data.stats[key] !== 'number' || data.stats[key] < 0 || data.stats[key] > 999) {
             return false;
         }
+        // Ensure integer (prevent floating point exploits)
+        if (!Number.isInteger(data.stats[key])) return false;
     }
 
     // Resources validation
@@ -270,6 +398,63 @@ function validateRPGSchema(data) {
     if (typeof data.resources.influence !== 'number' || data.resources.influence < 0) return false;
     if (typeof data.resources.reputation !== 'number') return false;
     if (typeof data.resources.tokens !== 'number' || data.resources.tokens < 0) return false;
+    // Validate burnedTotal (ASDF field)
+    if (data.resources.burnedTotal !== undefined) {
+        if (typeof data.resources.burnedTotal !== 'number' || data.resources.burnedTotal < 0) return false;
+        if (data.resources.burnedTotal > Number.MAX_SAFE_INTEGER) return false;
+    }
+    // Ensure resource values are within safe bounds
+    if (data.resources.tokens > Number.MAX_SAFE_INTEGER) return false;
+    if (data.resources.influence > 99999) return false;  // Max influence cap
+    if (Math.abs(data.resources.reputation) > Number.MAX_SAFE_INTEGER) return false;
+
+    // ASDF Tier validation (Security by Design)
+    if (data.asdfTier) {
+        if (typeof data.asdfTier !== 'object') return false;
+        // Validate tier name
+        if (data.asdfTier.current && !TIER_NAMES.includes(data.asdfTier.current)) return false;
+        // Validate tier index
+        if (typeof data.asdfTier.index !== 'number' || data.asdfTier.index < 0 || data.asdfTier.index > 4) return false;
+        if (!Number.isInteger(data.asdfTier.index)) return false;
+        // Validate totalBurned
+        if (data.asdfTier.totalBurned !== undefined) {
+            if (typeof data.asdfTier.totalBurned !== 'number' || data.asdfTier.totalBurned < 0) return false;
+            if (data.asdfTier.totalBurned > Number.MAX_SAFE_INTEGER) return false;
+        }
+    }
+
+    // Relationships validation (prevent prototype pollution)
+    if (data.relationships) {
+        if (typeof data.relationships !== 'object') return false;
+        // Check for dangerous keys
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+        for (const key of Object.keys(data.relationships)) {
+            if (dangerousKeys.includes(key)) return false;
+            // Validate NPC ID format
+            if (typeof key !== 'string' || key.length > 50) return false;
+        }
+    }
+
+    // Inventory validation
+    if (data.inventory) {
+        if (typeof data.inventory !== 'object') return false;
+        const inventoryLimits = { tools: 100, consumables: 999, collectibles: 500 };
+        for (const [slot, limit] of Object.entries(inventoryLimits)) {
+            if (data.inventory[slot] && !Array.isArray(data.inventory[slot])) return false;
+            if (data.inventory[slot] && data.inventory[slot].length > limit) return false;
+        }
+    }
+
+    // Session validation (prevent time manipulation)
+    if (data.session) {
+        if (data.session.startTime && typeof data.session.startTime !== 'number') return false;
+        if (data.session.lastSave && typeof data.session.lastSave !== 'number') return false;
+        // Prevent future timestamps
+        const now = Date.now();
+        const futureBuffer = 60000; // 1 minute buffer
+        if (data.session.startTime && data.session.startTime > now + futureBuffer) return false;
+        if (data.session.lastSave && data.session.lastSave > now + futureBuffer) return false;
+    }
 
     return true;
 }
@@ -613,6 +798,12 @@ function regenerateInfluence() {
  * @returns {Object} Result object with success status
  */
 function burnTokensForXP(amount) {
+    // Rate limiting check (Security by Design)
+    const rateCheck = ActionRateLimiter.checkAction('burn');
+    if (!rateCheck.allowed) {
+        return { success: false, message: rateCheck.message, rateLimited: true };
+    }
+
     // Input validation (Security by Design)
     if (typeof amount !== 'number' || !Number.isFinite(amount)) {
         return { success: false, message: 'Invalid amount type' };
@@ -645,6 +836,9 @@ function burnTokensForXP(amount) {
     const xpGained = amount;
     addXP(xpGained);
 
+    // Record successful action for rate limiting
+    ActionRateLimiter.recordAction('burn');
+
     // Dispatch burn event
     document.dispatchEvent(new CustomEvent('pumparena:burn', {
         detail: {
@@ -669,6 +863,12 @@ function burnTokensForXP(amount) {
  * @returns {Object} Result object with success status
  */
 function burnTokensForReputation(amount) {
+    // Rate limiting check (Security by Design)
+    const rateCheck = ActionRateLimiter.checkAction('burn');
+    if (!rateCheck.allowed) {
+        return { success: false, message: rateCheck.message, rateLimited: true };
+    }
+
     // Input validation (Security by Design)
     if (typeof amount !== 'number' || !Number.isFinite(amount)) {
         return { success: false, message: 'Invalid amount type' };
@@ -707,6 +907,9 @@ function burnTokensForReputation(amount) {
 
     // Add reputation
     addReputation(repGained);
+
+    // Record successful action for rate limiting
+    ActionRateLimiter.recordAction('burn');
 
     saveRPGState();
     return {
@@ -926,6 +1129,9 @@ if (typeof window !== 'undefined') {
         burnTokensForXP,
         burnTokensForReputation,
         getBurnStats,
+
+        // Rate Limiting (Security by Design)
+        RateLimiter: ActionRateLimiter,
 
         // Constants
         VERSION: PUMPARENA_VERSION,

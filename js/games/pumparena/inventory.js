@@ -801,6 +801,15 @@ const PumpArenaInventory = {
 
     // Buy item from shop (ASDF Philosophy: tier discounts)
     buyItem(itemId, quantity = 1) {
+        // Rate limiting check (Security by Design)
+        const rateLimiter = window.PumpArenaState?.RateLimiter;
+        if (rateLimiter) {
+            const rateCheck = rateLimiter.checkAction('buy');
+            if (!rateCheck.allowed) {
+                return { success: false, message: rateCheck.message, rateLimited: true };
+            }
+        }
+
         // Input validation (Security by Design)
         if (typeof itemId !== 'string' || itemId.length === 0 || itemId.length > 100) {
             return { success: false, message: 'Invalid item ID' };
@@ -851,6 +860,11 @@ const PumpArenaInventory = {
             return result;
         }
 
+        // Record successful action for rate limiting
+        if (rateLimiter) {
+            rateLimiter.recordAction('buy');
+        }
+
         const message = savings > 0
             ? `Purchased: ${itemDef.name} (saved ${savings} tokens with tier discount!)`
             : `Purchased: ${itemDef.name}`;
@@ -860,6 +874,15 @@ const PumpArenaInventory = {
 
     // Sell item (Security by Design)
     sellItem(itemId, quantity = 1) {
+        // Rate limiting check (Security by Design)
+        const rateLimiter = window.PumpArenaState?.RateLimiter;
+        if (rateLimiter) {
+            const rateCheck = rateLimiter.checkAction('sell');
+            if (!rateCheck.allowed) {
+                return { success: false, message: rateCheck.message, rateLimited: true };
+            }
+        }
+
         // Input validation
         if (typeof itemId !== 'string' || itemId.length === 0 || itemId.length > 100) {
             return { success: false, message: 'Invalid item ID' };
@@ -900,6 +923,11 @@ const PumpArenaInventory = {
         const totalValue = itemDef.sellPrice * quantity;
         state.resources.tokens += totalValue;
         window.PumpArenaState.save();
+
+        // Record successful action for rate limiting
+        if (rateLimiter) {
+            rateLimiter.recordAction('sell');
+        }
 
         return { success: true, message: `Sold ${quantity}x ${itemDef.name} for ${totalValue} tokens`, earned: totalValue };
     },
