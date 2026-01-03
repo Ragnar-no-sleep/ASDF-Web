@@ -300,6 +300,93 @@ function optionalSignedRequest(req, res, next) {
 }
 
 // ============================================
+// INPUT VALIDATION HELPERS
+// ============================================
+
+/**
+ * Validate and sanitize a generic ID parameter
+ * @param {string} id - ID to validate
+ * @param {Object} options - Validation options
+ * @returns {{valid: boolean, value?: string, error?: string}}
+ */
+function validateId(id, options = {}) {
+    const { maxLength = 64, pattern = /^[a-zA-Z0-9_-]+$/ } = options;
+
+    if (!id || typeof id !== 'string') {
+        return { valid: false, error: 'ID required' };
+    }
+
+    const trimmed = id.trim();
+
+    if (trimmed.length === 0 || trimmed.length > maxLength) {
+        return { valid: false, error: 'Invalid ID length' };
+    }
+
+    if (!pattern.test(trimmed)) {
+        return { valid: false, error: 'Invalid ID format' };
+    }
+
+    return { valid: true, value: trimmed };
+}
+
+/**
+ * Validate a referral code
+ * @param {string} code - Code to validate
+ * @returns {{valid: boolean, value?: string, error?: string}}
+ */
+function validateReferralCodeFormat(code) {
+    // Referral codes are 8-16 alphanumeric chars
+    return validateId(code, {
+        maxLength: 16,
+        pattern: /^[A-Z0-9]{8,16}$/i
+    });
+}
+
+/**
+ * Validate a circuit/funnel name
+ * @param {string} name - Name to validate
+ * @returns {{valid: boolean, value?: string, error?: string}}
+ */
+function validateName(name) {
+    // Names are lowercase alphanumeric with underscores/hyphens
+    return validateId(name, {
+        maxLength: 50,
+        pattern: /^[a-z0-9_-]+$/
+    });
+}
+
+/**
+ * Validate wallet address
+ * @param {string} address - Address to validate
+ * @returns {{valid: boolean, value?: string, error?: string}}
+ */
+function validateWalletAddress(address) {
+    if (!address || typeof address !== 'string') {
+        return { valid: false, error: 'Address required' };
+    }
+
+    const trimmed = address.trim();
+
+    if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
+        return { valid: false, error: 'Invalid wallet address format' };
+    }
+
+    return { valid: true, value: trimmed };
+}
+
+/**
+ * Sanitize string for safe logging (remove potential injection)
+ * @param {string} str - String to sanitize
+ * @param {number} maxLen - Maximum length
+ * @returns {string}
+ */
+function sanitizeForLog(str, maxLen = 100) {
+    if (typeof str !== 'string') return String(str).slice(0, maxLen);
+    // Remove control characters and limit length
+    return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, maxLen);
+}
+
+// ============================================
 // SECURITY UTILITIES
 // ============================================
 
@@ -376,6 +463,13 @@ module.exports = {
     requireSignedRequest,
     requireAdmin,
     optionalSignedRequest,
+
+    // Input validation
+    validateId,
+    validateReferralCodeFormat,
+    validateName,
+    validateWalletAddress,
+    sanitizeForLog,
 
     // Utilities
     hashForLog,

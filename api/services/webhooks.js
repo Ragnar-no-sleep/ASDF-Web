@@ -63,8 +63,15 @@ let minuteStart = Date.now();
  */
 function verifyWebhookSignature(payload, signature) {
     if (!WEBHOOK_CONFIG.secret) {
-        console.warn('[Webhooks] No webhook secret configured - skipping verification');
-        return true;  // Allow in development
+        // SECURITY: Fail-secure in production, warn in development
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (isProduction) {
+            console.error('[Webhooks] CRITICAL: HELIUS_WEBHOOK_SECRET not configured in production');
+            logAudit('webhook_no_secret_production', {});
+            return false;
+        }
+        console.warn('[Webhooks] No webhook secret configured - allowing in development only');
+        return true;
     }
 
     if (!signature) {

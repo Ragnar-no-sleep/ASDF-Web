@@ -597,7 +597,7 @@ async function buildBurnTransaction(walletAddress, amount) {
             transaction: serialized.toString('base64'),
             blockhash: blockhash,
             lastValidBlockHeight: lastValidBlockHeight,
-            priorityFee: PRIORITY_FEE
+            priorityFee: PRIORITY_FEE_CONFIG.default
         };
     }, 'buildBurnTransaction');
 }

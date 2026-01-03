@@ -9,15 +9,20 @@
 // GAME CONFIGURATION
 // ============================================
 
+/**
+ * GAME_CONFIG - ASDF Philosophy Aligned
+ * All values derived from Fibonacci sequence for mathematical harmony
+ * fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610...]
+ */
 const GAME_CONFIG = {
     name: 'Pump Arena',
     version: '2.0.0',
     minLevel: 1,
-    maxLevel: 50,
-    baseInfluence: 100,
-    influencePerLevel: 5,
-    influenceRegenRate: 180000, // 3 minutes per point
-    dailyLoginInfluence: 20
+    maxLevel: 55,                    // fib[10] = 55 (level cap)
+    baseInfluence: 55,               // fib[10] = 55 (base energy)
+    influencePerLevel: 5,            // fib[5] = 5 (energy per level)
+    influenceRegenRate: 21000,       // fib[8] * 1000 = 21 seconds per point
+    dailyLoginInfluence: 21          // fib[8] = 21 (daily bonus)
 };
 
 // ============================================
@@ -216,20 +221,25 @@ function showWelcomeSequence() {
     const character = window.PumpArenaState.getCharacter();
     const archetype = window.PumpArenaCharacter.getArchetype(character.archetype);
 
+    // Sanitize user data (Security by Design)
+    const safeCharName = escapeHtml(character.name);
+    const safeArchetypeName = escapeHtml(archetype?.name || 'Builder');
+    const safePortrait = sanitizeNumber(character.portrait);
+
     gameState.currentScreen = 'welcome';
     gameState.container.innerHTML = `
         <div class="pumparena-rpg welcome-screen">
             <div class="welcome-content">
                 <div class="welcome-animation">
                     <div class="character-reveal">
-                        <div class="portrait-glow" style="background: linear-gradient(135deg, hsl(${character.portrait * 30}, 70%, 40%), hsl(${character.portrait * 30 + 40}, 70%, 30%));">
-                            <span class="portrait-icon-xl">${window.PumpArenaCharacter.getPortraitIcon(character.portrait)}</span>
+                        <div class="portrait-glow" style="background: linear-gradient(135deg, hsl(${safePortrait * 30}, 70%, 40%), hsl(${safePortrait * 30 + 40}, 70%, 30%));">
+                            <span class="portrait-icon-xl">${window.PumpArenaCharacter.getPortraitIcon(safePortrait)}</span>
                         </div>
                     </div>
                 </div>
 
-                <h1 class="welcome-title">Welcome, ${character.name}</h1>
-                <p class="welcome-subtitle">Your journey as a ${archetype.name} begins now.</p>
+                <h1 class="welcome-title">Welcome, ${safeCharName}</h1>
+                <p class="welcome-subtitle">Your journey as a ${safeArchetypeName} begins now.</p>
 
                 <div class="welcome-intro">
                     <p>The crypto ecosystem awaits. Projects need builders like you.</p>
@@ -1060,14 +1070,26 @@ function showCampaignScene(campaignId, chapter) {
 function handleSceneChoice(campaignId, chapter, choice) {
     const state = window.PumpArenaState.get();
 
-    // Record choice
-    if (state.quests.campaignProgress[campaignId]) {
-        state.quests.campaignProgress[campaignId].choices.push({
-            chapter,
-            choice,
-            timestamp: Date.now()
-        });
+    // Initialize campaign progress if not exists
+    if (!state.quests.campaignProgress[campaignId]) {
+        state.quests.campaignProgress[campaignId] = {
+            currentChapter: 1,
+            choices: [],
+            started: Date.now()
+        };
     }
+
+    // Ensure choices array exists
+    if (!state.quests.campaignProgress[campaignId].choices) {
+        state.quests.campaignProgress[campaignId].choices = [];
+    }
+
+    // Record choice
+    state.quests.campaignProgress[campaignId].choices.push({
+        chapter,
+        choice,
+        timestamp: Date.now()
+    });
 
     // Update statistics
     state.statistics.decisionsCount++;
@@ -1283,23 +1305,30 @@ function showNPCMeetingForQuest(questId, objIndex, npcId) {
     // Meet the NPC
     const meeting = window.PumpArenaNPCs.meetNPC(npcId);
 
+    // Sanitize NPC data (Security by Design)
+    const safeNpcColor = sanitizeColor(npc.color);
+    const safeNpcName = escapeHtml(npc.name);
+    const safeNpcTitle = escapeHtml(npc.title);
+    const safeNpcIcon = escapeHtml(npc.icon);
+    const safeDialogue = escapeHtml(meeting.isFirstMeeting ? meeting.dialogue : npc.greeting);
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
         <div class="game-modal-panel npc-meeting-panel" style="max-width: 500px;">
-            <div class="npc-meeting-header" style="background: ${npc.color}22; border-bottom: 2px solid ${npc.color};">
-                <div class="npc-icon-large">${npc.icon}</div>
+            <div class="npc-meeting-header" style="background: ${safeNpcColor}22; border-bottom: 2px solid ${safeNpcColor};">
+                <div class="npc-icon-large">${safeNpcIcon}</div>
                 <div class="npc-info">
-                    <h3>${npc.name}</h3>
-                    <p class="npc-title">${npc.title}</p>
+                    <h3>${safeNpcName}</h3>
+                    <p class="npc-title">${safeNpcTitle}</p>
                 </div>
             </div>
             <div class="modal-body">
                 <div class="npc-dialogue">
-                    <p class="dialogue-text">"${meeting.isFirstMeeting ? meeting.dialogue : npc.greeting}"</p>
+                    <p class="dialogue-text">"${safeDialogue}"</p>
                 </div>
                 <div class="meeting-result">
-                    <p>You've met <strong>${npc.name}</strong>!</p>
+                    <p>You've met <strong>${safeNpcName}</strong>!</p>
                     ${meeting.isFirstMeeting ? '<p class="first-meeting-bonus">+5 Relationship</p>' : ''}
                 </div>
             </div>
@@ -1315,7 +1344,7 @@ function showNPCMeetingForQuest(questId, objIndex, npcId) {
         modal.remove();
         // Complete the objective
         window.PumpArenaQuests.updateObjective(questId, objIndex, true);
-        showNotification(`Met ${npc.name}!`, 'success');
+        showNotification(`Met ${safeNpcName}!`, 'success');
         showActiveQuestInContent();
     });
 }
@@ -1436,10 +1465,13 @@ function showDefaultGameContent() {
 
     const state = window.PumpArenaState.get();
 
+    // Sanitize user data (Security by Design)
+    const safeCharName = escapeHtml(state.character.name);
+
     content.innerHTML = `
         <div class="default-game-content">
             <div class="welcome-section">
-                <h2>Welcome, ${state.character.name}!</h2>
+                <h2>Welcome, ${safeCharName}!</h2>
                 <p>What would you like to do today?</p>
             </div>
 
@@ -1989,8 +2021,396 @@ function showGenericMinigame(gameType, minScore, callback) {
 // PANEL PLACEHOLDERS (To be implemented)
 // ============================================
 
+/**
+ * Settings Menu - ASDF Philosophy Aligned
+ * Provides user preferences with Fibonacci-based defaults
+ */
 function showSettingsMenu() {
-    showModal('Settings', '<p>Settings coming soon...</p>');
+    // Load current settings
+    const settings = loadSettings();
+    const state = window.PumpArenaState.get();
+    const tier = window.PumpArenaState.getCurrentTier();
+
+    // Sanitize data (Security by Design)
+    const safeTierName = escapeHtml(tier.name);
+    const safeTierColor = sanitizeColor(tier.color);
+    const safeCharName = escapeHtml(state.character.name || 'Builder');
+
+    const modal = document.createElement('div');
+    modal.className = 'game-modal-overlay settings-modal';
+    modal.innerHTML = `
+        <div class="game-modal-panel" style="max-width: 550px; max-height: 85vh;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+                <h3>&#9881; Settings</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: 60vh;">
+                <!-- Profile Section -->
+                <div class="settings-section">
+                    <h4 style="color: ${safeTierColor};">&#128100; Profile</h4>
+                    <div class="settings-profile" style="display: flex; align-items: center; gap: 15px; padding: 10px; background: #1a1a1a; border-radius: 8px;">
+                        <div style="font-size: 32px;">${window.PumpArenaCharacter?.getPortraitIcon(state.character.portrait) || '👤'}</div>
+                        <div>
+                            <div style="font-weight: bold;">${safeCharName}</div>
+                            <div style="font-size: 12px; color: ${safeTierColor};">Tier: ${safeTierName}</div>
+                            <div style="font-size: 11px; color: #888;">Level ${sanitizeNumber(state.progression.level)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gameplay Settings -->
+                <div class="settings-section" style="margin-top: 20px;">
+                    <h4>&#127918; Gameplay</h4>
+                    <div class="settings-row">
+                        <label>
+                            <span>Auto-save Interval</span>
+                            <span class="setting-hint">fib[${settings.autoSaveIndex}] = ${getFibForSettings(settings.autoSaveIndex)} seconds</span>
+                        </label>
+                        <select id="setting-autosave" class="settings-select">
+                            <option value="5" ${settings.autoSaveIndex === 5 ? 'selected' : ''}>5 sec (fib[5])</option>
+                            <option value="6" ${settings.autoSaveIndex === 6 ? 'selected' : ''}>8 sec (fib[6])</option>
+                            <option value="7" ${settings.autoSaveIndex === 7 ? 'selected' : ''}>13 sec (fib[7])</option>
+                            <option value="8" ${settings.autoSaveIndex === 8 ? 'selected' : ''}>21 sec (fib[8])</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Show Tutorials</span>
+                            <span class="setting-hint">Display helpful hints</span>
+                        </label>
+                        <input type="checkbox" id="setting-tutorials" class="settings-toggle" ${settings.showTutorials ? 'checked' : ''}>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Confirm Burns</span>
+                            <span class="setting-hint">Ask before burning tokens</span>
+                        </label>
+                        <input type="checkbox" id="setting-confirmburns" class="settings-toggle" ${settings.confirmBurns ? 'checked' : ''}>
+                    </div>
+                </div>
+
+                <!-- Visual Settings -->
+                <div class="settings-section" style="margin-top: 20px;">
+                    <h4>&#127912; Visuals</h4>
+                    <div class="settings-row">
+                        <label>
+                            <span>Animations</span>
+                            <span class="setting-hint">Enable smooth transitions</span>
+                        </label>
+                        <input type="checkbox" id="setting-animations" class="settings-toggle" ${settings.animations ? 'checked' : ''}>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Particle Effects</span>
+                            <span class="setting-hint">Show burn particles & effects</span>
+                        </label>
+                        <input type="checkbox" id="setting-particles" class="settings-toggle" ${settings.particles ? 'checked' : ''}>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Compact Mode</span>
+                            <span class="setting-hint">Reduce UI spacing</span>
+                        </label>
+                        <input type="checkbox" id="setting-compact" class="settings-toggle" ${settings.compactMode ? 'checked' : ''}>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="settings-section" style="margin-top: 20px;">
+                    <h4>&#128276; Notifications</h4>
+                    <div class="settings-row">
+                        <label>
+                            <span>Level Up Alerts</span>
+                            <span class="setting-hint">Show popup on level up</span>
+                        </label>
+                        <input type="checkbox" id="setting-levelup" class="settings-toggle" ${settings.levelUpAlerts ? 'checked' : ''}>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Achievement Popups</span>
+                            <span class="setting-hint">Show achievement unlocks</span>
+                        </label>
+                        <input type="checkbox" id="setting-achievements" class="settings-toggle" ${settings.achievementPopups ? 'checked' : ''}>
+                    </div>
+                    <div class="settings-row">
+                        <label>
+                            <span>Event Alerts</span>
+                            <span class="setting-hint">Notify on random events</span>
+                        </label>
+                        <input type="checkbox" id="setting-events" class="settings-toggle" ${settings.eventAlerts ? 'checked' : ''}>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="settings-section" style="margin-top: 20px;">
+                    <h4>&#128190; Data Management</h4>
+                    <div class="settings-buttons">
+                        <button class="btn-secondary" id="btn-export-data" style="flex: 1;">
+                            &#128229; Export Save
+                        </button>
+                        <button class="btn-secondary" id="btn-import-data" style="flex: 1;">
+                            &#128228; Import Save
+                        </button>
+                    </div>
+                    <div class="settings-buttons" style="margin-top: 10px;">
+                        <button class="btn-danger" id="btn-reset-game" style="flex: 1; background: #dc2626;">
+                            &#128465; Reset Game
+                        </button>
+                    </div>
+                    <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                </div>
+
+                <!-- ASDF Philosophy Info -->
+                <div class="settings-section" style="margin-top: 20px; background: linear-gradient(135deg, #f9731622, #dc262622); padding: 15px; border-radius: 8px; border-left: 3px solid #f97316;">
+                    <h4 style="color: #f97316;">&#128293; ASDF Philosophy</h4>
+                    <p style="font-size: 12px; color: #ccc; margin: 8px 0;">
+                        "THIS IS FINE" - All values in Pump Arena are derived from the Fibonacci sequence.
+                    </p>
+                    <p style="font-size: 11px; color: #888; margin: 0;">
+                        Burns benefit everyone. Verify everything. Build for the long term.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #333; padding-top: 15px;">
+                <button class="btn-secondary" id="btn-settings-cancel">Cancel</button>
+                <button class="btn-primary" id="btn-settings-save">Save Settings</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Settings event handlers
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-settings-cancel').addEventListener('click', () => modal.remove());
+
+    // Save settings
+    modal.querySelector('#btn-settings-save').addEventListener('click', () => {
+        const newSettings = {
+            autoSaveIndex: parseInt(modal.querySelector('#setting-autosave').value),
+            showTutorials: modal.querySelector('#setting-tutorials').checked,
+            confirmBurns: modal.querySelector('#setting-confirmburns').checked,
+            animations: modal.querySelector('#setting-animations').checked,
+            particles: modal.querySelector('#setting-particles').checked,
+            compactMode: modal.querySelector('#setting-compact').checked,
+            levelUpAlerts: modal.querySelector('#setting-levelup').checked,
+            achievementPopups: modal.querySelector('#setting-achievements').checked,
+            eventAlerts: modal.querySelector('#setting-events').checked
+        };
+        saveSettings(newSettings);
+        applySettings(newSettings);
+        showNotification('Settings saved!', 'success');
+        modal.remove();
+    });
+
+    // Export data
+    modal.querySelector('#btn-export-data').addEventListener('click', () => {
+        exportGameData();
+    });
+
+    // Import data
+    modal.querySelector('#btn-import-data').addEventListener('click', () => {
+        modal.querySelector('#import-file-input').click();
+    });
+
+    modal.querySelector('#import-file-input').addEventListener('change', (e) => {
+        importGameData(e.target.files[0]);
+    });
+
+    // Reset game
+    modal.querySelector('#btn-reset-game').addEventListener('click', () => {
+        showResetConfirmation(modal);
+    });
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+/**
+ * Get Fibonacci number for settings
+ */
+function getFibForSettings(n) {
+    const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+    return fib[n] || fib[fib.length - 1];
+}
+
+/**
+ * Load settings from localStorage
+ */
+function loadSettings() {
+    const defaults = {
+        autoSaveIndex: 7,        // fib[7] = 13 seconds
+        showTutorials: true,
+        confirmBurns: true,
+        animations: true,
+        particles: true,
+        compactMode: false,
+        levelUpAlerts: true,
+        achievementPopups: true,
+        eventAlerts: true
+    };
+
+    try {
+        const saved = localStorage.getItem('asdf_pumparena_settings');
+        if (saved) {
+            return { ...defaults, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.warn('[PumpArena] Failed to load settings:', e);
+    }
+    return defaults;
+}
+
+/**
+ * Save settings to localStorage
+ */
+function saveSettings(settings) {
+    try {
+        localStorage.setItem('asdf_pumparena_settings', JSON.stringify(settings));
+    } catch (e) {
+        console.error('[PumpArena] Failed to save settings:', e);
+    }
+}
+
+/**
+ * Apply settings to the game
+ */
+function applySettings(settings) {
+    // Apply compact mode
+    if (settings.compactMode) {
+        document.body.classList.add('pumparena-compact');
+    } else {
+        document.body.classList.remove('pumparena-compact');
+    }
+
+    // Apply animations
+    if (!settings.animations) {
+        document.body.classList.add('pumparena-no-animations');
+    } else {
+        document.body.classList.remove('pumparena-no-animations');
+    }
+}
+
+/**
+ * Export game data as JSON file
+ */
+function exportGameData() {
+    try {
+        const state = window.PumpArenaState.get();
+        const settings = loadSettings();
+        const exportData = {
+            version: GAME_CONFIG.version,
+            exportDate: new Date().toISOString(),
+            state: state,
+            settings: settings
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pumparena_save_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showNotification('Save exported successfully!', 'success');
+    } catch (e) {
+        console.error('[PumpArena] Export failed:', e);
+        showNotification('Export failed', 'error');
+    }
+}
+
+/**
+ * Import game data from JSON file
+ */
+function importGameData(file) {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            // Validate import data
+            if (!data.version || !data.state) {
+                showNotification('Invalid save file', 'error');
+                return;
+            }
+
+            // Confirm import
+            if (confirm('This will replace your current save. Are you sure?')) {
+                // Import state
+                localStorage.setItem('asdf_pumparena_rpg_v2', JSON.stringify(data.state));
+                if (data.settings) {
+                    localStorage.setItem('asdf_pumparena_settings', JSON.stringify(data.settings));
+                }
+
+                showNotification('Save imported! Reloading...', 'success');
+                setTimeout(() => location.reload(), 1500);
+            }
+        } catch (e) {
+            console.error('[PumpArena] Import failed:', e);
+            showNotification('Import failed: Invalid file', 'error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+/**
+ * Show reset confirmation dialog
+ */
+function showResetConfirmation(parentModal) {
+    const confirmModal = document.createElement('div');
+    confirmModal.className = 'game-modal-overlay';
+    confirmModal.style.zIndex = '10001';
+    confirmModal.innerHTML = `
+        <div class="game-modal-panel" style="max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 30px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">&#9888;</div>
+                <h3 style="color: #dc2626;">Reset Game?</h3>
+                <p style="color: #888; margin: 15px 0;">
+                    This will permanently delete ALL your progress including:
+                </p>
+                <ul style="text-align: left; color: #ccc; margin: 10px 0; padding-left: 20px;">
+                    <li>Character & Level</li>
+                    <li>Tokens & Items</li>
+                    <li>Quests & Achievements</li>
+                    <li>Relationships & Stats</li>
+                </ul>
+                <p style="color: #f97316; font-weight: bold; margin-top: 15px;">
+                    This action cannot be undone!
+                </p>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: center; padding: 15px;">
+                <button class="btn-secondary" id="btn-reset-cancel">Cancel</button>
+                <button class="btn-danger" id="btn-reset-confirm" style="background: #dc2626;">
+                    &#128293; Reset Everything
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(confirmModal);
+
+    confirmModal.querySelector('#btn-reset-cancel').addEventListener('click', () => {
+        confirmModal.remove();
+    });
+
+    confirmModal.querySelector('#btn-reset-confirm').addEventListener('click', () => {
+        // Clear all game data
+        window.PumpArenaState.reset();
+        localStorage.removeItem('asdf_pumparena_settings');
+        localStorage.removeItem('asdf_pumparena_daily');
+
+        showNotification('Game reset. Reloading...', 'success');
+        setTimeout(() => location.reload(), 1500);
+    });
+
+    confirmModal.addEventListener('click', (e) => {
+        if (e.target === confirmModal) confirmModal.remove();
+    });
 }
 
 function showQuestsPanel() {
@@ -2253,8 +2673,343 @@ function showNPCConversation(npcId) {
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
+/**
+ * World Map System - ASDF Philosophy Aligned
+ * Locations unlock based on level and tier progression
+ * Travel costs based on Fibonacci sequence
+ */
+
+// Location definitions with Fibonacci-based requirements
+const WORLD_LOCATIONS = {
+    crypto_valley: {
+        id: 'crypto_valley',
+        name: 'Crypto Valley',
+        icon: '&#127968;',
+        description: 'The starting hub. A bustling town of builders, dreamers, and degens.',
+        region: 'central',
+        unlockLevel: 1,          // Always unlocked
+        travelCost: 0,           // Home base
+        bonuses: { xpMultiplier: 1.0 },
+        npcs: ['marcus', 'sarah'],
+        quests: ['safeyield'],
+        color: '#22c55e'
+    },
+    defi_district: {
+        id: 'defi_district',
+        name: 'DeFi District',
+        icon: '&#127974;',
+        description: 'Where protocols are born. Smart contracts hum with activity.',
+        region: 'east',
+        unlockLevel: 5,          // fib[5] = 5
+        travelCost: 8,           // fib[6] = 8 influence
+        bonuses: { xpMultiplier: 1.1, devBonus: 2 },
+        npcs: ['luna', 'viktor'],
+        quests: ['flashdao', 'stablecore'],
+        color: '#3b82f6'
+    },
+    nft_gallery: {
+        id: 'nft_gallery',
+        name: 'NFT Gallery',
+        icon: '&#127912;',
+        description: 'Art meets blockchain. Creators showcase their masterpieces.',
+        region: 'west',
+        unlockLevel: 8,          // fib[6] = 8
+        travelCost: 13,          // fib[7] = 13 influence
+        bonuses: { xpMultiplier: 1.1, mktBonus: 2 },
+        npcs: ['maya', 'alex'],
+        quests: ['pixelraiders', 'lootverse'],
+        color: '#a855f7'
+    },
+    meme_arcade: {
+        id: 'meme_arcade',
+        name: 'Meme Arcade',
+        icon: '&#127918;',
+        description: 'Where viral moments are born. Chaos reigns supreme.',
+        region: 'south',
+        unlockLevel: 13,         // fib[7] = 13
+        travelCost: 21,          // fib[8] = 21 influence
+        bonuses: { xpMultiplier: 1.15, chaBonus: 3, lckBonus: 2 },
+        npcs: ['chad', 'pepe'],
+        quests: ['basedcollective', 'memelegion'],
+        color: '#f97316'
+    },
+    alpha_lounge: {
+        id: 'alpha_lounge',
+        name: 'Alpha Lounge',
+        icon: '&#128373;',
+        description: 'Exclusive intel flows here. Only the worthy enter.',
+        region: 'north',
+        unlockLevel: 21,         // fib[8] = 21
+        travelCost: 34,          // fib[9] = 34 influence
+        bonuses: { xpMultiplier: 1.2, strBonus: 3 },
+        npcs: ['cipher', 'oracle'],
+        quests: ['alphahunters'],
+        color: '#eab308',
+        requiresTier: 'SPARK'    // Requires SPARK tier
+    },
+    whale_waters: {
+        id: 'whale_waters',
+        name: 'Whale Waters',
+        icon: '&#128011;',
+        description: 'Deep liquidity pools. Where the big players swim.',
+        region: 'deep',
+        unlockLevel: 34,         // fib[9] = 34
+        travelCost: 55,          // fib[10] = 55 influence
+        bonuses: { xpMultiplier: 1.25, tokenBonus: 0.1 },
+        npcs: ['whale', 'anchor'],
+        quests: [],
+        color: '#06b6d4',
+        requiresTier: 'FLAME'    // Requires FLAME tier
+    },
+    validator_citadel: {
+        id: 'validator_citadel',
+        name: 'Validator Citadel',
+        icon: '&#127983;',
+        description: 'The backbone of consensus. Infrastructure legends gather here.',
+        region: 'heights',
+        unlockLevel: 55,         // fib[10] = 55 (max level cap)
+        travelCost: 89,          // fib[11] = 89 influence
+        bonuses: { xpMultiplier: 1.3, allStatsBonus: 1 },
+        npcs: ['dr_lin', 'node_master'],
+        quests: ['nodeforge', 'validatordao'],
+        color: '#dc2626',
+        requiresTier: 'BLAZE'    // Requires BLAZE tier
+    }
+};
+
 function showMapPanel() {
-    showModal('World Map', '<p>World map coming soon...</p>');
+    const state = window.PumpArenaState.get();
+    const currentLocation = state.world.currentLocation;
+    const unlockedLocations = state.world.unlockedLocations || ['crypto_valley'];
+    const playerLevel = state.progression.level;
+    const playerTier = window.PumpArenaState.getCurrentTier();
+    const influence = state.resources.influence;
+
+    // Check which locations are unlocked/accessible
+    const locationStatuses = {};
+    Object.entries(WORLD_LOCATIONS).forEach(([id, loc]) => {
+        const levelUnlocked = playerLevel >= loc.unlockLevel;
+        const tierUnlocked = !loc.requiresTier || getTierIndex(playerTier.name) >= getTierIndex(loc.requiresTier);
+        const isUnlocked = levelUnlocked && tierUnlocked;
+        const canTravel = isUnlocked && influence >= loc.travelCost && id !== currentLocation;
+        const isDiscovered = unlockedLocations.includes(id) || isUnlocked;
+
+        locationStatuses[id] = {
+            isUnlocked,
+            canTravel,
+            isDiscovered,
+            isCurrent: id === currentLocation,
+            levelNeeded: loc.unlockLevel,
+            tierNeeded: loc.requiresTier
+        };
+    });
+
+    const modal = document.createElement('div');
+    modal.className = 'game-modal-overlay map-modal';
+    modal.innerHTML = `
+        <div class="game-modal-panel" style="max-width: 800px; max-height: 90vh;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
+                <h3>&#128506; World Map</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0; overflow: hidden;">
+                <!-- Current Location Info -->
+                <div class="map-current-location" style="padding: 15px; background: ${sanitizeColor(WORLD_LOCATIONS[currentLocation]?.color || '#333')}22; border-bottom: 2px solid ${sanitizeColor(WORLD_LOCATIONS[currentLocation]?.color || '#333')};">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 28px;">${WORLD_LOCATIONS[currentLocation]?.icon || '&#127968;'}</span>
+                        <div>
+                            <div style="font-weight: bold; font-size: 16px;">Currently at: ${escapeHtml(WORLD_LOCATIONS[currentLocation]?.name || 'Unknown')}</div>
+                            <div style="font-size: 12px; color: #888;">Influence: ${influence} ⚡</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Grid -->
+                <div class="map-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; max-height: 55vh; overflow-y: auto;">
+                    ${Object.entries(WORLD_LOCATIONS).map(([id, loc]) => {
+                        const status = locationStatuses[id];
+                        const safeColor = sanitizeColor(loc.color);
+                        const safeName = escapeHtml(loc.name);
+                        const safeDesc = escapeHtml(loc.description);
+
+                        if (!status.isDiscovered) {
+                            return `
+                                <div class="map-location locked" style="background: #1a1a1a; border: 2px dashed #333; padding: 15px; border-radius: 12px; opacity: 0.5;">
+                                    <div style="font-size: 32px; text-align: center; filter: blur(3px);">&#10067;</div>
+                                    <div style="text-align: center; color: #666; margin-top: 10px;">
+                                        <div>???</div>
+                                        <div style="font-size: 11px;">Level ${loc.unlockLevel} to discover</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        return `
+                            <div class="map-location ${status.isCurrent ? 'current' : ''} ${status.isUnlocked ? 'unlocked' : 'locked'}"
+                                 data-location="${id}"
+                                 style="background: ${status.isUnlocked ? safeColor + '22' : '#1a1a1a'};
+                                        border: 2px solid ${status.isCurrent ? safeColor : (status.isUnlocked ? safeColor + '66' : '#333')};
+                                        padding: 15px; border-radius: 12px; cursor: ${status.canTravel ? 'pointer' : 'default'};
+                                        transition: all 0.2s ease;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <span style="font-size: 28px;">${loc.icon}</span>
+                                    ${status.isCurrent ? '<span style="background: ' + safeColor + '; padding: 2px 8px; border-radius: 8px; font-size: 10px;">HERE</span>' : ''}
+                                </div>
+                                <div style="font-weight: bold; margin-top: 8px; color: ${status.isUnlocked ? safeColor : '#666'};">${safeName}</div>
+                                <div style="font-size: 11px; color: #888; margin-top: 5px; line-height: 1.4;">${safeDesc}</div>
+
+                                ${status.isUnlocked ? `
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid ${safeColor}33;">
+                                        <div style="font-size: 10px; color: #888;">Bonuses:</div>
+                                        <div style="font-size: 11px; color: ${safeColor};">
+                                            ${loc.bonuses.xpMultiplier > 1 ? `+${Math.round((loc.bonuses.xpMultiplier - 1) * 100)}% XP` : ''}
+                                            ${loc.bonuses.devBonus ? ` +${loc.bonuses.devBonus} DEV` : ''}
+                                            ${loc.bonuses.mktBonus ? ` +${loc.bonuses.mktBonus} MKT` : ''}
+                                            ${loc.bonuses.chaBonus ? ` +${loc.bonuses.chaBonus} CHA` : ''}
+                                            ${loc.bonuses.strBonus ? ` +${loc.bonuses.strBonus} STR` : ''}
+                                            ${loc.bonuses.lckBonus ? ` +${loc.bonuses.lckBonus} LCK` : ''}
+                                            ${loc.bonuses.tokenBonus ? ` +${Math.round(loc.bonuses.tokenBonus * 100)}% Tokens` : ''}
+                                            ${loc.bonuses.allStatsBonus ? ` +${loc.bonuses.allStatsBonus} All Stats` : ''}
+                                        </div>
+                                    </div>
+                                    ${!status.isCurrent ? `
+                                        <button class="btn-travel ${status.canTravel ? 'btn-primary' : 'btn-disabled'}"
+                                                data-location="${id}"
+                                                ${status.canTravel ? '' : 'disabled'}
+                                                style="width: 100%; margin-top: 10px; padding: 8px; font-size: 12px;">
+                                            ${status.canTravel ? `Travel (${loc.travelCost} ⚡)` : (influence < loc.travelCost ? `Need ${loc.travelCost} ⚡` : 'Current')}
+                                        </button>
+                                    ` : ''}
+                                ` : `
+                                    <div style="margin-top: 10px; padding: 8px; background: #222; border-radius: 6px; font-size: 11px; color: #888; text-align: center;">
+                                        &#128274; Requires Level ${loc.unlockLevel}
+                                        ${loc.requiresTier ? `<br>+ ${loc.requiresTier} Tier` : ''}
+                                    </div>
+                                `}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Map Legend -->
+                <div class="map-legend" style="padding: 15px; background: #111; border-top: 1px solid #333;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 11px; color: #888;">
+                        <div>&#128293; Travel costs Influence (Fibonacci-based)</div>
+                        <div>&#10024; Higher regions = better XP bonuses</div>
+                        <div>&#128274; Some locations require specific Tiers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Travel button handlers
+    modal.querySelectorAll('.btn-travel:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const locationId = btn.dataset.location;
+            travelToLocation(locationId, modal);
+        });
+    });
+
+    // Close handlers
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+/**
+ * Get tier index for comparison
+ */
+function getTierIndex(tierName) {
+    const tiers = ['EMBER', 'SPARK', 'FLAME', 'BLAZE', 'INFERNO'];
+    return tiers.indexOf(tierName);
+}
+
+/**
+ * Travel to a new location
+ */
+function travelToLocation(locationId, modal) {
+    const location = WORLD_LOCATIONS[locationId];
+    if (!location) return;
+
+    const state = window.PumpArenaState.get();
+
+    // Check if can afford travel
+    if (state.resources.influence < location.travelCost) {
+        showNotification(`Not enough Influence! Need ${location.travelCost}`, 'error');
+        return;
+    }
+
+    // Rate limit check
+    const rateCheck = window.PumpArenaState.RateLimiter?.checkAction('relationship') || { allowed: true };
+    if (!rateCheck.allowed) {
+        showNotification(rateCheck.message, 'warning');
+        return;
+    }
+
+    // Deduct travel cost
+    window.PumpArenaState.spendInfluence(location.travelCost);
+    window.PumpArenaState.RateLimiter?.recordAction('relationship');
+
+    // Update location
+    state.world.currentLocation = locationId;
+
+    // Add to unlocked locations if not already
+    if (!state.world.unlockedLocations) {
+        state.world.unlockedLocations = ['crypto_valley'];
+    }
+    if (!state.world.unlockedLocations.includes(locationId)) {
+        state.world.unlockedLocations.push(locationId);
+    }
+
+    // Apply location bonuses to active session
+    applyLocationBonuses(location);
+
+    // Save state
+    window.PumpArenaState.save();
+
+    // Show travel animation/notification
+    showTravelAnimation(location, () => {
+        modal.remove();
+        renderMainGameUI();
+        showNotification(`Welcome to ${location.name}!`, 'success');
+    });
+}
+
+/**
+ * Apply location bonuses
+ */
+function applyLocationBonuses(location) {
+    // Store active location bonuses in session
+    if (typeof window.activeLocationBonuses === 'undefined') {
+        window.activeLocationBonuses = {};
+    }
+    window.activeLocationBonuses = location.bonuses || {};
+}
+
+/**
+ * Show travel animation
+ */
+function showTravelAnimation(location, callback) {
+    const overlay = document.createElement('div');
+    overlay.className = 'travel-overlay';
+    overlay.innerHTML = `
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;">
+            <div style="font-size: 64px; animation: pulse 0.5s ease-in-out infinite alternate;">${location.icon}</div>
+            <div style="font-size: 24px; color: ${sanitizeColor(location.color)}; margin-top: 20px;">Traveling to...</div>
+            <div style="font-size: 32px; font-weight: bold; color: white; margin-top: 10px;">${escapeHtml(location.name)}</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.remove();
+        if (callback) callback();
+    }, 1500);
 }
 
 function showCharacterSheet() {
@@ -2498,7 +3253,10 @@ function updateEventBadge(count) {
 function showNotification(message, type = 'info') {
     const notif = document.createElement('div');
     notif.className = `game-notification notif-${type}`;
-    notif.innerHTML = `<span>${message}</span>`;
+    // SECURITY: Use textContent instead of innerHTML for defense in depth
+    const span = document.createElement('span');
+    span.textContent = message;
+    notif.appendChild(span);
 
     document.body.appendChild(notif);
 
