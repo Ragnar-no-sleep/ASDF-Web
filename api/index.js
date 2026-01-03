@@ -42,6 +42,10 @@ const { checkLimit: checkRateLimit, checkTokenBucket, createMiddleware: createRa
 const { validate, registerSchema, createMiddleware: createValidationMiddleware, sanitizeValue, getStats: getValidatorStats } = require('./services/validator');
 const { isEnabled: isFeatureEnabled, evaluate: evaluateFlag, getAllFlags, setFlagEnabled, setFlagPercentage, createFlag, getStats: getFeatureFlagStats, getHistory: getFlagHistory } = require('./services/featureflags');
 const { log: auditLog, logSecurity, logAdmin: logAdminAction, search: searchAudit, getActiveAlerts, exportLogs: exportAuditLogs, getStats: getAuditStats, createMiddleware: createAuditMiddleware, EVENT_TYPES: AUDIT_EVENTS, CATEGORIES: AUDIT_CATEGORIES, SEVERITY: AUDIT_SEVERITY } = require('./services/audit');
+const { getCircuit, execute: circuitExecute, wrap: circuitWrap, getAllCircuits, getCircuitStatus, forceCircuitState, resetCircuit, getStats: getCircuitStats, STATES: CIRCUIT_STATES } = require('./services/circuitbreaker');
+const { startTrace, startSpan, endSpan, getCurrentTrace, createMiddleware: createTracingMiddleware, getTrace, searchTraces, getSlowTraces, getErrorTraces, getRecentTraces, getStats: getTracingStats, setSampleRate } = require('./services/tracing');
+const { registerCheck, runAllChecks, livenessProbe, readinessProbe, startupProbe, getDetailedHealth, getHistory: getHealthHistory, getTrend: getHealthTrend, getStats: getHealthStats, CHECK_TYPES } = require('./services/healthcheck');
+const { get: getConfig, set: setConfig, getAll: getAllConfig, onChange: onConfigChange, getHistory: getConfigHistory, getStats: getConfigStats, defineSchema: defineConfigSchema } = require('./services/config');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -216,11 +220,15 @@ app.get('/health', async (req, res) => {
     const validatorStats = getValidatorStats();
     const featureFlagStats = getFeatureFlagStats();
     const auditStats = getAuditStats();
+    const circuitStats = getCircuitStats();
+    const tracingStats = getTracingStats();
+    const healthStats = getHealthStats();
+    const configStats = getConfigStats();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.4.0',
+        version: '1.5.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
@@ -296,6 +304,22 @@ app.get('/health', async (req, res) => {
             audit: {
                 events: auditStats.totalEvents,
                 alerts: auditStats.activeAlerts
+            },
+            circuits: {
+                total: circuitStats.circuitCount,
+                open: circuitStats.byState?.open || 0
+            },
+            tracing: {
+                active: tracingStats.activeTraces,
+                stored: tracingStats.storedTraces
+            },
+            health: {
+                state: healthStats.overallState,
+                checks: healthStats.registeredChecks
+            },
+            config: {
+                total: configStats.totalConfigs,
+                schemas: configStats.totalSchemas
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -2211,6 +2235,367 @@ app.get('/api/admin/audit/alerts', authMiddleware, requireAdmin, async (req, res
         res.json({ alerts, count: alerts.length });
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'audit-alerts') });
+    }
+});
+
+// ============================================
+// ADMIN - CIRCUIT BREAKER ROUTES
+// ============================================
+
+/**
+ * Get all circuit breakers (admin only)
+ * GET /api/admin/circuits
+ */
+app.get('/api/admin/circuits', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const circuits = getAllCircuits();
+        const stats = getCircuitStats();
+
+        res.json({ circuits, stats });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'circuits') });
+    }
+});
+
+/**
+ * Get specific circuit status (admin only)
+ * GET /api/admin/circuits/:name
+ */
+app.get('/api/admin/circuits/:name', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const status = getCircuitStatus(req.params.name);
+
+        if (!status) {
+            return res.status(404).json({ error: 'Circuit not found' });
+        }
+
+        res.json(status);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'circuit-status') });
+    }
+});
+
+/**
+ * Force circuit state (admin only)
+ * POST /api/admin/circuits/:name/state
+ */
+app.post('/api/admin/circuits/:name/state', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { state } = req.body;
+
+        if (!['open', 'closed'].includes(state)) {
+            return res.status(400).json({ error: 'State must be "open" or "closed"' });
+        }
+
+        const success = forceCircuitState(req.params.name, state);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Circuit not found' });
+        }
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            circuit: req.params.name,
+            newState: state
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, circuit: req.params.name, state });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'circuit-state') });
+    }
+});
+
+/**
+ * Reset circuit (admin only)
+ * POST /api/admin/circuits/:name/reset
+ */
+app.post('/api/admin/circuits/:name/reset', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const success = resetCircuit(req.params.name);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Circuit not found' });
+        }
+
+        res.json({ success: true, circuit: req.params.name });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'circuit-reset') });
+    }
+});
+
+// ============================================
+// ADMIN - TRACING ROUTES
+// ============================================
+
+/**
+ * Get tracing statistics (admin only)
+ * GET /api/admin/tracing
+ */
+app.get('/api/admin/tracing', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getTracingStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'tracing-stats') });
+    }
+});
+
+/**
+ * Get specific trace (admin only)
+ * GET /api/admin/tracing/traces/:id
+ */
+app.get('/api/admin/tracing/traces/:id', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const trace = getTrace(req.params.id);
+
+        if (!trace) {
+            return res.status(404).json({ error: 'Trace not found' });
+        }
+
+        res.json(trace);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-trace') });
+    }
+});
+
+/**
+ * Search traces (admin only)
+ * GET /api/admin/tracing/search
+ */
+app.get('/api/admin/tracing/search', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const query = {
+            operationName: req.query.operation || null,
+            hasError: req.query.hasError === 'true' ? true : req.query.hasError === 'false' ? false : null,
+            minDuration: req.query.minDuration ? parseInt(req.query.minDuration) : null,
+            maxDuration: req.query.maxDuration ? parseInt(req.query.maxDuration) : null,
+            limit: Math.min(parseInt(req.query.limit) || 50, 100),
+            offset: parseInt(req.query.offset) || 0
+        };
+
+        const traces = searchTraces(query);
+        res.json({ traces, count: traces.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'search-traces') });
+    }
+});
+
+/**
+ * Get slow traces (admin only)
+ * GET /api/admin/tracing/slow
+ */
+app.get('/api/admin/tracing/slow', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const threshold = parseInt(req.query.threshold) || 1000;
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const traces = getSlowTraces(threshold, limit);
+        res.json({ traces, count: traces.length, threshold });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'slow-traces') });
+    }
+});
+
+/**
+ * Get error traces (admin only)
+ * GET /api/admin/tracing/errors
+ */
+app.get('/api/admin/tracing/errors', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const traces = getErrorTraces(limit);
+
+        res.json({ traces, count: traces.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'error-traces') });
+    }
+});
+
+/**
+ * Set sample rate (admin only)
+ * POST /api/admin/tracing/sample-rate
+ */
+app.post('/api/admin/tracing/sample-rate', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { rate } = req.body;
+
+        if (typeof rate !== 'number' || rate < 0 || rate > 1) {
+            return res.status(400).json({ error: 'Rate must be between 0 and 1' });
+        }
+
+        setSampleRate(rate);
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            setting: 'tracing.sampleRate',
+            value: rate
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, sampleRate: rate });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'set-sample-rate') });
+    }
+});
+
+// ============================================
+// HEALTH CHECK PROBES
+// ============================================
+
+/**
+ * Liveness probe
+ * GET /livez
+ */
+app.get('/livez', (req, res) => {
+    const result = livenessProbe();
+    res.json(result);
+});
+
+/**
+ * Readiness probe
+ * GET /readyz
+ */
+app.get('/readyz', async (req, res) => {
+    try {
+        const result = await readinessProbe();
+        const status = result.ready ? 200 : 503;
+        res.status(status).json(result);
+    } catch (error) {
+        res.status(503).json({ ready: false, error: error.message });
+    }
+});
+
+/**
+ * Startup probe
+ * GET /startupz
+ */
+app.get('/startupz', async (req, res) => {
+    try {
+        const result = await startupProbe();
+        const status = result.started ? 200 : 503;
+        res.status(status).json(result);
+    } catch (error) {
+        res.status(503).json({ started: false, error: error.message });
+    }
+});
+
+/**
+ * Detailed health (admin only)
+ * GET /api/admin/health
+ */
+app.get('/api/admin/health', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const health = await getDetailedHealth();
+        res.json(health);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'detailed-health') });
+    }
+});
+
+/**
+ * Health history (admin only)
+ * GET /api/admin/health/history
+ */
+app.get('/api/admin/health/history', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const history = getHealthHistory(limit);
+        const trend = getHealthTrend(60);
+
+        res.json({ history, trend });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'health-history') });
+    }
+});
+
+// ============================================
+// ADMIN - CONFIGURATION ROUTES
+// ============================================
+
+/**
+ * Get all configuration (admin only)
+ * GET /api/admin/config
+ */
+app.get('/api/admin/config', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const includeSensitive = req.query.sensitive === 'true';
+        const config = getAllConfig({
+            includeSensitive,
+            includeMetadata: true
+        });
+        const stats = getConfigStats();
+
+        res.json({ config, stats });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-config') });
+    }
+});
+
+/**
+ * Get specific configuration (admin only)
+ * GET /api/admin/config/:key
+ */
+app.get('/api/admin/config/:key', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const value = getConfig(req.params.key);
+
+        if (value === undefined) {
+            return res.status(404).json({ error: 'Configuration not found' });
+        }
+
+        res.json({ key: req.params.key, value });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-config-key') });
+    }
+});
+
+/**
+ * Set configuration value (admin only)
+ * PUT /api/admin/config/:key
+ */
+app.put('/api/admin/config/:key', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { value } = req.body;
+
+        if (value === undefined) {
+            return res.status(400).json({ error: 'Value required' });
+        }
+
+        const result = setConfig(req.params.key, value, {
+            updatedBy: req.user.wallet,
+            source: 'admin'
+        });
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        logAdminAction(AUDIT_EVENTS.CONFIG_CHANGED, {
+            key: req.params.key
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, key: req.params.key });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'set-config') });
+    }
+});
+
+/**
+ * Get configuration history (admin only)
+ * GET /api/admin/config/history
+ */
+app.get('/api/admin/config/history', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const key = req.query.key || null;
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+
+        const history = getConfigHistory(key, limit);
+        res.json({ history, count: history.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'config-history') });
     }
 });
 
