@@ -22,12 +22,23 @@ const { logAudit } = require('./leaderboard');
 // CONFIGURATION
 // ============================================
 
+// SECURITY: Validate encryption key at startup in production
+const isProduction = process.env.NODE_ENV === 'production';
+const configEncryptionKey = process.env.CONFIG_ENCRYPTION_KEY;
+
+if (isProduction && !configEncryptionKey) {
+    throw new Error(
+        'SECURITY ERROR: CONFIG_ENCRYPTION_KEY must be configured in production.\n' +
+        'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+    );
+}
+
 const CONFIG_CONFIG = {
     // Environment
     environment: process.env.NODE_ENV || 'development',
 
-    // Encryption for sensitive values
-    encryptionKey: process.env.CONFIG_ENCRYPTION_KEY || 'default-dev-key-change-in-prod',
+    // Encryption for sensitive values (required in production)
+    encryptionKey: configEncryptionKey || crypto.randomBytes(32).toString('hex'),
 
     // History
     historySize: 100,

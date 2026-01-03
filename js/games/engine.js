@@ -242,13 +242,22 @@ async function endGame(gameId, finalScore) {
             xpDiv.textContent = `+${xpResult.xpGained} XP`;
             gameOverDiv.appendChild(xpDiv);
 
-            // Show current tier progress
+            // Show current tier progress (using DOM API for XSS safety)
             const tierDiv = document.createElement('div');
             tierDiv.className = 'game-over-tier';
             const tier = xpResult.tier;
-            tierDiv.innerHTML = `<span class="tier-name" style="color: ${ASDF.getTierColor(tier.index, 'engage')}">${tier.name}</span>`;
+
+            const tierNameSpan = document.createElement('span');
+            tierNameSpan.className = 'tier-name';
+            tierNameSpan.style.color = ASDF.getTierColor(tier.index, 'engage');
+            tierNameSpan.textContent = tier.name;
+            tierDiv.appendChild(tierNameSpan);
+
             if (!tier.isMax) {
-                tierDiv.innerHTML += ` <span class="tier-progress">${Math.round(tier.progress * 100)}%</span>`;
+                const progressSpan = document.createElement('span');
+                progressSpan.className = 'tier-progress';
+                progressSpan.textContent = ` ${Math.round(tier.progress * 100)}%`;
+                tierDiv.appendChild(progressSpan);
             }
             gameOverDiv.appendChild(tierDiv);
         }
@@ -3946,12 +3955,16 @@ function startPumpArena(gameId) {
         const type = projectTypes[state.selectedType];
         const builder = state.selectedBuilder;
 
+        // SECURITY: Validate color format (hex only) and escape builder name
+        const safeColor = /^#[0-9A-Fa-f]{6}$/.test(type.color) ? type.color : '#6366f1';
+        const safeName = escapeHtml(builder.name);
+
         partnershipOfferEl.innerHTML = `
-            <div style="background:linear-gradient(135deg,${type.color}20,rgba(0,0,0,0.6));border-radius:12px;padding:25px;border:2px solid ${type.color};text-align:center;">
+            <div style="background:linear-gradient(135deg,${safeColor}20,rgba(0,0,0,0.6));border-radius:12px;padding:25px;border:2px solid ${safeColor};text-align:center;">
                 <div style="font-size:50px;margin-bottom:15px;">🏗️</div>
-                <h3 style="color:${type.color};font-size:20px;margin-bottom:10px;">Core Builder Invitation</h3>
+                <h3 style="color:${safeColor};font-size:20px;margin-bottom:10px;">Core Builder Invitation</h3>
                 <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;line-height:1.6;">
-                    The ${builder.name} team has noticed your consistent contributions.<br>
+                    The ${safeName} team has noticed your consistent contributions.<br>
                     They're inviting you to become a <strong style="color:#fbbf24;">Core Builder</strong>!
                 </p>
 
@@ -3970,7 +3983,7 @@ function startPumpArena(gameId) {
                     <button id="pa-decline-partnership" style="flex:1;padding:12px;border-radius:6px;background:transparent;border:1px solid #444;color:#9ca3af;cursor:pointer;font-size:13px;">
                         Keep Exploring
                     </button>
-                    <button id="pa-accept-partnership" style="flex:1;padding:12px;border-radius:6px;background:linear-gradient(135deg,${type.color},${type.color}aa);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:bold;">
+                    <button id="pa-accept-partnership" style="flex:1;padding:12px;border-radius:6px;background:linear-gradient(135deg,${safeColor},${safeColor}aa);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:bold;">
                         🏗️ Become Core Builder
                     </button>
                 </div>

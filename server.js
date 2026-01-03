@@ -6,6 +6,20 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// HTTPS redirect middleware for production
+if (isProduction) {
+    app.use((req, res, next) => {
+        // Check X-Forwarded-Proto header (set by reverse proxy)
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            return res.redirect(301, `https://${req.headers.host}${req.url}`);
+        }
+        next();
+    });
+    // Trust first proxy (Render, Heroku, etc.)
+    app.set('trust proxy', 1);
+}
 
 // Rate limiting - 100 requests per 15 minutes per IP
 const limiter = rateLimit({
@@ -33,12 +47,23 @@ app.use(helmet({
             formAction: ["'self'"],
             // Allow embedding in Squarespace (alonisthe.dev)
             frameAncestors: ["'self'", "https://alonisthe.dev", "https://*.squarespace.com", "https://*.squarespace-cdn.com"],
-            upgradeInsecureRequests: [],
+            // Upgrade HTTP requests to HTTPS in production
+            upgradeInsecureRequests: isProduction ? [] : null,
         },
     },
-    crossOriginEmbedderPolicy: false,
+    // HSTS - Strict Transport Security (1 year, include subdomains, preload eligible)
+    hsts: isProduction ? {
+        maxAge: 31536000,           // 1 year in seconds
+        includeSubDomains: true,
+        preload: true
+    } : false,
+    crossOriginEmbedderPolicy: false,  // Required for Squarespace embedding
     // Disable X-Frame-Options to allow iframe embedding (CSP frame-ancestors handles this)
     frameguard: false,
+    // Additional security headers
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    noSniff: true,
+    xssFilter: true,
 }));
 
 // Compression
@@ -60,11 +85,32 @@ app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), {
     }
 }));
 
-// Serve static files from root
+// Serve specific static directories with restricted file types
+// Block sensitive files (configs, env, etc.)
+const blockedExtensions = ['.json', '.env', '.md', '.txt', '.yml', '.yaml', '.lock'];
+const blockedFiles = ['package.json', 'package-lock.json', '.gitignore', '.env'];
+
 app.use(express.static(__dirname, {
     maxAge: '1d',
     etag: true,
+    index: false,  // Don't serve directory listings
+    dotfiles: 'deny',  // Block dotfiles
+    setHeaders: (res, filePath) => {
+        const fileName = path.basename(filePath);
+        const ext = path.extname(filePath).toLowerCase();
+
+        // Block sensitive files
+        if (blockedFiles.includes(fileName) ||
+            (blockedExtensions.includes(ext) && !filePath.includes('.well-known'))) {
+            res.status(403);
+        }
+    }
 }));
+
+// Explicit block for sensitive paths
+app.use(['/api', '/node_modules', '/.git', '/.env'], (req, res) => {
+    res.status(404).json({ error: 'Not found' });
+});
 
 // Health check endpoint for UptimeRobot / monitoring
 app.get('/health', (req, res) => {

@@ -20,7 +20,46 @@ const { getAssociatedTokenAddress, createBurnInstruction, TOKEN_PROGRAM_ID } = r
 // ============================================
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
-const HELIUS_RPC_URL = process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+
+// SECURITY NOTE: Helius API requires the API key in URL query parameters.
+// This is unavoidable for their RPC and REST APIs. To mitigate exposure:
+// 1. Never log full URLs containing the API key
+// 2. Ensure error messages don't include URLs
+// 3. Use the helper functions below that redact keys in logs
+
+/**
+ * Build Helius RPC URL (key in query param - required by Helius)
+ * @returns {string}
+ */
+function getHeliusRpcUrl() {
+    return process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+}
+
+/**
+ * Build Helius REST API URL with key
+ * @param {string} path - API path (e.g., /v0/addresses/...)
+ * @param {Object} params - Additional query parameters
+ * @returns {string}
+ */
+function buildHeliusApiUrl(path, params = {}) {
+    const url = new URL(`https://api.helius.xyz${path}`);
+    url.searchParams.set('api-key', HELIUS_API_KEY);
+    for (const [key, value] of Object.entries(params)) {
+        url.searchParams.set(key, value);
+    }
+    return url.toString();
+}
+
+/**
+ * Redact API key from URL for safe logging
+ * @param {string} url - URL that may contain API key
+ * @returns {string}
+ */
+function redactApiKey(url) {
+    return url.replace(/api-key=[^&]+/, 'api-key=REDACTED');
+}
+
+const HELIUS_RPC_URL = getHeliusRpcUrl();
 const ASDF_TOKEN_MINT = process.env.ASDF_TOKEN_MINT || '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump';
 const TOKEN_DECIMALS = 6;
 const INITIAL_SUPPLY = 1_000_000_000;
@@ -268,7 +307,7 @@ async function getPriorityFeeEstimate(accountKeys = []) {
     if (cached) return cached;
 
     try {
-        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`, {
+        const response = await fetch(getHeliusRpcUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -663,7 +702,7 @@ async function getRecentBurns(limit = 20) {
 
         // Use Helius Enhanced Transactions API
         const response = await fetch(
-            `https://api.helius.xyz/v0/addresses/${ASDF_TOKEN_MINT}/transactions?api-key=${HELIUS_API_KEY}&type=BURN`,
+            buildHeliusApiUrl(`/v0/addresses/${ASDF_TOKEN_MINT}/transactions`, { type: 'BURN' }),
             {
                 headers: {
                     'Accept': 'application/json'
@@ -716,7 +755,7 @@ async function getWalletBurnHistory(walletAddress, limit = 50) {
 
         // Use Helius Enhanced Transactions API for wallet
         const response = await fetch(
-            `https://api.helius.xyz/v0/addresses/${walletAddress}/transactions?api-key=${HELIUS_API_KEY}&type=BURN`,
+            buildHeliusApiUrl(`/v0/addresses/${walletAddress}/transactions`, { type: 'BURN' }),
             {
                 headers: { 'Accept': 'application/json' }
             }
@@ -802,7 +841,7 @@ async function healthCheck() {
         if (HELIUS_API_KEY) {
             try {
                 const response = await fetch(
-                    `https://api.helius.xyz/v0/addresses/${ASDF_TOKEN_MINT}/transactions?api-key=${HELIUS_API_KEY}&limit=1`,
+                    buildHeliusApiUrl(`/v0/addresses/${ASDF_TOKEN_MINT}/transactions`, { limit: '1' }),
                     { timeout: 5000 }
                 );
                 details.enhancedApi = response.ok;
@@ -866,6 +905,7 @@ module.exports = {
     healthCheck,
     invalidateWalletCache,
     clearAllCaches,
+    redactApiKey,  // For safe logging of URLs
 
     // Constants
     ASDF_TOKEN_MINT,

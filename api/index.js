@@ -55,6 +55,12 @@ const { trackTransaction, getTransactionStatus, getActiveTransactions, getHistor
 const { getEstimate: getPriorityFeeEstimateV2, getAccountFeeEstimate, getCongestionAnalysis, getHistory: getFeeHistory, getHourlyAverages: getFeeHourlyAverages, estimateComputeUnits, getStats: getPriorityFeeStats, PRIORITY_LEVELS } = require('./services/priorityFee');
 const { connect: wsConnect, getConnectionStatus: getWsStatus, subscribeAccount, subscribeSignature, getSubscriptions: getWsSubscriptions, getStats: getWsStats, shutdown: wsShutdown } = require('./services/wsManager');
 
+// Phase 12: Data Management & Compliance
+const { requestExport, downloadExport, requestDeletion, getRequestStatus: getExportRequestStatus, getWalletRequests, getStats: getDataExportStats } = require('./services/dataExport');
+const { middleware: idempotencyMiddleware, generateKey: generateIdempotencyKey, invalidateKey: invalidateIdempotencyKey, getStats: getIdempotencyStats } = require('./services/idempotency');
+const { createSession, validateSession, refreshSession, revokeSession, revokeAllUserSessions, getUserSessions, getUserDevices, blockDevice, trustDevice, getStats: getSessionStats } = require('./services/sessionManager');
+const { registerTag: registerApiTag, registerSchema: registerApiSchema, registerRoute: registerApiRoute, generateSpec, serveDocumentation, serveSwaggerUI, getStats: getOpenApiStats } = require('./services/openApiGenerator');
+
 const app = express();
 const PORT = process.env.API_PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -119,14 +125,69 @@ function sanitizeError(error, context = 'unknown') {
 // Security headers
 app.use(helmet());
 
-// CORS
+// CORS - SECURITY: Require explicit ALLOWED_ORIGINS in production
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(o => o.length > 0);
+
+// CRITICAL: Fail to start if ALLOWED_ORIGINS is not configured in production
+if (isProduction && (!allowedOrigins || allowedOrigins.length === 0)) {
+    console.error('[SECURITY] FATAL: ALLOWED_ORIGINS must be configured in production');
+    console.error('Set ALLOWED_ORIGINS=https://your-domain.com,https://other-domain.com in environment');
+    process.exit(1);
+}
+
+const corsOrigins = isProduction
+    ? allowedOrigins
+    : (allowedOrigins || ['http://localhost:3000', 'http://localhost:5173', 'https://alonisthe.dev']);
+
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'https://alonisthe.dev'],
+    origin: corsOrigins,
     credentials: true
 }));
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+
+// Content-Type validation middleware for non-GET requests with body
+app.use((req, res, next) => {
+    // Skip GET, HEAD, OPTIONS requests (no body expected)
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+        return next();
+    }
+
+    // Skip webhook endpoints (they handle raw body separately)
+    if (req.path.includes('/webhook/')) {
+        return next();
+    }
+
+    // For requests with body, validate Content-Type
+    const contentType = req.headers['content-type'];
+    if (req.body && Object.keys(req.body).length > 0) {
+        if (!contentType || !contentType.includes('application/json')) {
+            return res.status(415).json({
+                error: 'Unsupported Media Type',
+                message: 'Content-Type must be application/json'
+            });
+        }
+    }
+
+    next();
+});
+
+// Request timeout middleware - prevent hanging requests
+const REQUEST_TIMEOUT = 30000; // 30 seconds
+app.use((req, res, next) => {
+    req.setTimeout(REQUEST_TIMEOUT, () => {
+        if (!res.headersSent) {
+            res.status(408).json({ error: 'Request timeout' });
+        }
+    });
+    res.setTimeout(REQUEST_TIMEOUT, () => {
+        if (!res.headersSent) {
+            res.status(503).json({ error: 'Response timeout' });
+        }
+    });
+    next();
+});
 
 // Response compression
 app.use(compressionMiddleware());
@@ -157,6 +218,13 @@ const purchaseLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 5,
     message: { error: 'Too many purchase attempts, please try again later' }
+});
+
+// Health endpoint rate limiter - prevent DoS via heavy metrics gathering
+const healthLimiter = rateLimit({
+    windowMs: 60 * 1000,    // 1 minute
+    max: 30,                // 30 requests per minute
+    message: { error: 'Too many health check requests' }
 });
 
 // Per-wallet rate limiting for sensitive operations
@@ -216,7 +284,7 @@ app.use('/api/shop/purchase', purchaseLimiter);
 // HEALTH CHECK
 // ============================================
 
-app.get('/health', async (req, res) => {
+app.get('/health', healthLimiter, async (req, res) => {
     const heliusHealth = await healthCheck();
     const shopMetrics = getShopMetrics();
     const gameMetrics = getValidationMetrics();
@@ -249,6 +317,12 @@ app.get('/health', async (req, res) => {
     const txMonitorStats = getTxMonitorStats();
     const priorityFeeStats = getPriorityFeeStats();
     const wsStats = getWsStats();
+
+    // Phase 12 stats
+    const dataExportStats = getDataExportStats();
+    const idempotencyStats = getIdempotencyStats();
+    const sessionStats = getSessionStats();
+    const openApiStats = getOpenApiStats();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
@@ -379,7 +453,25 @@ app.get('/health', async (req, res) => {
                 state: wsStats.connectionState,
                 subscriptions: wsStats.activeSubscriptions
             },
-            heliusCacheSize: heliusHealth.details?.cacheSize || 0
+            heliusCacheSize: heliusHealth.details?.cacheSize || 0,
+            // Phase 12: Data Management & Compliance
+            dataExport: {
+                pending: dataExportStats.pendingRequests,
+                completed: dataExportStats.completedRequests,
+                exported: dataExportStats.dataExportedFormatted
+            },
+            idempotency: {
+                keys: idempotencyStats.totalKeys,
+                hits: idempotencyStats.duplicateHits
+            },
+            sessions: {
+                active: sessionStats.activeSessions,
+                devices: sessionStats.totalDevices
+            },
+            openApi: {
+                routes: openApiStats.totalRoutes,
+                requests: openApiStats.requestsServed
+            }
         }
     });
 });
@@ -1127,17 +1219,20 @@ function verifyWebhookSignature(payload, signature) {
  * - Transaction Types: BURN
  * - Account: ASDF token mint address
  */
-app.post('/api/webhook/helius', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/webhook/helius', express.raw({ type: 'application/json', limit: '1mb' }), async (req, res) => {
     try {
         const signature = req.headers['x-helius-signature'];
         const payload = req.body.toString();
 
-        // Verify webhook signature in production
-        if (isProduction && WEBHOOK_SECRET) {
-            if (!signature || !verifyWebhookSignature(payload, signature)) {
-                console.warn('[Webhook] Invalid signature');
-                return res.status(401).json({ error: 'Invalid signature' });
-            }
+        // SECURITY: Always verify webhook signature
+        // Require WEBHOOK_SECRET to be configured
+        if (!WEBHOOK_SECRET) {
+            console.error('[Webhook] CRITICAL: HELIUS_WEBHOOK_SECRET not configured - rejecting request');
+            return res.status(503).json({ error: 'Webhook not configured' });
+        }
+        if (!signature || !verifyWebhookSignature(payload, signature)) {
+            console.warn('[Webhook] Invalid signature - rejecting request');
+            return res.status(401).json({ error: 'Invalid signature' });
         }
 
         const events = JSON.parse(payload);
@@ -1387,7 +1482,7 @@ app.get('/api/assets/:mint', async (req, res) => {
  * POST /api/webhook/helius/v2
  * Uses the new webhooks service with full event processing
  */
-app.post('/api/webhook/helius/v2', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/webhook/helius/v2', express.raw({ type: 'application/json', limit: '1mb' }), async (req, res) => {
     try {
         const signature = req.headers['x-helius-signature'];
         const payload = req.body.toString();
@@ -3060,6 +3155,212 @@ app.post('/api/admin/websocket/reconnect', authMiddleware, requireAdmin, async (
 // ANALYTICS TRACKING MIDDLEWARE
 // ============================================
 
+// ============================================
+// PHASE 12: DATA MANAGEMENT & COMPLIANCE
+// ============================================
+
+/**
+ * Request data export (GDPR Right to Access)
+ * POST /api/data/export
+ */
+app.post('/api/data/export', authMiddleware, async (req, res) => {
+    try {
+        const result = requestExport(req.user.wallet, req.body);
+        if (!result.success) {
+            return res.status(429).json(result);
+        }
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'data-export') });
+    }
+});
+
+/**
+ * Get export request status
+ * GET /api/data/export/:requestId
+ */
+app.get('/api/data/export/:requestId', authMiddleware, async (req, res) => {
+    try {
+        const status = getExportRequestStatus(req.params.requestId, req.user.wallet);
+        if (!status) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        res.json(status);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'export-status') });
+    }
+});
+
+/**
+ * Download exported data
+ * GET /api/data/export/:requestId/download
+ */
+app.get('/api/data/export/:requestId/download', authMiddleware, async (req, res) => {
+    try {
+        const status = getExportRequestStatus(req.params.requestId, req.user.wallet);
+        if (!status || !status.downloadAvailable) {
+            return res.status(404).json({ error: 'Download not available' });
+        }
+        const result = downloadExport(req.params.requestId, req.user.wallet);
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+        res.setHeader('Content-Type', result.contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
+        res.send(result.data);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'download-export') });
+    }
+});
+
+/**
+ * Request data deletion (GDPR Right to Erasure)
+ * POST /api/data/delete
+ */
+app.post('/api/data/delete', authMiddleware, async (req, res) => {
+    try {
+        const result = requestDeletion(req.user.wallet, req.body);
+        if (!result.success) {
+            return res.status(result.confirmationRequired ? 200 : 429).json(result);
+        }
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'data-delete') });
+    }
+});
+
+/**
+ * Get user's data requests
+ * GET /api/data/requests
+ */
+app.get('/api/data/requests', authMiddleware, async (req, res) => {
+    try {
+        const requests = getWalletRequests(req.user.wallet);
+        res.json({ requests });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'data-requests') });
+    }
+});
+
+// ============================================
+// SESSION MANAGEMENT
+// ============================================
+
+/**
+ * Get user's active sessions
+ * GET /api/sessions
+ */
+app.get('/api/sessions', authMiddleware, async (req, res) => {
+    try {
+        const sessions = getUserSessions(req.user.wallet);
+        res.json({ sessions });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-sessions') });
+    }
+});
+
+/**
+ * Revoke a specific session
+ * DELETE /api/sessions/:sessionId
+ */
+app.delete('/api/sessions/:sessionId', authMiddleware, async (req, res) => {
+    try {
+        const result = revokeSession(req.params.sessionId, req.user.wallet);
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'revoke-session') });
+    }
+});
+
+/**
+ * Revoke all sessions (logout everywhere)
+ * DELETE /api/sessions
+ */
+app.delete('/api/sessions', authMiddleware, async (req, res) => {
+    try {
+        const result = revokeAllUserSessions(req.user.wallet);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'revoke-all-sessions') });
+    }
+});
+
+/**
+ * Get user's devices
+ * GET /api/devices
+ */
+app.get('/api/devices', authMiddleware, async (req, res) => {
+    try {
+        const devices = getUserDevices(req.user.wallet);
+        res.json({ devices });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-devices') });
+    }
+});
+
+/**
+ * Block a device
+ * POST /api/devices/:deviceId/block
+ */
+app.post('/api/devices/:deviceId/block', authMiddleware, async (req, res) => {
+    try {
+        const result = blockDevice(req.user.wallet, req.params.deviceId);
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'block-device') });
+    }
+});
+
+/**
+ * Trust a device
+ * POST /api/devices/:deviceId/trust
+ */
+app.post('/api/devices/:deviceId/trust', authMiddleware, async (req, res) => {
+    try {
+        const result = trustDevice(req.user.wallet, req.params.deviceId);
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'trust-device') });
+    }
+});
+
+// ============================================
+// API DOCUMENTATION
+// ============================================
+
+/**
+ * OpenAPI specification
+ * GET /api/docs/openapi.json
+ */
+app.get('/api/docs/openapi.json', (req, res) => {
+    res.json(generateSpec());
+});
+
+/**
+ * API Documentation page
+ * GET /api/docs
+ */
+app.get('/api/docs', serveDocumentation);
+
+/**
+ * Swagger UI
+ * GET /api/docs/swagger
+ */
+app.get('/api/docs/swagger', serveSwaggerUI);
+
+// ============================================
+// ANALYTICS TRACKING
+// ============================================
+
 // Track API requests for analytics (non-blocking)
 app.use((req, res, next) => {
     // Skip health checks and static files
@@ -3080,6 +3381,18 @@ app.use((req, res, next) => {
     });
 
     next();
+});
+
+// ============================================
+// 404 HANDLER
+// ============================================
+
+app.use((req, res, next) => {
+    res.status(404).json({
+        error: 'Endpoint not found',
+        path: req.path,
+        method: req.method
+    });
 });
 
 // ============================================

@@ -216,9 +216,14 @@ function requireSignedRequest(req, res, next) {
         body: req.body || {}
     };
 
-    // For now, we use the wallet address as part of the secret
-    // In production, this would be a derived key from wallet signature
-    const secret = `${wallet}:${process.env.API_SIGNING_SECRET || 'dev-secret'}`;
+    // Use wallet address combined with API signing secret
+    // SECURITY: Require explicit API_SIGNING_SECRET - no fallback
+    const apiSigningSecret = process.env.API_SIGNING_SECRET;
+    if (!apiSigningSecret) {
+        console.error('[Security] CRITICAL: API_SIGNING_SECRET not configured');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+    const secret = `${wallet}:${apiSigningSecret}`;
 
     if (!verifySignature(signingData, signature, secret)) {
         logAudit('signature_invalid', {

@@ -112,7 +112,7 @@ async function verifyAndAuthenticate(wallet, signature) {
         tierIndex: tier.index
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+    const token = jwt.sign(payload, JWT_SECRET, { algorithm: 'HS256', expiresIn: JWT_EXPIRY });
 
     return {
         token,
@@ -147,7 +147,7 @@ function verifySignature(wallet, message, signature) {
  */
 function verifyToken(token) {
     try {
-        const payload = jwt.verify(token, JWT_SECRET);
+        const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
         return { valid: true, payload };
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
@@ -184,7 +184,7 @@ async function refreshToken(token) {
         tierIndex: tier.index
     };
 
-    const newToken = jwt.sign(newPayload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+    const newToken = jwt.sign(newPayload, JWT_SECRET, { algorithm: 'HS256', expiresIn: JWT_EXPIRY });
 
     return {
         token: newToken,
