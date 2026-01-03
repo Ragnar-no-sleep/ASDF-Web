@@ -1849,11 +1849,21 @@
             crossorigin="anonymous"></script>
 
     <!-- ASDF Games Scripts -->
+    <!-- Security utilities (load first) -->
+    <script src="js/games/security.js"></script>
+    <!-- Core configuration -->
     <script src="js/games/utils.js"></script>
     <script src="js/games/config.js"></script>
+    <script src="js/games/asdf.js"></script>
+    <!-- Solana integration -->
     <script src="js/games/solana.js"></script>
     <script src="js/games/api.js"></script>
+    <!-- State & Systems -->
     <script src="js/games/state.js"></script>
+    <script src="js/games/engage.js"></script>
+    <script src="js/games/shop.js"></script>
+    <script src="js/games/avatar.js"></script>
+    <!-- UI & Engine -->
     <script src="js/games/ui.js"></script>
     <script src="js/games/engine.js"></script>
     <script src="js/games/main.js"></script>

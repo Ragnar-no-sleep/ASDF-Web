@@ -24,6 +24,60 @@ const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, g
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ============================================
+// ERROR SANITIZATION UTILITY
+// ============================================
+
+/**
+ * Sanitize error message for client response
+ * In production, hide internal details
+ * @param {Error|string} error - Error to sanitize
+ * @param {string} context - Error context for logging
+ * @returns {string} Safe error message
+ */
+function sanitizeError(error, context = 'unknown') {
+    const message = error instanceof Error ? error.message : String(error);
+
+    // Always log the full error server-side
+    console.error(`[${context}] Error:`, message);
+
+    // In development, return full error
+    if (!isProduction) {
+        return message;
+    }
+
+    // Production: Return generic messages
+    const lowerMessage = message.toLowerCase();
+
+    // Safe errors to pass through (user-facing)
+    const safePatterns = [
+        'not found', 'already owned', 'insufficient balance',
+        'invalid wallet', 'item not', 'requires higher',
+        'purchase expired', 'signature required', 'already used',
+        'cannot purchase', 'cannot unequip'
+    ];
+
+    for (const pattern of safePatterns) {
+        if (lowerMessage.includes(pattern)) {
+            return message;
+        }
+    }
+
+    // Generic fallback for internal errors
+    if (lowerMessage.includes('jwt') || lowerMessage.includes('token')) {
+        return 'Authentication error';
+    }
+    if (lowerMessage.includes('database') || lowerMessage.includes('sql')) {
+        return 'Database error';
+    }
+    if (lowerMessage.includes('network') || lowerMessage.includes('fetch') || lowerMessage.includes('helius')) {
+        return 'Network error';
+    }
+
+    return 'An error occurred';
+}
 
 // ============================================
 // MIDDLEWARE
@@ -104,8 +158,7 @@ app.post('/api/auth/challenge', (req, res) => {
         res.json(challenge);
 
     } catch (error) {
-        console.error('Challenge error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'challenge') });
     }
 });
 
@@ -125,8 +178,7 @@ app.post('/api/auth/verify', async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Auth error:', error);
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ error: sanitizeError(error, 'auth') });
     }
 });
 
@@ -141,8 +193,7 @@ app.get('/api/auth/refresh', authMiddleware, async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Refresh error:', error);
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ error: sanitizeError(error, 'refresh') });
     }
 });
 
@@ -176,8 +227,7 @@ app.get('/api/user/profile', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Profile error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'profile') });
     }
 });
 
@@ -205,8 +255,7 @@ app.get('/api/shop/catalog', optionalAuthMiddleware, async (req, res) => {
         res.json({ items: catalog });
 
     } catch (error) {
-        console.error('Catalog error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'catalog') });
     }
 });
 
@@ -222,8 +271,7 @@ app.get('/api/shop/inventory', authMiddleware, async (req, res) => {
         res.json({ inventory, equipped });
 
     } catch (error) {
-        console.error('Inventory error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'inventory') });
     }
 });
 
@@ -251,8 +299,7 @@ app.post('/api/shop/purchase', authMiddleware, async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Purchase init error:', error);
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: sanitizeError(error, 'purchase-init') });
     }
 });
 
@@ -272,8 +319,7 @@ app.post('/api/shop/purchase/confirm', authMiddleware, async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Purchase confirm error:', error);
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: sanitizeError(error, 'purchase-confirm') });
     }
 });
 
@@ -290,8 +336,7 @@ app.post('/api/shop/equip', authMiddleware, async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Equip error:', error);
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: sanitizeError(error, 'equip') });
     }
 });
 
@@ -307,8 +352,7 @@ app.post('/api/shop/unequip', authMiddleware, async (req, res) => {
         res.json(result);
 
     } catch (error) {
-        console.error('Unequip error:', error);
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: sanitizeError(error, 'unequip') });
     }
 });
 
@@ -332,8 +376,7 @@ app.get('/api/ecosystem/stats', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Stats error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'stats') });
     }
 });
 
@@ -349,8 +392,7 @@ app.get('/api/ecosystem/burns', async (req, res) => {
         res.json({ burns });
 
     } catch (error) {
-        console.error('Burns error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: sanitizeError(error, 'burns') });
     }
 });
 
@@ -376,8 +418,7 @@ app.get('/api/config/public', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Config error:', error);
-        // Return defaults on error
+        sanitizeError(error, 'config'); // Log but return defaults
         res.json({
             tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
             minHolderBalance: 1_000_000,
@@ -388,12 +429,21 @@ app.get('/api/config/public', async (req, res) => {
 });
 
 // ============================================
-// ERROR HANDLING
+// GLOBAL ERROR HANDLER
 // ============================================
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    const safeMessage = sanitizeError(err, 'unhandled');
+
+    // Don't leak stack traces in production
+    if (isProduction) {
+        res.status(500).json({ error: 'Internal server error' });
+    } else {
+        res.status(500).json({
+            error: safeMessage,
+            stack: err.stack
+        });
+    }
 });
 
 // ============================================
