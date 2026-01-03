@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const viewName = hash.replace('#view-', '');
             // Valid views: learn, tools, build, play, games, faq-glossary
             const validViews = ['learn', 'tools', 'build', 'play', 'games', 'faq-glossary'];
-            if (validViews.includes(viewName) && typeof switchView === 'function') {
+            if (validViews.includes(viewName) && typeof window.switchView === 'function') {
                 // Small delay to ensure DOM is fully ready
                 setTimeout(function() {
-                    switchView(viewName);
+                    window.switchView(viewName);
                     // Update nav-tab active state
                     document.querySelectorAll('.nav-tab').forEach(function(tab) {
                         tab.classList.remove('active');
@@ -63,7 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         btn.addEventListener('click', function() {
-            switchView(viewName);
+            if (typeof window.switchView === 'function') {
+                window.switchView(viewName);
+            }
         });
     });
 
@@ -101,14 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.nav-level').forEach(function(el) {
         el.addEventListener('click', function() {
             const level = parseInt(this.dataset.level);
-            if (level) goToLevel(level);
+            if (level && typeof window.goToLevel === 'function') window.goToLevel(level);
         });
     });
 
     // Reveal boxes
     document.querySelectorAll('.reveal-box').forEach(function(box) {
         box.addEventListener('click', function() {
-            toggleReveal(this);
+            if (typeof window.toggleReveal === 'function') window.toggleReveal(this);
         });
     });
 
@@ -123,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (match) level = parseInt(match[1]);
             }
             const correct = this.dataset.correct === 'true';
-            checkAnswer(this, level, correct);
+            if (typeof window.checkAnswer === 'function') window.checkAnswer(this, level, correct);
         });
     });
 
@@ -131,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[id^="unlock-level-"]').forEach(function(btn) {
         const level = parseInt(btn.id.replace('unlock-level-', ''));
         btn.addEventListener('click', function() {
-            unlockLevel(level);
+            if (typeof window.unlockLevel === 'function') window.unlockLevel(level);
         });
     });
 
@@ -143,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentLevel = parseInt(section.id.replace('level-', ''));
                 if (currentLevel > 1) {
                     btn.addEventListener('click', function() {
-                        goToLevel(currentLevel - 1);
+                        if (typeof window.goToLevel === 'function') window.goToLevel(currentLevel - 1);
                     });
                 }
             }
@@ -153,18 +155,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Complete course button
     const completeCourseBtn = document.getElementById('complete-course');
     if (completeCourseBtn) {
-        completeCourseBtn.addEventListener('click', completeCourse);
+        completeCourseBtn.addEventListener('click', function() {
+            if (typeof window.completeCourse === 'function') window.completeCourse();
+        });
     }
 
     // Share completion button
     document.querySelectorAll('.btn-share').forEach(function(btn) {
-        btn.addEventListener('click', shareCompletion);
+        btn.addEventListener('click', function() {
+            if (typeof window.shareCompletion === 'function') window.shareCompletion();
+        });
     });
 
     // Reset progress button
     document.querySelectorAll('.btn').forEach(function(btn) {
         if (btn.textContent.includes('Reset Progress')) {
-            btn.addEventListener('click', resetProgress);
+            btn.addEventListener('click', function() {
+                if (typeof window.resetProgress === 'function') window.resetProgress();
+            });
         }
     });
 
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const filter = this.dataset.filter;
             const value = this.dataset.value;
-            if (filter && value) filterProjects(filter, value);
+            if (filter && value && typeof window.filterProjects === 'function') window.filterProjects(filter, value);
         });
     });
 
@@ -181,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-docs').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const project = this.dataset.project || this.closest('.project-card')?.dataset.project;
-            if (project) openDocs(project);
+            if (project && typeof window.openDocs === 'function') window.openDocs(project);
         });
     });
 
@@ -189,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.doc-close').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const modal = this.closest('#doc-modal');
-            if (modal) closeDocs();
+            if (modal && typeof window.closeDocs === 'function') window.closeDocs();
             const deepModal = this.closest('#deep-learn-modal');
-            if (deepModal) closeDeepLearn();
+            if (deepModal && typeof window.closeDeepLearn === 'function') window.closeDeepLearn();
         });
     });
 
@@ -203,8 +211,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (deepLearnBtn) {
                 const project = deepLearnBtn.dataset.project;
                 if (project) {
-                    closeDocs();
-                    openDeepLearn(project);
+                    if (typeof window.closeDocs === 'function') window.closeDocs();
+                    if (typeof window.openDeepLearn === 'function') window.openDeepLearn(project);
                 }
             }
         });
@@ -215,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const gameId = card.dataset.game;
         if (gameId) {
             card.addEventListener('click', function() {
-                openGame(gameId);
+                if (typeof window.openGame === 'function') window.openGame(gameId);
             });
         }
     });
@@ -245,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = this.closest('.game-modal');
             if (modal) {
                 const gameId = modal.id.replace('game-', '');
-                closeGame(gameId);
+                if (typeof window.closeGame === 'function') window.closeGame(gameId);
             }
         });
     });
@@ -255,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = this.closest('.game-modal');
             if (modal) {
                 const gameId = modal.id.replace('game-', '');
-                resetGame(gameId);
+                if (typeof window.resetGame === 'function') window.resetGame(gameId);
             }
         });
     });
@@ -264,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.sequence-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const step = this.dataset.step;
-            if (step) sequenceClick(step);
+            if (step && typeof window.sequenceClick === 'function') window.sequenceClick(step);
         });
     });
 
@@ -273,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const upgradeId = btn.id.replace('upgrade-', '');
         if (upgradeId) {
             btn.addEventListener('click', function() {
-                buyUpgrade(upgradeId);
+                if (typeof window.buyUpgrade === 'function') window.buyUpgrade(upgradeId);
             });
         }
     });
@@ -281,33 +289,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Burn clicker button
     const clickerBtn = document.getElementById('clicker-btn');
     if (clickerBtn) {
-        clickerBtn.addEventListener('click', clickBurn);
+        clickerBtn.addEventListener('click', function() {
+            if (typeof window.clickBurn === 'function') window.clickBurn();
+        });
     }
 
     // Blaster arena
     const blasterArena = document.getElementById('blaster-arena');
     if (blasterArena) {
-        blasterArena.addEventListener('click', blasterShoot);
+        blasterArena.addEventListener('click', function() {
+            if (typeof window.blasterShoot === 'function') window.blasterShoot();
+        });
     }
 
     // Stacker area
     const stackerArea = document.getElementById('stacker-area');
     if (stackerArea) {
-        stackerArea.addEventListener('click', stackerDrop);
+        stackerArea.addEventListener('click', function() {
+            if (typeof window.stackerDrop === 'function') window.stackerDrop();
+        });
     }
 
     // Defense tower buttons
     document.querySelectorAll('.defense-tower-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const tower = this.id.replace('tower-', '');
-            if (tower) selectTower(tower);
+            if (tower && typeof window.selectTower === 'function') window.selectTower(tower);
         });
     });
 
     // FAQ items
     document.querySelectorAll('.faq-item').forEach(function(item) {
         item.addEventListener('click', function() {
-            toggleFaq(this);
+            if (typeof window.toggleFaq === 'function') window.toggleFaq(this);
         });
     });
 
@@ -316,19 +330,25 @@ document.addEventListener('DOMContentLoaded', function() {
     calcInputs.forEach(function(id) {
         const input = document.getElementById(id);
         if (input) {
-            input.addEventListener('input', calculateBurn);
+            input.addEventListener('input', function() {
+                if (typeof window.calculateBurn === 'function') window.calculateBurn();
+            });
         }
     });
 
     const calcPeriod = document.getElementById('calc-period');
     if (calcPeriod) {
-        calcPeriod.addEventListener('change', calculateBurn);
+        calcPeriod.addEventListener('change', function() {
+            if (typeof window.calculateBurn === 'function') window.calculateBurn();
+        });
     }
 
     // Glossary search
     const glossarySearch = document.getElementById('glossary-search');
     if (glossarySearch) {
-        glossarySearch.addEventListener('input', filterGlossary);
+        glossarySearch.addEventListener('input', function() {
+            if (typeof window.filterGlossary === 'function') window.filterGlossary();
+        });
     }
 
     // Eco cards with URLs
@@ -349,8 +369,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const completionBadge = document.getElementById('completion-badge');
     if (completionBadge) {
         completionBadge.addEventListener('click', function() {
-            if (typeof showPillModal === 'function') {
-                showPillModal();
+            if (typeof window.showPillModal === 'function') {
+                window.showPillModal();
             }
         });
     }
@@ -359,8 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const pillYes = document.getElementById('pill-yes');
     if (pillYes) {
         pillYes.addEventListener('click', function() {
-            if (typeof unlockHome === 'function') {
-                unlockHome();
+            if (typeof window.unlockHome === 'function') {
+                window.unlockHome();
             }
         });
     }
@@ -369,8 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const pillNo = document.getElementById('pill-no');
     if (pillNo) {
         pillNo.addEventListener('click', function() {
-            if (typeof resetLearnProgress === 'function') {
-                resetLearnProgress();
+            if (typeof window.resetLearnProgress === 'function') {
+                window.resetLearnProgress();
             }
         });
     }
@@ -379,8 +399,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const pillModal = document.getElementById('pill-modal');
     if (pillModal) {
         pillModal.addEventListener('click', function(e) {
-            if (e.target === pillModal && typeof hidePillModal === 'function') {
-                hidePillModal();
+            if (e.target === pillModal && typeof window.hidePillModal === 'function') {
+                window.hidePillModal();
             }
         });
     }
@@ -391,9 +411,148 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.leaderboard-tab').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const period = this.dataset.period;
-            if (period && typeof switchLeaderboardTab === 'function') {
-                switchLeaderboardTab(period);
+            if (period && typeof window.switchLeaderboardTab === 'function') {
+                window.switchLeaderboardTab(period);
             }
         });
     });
+
+    // ============================================
+    // PROJECT FINDER - Build Section Quiz
+    // ============================================
+    const projectFinderBtn = document.getElementById('project-finder-btn');
+    if (projectFinderBtn) {
+        projectFinderBtn.addEventListener('click', function() {
+            if (typeof window.openProjectFinder === 'function') {
+                window.openProjectFinder();
+            }
+        });
+    }
+
+    const projectFinderClose = document.getElementById('project-finder-close');
+    if (projectFinderClose) {
+        projectFinderClose.addEventListener('click', function() {
+            if (typeof window.closeProjectFinder === 'function') {
+                window.closeProjectFinder();
+            }
+        });
+    }
+
+    const projectFinderRestart = document.getElementById('pf-restart-btn');
+    if (projectFinderRestart) {
+        projectFinderRestart.addEventListener('click', function() {
+            if (typeof window.restartProjectFinder === 'function') {
+                window.restartProjectFinder();
+            }
+        });
+    }
+
+    // Start Your Journey from Project Finder result
+    const pfJourneyBtn = document.getElementById('pf-journey-btn');
+    if (pfJourneyBtn) {
+        pfJourneyBtn.addEventListener('click', function() {
+            if (typeof window.startJourneyFromFinder === 'function') {
+                window.startJourneyFromFinder();
+            }
+        });
+    }
+
+    // Close modal on background click
+    const projectFinderModal = document.getElementById('project-finder-modal');
+    if (projectFinderModal) {
+        projectFinderModal.addEventListener('click', function(e) {
+            if (e.target === projectFinderModal && typeof window.closeProjectFinder === 'function') {
+                window.closeProjectFinder();
+            }
+        });
+    }
+
+    // ============================================
+    // YOUR JOURNEY - Builder Training Platform
+    // ============================================
+    const yourJourneyBtn = document.getElementById('your-journey-btn');
+    if (yourJourneyBtn) {
+        yourJourneyBtn.addEventListener('click', function() {
+            if (typeof window.openYourJourney === 'function') {
+                window.openYourJourney();
+            }
+        });
+    }
+
+    const yjClose = document.getElementById('yj-close');
+    if (yjClose) {
+        yjClose.addEventListener('click', function() {
+            if (typeof window.closeYourJourney === 'function') {
+                window.closeYourJourney();
+            }
+        });
+    }
+
+    // Pillar selection buttons
+    document.querySelectorAll('.yj-pillar').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const pillar = this.dataset.pillar;
+            if (pillar && typeof window.selectJourneyPillar === 'function') {
+                window.selectJourneyPillar(pillar);
+            }
+        });
+    });
+
+    // Roadmap step navigation
+    document.querySelectorAll('.yj-roadmap-step').forEach(function(step) {
+        step.addEventListener('click', function() {
+            const moduleIndex = parseInt(this.dataset.module);
+            if (!isNaN(moduleIndex) && typeof window.goToJourneyModule === 'function') {
+                window.goToJourneyModule(moduleIndex);
+            }
+        });
+    });
+
+    // Module navigation buttons
+    const yjPrevModule = document.getElementById('yj-prev-module');
+    if (yjPrevModule) {
+        yjPrevModule.addEventListener('click', function() {
+            if (typeof window.journeyPrevModule === 'function') {
+                window.journeyPrevModule();
+            }
+        });
+    }
+
+    const yjNextModule = document.getElementById('yj-next-module');
+    if (yjNextModule) {
+        yjNextModule.addEventListener('click', function() {
+            if (typeof window.journeyNextModule === 'function') {
+                window.journeyNextModule();
+            }
+        });
+    }
+
+    // Close modal on background click
+    const yourJourneyModal = document.getElementById('your-journey-modal');
+    if (yourJourneyModal) {
+        yourJourneyModal.addEventListener('click', function(e) {
+            if (e.target === yourJourneyModal && typeof window.closeYourJourney === 'function') {
+                window.closeYourJourney();
+            }
+        });
+    }
+
+    // Stats panel
+    const statsBtn = document.getElementById('yj-stats-btn');
+    if (statsBtn) {
+        statsBtn.addEventListener('click', function() {
+            if (typeof window.openStatsPanel === 'function') {
+                window.openStatsPanel();
+            }
+        });
+    }
+
+    const statsClose = document.getElementById('yj-stats-close');
+    if (statsClose) {
+        statsClose.addEventListener('click', function() {
+            if (typeof window.closeStatsPanel === 'function') {
+                window.closeStatsPanel();
+            }
+        });
+    }
 });

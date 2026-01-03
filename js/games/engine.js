@@ -2892,7 +2892,7 @@ function startPumpArena(gameId) {
     // Override overflow:hidden from .game-arena CSS to allow scrolling
     arena.style.overflow = 'auto';
 
-    // Project Builder - CCM Community Builder Partnership Game
+    // Project Builder - Community Builder Partnership Game
     // Join projects, contribute to teams, build together, grow your influence
     const state = {
         score: 0,
@@ -6770,21 +6770,47 @@ function startLiquidityMaze(gameId) {
     };
 }
 
-// Pump Arena
-let pumpArenaMode = 'classic';
+// Pump Arena RPG
+let pumpArenaMode = 'rpg';
 
-function openPumpArena(mode = 'classic') {
-    pumpArenaMode = 'classic'; // Force classic mode only
-    // Open modal directly (pumparena is not in GAMES array)
+function openPumpArena(mode = 'rpg') {
+    pumpArenaMode = mode;
+
+    // Open modal
     const modal = document.getElementById('modal-pumparena');
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        // Initialize RPG mode
+        if (window.PumpArenaRPG) {
+            // Small delay to ensure modal is visible
+            setTimeout(() => {
+                window.PumpArenaRPG.init('arena-pumparena');
+            }, 100);
+        } else {
+            console.warn('[PumpArena] RPG module not loaded, falling back to classic');
+            startPumpArena('pumparena');
+        }
+    }
+}
+
+function closePumpArena() {
+    const modal = document.getElementById('modal-pumparena');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Clean up RPG
+        if (window.PumpArenaRPG) {
+            window.PumpArenaRPG.close();
+        }
     }
 }
 
 // Export functions to window for main.js access
 window.openPumpArena = openPumpArena;
+window.closePumpArena = closePumpArena;
 window.startGame = startGame;
 window.openGame = openGame;
 window.closeGame = closeGame;

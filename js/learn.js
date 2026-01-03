@@ -31,6 +31,59 @@
             }
         }
 
+        /**
+         * Sanitize HTML content using DOMPurify
+         * Prevents XSS attacks while allowing safe HTML
+         * @param {string} html - HTML content to sanitize
+         * @param {Object} options - DOMPurify options
+         * @returns {string} Sanitized HTML
+         */
+        function sanitizeHtml(html) {
+            if (typeof html !== 'string') return '';
+
+            // Use DOMPurify if available
+            if (typeof DOMPurify !== 'undefined') {
+                return DOMPurify.sanitize(html, {
+                    ALLOWED_TAGS: [
+                        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'div',
+                        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                        'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+                        'a', 'img', 'figure', 'figcaption',
+                        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+                        'pre', 'code', 'blockquote', 'hr',
+                        'input', 'button', 'label', 'select', 'option',
+                        'svg', 'path', 'circle', 'rect', 'line', 'g'
+                    ],
+                    ALLOWED_ATTR: [
+                        'href', 'src', 'alt', 'title', 'class', 'id', 'style',
+                        'data-*', 'type', 'value', 'placeholder', 'disabled',
+                        'checked', 'name', 'for', 'colspan', 'rowspan',
+                        'target', 'rel', 'width', 'height',
+                        'viewBox', 'd', 'fill', 'stroke', 'stroke-width',
+                        'cx', 'cy', 'r', 'x', 'y', 'x1', 'y1', 'x2', 'y2'
+                    ],
+                    ALLOW_DATA_ATTR: true,
+                    ADD_ATTR: ['target'],
+                    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+                    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+                });
+            }
+
+            // Fallback: basic HTML escaping if DOMPurify not loaded
+            console.warn('[Security] DOMPurify not loaded, using basic escaping');
+            return escapeHtml(html);
+        }
+
+        /**
+         * Safely set innerHTML with sanitization
+         * @param {Element} element - DOM element
+         * @param {string} html - HTML content
+         */
+        function safeInnerHTML(element, html) {
+            if (!element) return;
+            element.innerHTML = sanitizeHtml(html);
+        }
+
         // ============================================
         // STATE MANAGEMENT
         // ============================================
@@ -40,6 +93,7 @@
         const defaultState = {
             currentLevel: 1,
             completedLevels: [],
+            completedQuizzes: [],  // Track which quizzes have been answered correctly
             totalXP: 0,
             startTime: null,
             wrongAnswers: 0,
@@ -59,9 +113,12 @@
             if (typeof data.courseCompleted !== 'boolean') return false;
             // homeUnlocked is optional for backwards compatibility
             if (data.homeUnlocked !== undefined && typeof data.homeUnlocked !== 'boolean') return false;
+            // completedQuizzes is optional for backwards compatibility
+            if (data.completedQuizzes !== undefined && !Array.isArray(data.completedQuizzes)) return false;
             // Validate array contents
             if (!data.completedLevels.every(l => typeof l === 'number' && l >= 1 && l <= 5)) return false;
             if (!data.badges.every(b => typeof b === 'string' && b.length < 50)) return false;
+            if (data.completedQuizzes && !data.completedQuizzes.every(q => typeof q === 'number' && q >= 1 && q <= 5)) return false;
             return true;
         }
 
@@ -212,9 +269,13 @@
             });
         }
 
-        function goToLevel(level) {
+        function goToLevel(level, skipCheck) {
             const state = getState();
-            if (level > state.currentLevel && !state.completedLevels.includes(level)) return;
+
+            // Skip the check if called from unlockLevel (which already validated)
+            if (!skipCheck && level > state.currentLevel && !state.completedLevels.includes(level)) {
+                return;
+            }
 
             document.querySelectorAll('.level-section').forEach(el => el.classList.remove('active'));
             const targetSection = document.getElementById('level-' + level);
@@ -244,7 +305,7 @@
             state.currentLevel = level;
             saveState(state);
             updateNavigation();
-            goToLevel(level);
+            goToLevel(level, true);  // skipCheck=true since we already updated state
         }
 
         function completeCourse() {
@@ -849,7 +910,7 @@ docker run asdf-grinder
                 <a href="${escapeHtml(doc.github)}/issues/new" class="doc-link secondary" target="_blank" rel="noopener noreferrer">Report Issue</a>
             </div>`;
 
-            body.innerHTML = html;
+            safeInnerHTML(body, html);
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -1029,7 +1090,7 @@ User trades on Pump.fun
 
 <span class="comment">// Check burn stats</span>
 <span class="keyword">const</span> stats = <span class="keyword">await</span> engine.<span class="function">getStats</span>();
-console.log(<span class="string">\`Total burned: \${stats.totalBurned}\`</span>);</div>
+console.log('Total burned: ' + stats.totalBurned);</div>
 
                         <h4>Direct RPC Integration</h4>
                         <div class="deep-code">
@@ -1403,7 +1464,7 @@ npm run build</div>
     creatorAddress: <span class="string">'7xKX...abc'</span>,
     rpcUrl: <span class="string">'https://api.mainnet-beta.solana.com'</span>,
     onFeeDetected: (fee) => {
-        console.log(<span class="string">\`Fee: \${fee.amount} SOL from \${fee.tokenMint}\`</span>);
+        console.log('Fee: ' + fee.amount + ' SOL from ' + fee.tokenMint);
     },
     onError: (error) => {
         console.error(<span class="string">'Error:'</span>, error);
@@ -1708,7 +1769,7 @@ npx serve .
 <span class="keyword">export async function</span> <span class="function">getPrice</span>(mint) {
     <span class="comment">// Default: Jupiter Price API</span>
     <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="function">fetch</span>(
-        <span class="string">\`https://price.jup.ag/v4/price?ids=\${mint}\`</span>
+        'https://price.jup.ag/v4/price?ids=' + mint
     );
     <span class="keyword">return</span> response.<span class="function">json</span>();
 }</div>
@@ -2127,7 +2188,7 @@ docker-compose up -d</div>
 <span class="keyword">const</span> { jobId } = <span class="keyword">await</span> response.<span class="function">json</span>();
 
 <span class="comment">// Poll for status</span>
-<span class="keyword">const</span> status = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">\`/api/status/\${jobId}\`</span>);</div>
+<span class="keyword">const</span> status = <span class="keyword">await</span> <span class="function">fetch</span>('/api/status/' + jobId);</div>
 
                         <h4>Launch Statuses</h4>
                         <table class="deep-table">
@@ -2362,14 +2423,14 @@ CMD ["asdf_grinder"]</div>
                 const safeProjectId = escapeHtml(projectId);
                 navHtml += `<button class="deep-nav-btn ${index === 0 ? 'active' : ''}" onclick="switchDeepTab('${safeProjectId}', '${safeTab}')">${safeTab}</button>`;
             });
-            nav.innerHTML = navHtml;
+            safeInnerHTML(nav, navHtml);
 
             // Build content sections
             let contentHtml = '';
             doc.tabs.forEach((tab, index) => {
                 contentHtml += `<div class="deep-section ${index === 0 ? 'active' : ''}" id="deep-section-${tab.replace(/\s+/g, '-')}">${doc.content[tab]}</div>`;
             });
-            body.innerHTML = contentHtml;
+            safeInnerHTML(body, contentHtml);
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2440,6 +2501,13 @@ CMD ["asdf_grinder"]</div>
                 feedback.className = 'quiz-feedback show success';
                 feedback.textContent = '✓ Correct! +25 XP';
                 addXP(XP_VALUES.quiz);
+
+                // Save completed quiz to persist across page refresh
+                if (!state.completedQuizzes) state.completedQuizzes = [];
+                if (!state.completedQuizzes.includes(level)) {
+                    state.completedQuizzes.push(level);
+                    saveState(state);
+                }
 
                 const nextBtn = document.getElementById('unlock-level-' + (level + 1)) ||
                                document.getElementById('complete-course');
@@ -2706,7 +2774,7 @@ CMD ["asdf_grinder"]</div>
                     document.getElementById('defense-start').disabled = false;
                     document.getElementById('defense-wave').textContent = '1';
                     document.getElementById('defense-gold').textContent = '150';
-                    document.getElementById('defense-lives').innerHTML = '<span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span>';
+                    safeInnerHTML(document.getElementById('defense-lives'), '<span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span>');
                     break;
                 case 'stacker': {
                     const viewport = document.getElementById('stacker-viewport');
@@ -4753,7 +4821,7 @@ CMD ["asdf_grinder"]</div>
                 chapter: 6,
                 title: 'The Creator Dilemma',
                 visual: '🏛️',
-                text: `<p>You discover the concept of <strong>CCM - Creator Capital Market</strong>.</p>
+                text: `<p>You discover the <strong>ASDF vision</strong>.</p>
                        <p>The idea: support creators who build real value, not pump-and-dumpers who extract it.</p>
                        <p>A new project launches. The founder promises 100x. No product, just hype.</p>
                        <p>Meanwhile, another creator quietly builds useful tools for the ecosystem.</p>
@@ -4767,7 +4835,7 @@ CMD ["asdf_grinder"]</div>
                         effects: { diamond: +15, knowledge: +15, community: +15, portfolio: +150 },
                         outcome: `<p>You support the builder. Their tools gain adoption. Real utility creates real value.</p>
                                   <p>The hype project rugs within a month. Your judgment was correct.</p>
-                                  <p><strong>CCM mindset: reward creation, not extraction.</strong></p>`,
+                                  <p><strong>ASDF mindset: reward creation, not extraction.</strong></p>`,
                         lesson: 'Support builders who create lasting value'
                     },
                     {
@@ -4819,9 +4887,9 @@ CMD ["asdf_grinder"]</div>
             { icon: '🚀', text: 'FOMO buying at all-time high without research', correct: false, category: 'market' },
             { icon: '🔥', text: 'Understanding: sells also contribute to burns', correct: true, category: 'knowledge' },
 
-            // CCM values
-            { icon: '🏗️', text: 'Supporting a creator who builds useful tools', correct: true, category: 'ccm' },
-            { icon: '🎰', text: 'Chasing hype project with no product', correct: false, category: 'ccm' },
+            // ASDF values
+            { icon: '🏗️', text: 'Supporting a creator who builds useful tools', correct: true, category: 'asdf' },
+            { icon: '🎰', text: 'Chasing hype project with no product', correct: false, category: 'asdf' },
             { icon: '🤝', text: 'Sharing knowledge with the community', correct: true, category: 'community' },
             { icon: '⚔️', text: 'Attacking FUDders aggressively', correct: false, category: 'community' },
             { icon: '🧐', text: 'Verifying claims with on-chain data', correct: true, category: 'dyor' },
@@ -4831,7 +4899,7 @@ CMD ["asdf_grinder"]</div>
             { icon: '🐋', text: 'Blaming whales for every price drop', correct: false, category: 'community' },
             { icon: '📊', text: 'Checking treasury transparency regularly', correct: true, category: 'dyor' },
             { icon: '😱', text: 'Believing anonymous FUD without verification', correct: false, category: 'dyor' },
-            { icon: '🏛️', text: 'CCM: Reward creation, not extraction', correct: true, category: 'ccm' }
+            { icon: '🏛️', text: 'ASDF vision: Reward creation, not extraction', correct: true, category: 'asdf' }
         ];
 
         // Final Test Game State
@@ -5108,7 +5176,7 @@ CMD ["asdf_grinder"]</div>
 
             // Show bonus
             const bonusEl = document.getElementById('results-bonus');
-            bonusEl.innerHTML = `💎 +${Math.floor(bonusPoints * 0.3)} | 🧠 +${Math.floor(bonusPoints * 0.4)} | 🤝 +${Math.floor(bonusPoints * 0.3)}`;
+            safeInnerHTML(bonusEl, `💎 +${Math.floor(bonusPoints * 0.3)} | 🧠 +${Math.floor(bonusPoints * 0.4)} | 🤝 +${Math.floor(bonusPoints * 0.3)}`);
         }
 
         function getJourneyState() {
@@ -5234,7 +5302,7 @@ CMD ["asdf_grinder"]</div>
             document.getElementById('story-chapter').textContent = 'Chapter ' + chapterNum;
             document.getElementById('story-title').textContent = chapter.title;
             document.getElementById('scene-visual').textContent = chapter.visual;
-            document.getElementById('scene-text').innerHTML = chapter.text;
+            safeInnerHTML(document.getElementById('scene-text'), chapter.text);
 
             // Hide outcome, show choices
             document.getElementById('story-outcome').style.display = 'none';
@@ -5245,14 +5313,14 @@ CMD ["asdf_grinder"]</div>
             chapter.choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'story-choice';
-                btn.innerHTML = `
-                    <span class="choice-icon">${choice.icon}</span>
+                safeInnerHTML(btn, `
+                    <span class="choice-icon">${escapeHtml(choice.icon)}</span>
                     <div class="choice-content">
-                        <div class="choice-text">${choice.text}</div>
-                        <div class="choice-hint">${choice.hint}</div>
+                        <div class="choice-text">${escapeHtml(choice.text)}</div>
+                        <div class="choice-hint">${escapeHtml(choice.hint)}</div>
                     </div>
                     <span class="choice-arrow">→</span>
-                `;
+                `);
                 btn.addEventListener('click', () => makeChoice(chapterNum, choice));
                 choicesContainer.appendChild(btn);
             });
@@ -5288,7 +5356,7 @@ CMD ["asdf_grinder"]</div>
             const outcomeEl = document.getElementById('story-outcome');
             outcomeEl.style.display = 'block';
 
-            document.getElementById('outcome-content').innerHTML = choice.outcome;
+            safeInnerHTML(document.getElementById('outcome-content'), choice.outcome);
 
             // Show stat changes
             const statsHtml = [];
@@ -5304,7 +5372,7 @@ CMD ["asdf_grinder"]</div>
             if (choice.effects.portfolio !== 0) {
                 statsHtml.push(`<span class="outcome-stat ${choice.effects.portfolio > 0 ? 'positive' : 'negative'}">💰 ${choice.effects.portfolio > 0 ? '+' : ''}${choice.effects.portfolio}</span>`);
             }
-            document.getElementById('outcome-stats').innerHTML = statsHtml.join('');
+            safeInnerHTML(document.getElementById('outcome-stats'), statsHtml.join(''));
         }
 
         function nextChapter() {
@@ -5429,11 +5497,20 @@ Play at alonisthe.dev/learn #ASDF #ThisIsFine`;
             // Go to current level
             goToLevel(state.currentLevel);
 
-            // Re-enable buttons for completed quizzes
-            state.completedLevels.forEach(level => {
+            // Re-enable buttons for completed quizzes (from completedQuizzes or completedLevels)
+            const quizzesToRestore = new Set([
+                ...(state.completedQuizzes || []),
+                ...state.completedLevels
+            ]);
+            quizzesToRestore.forEach(level => {
                 const nextBtn = document.getElementById('unlock-level-' + (level + 1));
                 if (nextBtn) nextBtn.disabled = false;
             });
+            // Also enable complete-course button if level 5 quiz was completed
+            if (quizzesToRestore.has(5)) {
+                const completeBtn = document.getElementById('complete-course');
+                if (completeBtn) completeBtn.disabled = false;
+            }
 
             // Show completion if already done
             if (state.courseCompleted) {
@@ -5484,11 +5561,5205 @@ Play at alonisthe.dev/learn #ASDF #ThisIsFine`;
                     checkCatch();
                 }
             }, 50);
+
+            // Nav-tab click handlers for view switching
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const text = this.textContent.toLowerCase().trim();
+                    // Skip dropdown triggers and Tools dropdown
+                    if (this.classList.contains('nav-tab-trigger')) return;
+
+                    // Map button text to view names
+                    const viewMap = {
+                        'learn': 'learn',
+                        'build': 'build',
+                        'play': 'play',
+                        'games': 'games',
+                        'faq/glossary': 'faq-glossary'
+                    };
+
+                    const viewName = viewMap[text];
+                    if (viewName) {
+                        switchView(viewName);
+                    }
+                });
+            });
+
+            // Handle URL hash for direct linking
+            function handleHashChange() {
+                const hash = window.location.hash.replace('#', '');
+                if (hash && hash.startsWith('view-')) {
+                    const viewName = hash.replace('view-', '');
+                    switchView(viewName);
+                }
+            }
+            handleHashChange();
+            window.addEventListener('hashchange', handleHashChange);
         });
+
+        // ============================================
+        // PROJECT FINDER - Build Section Quiz
+        // ============================================
+
+        const PROJECT_FINDER_STORAGE = 'asdf_project_finder_data';
+
+        const PROJECT_FINDER_QUESTIONS = [
+            {
+                id: 'skill',
+                question: "What's your skill level?",
+                subtitle: "Be honest - we'll find the right fit",
+                options: [
+                    { id: 'beginner', icon: '🌱', label: 'Beginner', desc: 'New to crypto/coding' },
+                    { id: 'intermediate', icon: '🌿', label: 'Intermediate', desc: 'Some experience' },
+                    { id: 'advanced', icon: '🌳', label: 'Advanced', desc: 'Experienced builder' }
+                ]
+            },
+            {
+                id: 'interest',
+                question: "What interests you most?",
+                subtitle: "Pick your main area of focus",
+                options: [
+                    { id: 'code', icon: '💻', label: 'Code & Dev', desc: 'Smart contracts, bots, tools' },
+                    { id: 'design', icon: '🎨', label: 'Design & UX', desc: 'Visuals, interfaces, branding' },
+                    { id: 'content', icon: '✍️', label: 'Content', desc: 'Writing, videos, education' },
+                    { id: 'community', icon: '🤝', label: 'Community', desc: 'Moderation, support, growth' }
+                ]
+            },
+            {
+                id: 'time',
+                question: "How much time can you invest?",
+                subtitle: "Weekly commitment",
+                options: [
+                    { id: 'minimal', icon: '⏰', label: '1-2 hours', desc: 'Light involvement' },
+                    { id: 'moderate', icon: '📅', label: '5-10 hours', desc: 'Regular contributor' },
+                    { id: 'dedicated', icon: '🔥', label: '10+ hours', desc: 'Dedicated builder' }
+                ]
+            },
+            {
+                id: 'goal',
+                question: "What's your main goal?",
+                subtitle: "What do you want to achieve?",
+                options: [
+                    { id: 'learn', icon: '📚', label: 'Learn', desc: 'Gain new skills' },
+                    { id: 'contribute', icon: '🛠️', label: 'Contribute', desc: 'Help existing projects' },
+                    { id: 'create', icon: '🚀', label: 'Create', desc: 'Build something new' },
+                    { id: 'earn', icon: '💰', label: 'Earn', desc: 'Monetize skills' }
+                ]
+            }
+        ];
+
+        const PROJECT_RECOMMENDATIONS = {
+            // Beginner paths
+            'beginner-content-minimal-learn': {
+                icon: '📝', name: 'Content Creator Starter',
+                desc: 'Start by creating simple educational content - tweets, threads, or memes about ASDF. Perfect for learning while contributing.',
+                tags: ['Low commitment', 'Creative', 'Learning'],
+                link: 'build.html#marketplace',
+                pillar: 'content', level: 'beginner'
+            },
+            'beginner-community-minimal-learn': {
+                icon: '💬', name: 'Community Helper',
+                desc: 'Join Discord and help answer questions from newcomers. Great way to learn the ecosystem while building reputation.',
+                tags: ['Social', 'Supportive', 'Flexible'],
+                link: 'build.html#marketplace',
+                pillar: 'community', level: 'beginner'
+            },
+            'beginner-code-moderate-learn': {
+                icon: '🎓', name: 'Dev Academy Path',
+                desc: 'Follow our tutorials to learn Solana development. Start with simple scripts and work your way up to smart contracts.',
+                tags: ['Educational', 'Structured', 'Technical'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'beginner'
+            },
+            'beginner-design-minimal-contribute': {
+                icon: '🎨', name: 'Meme Factory',
+                desc: 'Create memes and visual content for the community. Low barrier, high impact, and lots of fun.',
+                tags: ['Creative', 'Fun', 'Community'],
+                link: 'build.html#marketplace',
+                pillar: 'design', level: 'beginner'
+            },
+
+            // Intermediate paths
+            'intermediate-code-moderate-contribute': {
+                icon: '🔧', name: 'Tool Contributor',
+                desc: 'Help improve existing ASDF tools - fix bugs, add features, or optimize performance. Real impact, real learning.',
+                tags: ['Technical', 'Collaborative', 'Impactful'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'intermediate'
+            },
+            'intermediate-code-dedicated-create': {
+                icon: '🤖', name: 'Bot Builder',
+                desc: 'Build Discord bots, trading tools, or automation scripts for the ecosystem. High demand, high visibility.',
+                tags: ['Technical', 'Creative', 'In-demand'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'intermediate'
+            },
+            'intermediate-design-moderate-create': {
+                icon: '🖼️', name: 'UI/UX Designer',
+                desc: 'Design interfaces for ASDF apps and tools. Help make the ecosystem more beautiful and user-friendly.',
+                tags: ['Creative', 'Visual', 'User-focused'],
+                link: 'build.html#marketplace',
+                pillar: 'design', level: 'intermediate'
+            },
+            'intermediate-content-dedicated-earn': {
+                icon: '📹', name: 'Content Producer',
+                desc: 'Create tutorials, reviews, and educational videos. Build an audience while earning through content.',
+                tags: ['Creative', 'Educational', 'Monetizable'],
+                link: 'build.html#marketplace',
+                pillar: 'content', level: 'intermediate'
+            },
+
+            // Advanced paths
+            'advanced-code-dedicated-create': {
+                icon: '⚡', name: 'Core Developer',
+                desc: 'Build new tools, smart contracts, or infrastructure for the ASDF ecosystem. Shape the future.',
+                tags: ['Technical', 'Leadership', 'High-impact'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'advanced'
+            },
+            'advanced-code-dedicated-earn': {
+                icon: '💎', name: 'Protocol Engineer',
+                desc: 'Work on DeFi integrations, advanced trading systems, or protocol improvements. Premium opportunities.',
+                tags: ['Expert', 'DeFi', 'Lucrative'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'advanced'
+            },
+            'advanced-community-dedicated-contribute': {
+                icon: '👑', name: 'Community Leader',
+                desc: 'Lead initiatives, organize events, and help grow the ASDF community. Become a pillar of the ecosystem.',
+                tags: ['Leadership', 'Strategic', 'Influential'],
+                link: 'build.html#marketplace',
+                pillar: 'community', level: 'advanced'
+            },
+
+            // Default fallback
+            'default': {
+                icon: '🧭', name: 'Explorer Path',
+                desc: 'Browse the Yggdrasil tree and Marketplace to discover projects that match your unique profile. There\'s something for everyone.',
+                tags: ['Flexible', 'Discovery', 'Open-ended'],
+                link: 'build.html#yggdrasil',
+                pillar: 'code', level: 'beginner'
+            }
+        };
+
+        let projectFinderState = {
+            currentQuestion: 0,
+            answers: {},
+            recommendation: null
+        };
+
+        function openProjectFinder() {
+            const modal = document.getElementById('project-finder-modal');
+            if (modal) {
+                projectFinderState = { currentQuestion: 0, answers: {} };
+                modal.classList.add('active');
+                document.getElementById('project-finder-body').style.display = 'block';
+                document.getElementById('project-finder-result').style.display = 'none';
+                renderProjectFinderQuestion();
+            }
+        }
+
+        function closeProjectFinder() {
+            const modal = document.getElementById('project-finder-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function renderProjectFinderQuestion() {
+            const q = PROJECT_FINDER_QUESTIONS[projectFinderState.currentQuestion];
+            const total = PROJECT_FINDER_QUESTIONS.length;
+            const progress = ((projectFinderState.currentQuestion + 1) / total) * 100;
+
+            // Update progress
+            document.getElementById('pf-progress-bar').style.width = progress + '%';
+            document.getElementById('pf-progress-text').textContent = `Question ${projectFinderState.currentQuestion + 1}/${total}`;
+
+            // Render question
+            safeInnerHTML(document.getElementById('pf-question'), `
+                <h3>${escapeHtml(q.question)}</h3>
+                <p>${escapeHtml(q.subtitle)}</p>
+            `);
+
+            // Render options
+            const optionsHtml = q.options.map(opt => `
+                <div class="pf-option" data-question="${q.id}" data-value="${opt.id}">
+                    <span class="pf-option-icon">${opt.icon}</span>
+                    <div class="pf-option-text">
+                        <strong>${opt.label}</strong>
+                        <span>${opt.desc}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            safeInnerHTML(document.getElementById('pf-options'), optionsHtml);
+
+            // Attach click handlers
+            document.querySelectorAll('.pf-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    selectProjectFinderOption(this.dataset.question, this.dataset.value);
+                });
+            });
+        }
+
+        function selectProjectFinderOption(questionId, value) {
+            projectFinderState.answers[questionId] = value;
+
+            if (projectFinderState.currentQuestion < PROJECT_FINDER_QUESTIONS.length - 1) {
+                projectFinderState.currentQuestion++;
+                renderProjectFinderQuestion();
+            } else {
+                showProjectFinderResult();
+            }
+        }
+
+        function showProjectFinderResult() {
+            const answers = projectFinderState.answers;
+
+            // Save data for analytics
+            saveProjectFinderData(answers);
+
+            // Build recommendation key
+            const key = `${answers.skill}-${answers.interest}-${answers.time}-${answers.goal}`;
+            let recommendation = PROJECT_RECOMMENDATIONS[key];
+
+            // Try partial matches if exact match not found
+            if (!recommendation) {
+                const partialKey = `${answers.skill}-${answers.interest}-${answers.time}-${answers.goal}`;
+                for (const recKey in PROJECT_RECOMMENDATIONS) {
+                    if (recKey.includes(answers.skill) && recKey.includes(answers.interest)) {
+                        recommendation = PROJECT_RECOMMENDATIONS[recKey];
+                        break;
+                    }
+                }
+            }
+
+            // Fallback to default
+            if (!recommendation) {
+                recommendation = PROJECT_RECOMMENDATIONS['default'];
+            }
+
+            // Store recommendation for journey start
+            projectFinderState.recommendation = recommendation;
+
+            // Hide questions, show result
+            document.getElementById('project-finder-body').style.display = 'none';
+            const resultDiv = document.getElementById('project-finder-result');
+            resultDiv.style.display = 'block';
+
+            document.getElementById('pf-result-icon').textContent = recommendation.icon;
+            safeInnerHTML(document.getElementById('pf-result-project'), `
+                <h4>${escapeHtml(recommendation.icon)} ${escapeHtml(recommendation.name)}</h4>
+                <p>${escapeHtml(recommendation.desc)}</p>
+                <div class="pf-result-tags">
+                    ${recommendation.tags.map(tag => `<span class="pf-result-tag">${escapeHtml(tag)}</span>`).join('')}
+                </div>
+            `);
+
+            // Update explore button link
+            document.getElementById('pf-explore-btn').href = recommendation.link;
+        }
+
+        function startJourneyFromFinder() {
+            const rec = projectFinderState.recommendation;
+            if (rec && rec.pillar) {
+                closeProjectFinder();
+                // Open Your Journey with the recommended pillar
+                openYourJourney(rec.pillar, rec.level);
+            }
+        }
+
+        function saveProjectFinderData(answers) {
+            try {
+                const existingData = JSON.parse(localStorage.getItem(PROJECT_FINDER_STORAGE) || '[]');
+                const entry = {
+                    timestamp: new Date().toISOString(),
+                    answers: answers,
+                    userAgent: navigator.userAgent.substring(0, 100)
+                };
+                existingData.push(entry);
+                // Keep only last 50 entries
+                if (existingData.length > 50) {
+                    existingData.shift();
+                }
+                localStorage.setItem(PROJECT_FINDER_STORAGE, JSON.stringify(existingData));
+            } catch (e) {
+                console.warn('Could not save project finder data');
+            }
+        }
+
+        function restartProjectFinder() {
+            projectFinderState = { currentQuestion: 0, answers: {} };
+            document.getElementById('project-finder-body').style.display = 'block';
+            document.getElementById('project-finder-result').style.display = 'none';
+            renderProjectFinderQuestion();
+        }
+
+        // ============================================
+        // YOUR JOURNEY - Builder Training Platform
+        // ============================================
+
+        const YJ_STORAGE_KEY = 'asdf_your_journey';
+
+        // Learning flow steps
+        const LEARNING_STEPS = {
+            ENTRY_QUIZ: 'entry-quiz',
+            COURSE: 'course',
+            KNOWLEDGE_QUIZ: 'knowledge-quiz',
+            DEEP_CONTENT: 'deep-content',
+            PRACTICE: 'practice'
+        };
+
+        const JOURNEY_PILLARS = {
+            code: {
+                icon: '💻',
+                name: 'Code & Dev',
+                levels: ['beginner', 'intermediate', 'advanced'],
+                modules: {
+                    beginner: [
+                        {
+                            id: 'code-b1',
+                            title: 'Welcome to ASDF Development',
+
+                            // STEP 1: Entry Quiz - Assess current knowledge
+                            entryQuiz: {
+                                intro: "Let's see what you already know! This helps us personalize your learning.",
+                                questions: [
+                                    {
+                                        question: "Have you ever used a crypto wallet?",
+                                        options: ["Yes, I use one regularly", "I've tried it once or twice", "No, never"],
+                                        type: 'assessment' // No right/wrong, just gauging experience
+                                    },
+                                    {
+                                        question: "What is a blockchain?",
+                                        options: ["A distributed database shared across computers", "A type of cryptocurrency", "A website for trading", "I'm not sure"],
+                                        correct: 0
+                                    },
+                                    {
+                                        question: "What does 'deflationary' mean for a token?",
+                                        options: ["Supply increases over time", "Supply decreases over time", "Price always goes up", "I don't know yet"],
+                                        correct: 1
+                                    }
+                                ]
+                            },
+
+                            // STEP 2: Core Course Content
+                            course: [
+                                {
+                                    title: "Welcome to Your Journey",
+                                    content: `
+                                        <p>Welcome to the ASDF developer path! Whether you're completely new to coding or just new to blockchain, this journey will take you from zero to building real tools.</p>
+                                        <div class="yj-objectives">
+                                            <h4>🎯 What You'll Learn</h4>
+                                            <ul>
+                                                <li>Blockchain basics and how Solana works</li>
+                                                <li>JavaScript fundamentals for blockchain</li>
+                                                <li>How to interact with the Solana network</li>
+                                                <li>Building your first ASDF tool</li>
+                                            </ul>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: "What is ASDF?",
+                                    content: `
+                                        <p><strong>ASDF</strong> is a deflationary token on Solana. Here's what makes it unique:</p>
+                                        <div class="yj-feature-cards">
+                                            <div class="yj-feature-card">
+                                                <span>🔥</span>
+                                                <strong>Deflationary</strong>
+                                                <p>Tokens are burned regularly, reducing supply</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>👥</span>
+                                                <strong>Community-Driven</strong>
+                                                <p>Built by builders, for builders</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🔍</span>
+                                                <strong>Transparent</strong>
+                                                <p>All burns verifiable on-chain</p>
+                                            </div>
+                                        </div>
+                                        <div class="yj-key-concept">
+                                            <strong>🔥 Token Burning</strong>
+                                            <p>Burning means sending tokens to an inaccessible address, permanently removing them from circulation. This reduces total supply over time.</p>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: "Why Solana?",
+                                    content: `
+                                        <p>ASDF chose <strong>Solana</strong> for its speed and low costs:</p>
+                                        <table class="yj-comparison-table">
+                                            <tr><th></th><th>Solana</th><th>Ethereum</th></tr>
+                                            <tr><td>Speed</td><td class="highlight">~400ms</td><td>~12 sec</td></tr>
+                                            <tr><td>Cost</td><td class="highlight">~$0.00025</td><td>$1-50+</td></tr>
+                                            <tr><td>TPS</td><td class="highlight">65,000+</td><td>~15</td></tr>
+                                        </table>
+                                        <p>This makes Solana perfect for frequent burns, real-time bots, and micro-transactions.</p>
+                                    `
+                                }
+                            ],
+
+                            // STEP 3: Knowledge Quiz - Validate learning
+                            quiz: {
+                                intro: "Let's check what you've learned!",
+                                passingScore: 70,
+                                questions: [
+                                    {
+                                        question: "What blockchain does ASDF run on?",
+                                        options: ["Ethereum", "Solana", "Bitcoin", "Polygon"],
+                                        correct: 1,
+                                        explanation: "ASDF is built on Solana for its speed and low transaction costs."
+                                    },
+                                    {
+                                        question: "What does 'burning' tokens mean?",
+                                        options: [
+                                            "Selling them quickly",
+                                            "Sending them to an inaccessible address permanently",
+                                            "Converting them to another token",
+                                            "Staking them for rewards"
+                                        ],
+                                        correct: 1,
+                                        explanation: "Burning permanently removes tokens from circulation by sending them to an address no one can access."
+                                    },
+                                    {
+                                        question: "Why is ASDF called 'deflationary'?",
+                                        options: [
+                                            "The price always decreases",
+                                            "The total supply decreases over time",
+                                            "It's related to inflation rates",
+                                            "Transactions cost less over time"
+                                        ],
+                                        correct: 1,
+                                        explanation: "Deflationary means the total supply shrinks as tokens are burned."
+                                    }
+                                ]
+                            },
+
+                            // STEP 4: Deep Content - Advanced material
+                            deepContent: [
+                                {
+                                    title: "Solana Technical Deep Dive",
+                                    content: `
+                                        <h4>How Solana Achieves Speed</h4>
+                                        <p>Solana uses several innovations:</p>
+                                        <ul>
+                                            <li><strong>Proof of History (PoH):</strong> A cryptographic clock that timestamps transactions before consensus</li>
+                                            <li><strong>Tower BFT:</strong> A optimized version of PBFT that leverages PoH</li>
+                                            <li><strong>Gulf Stream:</strong> Mempool-less transaction forwarding</li>
+                                            <li><strong>Turbine:</strong> Block propagation protocol</li>
+                                        </ul>
+                                        <h4>SPL Token Standard</h4>
+                                        <p>ASDF is an <strong>SPL Token</strong> (Solana Program Library Token). This is Solana's equivalent to Ethereum's ERC-20 standard.</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">ASDF Token Details</div>
+                                            <pre><code>Mint Address: 2P2Apwbo6jPsGDJ6YKEhGxkgibMVnL9p6mLbx8hPump
+Decimals: 6
+Total Supply: Dynamic (decreasing via burns)</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: "Understanding Token Economics",
+                                    content: `
+                                        <h4>Supply & Demand Dynamics</h4>
+                                        <p>In traditional economics:</p>
+                                        <ul>
+                                            <li><strong>Inflationary:</strong> More units created → each unit worth less</li>
+                                            <li><strong>Deflationary:</strong> Units destroyed → remaining units potentially worth more</li>
+                                        </ul>
+                                        <h4>ASDF Burn Mechanics</h4>
+                                        <p>Tokens can be burned through:</p>
+                                        <ol>
+                                            <li>Trading activity fees</li>
+                                            <li>Community burn events</li>
+                                            <li>Game mechanics and activities</li>
+                                            <li>Voluntary contributions</li>
+                                        </ol>
+                                        <div class="yj-warning">
+                                            <strong>⚠️ Note:</strong> Deflationary mechanics don't guarantee price increases. Value depends on many factors including utility and demand.
+                                        </div>
+                                    `
+                                }
+                            ],
+
+                            // STEP 5: Practice Exercises - Hands-on learning
+                            practice: [
+                                {
+                                    type: 'fill-blank',
+                                    id: 'practice-1',
+                                    title: 'Complete the Concept',
+                                    instruction: 'Fill in the blanks to test your understanding:',
+                                    questions: [
+                                        {
+                                            text: 'ASDF is a _____ token, meaning the supply _____ over time.',
+                                            blanks: ['deflationary', 'decreases'],
+                                            hints: ['Opposite of inflationary', 'Gets smaller']
+                                        },
+                                        {
+                                            text: 'Token burning sends tokens to an _____ address, permanently _____ them from circulation.',
+                                            blanks: ['inaccessible', 'removing'],
+                                            hints: ['No one can access it', 'Taking away']
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'explorer',
+                                    id: 'practice-2',
+                                    title: 'Explore the Blockchain',
+                                    instruction: 'Use Solscan to explore real ASDF data:',
+                                    tasks: [
+                                        {
+                                            task: 'Find the ASDF token on Solscan',
+                                            hint: 'Go to solscan.io and search for the mint address',
+                                            verification: 'screenshot'
+                                        },
+                                        {
+                                            task: 'Look at recent token transfers',
+                                            hint: 'Check the "Transfers" tab',
+                                            verification: 'answer',
+                                            question: 'Approximately how many transfers happened in the last hour?'
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'quiz-challenge',
+                                    id: 'practice-3',
+                                    title: 'Speed Challenge',
+                                    instruction: 'Answer as many as you can in 60 seconds!',
+                                    timeLimit: 60,
+                                    questions: [
+                                        { q: 'Solana or Ethereum - which is faster?', a: 'Solana' },
+                                        { q: 'What does burning tokens do to supply?', a: 'Decreases it' },
+                                        { q: 'Is ASDF inflationary or deflationary?', a: 'Deflationary' },
+                                        { q: 'What currency pays Solana fees?', a: 'SOL' },
+                                        { q: 'Can burned tokens be recovered?', a: 'No' }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 'code-b2',
+                            title: 'Understanding Blockchain Basics',
+                            sections: [
+                                {
+                                    title: 'What is a Blockchain?',
+                                    content: `
+                                        <p>A <strong>blockchain</strong> is a distributed ledger - think of it as a shared database that everyone can read but no single person controls.</p>
+                                        <div class="yj-diagram">
+                                            <div class="yj-diagram-block">Block 1<br><small>Transactions 1-100</small></div>
+                                            <div class="yj-diagram-arrow">→</div>
+                                            <div class="yj-diagram-block">Block 2<br><small>Transactions 101-200</small></div>
+                                            <div class="yj-diagram-arrow">→</div>
+                                            <div class="yj-diagram-block">Block 3<br><small>Transactions 201-300</small></div>
+                                        </div>
+                                        <p>Each block contains:</p>
+                                        <ul>
+                                            <li>A list of transactions</li>
+                                            <li>A timestamp</li>
+                                            <li>A reference to the previous block (creating the "chain")</li>
+                                            <li>A cryptographic hash (unique fingerprint)</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Transactions',
+                                    content: `
+                                        <p><strong>Transactions</strong> are the actions recorded on the blockchain. On Solana, every action is a transaction:</p>
+                                        <ul>
+                                            <li><strong>Transfer:</strong> Send tokens from one wallet to another</li>
+                                            <li><strong>Burn:</strong> Send tokens to an inaccessible address</li>
+                                            <li><strong>Swap:</strong> Exchange one token for another</li>
+                                            <li><strong>Mint:</strong> Create new tokens (for NFTs)</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Transaction</div>
+                                            <pre><code>{
+  "from": "ABC123...xyz",
+  "to": "DEF456...uvw",
+  "amount": 1000,
+  "token": "ASDF",
+  "fee": 0.000005,
+  "signature": "5xY9..."
+}</code></pre>
+                                        </div>
+                                        <p>Every transaction requires a small fee (paid in SOL) to compensate the network validators.</p>
+                                    `
+                                },
+                                {
+                                    title: 'Wallets & Keys',
+                                    content: `
+                                        <p>Your <strong>wallet</strong> is your identity on the blockchain. It's controlled by cryptographic keys:</p>
+                                        <div class="yj-key-diagram">
+                                            <div class="yj-key-box yj-key-public">
+                                                <strong>🔓 Public Key (Address)</strong>
+                                                <p>Like your email address</p>
+                                                <ul>
+                                                    <li>Safe to share</li>
+                                                    <li>Others use it to send you tokens</li>
+                                                    <li>Example: <code>7xKX...9Pq2</code></li>
+                                                </ul>
+                                            </div>
+                                            <div class="yj-key-box yj-key-private">
+                                                <strong>🔐 Private Key / Seed Phrase</strong>
+                                                <p>Like your password</p>
+                                                <ul>
+                                                    <li><strong>NEVER share!</strong></li>
+                                                    <li>Proves you own the wallet</li>
+                                                    <li>12-24 random words</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="yj-warning"><strong>⚠️ Critical Security Rule:</strong> Never share your private key or seed phrase with anyone! No legitimate service will ever ask for it. Anyone with your seed phrase can steal all your funds.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Smart Contracts & Tokens',
+                                    content: `
+                                        <p><strong>Smart Contracts</strong> (called "Programs" on Solana) are code that runs on the blockchain. They enable:</p>
+                                        <ul>
+                                            <li>Automated token transfers based on rules</li>
+                                            <li>Decentralized exchanges (DEXs)</li>
+                                            <li>NFT minting and trading</li>
+                                            <li>DeFi protocols (lending, staking)</li>
+                                        </ul>
+                                        <p><strong>Tokens</strong> are digital assets created using smart contracts. ASDF is an <strong>SPL Token</strong> (Solana Program Library Token), the standard token format on Solana.</p>
+                                        <div class="yj-info"><strong>📝 Note:</strong> You don't need to write smart contracts to build useful tools! Most ASDF tools just read blockchain data and display it.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What controls access to your blockchain wallet?',
+                                options: ['Email and password', 'Private key / Seed phrase', 'Username', 'Phone number'],
+                                correct: 1
+                            }
+                        },
+                        {
+                            id: 'code-b3',
+                            title: 'Setting Up Your Dev Environment',
+                            sections: [
+                                {
+                                    title: 'Tools Overview',
+                                    content: `
+                                        <p>Before writing code, you need to set up your development environment. Here's what you'll install:</p>
+                                        <div class="yj-tools-grid">
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">📦</span>
+                                                <strong>Node.js</strong>
+                                                <p>JavaScript runtime that lets you run JS outside the browser</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">📝</span>
+                                                <strong>VS Code</strong>
+                                                <p>Code editor with great extensions for web development</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">🔀</span>
+                                                <strong>Git</strong>
+                                                <p>Version control to track changes and collaborate</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">👻</span>
+                                                <strong>Phantom</strong>
+                                                <p>Solana wallet browser extension for testing</p>
+                                            </div>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Installing Node.js',
+                                    content: `
+                                        <p><strong>Node.js</strong> is essential - it lets you run JavaScript code on your computer.</p>
+                                        <h4>Step-by-step installation:</h4>
+                                        <ol class="yj-steps">
+                                            <li>Go to <code>nodejs.org</code></li>
+                                            <li>Download the <strong>LTS</strong> (Long Term Support) version</li>
+                                            <li>Run the installer and follow the prompts</li>
+                                            <li>Restart your terminal/command prompt</li>
+                                        </ol>
+                                        <h4>Verify installation:</h4>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Terminal</div>
+                                            <pre><code>node --version
+# Should output: v20.x.x or higher
+
+npm --version
+# Should output: 10.x.x or higher</code></pre>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 What is npm?</strong> npm (Node Package Manager) comes with Node.js. It lets you install libraries (packages) that other developers have created.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Installing VS Code',
+                                    content: `
+                                        <p><strong>Visual Studio Code</strong> is a free, powerful code editor:</p>
+                                        <ol class="yj-steps">
+                                            <li>Go to <code>code.visualstudio.com</code></li>
+                                            <li>Download for your operating system</li>
+                                            <li>Run the installer</li>
+                                        </ol>
+                                        <h4>Recommended Extensions:</h4>
+                                        <p>After installing VS Code, add these extensions (click the puzzle piece icon in the sidebar):</p>
+                                        <ul>
+                                            <li><strong>ESLint</strong> - Catches errors in your JavaScript</li>
+                                            <li><strong>Prettier</strong> - Auto-formats your code</li>
+                                            <li><strong>GitLens</strong> - Better Git integration</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎨 Pro Tip:</strong> Try the "One Dark Pro" or "GitHub Dark" themes for a better coding experience!</div>
+                                    `
+                                },
+                                {
+                                    title: 'Installing Phantom Wallet',
+                                    content: `
+                                        <p><strong>Phantom</strong> is the most popular Solana wallet. You'll use it to:</p>
+                                        <ul>
+                                            <li>Test your applications</li>
+                                            <li>View token balances</li>
+                                            <li>Sign transactions during development</li>
+                                        </ul>
+                                        <h4>Installation:</h4>
+                                        <ol class="yj-steps">
+                                            <li>Go to <code>phantom.app</code></li>
+                                            <li>Click "Download" and select your browser</li>
+                                            <li>Add the extension to your browser</li>
+                                            <li>Create a new wallet (or import existing)</li>
+                                            <li><strong>Save your seed phrase securely!</strong></li>
+                                        </ol>
+                                        <div class="yj-warning"><strong>⚠️ Security:</strong> Write your seed phrase on paper and store it safely. Never save it digitally or share it with anyone!</div>
+                                        <h4>Getting Test SOL:</h4>
+                                        <p>For development, you can use Solana's devnet (test network). Get free test SOL from a "faucet" - search "Solana devnet faucet" to find one.</p>
+                                    `
+                                },
+                                {
+                                    title: 'Your First Project',
+                                    content: `
+                                        <p>Let's create your first project folder and verify everything works:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Terminal Commands</div>
+                                            <pre><code># Create a new folder for ASDF projects
+mkdir asdf-projects
+cd asdf-projects
+
+# Create your first project
+mkdir my-first-tool
+cd my-first-tool
+
+# Initialize a Node.js project
+npm init -y
+
+# Install Solana Web3 library
+npm install @solana/web3.js</code></pre>
+                                        </div>
+                                        <p>If all commands succeed without errors, congratulations! 🎉 Your development environment is ready!</p>
+                                        <div class="yj-tip"><strong>💡 Next Steps:</strong> In the next module, we'll write our first code to connect to the Solana blockchain!</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'Which tool is used as a Solana wallet for testing?',
+                                options: ['MetaMask', 'Phantom', 'VS Code', 'Node.js'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    intermediate: [
+                        {
+                            id: 'code-i1',
+                            title: 'Working with Solana Web3.js',
+                            sections: [
+                                {
+                                    title: 'Introduction to Web3.js',
+                                    content: `
+                                        <p><strong>@solana/web3.js</strong> is the official JavaScript library for interacting with the Solana blockchain. It allows you to:</p>
+                                        <ul>
+                                            <li>Connect to Solana nodes (mainnet, devnet, testnet)</li>
+                                            <li>Read blockchain data (balances, transactions, accounts)</li>
+                                            <li>Send transactions</li>
+                                            <li>Subscribe to real-time updates</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Installation</div>
+                                            <pre><code>npm install @solana/web3.js</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Connecting to Solana',
+                                    content: `
+                                        <p>The first step is creating a <strong>Connection</strong> object:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">connection.js</div>
+                                            <pre><code>import { Connection, clusterApiUrl } from '@solana/web3.js';
+
+// Connect to different networks
+const mainnet = new Connection(clusterApiUrl('mainnet-beta'));
+const devnet = new Connection(clusterApiUrl('devnet'));
+
+// Or use a custom RPC endpoint (recommended for production)
+const customRpc = new Connection('https://your-rpc-provider.com');
+
+// Check connection
+const version = await mainnet.getVersion();
+console.log('Connected! Version:', version);</code></pre>
+                                        </div>
+                                        <div class="yj-info"><strong>💡 RPC Providers:</strong> For production apps, use a dedicated RPC provider like Helius, QuickNode, or Alchemy for better reliability and higher rate limits.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Working with Public Keys',
+                                    content: `
+                                        <p>Every Solana address is a <strong>PublicKey</strong>. Here's how to work with them:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">publickeys.js</div>
+                                            <pre><code>import { PublicKey } from '@solana/web3.js';
+
+// Create from a string (base58 encoded address)
+const address = new PublicKey('7xKX9PqoSfMGUb7Bz...9Pq2');
+
+// Validate an address
+function isValidAddress(addr) {
+    try {
+        new PublicKey(addr);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Convert to string
+console.log(address.toBase58()); // '7xKX9PqoSfMGUb7Bz...9Pq2'
+console.log(address.toString()); // Same as toBase58()</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Reading Account Data',
+                                    content: `
+                                        <p>Let's fetch data from the blockchain:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">read-data.js</div>
+                                            <pre><code>import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+
+const connection = new Connection(clusterApiUrl('mainnet-beta'));
+
+// Get SOL balance
+async function getSOLBalance(address) {
+    const pubkey = new PublicKey(address);
+    const balance = await connection.getBalance(pubkey);
+    return balance / LAMPORTS_PER_SOL; // Convert lamports to SOL
+}
+
+// Get account info
+async function getAccountInfo(address) {
+    const pubkey = new PublicKey(address);
+    const info = await connection.getAccountInfo(pubkey);
+
+    if (info) {
+        console.log('Owner:', info.owner.toBase58());
+        console.log('Lamports:', info.lamports);
+        console.log('Data length:', info.data.length);
+    }
+    return info;
+}
+
+// Example usage
+const balance = await getSOLBalance('your-wallet-address');
+console.log('Balance: ' + balance + ' SOL');</code></pre>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 Lamports:</strong> 1 SOL = 1,000,000,000 lamports. Always divide by LAMPORTS_PER_SOL when displaying SOL amounts.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Error Handling Best Practices',
+                                    content: `
+                                        <p>Network requests can fail. Always use proper error handling:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">error-handling.js</div>
+                                            <pre><code>async function safeGetBalance(address) {
+    try {
+        const pubkey = new PublicKey(address);
+        const balance = await connection.getBalance(pubkey);
+        return { success: true, balance: balance / LAMPORTS_PER_SOL };
+    } catch (error) {
+        if (error.message.includes('Invalid public key')) {
+            return { success: false, error: 'Invalid wallet address' };
+        }
+        if (error.message.includes('429')) {
+            return { success: false, error: 'Rate limited. Try again later.' };
+        }
+        return { success: false, error: 'Network error. Check connection.' };
+    }
+}
+
+// Usage
+const result = await safeGetBalance(userInput);
+if (result.success) {
+    console.log('Balance: ' + result.balance + ' SOL');
+} else {
+    console.error(result.error);
+}</code></pre>
+                                        </div>
+                                        <div class="yj-warning"><strong>⚠️ Important:</strong> Never expose raw error messages to users - they may contain sensitive information.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What library is used to interact with Solana in JavaScript?',
+                                options: ['ethers.js', '@solana/web3.js', 'web3.py', 'solana-sdk'],
+                                correct: 1
+                            }
+                        },
+                        {
+                            id: 'code-i2',
+                            title: 'Reading Token Data',
+                            sections: [
+                                {
+                                    title: 'Understanding SPL Tokens',
+                                    content: `
+                                        <p><strong>SPL Tokens</strong> (Solana Program Library Tokens) are the standard token format on Solana. ASDF is an SPL token.</p>
+                                        <p>Key concepts:</p>
+                                        <ul>
+                                            <li><strong>Mint:</strong> The "factory" that defines a token (supply, decimals, authority)</li>
+                                            <li><strong>Token Account:</strong> A wallet's balance for a specific token</li>
+                                            <li><strong>Associated Token Account (ATA):</strong> The default token account for a wallet</li>
+                                        </ul>
+                                        <div class="yj-diagram">
+                                            <div class="yj-diagram-block">Mint<br><small>Token definition</small></div>
+                                            <div class="yj-diagram-arrow">→</div>
+                                            <div class="yj-diagram-block">Token Account<br><small>Wallet A: 1000 ASDF</small></div>
+                                            <div class="yj-diagram-arrow">→</div>
+                                            <div class="yj-diagram-block">Token Account<br><small>Wallet B: 500 ASDF</small></div>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Installing SPL Token Library',
+                                    content: `
+                                        <p>Install the SPL Token library to work with tokens:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Installation</div>
+                                            <pre><code>npm install @solana/spl-token</code></pre>
+                                        </div>
+                                        <p>This library provides functions to:</p>
+                                        <ul>
+                                            <li>Read mint information (supply, decimals)</li>
+                                            <li>Get token account balances</li>
+                                            <li>Find associated token accounts</li>
+                                            <li>Create and transfer tokens</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Reading Mint Information',
+                                    content: `
+                                        <p>The <strong>Mint</strong> contains the token's core information:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">read-mint.js</div>
+                                            <pre><code>import { getMint } from '@solana/spl-token';
+import { Connection, PublicKey } from '@solana/web3.js';
+
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+
+// ASDF token mint address
+const ASDF_MINT = new PublicKey('2P2Apwbo6jPsGDJ6YKEhGxkgibMVnL9p6mLbx8hPump');
+
+async function getTokenInfo() {
+    const mint = await getMint(connection, ASDF_MINT);
+
+    console.log('=== ASDF Token Info ===');
+    console.log('Decimals:', mint.decimals);
+    console.log('Supply:', Number(mint.supply) / Math.pow(10, mint.decimals));
+    console.log('Mint Authority:', mint.mintAuthority?.toBase58() || 'None (fixed supply)');
+    console.log('Freeze Authority:', mint.freezeAuthority?.toBase58() || 'None');
+
+    return mint;
+}
+
+getTokenInfo();</code></pre>
+                                        </div>
+                                        <div class="yj-info"><strong>📝 Note:</strong> Supply is returned as a BigInt in the smallest unit. Divide by 10^decimals to get the human-readable amount.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Getting Token Balances',
+                                    content: `
+                                        <p>To check how much of a token a wallet holds:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">token-balance.js</div>
+                                            <pre><code>import { getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
+
+async function getTokenBalance(walletAddress, mintAddress) {
+    const wallet = new PublicKey(walletAddress);
+    const mint = new PublicKey(mintAddress);
+
+    // Find the Associated Token Account
+    const ata = await getAssociatedTokenAddress(mint, wallet);
+
+    try {
+        const tokenAccount = await getAccount(connection, ata);
+        const mintInfo = await getMint(connection, mint);
+
+        // Convert to human-readable
+        const balance = Number(tokenAccount.amount) / Math.pow(10, mintInfo.decimals);
+
+        return {
+            address: ata.toBase58(),
+            balance: balance,
+            rawAmount: tokenAccount.amount.toString()
+        };
+    } catch (error) {
+        // Account doesn't exist = 0 balance
+        if (error.name === 'TokenAccountNotFoundError') {
+            return { address: ata.toBase58(), balance: 0 };
+        }
+        throw error;
+    }
+}
+
+// Usage
+const result = await getTokenBalance('wallet-address', ASDF_MINT);
+console.log('ASDF Balance: ' + result.balance.toLocaleString());</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Practical Example: ASDF Tracker',
+                                    content: `
+                                        <p>Let's build a complete token tracker:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">asdf-tracker.js</div>
+                                            <pre><code>import { Connection, PublicKey } from '@solana/web3.js';
+import { getMint, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
+
+const ASDF_MINT = '2P2Apwbo6jPsGDJ6YKEhGxkgibMVnL9p6mLbx8hPump';
+const BURN_ADDRESS = '1nc1nerator11111111111111111111111111111111';
+
+class ASDFTracker {
+    constructor(rpcUrl) {
+        this.connection = new Connection(rpcUrl);
+        this.mint = new PublicKey(ASDF_MINT);
+    }
+
+    async getSupplyInfo() {
+        const mint = await getMint(this.connection, this.mint);
+        const decimals = mint.decimals;
+        const totalSupply = Number(mint.supply) / Math.pow(10, decimals);
+
+        // Get burned amount
+        const burnAta = await getAssociatedTokenAddress(
+            this.mint,
+            new PublicKey(BURN_ADDRESS)
+        );
+
+        let burned = 0;
+        try {
+            const burnAccount = await getAccount(this.connection, burnAta);
+            burned = Number(burnAccount.amount) / Math.pow(10, decimals);
+        } catch {}
+
+        return {
+            totalSupply,
+            burned,
+            circulating: totalSupply - burned,
+            burnPercentage: ((burned / totalSupply) * 100).toFixed(2)
+        };
+    }
+}
+
+// Usage
+const tracker = new ASDFTracker('https://api.mainnet-beta.solana.com');
+const info = await tracker.getSupplyInfo();
+console.log('Circulating: ' + info.circulating.toLocaleString() + ' ASDF');
+console.log('Burned: ' + info.burnPercentage + '%');</code></pre>
+                                        </div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What function gets token supply information?',
+                                options: ['getBalance', 'getMint', 'getToken', 'fetchSupply'],
+                                correct: 1
+                            }
+                        },
+                        {
+                            id: 'code-i3',
+                            title: 'Building a Monitoring Bot',
+                            sections: [
+                                {
+                                    title: 'Real-Time Subscriptions',
+                                    content: `
+                                        <p>Solana allows you to subscribe to real-time updates using <strong>WebSocket connections</strong>:</p>
+                                        <ul>
+                                            <li><strong>onAccountChange:</strong> Triggers when an account's data changes</li>
+                                            <li><strong>onLogs:</strong> Triggers when logs are emitted by a program</li>
+                                            <li><strong>onProgramAccountChange:</strong> Triggers for any account owned by a program</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Basic Subscription</div>
+                                            <pre><code>// Subscribe to changes on any account
+const subscriptionId = connection.onAccountChange(
+    accountPublicKey,
+    (accountInfo, context) => {
+        console.log('Account changed!');
+        console.log('Slot:', context.slot);
+        console.log('New data:', accountInfo.data);
+    },
+    'confirmed' // commitment level
+);
+
+// Later: unsubscribe when done
+await connection.removeAccountChangeListener(subscriptionId);</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Monitoring ASDF Burns',
+                                    content: `
+                                        <p>Let's build a bot that detects when ASDF tokens are burned:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">burn-monitor.js</div>
+                                            <pre><code>import { Connection, PublicKey } from '@solana/web3.js';
+import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
+
+const ASDF_MINT = new PublicKey('2P2Apwbo6jPsGDJ6YKEhGxkgibMVnL9p6mLbx8hPump');
+const BURN_ADDRESS = new PublicKey('1nc1nerator11111111111111111111111111111111');
+
+class BurnMonitor {
+    constructor(rpcUrl) {
+        this.connection = new Connection(rpcUrl, 'confirmed');
+        this.lastKnownBurn = 0;
+        this.subscriptionId = null;
+    }
+
+    async start(onBurnDetected) {
+        // Get the burn wallet's token account
+        const burnAta = await getAssociatedTokenAddress(ASDF_MINT, BURN_ADDRESS);
+
+        // Get initial balance
+        try {
+            const account = await getAccount(this.connection, burnAta);
+            this.lastKnownBurn = Number(account.amount);
+        } catch {
+            this.lastKnownBurn = 0;
+        }
+
+        console.log('Starting burn monitor...');
+        console.log('Initial burn amount:', this.lastKnownBurn);
+
+        // Subscribe to changes
+        this.subscriptionId = this.connection.onAccountChange(
+            burnAta,
+            (accountInfo) => {
+                // Parse the new balance
+                const newAmount = Number(accountInfo.data.readBigUInt64LE(64));
+                const burnedNow = newAmount - this.lastKnownBurn;
+
+                if (burnedNow > 0) {
+                    onBurnDetected({
+                        amount: burnedNow / 1e6, // Adjust for decimals
+                        totalBurned: newAmount / 1e6,
+                        timestamp: new Date()
+                    });
+                }
+
+                this.lastKnownBurn = newAmount;
+            }
+        );
+    }
+
+    async stop() {
+        if (this.subscriptionId) {
+            await this.connection.removeAccountChangeListener(this.subscriptionId);
+        }
+    }
+}
+
+// Usage
+const monitor = new BurnMonitor('wss://api.mainnet-beta.solana.com');
+monitor.start((burn) => {
+    console.log('🔥 BURN DETECTED: ' + burn.amount.toLocaleString() + ' ASDF');
+    console.log('Total burned: ' + burn.totalBurned.toLocaleString() + ' ASDF');
+});</code></pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Adding Discord Notifications',
+                                    content: `
+                                        <p>Now let's send burn alerts to Discord using webhooks:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">discord-alert.js</div>
+                                            <pre><code>// Discord webhook notification
+async function sendDiscordAlert(webhookUrl, burnData) {
+    const embed = {
+        title: '🔥 ASDF Burn Detected!',
+        color: 0xff6600, // Orange
+        fields: [
+            {
+                name: 'Amount Burned',
+                value: burnData.amount.toLocaleString() + ' ASDF',
+                inline: true
+            },
+            {
+                name: 'Total Burned',
+                value: burnData.totalBurned.toLocaleString() + ' ASDF',
+                inline: true
+            }
+        ],
+        timestamp: burnData.timestamp.toISOString(),
+        footer: { text: 'ASDF Burn Monitor' }
+    };
+
+    await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] })
+    });
+}
+
+// Integrate with monitor
+const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/...';
+
+monitor.start(async (burn) => {
+    console.log('🔥 Burn: ' + burn.amount + ' ASDF');
+    await sendDiscordAlert(DISCORD_WEBHOOK, burn);
+});</code></pre>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 Getting a Webhook URL:</strong> In Discord, go to Server Settings → Integrations → Webhooks → New Webhook, then copy the URL.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Production Considerations',
+                                    content: `
+                                        <p>Before deploying your bot, consider these best practices:</p>
+                                        <h4>1. Reconnection Logic</h4>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">reconnect.js</div>
+                                            <pre><code>async function startWithReconnect() {
+    while (true) {
+        try {
+            await monitor.start(handleBurn);
+            // Keep running
+            await new Promise(() => {});
+        } catch (error) {
+            console.error('Connection lost:', error.message);
+            console.log('Reconnecting in 5 seconds...');
+            await new Promise(r => setTimeout(r, 5000));
+        }
+    }
+}</code></pre>
+                                        </div>
+                                        <h4>2. Environment Variables</h4>
+                                        <pre><code># .env file
+RPC_URL=https://your-rpc-provider.com
+DISCORD_WEBHOOK=https://discord.com/api/webhooks/...</code></pre>
+                                        <h4>3. Rate Limiting</h4>
+                                        <p>Don't spam Discord - add a cooldown between notifications if burns are frequent.</p>
+                                        <div class="yj-warning"><strong>⚠️ Never commit</strong> your .env file or webhook URLs to public repositories!</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What method subscribes to account changes in real-time?',
+                                options: ['watchAccount', 'onAccountChange', 'subscribeAccount', 'listenAccount'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    advanced: [
+                        {
+                            id: 'code-a1',
+                            title: 'Smart Contract Integration',
+                            sections: [
+                                {
+                                    title: 'Understanding Solana Programs',
+                                    content: `
+                                        <p>On Solana, smart contracts are called <strong>Programs</strong>. They're different from Ethereum contracts:</p>
+                                        <table class="yj-table">
+                                            <tr><th>Aspect</th><th>Solana Programs</th><th>Ethereum Contracts</th></tr>
+                                            <tr><td>Language</td><td>Rust (primarily)</td><td>Solidity</td></tr>
+                                            <tr><td>State Storage</td><td>Separate accounts</td><td>Within contract</td></tr>
+                                            <tr><td>Upgradability</td><td>Built-in (optional)</td><td>Proxy patterns</td></tr>
+                                            <tr><td>Execution</td><td>Parallel</td><td>Sequential</td></tr>
+                                        </table>
+                                        <div class="yj-info"><strong>📝 Good News:</strong> You don't need to write Rust to interact with programs! JavaScript/TypeScript is enough for most use cases.</div>
+                                    `
+                                },
+                                {
+                                    title: 'The Anchor Framework',
+                                    content: `
+                                        <p><strong>Anchor</strong> is the most popular framework for Solana development. It provides:</p>
+                                        <ul>
+                                            <li>IDL (Interface Description Language) for easy client integration</li>
+                                            <li>Automatic serialization/deserialization</li>
+                                            <li>Type-safe program interactions</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Installation</div>
+                                            <pre><code>npm install @coral-xyz/anchor @solana/web3.js</code></pre>
+                                        </div>
+                                        <p>Most Solana programs you'll interact with use Anchor, including many DeFi protocols.</p>
+                                    `
+                                },
+                                {
+                                    title: 'Reading Program Accounts',
+                                    content: `
+                                        <p>Programs store state in separate accounts. Here's how to read them:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">read-program.js</div>
+                                            <pre><code>import { Program, AnchorProvider } from '@coral-xyz/anchor';
+import { Connection, PublicKey } from '@solana/web3.js';
+
+// Load the program's IDL (Interface Description Language)
+import idl from './idl.json';
+
+async function readProgramData() {
+    const connection = new Connection('https://api.mainnet-beta.solana.com');
+
+    // Create a read-only provider (no wallet needed for reading)
+    const provider = new AnchorProvider(
+        connection,
+        {}, // Empty wallet for read-only
+        { commitment: 'confirmed' }
+    );
+
+    const programId = new PublicKey('YourProgramId...');
+    const program = new Program(idl, programId, provider);
+
+    // Fetch an account
+    const accountPubkey = new PublicKey('AccountAddress...');
+    const accountData = await program.account.yourAccountType.fetch(accountPubkey);
+
+    console.log('Account data:', accountData);
+    return accountData;
+}</code></pre>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 Finding IDLs:</strong> Many programs publish their IDL on-chain. You can also find them on GitHub or use anchor idl fetch &lt;program-id&gt;.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Calling Program Instructions',
+                                    content: `
+                                        <p>To modify state, you need to send transactions with signed instructions:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">call-instruction.js</div>
+                                            <pre><code>import { Program, AnchorProvider, Wallet } from '@coral-xyz/anchor';
+import { Keypair } from '@solana/web3.js';
+
+async function callProgram() {
+    // Load your wallet (NEVER hardcode private keys!)
+    const wallet = new Wallet(Keypair.fromSecretKey(/* from env */));
+
+    const provider = new AnchorProvider(connection, wallet, {
+        commitment: 'confirmed'
+    });
+
+    const program = new Program(idl, programId, provider);
+
+    // Call a program instruction
+    const tx = await program.methods
+        .yourInstructionName(arg1, arg2) // Instruction arguments
+        .accounts({
+            user: wallet.publicKey,
+            someAccount: accountPubkey,
+            systemProgram: SystemProgram.programId,
+        })
+        .rpc(); // Sends and confirms the transaction
+
+    console.log('Transaction signature:', tx);
+}</code></pre>
+                                        </div>
+                                        <div class="yj-warning"><strong>⚠️ Security:</strong> Calling instructions can spend tokens or modify state. Always audit the program code before interacting with it!</div>
+                                    `
+                                },
+                                {
+                                    title: 'Practical Example: DEX Integration',
+                                    content: `
+                                        <p>Here's how you might read data from a DEX like Raydium:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">dex-example.js</div>
+                                            <pre><code>// Simplified example - actual DEX integration is more complex
+async function getPoolInfo(poolAddress) {
+    const accountInfo = await connection.getAccountInfo(
+        new PublicKey(poolAddress)
+    );
+
+    if (!accountInfo) {
+        throw new Error('Pool not found');
+    }
+
+    // Parse pool data based on the DEX's structure
+    // Each DEX has its own account layout
+    const data = accountInfo.data;
+
+    // Example: Reading reserves from pool data
+    const baseReserve = data.readBigUInt64LE(offset1);
+    const quoteReserve = data.readBigUInt64LE(offset2);
+
+    // Calculate price
+    const price = Number(quoteReserve) / Number(baseReserve);
+
+    return { baseReserve, quoteReserve, price };
+}</code></pre>
+                                        </div>
+                                        <div class="yj-info"><strong>📚 Next Steps:</strong> To go deeper into Solana program development, check out the official Solana Cookbook and Anchor documentation. You now have the foundation to explore!</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What are Solana smart contracts called?',
+                                options: ['Contracts', 'Programs', 'Scripts', 'Modules'],
+                                correct: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            design: {
+                icon: '🎨',
+                name: 'Design & UX',
+                levels: ['beginner', 'intermediate', 'advanced'],
+                modules: {
+                    beginner: [
+                        {
+                            id: 'design-b1',
+                            title: 'Foundations of Crypto Design',
+
+                            // STEP 1: Entry Quiz
+                            entryQuiz: {
+                                intro: "Let's discover your design background and customize your learning path!",
+                                questions: [
+                                    {
+                                        question: "Have you used any design tools before?",
+                                        options: ["Yes, I'm experienced with Figma/Photoshop", "I've tried Canva or similar tools", "No, I'm completely new to design"],
+                                        type: 'assessment'
+                                    },
+                                    {
+                                        question: "What is the primary purpose of good design in crypto?",
+                                        options: ["Building trust and clarity", "Making things look pretty", "Using trendy effects", "I'm not sure yet"],
+                                        correct: 0,
+                                        explanation: "Good design in crypto builds trust and communicates complex ideas clearly."
+                                    },
+                                    {
+                                        question: "Which design principle helps guide the viewer's eye?",
+                                        options: ["Visual hierarchy", "Maximum colors", "Complex patterns", "Dense layouts"],
+                                        correct: 0,
+                                        explanation: "Visual hierarchy uses size, color, and placement to guide attention to important elements first."
+                                    }
+                                ]
+                            },
+
+                            // STEP 2: Course Content
+                            course: [
+                                {
+                                    title: "Welcome to ASDF Design",
+                                    content: \`
+                                        <p>Welcome to the Design path! As an ASDF designer, you'll create visuals that build trust, explain concepts, and unite our community.</p>
+                                        <div class="yj-objectives">
+                                            <h4>What You'll Learn</h4>
+                                            <ul>
+                                                <li>Core design principles for crypto</li>
+                                                <li>The ASDF brand identity and visual language</li>
+                                                <li>Tools and workflows for creating graphics</li>
+                                                <li>Creating memes that resonate and spread</li>
+                                            </ul>
+                                        </div>
+                                        <div class="yj-key-concept">
+                                            <strong>The Designer's Mission</strong>
+                                            <p>In crypto, design isn't just aesthetics - it's communication. Your work helps people understand, trust, and connect with ASDF.</p>
+                                        </div>
+                                    \`
+                                },
+                                {
+                                    title: "Why Design Matters in Crypto",
+                                    content: \`
+                                        <p>In a space full of scams and complexity, design serves critical functions:</p>
+                                        <div class="yj-feature-cards">
+                                            <div class="yj-feature-card">
+                                                <span>🛡️</span>
+                                                <strong>Trust</strong>
+                                                <p>Professional design signals legitimacy and care</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🎯</span>
+                                                <strong>Clarity</strong>
+                                                <p>Complex concepts become understandable visuals</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🤝</span>
+                                                <strong>Community</strong>
+                                                <p>Shared visual language creates belonging</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>📣</span>
+                                                <strong>Virality</strong>
+                                                <p>Great memes spread ideas organically</p>
+                                            </div>
+                                        </div>
+                                        <table class="yj-comparison-table">
+                                            <tr><th></th><th>Good Design</th><th>Poor Design</th></tr>
+                                            <tr><td>First Impression</td><td class="highlight">Trust</td><td>Suspicion</td></tr>
+                                            <tr><td>Information</td><td class="highlight">Clear</td><td>Confusing</td></tr>
+                                            <tr><td>Sharing</td><td class="highlight">Likely</td><td>Unlikely</td></tr>
+                                        </table>
+                                    \`
+                                },
+                                {
+                                    title: "The CRAP Design Principles",
+                                    content: \`
+                                        <p>Every great design follows these four principles (yes, it spells CRAP!):</p>
+                                        <h4>C - Contrast</h4>
+                                        <p>Make important elements stand out. If things are different, make them VERY different.</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Examples</div>
+                                            <pre>Good: White text on dark background
+Good: Large headline with small body text
+Bad: Light gray text on white background
+Bad: Two similar font sizes competing</pre>
+                                        </div>
+                                        <h4>R - Repetition</h4>
+                                        <p>Repeat visual elements throughout. Consistent colors, fonts, and styles create unity.</p>
+                                        <h4>A - Alignment</h4>
+                                        <p>Nothing should be placed arbitrarily. Every element should have a visual connection to something else.</p>
+                                        <h4>P - Proximity</h4>
+                                        <p>Group related items together. Items near each other are perceived as related.</p>
+                                        <div class="yj-tip"><strong>Golden Rule:</strong> When in doubt, simplify. Remove elements until your design breaks, then add one back.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Essential Design Tools",
+                                    content: \`
+                                        <p>Here's your design toolkit - all free to start:</p>
+                                        <div class="yj-tools-grid">
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">🎨</span>
+                                                <strong>Figma</strong>
+                                                <p>Professional design tool. Best for UI, graphics, and collaboration.</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">🖼️</span>
+                                                <strong>Canva</strong>
+                                                <p>Quick graphics, social media posts, templates.</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">✂️</span>
+                                                <strong>Remove.bg</strong>
+                                                <p>Instant background removal from any image.</p>
+                                            </div>
+                                            <div class="yj-tool-item">
+                                                <span class="yj-tool-icon">🎬</span>
+                                                <strong>Kapwing</strong>
+                                                <p>Meme maker, video editing, GIF creation.</p>
+                                            </div>
+                                        </div>
+                                        <div class="yj-info"><strong>Start Here:</strong> Begin with Canva for quick wins, then graduate to Figma as you grow.</div>
+                                    \`
+                                },
+                                {
+                                    title: "ASDF Brand Identity",
+                                    content: \`
+                                        <p>Understanding our brand is essential for creating cohesive ASDF designs.</p>
+                                        <h4>The ASDF Story</h4>
+                                        <p>ASDF is inspired by the "This is Fine" meme - staying calm while everything burns. This represents:</p>
+                                        <ul>
+                                            <li>Resilience in volatile markets</li>
+                                            <li>Finding humor in chaos</li>
+                                            <li>Self-awareness about crypto's wild nature</li>
+                                            <li>Building real value despite the flames</li>
+                                        </ul>
+                                        <h4>Color Palette</h4>
+                                        <div class="yj-color-palette">
+                                            <div class="yj-color-swatch" style="background: #ff6b35;"><span>Fire Orange</span><code>#ff6b35</code></div>
+                                            <div class="yj-color-swatch" style="background: #ffd93d;"><span>Flame Yellow</span><code>#ffd93d</code></div>
+                                            <div class="yj-color-swatch" style="background: #1a1a1a; color: #fff;"><span>Charred Black</span><code>#1a1a1a</code></div>
+                                            <div class="yj-color-swatch" style="background: #2d2d2d; color: #fff;"><span>Smoke Grey</span><code>#2d2d2d</code></div>
+                                        </div>
+                                        <div class="yj-key-concept">
+                                            <strong>Brand Personality</strong>
+                                            <p>We embrace the chaos. Designs should feel controlled but on fire - professional with a spark of meme energy.</p>
+                                        </div>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 3: Knowledge Quiz
+                            quiz: {
+                                intro: "Let's check what you've learned about design fundamentals!",
+                                passingScore: 70,
+                                questions: [
+                                    {
+                                        question: "What does CRAP stand for in design?",
+                                        options: ["Contrast, Repetition, Alignment, Proximity", "Color, Resolution, Art, Pixels", "Create, Review, Apply, Publish", "I don't remember"],
+                                        correct: 0,
+                                        explanation: "CRAP stands for Contrast, Repetition, Alignment, and Proximity - the four fundamental design principles."
+                                    },
+                                    {
+                                        question: "What is the primary color of the ASDF brand?",
+                                        options: ["Blue", "Fire Orange (#ff6b35)", "Green", "Purple"],
+                                        correct: 1,
+                                        explanation: "ASDF's primary color is Fire Orange (#ff6b35), inspired by flames and our 'This is Fine' theme."
+                                    },
+                                    {
+                                        question: "Which tool is recommended for beginners?",
+                                        options: ["Photoshop", "Illustrator", "Canva", "After Effects"],
+                                        correct: 2,
+                                        explanation: "Canva is perfect for beginners with its templates and easy interface. Graduate to Figma as you improve."
+                                    },
+                                    {
+                                        question: "What does the ASDF brand represent?",
+                                        options: ["Aggressive growth", "Resilience and humor in chaos", "Serious finance", "Technical complexity"],
+                                        correct: 1,
+                                        explanation: "ASDF embraces resilience and finding humor in crypto's volatility, inspired by the 'This is Fine' meme."
+                                    }
+                                ]
+                            },
+
+                            // STEP 4: Deep Content
+                            deepContent: [
+                                {
+                                    title: "Advanced Color Theory for Crypto",
+                                    content: \`
+                                        <h4>The Psychology of Colors</h4>
+                                        <p>Colors evoke specific emotions and associations in crypto:</p>
+                                        <ul>
+                                            <li><strong>Green:</strong> Profit, growth, success (use for positive metrics)</li>
+                                            <li><strong>Red:</strong> Loss, danger, urgency (use for warnings, decreases)</li>
+                                            <li><strong>Orange/Yellow:</strong> Energy, excitement, caution (ASDF's signature)</li>
+                                            <li><strong>Blue:</strong> Trust, stability (common in DeFi)</li>
+                                            <li><strong>Purple:</strong> Premium, innovative (NFT/Web3 vibes)</li>
+                                        </ul>
+                                        <h4>Color Accessibility</h4>
+                                        <p>Ensure your designs work for everyone:</p>
+                                        <ul>
+                                            <li>Maintain 4.5:1 contrast ratio for text</li>
+                                            <li>Don't rely solely on color to convey meaning</li>
+                                            <li>Test with colorblind simulators</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>Pro Tip:</strong> Use WebAIM's contrast checker to verify your color combinations are accessible.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Typography Deep Dive",
+                                    content: \`
+                                        <h4>Font Pairing Rules</h4>
+                                        <p>Great typography follows these patterns:</p>
+                                        <ul>
+                                            <li><strong>Contrast:</strong> Pair a decorative header font with a simple body font</li>
+                                            <li><strong>Limit:</strong> Use maximum 2-3 fonts per design</li>
+                                            <li><strong>Hierarchy:</strong> Establish clear size relationships</li>
+                                        </ul>
+                                        <h4>Recommended Font Stacks for ASDF</h4>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Font Hierarchy</div>
+                                            <pre>Headlines: Space Grotesk (bold, techy)
+Subheads: Inter (semi-bold)
+Body: Inter (regular)
+Code: Space Mono (monospace)</pre>
+                                        </div>
+                                        <h4>Size Scale (Desktop)</h4>
+                                        <p>Use a consistent scale for visual rhythm:</p>
+                                        <ul>
+                                            <li>H1: 48-64px (hero statements)</li>
+                                            <li>H2: 32-40px (section headers)</li>
+                                            <li>H3: 24-28px (subsections)</li>
+                                            <li>Body: 16-18px (readable paragraphs)</li>
+                                            <li>Caption: 12-14px (supporting text)</li>
+                                        </ul>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 5: Practice
+                            practice: [
+                                {
+                                    type: 'fill-blank',
+                                    id: 'design-practice-1',
+                                    title: 'Design Principles Check',
+                                    instruction: 'Complete these design fundamentals:',
+                                    questions: [
+                                        {
+                                            text: 'CRAP stands for Contrast, _____, Alignment, and _____.',
+                                            blanks: ['Repetition', 'Proximity'],
+                                            hints: ['Repeating visual elements', 'Grouping related items']
+                                        },
+                                        {
+                                            text: 'The primary ASDF brand color is Fire _____ with hex code #ff6b35.',
+                                            blanks: ['Orange'],
+                                            hints: ['A warm color between red and yellow']
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'explorer',
+                                    id: 'design-practice-2',
+                                    title: 'Design Tool Setup',
+                                    instruction: 'Set up your design environment:',
+                                    tasks: [
+                                        {
+                                            task: 'Create a free Figma account',
+                                            hint: 'Go to figma.com and sign up',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Create a free Canva account',
+                                            hint: 'Go to canva.com and sign up',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Create a simple graphic using ASDF colors',
+                                            hint: 'Use #ff6b35 and #1a1a1a as your main colors',
+                                            verification: 'checkbox'
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'quiz-challenge',
+                                    id: 'design-practice-3',
+                                    title: 'Design Speed Round',
+                                    description: 'Test your design knowledge quickly!',
+                                    timeLimit: 45,
+                                    questions: [
+                                        { q: 'What does the C in CRAP stand for?', a: 'Contrast' },
+                                        { q: 'What tool is best for beginners?', a: 'Canva' },
+                                        { q: 'What is the ASDF primary color hex?', a: '#ff6b35' },
+                                        { q: 'Maximum fonts per design?', a: '3' },
+                                        { q: 'Which principle groups related items?', a: 'Proximity' }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 'design-b2',
+                            title: 'ASDF Brand Identity',
+                            sections: [
+                                {
+                                    title: 'The ASDF Visual Language',
+                                    content: `
+                                        <p>Understanding our brand is key to creating cohesive designs that feel authentically ASDF.</p>
+                                        <h4>Our Story</h4>
+                                        <p>ASDF is inspired by the "This is Fine" meme - the dog sitting calmly while everything burns around him. This represents:</p>
+                                        <ul>
+                                            <li>Staying calm in volatile markets</li>
+                                            <li>Finding humor in chaos</li>
+                                            <li>Being self-aware about crypto's wild nature</li>
+                                            <li>Building real value despite the flames</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🔥 Brand Personality:</strong> We embrace the chaos - our designs should feel controlled but on fire.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Color Palette',
+                                    content: `
+                                        <p>The ASDF color palette is inspired by fire and charcoal:</p>
+                                        <div class="yj-color-palette">
+                                            <div class="yj-color-swatch" style="background: #ff6b35;">
+                                                <span>Primary Fire</span>
+                                                <code>#ff6b35</code>
+                                            </div>
+                                            <div class="yj-color-swatch" style="background: #ff8c42;">
+                                                <span>Ember Glow</span>
+                                                <code>#ff8c42</code>
+                                            </div>
+                                            <div class="yj-color-swatch" style="background: #1a1a1a; color: #fff;">
+                                                <span>Charred Black</span>
+                                                <code>#1a1a1a</code>
+                                            </div>
+                                            <div class="yj-color-swatch" style="background: #2d2d2d; color: #fff;">
+                                                <span>Smoke Grey</span>
+                                                <code>#2d2d2d</code>
+                                            </div>
+                                            <div class="yj-color-swatch" style="background: #ffd93d;">
+                                                <span>Flame Yellow</span>
+                                                <code>#ffd93d</code>
+                                            </div>
+                                        </div>
+                                        <h4>Usage Guidelines</h4>
+                                        <ul>
+                                            <li><strong>Primary Fire:</strong> CTAs, highlights, important elements</li>
+                                            <li><strong>Charred Black:</strong> Backgrounds, text on light</li>
+                                            <li><strong>Flame Yellow:</strong> Accents, warnings, celebrations</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Typography',
+                                    content: `
+                                        <p>Typography is crucial for readability and brand recognition:</p>
+                                        <h4>Primary Font: Bold Sans-Serif</h4>
+                                        <p>For headlines, logos, and emphasis. Options:</p>
+                                        <ul>
+                                            <li>Inter (free, excellent readability)</li>
+                                            <li>Montserrat (free, modern feel)</li>
+                                            <li>Space Grotesk (free, techy vibe)</li>
+                                        </ul>
+                                        <h4>Body Font: Clean Sans-Serif</h4>
+                                        <p>For longer text and descriptions:</p>
+                                        <ul>
+                                            <li>Inter (works great for both)</li>
+                                            <li>Open Sans (classic, highly readable)</li>
+                                        </ul>
+                                        <h4>Type Hierarchy</h4>
+                                        <div class="yj-type-demo">
+                                            <p style="font-size: 2em; font-weight: 800;">H1: Bold Statement</p>
+                                            <p style="font-size: 1.5em; font-weight: 700;">H2: Section Title</p>
+                                            <p style="font-size: 1.2em; font-weight: 600;">H3: Subsection</p>
+                                            <p style="font-size: 1em;">Body: Regular text for reading.</p>
+                                            <p style="font-size: 0.85em; opacity: 0.7;">Small: Captions and fine print</p>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Logo Usage',
+                                    content: `
+                                        <p>The ASDF logo and mascot have specific usage guidelines:</p>
+                                        <h4>Do's ✓</h4>
+                                        <ul>
+                                            <li>Use official logo assets when available</li>
+                                            <li>Maintain proportions (don't stretch)</li>
+                                            <li>Ensure adequate contrast with background</li>
+                                            <li>Leave breathing room around the logo</li>
+                                        </ul>
+                                        <h4>Don'ts ✗</h4>
+                                        <ul>
+                                            <li>Don't alter colors arbitrarily</li>
+                                            <li>Don't add effects that obscure the logo</li>
+                                            <li>Don't use low-resolution versions</li>
+                                            <li>Don't place on busy backgrounds</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>⚠️ Important:</strong> The "This is Fine" dog image has copyright considerations. For official use, refer to community-created ASDF-specific artwork.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What is the ASDF mascot?',
+                                options: ['A rocket', 'The "This is Fine" dog', 'A phoenix', 'A bull'],
+                                correct: 1
+                            }
+                        },
+                        {
+                            id: 'design-b3',
+                            title: 'Creating Effective Memes',
+                            sections: [
+                                {
+                                    title: 'The Art of Crypto Memes',
+                                    content: `
+                                        <p>Memes are the currency of crypto culture. They spread ideas faster than any marketing campaign.</p>
+                                        <h4>Why Memes Work</h4>
+                                        <ul>
+                                            <li><strong>Relatability:</strong> People share what resonates with their experience</li>
+                                            <li><strong>Simplicity:</strong> Complex ideas in digestible format</li>
+                                            <li><strong>Community:</strong> Inside jokes create belonging</li>
+                                            <li><strong>Shareability:</strong> Easy to forward, screenshot, repost</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Goal:</strong> Make people feel understood, then laugh, then share.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Anatomy of a Good Meme',
+                                    content: `
+                                        <p>Every effective meme has these elements:</p>
+                                        <h4>1. Hook (First 0.5 seconds)</h4>
+                                        <p>Familiar format or image that catches attention.</p>
+                                        <h4>2. Setup (1-2 seconds)</h4>
+                                        <p>Brief context that everyone recognizes.</p>
+                                        <h4>3. Punchline (The moment)</h4>
+                                        <p>The unexpected twist that makes it funny.</p>
+                                        <h4>4. ASDF Connection</h4>
+                                        <p>Subtle brand tie-in that doesn't feel forced.</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Structure</div>
+                                            <pre>Format: "This is Fine" dog template
+Setup: Market dumping -30%
+Punchline: "This is fine, I'm buying more ASDF"
+Why it works: Relatable situation + our mascot + calm confidence</pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Meme Formats That Work',
+                                    content: `
+                                        <p>These formats consistently perform well:</p>
+                                        <h4>Comparison Memes</h4>
+                                        <p>"How I started vs How it's going" - Show growth</p>
+                                        <h4>Reaction Memes</h4>
+                                        <p>Character reacting to crypto situations (burns, price moves)</p>
+                                        <h4>Caption Memes</h4>
+                                        <p>Existing image + new crypto-relevant caption</p>
+                                        <h4>Timeline Memes</h4>
+                                        <p>"Me explaining to my friends why I'm excited about a deflationary dog token"</p>
+                                        <h4>Educational Memes</h4>
+                                        <p>Complex concepts explained through humor</p>
+                                        <div class="yj-tip"><strong>💡 Pro Tip:</strong> Study what's trending on crypto Twitter. Adapt popular formats quickly while they're hot.</div>
+                                    `
+                                },
+                                {
+                                    title: 'What to Avoid',
+                                    content: `
+                                        <p>Some content can harm the community:</p>
+                                        <div class="yj-warning-box">
+                                            <h4>❌ Never Include:</h4>
+                                            <ul>
+                                                <li><strong>Price predictions:</strong> "ASDF to $1!" - This is speculation</li>
+                                                <li><strong>Financial advice:</strong> "Buy now before it moons!"</li>
+                                                <li><strong>Attacks on other projects:</strong> Stay positive</li>
+                                                <li><strong>Misleading claims:</strong> Don't promise what can't be delivered</li>
+                                                <li><strong>Low-effort spam:</strong> Quality over quantity</li>
+                                            </ul>
+                                        </div>
+                                        <h4>✓ Safe Topics:</h4>
+                                        <ul>
+                                            <li>Burn mechanics and deflation</li>
+                                            <li>Community moments and milestones</li>
+                                            <li>General crypto humor (not price-focused)</li>
+                                            <li>"This is Fine" dog in relatable situations</li>
+                                            <li>Building and development progress</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Creating Your First Meme',
+                                    content: `
+                                        <p>Let's walk through creating an ASDF meme:</p>
+                                        <h4>Step 1: Choose Your Format</h4>
+                                        <p>Pick a trending template or use the "This is Fine" dog.</p>
+                                        <h4>Step 2: Identify the Relatable Moment</h4>
+                                        <p>What's happening in crypto that people are talking about?</p>
+                                        <h4>Step 3: Write Your Copy</h4>
+                                        <p>Keep it short. If you need more than 10 words, simplify.</p>
+                                        <h4>Step 4: Design</h4>
+                                        <ul>
+                                            <li>Bold, readable text (Impact or similar)</li>
+                                            <li>High contrast (white text with black outline works everywhere)</li>
+                                            <li>Don't cover the focal point of the image</li>
+                                        </ul>
+                                        <h4>Step 5: Test</h4>
+                                        <p>Show a friend. If you have to explain it, rework it.</p>
+                                        <div class="yj-info"><strong>🚀 Ready?</strong> Create a meme and share it in the ASDF community for feedback!</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What should you avoid in crypto memes?',
+                                options: ['Humor', 'Relatability', 'Price predictions and financial advice', 'Brand colors'],
+                                correct: 2
+                            }
+                        }
+                    ],
+                    intermediate: [
+                        {
+                            id: 'design-i1',
+                            title: 'UI Design for Crypto Apps',
+                            sections: [
+                                {
+                                    title: 'Crypto UX Challenges',
+                                    content: `
+                                        <p>Crypto interfaces have unique challenges that traditional apps don't face:</p>
+                                        <ul>
+                                            <li><strong>Irreversibility:</strong> Transactions can't be undone</li>
+                                            <li><strong>Complexity:</strong> Users must understand wallets, gas, signatures</li>
+                                            <li><strong>Trust:</strong> Users are entrusting their money to your interface</li>
+                                            <li><strong>Jargon:</strong> Technical terms can confuse newcomers</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Goal:</strong> Make users feel safe and informed at every step.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Essential UI Patterns',
+                                    content: `
+                                        <h4>1. Clear Transaction Preview</h4>
+                                        <p>Always show exactly what will happen before confirmation:</p>
+                                        <ul>
+                                            <li>Amount being sent/received</li>
+                                            <li>Recipient address (truncated with copy option)</li>
+                                            <li>Transaction fee estimate</li>
+                                            <li>Total cost breakdown</li>
+                                        </ul>
+                                        <h4>2. Confirmation Steps</h4>
+                                        <p>For irreversible actions, use multi-step confirmation:</p>
+                                        <ol>
+                                            <li>Review details</li>
+                                            <li>Explicit checkbox ("I understand this is irreversible")</li>
+                                            <li>Final confirm button</li>
+                                        </ol>
+                                        <h4>3. Loading States</h4>
+                                        <p>Blockchain transactions take time. Show progress:</p>
+                                        <ul>
+                                            <li>Pending → Confirming → Confirmed</li>
+                                            <li>Link to block explorer</li>
+                                            <li>Estimated time remaining</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Information Hierarchy',
+                                    content: `
+                                        <p>In crypto UIs, prioritize information correctly:</p>
+                                        <h4>Primary (Most Visible)</h4>
+                                        <ul>
+                                            <li>Current balance / portfolio value</li>
+                                            <li>Active actions (send, receive, swap)</li>
+                                            <li>Connection status (wallet connected?)</li>
+                                        </ul>
+                                        <h4>Secondary (Easily Accessible)</h4>
+                                        <ul>
+                                            <li>Transaction history</li>
+                                            <li>Token details</li>
+                                            <li>Settings</li>
+                                        </ul>
+                                        <h4>Tertiary (Available on Request)</h4>
+                                        <ul>
+                                            <li>Contract addresses</li>
+                                            <li>Technical details</li>
+                                            <li>Advanced options</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Rule:</strong> Beginners should never need tertiary info to complete basic tasks.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Error Handling',
+                                    content: `
+                                        <h4>Good Error Messages Include:</h4>
+                                        <ol>
+                                            <li><strong>What happened:</strong> "Transaction failed"</li>
+                                            <li><strong>Why:</strong> "Insufficient SOL for gas fee"</li>
+                                            <li><strong>How to fix:</strong> "Add at least 0.01 SOL to your wallet"</li>
+                                        </ol>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Bad vs Good Error</div>
+                                            <pre>❌ Bad: "Error: 0x1"
+
+✓ Good: "Transaction Failed
+Your wallet doesn't have enough SOL to pay the
+network fee (0.00001 SOL needed).
+
+[Add SOL] [Learn More]"</pre>
+                                        </div>
+                                        <h4>Common Errors to Handle:</h4>
+                                        <ul>
+                                            <li>Wallet not connected</li>
+                                            <li>Insufficient balance</li>
+                                            <li>Transaction rejected by user</li>
+                                            <li>Network congestion</li>
+                                            <li>Invalid address</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Mobile Considerations',
+                                    content: `
+                                        <p>Many crypto users are mobile-first. Design for small screens:</p>
+                                        <h4>Touch Targets</h4>
+                                        <p>Buttons should be at least 44x44 pixels. Larger for important actions.</p>
+                                        <h4>Address Display</h4>
+                                        <p>Show truncated addresses with copy functionality:</p>
+                                        <div class="yj-code-example">
+                                            <pre>7xKX...9Pq2 [Copy icon]</pre>
+                                        </div>
+                                        <h4>Bottom Navigation</h4>
+                                        <p>Keep primary actions within thumb reach (bottom of screen).</p>
+                                        <h4>Input Fields</h4>
+                                        <p>Use appropriate keyboard types (numeric for amounts).</p>
+                                        <div class="yj-tip"><strong>💡 Test:</strong> Always test your designs on actual mobile devices, not just browser dev tools.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What is most important in crypto UI design?',
+                                options: ['Animations', 'Clarity and trust', 'Dark mode', 'Minimalism'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    advanced: [
+                        {
+                            id: 'design-a1',
+                            title: 'Building Design Systems',
+                            sections: [
+                                {
+                                    title: 'What is a Design System?',
+                                    content: `
+                                        <p>A <strong>design system</strong> is a collection of reusable components and guidelines that ensure consistency across products.</p>
+                                        <h4>Components of a Design System:</h4>
+                                        <ul>
+                                            <li><strong>Design Tokens:</strong> Colors, typography, spacing values</li>
+                                            <li><strong>Component Library:</strong> Buttons, inputs, cards, modals</li>
+                                            <li><strong>Patterns:</strong> Common UI solutions (forms, navigation)</li>
+                                            <li><strong>Documentation:</strong> How and when to use each element</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Benefits:</strong> Faster design, consistent UX, easier handoff to developers, scalable products.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Design Tokens',
+                                    content: `
+                                        <p>Design tokens are the atomic values of your system:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Token Structure</div>
+                                            <pre><code>// Colors
+--color-primary: #ff6b35;
+--color-primary-hover: #ff8142;
+--color-background: #1a1a1a;
+--color-surface: #2d2d2d;
+--color-text: #ffffff;
+--color-text-muted: #888888;
+--color-success: #22c55e;
+--color-error: #ef4444;
+
+// Spacing (8px base unit)
+--space-xs: 4px;
+--space-sm: 8px;
+--space-md: 16px;
+--space-lg: 24px;
+--space-xl: 32px;
+
+// Typography
+--font-family: 'Inter', sans-serif;
+--font-size-sm: 14px;
+--font-size-md: 16px;
+--font-size-lg: 20px;
+--font-size-xl: 24px;
+
+// Border Radius
+--radius-sm: 4px;
+--radius-md: 8px;
+--radius-lg: 16px;
+--radius-full: 9999px;</code></pre>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 Tip:</strong> Use semantic names (--color-primary) rather than descriptive (--color-orange). This makes theme changes easier.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Component Library',
+                                    content: `
+                                        <p>Build reusable components for consistency:</p>
+                                        <h4>Essential Components:</h4>
+                                        <ul>
+                                            <li><strong>Button:</strong> Primary, Secondary, Ghost, Disabled states</li>
+                                            <li><strong>Input:</strong> Text, Number, Address (with validation)</li>
+                                            <li><strong>Card:</strong> Container for content blocks</li>
+                                            <li><strong>Modal:</strong> For confirmations and forms</li>
+                                            <li><strong>Toast:</strong> Success/error notifications</li>
+                                            <li><strong>Tooltip:</strong> Contextual help</li>
+                                            <li><strong>Badge:</strong> Status indicators</li>
+                                            <li><strong>Skeleton:</strong> Loading placeholders</li>
+                                        </ul>
+                                        <h4>Component States:</h4>
+                                        <p>Each component needs designs for:</p>
+                                        <ul>
+                                            <li>Default</li>
+                                            <li>Hover</li>
+                                            <li>Focus</li>
+                                            <li>Active/Pressed</li>
+                                            <li>Disabled</li>
+                                            <li>Loading</li>
+                                            <li>Error</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Documentation',
+                                    content: `
+                                        <p>A design system is only useful if people know how to use it:</p>
+                                        <h4>What to Document:</h4>
+                                        <ul>
+                                            <li><strong>When to use:</strong> "Use primary button for main CTA, secondary for alternatives"</li>
+                                            <li><strong>When NOT to use:</strong> "Don't use ghost buttons for important actions"</li>
+                                            <li><strong>Anatomy:</strong> Label each part of the component</li>
+                                            <li><strong>Spacing:</strong> How much room to leave around it</li>
+                                            <li><strong>Accessibility:</strong> Keyboard navigation, screen reader support</li>
+                                        </ul>
+                                        <h4>Example Documentation:</h4>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Button Component</div>
+                                            <pre>## Button
+
+### Variants
+- **Primary:** Main actions, one per view
+- **Secondary:** Alternative actions
+- **Ghost:** Tertiary actions, low emphasis
+
+### Sizes
+- **Large:** 48px height, for primary CTAs
+- **Medium:** 40px height, default
+- **Small:** 32px height, for tight spaces
+
+### Usage Guidelines
+✓ Use clear, action-oriented labels ("Connect Wallet")
+✗ Don't use vague labels ("Click Here")</pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Implementing in Figma',
+                                    content: `
+                                        <p>Figma is ideal for building and maintaining design systems:</p>
+                                        <h4>Setup Structure:</h4>
+                                        <ol>
+                                            <li><strong>Foundations File:</strong> Colors, typography, icons</li>
+                                            <li><strong>Components File:</strong> All reusable components</li>
+                                            <li><strong>Patterns File:</strong> Common layouts and flows</li>
+                                            <li><strong>Documentation:</strong> Guidelines and examples</li>
+                                        </ol>
+                                        <h4>Figma Features to Use:</h4>
+                                        <ul>
+                                            <li><strong>Variables:</strong> For design tokens (colors, spacing)</li>
+                                            <li><strong>Components:</strong> For reusable elements</li>
+                                            <li><strong>Variants:</strong> For component states</li>
+                                            <li><strong>Auto Layout:</strong> For responsive components</li>
+                                            <li><strong>Team Libraries:</strong> Share across projects</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Pro Tip:</strong> Start small. Build what you need now, expand as patterns emerge. Don't try to design everything upfront.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What ensures consistent design across a project?',
+                                options: ['One designer', 'Design system', 'More meetings', 'Strict deadlines'],
+                                correct: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            content: {
+                icon: '✍️',
+                name: 'Content',
+                levels: ['beginner', 'intermediate', 'advanced'],
+                modules: {
+                    beginner: [
+                        {
+                            id: 'content-b1',
+                            title: 'Mastering Crypto Content Creation',
+
+                            // STEP 1: Entry Quiz
+                            entryQuiz: {
+                                intro: "Let's discover your content creation background and style preferences!",
+                                questions: [
+                                    {
+                                        question: "What content have you created before?",
+                                        options: ["I regularly write/post on social media", "I've written a few things", "I'm new to content creation"],
+                                        type: 'assessment'
+                                    },
+                                    {
+                                        question: "What makes crypto content effective?",
+                                        options: ["Educating while entertaining", "Using complex jargon", "Making price predictions", "Posting frequently without research"],
+                                        correct: 0,
+                                        explanation: "The best crypto content educates AND entertains. Pure information is boring; pure entertainment doesn't build value."
+                                    },
+                                    {
+                                        question: "Before writing about a topic, you should:",
+                                        options: ["Research and verify facts", "Copy what others said", "Write immediately without planning", "Skip checking sources"],
+                                        correct: 0,
+                                        explanation: "Always research and verify facts. Inaccurate information damages trust and can spread harmful misinformation."
+                                    }
+                                ]
+                            },
+
+                            // STEP 2: Course Content
+                            course: [
+                                {
+                                    title: "Welcome to Content Creation",
+                                    content: \`
+                                        <p>Welcome to the Content Creator path! You're the storytellers of the ASDF ecosystem - you help people understand, engage, and believe in what we're building.</p>
+                                        <div class="yj-objectives">
+                                            <h4>What You'll Learn</h4>
+                                            <ul>
+                                                <li>How to create engaging crypto content</li>
+                                                <li>Understanding and writing for different audiences</li>
+                                                <li>Mastering Twitter threads and social media</li>
+                                                <li>Building your personal brand as a creator</li>
+                                            </ul>
+                                        </div>
+                                        <div class="yj-feature-cards">
+                                            <div class="yj-feature-card">
+                                                <span>📚</span>
+                                                <strong>Educational</strong>
+                                                <p>Tutorials, explainers, guides</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🐦</span>
+                                                <strong>Social</strong>
+                                                <p>Tweets, threads, engagement</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🎬</span>
+                                                <strong>Video</strong>
+                                                <p>YouTube, TikTok, Shorts</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>✍️</span>
+                                                <strong>Written</strong>
+                                                <p>Articles, docs, newsletters</p>
+                                            </div>
+                                        </div>
+                                    \`
+                                },
+                                {
+                                    title: "Understanding Your Audience",
+                                    content: \`
+                                        <p>Different audiences need different content approaches:</p>
+                                        <div class="yj-audience-grid">
+                                            <div class="yj-audience-card">
+                                                <h4>Crypto Newcomers</h4>
+                                                <ul>
+                                                    <li>Explain everything, assume nothing</li>
+                                                    <li>Avoid jargon or define it immediately</li>
+                                                    <li>Focus on "why" before "how"</li>
+                                                    <li>Use analogies to familiar concepts</li>
+                                                </ul>
+                                            </div>
+                                            <div class="yj-audience-card">
+                                                <h4>Crypto Natives</h4>
+                                                <ul>
+                                                    <li>Skip basics, get to the point</li>
+                                                    <li>Use community language naturally</li>
+                                                    <li>Focus on what makes ASDF unique</li>
+                                                    <li>Provide technical depth and data</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="yj-key-concept">
+                                            <strong>The Audience Check</strong>
+                                            <p>Before every piece: Who am I writing for? What do they already know? What do they want to learn?</p>
+                                        </div>
+                                    \`
+                                },
+                                {
+                                    title: "Content Planning Framework",
+                                    content: \`
+                                        <p>Great content starts with planning. Use the HOOK framework:</p>
+                                        <h4>H - Hook</h4>
+                                        <p>Start with something that grabs attention. A question, surprising stat, or bold statement.</p>
+                                        <h4>O - Outline</h4>
+                                        <p>Structure your main points (3-5 key ideas) before writing.</p>
+                                        <h4>O - Offer Value</h4>
+                                        <p>Every piece should teach, entertain, or inspire action.</p>
+                                        <h4>K - Kick to Action</h4>
+                                        <p>End with a clear call-to-action: follow, share, try something, or discuss.</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Thread Structure</div>
+                                            <pre>Tweet 1: Hook - "ASDF just burned 500M tokens. Here's why that matters..."
+Tweet 2-4: Main points with data
+Tweet 5: Why this is bullish
+Tweet 6: Call to action - "Follow for more ASDF alpha"</pre>
+                                        </div>
+                                        <div class="yj-warning"><strong>Research First:</strong> Never make claims you can't verify. Check on-chain data, cite sources.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Writing for Crypto",
+                                    content: \`
+                                        <p>Crypto is full of jargon. Great content makes complex ideas simple:</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Complex vs Simple</div>
+                                            <pre>Bad: "ASDF implements a deflationary tokenomic
+model whereby a percentage of transaction volume
+is algorithmically allocated to a provably
+inaccessible burn address."
+
+Good: "Every time ASDF is traded, some tokens
+are permanently destroyed. The total supply
+keeps shrinking over time."</pre>
+                                        </div>
+                                        <h4>Key Writing Rules</h4>
+                                        <ul>
+                                            <li><strong>Lead with value:</strong> Don't bury the important stuff</li>
+                                            <li><strong>One idea per sentence:</strong> Keep sentences short</li>
+                                            <li><strong>Use active voice:</strong> "The contract burned tokens" not "Tokens were burned"</li>
+                                            <li><strong>Show, don't tell:</strong> Use specific numbers and examples</li>
+                                        </ul>
+                                    \`
+                                },
+                                {
+                                    title: "Finding Your Voice",
+                                    content: \`
+                                        <p>Your unique voice makes you memorable. Consider these elements:</p>
+                                        <table class="yj-comparison-table">
+                                            <tr><th>Element</th><th>Options</th><th>Examples</th></tr>
+                                            <tr><td>Tone</td><td>Casual / Formal</td><td>"LFG!" vs "Let's examine..."</td></tr>
+                                            <tr><td>Perspective</td><td>Expert / Learner</td><td>"I discovered..." vs "Here's what we know..."</td></tr>
+                                            <tr><td>Length</td><td>Quick hits / Deep dives</td><td>Single tweets vs long threads</td></tr>
+                                        </table>
+                                        <h4>Content Types to Try</h4>
+                                        <ul>
+                                            <li><strong>Educational threads:</strong> Explain concepts step by step</li>
+                                            <li><strong>News commentary:</strong> React to updates with insights</li>
+                                            <li><strong>Data analysis:</strong> Share on-chain metrics and trends</li>
+                                            <li><strong>Community highlights:</strong> Showcase member achievements</li>
+                                            <li><strong>Behind-the-scenes:</strong> Show your journey and process</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>Authenticity beats imitation.</strong> Don't copy someone else's style - develop your own through experimentation.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Twitter/X Mastery",
+                                    content: \`
+                                        <p>Twitter/X is the heart of crypto discourse. Master these formats:</p>
+                                        <h4>Thread Anatomy</h4>
+                                        <ul>
+                                            <li><strong>Tweet 1 (Hook):</strong> Make them stop scrolling</li>
+                                            <li><strong>Tweet 2-N (Body):</strong> Deliver value, one point per tweet</li>
+                                            <li><strong>Final Tweet (CTA):</strong> What should they do next?</li>
+                                        </ul>
+                                        <h4>Engagement Tips</h4>
+                                        <ul>
+                                            <li>Post when your audience is active (test different times)</li>
+                                            <li>Reply to comments within the first hour</li>
+                                            <li>Use relevant hashtags sparingly (1-2 max)</li>
+                                            <li>Quote tweet with added value, not just "this"</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Hook Examples</div>
+                                            <pre>Question: "What if I told you ASDF burned more tokens this week than most projects burn in a year?"
+
+Stat: "2.5 billion ASDF tokens. Gone forever. Here's the story..."
+
+Bold claim: "Most deflationary tokens are scams. ASDF is different. Here's why..."</pre>
+                                        </div>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 3: Knowledge Quiz
+                            quiz: {
+                                intro: "Let's check what you've learned about content creation!",
+                                passingScore: 70,
+                                questions: [
+                                    {
+                                        question: "What does the HOOK framework stand for?",
+                                        options: ["Hook, Outline, Offer value, Kick to action", "Help, Organize, Optimize, Keep", "How, Open, Order, Know", "None of these"],
+                                        correct: 0,
+                                        explanation: "HOOK = Hook (grab attention), Outline (structure), Offer value (teach/entertain), Kick to action (CTA)."
+                                    },
+                                    {
+                                        question: "When writing for crypto newcomers, you should:",
+                                        options: ["Use lots of technical jargon", "Explain terms and use analogies", "Skip explanations to save time", "Only share price predictions"],
+                                        correct: 1,
+                                        explanation: "For newcomers, explain everything and use analogies to familiar concepts. Never assume knowledge."
+                                    },
+                                    {
+                                        question: "Which is the better writing approach?",
+                                        options: ["Complex, technical language", "Simple, clear explanations", "As many words as possible", "No structure needed"],
+                                        correct: 1,
+                                        explanation: "The best writers understand complex topics so well they can explain them simply."
+                                    },
+                                    {
+                                        question: "The first tweet in a thread should:",
+                                        options: ["Be forgettable", "Hook the reader to stop scrolling", "Include all details", "Ask for follows immediately"],
+                                        correct: 1,
+                                        explanation: "The first tweet is your hook - it must grab attention and make people want to read more."
+                                    }
+                                ]
+                            },
+
+                            // STEP 4: Deep Content
+                            deepContent: [
+                                {
+                                    title: "Advanced Thread Strategies",
+                                    content: \`
+                                        <h4>The Thread Formula</h4>
+                                        <p>High-performing threads follow patterns:</p>
+                                        <ul>
+                                            <li><strong>Numbers hook:</strong> "7 reasons why..." performs well</li>
+                                            <li><strong>Story threads:</strong> Narrative structure keeps readers engaged</li>
+                                            <li><strong>Controversial takes:</strong> Thoughtful disagreement gets engagement</li>
+                                            <li><strong>Data threads:</strong> On-chain analysis with charts</li>
+                                        </ul>
+                                        <h4>Optimal Thread Length</h4>
+                                        <ul>
+                                            <li>5-7 tweets: Quick educational content</li>
+                                            <li>10-15 tweets: Standard deep dive</li>
+                                            <li>20+ tweets: Comprehensive guides (use sparingly)</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>Quality over quantity.</strong> A 5-tweet thread with great content beats a 20-tweet thread with fluff.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Building Your Content Brand",
+                                    content: \`
+                                        <h4>Personal Branding Elements</h4>
+                                        <ul>
+                                            <li><strong>Consistent handle:</strong> Same username across platforms</li>
+                                            <li><strong>Recognizable avatar:</strong> PFP that stands out</li>
+                                            <li><strong>Clear bio:</strong> What you do, who you help</li>
+                                            <li><strong>Content niche:</strong> What are you known for?</li>
+                                        </ul>
+                                        <h4>Content Calendar</h4>
+                                        <p>Consistency beats intensity:</p>
+                                        <ul>
+                                            <li>Post at least 3-5x per week minimum</li>
+                                            <li>One thread per week builds authority</li>
+                                            <li>Engage with others daily (replies matter)</li>
+                                            <li>Track what performs and do more of that</li>
+                                        </ul>
+                                        <div class="yj-key-concept">
+                                            <strong>The 80/20 Rule</strong>
+                                            <p>80% of your content should provide value (educate, entertain). 20% can promote ASDF directly.</p>
+                                        </div>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 5: Practice
+                            practice: [
+                                {
+                                    type: 'fill-blank',
+                                    id: 'content-practice-1',
+                                    title: 'Content Framework Check',
+                                    instruction: 'Complete these content creation concepts:',
+                                    questions: [
+                                        {
+                                            text: 'HOOK stands for Hook, Outline, Offer value, and _____ to action.',
+                                            blanks: ['Kick'],
+                                            hints: ['A call to do something']
+                                        },
+                                        {
+                                            text: 'For crypto newcomers, you should avoid _____ and use _____ instead.',
+                                            blanks: ['jargon', 'analogies'],
+                                            hints: ['Technical language', 'Comparisons to familiar things']
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'explorer',
+                                    id: 'content-practice-2',
+                                    title: 'Content Creation Challenge',
+                                    instruction: 'Create your first ASDF content:',
+                                    tasks: [
+                                        {
+                                            task: 'Write a hook tweet about ASDF burns',
+                                            hint: 'Use a surprising stat or question format',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Create a 3-tweet thread outline about why you joined ASDF',
+                                            hint: 'Hook -> Story -> Call to action',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Find and share a recent ASDF metric with your insight',
+                                            hint: 'Check burn tracker or on-chain data',
+                                            verification: 'checkbox'
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'quiz-challenge',
+                                    id: 'content-practice-3',
+                                    title: 'Content Speed Round',
+                                    description: 'Test your content creation knowledge!',
+                                    timeLimit: 45,
+                                    questions: [
+                                        { q: 'What does the H in HOOK stand for?', a: 'Hook' },
+                                        { q: 'How many tweets in a quick educational thread?', a: '5-7' },
+                                        { q: 'What % of content should provide value?', a: '80' },
+                                        { q: 'What should the first tweet in a thread do?', a: 'Hook' },
+                                        { q: 'Complex or simple writing for crypto?', a: 'Simple' }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 'content-b2',
+                            title: 'Writing for Crypto',
+                            sections: [
+                                {
+                                    title: 'Clear Communication',
+                                    content: `
+                                        <p>Crypto is full of jargon. Great content makes complex ideas simple:</p>
+                                        <h4>The Complexity Paradox:</h4>
+                                        <p>The best writers understand complex topics so well that they can explain them simply.</p>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Complex vs Simple</div>
+                                            <pre>❌ Complex:
+"ASDF implements a deflationary tokenomic model
+whereby a percentage of transaction volume is
+algorithmically allocated to a provably
+inaccessible burn address."
+
+✓ Simple:
+"Every time ASDF is traded, some tokens are
+permanently destroyed. This means the total
+supply keeps shrinking over time."</pre>
+                                        </div>
+                                    `
+                                },
+                                {
+                                    title: 'Writing Techniques',
+                                    content: `
+                                        <h4>1. Lead with Value</h4>
+                                        <p>Don't bury the important stuff. Start with the key takeaway.</p>
+                                        <h4>2. One Idea Per Sentence</h4>
+                                        <p>Long sentences with multiple clauses confuse readers. Keep it simple.</p>
+                                        <h4>3. Use Active Voice</h4>
+                                        <div class="yj-code-example">
+                                            <pre>❌ Passive: "The tokens were burned by the contract."
+✓ Active: "The contract burned the tokens."</pre>
+                                        </div>
+                                        <h4>4. Show, Don't Tell</h4>
+                                        <div class="yj-code-example">
+                                            <pre>❌ Telling: "ASDF has burned a lot of tokens."
+✓ Showing: "ASDF has burned 2.5 billion tokens -
+   that's 25% of the original supply, gone forever."</pre>
+                                        </div>
+                                        <h4>5. Use Concrete Numbers</h4>
+                                        <p>Replace vague words with specific data when possible.</p>
+                                    `
+                                },
+                                {
+                                    title: 'Explaining Crypto Concepts',
+                                    content: `
+                                        <p>Use the "What → Why → How" framework:</p>
+                                        <h4>Example: Explaining Token Burns</h4>
+                                        <div class="yj-framework">
+                                            <div class="yj-framework-step">
+                                                <strong>1. WHAT (Definition)</strong>
+                                                <p>"A token burn permanently removes tokens from circulation by sending them to an inaccessible wallet."</p>
+                                            </div>
+                                            <div class="yj-framework-step">
+                                                <strong>2. WHY (Purpose)</strong>
+                                                <p>"Burns reduce supply, which can increase the value of remaining tokens - basic economics."</p>
+                                            </div>
+                                            <div class="yj-framework-step">
+                                                <strong>3. HOW (Mechanism)</strong>
+                                                <p>"ASDF burns happen automatically when tokens are traded. You can verify burns on-chain at any time."</p>
+                                            </div>
+                                        </div>
+                                        <div class="yj-tip"><strong>💡 Analogy Tip:</strong> Compare to familiar concepts. "A burn address is like a shredder for money - once tokens go in, they can never come out."</div>
+                                    `
+                                },
+                                {
+                                    title: 'What to Avoid',
+                                    content: `
+                                        <h4>Never Include:</h4>
+                                        <div class="yj-warning-box">
+                                            <ul>
+                                                <li><strong>Price predictions:</strong> "ASDF will 10x" - You don't know this</li>
+                                                <li><strong>Financial advice:</strong> "You should buy/sell" - You're not licensed</li>
+                                                <li><strong>Unverified claims:</strong> Always fact-check</li>
+                                                <li><strong>FOMO tactics:</strong> "Buy before it's too late!"</li>
+                                                <li><strong>Attacks on others:</strong> Stay positive and constructive</li>
+                                            </ul>
+                                        </div>
+                                        <h4>Always Include:</h4>
+                                        <ul>
+                                            <li><strong>Disclaimers:</strong> "This is not financial advice"</li>
+                                            <li><strong>Sources:</strong> Link to on-chain data, official announcements</li>
+                                            <li><strong>Balance:</strong> Acknowledge limitations or risks</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>📝 Credibility Rule:</strong> It's better to say "I don't know" than to guess. Admitting uncertainty builds trust.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What should great crypto content do?',
+                                options: ['Use as much jargon as possible', 'Make complex ideas simple', 'Focus only on price', 'Be as long as possible'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    intermediate: [
+                        {
+                            id: 'content-i1',
+                            title: 'Building an Audience',
+                            sections: [
+                                {
+                                    title: 'Growing Your Reach',
+                                    content: `
+                                        <p>Quality content is nothing without distribution. Here's how to build an audience:</p>
+                                        <h4>The Audience Growth Formula:</h4>
+                                        <div class="yj-formula">
+                                            <span>Consistency</span>
+                                            <span>+</span>
+                                            <span>Value</span>
+                                            <span>+</span>
+                                            <span>Engagement</span>
+                                            <span>=</span>
+                                            <span>Growth</span>
+                                        </div>
+                                        <p>All three elements are required. Missing one will stall your growth.</p>
+                                    `
+                                },
+                                {
+                                    title: 'Consistency',
+                                    content: `
+                                        <p>Regular posting trains the algorithm and your audience to expect content from you.</p>
+                                        <h4>Posting Schedule Examples:</h4>
+                                        <ul>
+                                            <li><strong>Twitter/X:</strong> 1-3 tweets per day minimum</li>
+                                            <li><strong>Threads:</strong> 2-3 per week</li>
+                                            <li><strong>YouTube:</strong> 1-2 videos per week</li>
+                                            <li><strong>Articles:</strong> 1 per week</li>
+                                        </ul>
+                                        <h4>Tips for Staying Consistent:</h4>
+                                        <ul>
+                                            <li><strong>Batch create:</strong> Write multiple pieces at once</li>
+                                            <li><strong>Content calendar:</strong> Plan ahead</li>
+                                            <li><strong>Repurpose:</strong> Turn threads into articles, videos into clips</li>
+                                            <li><strong>Templates:</strong> Create formats you can reuse</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>⚠️ Reality Check:</strong> Start with a schedule you can maintain. It's better to post twice a week consistently than daily for a month then burn out.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Providing Value',
+                                    content: `
+                                        <p>Every piece of content should give something to the reader:</p>
+                                        <h4>Types of Value:</h4>
+                                        <ul>
+                                            <li><strong>Educational:</strong> Teach something new</li>
+                                            <li><strong>Informational:</strong> Share news or updates</li>
+                                            <li><strong>Entertainment:</strong> Make them laugh or feel something</li>
+                                            <li><strong>Inspiration:</strong> Motivate action or thought</li>
+                                            <li><strong>Connection:</strong> Make them feel part of a community</li>
+                                        </ul>
+                                        <h4>The Value Test:</h4>
+                                        <p>Before posting, ask: "Would I save/share this if I saw it from someone else?"</p>
+                                        <p>If no, either improve it or don't post it.</p>
+                                        <div class="yj-tip"><strong>💡 80/20 Rule:</strong> 80% of your content should give value. Only 20% should be promotional or about yourself.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Engagement',
+                                    content: `
+                                        <p>Social media is social. You need to engage, not just broadcast:</p>
+                                        <h4>Engagement Activities:</h4>
+                                        <ul>
+                                            <li><strong>Reply to comments:</strong> On your posts and others'</li>
+                                            <li><strong>Quote tweet:</strong> Add your take to others' content</li>
+                                            <li><strong>Ask questions:</strong> Invite discussion</li>
+                                            <li><strong>Participate in spaces:</strong> Join Twitter Spaces, Discord calls</li>
+                                            <li><strong>Collaborate:</strong> Work with other creators</li>
+                                        </ul>
+                                        <h4>Engagement Tips:</h4>
+                                        <ul>
+                                            <li>Be genuinely helpful, not self-promotional</li>
+                                            <li>Respond within the first hour of posting</li>
+                                            <li>Engage with accounts similar to or larger than yours</li>
+                                            <li>Add value to conversations, don't just agree</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Goal:</strong> Build relationships, not just followers. 100 engaged fans beat 10,000 silent followers.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Platform-Specific Tips',
+                                    content: `
+                                        <h4>Twitter/X</h4>
+                                        <ul>
+                                            <li>First line is crucial - it determines if people click "more"</li>
+                                            <li>Use line breaks for readability</li>
+                                            <li>End threads with a CTA (follow, like, share)</li>
+                                        </ul>
+                                        <h4>YouTube</h4>
+                                        <ul>
+                                            <li>Thumbnail and title matter more than content quality</li>
+                                            <li>First 30 seconds determine if people stay</li>
+                                            <li>Encourage comments to boost algorithm</li>
+                                        </ul>
+                                        <h4>Discord/Telegram</h4>
+                                        <ul>
+                                            <li>Be helpful in community channels</li>
+                                            <li>Share exclusive content or early access</li>
+                                            <li>Build 1-on-1 relationships</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Focus:</strong> Master one platform before expanding to others. Spreading too thin hurts growth everywhere.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What is key to building an audience?',
+                                options: ['Posting once a month', 'Consistency and engagement', 'Only promoting yourself', 'Avoiding replies'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    advanced: [
+                        {
+                            id: 'content-a1',
+                            title: 'Monetizing Content',
+                            sections: [
+                                {
+                                    title: 'Sustainable Creation',
+                                    content: `
+                                        <p>Turning your content into income allows you to create full-time:</p>
+                                        <h4>Revenue Streams for Creators:</h4>
+                                        <ul>
+                                            <li><strong>Sponsorships:</strong> Paid mentions or content</li>
+                                            <li><strong>Affiliate marketing:</strong> Commission on referrals</li>
+                                            <li><strong>Products:</strong> Courses, guides, tools</li>
+                                            <li><strong>Services:</strong> Consulting, ghostwriting</li>
+                                            <li><strong>Platform rewards:</strong> YouTube ads, creator funds</li>
+                                            <li><strong>Memberships:</strong> Premium content for subscribers</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>📊 Income Diversity:</strong> Don't rely on one source. Multiple streams provide stability.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Sponsored Content',
+                                    content: `
+                                        <p>Brands will pay for access to your audience. Here's how to do it right:</p>
+                                        <h4>Requirements:</h4>
+                                        <ul>
+                                            <li><strong>Clear disclosure:</strong> Always mark content as sponsored</li>
+                                            <li><strong>Authentic alignment:</strong> Only promote what you'd use yourself</li>
+                                            <li><strong>Editorial control:</strong> You decide the message, not the sponsor</li>
+                                        </ul>
+                                        <h4>Pricing Factors:</h4>
+                                        <ul>
+                                            <li>Follower count and engagement rate</li>
+                                            <li>Content format (tweet vs video vs article)</li>
+                                            <li>Exclusivity and usage rights</li>
+                                            <li>Your reputation and niche expertise</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>⚠️ Critical:</strong> Never promote scams, even for money. One bad sponsorship can destroy your reputation permanently.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Educational Products',
+                                    content: `
+                                        <h4>Product Ideas:</h4>
+                                        <ul>
+                                            <li><strong>Courses:</strong> In-depth learning on specific topics</li>
+                                            <li><strong>E-books/Guides:</strong> Written resources</li>
+                                            <li><strong>Templates:</strong> Reusable tools and frameworks</li>
+                                            <li><strong>Communities:</strong> Paid access to group + content</li>
+                                        </ul>
+                                        <h4>Creating a Course:</h4>
+                                        <ol>
+                                            <li><strong>Validate demand:</strong> Survey your audience first</li>
+                                            <li><strong>Outline curriculum:</strong> Clear learning outcomes</li>
+                                            <li><strong>Create content:</strong> Video, text, or both</li>
+                                            <li><strong>Choose platform:</strong> Gumroad, Teachable, own site</li>
+                                            <li><strong>Launch:</strong> Start with your existing audience</li>
+                                        </ol>
+                                        <div class="yj-tip"><strong>💡 Start Small:</strong> Your first product should be simple. A $20 guide is better than an unfinished $200 course.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Legal Considerations',
+                                    content: `
+                                        <p>As you grow, legal compliance becomes critical:</p>
+                                        <h4>Disclosure Requirements:</h4>
+                                        <ul>
+                                            <li>FTC requires disclosure of paid partnerships</li>
+                                            <li>Use clear language: "Ad" "Sponsored" "Paid partnership"</li>
+                                            <li>Disclosure must be visible, not hidden</li>
+                                        </ul>
+                                        <h4>Financial Content:</h4>
+                                        <ul>
+                                            <li>Include "Not financial advice" disclaimers</li>
+                                            <li>Don't guarantee returns or profits</li>
+                                            <li>Disclose if you hold the assets you discuss</li>
+                                        </ul>
+                                        <h4>Taxes:</h4>
+                                        <ul>
+                                            <li>Creator income is taxable</li>
+                                            <li>Track all revenue streams</li>
+                                            <li>Consult a tax professional</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>⚠️ Important:</strong> Laws vary by country. Understand the rules where you live.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What must you do with sponsored content?',
+                                options: ['Hide it', 'Disclose it clearly', 'Deny it', 'Ignore regulations'],
+                                correct: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            community: {
+                icon: '🤝',
+                name: 'Community',
+                levels: ['beginner', 'intermediate', 'advanced'],
+                modules: {
+                    beginner: [
+                        {
+                            id: 'community-b1',
+                            title: 'Mastering Community Building',
+
+                            // STEP 1: Entry Quiz
+                            entryQuiz: {
+                                intro: "Let's discover your community experience and engagement style!",
+                                questions: [
+                                    {
+                                        question: "What experience do you have with online communities?",
+                                        options: ["I'm active in several Discord/Telegram groups", "I've participated casually", "I'm new to crypto communities"],
+                                        type: 'assessment'
+                                    },
+                                    {
+                                        question: "What's the most important quality of a community builder?",
+                                        options: ["Helping others succeed", "Promoting the token price", "Being the loudest voice", "Excluding newcomers"],
+                                        correct: 0,
+                                        explanation: "Great community builders think 'How can I help?' before 'What can I get?' - helping others succeed builds lasting communities."
+                                    },
+                                    {
+                                        question: "When someone asks 'Is this a scam?' you should:",
+                                        options: ["Respond patiently with facts and resources", "Get angry and defensive", "Ignore them", "Call them FUD spreaders"],
+                                        correct: 0,
+                                        explanation: "New members often have trust concerns. Responding with patience and verified information builds trust and grows the community."
+                                    }
+                                ]
+                            },
+
+                            // STEP 2: Course Content
+                            course: [
+                                {
+                                    title: "Welcome to Community Building",
+                                    content: \`
+                                        <p>Welcome to the Community Builder path! Community is what makes crypto projects survive and thrive. As a community builder, you're essential to ASDF's success.</p>
+                                        <div class="yj-objectives">
+                                            <h4>What You'll Learn</h4>
+                                            <ul>
+                                                <li>How to welcome and support newcomers</li>
+                                                <li>Managing community platforms effectively</li>
+                                                <li>Handling FUD and protecting from scams</li>
+                                                <li>Building genuine connections and culture</li>
+                                            </ul>
+                                        </div>
+                                        <div class="yj-feature-cards">
+                                            <div class="yj-feature-card">
+                                                <span>👋</span>
+                                                <strong>Welcoming</strong>
+                                                <p>Help newcomers feel at home</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🤝</span>
+                                                <strong>Supporting</strong>
+                                                <p>Answer questions patiently</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🛡️</span>
+                                                <strong>Protecting</strong>
+                                                <p>Keep the community safe</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>🔗</span>
+                                                <strong>Connecting</strong>
+                                                <p>Bring people together</p>
+                                            </div>
+                                        </div>
+                                        <div class="yj-key-concept">
+                                            <strong>The Golden Rule</strong>
+                                            <p>Always ask "How can I help?" before "What can I get?" - this mindset builds lasting communities.</p>
+                                        </div>
+                                    \`
+                                },
+                                {
+                                    title: "Understanding Our Platforms",
+                                    content: \`
+                                        <p>ASDF community exists across multiple platforms, each with its own culture:</p>
+                                        <div class="yj-platform-grid">
+                                            <div class="yj-platform-card">
+                                                <h4>Discord</h4>
+                                                <p>Main hub for deep discussions, support, and announcements.</p>
+                                                <ul>
+                                                    <li>Real-time chat with organized channels</li>
+                                                    <li>Voice channels for calls</li>
+                                                    <li>Roles and permissions</li>
+                                                </ul>
+                                            </div>
+                                            <div class="yj-platform-card">
+                                                <h4>Telegram</h4>
+                                                <p>Quick updates and casual community chat.</p>
+                                                <ul>
+                                                    <li>Mobile-first experience</li>
+                                                    <li>Fast notifications</li>
+                                                    <li>Easy for newcomers</li>
+                                                </ul>
+                                            </div>
+                                            <div class="yj-platform-card">
+                                                <h4>Twitter/X</h4>
+                                                <p>Public face and content distribution.</p>
+                                                <ul>
+                                                    <li>News and updates</li>
+                                                    <li>Memes and viral content</li>
+                                                    <li>Broader reach</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="yj-tip"><strong>Pro Tip:</strong> Each platform has different norms. What works on Telegram may not work on Discord. Adapt your approach.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Being an Excellent Community Member",
+                                    content: \`
+                                        <p>Your behavior sets the tone for the entire community. Lead by example:</p>
+                                        <h4>The Do's ✓</h4>
+                                        <ul>
+                                            <li><strong>Be welcoming:</strong> Greet newcomers, answer basic questions</li>
+                                            <li><strong>Be patient:</strong> Not everyone knows what you know</li>
+                                            <li><strong>Be helpful:</strong> Point people to resources proactively</li>
+                                            <li><strong>Be positive:</strong> Celebrate wins, support during dips</li>
+                                            <li><strong>Be honest:</strong> Admit when you don't know something</li>
+                                        </ul>
+                                        <h4>The Don'ts ✗</h4>
+                                        <ul>
+                                            <li><strong>Don't spread FUD:</strong> Panic helps no one</li>
+                                            <li><strong>Don't attack:</strong> Disagree respectfully</li>
+                                            <li><strong>Don't spam:</strong> Quality over quantity</li>
+                                            <li><strong>Don't shill:</strong> Avoid price pumping language</li>
+                                            <li><strong>Don't DM unsolicited:</strong> Respect boundaries</li>
+                                        </ul>
+                                        <table class="yj-comparison-table">
+                                            <tr><th>Scenario</th><th>Bad Response</th><th>Good Response</th></tr>
+                                            <tr><td>Price drop</td><td>"We're all gonna make it!!!"</td><td>"Focus on the burns - fundamentals are strong"</td></tr>
+                                            <tr><td>FUD post</td><td>"FUD! Ban this person!"</td><td>"Here's the on-chain data that addresses this concern"</td></tr>
+                                        </table>
+                                    \`
+                                },
+                                {
+                                    title: "Welcoming Newcomers",
+                                    content: \`
+                                        <p>New members are the lifeblood of community growth. Make their first experience positive:</p>
+                                        <h4>Common Newcomer Questions</h4>
+                                        <ol>
+                                            <li>"What is ASDF?" - Explain the project simply</li>
+                                            <li>"How do I buy?" - Guide them step by step</li>
+                                            <li>"Is this legit?" - Provide verifiable proof</li>
+                                            <li>"When moon?" - Redirect to fundamentals</li>
+                                        </ol>
+                                        <h4>The CARE Framework</h4>
+                                        <ul>
+                                            <li><strong>C - Connect:</strong> Greet them warmly by name</li>
+                                            <li><strong>A - Answer:</strong> Address their actual question</li>
+                                            <li><strong>R - Resource:</strong> Link to helpful guides</li>
+                                            <li><strong>E - Encourage:</strong> Invite them to ask more</li>
+                                        </ul>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Welcome Response</div>
+                                            <pre>Hey @NewUser, welcome! Great question.
+
+ASDF is a deflationary token on Solana - tokens
+get burned regularly, shrinking the supply.
+
+Here's our beginner guide: [link]
+
+Feel free to ask anything else - we're
+happy to help!</pre>
+                                        </div>
+                                    \`
+                                },
+                                {
+                                    title: "Understanding FUD",
+                                    content: \`
+                                        <p><strong>FUD</strong> = Fear, Uncertainty, and Doubt. But not all criticism is FUD:</p>
+                                        <div class="yj-feature-cards">
+                                            <div class="yj-feature-card">
+                                                <span>🤔</span>
+                                                <strong>Legitimate Concerns</strong>
+                                                <p>Real questions deserving honest answers</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>❓</span>
+                                                <strong>Misinformation</strong>
+                                                <p>Wrong facts spread unintentionally</p>
+                                            </div>
+                                            <div class="yj-feature-card">
+                                                <span>👎</span>
+                                                <strong>Deliberate FUD</strong>
+                                                <p>Intentional attacks to harm the project</p>
+                                            </div>
+                                        </div>
+                                        <h4>The CALM Framework for Responding</h4>
+                                        <ul>
+                                            <li><strong>C - Consider:</strong> Is this legitimate concern or bad faith?</li>
+                                            <li><strong>A - Acknowledge:</strong> Show you've heard them</li>
+                                            <li><strong>L - Link to facts:</strong> Provide on-chain data or official sources</li>
+                                            <li><strong>M - Move on:</strong> Don't get into endless arguments</li>
+                                        </ul>
+                                        <div class="yj-warning"><strong>Key Insight:</strong> Sometimes criticism is valid. Dismissing all concerns as "FUD" makes us look like we're hiding something.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Protecting Against Scams",
+                                    content: \`
+                                        <p>Scammers aggressively target crypto communities. Learn to protect yourself and others:</p>
+                                        <h4>Common Scam Types</h4>
+                                        <ul>
+                                            <li><strong>Fake Admin DMs:</strong> "Admin" asking for wallet/funds</li>
+                                            <li><strong>Phishing Links:</strong> Fake websites stealing credentials</li>
+                                            <li><strong>Airdrop Scams:</strong> "Send X to receive Y" offers</li>
+                                            <li><strong>Impersonation:</strong> Fake accounts mimicking real people</li>
+                                            <li><strong>Giveaway Scams:</strong> "Send ETH for double back"</li>
+                                        </ul>
+                                        <h4>Red Flags to Watch For</h4>
+                                        <ul>
+                                            <li>Unsolicited DMs (admins never DM first!)</li>
+                                            <li>Urgency tactics ("Act now or miss out!")</li>
+                                            <li>Too good to be true offers</li>
+                                            <li>Requests for private keys or seed phrases</li>
+                                            <li>Slightly misspelled usernames</li>
+                                        </ul>
+                                        <div class="yj-key-concept">
+                                            <strong>Golden Rule</strong>
+                                            <p>NEVER share your seed phrase or private key. No legitimate admin, support, or airdrop will ever ask for it.</p>
+                                        </div>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 3: Knowledge Quiz
+                            quiz: {
+                                intro: "Let's check what you've learned about community building!",
+                                passingScore: 70,
+                                questions: [
+                                    {
+                                        question: "What does CARE stand for in the newcomer welcome framework?",
+                                        options: ["Connect, Answer, Resource, Encourage", "Call, Ask, Reply, End", "Chat, Announce, Read, Exit", "None of these"],
+                                        correct: 0,
+                                        explanation: "CARE = Connect (greet warmly), Answer (their question), Resource (link guides), Encourage (invite more questions)."
+                                    },
+                                    {
+                                        question: "When someone posts criticism of ASDF, you should:",
+                                        options: ["Immediately call it FUD", "Use the CALM framework to respond appropriately", "Ignore all criticism", "Get angry and defensive"],
+                                        correct: 1,
+                                        explanation: "Use CALM: Consider if it's valid, Acknowledge their concern, Link to facts, Move on. Not all criticism is FUD."
+                                    },
+                                    {
+                                        question: "What is a major red flag for a scam?",
+                                        options: ["An admin DMs you first asking for your wallet", "Someone asks a question in the public chat", "A member shares a meme", "An announcement in the official channel"],
+                                        correct: 0,
+                                        explanation: "Real admins NEVER DM first asking for wallet info or private keys. This is always a scam."
+                                    },
+                                    {
+                                        question: "The best mindset for community building is:",
+                                        options: ["How can I help?", "What can I get?", "How can I be famous?", "When will price go up?"],
+                                        correct: 0,
+                                        explanation: "Great community builders always ask 'How can I help?' first. This mindset builds trust and lasting communities."
+                                    }
+                                ]
+                            },
+
+                            // STEP 4: Deep Content
+                            deepContent: [
+                                {
+                                    title: "Advanced Community Management",
+                                    content: \`
+                                        <h4>Building Community Culture</h4>
+                                        <p>Culture isn't created by rules - it's created by consistent behavior:</p>
+                                        <ul>
+                                            <li><strong>Model the behavior:</strong> Be what you want to see</li>
+                                            <li><strong>Recognize good actors:</strong> Highlight helpful members</li>
+                                            <li><strong>Address bad behavior quickly:</strong> But fairly</li>
+                                            <li><strong>Create traditions:</strong> Regular events, memes, inside jokes</li>
+                                        </ul>
+                                        <h4>Handling Difficult Situations</h4>
+                                        <ul>
+                                            <li><strong>Price dumps:</strong> Acknowledge the situation, focus on fundamentals</li>
+                                            <li><strong>Internal conflicts:</strong> Mediate privately when possible</li>
+                                            <li><strong>Coordinated attacks:</strong> Document, report, don't engage</li>
+                                            <li><strong>Member leaving:</strong> Wish them well, don't burn bridges</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>Leadership Tip:</strong> How you handle hard times defines community culture more than how you handle good times.</div>
+                                    \`
+                                },
+                                {
+                                    title: "Scaling Your Impact",
+                                    content: \`
+                                        <h4>From Member to Leader</h4>
+                                        <p>As you grow, your impact should scale:</p>
+                                        <ul>
+                                            <li><strong>Level 1:</strong> Help individuals (answer questions)</li>
+                                            <li><strong>Level 2:</strong> Create resources (FAQs, guides)</li>
+                                            <li><strong>Level 3:</strong> Mentor others (train new helpers)</li>
+                                            <li><strong>Level 4:</strong> Shape culture (set standards)</li>
+                                        </ul>
+                                        <h4>Documentation</h4>
+                                        <p>Create resources that help at scale:</p>
+                                        <ul>
+                                            <li>FAQ documents for common questions</li>
+                                            <li>Welcome message templates</li>
+                                            <li>Response frameworks for different situations</li>
+                                            <li>Onboarding guides for new community helpers</li>
+                                        </ul>
+                                        <div class="yj-key-concept">
+                                            <strong>10x Impact</strong>
+                                            <p>Teaching 10 people to answer questions is better than answering 100 questions yourself.</p>
+                                        </div>
+                                    \`
+                                }
+                            ],
+
+                            // STEP 5: Practice
+                            practice: [
+                                {
+                                    type: 'fill-blank',
+                                    id: 'community-practice-1',
+                                    title: 'Community Frameworks',
+                                    instruction: 'Complete these community building concepts:',
+                                    questions: [
+                                        {
+                                            text: 'CARE stands for Connect, Answer, _____, and Encourage.',
+                                            blanks: ['Resource'],
+                                            hints: ['Providing helpful links or guides']
+                                        },
+                                        {
+                                            text: 'CALM stands for Consider, Acknowledge, Link to facts, and _____.',
+                                            blanks: ['Move on'],
+                                            hints: ['Dont continue arguing endlessly']
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'explorer',
+                                    id: 'community-practice-2',
+                                    title: 'Community Participation',
+                                    instruction: 'Practice being an excellent community member:',
+                                    tasks: [
+                                        {
+                                            task: 'Join the ASDF Discord and introduce yourself',
+                                            hint: 'Use the introduction channel',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Help answer a newcomer question in chat',
+                                            hint: 'Use the CARE framework',
+                                            verification: 'checkbox'
+                                        },
+                                        {
+                                            task: 'Report a suspicious message or scam attempt',
+                                            hint: 'Use the report feature or tag a mod',
+                                            verification: 'checkbox'
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'quiz-challenge',
+                                    id: 'community-practice-3',
+                                    title: 'Community Speed Round',
+                                    description: 'Test your community building knowledge!',
+                                    timeLimit: 45,
+                                    questions: [
+                                        { q: 'What does FUD stand for?', a: 'Fear Uncertainty Doubt' },
+                                        { q: 'What does the C in CARE stand for?', a: 'Connect' },
+                                        { q: 'Should admins DM you first?', a: 'No' },
+                                        { q: 'What mindset should you have?', a: 'How can I help' },
+                                        { q: 'What does the M in CALM mean?', a: 'Move on' }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: 'community-b2',
+                            title: 'Handling FUD and Scams',
+                            sections: [
+                                {
+                                    title: 'Understanding FUD',
+                                    content: `
+                                        <p><strong>FUD</strong> stands for Fear, Uncertainty, and Doubt. It's negative information that may or may not be accurate.</p>
+                                        <h4>Types of FUD:</h4>
+                                        <ul>
+                                            <li><strong>Legitimate concerns:</strong> Real questions that deserve answers</li>
+                                            <li><strong>Misinformation:</strong> Incorrect facts spread unintentionally</li>
+                                            <li><strong>Deliberate FUD:</strong> Intentional attacks to manipulate price or sentiment</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>📝 Important:</strong> Not all criticism is FUD. Sometimes concerns are valid and deserve honest discussion.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Responding to FUD',
+                                    content: `
+                                        <h4>The CALM Framework:</h4>
+                                        <ol>
+                                            <li><strong>C - Consider:</strong> Is this legitimate concern or bad faith?</li>
+                                            <li><strong>A - Acknowledge:</strong> Show you've heard them</li>
+                                            <li><strong>L - Link to facts:</strong> Provide on-chain data or official sources</li>
+                                            <li><strong>M - Move on:</strong> Don't get into endless arguments</li>
+                                        </ol>
+                                        <div class="yj-code-example">
+                                            <div class="yj-code-title">Example Response to FUD</div>
+                                            <pre>FUD: "ASDF is a scam, devs are dumping!"
+
+Response: "I understand the concern - trust is
+important in crypto. Here's the burn wallet
+showing all burns are verifiable on-chain:
+[explorer link]
+
+The contract is also verified. Happy to
+answer specific questions about the
+tokenomics if you have them."</pre>
+                                        </div>
+                                        <div class="yj-warning"><strong>⚠️ Don't:</strong> Get emotional, call names, or feed trolls. If someone is arguing in bad faith, provide facts once and disengage.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Recognizing Scams',
+                                    content: `
+                                        <p>Scammers target crypto communities aggressively. Learn to spot them:</p>
+                                        <h4>Common Scam Tactics:</h4>
+                                        <ul>
+                                            <li><strong>Fake admin DMs:</strong> "Admin" messages asking for wallet/funds</li>
+                                            <li><strong>Phishing links:</strong> Fake websites that steal credentials</li>
+                                            <li><strong>Airdrop scams:</strong> "Send X to receive Y" offers</li>
+                                            <li><strong>Impersonation:</strong> Fake accounts mimicking real people</li>
+                                            <li><strong>Giveaway scams:</strong> "Send ETH to receive double back"</li>
+                                        </ul>
+                                        <h4>Red Flags:</h4>
+                                        <ul>
+                                            <li>Unsolicited DMs</li>
+                                            <li>Urgency ("Act now!")</li>
+                                            <li>Too good to be true</li>
+                                            <li>Requests for private keys or seed phrases</li>
+                                            <li>Slightly misspelled usernames</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Protecting the Community',
+                                    content: `
+                                        <h4>When You Spot a Scam:</h4>
+                                        <ol>
+                                            <li><strong>Don't engage:</strong> Don't click links or reply</li>
+                                            <li><strong>Report:</strong> Use platform reporting tools</li>
+                                            <li><strong>Alert mods:</strong> Tag moderators in Discord/Telegram</li>
+                                            <li><strong>Warn others:</strong> "PSA: This is a scam, don't click"</li>
+                                        </ol>
+                                        <h4>Educate the Community:</h4>
+                                        <ul>
+                                            <li>Remind people: "Admins will NEVER DM you first"</li>
+                                            <li>Share: "Never share your seed phrase with anyone"</li>
+                                            <li>Post: "Always verify links before clicking"</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Pro Tip:</strong> Create a pinned message with common scams and how to avoid them. Reference it whenever new scams appear.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'How should you respond to FUD?',
+                                options: ['Ignore it', 'Get angry', 'Counter with facts calmly', 'Leave the community'],
+                                correct: 2
+                            }
+                        }
+                    ],
+                    intermediate: [
+                        {
+                            id: 'community-i1',
+                            title: 'Organizing Events',
+                            sections: [
+                                {
+                                    title: 'Building Engagement',
+                                    content: `
+                                        <p>Events keep communities active and growing. They create memorable moments that bond members together.</p>
+                                        <h4>Types of Community Events:</h4>
+                                        <ul>
+                                            <li><strong>AMAs:</strong> Q&A sessions with team or guests</li>
+                                            <li><strong>Contests:</strong> Meme competitions, trading challenges</li>
+                                            <li><strong>Education:</strong> Workshops, tutorials, deep dives</li>
+                                            <li><strong>Celebrations:</strong> Milestone parties, anniversaries</li>
+                                            <li><strong>Games:</strong> Trivia, scavenger hunts, tournaments</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Goal:</strong> Create reasons for people to show up, engage, and come back.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Planning an Event',
+                                    content: `
+                                        <h4>Event Planning Checklist:</h4>
+                                        <ol>
+                                            <li><strong>Define purpose:</strong> What do you want to achieve?</li>
+                                            <li><strong>Pick format:</strong> Live audio, text, video?</li>
+                                            <li><strong>Set date/time:</strong> Consider different time zones</li>
+                                            <li><strong>Prepare content:</strong> Questions, prizes, materials</li>
+                                            <li><strong>Promote:</strong> Announce across all channels</li>
+                                            <li><strong>Execute:</strong> Run the event</li>
+                                            <li><strong>Follow up:</strong> Share recap, thank participants</li>
+                                        </ol>
+                                        <h4>Timeline:</h4>
+                                        <ul>
+                                            <li><strong>1 week before:</strong> First announcement</li>
+                                            <li><strong>2-3 days before:</strong> Reminder + details</li>
+                                            <li><strong>Day of:</strong> Final reminder 1 hour before</li>
+                                            <li><strong>After:</strong> Recap within 24 hours</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Running an AMA',
+                                    content: `
+                                        <p>AMAs (Ask Me Anything) are great for transparency and engagement:</p>
+                                        <h4>Before the AMA:</h4>
+                                        <ul>
+                                            <li>Collect questions in advance (reduces dead air)</li>
+                                            <li>Prepare answers to likely questions</li>
+                                            <li>Test audio/tech setup</li>
+                                            <li>Brief the speaker(s) on format and timing</li>
+                                        </ul>
+                                        <h4>During the AMA:</h4>
+                                        <ul>
+                                            <li>Start with introductions and ground rules</li>
+                                            <li>Mix pre-collected questions with live ones</li>
+                                            <li>Keep answers concise (2-3 minutes max)</li>
+                                            <li>Have a moderator filter questions</li>
+                                            <li>End with call to action</li>
+                                        </ul>
+                                        <h4>After the AMA:</h4>
+                                        <ul>
+                                            <li>Post transcript or recording</li>
+                                            <li>Share key takeaways</li>
+                                            <li>Follow up on any open items</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Contest Ideas',
+                                    content: `
+                                        <h4>Easy to Run:</h4>
+                                        <ul>
+                                            <li><strong>Meme contest:</strong> Best ASDF meme wins</li>
+                                            <li><strong>Trivia:</strong> Questions about ASDF/crypto</li>
+                                            <li><strong>Caption contest:</strong> Funniest caption for an image</li>
+                                            <li><strong>Prediction game:</strong> Guess burn amounts (not price!)</li>
+                                        </ul>
+                                        <h4>More Complex:</h4>
+                                        <ul>
+                                            <li><strong>Trading competition:</strong> Best % gains (risky - be careful)</li>
+                                            <li><strong>Art contest:</strong> Best ASDF artwork</li>
+                                            <li><strong>Builder challenge:</strong> Create a tool or content</li>
+                                            <li><strong>Referral contest:</strong> Bring new community members</li>
+                                        </ul>
+                                        <h4>Prize Considerations:</h4>
+                                        <ul>
+                                            <li>ASDF tokens (if available)</li>
+                                            <li>NFTs or exclusive roles</li>
+                                            <li>Merchandise</li>
+                                            <li>Recognition (featured content, shoutouts)</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Tip:</strong> Clear rules prevent disputes. Specify eligibility, judging criteria, and prize distribution upfront.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What keeps a community active?',
+                                options: ['Silence', 'Regular events and engagement', 'Strict rules only', 'Price talk only'],
+                                correct: 1
+                            }
+                        }
+                    ],
+                    advanced: [
+                        {
+                            id: 'community-a1',
+                            title: 'Community Leadership',
+                            sections: [
+                                {
+                                    title: 'Leading by Example',
+                                    content: `
+                                        <p>Senior community members shape the culture through their actions:</p>
+                                        <h4>Leadership Behaviors:</h4>
+                                        <ul>
+                                            <li><strong>Model tone:</strong> Stay calm during volatility</li>
+                                            <li><strong>Show consistency:</strong> Be present regularly</li>
+                                            <li><strong>Admit mistakes:</strong> Shows authenticity</li>
+                                            <li><strong>Celebrate others:</strong> Lift up community members</li>
+                                            <li><strong>Handle conflict gracefully:</strong> Mediate, don't escalate</li>
+                                        </ul>
+                                        <div class="yj-info"><strong>🎯 Key Insight:</strong> People follow behavior, not rules. How you act sets the standard for everyone.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Mentoring New Moderators',
+                                    content: `
+                                        <p>Building a strong mod team is essential for scaling:</p>
+                                        <h4>Selecting Moderators:</h4>
+                                        <ul>
+                                            <li>Look for consistent, positive contributors</li>
+                                            <li>Prioritize judgment over availability</li>
+                                            <li>Diversity in time zones and perspectives</li>
+                                            <li>Start with a trial period</li>
+                                        </ul>
+                                        <h4>Training Moderators:</h4>
+                                        <ol>
+                                            <li>Shadow experienced mods first</li>
+                                            <li>Document guidelines and common scenarios</li>
+                                            <li>Start with limited permissions</li>
+                                            <li>Regular check-ins and feedback</li>
+                                            <li>Gradually increase responsibility</li>
+                                        </ol>
+                                        <h4>Mod Guidelines to Document:</h4>
+                                        <ul>
+                                            <li>What warrants a warning vs ban</li>
+                                            <li>How to handle specific situations</li>
+                                            <li>Escalation procedures</li>
+                                            <li>Communication standards</li>
+                                        </ul>
+                                    `
+                                },
+                                {
+                                    title: 'Crisis Management',
+                                    content: `
+                                        <p>Every community faces crises. How you handle them defines trust:</p>
+                                        <h4>Types of Crises:</h4>
+                                        <ul>
+                                            <li>Major price drops</li>
+                                            <li>Technical issues or exploits</li>
+                                            <li>Coordinated FUD attacks</li>
+                                            <li>Team member departures</li>
+                                            <li>Regulatory news</li>
+                                        </ul>
+                                        <h4>Crisis Response Framework:</h4>
+                                        <ol>
+                                            <li><strong>Acknowledge:</strong> Don't hide or ignore</li>
+                                            <li><strong>Gather facts:</strong> Before speaking, know what's true</li>
+                                            <li><strong>Communicate:</strong> Share what you know and don't know</li>
+                                            <li><strong>Take action:</strong> What's being done to address it</li>
+                                            <li><strong>Update:</strong> Keep community informed as situation evolves</li>
+                                        </ol>
+                                        <div class="yj-warning"><strong>⚠️ Never:</strong> Lie, hide problems, or blame others. Transparency builds trust even in hard times.</div>
+                                    `
+                                },
+                                {
+                                    title: 'Strategic Growth',
+                                    content: `
+                                        <p>Sustainable growth requires strategy, not just activity:</p>
+                                        <h4>Growth Metrics to Track:</h4>
+                                        <ul>
+                                            <li><strong>Member count:</strong> Total community size</li>
+                                            <li><strong>Active members:</strong> Daily/weekly active participants</li>
+                                            <li><strong>Engagement rate:</strong> Messages per member</li>
+                                            <li><strong>Retention:</strong> How many new members stay active</li>
+                                            <li><strong>Sentiment:</strong> Overall community mood</li>
+                                        </ul>
+                                        <h4>Growth Strategies:</h4>
+                                        <ul>
+                                            <li><strong>Content:</strong> Valuable content attracts new members</li>
+                                            <li><strong>Partnerships:</strong> Collaborate with aligned communities</li>
+                                            <li><strong>Events:</strong> Give people reasons to invite friends</li>
+                                            <li><strong>Recognition:</strong> Highlight active members</li>
+                                            <li><strong>Onboarding:</strong> Make first experience excellent</li>
+                                        </ul>
+                                        <div class="yj-tip"><strong>💡 Quality Over Quantity:</strong> 1,000 engaged members beat 10,000 inactive ones. Focus on engagement, not just numbers.</div>
+                                    `
+                                }
+                            ],
+                            quiz: {
+                                question: 'What shapes community culture?',
+                                options: ['Rules alone', 'Leadership by example', 'Punishments', 'Silence'],
+                                correct: 1
+                            }
+                        }
+                    ]
+                }
+            }
+        };
+
+        // ============================================
+        // BADGES / ACHIEVEMENTS SYSTEM
+        // ============================================
+        const JOURNEY_BADGES = {
+            // First steps badges
+            'first-step': {
+                id: 'first-step',
+                icon: '🌱',
+                name: 'First Step',
+                desc: 'Complete your first module',
+                check: (state) => state.completedModules.length >= 1
+            },
+            'curious-mind': {
+                id: 'curious-mind',
+                icon: '🔍',
+                name: 'Curious Mind',
+                desc: 'Complete 5 modules',
+                check: (state) => state.completedModules.length >= 5
+            },
+            'dedicated-learner': {
+                id: 'dedicated-learner',
+                icon: '📚',
+                name: 'Dedicated Learner',
+                desc: 'Complete 10 modules',
+                check: (state) => state.completedModules.length >= 10
+            },
+            // Level completion badges
+            'beginner-code': {
+                id: 'beginner-code',
+                icon: '💻',
+                name: 'Code Initiate',
+                desc: 'Complete Code & Dev Beginner level',
+                check: (state) => state.completedLevels.includes('code-beginner')
+            },
+            'beginner-design': {
+                id: 'beginner-design',
+                icon: '🎨',
+                name: 'Design Initiate',
+                desc: 'Complete Design & UX Beginner level',
+                check: (state) => state.completedLevels.includes('design-beginner')
+            },
+            'beginner-content': {
+                id: 'beginner-content',
+                icon: '✍️',
+                name: 'Content Initiate',
+                desc: 'Complete Content Beginner level',
+                check: (state) => state.completedLevels.includes('content-beginner')
+            },
+            'beginner-community': {
+                id: 'beginner-community',
+                icon: '🤝',
+                name: 'Community Initiate',
+                desc: 'Complete Community Beginner level',
+                check: (state) => state.completedLevels.includes('community-beginner')
+            },
+            // Intermediate badges
+            'intermediate-any': {
+                id: 'intermediate-any',
+                icon: '⬆️',
+                name: 'Level Up',
+                desc: 'Complete any Intermediate level',
+                check: (state) => state.completedLevels.some(l => l.includes('intermediate'))
+            },
+            // Advanced badges
+            'advanced-any': {
+                id: 'advanced-any',
+                icon: '🌟',
+                name: 'Rising Star',
+                desc: 'Complete any Advanced level',
+                check: (state) => state.completedLevels.some(l => l.includes('advanced'))
+            },
+            // Multi-pillar badges
+            'explorer': {
+                id: 'explorer',
+                icon: '🧭',
+                name: 'Explorer',
+                desc: 'Start modules in 2 different pillars',
+                check: (state) => {
+                    const pillars = new Set(state.completedModules.map(m => m.split('-')[0]));
+                    return pillars.size >= 2;
+                }
+            },
+            'polymath': {
+                id: 'polymath',
+                icon: '🎯',
+                name: 'Polymath',
+                desc: 'Complete beginner level in all 4 pillars',
+                check: (state) => {
+                    const required = ['code-beginner', 'design-beginner', 'content-beginner', 'community-beginner'];
+                    return required.every(l => state.completedLevels.includes(l));
+                }
+            },
+            // Mastery badges
+            'code-master': {
+                id: 'code-master',
+                icon: '👨‍💻',
+                name: 'Code Master',
+                desc: 'Complete all Code & Dev levels',
+                check: (state) => ['code-beginner', 'code-intermediate', 'code-advanced'].every(l => state.completedLevels.includes(l))
+            },
+            'design-master': {
+                id: 'design-master',
+                icon: '🎭',
+                name: 'Design Master',
+                desc: 'Complete all Design & UX levels',
+                check: (state) => ['design-beginner', 'design-intermediate', 'design-advanced'].every(l => state.completedLevels.includes(l))
+            },
+            'content-master': {
+                id: 'content-master',
+                icon: '📝',
+                name: 'Content Master',
+                desc: 'Complete all Content levels',
+                check: (state) => ['content-beginner', 'content-intermediate', 'content-advanced'].every(l => state.completedLevels.includes(l))
+            },
+            'community-master': {
+                id: 'community-master',
+                icon: '👑',
+                name: 'Community Master',
+                desc: 'Complete all Community levels',
+                check: (state) => ['community-beginner', 'community-intermediate', 'community-advanced'].every(l => state.completedLevels.includes(l))
+            },
+            // Ultimate badge
+            'asdf-legend': {
+                id: 'asdf-legend',
+                icon: '🏆',
+                name: 'ASDF Legend',
+                desc: 'Master all 4 pillars',
+                check: (state) => {
+                    const allMasters = ['code-master', 'design-master', 'content-master', 'community-master'];
+                    return allMasters.every(b => state.unlockedBadges && state.unlockedBadges.includes(b));
+                }
+            }
+        };
+
+        let journeyState = {
+            currentPillar: null,
+            currentLevel: 'beginner',
+            currentModuleIndex: 0,
+            currentStep: LEARNING_STEPS.ENTRY_QUIZ,  // Current learning step
+            currentSubIndex: 0,  // Index within current step (for sections, questions, etc.)
+            completedModules: [],
+            completedLevels: [],
+            unlockedBadges: [],
+            quizPassed: {},
+            entryQuizResults: {},  // Store entry quiz results for personalization
+            moduleProgress: {}  // Track progress within each module
+        };
+
+        function loadJourneyState() {
+            try {
+                const saved = localStorage.getItem(YJ_STORAGE_KEY);
+                if (saved) {
+                    journeyState = { ...journeyState, ...JSON.parse(saved) };
+                }
+            } catch (e) {
+                console.warn('Could not load journey state');
+            }
+        }
+
+        function saveJourneyState() {
+            try {
+                localStorage.setItem(YJ_STORAGE_KEY, JSON.stringify(journeyState));
+                checkForNewBadges();
+            } catch (e) {
+                console.warn('Could not save journey state');
+            }
+        }
+
+        function checkForNewBadges() {
+            const newBadges = [];
+            for (const [badgeId, badge] of Object.entries(JOURNEY_BADGES)) {
+                if (!journeyState.unlockedBadges.includes(badgeId) && badge.check(journeyState)) {
+                    journeyState.unlockedBadges.push(badgeId);
+                    newBadges.push(badge);
+                }
+            }
+            if (newBadges.length > 0) {
+                localStorage.setItem(YJ_STORAGE_KEY, JSON.stringify(journeyState));
+                newBadges.forEach((badge, i) => {
+                    setTimeout(() => showBadgeNotification(badge), i * 1500);
+                });
+            }
+        }
+
+        function showBadgeNotification(badge) {
+            // Remove existing notification
+            const existing = document.querySelector('.yj-badge-notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = 'yj-badge-notification';
+            safeInnerHTML(notification, `
+                <div class="yj-badge-notif-content">
+                    <span class="yj-badge-notif-icon">${escapeHtml(badge.icon)}</span>
+                    <div class="yj-badge-notif-text">
+                        <span class="yj-badge-notif-label">Badge Unlocked!</span>
+                        <span class="yj-badge-notif-name">${escapeHtml(badge.name)}</span>
+                    </div>
+                </div>
+            `);
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 50);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function getJourneyBadges() {
+            return Object.entries(JOURNEY_BADGES).map(([id, badge]) => ({
+                ...badge,
+                unlocked: journeyState.unlockedBadges.includes(id)
+            }));
+        }
+
+        function openYourJourney(pillar, level) {
+            loadJourneyState();
+            const modal = document.getElementById('your-journey-modal');
+            if (modal) {
+                modal.classList.add('active');
+
+                if (pillar && JOURNEY_PILLARS[pillar]) {
+                    journeyState.currentPillar = pillar;
+                    journeyState.currentLevel = level || 'beginner';
+                    journeyState.currentModuleIndex = 0;
+                    showJourneyContent();
+                } else if (journeyState.currentPillar) {
+                    showJourneyContent();
+                } else {
+                    showJourneyWelcome();
+                }
+            }
+        }
+
+        function closeYourJourney() {
+            const modal = document.getElementById('your-journey-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function showJourneyWelcome() {
+            document.getElementById('yj-welcome').style.display = 'block';
+            document.getElementById('yj-module').style.display = 'none';
+            document.getElementById('yj-quiz').style.display = 'none';
+            renderJourneyRoadmap();
+        }
+
+        function showJourneyContent() {
+            document.getElementById('yj-welcome').style.display = 'none';
+            document.getElementById('yj-module').style.display = 'block';
+            document.getElementById('yj-quiz').style.display = 'none';
+
+            updateJourneyProfile();
+            renderJourneyRoadmap();
+            renderCurrentModule();
+        }
+
+        function updateJourneyProfile() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            if (!pillar) return;
+
+            document.getElementById('yj-profile-icon').textContent = pillar.icon;
+            document.getElementById('yj-profile-name').textContent = pillar.name;
+            document.getElementById('yj-profile-level').textContent =
+                journeyState.currentLevel.charAt(0).toUpperCase() + journeyState.currentLevel.slice(1);
+
+            // Update progress
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const completed = journeyState.completedModules.filter(m =>
+                modules.some(mod => mod.id === m)
+            ).length;
+            const progress = modules.length > 0 ? (completed / modules.length) * 100 : 0;
+
+            document.getElementById('yj-overall-progress').style.width = progress + '%';
+            document.getElementById('yj-progress-text').textContent = `${completed}/${modules.length} modules`;
+        }
+
+        function renderJourneyRoadmap() {
+            const roadmap = document.getElementById('yj-roadmap');
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+
+            if (!pillar) {
+                safeInnerHTML(roadmap, '<h4>📍 Roadmap</h4><p style="color: var(--text-muted); font-size: 12px;">Select a pillar to see your roadmap</p>');
+                return;
+            }
+
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            let html = '<h4>📍 Roadmap</h4>';
+
+            modules.forEach((mod, index) => {
+                const isCompleted = journeyState.completedModules.includes(mod.id);
+                const isActive = index === journeyState.currentModuleIndex;
+                const isLocked = index > journeyState.currentModuleIndex && !isCompleted;
+
+                html += `
+                    <div class="yj-roadmap-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}"
+                         data-module-index="${index}" ${isLocked ? '' : 'onclick="goToJourneyModule(' + index + ')"'}>
+                        <div class="yj-roadmap-check"></div>
+                        <div class="yj-roadmap-info">
+                            <strong>Module ${index + 1}</strong>
+                            <span>${mod.title}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            safeInnerHTML(roadmap, html);
+        }
+
+        // Learning flow step labels
+        const STEP_LABELS = {
+            [LEARNING_STEPS.ENTRY_QUIZ]: { icon: '🎯', label: 'Assessment', short: '1' },
+            [LEARNING_STEPS.COURSE]: { icon: '📚', label: 'Course', short: '2' },
+            [LEARNING_STEPS.KNOWLEDGE_QUIZ]: { icon: '✓', label: 'Quiz', short: '3' },
+            [LEARNING_STEPS.DEEP_CONTENT]: { icon: '🔬', label: 'Deep Dive', short: '4' },
+            [LEARNING_STEPS.PRACTICE]: { icon: '🛠️', label: 'Practice', short: '5' }
+        };
+
+        const STEPS_ORDER = [
+            LEARNING_STEPS.ENTRY_QUIZ,
+            LEARNING_STEPS.COURSE,
+            LEARNING_STEPS.KNOWLEDGE_QUIZ,
+            LEARNING_STEPS.DEEP_CONTENT,
+            LEARNING_STEPS.PRACTICE
+        ];
+
+        function renderCurrentModule() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            if (!pillar) return;
+
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const mod = modules[journeyState.currentModuleIndex];
+            if (!mod) return;
+
+            // Check if module uses new 5-step format or old format
+            const hasNewFormat = mod.entryQuiz || mod.course || mod.practice;
+
+            if (hasNewFormat) {
+                renderNewFormatModule(mod, modules);
+            } else {
+                renderLegacyModule(mod, modules);
+            }
+        }
+
+        function renderNewFormatModule(mod, modules) {
+            const step = journeyState.currentStep;
+            const subIndex = journeyState.currentSubIndex;
+
+            // Update header
+            document.getElementById('yj-module-badge').textContent = `Module ${journeyState.currentModuleIndex + 1}`;
+            document.getElementById('yj-module-title').textContent = mod.title;
+
+            let contentHtml = '';
+
+            // Learning flow progress bar
+            contentHtml += renderLearningFlowProgress(mod, step);
+
+            // Render content based on current step
+            switch (step) {
+                case LEARNING_STEPS.ENTRY_QUIZ:
+                    contentHtml += renderEntryQuiz(mod, subIndex);
+                    break;
+                case LEARNING_STEPS.COURSE:
+                    contentHtml += renderCourse(mod, subIndex);
+                    break;
+                case LEARNING_STEPS.KNOWLEDGE_QUIZ:
+                    contentHtml += renderKnowledgeQuiz(mod, subIndex);
+                    break;
+                case LEARNING_STEPS.DEEP_CONTENT:
+                    contentHtml += renderDeepContent(mod, subIndex);
+                    break;
+                case LEARNING_STEPS.PRACTICE:
+                    contentHtml += renderPractice(mod, subIndex);
+                    break;
+            }
+
+            safeInnerHTML(document.getElementById('yj-module-content'), contentHtml);
+
+            // Attach event handlers
+            attachStepHandlers(mod, modules);
+
+            // Hide main nav buttons (we use step navigation instead)
+            document.getElementById('yj-prev-module').style.display = 'none';
+            document.getElementById('yj-next-module').style.display = 'none';
+        }
+
+        function renderLearningFlowProgress(mod, currentStep) {
+            const currentIndex = STEPS_ORDER.indexOf(currentStep);
+            const moduleProgress = journeyState.moduleProgress[mod.id] || {};
+
+            return `
+                <div class="yj-flow-progress">
+                    ${STEPS_ORDER.map((step, i) => {
+                        const stepInfo = STEP_LABELS[step];
+                        const isActive = step === currentStep;
+                        const isCompleted = moduleProgress[step] === 'completed';
+                        const isAccessible = i <= currentIndex || isCompleted;
+
+                        return `
+                            <div class="yj-flow-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isAccessible ? 'accessible' : ''}"
+                                 data-step="${step}" title="${stepInfo.label}">
+                                <span class="yj-flow-icon">${isCompleted ? '✓' : stepInfo.icon}</span>
+                                <span class="yj-flow-label">${stepInfo.label}</span>
+                            </div>
+                            ${i < STEPS_ORDER.length - 1 ? '<div class="yj-flow-connector"></div>' : ''}
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderEntryQuiz(mod, questionIndex) {
+            if (!mod.entryQuiz) {
+                // Skip to course if no entry quiz
+                journeyState.currentStep = LEARNING_STEPS.COURSE;
+                journeyState.currentSubIndex = 0;
+                return renderCourse(mod, 0);
+            }
+
+            const quiz = mod.entryQuiz;
+            const questions = quiz.questions || [];
+
+            if (questionIndex >= questions.length) {
+                // All questions answered, show results and continue
+                return renderEntryQuizComplete(mod);
+            }
+
+            const q = questions[questionIndex];
+            const isAssessment = q.type === 'assessment';
+
+            return `
+                <div class="yj-step-content yj-entry-quiz">
+                    <div class="yj-quiz-header">
+                        <span class="yj-quiz-badge">Assessment ${questionIndex + 1}/${questions.length}</span>
+                        <p class="yj-quiz-intro">${quiz.intro || "Let's see what you know!"}</p>
+                    </div>
+                    <div class="yj-quiz-question">
+                        <h3>${q.question}</h3>
+                        <div class="yj-quiz-options">
+                            ${q.options.map((opt, i) => `
+                                <button class="yj-quiz-option" data-index="${i}" data-correct="${q.correct === i}">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="yj-quiz-feedback" id="yj-quiz-feedback" style="display: none;"></div>
+                    </div>
+                    ${isAssessment ? '<p class="yj-quiz-note">No wrong answers here - we just want to know your experience level!</p>' : ''}
+                </div>
+            `;
+        }
+
+        function renderEntryQuizComplete(mod) {
+            const results = journeyState.entryQuizResults[mod.id] || { score: 0, total: 0 };
+            const percentage = results.total > 0 ? Math.round((results.score / results.total) * 100) : 0;
+
+            let message, recommendation;
+            if (percentage >= 80) {
+                message = "Excellent! You already have a strong foundation.";
+                recommendation = "Feel free to skim the course or jump straight to the Deep Dive for advanced content.";
+            } else if (percentage >= 50) {
+                message = "Good start! You have some knowledge to build on.";
+                recommendation = "The course will reinforce what you know and fill in the gaps.";
+            } else {
+                message = "Perfect starting point!";
+                recommendation = "The course is designed exactly for where you are. Let's learn together!";
+            }
+
+            return `
+                <div class="yj-step-content yj-entry-complete">
+                    <div class="yj-result-card">
+                        <div class="yj-result-icon">${percentage >= 50 ? '🌟' : '🚀'}</div>
+                        <h3>${message}</h3>
+                        <p>${recommendation}</p>
+                        <div class="yj-result-score">
+                            <span class="yj-score-value">${percentage}%</span>
+                            <span class="yj-score-label">prior knowledge</span>
+                        </div>
+                    </div>
+                    <button class="yj-continue-btn btn btn-primary" data-action="start-course">
+                        Start Learning →
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderCourse(mod, sectionIndex) {
+            const sections = mod.course || [];
+            if (sections.length === 0) {
+                // Skip to quiz if no course content
+                journeyState.currentStep = LEARNING_STEPS.KNOWLEDGE_QUIZ;
+                journeyState.currentSubIndex = 0;
+                return renderKnowledgeQuiz(mod, 0);
+            }
+
+            const section = sections[sectionIndex] || sections[0];
+            const isFirst = sectionIndex === 0;
+            const isLast = sectionIndex >= sections.length - 1;
+
+            return `
+                <div class="yj-step-content yj-course">
+                    <div class="yj-course-progress">
+                        ${sections.map((s, i) => `
+                            <div class="yj-course-dot ${i === sectionIndex ? 'active' : ''} ${i < sectionIndex ? 'completed' : ''}"
+                                 data-section="${i}" title="${s.title}"></div>
+                        `).join('')}
+                    </div>
+                    <div class="yj-course-header">
+                        <h3>${section.title}</h3>
+                    </div>
+                    <div class="yj-course-content">
+                        ${section.content}
+                    </div>
+                    <div class="yj-course-nav">
+                        <button class="yj-nav-prev btn btn-secondary" ${isFirst ? 'disabled' : ''} data-action="prev-section">
+                            ← Previous
+                        </button>
+                        <span class="yj-nav-indicator">${sectionIndex + 1} / ${sections.length}</span>
+                        <button class="yj-nav-next btn ${isLast ? 'btn-primary' : 'btn-secondary'}" data-action="next-section">
+                            ${isLast ? 'Take Quiz →' : 'Next →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderKnowledgeQuiz(mod, questionIndex) {
+            const quiz = mod.quiz || {};
+            const questions = quiz.questions || [];
+
+            if (questions.length === 0) {
+                // No quiz, skip to deep content
+                journeyState.currentStep = LEARNING_STEPS.DEEP_CONTENT;
+                journeyState.currentSubIndex = 0;
+                return renderDeepContent(mod, 0);
+            }
+
+            if (questionIndex >= questions.length) {
+                return renderQuizComplete(mod);
+            }
+
+            const q = questions[questionIndex];
+
+            return `
+                <div class="yj-step-content yj-knowledge-quiz">
+                    <div class="yj-quiz-header">
+                        <span class="yj-quiz-badge">Question ${questionIndex + 1}/${questions.length}</span>
+                        <p class="yj-quiz-intro">${quiz.intro || "Let's check what you've learned!"}</p>
+                    </div>
+                    <div class="yj-quiz-question">
+                        <h3>${q.question}</h3>
+                        <div class="yj-quiz-options">
+                            ${q.options.map((opt, i) => `
+                                <button class="yj-quiz-option" data-index="${i}" data-correct="${q.correct === i}">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="yj-quiz-feedback" id="yj-quiz-feedback" style="display: none;"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuizComplete(mod) {
+            const results = journeyState.quizPassed[mod.id] || { score: 0, total: 0 };
+            const percentage = results.total > 0 ? Math.round((results.score / results.total) * 100) : 0;
+            const passed = percentage >= (mod.quiz?.passingScore || 70);
+
+            return `
+                <div class="yj-step-content yj-quiz-complete">
+                    <div class="yj-result-card ${passed ? 'success' : 'retry'}">
+                        <div class="yj-result-icon">${passed ? '🎉' : '📖'}</div>
+                        <h3>${passed ? 'Great job!' : 'Almost there!'}</h3>
+                        <p>${passed ? 'You passed the quiz!' : 'Review the course and try again.'}</p>
+                        <div class="yj-result-score">
+                            <span class="yj-score-value">${percentage}%</span>
+                            <span class="yj-score-label">(${results.score}/${results.total} correct)</span>
+                        </div>
+                    </div>
+                    <div class="yj-quiz-actions">
+                        ${passed ? `
+                            <button class="yj-continue-btn btn btn-primary" data-action="continue-deep">
+                                Continue to Deep Dive →
+                            </button>
+                            <button class="yj-skip-btn btn btn-secondary" data-action="skip-to-practice">
+                                Skip to Practice →
+                            </button>
+                        ` : `
+                            <button class="yj-retry-btn btn btn-primary" data-action="retry-quiz">
+                                Review & Retry →
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDeepContent(mod, sectionIndex) {
+            const sections = mod.deepContent || [];
+            if (sections.length === 0) {
+                // Skip to practice if no deep content
+                journeyState.currentStep = LEARNING_STEPS.PRACTICE;
+                journeyState.currentSubIndex = 0;
+                return renderPractice(mod, 0);
+            }
+
+            const section = sections[sectionIndex] || sections[0];
+            const isFirst = sectionIndex === 0;
+            const isLast = sectionIndex >= sections.length - 1;
+
+            return `
+                <div class="yj-step-content yj-deep-content">
+                    <div class="yj-deep-header">
+                        <span class="yj-deep-badge">🔬 Deep Dive</span>
+                        <h3>${section.title}</h3>
+                    </div>
+                    <div class="yj-deep-body">
+                        ${section.content}
+                    </div>
+                    <div class="yj-deep-nav">
+                        <button class="yj-nav-prev btn btn-secondary" ${isFirst ? 'disabled' : ''} data-action="prev-deep">
+                            ← Previous
+                        </button>
+                        <span class="yj-nav-indicator">${sectionIndex + 1} / ${sections.length}</span>
+                        <button class="yj-nav-next btn ${isLast ? 'btn-primary' : 'btn-secondary'}" data-action="next-deep">
+                            ${isLast ? 'Start Practice →' : 'Next →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPractice(mod, exerciseIndex) {
+            const exercises = mod.practice || [];
+            if (exercises.length === 0) {
+                return renderModuleComplete(mod);
+            }
+
+            if (exerciseIndex >= exercises.length) {
+                return renderModuleComplete(mod);
+            }
+
+            const ex = exercises[exerciseIndex];
+
+            let exerciseHtml = '';
+            switch (ex.type) {
+                case 'fill-blank':
+                    exerciseHtml = renderFillBlankExercise(ex);
+                    break;
+                case 'explorer':
+                    exerciseHtml = renderExplorerExercise(ex);
+                    break;
+                case 'quiz-challenge':
+                    exerciseHtml = renderQuizChallengeExercise(ex);
+                    break;
+                default:
+                    exerciseHtml = `<p>Unknown exercise type: ${ex.type}</p>`;
+            }
+
+            const isLast = exerciseIndex >= exercises.length - 1;
+
+            return `
+                <div class="yj-step-content yj-practice">
+                    <div class="yj-practice-header">
+                        <span class="yj-practice-badge">🛠️ Practice ${exerciseIndex + 1}/${exercises.length}</span>
+                        <h3>${ex.title}</h3>
+                        <p>${ex.instruction}</p>
+                    </div>
+                    <div class="yj-practice-body">
+                        ${exerciseHtml}
+                    </div>
+                    <div class="yj-practice-nav">
+                        <button class="yj-nav-prev btn btn-secondary" ${exerciseIndex === 0 ? 'disabled' : ''} data-action="prev-practice">
+                            ← Previous
+                        </button>
+                        <button class="yj-nav-next btn btn-primary" data-action="next-practice">
+                            ${isLast ? 'Complete Module →' : 'Next Exercise →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFillBlankExercise(ex) {
+            return `
+                <div class="yj-fill-blank-exercise">
+                    ${ex.questions.map((q, i) => `
+                        <div class="yj-fill-blank-item" data-index="${i}">
+                            <p class="yj-fill-text">${q.text.replace(/_____/g, '<input type="text" class="yj-blank-input" placeholder="...">')}</p>
+                            <div class="yj-fill-hints">
+                                ${q.hints.map((h, j) => `<span class="yj-hint" title="Hint ${j + 1}">${h}</span>`).join('')}
+                            </div>
+                            <div class="yj-fill-feedback"></div>
+                        </div>
+                    `).join('')}
+                    <button class="yj-check-btn btn btn-primary" data-action="check-blanks">Check Answers</button>
+                </div>
+            `;
+        }
+
+        function renderExplorerExercise(ex) {
+            return `
+                <div class="yj-explorer-exercise">
+                    ${ex.tasks.map((t, i) => `
+                        <div class="yj-explorer-task" data-index="${i}">
+                            <div class="yj-task-header">
+                                <span class="yj-task-num">${i + 1}</span>
+                                <span class="yj-task-text">${t.task}</span>
+                            </div>
+                            <p class="yj-task-hint">💡 ${t.hint}</p>
+                            ${t.verification === 'answer' ? `
+                                <input type="text" class="yj-task-answer" placeholder="${t.question || 'Your answer...'}" />
+                            ` : `
+                                <button class="yj-task-done btn btn-secondary" data-action="mark-done">✓ Done</button>
+                            `}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderQuizChallengeExercise(ex) {
+            return `
+                <div class="yj-quiz-challenge">
+                    <div class="yj-challenge-header">
+                        <div class="yj-challenge-info">
+                            <h3>${ex.title || 'Speed Challenge'}</h3>
+                            <p>${ex.description || 'Answer as many questions as you can before time runs out!'}</p>
+                        </div>
+                        <div class="yj-challenge-stats">
+                            <div class="yj-challenge-timer">
+                                <span class="yj-timer-icon">⏱️</span>
+                                <span class="yj-timer-value">${ex.timeLimit || 60}</span>
+                                <span class="yj-timer-label">sec</span>
+                            </div>
+                            <div class="yj-challenge-score">
+                                <span class="yj-score-icon">✓</span>
+                                <span class="yj-score-value">0</span>
+                                <span class="yj-score-label">/ ${ex.questions.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="yj-challenge-body">
+                        <div class="yj-challenge-progress">Question 1/${ex.questions.length}</div>
+                        <div class="yj-challenge-question" data-total="${ex.questions.length}">
+                            <p class="yj-challenge-q">Press Start to begin...</p>
+                            <input type="text" class="yj-challenge-input" placeholder="Type your answer and press Enter..." disabled />
+                        </div>
+                        <button class="yj-start-challenge btn btn-primary" data-action="start-challenge">
+                            Start Challenge
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderModuleComplete(mod) {
+            return `
+                <div class="yj-step-content yj-module-complete">
+                    <div class="yj-complete-card">
+                        <div class="yj-complete-icon">🎉</div>
+                        <h2>Module Complete!</h2>
+                        <p>Congratulations! You've completed "${mod.title}"</p>
+                    </div>
+                    <button class="yj-continue-btn btn btn-primary" data-action="next-module">
+                        Continue to Next Module →
+                    </button>
+                </div>
+            `;
+        }
+
+        function attachStepHandlers(mod, modules) {
+            const content = document.getElementById('yj-module-content');
+
+            // Flow step navigation
+            content.querySelectorAll('.yj-flow-step.accessible').forEach(step => {
+                step.addEventListener('click', function() {
+                    const targetStep = this.dataset.step;
+                    if (targetStep && STEPS_ORDER.includes(targetStep)) {
+                        journeyState.currentStep = targetStep;
+                        journeyState.currentSubIndex = 0;
+                        renderCurrentModule();
+                    }
+                });
+            });
+
+            // Quiz option clicks
+            content.querySelectorAll('.yj-quiz-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    handleQuizOptionClick(this, mod);
+                });
+            });
+
+            // Course section dots
+            content.querySelectorAll('.yj-course-dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.section);
+                    if (!isNaN(idx) && idx <= journeyState.currentSubIndex) {
+                        journeyState.currentSubIndex = idx;
+                        renderCurrentModule();
+                    }
+                });
+            });
+
+            // Navigation buttons
+            content.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    handleActionClick(this.dataset.action, mod, modules);
+                });
+            });
+        }
+
+        function handleQuizOptionClick(optionEl, mod) {
+            const questionContainer = optionEl.closest('.yj-quiz-question');
+            const options = optionEl.parentElement.querySelectorAll('.yj-quiz-option');
+            const isCorrect = optionEl.dataset.correct === 'true';
+            const step = journeyState.currentStep;
+            const selectedIndex = parseInt(optionEl.dataset.index);
+
+            // Disable all options
+            options.forEach(o => {
+                o.classList.add('disabled');
+                o.style.pointerEvents = 'none';
+            });
+
+            // Show result
+            optionEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+            options.forEach(o => {
+                if (o.dataset.correct === 'true') o.classList.add('correct');
+            });
+
+            // Track results with detailed answers
+            if (step === LEARNING_STEPS.ENTRY_QUIZ) {
+                if (!journeyState.entryQuizResults[mod.id]) {
+                    journeyState.entryQuizResults[mod.id] = { score: 0, total: 0, answers: [] };
+                }
+                journeyState.entryQuizResults[mod.id].total++;
+                if (isCorrect) journeyState.entryQuizResults[mod.id].score++;
+                journeyState.entryQuizResults[mod.id].answers.push({
+                    questionIndex: journeyState.currentSubIndex,
+                    selectedIndex: selectedIndex,
+                    isCorrect: isCorrect
+                });
+            } else if (step === LEARNING_STEPS.KNOWLEDGE_QUIZ) {
+                if (!journeyState.quizPassed[mod.id]) {
+                    journeyState.quizPassed[mod.id] = { score: 0, total: 0, answers: [] };
+                }
+                journeyState.quizPassed[mod.id].total++;
+                if (isCorrect) journeyState.quizPassed[mod.id].score++;
+                journeyState.quizPassed[mod.id].answers.push({
+                    questionIndex: journeyState.currentSubIndex,
+                    selectedIndex: selectedIndex,
+                    isCorrect: isCorrect
+                });
+            }
+
+            // Show explanation if available
+            const quiz = step === LEARNING_STEPS.ENTRY_QUIZ ? mod.entryQuiz : mod.quiz;
+            const questions = quiz?.questions || [];
+            const currentQuestion = questions[journeyState.currentSubIndex];
+
+            if (currentQuestion?.explanation) {
+                const feedbackEl = document.getElementById('yj-quiz-feedback') || questionContainer.querySelector('.yj-quiz-feedback');
+                if (feedbackEl) {
+                    safeInnerHTML(feedbackEl, `
+                        <div class="yj-quiz-explanation ${isCorrect ? 'correct' : 'incorrect'}">
+                            <span class="yj-explanation-icon">${isCorrect ? '✓' : '✗'}</span>
+                            <span class="yj-explanation-text">${escapeHtml(currentQuestion.explanation)}</span>
+                        </div>
+                    `);
+                    feedbackEl.style.display = 'block';
+                }
+            } else {
+                // Show simple feedback if no explanation
+                const feedbackEl = document.getElementById('yj-quiz-feedback') || questionContainer.querySelector('.yj-quiz-feedback');
+                if (feedbackEl) {
+                    safeInnerHTML(feedbackEl, `
+                        <div class="yj-quiz-explanation ${isCorrect ? 'correct' : 'incorrect'}">
+                            <span class="yj-explanation-icon">${isCorrect ? '✓' : '✗'}</span>
+                            <span class="yj-explanation-text">${isCorrect ? 'Correct!' : 'Incorrect. The correct answer is highlighted above.'}</span>
+                        </div>
+                    `);
+                    feedbackEl.style.display = 'block';
+                }
+            }
+
+            // Auto-advance after delay (longer to read explanation)
+            setTimeout(() => {
+                journeyState.currentSubIndex++;
+                renderCurrentModule();
+            }, 2000);
+        }
+
+        function handleActionClick(action, mod, modules) {
+            switch (action) {
+                case 'start-course':
+                    journeyState.currentStep = LEARNING_STEPS.COURSE;
+                    journeyState.currentSubIndex = 0;
+                    markStepComplete(mod.id, LEARNING_STEPS.ENTRY_QUIZ);
+                    break;
+
+                case 'prev-section':
+                    if (journeyState.currentSubIndex > 0) {
+                        journeyState.currentSubIndex--;
+                    }
+                    break;
+
+                case 'next-section':
+                    const courseLen = (mod.course || []).length;
+                    if (journeyState.currentSubIndex < courseLen - 1) {
+                        journeyState.currentSubIndex++;
+                    } else {
+                        journeyState.currentStep = LEARNING_STEPS.KNOWLEDGE_QUIZ;
+                        journeyState.currentSubIndex = 0;
+                        markStepComplete(mod.id, LEARNING_STEPS.COURSE);
+                    }
+                    break;
+
+                case 'continue-deep':
+                    journeyState.currentStep = LEARNING_STEPS.DEEP_CONTENT;
+                    journeyState.currentSubIndex = 0;
+                    markStepComplete(mod.id, LEARNING_STEPS.KNOWLEDGE_QUIZ);
+                    break;
+
+                case 'skip-to-practice':
+                    journeyState.currentStep = LEARNING_STEPS.PRACTICE;
+                    journeyState.currentSubIndex = 0;
+                    markStepComplete(mod.id, LEARNING_STEPS.KNOWLEDGE_QUIZ);
+                    markStepComplete(mod.id, LEARNING_STEPS.DEEP_CONTENT);
+                    break;
+
+                case 'retry-quiz':
+                    journeyState.currentStep = LEARNING_STEPS.COURSE;
+                    journeyState.currentSubIndex = 0;
+                    journeyState.quizPassed[mod.id] = { score: 0, total: 0 };
+                    break;
+
+                case 'prev-deep':
+                    if (journeyState.currentSubIndex > 0) {
+                        journeyState.currentSubIndex--;
+                    }
+                    break;
+
+                case 'next-deep':
+                    const deepLen = (mod.deepContent || []).length;
+                    if (journeyState.currentSubIndex < deepLen - 1) {
+                        journeyState.currentSubIndex++;
+                    } else {
+                        journeyState.currentStep = LEARNING_STEPS.PRACTICE;
+                        journeyState.currentSubIndex = 0;
+                        markStepComplete(mod.id, LEARNING_STEPS.DEEP_CONTENT);
+                    }
+                    break;
+
+                case 'prev-practice':
+                    if (journeyState.currentSubIndex > 0) {
+                        journeyState.currentSubIndex--;
+                    }
+                    break;
+
+                case 'next-practice':
+                    const practiceLen = (mod.practice || []).length;
+                    if (journeyState.currentSubIndex < practiceLen - 1) {
+                        journeyState.currentSubIndex++;
+                    } else {
+                        markStepComplete(mod.id, LEARNING_STEPS.PRACTICE);
+                        completeModule(mod, modules);
+                        return; // Don't render again, completeModule handles it
+                    }
+                    break;
+
+                case 'next-module':
+                    if (journeyState.currentModuleIndex < modules.length - 1) {
+                        journeyState.currentModuleIndex++;
+                        journeyState.currentStep = LEARNING_STEPS.ENTRY_QUIZ;
+                        journeyState.currentSubIndex = 0;
+                        showJourneyContent();
+                        return;
+                    }
+                    break;
+
+                case 'check-blanks':
+                    // Handle fill-in-blank checking
+                    checkFillBlanks(mod);
+                    return;
+
+                case 'start-challenge':
+                    // Handle quiz challenge start
+                    startQuizChallenge(mod);
+                    return;
+            }
+
+            renderCurrentModule();
+        }
+
+        function markStepComplete(moduleId, step) {
+            if (!journeyState.moduleProgress[moduleId]) {
+                journeyState.moduleProgress[moduleId] = {};
+            }
+            journeyState.moduleProgress[moduleId][step] = 'completed';
+            saveJourneyState();
+        }
+
+        function completeModule(mod, modules) {
+            if (!journeyState.completedModules.includes(mod.id)) {
+                journeyState.completedModules.push(mod.id);
+            }
+            saveJourneyState();
+            checkAndAwardBadges();
+
+            // Check if level complete
+            const allModuleIds = modules.map(m => m.id);
+            const allComplete = allModuleIds.every(id => journeyState.completedModules.includes(id));
+
+            if (allComplete) {
+                showLevelCompletion();
+            } else {
+                renderCurrentModule();
+            }
+        }
+
+        function checkFillBlanks(mod) {
+            const container = document.querySelector('.yj-fill-blank-exercise');
+            if (!container) return;
+
+            const exercise = mod.practice[journeyState.currentSubIndex];
+            let allCorrect = true;
+
+            container.querySelectorAll('.yj-fill-blank-item').forEach((item, i) => {
+                const inputs = item.querySelectorAll('.yj-blank-input');
+                const expected = exercise.questions[i].blanks;
+                const feedback = item.querySelector('.yj-fill-feedback');
+
+                let itemCorrect = true;
+                inputs.forEach((input, j) => {
+                    const userAnswer = input.value.trim().toLowerCase();
+                    const correctAnswer = expected[j].toLowerCase();
+                    if (userAnswer === correctAnswer) {
+                        input.classList.add('correct');
+                        input.classList.remove('incorrect');
+                    } else {
+                        input.classList.add('incorrect');
+                        input.classList.remove('correct');
+                        itemCorrect = false;
+                        allCorrect = false;
+                    }
+                });
+
+                feedback.textContent = itemCorrect ? '✓ Correct!' : '✗ Try again';
+                feedback.className = 'yj-fill-feedback ' + (itemCorrect ? 'correct' : 'incorrect');
+            });
+
+            if (allCorrect) {
+                setTimeout(() => {
+                    journeyState.currentSubIndex++;
+                    renderCurrentModule();
+                }, 1500);
+            }
+        }
+
+        function startQuizChallenge(mod) {
+            const exercise = mod.practice[journeyState.currentSubIndex];
+            const container = document.querySelector('.yj-quiz-challenge');
+            if (!container) return;
+
+            const timerEl = container.querySelector('.yj-timer-value');
+            const scoreEl = container.querySelector('.yj-score-value');
+            const questionEl = container.querySelector('.yj-challenge-q');
+            const inputEl = container.querySelector('.yj-challenge-input');
+            const startBtn = container.querySelector('.yj-start-challenge');
+            const progressEl = container.querySelector('.yj-challenge-progress');
+
+            startBtn.style.display = 'none';
+            inputEl.disabled = false;
+            inputEl.focus();
+
+            let timeLeft = exercise.timeLimit || 60;
+            let score = 0;
+            let currentQ = 0;
+            let userAnswers = [];
+            let timerInterval = null;
+
+            const updateProgress = () => {
+                if (progressEl) {
+                    progressEl.textContent = `Question ${currentQ + 1}/${exercise.questions.length}`;
+                }
+            };
+
+            const showQuestion = () => {
+                if (currentQ >= exercise.questions.length) {
+                    // All questions answered - show results
+                    endChallenge('completed');
+                    return;
+                }
+                questionEl.textContent = exercise.questions[currentQ].q;
+                inputEl.value = '';
+                inputEl.focus();
+                updateProgress();
+            };
+
+            const endChallenge = (reason) => {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                inputEl.disabled = true;
+
+                // Generate detailed results
+                const percentage = Math.round((score / exercise.questions.length) * 100);
+                const passed = percentage >= 70;
+
+                const resultsHtml = `
+                    <div class="yj-challenge-results">
+                        <div class="yj-result-header ${passed ? 'success' : 'retry'}">
+                            <div class="yj-result-icon">${passed ? '🎉' : '📖'}</div>
+                            <h3>${reason === 'timeout' ? "Time's Up!" : 'Challenge Complete!'}</h3>
+                            <div class="yj-result-score-big">
+                                <span class="yj-score-number">${score}</span>
+                                <span class="yj-score-separator">/</span>
+                                <span class="yj-score-total">${exercise.questions.length}</span>
+                            </div>
+                            <p class="yj-result-percentage">${percentage}% correct</p>
+                        </div>
+
+                        <div class="yj-answers-review">
+                            <h4>Review Your Answers</h4>
+                            <div class="yj-answers-list">
+                                ${exercise.questions.map((q, i) => {
+                                    const userAnswer = userAnswers[i] || { answer: '(no answer)', isCorrect: false };
+                                    // Escape user input to prevent XSS
+                                    const safeUserAnswer = escapeHtml(userAnswer.answer || '(skipped)');
+                                    const safeQuestion = escapeHtml(q.q);
+                                    const safeCorrectAnswer = escapeHtml(q.a);
+                                    return `
+                                        <div class="yj-answer-item ${userAnswer.isCorrect ? 'correct' : 'incorrect'}">
+                                            <div class="yj-answer-status">
+                                                ${userAnswer.isCorrect ? '✓' : '✗'}
+                                            </div>
+                                            <div class="yj-answer-content">
+                                                <div class="yj-answer-question">${safeQuestion}</div>
+                                                <div class="yj-answer-user">
+                                                    <span class="yj-label">Your answer:</span>
+                                                    <span class="yj-value ${userAnswer.isCorrect ? '' : 'wrong'}">${safeUserAnswer}</span>
+                                                </div>
+                                                ${!userAnswer.isCorrect ? `
+                                                    <div class="yj-answer-correct">
+                                                        <span class="yj-label">Correct answer:</span>
+                                                        <span class="yj-value">${safeCorrectAnswer}</span>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <div class="yj-challenge-actions">
+                            <button class="yj-btn btn btn-secondary" data-action="retry-challenge">
+                                Retry Challenge
+                            </button>
+                            <button class="yj-btn btn btn-primary" data-action="next-practice">
+                                Continue →
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                safeInnerHTML(container, resultsHtml);
+
+                // Attach new event handlers
+                container.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const action = this.dataset.action;
+                        if (action === 'retry-challenge') {
+                            renderCurrentModule();
+                        } else {
+                            handleActionClick(action, mod, getCurrentModules());
+                        }
+                    });
+                });
+            };
+
+            showQuestion();
+
+            // Input handler for answers
+            const handleAnswer = function(e) {
+                if (e.key === 'Enter' && currentQ < exercise.questions.length) {
+                    const userAnswer = this.value.trim();
+                    const correctAnswer = exercise.questions[currentQ].a;
+                    const userAnswerLower = userAnswer.toLowerCase();
+                    const correctLower = correctAnswer.toLowerCase();
+
+                    // Check if answer is correct (flexible matching)
+                    const isCorrect = userAnswerLower === correctLower ||
+                                     userAnswerLower.includes(correctLower) ||
+                                     correctLower.includes(userAnswerLower);
+
+                    // Store the answer
+                    userAnswers[currentQ] = {
+                        answer: userAnswer,
+                        isCorrect: isCorrect
+                    };
+
+                    if (isCorrect) {
+                        score++;
+                        scoreEl.textContent = score;
+                        // Visual feedback for correct
+                        inputEl.classList.add('correct-flash');
+                        setTimeout(() => inputEl.classList.remove('correct-flash'), 300);
+                    } else {
+                        // Visual feedback for incorrect
+                        inputEl.classList.add('incorrect-flash');
+                        setTimeout(() => inputEl.classList.remove('incorrect-flash'), 300);
+                    }
+
+                    currentQ++;
+                    showQuestion();
+                }
+            };
+
+            inputEl.addEventListener('keypress', handleAnswer);
+
+            // Timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+
+                // Add warning classes
+                if (timeLeft <= 10) {
+                    timerEl.parentElement.classList.add('danger');
+                    timerEl.parentElement.classList.remove('warning');
+                } else if (timeLeft <= 20) {
+                    timerEl.parentElement.classList.add('warning');
+                }
+
+                if (timeLeft <= 0) {
+                    // Mark remaining questions as unanswered
+                    for (let i = currentQ; i < exercise.questions.length; i++) {
+                        if (!userAnswers[i]) {
+                            userAnswers[i] = { answer: '', isCorrect: false };
+                        }
+                    }
+                    endChallenge('timeout');
+                }
+            }, 1000);
+        }
+
+        function getCurrentModules() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            if (!pillar) return [];
+            const levelModules = pillar.modules[journeyState.currentLevel];
+            return levelModules || [];
+        }
+
+        // Legacy module rendering (for old format modules)
+        function renderLegacyModule(mod, modules) {
+            const hasSections = mod.sections && mod.sections.length > 0;
+
+            document.getElementById('yj-module-badge').textContent = `Module ${journeyState.currentModuleIndex + 1}`;
+            document.getElementById('yj-module-title').textContent = mod.title;
+
+            let contentHtml = '';
+
+            if (hasSections) {
+                const sectionIndex = journeyState.currentSubIndex;
+                const section = mod.sections[sectionIndex];
+
+                contentHtml = `
+                    <div class="yj-section-progress">
+                        ${mod.sections.map((s, i) => `
+                            <div class="yj-section-dot ${i === sectionIndex ? 'active' : ''} ${i < sectionIndex ? 'completed' : ''}"
+                                 data-section="${i}" title="${s.title}"></div>
+                        `).join('')}
+                    </div>
+                    <div class="yj-section-content">${section.content}</div>
+                    <div class="yj-section-nav">
+                        <button class="yj-section-prev btn btn-secondary" ${sectionIndex === 0 ? 'disabled' : ''}>← Previous</button>
+                        <span>${sectionIndex + 1} / ${mod.sections.length}</span>
+                        <button class="yj-section-next btn btn-primary">${sectionIndex >= mod.sections.length - 1 ? 'Quiz →' : 'Next →'}</button>
+                    </div>
+                `;
+            } else {
+                contentHtml = mod.content || '';
+            }
+
+            safeInnerHTML(document.getElementById('yj-module-content'), contentHtml);
+
+            // Attach legacy handlers...
+            // (keeping this minimal for now)
+        }
+
+        function goToJourneyModule(index) {
+            journeyState.currentModuleIndex = index;
+            journeyState.currentSectionIndex = 0;  // Reset section index
+            showJourneyContent();
+        }
+
+        function journeyPrevModule() {
+            // If in a section, go back to first section first
+            if (journeyState.currentSectionIndex > 0) {
+                journeyState.currentSectionIndex = 0;
+                renderCurrentModule();
+            } else if (journeyState.currentModuleIndex > 0) {
+                journeyState.currentModuleIndex--;
+                journeyState.currentSectionIndex = 0;
+                showJourneyContent();
+            }
+        }
+
+        function journeyNextModule() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const mod = modules[journeyState.currentModuleIndex];
+
+            if (journeyState.completedModules.includes(mod.id)) {
+                if (journeyState.currentModuleIndex < modules.length - 1) {
+                    journeyState.currentModuleIndex++;
+                    showJourneyContent();
+                }
+            } else {
+                showJourneyQuiz();
+            }
+        }
+
+        function showJourneyQuiz() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const mod = modules[journeyState.currentModuleIndex];
+            if (!mod || !mod.quiz) return;
+
+            document.getElementById('yj-module').style.display = 'none';
+            document.getElementById('yj-quiz').style.display = 'block';
+
+            document.getElementById('yj-quiz-title').textContent = mod.title + ' Quiz';
+            document.getElementById('yj-quiz-question').textContent = mod.quiz.question;
+
+            const optionsHtml = mod.quiz.options.map((opt, i) =>
+                `<div class="yj-quiz-option" data-index="${i}">${opt}</div>`
+            ).join('');
+            safeInnerHTML(document.getElementById('yj-quiz-options'), optionsHtml);
+            document.getElementById('yj-quiz-feedback').className = 'yj-quiz-feedback';
+            document.getElementById('yj-quiz-feedback').textContent = '';
+
+            // Attach handlers
+            document.querySelectorAll('.yj-quiz-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    handleJourneyQuizAnswer(parseInt(this.dataset.index));
+                });
+            });
+        }
+
+        function handleJourneyQuizAnswer(selectedIndex) {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            const modules = pillar.modules[journeyState.currentLevel] || [];
+            const mod = modules[journeyState.currentModuleIndex];
+            if (!mod || !mod.quiz) return;
+
+            const options = document.querySelectorAll('.yj-quiz-option');
+            const feedback = document.getElementById('yj-quiz-feedback');
+
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+
+            if (selectedIndex === mod.quiz.correct) {
+                options[selectedIndex].classList.add('correct');
+                feedback.className = 'yj-quiz-feedback show success';
+                feedback.textContent = '✓ Correct! Module completed.';
+
+                if (!journeyState.completedModules.includes(mod.id)) {
+                    journeyState.completedModules.push(mod.id);
+                    saveJourneyState();
+                }
+
+                setTimeout(() => {
+                    if (journeyState.currentModuleIndex < modules.length - 1) {
+                        journeyState.currentModuleIndex++;
+                        showJourneyContent();
+                    } else {
+                        // Level completed - show completion screen
+                        showLevelCompletion();
+                    }
+                }, 1500);
+            } else {
+                options[selectedIndex].classList.add('wrong');
+                options[mod.quiz.correct].classList.add('correct');
+                feedback.className = 'yj-quiz-feedback show error';
+                feedback.textContent = '✗ Not quite. Review the module and try again.';
+
+                setTimeout(() => {
+                    options.forEach(opt => {
+                        opt.style.pointerEvents = 'auto';
+                        opt.classList.remove('wrong', 'correct');
+                    });
+                    feedback.className = 'yj-quiz-feedback';
+                }, 2000);
+            }
+        }
+
+        function showLevelCompletion() {
+            const pillar = JOURNEY_PILLARS[journeyState.currentPillar];
+            const currentLevel = journeyState.currentLevel;
+            const levels = ['beginner', 'intermediate', 'advanced'];
+            const currentLevelIndex = levels.indexOf(currentLevel);
+            const hasNextLevel = currentLevelIndex < levels.length - 1;
+            const nextLevel = hasNextLevel ? levels[currentLevelIndex + 1] : null;
+
+            // Mark level as completed
+            const levelKey = `${journeyState.currentPillar}-${currentLevel}`;
+            if (!journeyState.completedLevels) journeyState.completedLevels = [];
+            if (!journeyState.completedLevels.includes(levelKey)) {
+                journeyState.completedLevels.push(levelKey);
+                saveJourneyState();
+            }
+
+            // Hide other sections, show completion
+            document.getElementById('yj-welcome').style.display = 'none';
+            document.getElementById('yj-module').style.display = 'none';
+            document.getElementById('yj-quiz').style.display = 'none';
+            document.getElementById('yj-level-complete').style.display = 'block';
+
+            // Update completion content
+            const levelName = currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1);
+            document.getElementById('yj-complete-title').textContent = `${pillar.icon} ${levelName} Complete!`;
+            document.getElementById('yj-complete-message').textContent =
+                `Congratulations! You've completed all ${levelName} modules in ${pillar.name}.`;
+
+            // Build action buttons
+            let actionsHtml = '';
+
+            if (hasNextLevel) {
+                const nextLevelName = nextLevel.charAt(0).toUpperCase() + nextLevel.slice(1);
+                actionsHtml += `
+                    <button class="yj-complete-btn yj-complete-btn-primary" data-action="next-level">
+                        Continue to ${nextLevelName} →
+                    </button>
+                `;
+            }
+
+            // Show other pillars to switch to
+            const otherPillars = Object.entries(JOURNEY_PILLARS)
+                .filter(([key]) => key !== journeyState.currentPillar);
+
+            actionsHtml += `
+                <div class="yj-complete-divider">
+                    <span>or explore another path</span>
+                </div>
+                <div class="yj-complete-pillars">
+            `;
+
+            otherPillars.forEach(([key, p]) => {
+                actionsHtml += `
+                    <button class="yj-complete-pillar" data-pillar="${key}">
+                        <span class="yj-complete-pillar-icon">${p.icon}</span>
+                        <span class="yj-complete-pillar-name">${p.name}</span>
+                    </button>
+                `;
+            });
+
+            actionsHtml += '</div>';
+
+            safeInnerHTML(document.getElementById('yj-complete-actions'), actionsHtml);
+
+            // Attach event handlers
+            const nextLevelBtn = document.querySelector('[data-action="next-level"]');
+            if (nextLevelBtn) {
+                nextLevelBtn.addEventListener('click', function() {
+                    journeyState.currentLevel = nextLevel;
+                    journeyState.currentModuleIndex = 0;
+                    saveJourneyState();
+                    document.getElementById('yj-level-complete').style.display = 'none';
+                    showJourneyContent();
+                });
+            }
+
+            document.querySelectorAll('.yj-complete-pillar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const newPillar = this.dataset.pillar;
+                    journeyState.currentPillar = newPillar;
+                    journeyState.currentLevel = 'beginner';
+                    journeyState.currentModuleIndex = 0;
+                    saveJourneyState();
+                    document.getElementById('yj-level-complete').style.display = 'none';
+                    showJourneyContent();
+                });
+            });
+
+            renderJourneyRoadmap();
+        }
+
+        function selectJourneyPillar(pillar) {
+            journeyState.currentPillar = pillar;
+            journeyState.currentModuleIndex = 0;
+            saveJourneyState();
+            showJourneyContent();
+        }
+
+        // ============================================
+        // STATS PANEL
+        // ============================================
+        function openStatsPanel() {
+            loadJourneyState();
+            const panel = document.getElementById('yj-stats-panel');
+            if (panel) {
+                panel.style.display = 'block';
+                renderStatsPanel();
+            }
+        }
+
+        function closeStatsPanel() {
+            const panel = document.getElementById('yj-stats-panel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+
+        function renderStatsPanel() {
+            // Calculate global stats
+            const totalModules = Object.values(JOURNEY_PILLARS).reduce((sum, p) => {
+                return sum + Object.values(p.modules).reduce((s, mods) => s + mods.length, 0);
+            }, 0);
+            const completedModules = journeyState.completedModules.length;
+            const totalLevels = 12; // 4 pillars x 3 levels
+            const completedLevels = journeyState.completedLevels.length;
+            const totalBadges = Object.keys(JOURNEY_BADGES).length;
+            const unlockedBadges = journeyState.unlockedBadges.length;
+
+            // Global stats
+            safeInnerHTML(document.getElementById('yj-stats-global'), `
+                <div class="yj-stats-row">
+                    <div class="yj-stat-card">
+                        <span class="yj-stat-value">${completedModules}</span>
+                        <span class="yj-stat-label">Modules Completed</span>
+                        <div class="yj-stat-bar">
+                            <div class="yj-stat-bar-fill" style="width: ${(completedModules / totalModules) * 100}%"></div>
+                        </div>
+                    </div>
+                    <div class="yj-stat-card">
+                        <span class="yj-stat-value">${completedLevels}/${totalLevels}</span>
+                        <span class="yj-stat-label">Levels Completed</span>
+                        <div class="yj-stat-bar">
+                            <div class="yj-stat-bar-fill" style="width: ${(completedLevels / totalLevels) * 100}%"></div>
+                        </div>
+                    </div>
+                    <div class="yj-stat-card">
+                        <span class="yj-stat-value">${unlockedBadges}/${totalBadges}</span>
+                        <span class="yj-stat-label">Badges Earned</span>
+                        <div class="yj-stat-bar">
+                            <div class="yj-stat-bar-fill" style="width: ${(unlockedBadges / totalBadges) * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            // Pillar progress
+            let pillarsHtml = '';
+            Object.entries(JOURNEY_PILLARS).forEach(([key, pillar]) => {
+                const levels = ['beginner', 'intermediate', 'advanced'];
+                const levelStatus = levels.map(level => {
+                    const isCompleted = journeyState.completedLevels.includes(`${key}-${level}`);
+                    return `<span class="yj-pillar-level ${isCompleted ? 'completed' : ''}">${level.charAt(0).toUpperCase()}</span>`;
+                }).join('');
+
+                const totalPillarModules = Object.values(pillar.modules).reduce((s, m) => s + m.length, 0);
+                const completedPillarModules = journeyState.completedModules.filter(m => m.startsWith(key)).length;
+                const progress = totalPillarModules > 0 ? (completedPillarModules / totalPillarModules) * 100 : 0;
+
+                pillarsHtml += `
+                    <div class="yj-pillar-stat">
+                        <div class="yj-pillar-stat-header">
+                            <span class="yj-pillar-stat-icon">${pillar.icon}</span>
+                            <span class="yj-pillar-stat-name">${pillar.name}</span>
+                        </div>
+                        <div class="yj-pillar-levels">${levelStatus}</div>
+                        <div class="yj-pillar-bar">
+                            <div class="yj-pillar-bar-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <span class="yj-pillar-progress">${completedPillarModules}/${totalPillarModules} modules</span>
+                    </div>
+                `;
+            });
+            safeInnerHTML(document.getElementById('yj-stats-pillars'), pillarsHtml);
+
+            // Badges
+            let badgesHtml = '';
+            Object.entries(JOURNEY_BADGES).forEach(([id, badge]) => {
+                const isUnlocked = journeyState.unlockedBadges.includes(id);
+                badgesHtml += `
+                    <div class="yj-badge ${isUnlocked ? 'unlocked' : 'locked'}" title="${badge.desc}">
+                        <span class="yj-badge-icon">${badge.icon}</span>
+                        <span class="yj-badge-name">${badge.name}</span>
+                    </div>
+                `;
+            });
+            safeInnerHTML(document.getElementById('yj-stats-badges'), badgesHtml);
+        }
 
         // ============================================
         // EXPOSE GLOBAL FUNCTIONS FOR CSP COMPLIANCE
         // ============================================
+        window.openProjectFinder = openProjectFinder;
+        window.closeProjectFinder = closeProjectFinder;
+        window.restartProjectFinder = restartProjectFinder;
+        window.startJourneyFromFinder = startJourneyFromFinder;
+        window.openYourJourney = openYourJourney;
+        window.closeYourJourney = closeYourJourney;
+        window.selectJourneyPillar = selectJourneyPillar;
+        window.openStatsPanel = openStatsPanel;
+        window.closeStatsPanel = closeStatsPanel;
+        window.goToJourneyModule = goToJourneyModule;
+        window.journeyPrevModule = journeyPrevModule;
+        window.journeyNextModule = journeyNextModule;
         window.showPillModal = showPillModal;
         window.hidePillModal = hidePillModal;
         window.unlockHome = unlockHome;

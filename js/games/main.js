@@ -41,21 +41,28 @@ function initEventListeners() {
         devModeBtn.addEventListener('click', toggleDevMode);
     }
 
-    // Pump Arena buttons
+    // Pump Arena RPG buttons
     const pumpClassicBtn = document.getElementById('pump-classic-btn');
     if (pumpClassicBtn) {
-        pumpClassicBtn.addEventListener('click', () => openPumpArena('classic'));
+        pumpClassicBtn.addEventListener('click', () => openPumpArena('rpg'));
     }
 
     // Pump Arena modal controls
     const closePumpArenaBtn = document.getElementById('close-pumparena-btn');
     if (closePumpArenaBtn) {
-        closePumpArenaBtn.addEventListener('click', () => closeGame('pumparena'));
+        closePumpArenaBtn.addEventListener('click', () => {
+            if (window.closePumpArena) {
+                closePumpArena();
+            } else {
+                closeGame('pumparena');
+            }
+        });
     }
 
     const startPumpArenaBtn = document.getElementById('start-pumparena-btn');
     if (startPumpArenaBtn) {
-        startPumpArenaBtn.addEventListener('click', () => startGame('pumparena'));
+        // Legacy start button - RPG auto-starts now
+        startPumpArenaBtn.style.display = 'none';
     }
 
 }
@@ -164,6 +171,16 @@ if (document.readyState === 'loading') {
 // Close modal on Escape
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+        // Check Pump Arena first
+        const pumpModal = document.getElementById('modal-pumparena');
+        if (pumpModal && pumpModal.classList.contains('active')) {
+            if (window.closePumpArena) {
+                closePumpArena();
+            }
+            return;
+        }
+
+        // Then check other games
         GAMES.forEach(game => {
             const modal = document.getElementById(`modal-${game.id}`);
             if (modal && modal.classList.contains('active')) {

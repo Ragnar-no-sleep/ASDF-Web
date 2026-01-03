@@ -23,7 +23,7 @@
     <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' https://unpkg.com;
+        script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https:;
@@ -49,6 +49,7 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="css/learn.css">
     <link rel="stylesheet" href="css/games.css">
+    <link rel="stylesheet" href="css/pumparena-rpg.css">
 
 </head>
 <body>
@@ -694,9 +695,15 @@
                         <a href="build.html#marketplace" style="display: inline-flex; align-items: center; gap: 12px; padding: 20px 40px; background: linear-gradient(135deg, var(--accent-fire), var(--accent-bright)); color: #fff; font-family: var(--font-display); font-size: 18px; font-weight: 700; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4); transition: all 0.3s ease;">
                             🏪 Marketplace
                         </a>
+                        <button id="project-finder-btn" style="display: inline-flex; align-items: center; gap: 12px; padding: 20px 40px; background: linear-gradient(135deg, var(--gold), #fbbf24); color: #000; font-family: var(--font-display); font-size: 18px; font-weight: 700; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4); transition: all 0.3s ease; cursor: pointer;">
+                            🧭 Find Your Path
+                        </button>
+                        <button id="your-journey-btn" style="display: inline-flex; align-items: center; gap: 12px; padding: 20px 40px; background: linear-gradient(135deg, var(--purple), #a855f7); color: #fff; font-family: var(--font-display); font-size: 18px; font-weight: 700; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4); transition: all 0.3s ease; cursor: pointer;">
+                            🎯 Your Journey
+                        </button>
                     </div>
                     <p style="color: var(--text-muted); font-size: 12px; margin-top: 32px;">
-                        Click either button to explore the full Build section
+                        New here? Start with "Find Your Path" to discover your ideal builder journey
                     </p>
                 </div>
             </section>
@@ -731,6 +738,195 @@
             </div>
         </div>
 
+        <!-- Project Finder Modal -->
+        <div class="project-finder-modal" id="project-finder-modal">
+            <div class="project-finder-content">
+                <div class="project-finder-header">
+                    <h2 class="project-finder-title">🧭 Find Your Path</h2>
+                    <button class="project-finder-close" id="project-finder-close">&times;</button>
+                </div>
+                <div class="project-finder-body" id="project-finder-body">
+                    <!-- Progress bar -->
+                    <div class="pf-progress">
+                        <div class="pf-progress-bar" id="pf-progress-bar"></div>
+                    </div>
+                    <div class="pf-progress-text" id="pf-progress-text">Question 1/4</div>
+
+                    <!-- Question container -->
+                    <div class="pf-question" id="pf-question">
+                        <!-- Question injected by JS -->
+                    </div>
+
+                    <!-- Options container -->
+                    <div class="pf-options" id="pf-options">
+                        <!-- Options injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Result screen (hidden by default) -->
+                <div class="project-finder-result" id="project-finder-result" style="display: none;">
+                    <div class="pf-result-icon" id="pf-result-icon">🎯</div>
+                    <h3 class="pf-result-title" id="pf-result-title">Your Recommended Path</h3>
+                    <div class="pf-result-project" id="pf-result-project">
+                        <!-- Result injected by JS -->
+                    </div>
+                    <div class="pf-result-actions">
+                        <button class="pf-btn pf-btn-primary" id="pf-journey-btn">Start Your Journey</button>
+                        <a href="build.html#marketplace" class="pf-btn pf-btn-secondary" id="pf-explore-btn">Browse Marketplace</a>
+                        <button class="pf-btn pf-btn-tertiary" id="pf-restart-btn">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Journey Modal - Builder Training Platform -->
+        <div class="your-journey-modal" id="your-journey-modal">
+            <div class="yj-container">
+                <!-- Header -->
+                <div class="yj-header">
+                    <div class="yj-header-left">
+                        <h1 class="yj-title">🎯 Your Journey</h1>
+                        <p class="yj-subtitle">Personalized builder training path</p>
+                    </div>
+                    <div class="yj-header-actions">
+                        <button class="yj-stats-btn" id="yj-stats-btn">📊 Stats</button>
+                        <button class="yj-close" id="yj-close">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Main content area -->
+                <div class="yj-content">
+                    <!-- Sidebar with roadmap -->
+                    <aside class="yj-sidebar">
+                        <div class="yj-profile" id="yj-profile">
+                            <div class="yj-profile-icon" id="yj-profile-icon">💻</div>
+                            <div class="yj-profile-info">
+                                <h3 id="yj-profile-name">Code Builder</h3>
+                                <span class="yj-profile-level" id="yj-profile-level">Beginner</span>
+                            </div>
+                        </div>
+
+                        <div class="yj-progress-overview">
+                            <div class="yj-progress-label">Overall Progress</div>
+                            <div class="yj-progress-bar-wrap">
+                                <div class="yj-progress-bar" id="yj-overall-progress"></div>
+                            </div>
+                            <div class="yj-progress-text" id="yj-progress-text">0/12 modules</div>
+                        </div>
+
+                        <nav class="yj-roadmap" id="yj-roadmap">
+                            <h4>📍 Roadmap</h4>
+                            <!-- Roadmap items injected by JS -->
+                        </nav>
+                    </aside>
+
+                    <!-- Main content -->
+                    <main class="yj-main">
+                        <!-- Welcome screen (shown first) -->
+                        <div class="yj-welcome" id="yj-welcome">
+                            <div class="yj-welcome-icon">🚀</div>
+                            <h2>Welcome to Your Journey</h2>
+                            <p>Complete "Find Your Path" first to get a personalized training program, or choose a pillar below to start exploring.</p>
+
+                            <div class="yj-pillars">
+                                <button class="yj-pillar" data-pillar="code">
+                                    <span class="yj-pillar-icon">💻</span>
+                                    <span class="yj-pillar-name">Code & Dev</span>
+                                    <span class="yj-pillar-desc">Smart contracts, bots, tools</span>
+                                </button>
+                                <button class="yj-pillar" data-pillar="design">
+                                    <span class="yj-pillar-icon">🎨</span>
+                                    <span class="yj-pillar-name">Design & UX</span>
+                                    <span class="yj-pillar-desc">Visuals, interfaces, branding</span>
+                                </button>
+                                <button class="yj-pillar" data-pillar="content">
+                                    <span class="yj-pillar-icon">✍️</span>
+                                    <span class="yj-pillar-name">Content</span>
+                                    <span class="yj-pillar-desc">Writing, videos, education</span>
+                                </button>
+                                <button class="yj-pillar" data-pillar="community">
+                                    <span class="yj-pillar-icon">🤝</span>
+                                    <span class="yj-pillar-name">Community</span>
+                                    <span class="yj-pillar-desc">Moderation, support, growth</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Module content (hidden by default) -->
+                        <div class="yj-module" id="yj-module" style="display: none;">
+                            <div class="yj-module-header">
+                                <div class="yj-module-badge" id="yj-module-badge">Module 1</div>
+                                <h2 class="yj-module-title" id="yj-module-title">Introduction</h2>
+                            </div>
+
+                            <div class="yj-module-content" id="yj-module-content">
+                                <!-- Content injected by JS -->
+                            </div>
+
+                            <div class="yj-module-actions">
+                                <button class="yj-btn yj-btn-secondary" id="yj-prev-module">← Previous</button>
+                                <button class="yj-btn yj-btn-primary" id="yj-next-module">Next →</button>
+                            </div>
+                        </div>
+
+                        <!-- Quiz (hidden by default) -->
+                        <div class="yj-quiz" id="yj-quiz" style="display: none;">
+                            <div class="yj-quiz-header">
+                                <span class="yj-quiz-badge">🧠 Knowledge Check</span>
+                                <h3 id="yj-quiz-title">Module Quiz</h3>
+                            </div>
+                            <div class="yj-quiz-question" id="yj-quiz-question"></div>
+                            <div class="yj-quiz-options" id="yj-quiz-options"></div>
+                            <div class="yj-quiz-feedback" id="yj-quiz-feedback"></div>
+                        </div>
+
+                        <!-- Level Completion (hidden by default) -->
+                        <div class="yj-level-complete" id="yj-level-complete" style="display: none;">
+                            <div class="yj-complete-celebration">🎉</div>
+                            <h2 class="yj-complete-title" id="yj-complete-title">Level Complete!</h2>
+                            <p class="yj-complete-message" id="yj-complete-message"></p>
+                            <div class="yj-complete-actions" id="yj-complete-actions">
+                                <!-- Actions injected by JS -->
+                            </div>
+                        </div>
+                    </main>
+                </div>
+
+                <!-- Stats Panel (hidden by default) -->
+                <div class="yj-stats-panel" id="yj-stats-panel" style="display: none;">
+                    <div class="yj-stats-header">
+                        <h2>📊 Your Progress</h2>
+                        <button class="yj-stats-close" id="yj-stats-close">&times;</button>
+                    </div>
+                    <div class="yj-stats-content">
+                        <!-- Global Progress -->
+                        <div class="yj-stats-section">
+                            <h3>Overall Progress</h3>
+                            <div class="yj-stats-global" id="yj-stats-global">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Pillar Progress -->
+                        <div class="yj-stats-section">
+                            <h3>Progress by Pillar</h3>
+                            <div class="yj-stats-pillars" id="yj-stats-pillars">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="yj-stats-section">
+                            <h3>Badges</h3>
+                            <div class="yj-stats-badges" id="yj-stats-badges">
+                                <!-- Injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- ============================================
              PLAY VIEW - Journey du Holder (RPG Educatif)
@@ -740,7 +936,7 @@
             <div class="journey-intro" id="journey-intro">
                 <div class="journey-header">
                     <div class="journey-logo">🐕🔥</div>
-                    <h1 class="journey-title">Journey du Holder</h1>
+                    <h1 class="journey-title">Holder's Journey</h1>
                     <p class="journey-tagline">Navigate the chaos. Learn the truth. THIS IS FINE.</p>
                 </div>
 
@@ -1840,6 +2036,11 @@
     </footer>
 
     <!-- JavaScript -->
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
+            integrity="sha512-5g1wRsV5K1gYvLTuEI7BtZyG0S7q2bV0l3DhHZOdcJLgDaAXxLz/VNpvi9dBwWjGr/RzT5dJhzF7eiUKos9ABw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
     <script src="js/learn.js"></script>
     <script src="js/learn-init.js"></script>
 
@@ -1865,6 +2066,19 @@
     <script src="js/games/avatar.js"></script>
     <!-- UI & Engine -->
     <script src="js/games/ui.js"></script>
+    <!-- Pump Arena RPG Module -->
+    <script src="js/games/pumparena/rpgstate.js"></script>
+    <script src="js/games/pumparena/character.js"></script>
+    <script src="js/games/pumparena/daily.js"></script>
+    <script src="js/games/pumparena/npcs.js"></script>
+    <script src="js/games/pumparena/quests.js"></script>
+    <script src="js/games/pumparena/events.js"></script>
+    <script src="js/games/pumparena/minigames.js"></script>
+    <script src="js/games/pumparena/skilltrees.js"></script>
+    <script src="js/games/pumparena/inventory.js"></script>
+    <script src="js/games/pumparena/achievements.js"></script>
+    <script src="js/games/pumparena/index.js"></script>
+    <!-- Main Engine -->
     <script src="js/games/engine.js"></script>
     <script src="js/games/main.js"></script>
 </body>
