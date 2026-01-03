@@ -1925,3 +1925,449 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* =========================================
+   CERTIFICATION MODULE STYLES
+   ========================================= */
+
+/* Certification Module Cards */
+.jm-certification-modules {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jm-space-lg);
+}
+
+.jm-certification-module-card {
+    background: linear-gradient(135deg, var(--jm-bg-charred), var(--jm-bg-void));
+    border: 2px solid var(--jm-accent-gold);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.jm-certification-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--jm-accent-fire), var(--jm-accent-gold), var(--jm-accent-fire));
+}
+
+.jm-cert-card-header {
+    display: flex;
+    gap: var(--jm-space-lg);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-cert-badge {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--jm-accent-fire), var(--jm-accent-gold));
+    border-radius: var(--jm-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+}
+
+.jm-cert-title-area h4 {
+    color: var(--jm-text);
+    font-size: 1.25rem;
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-cert-title-area p {
+    color: var(--jm-text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.jm-cert-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jm-space-md);
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-cert-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-sm);
+    color: var(--jm-text-muted);
+    font-size: 0.875rem;
+    padding: var(--jm-space-sm) var(--jm-space-md);
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+}
+
+.jm-cert-meta-item.cert-level {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.2), rgba(245, 158, 11, 0.2));
+    color: var(--jm-accent-gold);
+    font-weight: 600;
+}
+
+.jm-start-cert-module {
+    width: 100%;
+    padding: var(--jm-space-md) var(--jm-space-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--jm-accent-fire), var(--jm-accent-gold));
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.jm-start-cert-module:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+}
+
+/* Certification Lesson Content */
+.jm-cert-lessons {
+    margin-top: var(--jm-space-lg);
+}
+
+.jm-cert-lesson {
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-md);
+    margin-bottom: var(--jm-space-md);
+    overflow: hidden;
+}
+
+.jm-cert-lesson-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-void);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.jm-cert-lesson-header:hover {
+    background: var(--jm-bg-charred);
+}
+
+.jm-cert-lesson-header.expanded {
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-cert-lesson-header h5 {
+    flex: 1;
+    margin: 0;
+    color: var(--jm-text);
+    font-size: 1rem;
+}
+
+.jm-cert-lesson-content {
+    padding: var(--jm-space-lg);
+    background: var(--jm-bg-warm);
+}
+
+.cert-key-points {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(245, 158, 11, 0.1));
+    border-left: 4px solid var(--jm-accent-gold);
+}
+
+/* Final Certification Section */
+.jm-final-certification-section {
+    background: linear-gradient(135deg, var(--jm-bg-void), #1a1a2e);
+    border: 2px solid var(--jm-accent-fire);
+    border-radius: var(--jm-radius-xl);
+    padding: var(--jm-space-xxl);
+    margin-top: var(--jm-space-xxl);
+    position: relative;
+    overflow: hidden;
+}
+
+.jm-final-certification-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+        var(--jm-accent-fire),
+        var(--jm-accent-gold),
+        #22c55e,
+        var(--jm-accent-gold),
+        var(--jm-accent-fire)
+    );
+    animation: shimmer 3s infinite linear;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+.jm-final-cert-header {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-xl);
+    margin-bottom: var(--jm-space-xxl);
+    padding-bottom: var(--jm-space-xl);
+    border-bottom: 1px solid var(--jm-border);
+}
+
+.jm-cert-flame {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--jm-accent-fire), var(--jm-accent-gold));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 8px 32px rgba(234, 88, 12, 0.5);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 8px 32px rgba(234, 88, 12, 0.5); }
+    50% { box-shadow: 0 8px 48px rgba(234, 88, 12, 0.7); }
+}
+
+.jm-cert-title-block h3 {
+    color: var(--jm-text);
+    font-size: 1.75rem;
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-cert-tier {
+    color: var(--jm-accent-gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: var(--jm-space-sm) !important;
+}
+
+.jm-cert-title-block p {
+    color: var(--jm-text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Certification Requirements */
+.jm-cert-requirements {
+    margin-bottom: var(--jm-space-xxl);
+}
+
+.jm-cert-requirements h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-cert-req-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--jm-space-lg);
+}
+
+.jm-cert-req-card {
+    background: var(--jm-bg-charred);
+    border: 1px solid var(--jm-border);
+    border-radius: var(--jm-radius-lg);
+    padding: var(--jm-space-xl);
+}
+
+.jm-req-icon {
+    font-size: 2rem;
+    margin-bottom: var(--jm-space-md);
+}
+
+.jm-cert-req-card h5 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-md);
+}
+
+.jm-cert-req-card p {
+    color: var(--jm-text-muted);
+    margin: 0 0 var(--jm-space-md);
+    line-height: 1.5;
+}
+
+.jm-cert-req-card ul {
+    margin: 0 0 var(--jm-space-md);
+    padding-left: var(--jm-space-lg);
+    color: var(--jm-text-muted);
+}
+
+.jm-cert-req-card li {
+    margin-bottom: var(--jm-space-sm);
+}
+
+.jm-pass-score {
+    display: inline-block;
+    padding: var(--jm-space-sm) var(--jm-space-md);
+    background: linear-gradient(135deg, #22c55e20, #16a34a20);
+    color: #22c55e;
+    border-radius: var(--jm-radius-sm);
+    font-weight: 600;
+}
+
+/* Certification Perks */
+.jm-cert-perks {
+    margin-bottom: var(--jm-space-xxl);
+}
+
+.jm-cert-perks h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-perks-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--jm-space-md);
+}
+
+.jm-perk-item {
+    display: flex;
+    align-items: center;
+    gap: var(--jm-space-md);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-charred);
+    border-radius: var(--jm-radius-md);
+    color: var(--jm-text);
+}
+
+.jm-perk-check {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+/* NFT Badge Preview */
+.jm-cert-nft {
+    margin-bottom: var(--jm-space-xxl);
+}
+
+.jm-cert-nft h4 {
+    color: var(--jm-text);
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-nft-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--jm-space-md);
+}
+
+.jm-nft-card {
+    background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+    border: 2px solid var(--jm-accent-gold);
+    border-radius: var(--jm-radius-xl);
+    padding: var(--jm-space-xl);
+    text-align: center;
+    min-width: 280px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.jm-nft-badge-icon {
+    font-size: 4rem;
+    margin-bottom: var(--jm-space-lg);
+}
+
+.jm-nft-collection {
+    color: var(--jm-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 var(--jm-space-sm);
+}
+
+.jm-nft-name {
+    color: var(--jm-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 var(--jm-space-lg);
+}
+
+.jm-nft-attributes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jm-space-sm);
+    justify-content: center;
+}
+
+.jm-nft-attr {
+    display: inline-block;
+    padding: var(--jm-space-xs) var(--jm-space-md);
+    background: var(--jm-bg-void);
+    border-radius: var(--jm-radius-sm);
+    color: var(--jm-accent-gold);
+    font-size: 0.75rem;
+}
+
+.jm-nft-type {
+    color: var(--jm-text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Certification CTA */
+.jm-cert-cta {
+    text-align: center;
+}
+
+.jm-start-certification {
+    padding: var(--jm-space-lg) var(--jm-space-xxl);
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--jm-accent-fire), var(--jm-accent-gold));
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: var(--jm-radius-lg);
+    box-shadow: 0 8px 32px rgba(234, 88, 12, 0.4);
+    transition: all 0.3s ease;
+}
+
+.jm-start-certification:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(234, 88, 12, 0.6);
+}
+
+.jm-cert-note {
+    color: var(--jm-text-muted);
+    font-size: 0.875rem;
+    margin-top: var(--jm-space-md);
+}
+
+/* Responsive for certification */
+@media (max-width: 768px) {
+    .jm-final-cert-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .jm-cert-req-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jm-perks-list {
+        grid-template-columns: 1fr;
+    }
+
+    .jm-nft-card {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .jm-cert-card-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .jm-cert-badge {
+        align-self: center;
+    }
+}

@@ -10600,11 +10600,12 @@ tokenomics if you have them."</pre>
 
             const JA = window.JourneyAdvanced;
             const JP = window.JourneyProduction;
+            const JC = window.JourneyCertification;
             const JM = window.JourneyModules;
             const pillar = journeyState.currentPillar;
 
             // Check if any advanced module system is available
-            if (!JA && !JP) return;
+            if (!JA && !JP && !JC) return;
 
             // Map module IDs to JourneyAdvanced content (using actual module IDs)
             const advancedMapping = {
@@ -10640,16 +10641,35 @@ tokenomics if you have them."</pre>
                 'community-a2': ['prod-community-ambassadors']
             };
 
+            // Map module IDs to JourneyCertification content
+            const certificationMapping = {
+                // Code & Dev → Certification modules
+                'code-a1': ['cert-code-architecture'],
+                'code-a2': ['cert-code-architecture'],
+                'code-a3': ['cert-code-solana-advanced'],
+                // Design & UX → Certification modules
+                'design-a1': ['cert-design-motion'],
+                'design-a2': ['cert-design-critical'],
+                // Content → Certification modules
+                'content-a1': ['cert-content-video'],
+                'content-a2': ['cert-content-multiplatform'],
+                // Community → Certification modules
+                'community-a1': ['cert-community-dao'],
+                'community-a2': ['cert-community-metrics']
+            };
+
             const advancedKeys = advancedMapping[mod.id] || [];
             const productionKeys = productionMapping[mod.id] || [];
+            const certificationKeys = certificationMapping[mod.id] || [];
 
-            if (advancedKeys.length === 0 && productionKeys.length === 0) return;
+            if (advancedKeys.length === 0 && productionKeys.length === 0 && certificationKeys.length === 0) return;
 
             // Get the corresponding module data
             const advancedModules = JA ? JA.getModulesForPillar(pillar).filter(m => advancedKeys.includes(m.id)) : [];
             const productionModules = JP ? JP.getModulesForPillar(pillar).filter(m => productionKeys.includes(m.id)) : [];
+            const certificationModules = JC ? JC.getModulesForPillar(pillar).filter(m => certificationKeys.includes(m.id)) : [];
 
-            if (advancedModules.length === 0 && productionModules.length === 0) return;
+            if (advancedModules.length === 0 && productionModules.length === 0 && certificationModules.length === 0) return;
 
             // Build interactive content with tabs
             container.innerHTML = `
@@ -10666,6 +10686,9 @@ tokenomics if you have them."</pre>
                         <button class="jm-tab" data-tab="production">
                             <span class="jm-tab-icon">🚀</span> Production Ready
                         </button>
+                        <button class="jm-tab" data-tab="certification">
+                            <span class="jm-tab-icon">🏅</span> Certification
+                        </button>
                     </div>
 
                     <div class="jm-curriculum-content">
@@ -10674,6 +10697,9 @@ tokenomics if you have them."</pre>
                         </div>
                         <div class="jm-tab-panel" id="tab-production">
                             <div class="jm-production-modules" id="jm-production-modules-list"></div>
+                        </div>
+                        <div class="jm-tab-panel" id="tab-certification">
+                            <div class="jm-certification-modules" id="jm-certification-modules-list"></div>
                         </div>
                     </div>
                 </div>
@@ -10700,6 +10726,17 @@ tokenomics if you have them."</pre>
             productionModules.forEach(prodModule => {
                 renderProductionModuleCard(productionList, prodModule, JM);
             });
+
+            // Render Certification modules
+            const certificationList = container.querySelector('#jm-certification-modules-list');
+            certificationModules.forEach(certModule => {
+                renderCertificationModuleCard(certificationList, certModule, JM);
+            });
+
+            // Add final certification section
+            if (JC) {
+                renderFinalCertificationSection(certificationList, JC, JM);
+            }
 
             // Add master challenge
             if (JA && JA.CHALLENGES && JA.CHALLENGES.masterChallenge && JM) {
@@ -10971,6 +11008,218 @@ tokenomics if you have them."</pre>
             html += '</div>';
             capstoneSection.innerHTML = html;
             container.appendChild(capstoneSection);
+        }
+
+        // Helper: Render certification module card
+        function renderCertificationModuleCard(container, module, JM) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'jm-certification-module-card';
+            const safeTitle = JM ? JM.escapeHtml(module.title) : module.title;
+            const safeDesc = JM ? JM.escapeHtml(module.description) : module.description;
+
+            const lessonsCount = module.lessons ? module.lessons.length : 0;
+            const themeIcon = module.theme === 'verify' ? '✓' : module.theme === 'fibonacci' ? '🌀' : module.theme === 'burn' ? '🔥' : '🏅';
+
+            moduleCard.innerHTML = `
+                <div class="jm-cert-card-header">
+                    <div class="jm-cert-badge">${themeIcon}</div>
+                    <div class="jm-cert-title-area">
+                        <h4>${safeTitle}</h4>
+                        <p>${safeDesc}</p>
+                    </div>
+                </div>
+                <div class="jm-cert-meta">
+                    <span class="jm-cert-meta-item">
+                        <span class="jm-meta-icon">📖</span> ${lessonsCount} lessons
+                    </span>
+                    <span class="jm-cert-meta-item">
+                        <span class="jm-meta-icon">⏱️</span> ${module.estimatedTime || '4-6 hours'}
+                    </span>
+                    <span class="jm-cert-meta-item cert-level">
+                        <span class="jm-meta-icon">🎯</span> Expert Level
+                    </span>
+                </div>
+                <button class="jm-start-cert-module btn btn-primary" data-module-id="${module.id}">
+                    Master This Skill →
+                </button>
+                <div class="jm-cert-module-content" id="cert-content-${module.id}" style="display: none;"></div>
+            `;
+            container.appendChild(moduleCard);
+
+            const startBtn = moduleCard.querySelector('.jm-start-cert-module');
+            startBtn.addEventListener('click', function() {
+                const contentArea = moduleCard.querySelector('.jm-cert-module-content');
+                const isExpanded = contentArea.style.display !== 'none';
+
+                if (isExpanded) {
+                    contentArea.style.display = 'none';
+                    this.textContent = 'Master This Skill →';
+                } else {
+                    contentArea.style.display = 'block';
+                    this.textContent = 'Close Module ↑';
+                    renderCertificationModuleContent(contentArea, module, JM);
+                }
+            });
+        }
+
+        // Helper: Render certification module content
+        function renderCertificationModuleContent(container, module, JM) {
+            if (container.dataset.loaded === 'true') return;
+            container.dataset.loaded = 'true';
+
+            let html = '<div class="jm-cert-lessons">';
+
+            // Render lessons
+            if (module.lessons) {
+                module.lessons.forEach((lesson, index) => {
+                    const safeTitle = JM ? JM.escapeHtml(lesson.title) : lesson.title;
+                    html += `
+                        <div class="jm-cert-lesson">
+                            <div class="jm-cert-lesson-header" data-lesson="${index}">
+                                <span class="jm-lesson-num">${index + 1}</span>
+                                <h5>${safeTitle}</h5>
+                                <span class="jm-lesson-toggle">▼</span>
+                            </div>
+                            <div class="jm-cert-lesson-content" id="cert-lesson-${module.id}-${index}" style="display: none;">
+                                ${lesson.content}
+                                ${lesson.keyPoints ? `
+                                    <div class="jm-key-points cert-key-points">
+                                        <h6>🎯 Key Takeaways:</h6>
+                                        <ul>
+                                            ${lesson.keyPoints.map(p => `<li>${JM ? JM.escapeHtml(p) : p}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Add lesson toggle handlers
+            container.querySelectorAll('.jm-cert-lesson-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const lessonIndex = this.dataset.lesson;
+                    const content = container.querySelector(`#cert-lesson-${module.id}-${lessonIndex}`);
+                    const toggle = this.querySelector('.jm-lesson-toggle');
+
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        toggle.textContent = '▲';
+                        this.classList.add('expanded');
+                    } else {
+                        content.style.display = 'none';
+                        toggle.textContent = '▼';
+                        this.classList.remove('expanded');
+                    }
+                });
+            });
+        }
+
+        // Helper: Render final certification section
+        function renderFinalCertificationSection(container, JC, JM) {
+            const cert = JC.getCertificationModule();
+            if (!cert) return;
+
+            const certSection = document.createElement('div');
+            certSection.className = 'jm-final-certification-section';
+
+            const badge = cert.certification.badge;
+            const assessment = cert.technicalAssessment;
+            const capstone = cert.capstoneProject;
+
+            certSection.innerHTML = `
+                <div class="jm-final-cert-header">
+                    <div class="jm-cert-flame">${badge.symbol}</div>
+                    <div class="jm-cert-title-block">
+                        <h3>${JM ? JM.escapeHtml(badge.name) : badge.name}</h3>
+                        <p class="jm-cert-tier">Tier: ${badge.tier}</p>
+                        <p>${JM ? JM.escapeHtml(badge.description) : badge.description}</p>
+                    </div>
+                </div>
+
+                <div class="jm-cert-requirements">
+                    <h4>📋 Certification Requirements</h4>
+                    <div class="jm-cert-req-grid">
+                        <div class="jm-cert-req-card">
+                            <div class="jm-req-icon">📝</div>
+                            <h5>Technical Assessment</h5>
+                            <p>Pass a comprehensive ${assessment.sections.length}-section exam covering all pillars.</p>
+                            <ul>
+                                ${assessment.sections.map(s => `<li>${JM ? JM.escapeHtml(s.name) : s.name} (${s.questions} questions)</li>`).join('')}
+                            </ul>
+                            <div class="jm-pass-score">Pass: ${assessment.passingScore}%</div>
+                        </div>
+
+                        <div class="jm-cert-req-card">
+                            <div class="jm-req-icon">🛠️</div>
+                            <h5>Capstone Project</h5>
+                            <p>Complete one of ${capstone.options.length} project options:</p>
+                            <ul>
+                                ${capstone.options.map(o => `<li><strong>${JM ? JM.escapeHtml(o.name) : o.name}</strong>: ${JM ? JM.escapeHtml(o.description) : o.description}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jm-cert-perks">
+                    <h4>🎁 Certification Perks</h4>
+                    <div class="jm-perks-list">
+                        ${cert.certification.perks.map(perk => `
+                            <div class="jm-perk-item">
+                                <span class="jm-perk-check">✓</span>
+                                ${JM ? JM.escapeHtml(perk) : perk}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="jm-cert-nft">
+                    <h4>🏆 NFT Badge Credential</h4>
+                    <div class="jm-nft-preview">
+                        <div class="jm-nft-card">
+                            <div class="jm-nft-badge-icon">${badge.symbol}</div>
+                            <div class="jm-nft-info">
+                                <p class="jm-nft-collection">${cert.certification.nft.collection}</p>
+                                <p class="jm-nft-name">${cert.certification.nft.metadata.name}</p>
+                            </div>
+                            <div class="jm-nft-attributes">
+                                ${cert.certification.nft.attributes.map(attr => `
+                                    <span class="jm-nft-attr">${attr.trait_type}: ${attr.value}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <p class="jm-nft-type">Compressed NFT on Solana</p>
+                    </div>
+                </div>
+
+                <div class="jm-cert-cta">
+                    <button class="jm-start-certification btn btn-primary btn-lg" id="start-certification-btn">
+                        🔥 Begin Certification Journey
+                    </button>
+                    <p class="jm-cert-note">Complete all pillar modules before starting certification</p>
+                </div>
+            `;
+
+            container.appendChild(certSection);
+
+            // Add certification button handler
+            const certBtn = certSection.querySelector('#start-certification-btn');
+            certBtn.addEventListener('click', function() {
+                // Check eligibility
+                const state = getState();
+                const eligibility = JC.checkCertificationEligibility(state.completedModules || []);
+
+                if (!eligibility.eligible) {
+                    showAchievement('⚠️', 'Not Ready Yet', `Complete ${eligibility.total - eligibility.completed} more modules first!`);
+                } else {
+                    showAchievement('🔥', 'Ready for Certification!', 'You can now take the certification exam.');
+                    // In a full implementation, this would open the certification exam
+                }
+            });
         }
 
         // Legacy module rendering (for old format modules)
