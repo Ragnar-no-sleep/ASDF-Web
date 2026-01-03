@@ -2445,6 +2445,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { threshold: 0.2 });
 
     realmGlows.forEach(function(glow) { realmObserver.observe(glow); });
-
-    console.log('Yggdrasil World Tree initialized with Feature Modal');
 });

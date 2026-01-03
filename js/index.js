@@ -5,8 +5,8 @@
 
 'use strict';
 
-+ // Burn Engine API endpoint
-+ const API_URL = 'https://burns.onrender.com';
+// Burn Engine API endpoint
+const API_URL = 'https://burns.onrender.com';
 
 // Format numbers safely
 function formatNumber(num) {

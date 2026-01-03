@@ -23,13 +23,17 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://unpkg.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://*.solana.com", "https://asdforecast.onrender.com", "https://burns.onrender.com"],
+            connectSrc: ["'self'", "https://*.solana.com", "https://asdforecast.onrender.com", "https://burns.onrender.com", "https://api.asdf-games.com"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
             // Allow embedding in Squarespace (alonisthe.dev)
             frameAncestors: ["'self'", "https://alonisthe.dev", "https://*.squarespace.com", "https://*.squarespace-cdn.com"],
+            upgradeInsecureRequests: [],
         },
     },
     crossOriginEmbedderPolicy: false,

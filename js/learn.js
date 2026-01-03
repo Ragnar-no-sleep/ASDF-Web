@@ -4515,6 +4515,858 @@ CMD ["asdf_grinder"]</div>
         }
 
         // ============================================
+        // JOURNEY DU HOLDER - RPG EDUCATIF
+        // ============================================
+
+        const JOURNEY_STORAGE_KEY = 'asdf_journey_v1';
+
+        // Journey State
+        const JourneyState = {
+            stats: { diamond: 50, knowledge: 20, community: 30, portfolio: 1000 },
+            chapter: 1,
+            choicesMade: [],
+            lessonsLearned: [],
+            completed: false
+        };
+
+        // Chapter Data - Educational Content with Choices
+        const JOURNEY_CHAPTERS = [
+            {
+                chapter: 1,
+                title: 'The First Buy',
+                visual: '🐕',
+                text: `<p>You've heard whispers about <strong>$ASDF</strong> on crypto Twitter. A memecoin with "This is Fine" vibes and something about automated burns.</p>
+                       <p>The dog in the burning room. That's their thing.</p>
+                       <p><em>You have 1,000 SOL worth of stablecoins. Time to make a decision...</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '📚',
+                        text: 'Read the docs first',
+                        hint: 'Knowledge is power',
+                        effects: { diamond: 0, knowledge: +15, community: +5, portfolio: 0 },
+                        outcome: `<p>You spend an hour reading the whitepaper and learning about the <strong>Optimistic Burn Protocol</strong>.</p>
+                                  <p>Creator fees from Pump.fun get collected, used to buyback $ASDF, and then burned forever. The supply decreases while demand stays constant.</p>
+                                  <p><em>This actually makes sense...</em></p>`,
+                        lesson: 'DYOR (Do Your Own Research) before investing'
+                    },
+                    {
+                        id: 'b',
+                        icon: '🚀',
+                        text: 'Ape in immediately',
+                        hint: 'WAGMI mentality',
+                        effects: { diamond: +10, knowledge: -5, community: 0, portfolio: -100 },
+                        outcome: `<p>You buy at the top. The price immediately dumps 10%.</p>
+                                  <p><em>"This is fine"</em>, you tell yourself.</p>
+                                  <p>At least you're in now. But you still don't fully understand what you bought...</p>`,
+                        lesson: 'FOMO often leads to buying high'
+                    },
+                    {
+                        id: 'c',
+                        icon: '🎯',
+                        text: 'Ask the community',
+                        hint: 'Join the Discord',
+                        effects: { diamond: +5, knowledge: +10, community: +15, portfolio: 0 },
+                        outcome: `<p>You join the Discord and ask questions. The community explains the burn mechanics patiently.</p>
+                                  <p><strong>Creator fees → Buyback → Burn → Less supply</strong></p>
+                                  <p>You make some friends along the way. They seem genuinely helpful.</p>`,
+                        lesson: 'Good communities educate, not pump'
+                    }
+                ]
+            },
+            {
+                chapter: 2,
+                title: 'The First Dip',
+                visual: '📉',
+                text: `<p>A week later. Your portfolio is down <strong>40%</strong>.</p>
+                       <p>FUD is spreading. Someone on Twitter claims the project is dead. Another says the dev rugged.</p>
+                       <p>But you check - the burn mechanism is still running. Fees are still being collected. Burns are still happening.</p>
+                       <p><em>What do you do?</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '💎',
+                        text: 'HODL - This is fine',
+                        hint: 'Diamond hands activated',
+                        effects: { diamond: +20, knowledge: +5, community: +5, portfolio: 0 },
+                        outcome: `<p>You hold through the chaos. The burns continue regardless of price action.</p>
+                                  <p>You learn that volatility is normal in crypto, and fundamentals matter more than daily charts.</p>
+                                  <p>Two weeks later, price recovers. <strong>Your patience is rewarded.</strong></p>`,
+                        lesson: 'Price volatility is temporary, burns are permanent'
+                    },
+                    {
+                        id: 'b',
+                        icon: '😱',
+                        text: 'Panic sell everything',
+                        hint: 'Cut losses',
+                        effects: { diamond: -20, knowledge: 0, community: -10, portfolio: -400 },
+                        outcome: `<p>You sell at the bottom. The price pumps 50% the next day.</p>
+                                  <p>Your portfolio takes a 40% realized loss. The emotional pain is worse than the financial loss.</p>
+                                  <p><em>Selling added fees to the burn mechanism. At least your loss helped others...</em></p>`,
+                        lesson: 'Panic selling locks in losses'
+                    },
+                    {
+                        id: 'c',
+                        icon: '🧐',
+                        text: 'Verify the FUD claims',
+                        hint: 'Check on-chain data',
+                        effects: { diamond: +10, knowledge: +20, community: 0, portfolio: 0 },
+                        outcome: `<p>You check Solscan. The daemon is running. Burns are happening. Treasury is transparent.</p>
+                                  <p>The FUD was baseless. You learn to <strong>verify before believing</strong>.</p>
+                                  <p>Knowledge protects you from manipulation.</p>`,
+                        lesson: 'Verify claims with on-chain data'
+                    }
+                ]
+            },
+            {
+                chapter: 3,
+                title: 'The Scam DM',
+                visual: '🎣',
+                text: `<p>You receive a DM: <em>"Hey! I'm an admin from $ASDF. We're doing an airdrop! Send 0.1 SOL to verify your wallet and receive 10,000 $ASDF!"</em></p>
+                       <p>The profile picture looks legit. They have followers.</p>
+                       <p><em>But something feels off...</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '🛡️',
+                        text: 'Report and block',
+                        hint: 'Trust no DMs',
+                        effects: { diamond: +5, knowledge: +15, community: +10, portfolio: 0 },
+                        outcome: `<p>You recognize the classic scam patterns: unsolicited DMs, urgency, requests to send crypto.</p>
+                                  <p>You report the account and warn others in the community.</p>
+                                  <p><strong>Legit projects never DM first asking for funds.</strong></p>`,
+                        lesson: 'Admins will never DM you first'
+                    },
+                    {
+                        id: 'b',
+                        icon: '🤔',
+                        text: 'Ask in official Discord',
+                        hint: 'Verify with community',
+                        effects: { diamond: +5, knowledge: +10, community: +15, portfolio: 0 },
+                        outcome: `<p>You screenshot and share in the official Discord. The mods confirm it's a scam.</p>
+                                  <p>Other community members thank you for the warning. Your reputation grows.</p>
+                                  <p><em>When in doubt, verify through official channels.</em></p>`,
+                        lesson: 'When in doubt, ask the official community'
+                    },
+                    {
+                        id: 'c',
+                        icon: '💸',
+                        text: 'Send the SOL',
+                        hint: 'YOLO...',
+                        effects: { diamond: -10, knowledge: +5, community: -5, portfolio: -200 },
+                        outcome: `<p>You send 0.1 SOL. The account blocks you immediately.</p>
+                                  <p><strong>Lesson learned the hard way.</strong> You lost money but gained wisdom.</p>
+                                  <p>You share your experience to help others avoid the same mistake.</p>`,
+                        lesson: 'Never send crypto to verify your wallet'
+                    }
+                ]
+            },
+            {
+                chapter: 4,
+                title: 'The Burn Event',
+                visual: '🔥',
+                text: `<p>A massive burn just happened! <strong>500,000 $ASDF</strong> permanently removed from circulation.</p>
+                       <p>The community is celebrating. Price pumped 20%. Everyone's posting fire emojis.</p>
+                       <p>You now understand: the flywheel works. Trading fees → Buybacks → Burns → Less supply → Value accrual.</p>
+                       <p><em>How do you celebrate?</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '📢',
+                        text: 'Share on social media',
+                        hint: 'Spread the word',
+                        effects: { diamond: 0, knowledge: +5, community: +20, portfolio: 0 },
+                        outcome: `<p>You create a thread explaining how the burn mechanism works.</p>
+                                  <p>It goes viral. New holders join because they finally understand the value proposition.</p>
+                                  <p><strong>Education > Shilling</strong></p>`,
+                        lesson: 'Educating others builds real community'
+                    },
+                    {
+                        id: 'b',
+                        icon: '💰',
+                        text: 'Take some profits',
+                        hint: 'Secure gains',
+                        effects: { diamond: -5, knowledge: +5, community: 0, portfolio: +200 },
+                        outcome: `<p>You sell 20% of your position at a profit. Smart risk management.</p>
+                                  <p>Even if price drops, you've secured some gains. The rest continues to benefit from burns.</p>
+                                  <p><em>Taking profits isn't paper-handing, it's strategy.</em></p>`,
+                        lesson: 'Taking profits is valid risk management'
+                    },
+                    {
+                        id: 'c',
+                        icon: '🏗️',
+                        text: 'Build something',
+                        hint: 'Contribute to ecosystem',
+                        effects: { diamond: +10, knowledge: +15, community: +20, portfolio: 0 },
+                        outcome: `<p>Inspired by the burn event, you start building a tracker tool for the community.</p>
+                                  <p>It helps holders see burns in real-time. The community loves it.</p>
+                                  <p><strong>You become a builder, not just a holder.</strong></p>`,
+                        lesson: 'Building adds more value than just holding'
+                    }
+                ]
+            },
+            {
+                chapter: 5,
+                title: 'The Community Test',
+                visual: '🤝',
+                text: `<p>A new holder in Discord is spreading misinformation. They're aggressive and dismissive.</p>
+                       <p>"This is just another pump and dump! The devs will rug!"</p>
+                       <p>They clearly haven't done research. The community looks to you - you've been here a while now.</p>
+                       <p><em>How do you respond?</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '🎓',
+                        text: 'Educate patiently',
+                        hint: 'Be the bigger person',
+                        effects: { diamond: +5, knowledge: +5, community: +25, portfolio: 0 },
+                        outcome: `<p>You calmly explain the mechanics. Point to on-chain data. Share resources.</p>
+                                  <p>The person apologizes and becomes curious. They do their research and stay.</p>
+                                  <p><strong>Patience converts skeptics into allies.</strong></p>`,
+                        lesson: 'Patient education builds stronger communities'
+                    },
+                    {
+                        id: 'b',
+                        icon: '⚔️',
+                        text: 'Attack them back',
+                        hint: 'Defend the project',
+                        effects: { diamond: +5, knowledge: -5, community: -15, portfolio: 0 },
+                        outcome: `<p>You fire back aggressively. The argument escalates. The person leaves angry.</p>
+                                  <p>Other community members are uncomfortable. The vibe is ruined.</p>
+                                  <p><em>Toxicity drives people away, even if you're "right".</em></p>`,
+                        lesson: 'Toxicity hurts communities more than FUD'
+                    },
+                    {
+                        id: 'c',
+                        icon: '🔇',
+                        text: 'Ignore and let mods handle',
+                        hint: 'Not your problem',
+                        effects: { diamond: 0, knowledge: 0, community: +5, portfolio: 0 },
+                        outcome: `<p>You let the moderators handle it. They respond professionally.</p>
+                                  <p>The situation is resolved, but a teaching moment was missed.</p>
+                                  <p><em>Sometimes stepping back is okay, but active participation builds stronger bonds.</em></p>`,
+                        lesson: 'Community health is everyone\'s responsibility'
+                    }
+                ]
+            },
+            {
+                chapter: 6,
+                title: 'The Creator Dilemma',
+                visual: '🏛️',
+                text: `<p>You discover the concept of <strong>CCM - Creator Capital Market</strong>.</p>
+                       <p>The idea: support creators who build real value, not pump-and-dumpers who extract it.</p>
+                       <p>A new project launches. The founder promises 100x. No product, just hype.</p>
+                       <p>Meanwhile, another creator quietly builds useful tools for the ecosystem.</p>
+                       <p><em>Where do you put your support?</em></p>`,
+                choices: [
+                    {
+                        id: 'a',
+                        icon: '🛠️',
+                        text: 'Support the builder',
+                        hint: 'Value over hype',
+                        effects: { diamond: +15, knowledge: +15, community: +15, portfolio: +150 },
+                        outcome: `<p>You support the builder. Their tools gain adoption. Real utility creates real value.</p>
+                                  <p>The hype project rugs within a month. Your judgment was correct.</p>
+                                  <p><strong>CCM mindset: reward creation, not extraction.</strong></p>`,
+                        lesson: 'Support builders who create lasting value'
+                    },
+                    {
+                        id: 'b',
+                        icon: '🎰',
+                        text: 'Chase the hype',
+                        hint: 'High risk, high reward?',
+                        effects: { diamond: -15, knowledge: +5, community: -10, portfolio: -300 },
+                        outcome: `<p>You ape into the hype project. It pumps 3x... then rugs completely.</p>
+                                  <p>Your portfolio takes a hit. Another lesson learned.</p>
+                                  <p><em>Hype without substance is a house of cards.</em></p>`,
+                        lesson: 'Hype without product usually ends badly'
+                    },
+                    {
+                        id: 'c',
+                        icon: '⚖️',
+                        text: 'Diversify both',
+                        hint: 'Hedge your bets',
+                        effects: { diamond: +5, knowledge: +10, community: +5, portfolio: -50 },
+                        outcome: `<p>You split your investment. The hype project rugs, but your builder bet pays off.</p>
+                                  <p>Net result: small loss, but balanced approach.</p>
+                                  <p><em>Diversification reduces risk but also reduces learning from conviction.</em></p>`,
+                        lesson: 'Diversification reduces risk but dilutes conviction'
+                    }
+                ]
+            }
+        ];
+
+        // Chapter 7: Final Test Scenarios
+        const FINAL_TEST_SCENARIOS = [
+            // Scam detection
+            { icon: '📩', text: '"Hey! Admin here. Send 0.1 SOL to verify your wallet for airdrop!"', correct: false, category: 'scam' },
+            { icon: '🎁', text: '"Free 10,000 $ASDF! Just connect wallet to this site!"', correct: false, category: 'scam' },
+            { icon: '🔗', text: '"Click here to claim your rewards before they expire!"', correct: false, category: 'scam' },
+            { icon: '👤', text: 'DM from "official support" asking for your seed phrase', correct: false, category: 'scam' },
+            { icon: '💰', text: '"Guaranteed 100x! Dev is doxxed!" (no product, just hype)', correct: false, category: 'scam' },
+
+            // Good practices
+            { icon: '📚', text: 'Reading the whitepaper before investing', correct: true, category: 'dyor' },
+            { icon: '🔍', text: 'Verifying burns on Solscan before believing FUD', correct: true, category: 'dyor' },
+            { icon: '💬', text: 'Asking questions in official Discord', correct: true, category: 'community' },
+            { icon: '🎓', text: 'Educating new holders patiently', correct: true, category: 'community' },
+            { icon: '🛠️', text: 'Building tools for the ecosystem', correct: true, category: 'building' },
+
+            // Market behavior
+            { icon: '📉', text: 'Price dropped 40%: panic sell everything', correct: false, category: 'market' },
+            { icon: '💎', text: 'Price dropped but burns still happening: HODL', correct: true, category: 'market' },
+            { icon: '📈', text: 'Taking some profits after a pump', correct: true, category: 'market' },
+            { icon: '🚀', text: 'FOMO buying at all-time high without research', correct: false, category: 'market' },
+            { icon: '🔥', text: 'Understanding: sells also contribute to burns', correct: true, category: 'knowledge' },
+
+            // CCM values
+            { icon: '🏗️', text: 'Supporting a creator who builds useful tools', correct: true, category: 'ccm' },
+            { icon: '🎰', text: 'Chasing hype project with no product', correct: false, category: 'ccm' },
+            { icon: '🤝', text: 'Sharing knowledge with the community', correct: true, category: 'community' },
+            { icon: '⚔️', text: 'Attacking FUDders aggressively', correct: false, category: 'community' },
+            { icon: '🧐', text: 'Verifying claims with on-chain data', correct: true, category: 'dyor' },
+
+            // More scenarios
+            { icon: '🔄', text: 'Creator fees → Buyback → Burn = deflation', correct: true, category: 'knowledge' },
+            { icon: '🐋', text: 'Blaming whales for every price drop', correct: false, category: 'community' },
+            { icon: '📊', text: 'Checking treasury transparency regularly', correct: true, category: 'dyor' },
+            { icon: '😱', text: 'Believing anonymous FUD without verification', correct: false, category: 'dyor' },
+            { icon: '🏛️', text: 'CCM: Reward creation, not extraction', correct: true, category: 'ccm' }
+        ];
+
+        // Final Test Game State
+        let finalTestState = {
+            active: false,
+            timer: 30,
+            timerInterval: null,
+            score: 0,
+            correct: 0,
+            wrong: 0,
+            streak: 0,
+            bestStreak: 0,
+            currentScenario: null,
+            usedScenarios: []
+        };
+
+        // Archetypes based on final stats
+        const JOURNEY_ARCHETYPES = [
+            {
+                id: 'diamond_legend',
+                badge: '💎',
+                name: 'Diamond Hand Legend',
+                desc: 'Unshakeable conviction. You held through chaos and emerged stronger. The market bends to your will.',
+                condition: (stats) => stats.diamond >= 80
+            },
+            {
+                id: 'sage',
+                badge: '🧙',
+                name: 'Ecosystem Sage',
+                desc: 'Knowledge is your weapon. You understand the mechanics, verify the data, and make informed decisions.',
+                condition: (stats) => stats.knowledge >= 80
+            },
+            {
+                id: 'community_pillar',
+                badge: '🏛️',
+                name: 'Community Pillar',
+                desc: 'You build bridges, not walls. Your reputation precedes you. Others look to you for guidance.',
+                condition: (stats) => stats.community >= 80
+            },
+            {
+                id: 'whale',
+                badge: '🐋',
+                name: 'Portfolio Whale',
+                desc: 'Your portfolio speaks for itself. Smart decisions compounded over time.',
+                condition: (stats) => stats.portfolio >= 1500
+            },
+            {
+                id: 'survivor',
+                badge: '🔥',
+                name: 'Burn Survivor',
+                desc: 'You made it through. Not perfect, but still standing. This is fine.',
+                condition: (stats) => true // Default
+            }
+        ];
+
+        // Final Test Game Functions
+        function startFinalTest() {
+            const state = getJourneyState();
+            state.chapter = 7;
+            saveJourneyState(state);
+
+            // Reset test state
+            finalTestState = {
+                active: true,
+                timer: 30,
+                timerInterval: null,
+                score: 0,
+                correct: 0,
+                wrong: 0,
+                streak: 0,
+                bestStreak: 0,
+                currentScenario: null,
+                usedScenarios: []
+            };
+
+            // Hide story, show final test
+            document.getElementById('journey-story').style.display = 'none';
+            document.getElementById('journey-final-test').style.display = 'block';
+            document.getElementById('final-test-results').style.display = 'none';
+            document.querySelector('.final-test-arena').style.display = 'block';
+
+            // Update chapter dots
+            updateJourneyStats(state);
+
+            // Setup button listeners
+            document.getElementById('test-btn-accept').onclick = () => handleTestAnswer(true);
+            document.getElementById('test-btn-reject').onclick = () => handleTestAnswer(false);
+            document.getElementById('final-test-continue').onclick = () => endJourney();
+
+            // Keyboard support
+            document.addEventListener('keydown', finalTestKeyHandler);
+
+            // Start the game
+            updateTestUI();
+            loadNextScenario();
+            startTestTimer();
+        }
+
+        function finalTestKeyHandler(e) {
+            if (!finalTestState.active) return;
+
+            // Left arrow or A = Reject, Right arrow or D = Accept
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                e.preventDefault();
+                handleTestAnswer(false);
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                handleTestAnswer(true);
+            }
+        }
+
+        function startTestTimer() {
+            const timerBar = document.getElementById('test-timer-bar');
+            const timerText = document.getElementById('test-timer-text');
+
+            finalTestState.timerInterval = setInterval(() => {
+                finalTestState.timer -= 0.1;
+
+                if (finalTestState.timer <= 0) {
+                    finalTestState.timer = 0;
+                    endFinalTest();
+                    return;
+                }
+
+                // Update timer UI
+                const percent = (finalTestState.timer / 30) * 100;
+                timerBar.style.width = percent + '%';
+                timerText.textContent = Math.ceil(finalTestState.timer) + 's';
+
+                // Warning colors
+                timerText.classList.remove('warning', 'danger');
+                if (finalTestState.timer <= 5) {
+                    timerText.classList.add('danger');
+                } else if (finalTestState.timer <= 10) {
+                    timerText.classList.add('warning');
+                }
+            }, 100);
+        }
+
+        function loadNextScenario() {
+            // Get unused scenarios
+            const available = FINAL_TEST_SCENARIOS.filter((_, i) => !finalTestState.usedScenarios.includes(i));
+
+            if (available.length === 0) {
+                // Reset if we've used all
+                finalTestState.usedScenarios = [];
+                loadNextScenario();
+                return;
+            }
+
+            // Pick random scenario
+            const randomIndex = Math.floor(Math.random() * available.length);
+            const originalIndex = FINAL_TEST_SCENARIOS.indexOf(available[randomIndex]);
+            finalTestState.usedScenarios.push(originalIndex);
+            finalTestState.currentScenario = available[randomIndex];
+
+            // Update UI
+            document.getElementById('scenario-icon').textContent = finalTestState.currentScenario.icon;
+            document.getElementById('scenario-text').textContent = finalTestState.currentScenario.text;
+
+            // Reset scenario appearance
+            const scenarioEl = document.getElementById('test-scenario');
+            scenarioEl.classList.remove('correct', 'wrong');
+        }
+
+        function handleTestAnswer(playerSaidAccept) {
+            if (!finalTestState.active || !finalTestState.currentScenario) return;
+
+            const isCorrect = playerSaidAccept === finalTestState.currentScenario.correct;
+            const scenarioEl = document.getElementById('test-scenario');
+            const feedbackEl = document.getElementById('test-feedback');
+
+            if (isCorrect) {
+                // Correct answer
+                finalTestState.correct++;
+                finalTestState.streak++;
+                if (finalTestState.streak > finalTestState.bestStreak) {
+                    finalTestState.bestStreak = finalTestState.streak;
+                }
+
+                // Score: base + streak bonus
+                const points = 10 + (finalTestState.streak * 2);
+                finalTestState.score += points;
+
+                // Bonus time for streaks
+                if (finalTestState.streak >= 3) {
+                    finalTestState.timer = Math.min(30, finalTestState.timer + 1);
+                }
+
+                scenarioEl.classList.add('correct');
+                feedbackEl.textContent = `+${points} points! ${finalTestState.streak >= 3 ? '🔥 +1s!' : ''}`;
+                feedbackEl.className = 'test-feedback correct';
+            } else {
+                // Wrong answer
+                finalTestState.wrong++;
+                finalTestState.streak = 0;
+
+                // Lose time
+                finalTestState.timer = Math.max(0, finalTestState.timer - 2);
+
+                scenarioEl.classList.add('wrong');
+                feedbackEl.textContent = `-2s! ${finalTestState.currentScenario.correct ? 'This was GOOD!' : 'This was BAD!'}`;
+                feedbackEl.className = 'test-feedback wrong';
+            }
+
+            updateTestUI();
+
+            // Load next scenario after brief delay
+            setTimeout(() => {
+                if (finalTestState.active && finalTestState.timer > 0) {
+                    loadNextScenario();
+                    feedbackEl.textContent = '';
+                }
+            }, 600);
+        }
+
+        function updateTestUI() {
+            document.getElementById('test-score').textContent = finalTestState.score;
+            document.getElementById('test-streak').textContent = finalTestState.streak;
+        }
+
+        function endFinalTest() {
+            finalTestState.active = false;
+            clearInterval(finalTestState.timerInterval);
+
+            // Remove keyboard handler
+            document.removeEventListener('keydown', finalTestKeyHandler);
+
+            // Hide arena, show results
+            document.querySelector('.final-test-arena').style.display = 'none';
+            document.getElementById('final-test-results').style.display = 'block';
+
+            // Update results
+            document.getElementById('result-correct').textContent = finalTestState.correct;
+            document.getElementById('result-wrong').textContent = finalTestState.wrong;
+            document.getElementById('result-streak').textContent = finalTestState.bestStreak;
+            document.getElementById('result-score').textContent = finalTestState.score;
+
+            // Determine result icon and title
+            const accuracy = finalTestState.correct / (finalTestState.correct + finalTestState.wrong) || 0;
+            let icon, title;
+
+            if (accuracy >= 0.9 && finalTestState.score >= 150) {
+                icon = '🏆';
+                title = 'LEGENDARY!';
+            } else if (accuracy >= 0.8 && finalTestState.score >= 100) {
+                icon = '⭐';
+                title = 'Excellent!';
+            } else if (accuracy >= 0.6) {
+                icon = '👍';
+                title = 'Well Done!';
+            } else {
+                icon = '📚';
+                title = 'Keep Learning!';
+            }
+
+            document.getElementById('results-icon').textContent = icon;
+            document.getElementById('results-title').textContent = title;
+
+            // Bonus stats for journey
+            const state = getJourneyState();
+            const bonusPoints = Math.floor(finalTestState.score / 10);
+
+            state.stats.diamond += Math.floor(bonusPoints * 0.3);
+            state.stats.knowledge += Math.floor(bonusPoints * 0.4);
+            state.stats.community += Math.floor(bonusPoints * 0.3);
+
+            // Clamp
+            state.stats.diamond = Math.min(100, state.stats.diamond);
+            state.stats.knowledge = Math.min(100, state.stats.knowledge);
+            state.stats.community = Math.min(100, state.stats.community);
+
+            saveJourneyState(state);
+
+            // Show bonus
+            const bonusEl = document.getElementById('results-bonus');
+            bonusEl.innerHTML = `💎 +${Math.floor(bonusPoints * 0.3)} | 🧠 +${Math.floor(bonusPoints * 0.4)} | 🤝 +${Math.floor(bonusPoints * 0.3)}`;
+        }
+
+        function getJourneyState() {
+            try {
+                const saved = localStorage.getItem(JOURNEY_STORAGE_KEY);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+                return JSON.parse(JSON.stringify(JourneyState));
+            } catch {
+                return JSON.parse(JSON.stringify(JourneyState));
+            }
+        }
+
+        function saveJourneyState(state) {
+            try {
+                localStorage.setItem(JOURNEY_STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save journey state');
+            }
+        }
+
+        function initJourney() {
+            const state = getJourneyState();
+
+            // Check for existing journey
+            if (state.chapter > 1 && !state.completed) {
+                document.getElementById('journey-continue').style.display = 'block';
+            }
+
+            // Event listeners
+            document.getElementById('journey-start-btn').addEventListener('click', startNewJourney);
+            document.getElementById('journey-continue-btn')?.addEventListener('click', continueJourney);
+            document.getElementById('journey-restart-btn')?.addEventListener('click', startNewJourney);
+            document.getElementById('outcome-continue-btn')?.addEventListener('click', nextChapter);
+            document.getElementById('journey-replay-btn')?.addEventListener('click', startNewJourney);
+            document.getElementById('journey-share-btn')?.addEventListener('click', shareJourneyResults);
+        }
+
+        function startNewJourney() {
+            const freshState = JSON.parse(JSON.stringify(JourneyState));
+            saveJourneyState(freshState);
+
+            // Clear any running timer
+            if (finalTestState.timerInterval) {
+                clearInterval(finalTestState.timerInterval);
+            }
+
+            document.getElementById('journey-intro').style.display = 'none';
+            document.getElementById('journey-end').style.display = 'none';
+            document.getElementById('journey-game').style.display = 'block';
+            document.getElementById('journey-story').style.display = 'block';
+            document.getElementById('journey-final-test').style.display = 'none';
+
+            updateJourneyStats(freshState);
+            loadChapter(1);
+        }
+
+        function continueJourney() {
+            const state = getJourneyState();
+
+            document.getElementById('journey-intro').style.display = 'none';
+            document.getElementById('journey-end').style.display = 'none';
+            document.getElementById('journey-game').style.display = 'block';
+
+            // Reset visibility - loadChapter will set correct visibility
+            document.getElementById('journey-story').style.display = 'block';
+            document.getElementById('journey-final-test').style.display = 'none';
+
+            updateJourneyStats(state);
+            loadChapter(state.chapter);
+        }
+
+        function updateJourneyStats(state) {
+            const stats = state.stats;
+
+            // Update stat bars
+            document.getElementById('stat-diamond').style.width = Math.min(100, Math.max(0, stats.diamond)) + '%';
+            document.getElementById('stat-knowledge').style.width = Math.min(100, Math.max(0, stats.knowledge)) + '%';
+            document.getElementById('stat-community').style.width = Math.min(100, Math.max(0, stats.community)) + '%';
+
+            document.getElementById('stat-diamond-val').textContent = Math.max(0, stats.diamond);
+            document.getElementById('stat-knowledge-val').textContent = Math.max(0, stats.knowledge);
+            document.getElementById('stat-community-val').textContent = Math.max(0, stats.community);
+
+            document.getElementById('stat-portfolio').textContent = stats.portfolio.toLocaleString() + ' ASDF';
+
+            // Update chapter dots
+            const dots = document.querySelectorAll('.chapter-dot');
+            const connectors = document.querySelectorAll('.chapter-connector');
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i + 1 < state.chapter) {
+                    dot.classList.add('completed');
+                } else if (i + 1 === state.chapter) {
+                    dot.classList.add('active');
+                }
+            });
+
+            connectors.forEach((conn, i) => {
+                conn.classList.toggle('active', i + 1 < state.chapter);
+            });
+        }
+
+        function loadChapter(chapterNum) {
+            // Chapter 7 is the Final Test (gamified)
+            if (chapterNum === 7) {
+                startFinalTest();
+                return;
+            }
+
+            if (chapterNum > JOURNEY_CHAPTERS.length) {
+                endJourney();
+                return;
+            }
+
+            const chapter = JOURNEY_CHAPTERS[chapterNum - 1];
+            const state = getJourneyState();
+            state.chapter = chapterNum;
+            saveJourneyState(state);
+
+            document.getElementById('story-chapter').textContent = 'Chapter ' + chapterNum;
+            document.getElementById('story-title').textContent = chapter.title;
+            document.getElementById('scene-visual').textContent = chapter.visual;
+            document.getElementById('scene-text').innerHTML = chapter.text;
+
+            // Hide outcome, show choices
+            document.getElementById('story-outcome').style.display = 'none';
+            const choicesContainer = document.getElementById('story-choices');
+            choicesContainer.style.display = 'flex';
+            choicesContainer.innerHTML = '';
+
+            chapter.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'story-choice';
+                btn.innerHTML = `
+                    <span class="choice-icon">${choice.icon}</span>
+                    <div class="choice-content">
+                        <div class="choice-text">${choice.text}</div>
+                        <div class="choice-hint">${choice.hint}</div>
+                    </div>
+                    <span class="choice-arrow">→</span>
+                `;
+                btn.addEventListener('click', () => makeChoice(chapterNum, choice));
+                choicesContainer.appendChild(btn);
+            });
+
+            updateJourneyStats(state);
+        }
+
+        function makeChoice(chapterNum, choice) {
+            const state = getJourneyState();
+
+            // Apply effects
+            state.stats.diamond += choice.effects.diamond;
+            state.stats.knowledge += choice.effects.knowledge;
+            state.stats.community += choice.effects.community;
+            state.stats.portfolio += choice.effects.portfolio;
+
+            // Clamp stats to 0-100
+            state.stats.diamond = Math.max(0, Math.min(100, state.stats.diamond));
+            state.stats.knowledge = Math.max(0, Math.min(100, state.stats.knowledge));
+            state.stats.community = Math.max(0, Math.min(100, state.stats.community));
+
+            // Record choice and lesson
+            state.choicesMade.push({ chapter: chapterNum, choiceId: choice.id });
+            if (choice.lesson && !state.lessonsLearned.includes(choice.lesson)) {
+                state.lessonsLearned.push(choice.lesson);
+            }
+
+            saveJourneyState(state);
+            updateJourneyStats(state);
+
+            // Show outcome
+            document.getElementById('story-choices').style.display = 'none';
+            const outcomeEl = document.getElementById('story-outcome');
+            outcomeEl.style.display = 'block';
+
+            document.getElementById('outcome-content').innerHTML = choice.outcome;
+
+            // Show stat changes
+            const statsHtml = [];
+            if (choice.effects.diamond !== 0) {
+                statsHtml.push(`<span class="outcome-stat ${choice.effects.diamond > 0 ? 'positive' : 'negative'}">💎 ${choice.effects.diamond > 0 ? '+' : ''}${choice.effects.diamond}</span>`);
+            }
+            if (choice.effects.knowledge !== 0) {
+                statsHtml.push(`<span class="outcome-stat ${choice.effects.knowledge > 0 ? 'positive' : 'negative'}">🧠 ${choice.effects.knowledge > 0 ? '+' : ''}${choice.effects.knowledge}</span>`);
+            }
+            if (choice.effects.community !== 0) {
+                statsHtml.push(`<span class="outcome-stat ${choice.effects.community > 0 ? 'positive' : 'negative'}">🤝 ${choice.effects.community > 0 ? '+' : ''}${choice.effects.community}</span>`);
+            }
+            if (choice.effects.portfolio !== 0) {
+                statsHtml.push(`<span class="outcome-stat ${choice.effects.portfolio > 0 ? 'positive' : 'negative'}">💰 ${choice.effects.portfolio > 0 ? '+' : ''}${choice.effects.portfolio}</span>`);
+            }
+            document.getElementById('outcome-stats').innerHTML = statsHtml.join('');
+        }
+
+        function nextChapter() {
+            const state = getJourneyState();
+            loadChapter(state.chapter + 1);
+        }
+
+        function endJourney() {
+            const state = getJourneyState();
+            state.completed = true;
+            saveJourneyState(state);
+
+            document.getElementById('journey-game').style.display = 'none';
+            document.getElementById('journey-end').style.display = 'block';
+
+            // Determine archetype
+            const archetype = JOURNEY_ARCHETYPES.find(a => a.condition(state.stats)) || JOURNEY_ARCHETYPES[JOURNEY_ARCHETYPES.length - 1];
+
+            document.getElementById('archetype-badge').textContent = archetype.badge;
+            document.getElementById('archetype-name').textContent = archetype.name;
+            document.getElementById('archetype-desc').textContent = archetype.desc;
+
+            // Final stats
+            document.getElementById('final-diamond').textContent = state.stats.diamond;
+            document.getElementById('final-knowledge').textContent = state.stats.knowledge;
+            document.getElementById('final-community').textContent = state.stats.community;
+            document.getElementById('final-portfolio').textContent = state.stats.portfolio.toLocaleString();
+
+            // Lessons learned
+            const lessonsList = document.getElementById('lessons-list');
+            lessonsList.innerHTML = '';
+            state.lessonsLearned.forEach(lesson => {
+                const li = document.createElement('li');
+                li.textContent = lesson;
+                lessonsList.appendChild(li);
+            });
+
+            // XP reward based on performance
+            const totalScore = state.stats.diamond + state.stats.knowledge + state.stats.community;
+            const xpReward = Math.floor(50 + totalScore / 3);
+            document.getElementById('journey-xp-reward').textContent = '+' + xpReward + ' XP';
+            addXP(xpReward);
+        }
+
+        function shareJourneyResults() {
+            const state = getJourneyState();
+            const archetype = JOURNEY_ARCHETYPES.find(a => a.condition(state.stats)) || JOURNEY_ARCHETYPES[JOURNEY_ARCHETYPES.length - 1];
+
+            const text = `I completed Journey du Holder! ${archetype.badge}
+
+My archetype: ${archetype.name}
+💎 Diamond Hands: ${state.stats.diamond}
+🧠 Knowledge: ${state.stats.knowledge}
+🤝 Community: ${state.stats.community}
+
+Play at alonisthe.dev/learn #ASDF #ThisIsFine`;
+
+            const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        // ============================================
         // DAILY STREAK
         // ============================================
 
@@ -4572,6 +5424,7 @@ CMD ["asdf_grinder"]</div>
             updateStreak();
             initClicker();
             initDefenseField();
+            initJourney();
 
             // Go to current level
             goToLevel(state.currentLevel);
@@ -4658,3 +5511,9 @@ CMD ["asdf_grinder"]</div>
         window.shareCompletion = shareCompletion;
         window.filterGlossary = filterGlossary;
         window.toggleFaq = toggleFaq;
+
+        // Journey du Holder exports
+        window.initJourney = initJourney;
+        window.startNewJourney = startNewJourney;
+        window.continueJourney = continueJourney;
+        window.shareJourneyResults = shareJourneyResults;

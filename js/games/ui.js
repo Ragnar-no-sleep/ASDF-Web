@@ -267,6 +267,7 @@ function generateGameModals() {
                         </div>
                     </div>
                     <div class="game-mode-toggle">
+                        <button class="mode-btn" data-action="show-leaderboard" data-game="${game.id}" title="View Leaderboard">🏆</button>
                         <button class="mode-btn" data-action="restart-game" data-game="${game.id}" title="Restart Game">Restart</button>
                         <button class="mode-btn active" id="practice-btn-${game.id}">Practice</button>
                         <button class="mode-btn" id="competitive-btn-${game.id}" data-action="toggle-competitive" data-game="${game.id}">
@@ -274,9 +275,9 @@ function generateGameModals() {
                         </button>
                     </div>
                 </div>
-                <!-- Mini Leaderboard -->
-                <div class="game-leaderboard-mini">
-                    <h4 class="mini-leaderboard-title">Top Scores</h4>
+                <!-- Mini Leaderboard (hidden by default) -->
+                <div class="game-leaderboard-mini" id="leaderboard-panel-${game.id}" style="display:none;">
+                    <h4 class="mini-leaderboard-title">Top Scores <button style="float:right;background:none;border:none;color:#888;cursor:pointer;font-size:16px;" data-action="hide-leaderboard" data-game="${game.id}">&times;</button></h4>
                     <div class="mini-leaderboard-list" id="leaderboard-mini-${game.id}">
                         <div class="leaderboard-loading">Loading...</div>
                     </div>
@@ -284,6 +285,21 @@ function generateGameModals() {
             </div>
         </div>
     `).join('');
+}
+
+function showLeaderboard(gameId) {
+    const panel = document.getElementById(`leaderboard-panel-${gameId}`);
+    if (panel) {
+        panel.style.display = 'block';
+        loadMiniLeaderboard(gameId);
+    }
+}
+
+function hideLeaderboard(gameId) {
+    const panel = document.getElementById(`leaderboard-panel-${gameId}`);
+    if (panel) {
+        panel.style.display = 'none';
+    }
 }
 
 /**

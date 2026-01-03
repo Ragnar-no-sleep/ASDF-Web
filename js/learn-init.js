@@ -396,6 +396,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    console.log('Event listeners initialized for CSP compliance');
 });

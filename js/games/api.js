@@ -129,7 +129,10 @@ const ApiClient = {
 
             return data;
         } catch (error) {
-            console.error(`API Error [${endpoint}]:`, error);
+            // Only log errors in dev mode to avoid console spam
+            if (CONFIG.DEV_MODE) {
+                console.warn(`API Error [${endpoint}]:`, error.message);
+            }
             throw error;
         }
     },

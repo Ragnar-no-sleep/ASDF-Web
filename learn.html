@@ -733,183 +733,259 @@
 
 
         <!-- ============================================
-             PLAY VIEW (Mini-Games)
+             PLAY VIEW - Journey du Holder (RPG Educatif)
              ============================================ -->
         <div class="view-section" id="view-play">
-            <div class="section-header">
-                <h1 class="section-title">🎮 Mini-Games</h1>
-                <p class="section-subtitle">Learn ASDF mechanics through fun, addictive games!</p>
-            </div>
-
-            <div class="play-grid">
-                <!-- Token Catcher Card -->
-                <div class="game-card" data-game="catcher">
-                    <div class="game-card-icon">🪣</div>
-                    <div class="game-card-content">
-                        <h3>Token Catcher</h3>
-                        <p>Catch falling ASDF tokens with your basket. Avoid scam tokens!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+50 XP max</span>
-                            <span class="game-time">30 sec</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: <span id="play-hs-catcher">0</span> pts
-                        </div>
-                    </div>
-                    <div class="game-card-play">PLAY →</div>
+            <!-- Journey Intro Screen -->
+            <div class="journey-intro" id="journey-intro">
+                <div class="journey-header">
+                    <div class="journey-logo">🐕🔥</div>
+                    <h1 class="journey-title">Journey du Holder</h1>
+                    <p class="journey-tagline">Navigate the chaos. Learn the truth. THIS IS FINE.</p>
                 </div>
 
-                <!-- Burn Sequence Card -->
-                <div class="game-card" data-game="sequence">
-                    <div class="game-card-icon">🔄</div>
-                    <div class="game-card-content">
-                        <h3>Burn Sequence</h3>
-                        <p>Memorize the burn cycle: Collect → Swap → Burn → Verify</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+75 XP max</span>
-                            <span class="game-time">Memory</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: Level <span id="play-hs-sequence">0</span>
-                        </div>
-                    </div>
-                    <div class="game-card-play">PLAY →</div>
+                <div class="journey-description">
+                    <p>You're about to enter the chaotic world of crypto. Every choice matters. Every decision shapes your destiny.</p>
+                    <p style="color: var(--accent-bright);">Will you become a diamond-handed legend or fall victim to the market's chaos?</p>
                 </div>
 
-                <!-- Speed Match Card -->
-                <div class="game-card" data-game="match">
-                    <div class="game-card-icon">🃏</div>
-                    <div class="game-card-content">
-                        <h3>Speed Match</h3>
-                        <p>Match ASDF terms with their meanings as fast as possible!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+60 XP max</span>
-                            <span class="game-time">Timed</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: <span id="play-hs-match">--</span>
-                        </div>
+                <div class="journey-stats-preview">
+                    <div class="stat-preview">
+                        <span class="stat-icon">💎</span>
+                        <span class="stat-name">Diamond Hands</span>
+                        <span class="stat-desc">Your ability to HODL through volatility</span>
                     </div>
-                    <div class="game-card-play">PLAY →</div>
+                    <div class="stat-preview">
+                        <span class="stat-icon">🧠</span>
+                        <span class="stat-name">Knowledge</span>
+                        <span class="stat-desc">Understanding of the ecosystem</span>
+                    </div>
+                    <div class="stat-preview">
+                        <span class="stat-icon">🤝</span>
+                        <span class="stat-name">Community</span>
+                        <span class="stat-desc">Your standing with fellow holders</span>
+                    </div>
+                    <div class="stat-preview">
+                        <span class="stat-icon">💰</span>
+                        <span class="stat-name">Portfolio</span>
+                        <span class="stat-desc">The value of your holdings</span>
+                    </div>
                 </div>
 
-                <!-- Burn Clicker Card -->
-                <div class="game-card" data-game="clicker">
-                    <div class="game-card-icon">🔥</div>
-                    <div class="game-card-content">
-                        <h3>Burn Clicker</h3>
-                        <p>Idle clicker game! Click to burn, buy upgrades, go infinite!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">Infinite XP</span>
-                            <span class="game-time">Idle</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Total: <span id="play-hs-clicker">0</span> burns
-                        </div>
-                    </div>
-                    <div class="game-card-play">PLAY →</div>
-                </div>
+                <button class="journey-start-btn" id="journey-start-btn">
+                    <span>Begin Your Journey</span>
+                    <span class="btn-arrow">→</span>
+                </button>
 
-                <!-- Burn Fighter Card -->
-                <div class="game-card" data-game="fighter">
-                    <div class="game-card-icon">⚔️</div>
-                    <div class="game-card-content">
-                        <h3>Burn Fighter</h3>
-                        <p>Combat 2D! Fight scam tokens and protect ASDF!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+80 XP max</span>
-                            <span class="game-time">Combat</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: Wave <span id="play-hs-fighter">0</span>
-                        </div>
-                    </div>
-                    <div class="game-card-play">FIGHT →</div>
-                </div>
-
-                <!-- Token Racer Card -->
-                <div class="game-card" data-game="racer">
-                    <div class="game-card-icon">🏎️</div>
-                    <div class="game-card-content">
-                        <h3>Token Racer</h3>
-                        <p>Race through the blockchain! Collect tokens, avoid rugs!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+70 XP max</span>
-                            <span class="game-time">Racing</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: <span id="play-hs-racer">0</span> m
-                        </div>
-                    </div>
-                    <div class="game-card-play">RACE →</div>
-                </div>
-
-                <!-- Scam Blaster Card -->
-                <div class="game-card" data-game="blaster">
-                    <div class="game-card-icon">🎯</div>
-                    <div class="game-card-content">
-                        <h3>Scam Blaster</h3>
-                        <p>Shoot down scam tokens before they escape!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+65 XP max</span>
-                            <span class="game-time">Shooter</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: Wave <span id="play-hs-blaster">0</span>
-                        </div>
-                    </div>
-                    <div class="game-card-play">BLAST →</div>
-                </div>
-
-                <!-- Treasury Defense Card -->
-                <div class="game-card" data-game="defense">
-                    <div class="game-card-icon">🏰</div>
-                    <div class="game-card-content">
-                        <h3>Treasury Defense</h3>
-                        <p>Tower defense! Build towers to protect the treasury!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+90 XP max</span>
-                            <span class="game-time">Strategy</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: Wave <span id="play-hs-defense">0</span>
-                        </div>
-                    </div>
-                    <div class="game-card-play">DEFEND →</div>
-                </div>
-
-                <!-- Token Stacker Card -->
-                <div class="game-card" data-game="stacker">
-                    <div class="game-card-icon">🏗️</div>
-                    <div class="game-card-content">
-                        <h3>Token Stacker</h3>
-                        <p>Stack tokens to build the tallest tower!</p>
-                        <div class="game-card-meta">
-                            <span class="game-xp">+55 XP max</span>
-                            <span class="game-time">Building</span>
-                        </div>
-                        <div class="game-card-highscore">
-                            Best: <span id="play-hs-stacker">0</span> floors
-                        </div>
-                    </div>
-                    <div class="game-card-play">BUILD →</div>
+                <div class="journey-continue" id="journey-continue" style="display: none;">
+                    <p>You have a journey in progress</p>
+                    <button class="journey-continue-btn" id="journey-continue-btn">Continue Journey</button>
+                    <button class="journey-restart-btn" id="journey-restart-btn">Start Over</button>
                 </div>
             </div>
 
-            <!-- How Games Work -->
-            <div class="content-card" style="margin-top: 32px;">
-                <h3>🏆 How It Works</h3>
-                <p>Play mini-games to earn XP and unlock exclusive badges!</p>
-                <div class="highlight-box">
-                    <strong>🪣 Token Catcher:</strong> Score 500+ to unlock the "Catcher" badge<br>
-                    <strong>🔄 Burn Sequence:</strong> Reach Level 10 to unlock the "Memory" badge<br>
-                    <strong>🃏 Speed Match:</strong> Beat your best time to climb the leaderboard<br>
-                    <strong>🔥 Burn Clicker:</strong> Earn +10 XP every 100 burns (up to 100 XP)<br>
-                    <strong>🐕 Burn Fighter:</strong> Defeat waves of enemies to earn XP<br>
-                    <strong>🏎️ Token Racer:</strong> Race and collect coins, avoid obstacles<br>
-                    <strong>🎯 Scam Blaster:</strong> Destroy scam tokens, avoid skulls!<br>
-                    <strong>🏰 Treasury Defense:</strong> Defend the treasury from invaders<br>
-                    <strong>🏗️ Token Stacker:</strong> Stack blocks perfectly to build higher
+            <!-- Journey Game Screen -->
+            <div class="journey-game" id="journey-game" style="display: none;">
+                <!-- Stats Bar -->
+                <div class="journey-stats-bar">
+                    <div class="journey-stat">
+                        <span class="stat-icon">💎</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar" id="stat-diamond" style="width: 50%"></div>
+                        </div>
+                        <span class="stat-value" id="stat-diamond-val">50</span>
+                    </div>
+                    <div class="journey-stat">
+                        <span class="stat-icon">🧠</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar knowledge" id="stat-knowledge" style="width: 20%"></div>
+                        </div>
+                        <span class="stat-value" id="stat-knowledge-val">20</span>
+                    </div>
+                    <div class="journey-stat">
+                        <span class="stat-icon">🤝</span>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar community" id="stat-community" style="width: 30%"></div>
+                        </div>
+                        <span class="stat-value" id="stat-community-val">30</span>
+                    </div>
+                    <div class="journey-stat portfolio">
+                        <span class="stat-icon">💰</span>
+                        <span class="portfolio-value" id="stat-portfolio">1,000 ASDF</span>
+                    </div>
+                </div>
+
+                <!-- Chapter Progress -->
+                <div class="journey-progress">
+                    <div class="chapter-dots">
+                        <div class="chapter-dot active" data-chapter="1">1</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot" data-chapter="2">2</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot" data-chapter="3">3</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot" data-chapter="4">4</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot" data-chapter="5">5</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot" data-chapter="6">6</div>
+                        <div class="chapter-connector"></div>
+                        <div class="chapter-dot final" data-chapter="7">★</div>
+                    </div>
+                </div>
+
+                <!-- Story Content -->
+                <div class="journey-story" id="journey-story">
+                    <div class="story-chapter" id="story-chapter">Chapter 1</div>
+                    <h2 class="story-title" id="story-title">The First Buy</h2>
+
+                    <div class="story-scene" id="story-scene">
+                        <div class="scene-visual" id="scene-visual">🐕</div>
+                        <div class="scene-text" id="scene-text">
+                            <p>Loading story...</p>
+                        </div>
+                    </div>
+
+                    <div class="story-choices" id="story-choices">
+                        <!-- Choices populated by JS -->
+                    </div>
+
+                    <div class="story-outcome" id="story-outcome" style="display: none;">
+                        <div class="outcome-content" id="outcome-content"></div>
+                        <div class="outcome-stats" id="outcome-stats"></div>
+                        <button class="outcome-continue-btn" id="outcome-continue-btn">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Chapter 7: The Final Test (Gamified) -->
+                <div class="journey-final-test" id="journey-final-test" style="display: none;">
+                    <div class="final-test-header">
+                        <div class="story-chapter">Chapter 7</div>
+                        <h2 class="story-title">The Final Test</h2>
+                        <p class="final-test-intro">Quick decisions. No time to think. Trust your instincts.</p>
+                        <p class="final-test-controls">⌨️ Use ← → arrows or A/D keys</p>
+                    </div>
+
+                    <div class="final-test-arena">
+                        <div class="test-timer">
+                            <div class="timer-bar" id="test-timer-bar"></div>
+                            <span class="timer-text" id="test-timer-text">30s</span>
+                        </div>
+
+                        <div class="test-score-display">
+                            <span class="test-score-label">Score</span>
+                            <span class="test-score-value" id="test-score">0</span>
+                        </div>
+
+                        <div class="test-scenario" id="test-scenario">
+                            <div class="scenario-icon" id="scenario-icon">🎯</div>
+                            <div class="scenario-text" id="scenario-text">Loading...</div>
+                        </div>
+
+                        <div class="test-buttons">
+                            <button class="test-btn reject" id="test-btn-reject">
+                                <span class="btn-icon">❌</span>
+                                <span class="btn-label">REJECT</span>
+                            </button>
+                            <button class="test-btn accept" id="test-btn-accept">
+                                <span class="btn-icon">✅</span>
+                                <span class="btn-label">ACCEPT</span>
+                            </button>
+                        </div>
+
+                        <div class="test-feedback" id="test-feedback"></div>
+
+                        <div class="test-streak">
+                            <span>🔥 Streak: </span>
+                            <span id="test-streak">0</span>
+                        </div>
+
+                        <div class="test-controls-legend">
+                            <span class="control-key">←</span> or <span class="control-key">A</span> = Reject
+                            <span class="control-separator">|</span>
+                            <span class="control-key">→</span> or <span class="control-key">D</span> = Accept
+                        </div>
+                    </div>
+
+                    <div class="final-test-results" id="final-test-results" style="display: none;">
+                        <div class="results-icon" id="results-icon">🏆</div>
+                        <h3 class="results-title" id="results-title">Test Complete!</h3>
+                        <div class="results-stats">
+                            <div class="result-stat">
+                                <span class="result-label">Correct</span>
+                                <span class="result-value" id="result-correct">0</span>
+                            </div>
+                            <div class="result-stat">
+                                <span class="result-label">Wrong</span>
+                                <span class="result-value wrong" id="result-wrong">0</span>
+                            </div>
+                            <div class="result-stat">
+                                <span class="result-label">Best Streak</span>
+                                <span class="result-value streak" id="result-streak">0</span>
+                            </div>
+                            <div class="result-stat">
+                                <span class="result-label">Final Score</span>
+                                <span class="result-value score" id="result-score">0</span>
+                            </div>
+                        </div>
+                        <div class="results-bonus" id="results-bonus"></div>
+                        <button class="outcome-continue-btn" id="final-test-continue">Complete Journey →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journey End Screen -->
+            <div class="journey-end" id="journey-end" style="display: none;">
+                <div class="end-header">
+                    <div class="end-icon" id="end-icon">🏆</div>
+                    <h1 class="end-title" id="end-title">Journey Complete!</h1>
+                    <p class="end-subtitle" id="end-subtitle">Your path through the chaos is recorded</p>
+                </div>
+
+                <div class="end-archetype">
+                    <div class="archetype-badge" id="archetype-badge">💎</div>
+                    <h2 class="archetype-name" id="archetype-name">Diamond Hand Legend</h2>
+                    <p class="archetype-desc" id="archetype-desc">Description here...</p>
+                </div>
+
+                <div class="end-final-stats">
+                    <div class="final-stat">
+                        <span class="stat-icon">💎</span>
+                        <span class="stat-label">Diamond Hands</span>
+                        <span class="stat-final-value" id="final-diamond">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="stat-icon">🧠</span>
+                        <span class="stat-label">Knowledge</span>
+                        <span class="stat-final-value" id="final-knowledge">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="stat-icon">🤝</span>
+                        <span class="stat-label">Community</span>
+                        <span class="stat-final-value" id="final-community">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span class="stat-icon">💰</span>
+                        <span class="stat-label">Final Portfolio</span>
+                        <span class="stat-final-value" id="final-portfolio">0</span>
+                    </div>
+                </div>
+
+                <div class="end-lessons">
+                    <h3>Lessons Learned</h3>
+                    <ul class="lessons-list" id="lessons-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <div class="end-actions">
+                    <button class="journey-replay-btn" id="journey-replay-btn">Play Again</button>
+                    <button class="journey-share-btn" id="journey-share-btn">Share Results</button>
+                </div>
+
+                <div class="end-xp-reward">
+                    <span>🎮 Journey Complete!</span>
+                    <span class="xp-amount" id="journey-xp-reward">+100 XP</span>
                 </div>
             </div>
         </div>

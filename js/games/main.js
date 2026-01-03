@@ -92,12 +92,10 @@ function init() {
                 .then(response => {
                     const connectedWallet = response.publicKey.toString();
                     if (connectedWallet === appState.wallet) {
-                        console.info('Wallet auto-reconnected:', connectedWallet.slice(0, 8) + '...');
                         // SECURITY: Always verify balance on reconnect
                         checkTokenBalance(connectedWallet);
                     } else {
                         // Wallet changed - clear old state and reconnect
-                        console.warn('Wallet mismatch on reconnect, clearing state');
                         appState.wallet = connectedWallet;
                         appState.isHolder = false;
                         appState.balance = 0;
@@ -106,15 +104,8 @@ function init() {
                         checkTokenBalance(connectedWallet);
                     }
                 })
-                .catch((error) => {
-                    // Expected error if user hasn't previously approved auto-connect
-                    if (error.code === 4001) {
-                        console.info('Wallet auto-connect declined by user');
-                    } else if (error.code === -32002) {
-                        console.info('Wallet connection pending user approval');
-                    } else {
-                        console.warn('Wallet auto-reconnect failed:', error.message || error);
-                    }
+                .catch(() => {
+                    // Expected errors: 4001 (declined), -32002 (pending)
                     // Don't clear wallet state - user can still manually reconnect
                 });
         }
@@ -124,7 +115,6 @@ function init() {
     const provider = getPhantomProvider();
     if (provider) {
         provider.on('disconnect', () => {
-            console.info('Wallet disconnected');
             // End any active competitive session
             endCompetitiveSession();
             appState.wallet = null;
@@ -143,7 +133,6 @@ function init() {
         provider.on('accountChanged', (publicKey) => {
             if (publicKey) {
                 const newWallet = publicKey.toString();
-                console.info('Wallet account changed:', newWallet.slice(0, 8) + '...');
                 // End competitive session when switching accounts
                 endCompetitiveSession();
                 appState.wallet = newWallet;
@@ -207,6 +196,12 @@ document.addEventListener('click', (e) => {
             break;
         case 'toggle-competitive':
             if (gameId) toggleCompetitive(gameId);
+            break;
+        case 'show-leaderboard':
+            if (gameId) showLeaderboard(gameId);
+            break;
+        case 'hide-leaderboard':
+            if (gameId) hideLeaderboard(gameId);
             break;
     }
 });

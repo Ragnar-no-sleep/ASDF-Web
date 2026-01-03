@@ -53,9 +53,9 @@ function isValidSolanaAddress(address) {
 
 // Valid game IDs - whitelist for validation
 const VALID_GAME_IDS = new Set([
-    'burnrunner', 'scamblaster', 'hodlhero', 'cryptoheist',
-    'rugpull', 'whalewatch', 'stakestacker', 'dexdash',
-    'burnorhold', 'pumparena'
+    'tokencatcher', 'burnrunner', 'scamblaster', 'cryptoheist',
+    'whalewatch', 'stakestacker', 'dexdash',
+    'burnorhold', 'liquiditymaze', 'pumparena'
 ]);
 
 /**
@@ -107,15 +107,15 @@ const AntiCheat = {
 
     // Score thresholds per game (max possible scores per second)
     scoreThresholds: {
+        'tokencatcher': { maxPerSecond: 20, maxTotal: 5000 },
         'burnrunner': { maxPerSecond: 50, maxTotal: 50000 },
         'scamblaster': { maxPerSecond: 100, maxTotal: 100000 },
-        'hodlhero': { maxPerSecond: 30, maxTotal: 30000 },
         'cryptoheist': { maxPerSecond: 200, maxTotal: 200000 },
-        'rugpull': { maxPerSecond: 500, maxTotal: 50000 },
         'whalewatch': { maxPerSecond: 100, maxTotal: 100000 },
         'stakestacker': { maxPerSecond: 50, maxTotal: 50000 },
         'dexdash': { maxPerSecond: 100, maxTotal: 100000 },
         'burnorhold': { maxPerSecond: 50, maxTotal: 50000 },
+        'liquiditymaze': { maxPerSecond: 500, maxTotal: 100000 },
         'pumparena': { maxPerSecond: 1000, maxTotal: 1000000 }
     },
 

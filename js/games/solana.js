@@ -4,8 +4,36 @@
 
 'use strict';
 
+// Solana Program IDs (defined once to avoid duplication)
+const SOLANA_TOKEN_PROGRAM_ID = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+const SOLANA_ASSOCIATED_TOKEN_PROGRAM_ID = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+
 const SolanaPayment = {
     connection: null,
+
+    // Cached PublicKey instances
+    _tokenProgramId: null,
+    _associatedTokenProgramId: null,
+
+    /**
+     * Get cached Token Program ID
+     */
+    getTokenProgramId() {
+        if (!this._tokenProgramId) {
+            this._tokenProgramId = new solanaWeb3.PublicKey(SOLANA_TOKEN_PROGRAM_ID);
+        }
+        return this._tokenProgramId;
+    },
+
+    /**
+     * Get cached Associated Token Program ID
+     */
+    getAssociatedTokenProgramId() {
+        if (!this._associatedTokenProgramId) {
+            this._associatedTokenProgramId = new solanaWeb3.PublicKey(SOLANA_ASSOCIATED_TOKEN_PROGRAM_ID);
+        }
+        return this._associatedTokenProgramId;
+    },
 
     /**
      * Initialize Solana connection
@@ -174,16 +202,13 @@ const SolanaPayment = {
      * Get Associated Token Address (ATA)
      */
     async getAssociatedTokenAddress(walletAddress, mintAddress) {
-        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-        const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
-
         const [address] = await solanaWeb3.PublicKey.findProgramAddress(
             [
                 walletAddress.toBuffer(),
-                TOKEN_PROGRAM_ID.toBuffer(),
+                this.getTokenProgramId().toBuffer(),
                 mintAddress.toBuffer()
             ],
-            ASSOCIATED_TOKEN_PROGRAM_ID
+            this.getAssociatedTokenProgramId()
         );
         return address;
     },
@@ -192,21 +217,18 @@ const SolanaPayment = {
      * Create Associated Token Account instruction
      */
     createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint) {
-        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-        const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
-
         const keys = [
             { pubkey: payer, isSigner: true, isWritable: true },
             { pubkey: associatedToken, isSigner: false, isWritable: true },
             { pubkey: owner, isSigner: false, isWritable: false },
             { pubkey: mint, isSigner: false, isWritable: false },
             { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: this.getTokenProgramId(), isSigner: false, isWritable: false },
         ];
 
         return new solanaWeb3.TransactionInstruction({
             keys,
-            programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+            programId: this.getAssociatedTokenProgramId(),
             data: Buffer.alloc(0)
         });
     },
@@ -215,8 +237,6 @@ const SolanaPayment = {
      * Create SPL Token transfer instruction
      */
     createTransferInstruction(source, destination, owner, amount) {
-        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-
         const keys = [
             { pubkey: source, isSigner: false, isWritable: true },
             { pubkey: destination, isSigner: false, isWritable: true },
@@ -229,83 +249,8 @@ const SolanaPayment = {
 
         return new solanaWeb3.TransactionInstruction({
             keys,
-            programId: TOKEN_PROGRAM_ID,
+            programId: this.getTokenProgramId(),
             data
         });
-    },
-
-    /**
-     * Get SOL balance
-     */
-    async getSOLBalance(walletAddress) {
-        const connection = this.getConnection();
-        if (!connection) return 0;
-
-        try {
-            const pubkey = new solanaWeb3.PublicKey(walletAddress);
-            const balance = await connection.getBalance(pubkey);
-            return balance / solanaWeb3.LAMPORTS_PER_SOL;
-        } catch (error) {
-            console.error('Failed to get SOL balance:', error);
-            return 0;
-        }
-    },
-
-    /**
-     * Get token balance
-     */
-    async getTokenBalance(walletAddress) {
-        const connection = this.getConnection();
-        if (!connection) return 0;
-
-        if (!CONFIG.ASDF_TOKEN_MINT || CONFIG.ASDF_TOKEN_MINT === 'YOUR_TOKEN_MINT_ADDRESS_HERE') {
-            return 0;
-        }
-
-        try {
-            const pubkey = new solanaWeb3.PublicKey(walletAddress);
-            const mintPubkey = new solanaWeb3.PublicKey(CONFIG.ASDF_TOKEN_MINT);
-            const tokenAccount = await this.getAssociatedTokenAddress(pubkey, mintPubkey);
-
-            const accountInfo = await connection.getTokenAccountBalance(tokenAccount);
-            return parseFloat(accountInfo.value.uiAmount || 0);
-        } catch (error) {
-            console.error('Failed to get token balance:', error);
-            return 0;
-        }
-    },
-
-    /**
-     * Verify a transaction exists and is confirmed
-     */
-    async verifyTransaction(signature, expectedAmount = null, expectedType = 'sol') {
-        const connection = this.getConnection();
-        if (!connection) {
-            return { verified: false, error: 'Connection failed' };
-        }
-
-        try {
-            const tx = await connection.getTransaction(signature, {
-                commitment: 'confirmed',
-                maxSupportedTransactionVersion: 0
-            });
-
-            if (!tx) {
-                return { verified: false, error: 'Transaction not found' };
-            }
-
-            if (tx.meta?.err) {
-                return { verified: false, error: 'Transaction failed on chain' };
-            }
-
-            return {
-                verified: true,
-                slot: tx.slot,
-                blockTime: tx.blockTime,
-                fee: tx.meta?.fee
-            };
-        } catch (error) {
-            return { verified: false, error: error.message };
-        }
     }
 };

@@ -115,13 +115,9 @@ const ConfigLoader = {
                 const apiConfig = await response.json();
                 this.applyConfig(apiConfig);
                 CONFIG._loadedFrom = 'api';
-                console.info('Config loaded from API');
             }
-        } catch (error) {
+        } catch {
             // API not available - use defaults (expected in dev)
-            if (!Environment.isDev) {
-                console.warn('Config API unavailable, using defaults:', error.message);
-            }
             CONFIG._loadedFrom = 'default';
         }
 
@@ -218,6 +214,13 @@ const ConfigValidator = {
 // Games definition
 const GAMES = [
     {
+        id: 'tokencatcher',
+        name: 'Token Catcher',
+        icon: '🪣',
+        type: 'Arcade',
+        description: 'Catch falling ASDF tokens with your basket. Avoid scam tokens or lose points!'
+    },
+    {
         id: 'burnrunner',
         name: 'Burn Runner',
         icon: '🔥',
@@ -232,13 +235,6 @@ const GAMES = [
         description: 'Shoot down scam tokens and rug projects before they hit your wallet!'
     },
     {
-        id: 'hodlhero',
-        name: 'Hold Hero',
-        icon: '💎',
-        type: 'Tower Defense',
-        description: 'Protect your wallet from waves of FUD and scammers. Hold the line!'
-    },
-    {
         id: 'cryptoheist',
         name: 'Crypto Heist',
         icon: '🦹',
@@ -246,18 +242,11 @@ const GAMES = [
         description: 'Navigate the crypto underworld! Steal tokens, evade the SEC, and escape with your loot!'
     },
     {
-        id: 'rugpull',
-        name: 'Rug Pull Escape',
-        icon: '🏃',
-        type: 'Reaction Game',
-        description: 'Spot the warning signs and withdraw before the rug gets pulled!'
-    },
-    {
         id: 'whalewatch',
         name: 'Whale Watch',
         icon: '🐋',
-        type: 'Pattern Memory',
-        description: 'Track whale movements and predict their next trade patterns.'
+        type: 'Match + Memory',
+        description: 'Match pairs to reveal the whale pattern, then reproduce it from memory!'
     },
     {
         id: 'stakestacker',
@@ -275,10 +264,17 @@ const GAMES = [
     },
     {
         id: 'burnorhold',
-        name: 'Token Archer',
-        icon: '🏹',
-        type: 'Turn-based',
-        description: 'Take turns shooting arrows at your enemy! Aim with drag, release to fire. Defeat the enemy to win!'
+        name: 'Chain Conquest',
+        icon: '⚔️',
+        type: 'Strategy',
+        description: 'Conquer blockchain territories! Deploy validators, capture nodes, and dominate the network!'
+    },
+    {
+        id: 'liquiditymaze',
+        name: 'Liquidity Maze',
+        icon: '🌊',
+        type: 'Navigation',
+        description: 'Navigate the DeFi maze to find the deepest liquidity pools. Avoid fee traps and dead ends!'
     }
 ];
 
