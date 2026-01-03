@@ -38,6 +38,10 @@ const { get: cacheGet, set: cacheSet, del: cacheDel, wrap: cacheWrap, invalidate
 const { registerHandler: registerJobHandler, enqueue: enqueueJob, getJob, getJobsByStatus, getQueueStats, PRIORITY: JOB_PRIORITY } = require('./services/queue');
 const { track: trackAnalytics, trackPageView, trackAction, getAggregatedMetrics, getFunnelAnalysis, getAnalyticsMetrics, EVENT_TYPES: ANALYTICS_EVENTS } = require('./services/analytics');
 const { schedule: scheduleTask, scheduleInterval, getAllTasks, getHistory: getTaskHistory, getSchedulerMetrics, SCHEDULES } = require('./services/scheduler');
+const { checkLimit: checkRateLimit, checkTokenBucket, createMiddleware: createRateLimitMiddleware, getStats: getRateLimitStats, getBannedList, removeBan, extractIP } = require('./services/ratelimit');
+const { validate, registerSchema, createMiddleware: createValidationMiddleware, sanitizeValue, getStats: getValidatorStats } = require('./services/validator');
+const { isEnabled: isFeatureEnabled, evaluate: evaluateFlag, getAllFlags, setFlagEnabled, setFlagPercentage, createFlag, getStats: getFeatureFlagStats, getHistory: getFlagHistory } = require('./services/featureflags');
+const { log: auditLog, logSecurity, logAdmin: logAdminAction, search: searchAudit, getActiveAlerts, exportLogs: exportAuditLogs, getStats: getAuditStats, createMiddleware: createAuditMiddleware, EVENT_TYPES: AUDIT_EVENTS, CATEGORIES: AUDIT_CATEGORIES, SEVERITY: AUDIT_SEVERITY } = require('./services/audit');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -208,11 +212,15 @@ app.get('/health', async (req, res) => {
     const queueStats = getQueueStats();
     const analyticsMetrics = getAnalyticsMetrics();
     const schedulerMetrics = getSchedulerMetrics();
+    const rateLimitStats = getRateLimitStats();
+    const validatorStats = getValidatorStats();
+    const featureFlagStats = getFeatureFlagStats();
+    const auditStats = getAuditStats();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.3.0',
+        version: '1.4.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
@@ -271,6 +279,23 @@ app.get('/health', async (req, res) => {
             scheduler: {
                 tasks: schedulerMetrics.taskCount,
                 running: schedulerMetrics.runningTasks
+            },
+            rateLimit: {
+                allowed: rateLimitStats.allowed,
+                denied: rateLimitStats.denied,
+                bans: rateLimitStats.permanentBans
+            },
+            validator: {
+                validated: validatorStats.validated,
+                passRate: validatorStats.passRate
+            },
+            featureFlags: {
+                total: featureFlagStats.totalFlags,
+                enabled: featureFlagStats.enabledFlags
+            },
+            audit: {
+                events: auditStats.totalEvents,
+                alerts: auditStats.activeAlerts
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -1876,6 +1901,316 @@ app.get('/api/admin/scheduler/history', authMiddleware, requireAdmin, async (req
         res.json({ history, count: history.length });
     } catch (error) {
         res.status(500).json({ error: sanitizeError(error, 'scheduler-history') });
+    }
+});
+
+// ============================================
+// ADMIN - RATE LIMITING ROUTES
+// ============================================
+
+/**
+ * Get rate limit statistics (admin only)
+ * GET /api/admin/ratelimit
+ */
+app.get('/api/admin/ratelimit', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getRateLimitStats();
+        const banned = getBannedList();
+
+        res.json({ stats, banned });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'ratelimit-stats') });
+    }
+});
+
+/**
+ * Remove ban (admin only)
+ * POST /api/admin/ratelimit/unban
+ */
+app.post('/api/admin/ratelimit/unban', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { identifier } = req.body;
+
+        if (!identifier) {
+            return res.status(400).json({ error: 'Identifier required' });
+        }
+
+        const success = removeBan(identifier);
+
+        logAdminAction(AUDIT_EVENTS.USER_UNBANNED, {
+            identifier,
+            success
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'unban') });
+    }
+});
+
+// ============================================
+// ADMIN - VALIDATION ROUTES
+// ============================================
+
+/**
+ * Get validator statistics (admin only)
+ * GET /api/admin/validator
+ */
+app.get('/api/admin/validator', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getValidatorStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'validator-stats') });
+    }
+});
+
+// ============================================
+// ADMIN - FEATURE FLAGS ROUTES
+// ============================================
+
+/**
+ * Get all feature flags (admin only)
+ * GET /api/admin/flags
+ */
+app.get('/api/admin/flags', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const flags = getAllFlags();
+        const stats = getFeatureFlagStats();
+
+        res.json({ flags, stats });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'feature-flags') });
+    }
+});
+
+/**
+ * Create or update feature flag (admin only)
+ * POST /api/admin/flags
+ */
+app.post('/api/admin/flags', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { key, config } = req.body;
+
+        if (!key || typeof key !== 'string') {
+            return res.status(400).json({ error: 'Flag key required' });
+        }
+
+        const result = createFlag(key, config || {});
+
+        logAdminAction(AUDIT_EVENTS.FLAG_TOGGLED, {
+            key,
+            action: 'created'
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'create-flag') });
+    }
+});
+
+/**
+ * Toggle feature flag (admin only)
+ * POST /api/admin/flags/:key/toggle
+ */
+app.post('/api/admin/flags/:key/toggle', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { key } = req.params;
+        const { enabled } = req.body;
+
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ error: 'enabled (boolean) required' });
+        }
+
+        const success = setFlagEnabled(key, enabled);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Flag not found' });
+        }
+
+        logAdminAction(AUDIT_EVENTS.FLAG_TOGGLED, {
+            key,
+            enabled
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, key, enabled });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'toggle-flag') });
+    }
+});
+
+/**
+ * Update flag rollout percentage (admin only)
+ * POST /api/admin/flags/:key/percentage
+ */
+app.post('/api/admin/flags/:key/percentage', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { key } = req.params;
+        const { percentage } = req.body;
+
+        if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
+            return res.status(400).json({ error: 'percentage (0-100) required' });
+        }
+
+        const success = setFlagPercentage(key, percentage);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Flag not found' });
+        }
+
+        logAdminAction(AUDIT_EVENTS.FLAG_TOGGLED, {
+            key,
+            percentage
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        res.json({ success: true, key, percentage });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'flag-percentage') });
+    }
+});
+
+/**
+ * Get flag history (admin only)
+ * GET /api/admin/flags/history
+ */
+app.get('/api/admin/flags/history', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const key = req.query.key || null;
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+
+        const history = getFlagHistory(key, limit);
+        res.json({ history, count: history.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'flag-history') });
+    }
+});
+
+/**
+ * Evaluate flag for context (public, for client-side feature checks)
+ * POST /api/flags/evaluate
+ */
+app.post('/api/flags/evaluate', optionalAuthMiddleware, async (req, res) => {
+    try {
+        const { flags } = req.body;
+
+        if (!Array.isArray(flags)) {
+            return res.status(400).json({ error: 'flags array required' });
+        }
+
+        const context = {
+            wallet: req.user?.wallet,
+            tier: req.user?.tier,
+            tierIndex: req.user?.tierIndex,
+            environment: isProduction ? 'production' : 'development'
+        };
+
+        const results = {};
+        for (const key of flags.slice(0, 50)) {  // Limit to 50 flags per request
+            results[key] = evaluateFlag(key, context);
+        }
+
+        res.json({ flags: results });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'evaluate-flags') });
+    }
+});
+
+// ============================================
+// ADMIN - AUDIT TRAIL ROUTES
+// ============================================
+
+/**
+ * Get audit statistics (admin only)
+ * GET /api/admin/audit
+ */
+app.get('/api/admin/audit', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const stats = getAuditStats();
+        const alerts = getActiveAlerts();
+
+        res.json({ stats, alerts });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'audit-stats') });
+    }
+});
+
+/**
+ * Search audit logs (admin only)
+ * GET /api/admin/audit/search
+ */
+app.get('/api/admin/audit/search', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const query = {
+            category: req.query.category || null,
+            eventType: req.query.eventType || null,
+            severity: req.query.severity || null,
+            actor: req.query.actor || null,
+            startTime: req.query.startTime ? parseInt(req.query.startTime) : null,
+            endTime: req.query.endTime ? parseInt(req.query.endTime) : null,
+            limit: Math.min(parseInt(req.query.limit) || 50, 500),
+            offset: parseInt(req.query.offset) || 0
+        };
+
+        const results = searchAudit(query);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'audit-search') });
+    }
+});
+
+/**
+ * Export audit logs (admin only)
+ * GET /api/admin/audit/export
+ */
+app.get('/api/admin/audit/export', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const options = {
+            category: req.query.category || null,
+            startTime: req.query.startTime ? parseInt(req.query.startTime) : null,
+            endTime: req.query.endTime ? parseInt(req.query.endTime) : null,
+            format: req.query.format || 'json'
+        };
+
+        const exported = exportAuditLogs(options);
+
+        logAdminAction(AUDIT_EVENTS.DATA_EXPORTED, {
+            type: 'audit_logs',
+            format: options.format,
+            eventCount: exported.totalEvents || 0
+        }, {
+            actor: { id: req.user.wallet, type: 'admin' }
+        });
+
+        if (options.format === 'csv') {
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename="audit_export.csv"');
+            return res.send(exported);
+        }
+
+        res.json(exported);
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'audit-export') });
+    }
+});
+
+/**
+ * Get active security alerts (admin only)
+ * GET /api/admin/audit/alerts
+ */
+app.get('/api/admin/audit/alerts', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const alerts = getActiveAlerts();
+        res.json({ alerts, count: alerts.length });
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'audit-alerts') });
     }
 });
 
