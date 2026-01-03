@@ -5615,15 +5615,18 @@
             padding: 40px;
             overflow-y: auto;
             width: 100%;
-            min-height: 100%;
+            min-height: calc(100vh - 80px);
+            box-sizing: border-box;
         }
 
         .yj-complete-celebration {
-            font-size: 64px;
-            margin-bottom: 16px;
+            font-size: 80px;
+            margin-bottom: 24px;
             animation: celebrateBounce 2s ease-in-out infinite;
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         @keyframes celebrateBounce {
@@ -7509,9 +7512,10 @@
             }
             .yj-level-complete {
                 padding: 30px 16px;
+                min-height: calc(100vh - 60px);
             }
             .yj-complete-celebration {
-                font-size: 48px;
+                font-size: 64px;
             }
             .yj-complete-title {
                 font-size: 22px;
