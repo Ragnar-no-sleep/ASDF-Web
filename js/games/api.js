@@ -1,14 +1,17 @@
 /**
  * ASDF Games - API Client
+ *
+ * Security: Uses httpOnly cookies for JWT authentication
+ * - Cookies are set/cleared by the server
+ * - credentials: 'include' sends cookies with cross-origin requests
+ * - CSRF token added to state-changing requests
  */
 
 'use strict';
 
 const ApiClient = {
-    // Cache signed auth to avoid repeated signing prompts
-    _authCache: null,
-    _authCacheExpiry: 0,
-    AUTH_CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
+    // Track authentication state (cookie is managed by server)
+    _isAuthenticated: false,
 
     /**
      * Generate cryptographically secure nonce
@@ -29,38 +32,23 @@ const ApiClient = {
         if (meta) {
             return meta.getAttribute('content');
         }
-        // Fall back to cookie if available
+        // Fall back to cookie if available (non-httpOnly CSRF cookie)
         const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
         return match ? decodeURIComponent(match[1]) : null;
     },
 
     /**
-     * Get valid JWT token for API requests
-     * Uses the getValidToken function that checks expiration
-     */
-    getJWTToken() {
-        // getValidToken is defined in state.js and checks expiration
-        return typeof getValidToken === 'function' ? getValidToken() : null;
-    },
-
-    /**
      * Get authentication headers with wallet signature
-     * Uses secure nonce and caches to reduce signing prompts
+     * Used for initial authentication before cookie is set
      */
-    async getAuthHeaders() {
+    async getWalletSignatureHeaders() {
         if (!appState.wallet) {
             return {};
         }
 
-        // Return cached auth if still valid
-        const now = Date.now();
-        if (this._authCache && now < this._authCacheExpiry) {
-            return this._authCache;
-        }
-
         // Generate secure message with nonce
         const nonce = this.generateNonce();
-        const timestamp = now;
+        const timestamp = Date.now();
         const message = [
             'ASDF Games Authentication',
             `Wallet: ${appState.wallet}`,
@@ -79,40 +67,38 @@ const ApiClient = {
             const signedMessage = await provider.signMessage(encodedMessage, 'utf8');
             const signature = btoa(String.fromCharCode(...signedMessage.signature));
 
-            const headers = {
+            return {
                 'X-Wallet-Address': appState.wallet,
                 'X-Auth-Nonce': nonce,
                 'X-Auth-Timestamp': timestamp.toString(),
                 'X-Auth-Signature': signature
             };
-
-            // Add CSRF token if available
-            const csrfToken = this.getCSRFToken();
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-            }
-
-            // Cache the auth headers
-            this._authCache = headers;
-            this._authCacheExpiry = now + this.AUTH_CACHE_DURATION;
-
-            return headers;
         } catch (error) {
-            console.warn('Could not sign message:', error);
+            if (CONFIG.DEV_MODE) {
+                console.warn('Could not sign message:', error);
+            }
             return { 'X-Wallet-Address': appState.wallet };
         }
     },
 
     /**
-     * Clear auth cache (call on wallet disconnect)
+     * Mark as authenticated (called after successful login)
      */
-    clearAuthCache() {
-        this._authCache = null;
-        this._authCacheExpiry = 0;
+    setAuthenticated(value) {
+        this._isAuthenticated = value;
+    },
+
+    /**
+     * Check if user appears to be authenticated
+     * Note: Server-side validation is authoritative
+     */
+    isAuthenticated() {
+        return this._isAuthenticated;
     },
 
     /**
      * Make an API request
+     * Uses httpOnly cookies for authentication (credentials: 'include')
      */
     async request(endpoint, options = {}) {
         const url = `${CONFIG.API_BASE}${endpoint}`;
@@ -126,19 +112,7 @@ const ApiClient = {
             ...options.headers
         };
 
-        // Add JWT token for authenticated requests
-        const jwtToken = this.getJWTToken();
-        if (options.auth !== false && jwtToken) {
-            headers['Authorization'] = `Bearer ${jwtToken}`;
-        }
-
-        // Add wallet signature headers if no JWT
-        if (options.auth !== false && appState.wallet && !jwtToken) {
-            const authHeaders = await this.getAuthHeaders();
-            Object.assign(headers, authHeaders);
-        }
-
-        // Always add CSRF token for state-changing requests
+        // Add CSRF token for state-changing requests
         if (options.method && options.method !== 'GET') {
             const csrfToken = this.getCSRFToken();
             if (csrfToken) {
@@ -149,17 +123,17 @@ const ApiClient = {
         try {
             const response = await fetch(url, {
                 ...options,
-                headers
+                headers,
+                // CRITICAL: Include cookies with cross-origin requests
+                credentials: 'include'
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                // Handle auth errors - clear token if invalid
-                if (response.status === 401 && jwtToken) {
-                    if (typeof clearToken === 'function') {
-                        clearToken();
-                    }
+                // Handle auth errors - update state
+                if (response.status === 401) {
+                    this._isAuthenticated = false;
                 }
                 throw new Error(data.message || data.error || 'API request failed');
             }
@@ -216,33 +190,64 @@ const ApiClient = {
     },
 
     // Auth endpoints
-    async logout() {
-        const token = this.getJWTToken();
-        if (!token) {
-            // No token to revoke, just clear local state
-            if (typeof clearToken === 'function') {
-                clearToken();
-            }
-            this.clearAuthCache();
-            return { success: true, message: 'Already logged out' };
+
+    /**
+     * Request authentication challenge from server
+     */
+    async requestChallenge(wallet) {
+        return this.request('/auth/challenge', {
+            method: 'POST',
+            body: JSON.stringify({ wallet })
+        });
+    },
+
+    /**
+     * Verify wallet signature and authenticate
+     * Server will set httpOnly cookie on success
+     */
+    async verifyAndLogin(wallet, signature) {
+        const result = await this.request('/auth/verify', {
+            method: 'POST',
+            body: JSON.stringify({ wallet, signature })
+        });
+
+        if (result.success) {
+            this._isAuthenticated = true;
         }
 
+        return result;
+    },
+
+    /**
+     * Refresh authentication
+     * Server will update httpOnly cookie with new token
+     */
+    async refreshAuth() {
+        try {
+            const result = await this.request('/auth/refresh');
+            if (result.success) {
+                this._isAuthenticated = true;
+            }
+            return result;
+        } catch (error) {
+            this._isAuthenticated = false;
+            throw error;
+        }
+    },
+
+    /**
+     * Logout - clear server-side session and cookie
+     */
+    async logout() {
         try {
             const result = await this.request('/auth/logout', {
                 method: 'POST'
             });
-            // Clear local token after successful server-side revocation
-            if (typeof clearToken === 'function') {
-                clearToken();
-            }
-            this.clearAuthCache();
+            this._isAuthenticated = false;
             return result;
         } catch (error) {
-            // Still clear local token even if server call fails
-            if (typeof clearToken === 'function') {
-                clearToken();
-            }
-            this.clearAuthCache();
+            // Still mark as logged out even if server call fails
+            this._isAuthenticated = false;
             throw error;
         }
     }

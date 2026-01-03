@@ -30,67 +30,12 @@ const activeGameModes = {};
 let testMode = false;
 
 // ============================================
-// JWT TOKEN MANAGEMENT
+// AUTHENTICATION STATE
 // ============================================
 
-const JWT_STORAGE_KEY = 'asdf_jwt';
-
-/**
- * Decode JWT payload without verification
- * Used for client-side expiration checking only
- * Server-side validation is always authoritative
- */
-function decodeJwtPayload(token) {
-    try {
-        const parts = token.split('.');
-        if (parts.length !== 3) return null;
-        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-        return payload;
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Check if JWT token is expired
- * Includes 60-second buffer to avoid edge cases
- */
-function isTokenExpired(token) {
-    const payload = decodeJwtPayload(token);
-    if (!payload || !payload.exp) return true;
-    // Add 60 second buffer before expiration
-    return (payload.exp * 1000) < (Date.now() + 60000);
-}
-
-/**
- * Get valid JWT token from storage
- * Returns null if token is missing or expired
- */
-function getValidToken() {
-    const token = localStorage.getItem(JWT_STORAGE_KEY);
-    if (!token) return null;
-    if (isTokenExpired(token)) {
-        localStorage.removeItem(JWT_STORAGE_KEY);
-        return null;
-    }
-    return token;
-}
-
-/**
- * Store JWT token in localStorage
- */
-function storeToken(token) {
-    if (!token || isTokenExpired(token)) return false;
-    localStorage.setItem(JWT_STORAGE_KEY, token);
-    return true;
-}
-
-/**
- * Clear JWT token from storage
- */
-function clearToken() {
-    localStorage.removeItem(JWT_STORAGE_KEY);
-}
+// Note: JWT is now stored in httpOnly cookie (not accessible via JavaScript)
+// Authentication state is tracked by ApiClient.isAuthenticated()
+// Server is the source of truth for authentication
 
 function toggleDevMode() {
     testMode = !testMode;
@@ -345,17 +290,16 @@ async function checkTokenBalance(publicKey) {
             throw new Error('API request failed');
         }
 
-        // For authenticated balance, we should use the auth flow
-        // But for initial display, we'll check if user is authenticated
-        const token = getValidToken(); // Check expiration before use
-        if (token) {
+        // For authenticated balance, use the API with httpOnly cookie auth
+        // Cookie is automatically included via credentials: 'include'
+        if (ApiClient.isAuthenticated()) {
             // Use authenticated endpoint for verified balance
             const profileResponse = await fetch(`${CONFIG.API_BASE}/user/profile`, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
+                    'Accept': 'application/json'
+                },
+                credentials: 'include' // Include httpOnly cookie
             });
 
             if (profileResponse.ok) {
@@ -363,13 +307,13 @@ async function checkTokenBalance(publicKey) {
                 appState.balance = profile.balance || 0;
                 appState.isHolder = profile.isHolder || false;
             } else {
-                // Token invalid on server (revoked, etc), clear it
-                clearToken();
+                // Session invalid on server, update local state
+                ApiClient.setAuthenticated(false);
                 appState.balance = 0;
                 appState.isHolder = false;
             }
         } else {
-            // No auth token - user needs to authenticate for verified holder status
+            // Not authenticated - user needs to authenticate for verified holder status
             // For display only, show 0 balance until authenticated
             appState.balance = 0;
             appState.isHolder = false;

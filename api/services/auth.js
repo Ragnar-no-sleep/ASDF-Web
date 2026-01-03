@@ -286,17 +286,41 @@ function calculateTier(xp) {
     return { index: 0, name: 'EMBER' };
 }
 
+// Cookie name for JWT storage (must match index.js)
+const JWT_COOKIE_NAME = 'asdf_auth';
+
+/**
+ * Extract JWT token from request
+ * Checks httpOnly cookie first (secure), then Authorization header (legacy fallback)
+ * @param {object} req - Express request object
+ * @returns {string|null}
+ */
+function extractToken(req) {
+    // Primary: httpOnly cookie (set by cookie-parser middleware)
+    if (req.cookies && req.cookies[JWT_COOKIE_NAME]) {
+        return req.cookies[JWT_COOKIE_NAME];
+    }
+
+    // Fallback: Authorization header (for legacy clients during migration)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+    }
+
+    return null;
+}
+
 /**
  * Express middleware for JWT authentication
+ * Supports both httpOnly cookie and Authorization header
  */
 function authMiddleware(req, res, next) {
-    const authHeader = req.headers.authorization;
+    const token = extractToken(req);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
         return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.substring(7);
     const { valid, payload, error } = verifyToken(token);
 
     if (!valid) {
@@ -309,12 +333,12 @@ function authMiddleware(req, res, next) {
 
 /**
  * Optional auth middleware (doesn't fail if no token)
+ * Supports both httpOnly cookie and Authorization header
  */
 function optionalAuthMiddleware(req, res, next) {
-    const authHeader = req.headers.authorization;
+    const token = extractToken(req);
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
+    if (token) {
         const { valid, payload } = verifyToken(token);
 
         if (valid) {
@@ -356,6 +380,8 @@ module.exports = {
     revokeToken,
     isTokenRevoked,
     calculateTier,
+    extractToken,
     authMiddleware,
-    optionalAuthMiddleware
+    optionalAuthMiddleware,
+    JWT_COOKIE_NAME
 };

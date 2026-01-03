@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
 // Services
@@ -146,6 +147,64 @@ app.use(cors({
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+
+// Cookie parsing
+app.use(cookieParser());
+
+// ============================================
+// JWT COOKIE CONFIGURATION
+// ============================================
+
+const JWT_COOKIE_NAME = 'asdf_auth';
+const JWT_COOKIE_OPTIONS = {
+    httpOnly: true,                           // Not accessible via JavaScript
+    secure: isProduction,                     // HTTPS only in production
+    sameSite: isProduction ? 'strict' : 'lax', // CSRF protection
+    path: '/api',                             // Only sent to API routes
+    maxAge: 24 * 60 * 60 * 1000               // 24 hours (match JWT expiry)
+};
+
+/**
+ * Set JWT token as httpOnly cookie
+ * @param {object} res - Express response object
+ * @param {string} token - JWT token
+ */
+function setAuthCookie(res, token) {
+    res.cookie(JWT_COOKIE_NAME, token, JWT_COOKIE_OPTIONS);
+}
+
+/**
+ * Clear auth cookie (logout)
+ * @param {object} res - Express response object
+ */
+function clearAuthCookie(res) {
+    res.clearCookie(JWT_COOKIE_NAME, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'strict' : 'lax',
+        path: '/api'
+    });
+}
+
+/**
+ * Get JWT token from cookie or Authorization header (fallback for backward compatibility)
+ * @param {object} req - Express request object
+ * @returns {string|null}
+ */
+function getAuthToken(req) {
+    // Primary: Get from httpOnly cookie
+    if (req.cookies && req.cookies[JWT_COOKIE_NAME]) {
+        return req.cookies[JWT_COOKIE_NAME];
+    }
+
+    // Fallback: Authorization header (for legacy clients during migration)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+    }
+
+    return null;
+}
 
 // Content-Type validation middleware for non-GET requests with body
 app.use((req, res, next) => {
@@ -503,6 +562,7 @@ app.post('/api/auth/challenge', (req, res) => {
 /**
  * Verify signature and get JWT
  * POST /api/auth/verify
+ * Sets JWT as httpOnly cookie for security
  */
 app.post('/api/auth/verify', async (req, res) => {
     try {
@@ -513,7 +573,17 @@ app.post('/api/auth/verify', async (req, res) => {
         }
 
         const result = await verifyAndAuthenticate(wallet, signature);
-        res.json(result);
+
+        // Set JWT as httpOnly cookie
+        setAuthCookie(res, result.token);
+
+        // Return user info (token still included for backward compatibility during migration)
+        res.json({
+            success: true,
+            user: result.user,
+            // Token in response body is deprecated - will be removed in future version
+            token: result.token
+        });
 
     } catch (error) {
         res.status(401).json({ error: sanitizeError(error, 'auth') });
@@ -523,12 +593,26 @@ app.post('/api/auth/verify', async (req, res) => {
 /**
  * Refresh JWT with updated balance
  * GET /api/auth/refresh
+ * Updates the httpOnly cookie with new token
  */
 app.get('/api/auth/refresh', authMiddleware, async (req, res) => {
     try {
-        const token = req.headers.authorization.substring(7);
+        const token = getAuthToken(req);
+        if (!token) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
+
         const result = await refreshToken(token);
-        res.json(result);
+
+        // Update cookie with new token
+        setAuthCookie(res, result.token);
+
+        res.json({
+            success: true,
+            user: result.user,
+            // Token in response body is deprecated
+            token: result.token
+        });
 
     } catch (error) {
         res.status(401).json({ error: sanitizeError(error, 'refresh') });
@@ -536,22 +620,29 @@ app.get('/api/auth/refresh', authMiddleware, async (req, res) => {
 });
 
 /**
- * Logout - Revoke current JWT token
+ * Logout - Revoke current JWT token and clear cookie
  * POST /api/auth/logout
  */
 app.post('/api/auth/logout', authMiddleware, (req, res) => {
     try {
-        const token = req.headers.authorization.substring(7);
-        const result = revokeToken(token);
-
-        if (!result.success) {
-            return res.status(400).json({ error: result.error });
+        const token = getAuthToken(req);
+        if (token) {
+            const result = revokeToken(token);
+            if (!result.success) {
+                // Log but don't fail - still clear cookie
+                console.warn('[Auth] Token revocation failed:', result.error);
+            }
         }
 
-        logAudit('user_logout', { wallet: req.user.wallet.slice(0, 8) + '...' });
+        // Always clear the cookie
+        clearAuthCookie(res);
+
+        logAudit('user_logout', { wallet: req.user?.wallet?.slice(0, 8) + '...' });
         res.json({ success: true, message: 'Logged out successfully' });
 
     } catch (error) {
+        // Still clear cookie even on error
+        clearAuthCookie(res);
         res.status(500).json({ error: sanitizeError(error, 'logout') });
     }
 });
