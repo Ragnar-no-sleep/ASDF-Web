@@ -27,6 +27,9 @@ const { startGameSession, submitScore, getPlayerStats, getValidationMetrics } = 
 const { requireAdmin, getSecurityMetrics, generateNonce, isAdmin } = require('./services/security');
 const { metricsMiddleware, getSummaryMetrics, getDetailedMetrics, getPrometheusMetrics } = require('./services/metrics');
 const { getHealthStatus: getDbHealth } = require('./services/database');
+const { verifyWebhookSignature: verifyHeliusSignature, processWebhookEvent, getWebhookMetrics, registerWebhook, listWebhooks } = require('./services/webhooks');
+const { getWalletNFTs, verifyNFTOwnership, verifyCollectionOwnership, getTokenBalances: getDASTokenBalances, getAssetDetails, checkRateLimit: checkAssetRateLimit, getAssetMetrics } = require('./services/assets');
+const { getUnlockedAchievements, getAchievementProgress, getDetailedAchievements, recordBurnForAchievements, recordGameForAchievements, updateStreak, grantAchievement, getAchievementLeaderboard, getAchievementMetrics } = require('./services/achievements');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -186,16 +189,20 @@ app.get('/health', async (req, res) => {
     const gameMetrics = getValidationMetrics();
     const dbHealth = getDbHealth();
     const securityMetrics = getSecurityMetrics();
+    const webhookMetrics = getWebhookMetrics();
+    const assetMetrics = getAssetMetrics();
+    const achievementMetrics = getAchievementMetrics();
 
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: '1.1.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
             heliusEnhanced: heliusHealth.details?.enhancedApi || false,
-            database: dbHealth.type
+            database: dbHealth.type,
+            webhooks: webhookMetrics.config.hasSecret
         },
         latency: {
             helius: heliusHealth.latency
@@ -206,6 +213,17 @@ app.get('/health', async (req, res) => {
             database: dbHealth.stats,
             security: {
                 activeNonces: securityMetrics.activeNonces
+            },
+            webhooks: {
+                queueSize: webhookMetrics.queueSize,
+                processed: webhookMetrics.processedCount
+            },
+            assets: {
+                cacheSize: assetMetrics.cacheSize
+            },
+            achievements: {
+                totalPlayers: achievementMetrics.playersWithAchievements,
+                totalUnlocks: achievementMetrics.totalUnlocks
             },
             heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
@@ -740,11 +758,20 @@ app.post('/api/game/submit', authMiddleware, walletRateLimiter, async (req, res)
             return res.status(400).json({ error: result.error, suspicious: result.suspicious });
         }
 
+        // Check for achievement unlocks
+        const newAchievements = recordGameForAchievements(req.user.wallet, result.score);
+
         res.json({
             success: true,
             score: result.score,
             duration: result.duration,
-            percentile: result.percentile
+            percentile: result.percentile,
+            newAchievements: newAchievements.map(a => ({
+                id: a.id,
+                name: a.name,
+                rarity: a.rarity,
+                xpReward: a.xpReward
+            }))
         });
 
     } catch (error) {
@@ -996,6 +1023,330 @@ app.post('/api/webhook/helius', express.raw({ type: 'application/json' }), async
         console.error('[Webhook] Error processing:', error.message);
         // Always return 200 to prevent Helius retries on processing errors
         res.json({ received: true, error: 'Processing error' });
+    }
+});
+
+// ============================================
+// ACHIEVEMENT ROUTES
+// ============================================
+
+/**
+ * Get user's achievements
+ * GET /api/achievements
+ */
+app.get('/api/achievements', authMiddleware, async (req, res) => {
+    try {
+        const detailed = req.query.detailed === 'true';
+
+        if (detailed) {
+            const achievements = getDetailedAchievements(req.user.wallet);
+            res.json({ achievements });
+        } else {
+            const unlocked = getUnlockedAchievements(req.user.wallet);
+            const progress = getAchievementProgress(req.user.wallet);
+            res.json({ unlocked, progress });
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'achievements') });
+    }
+});
+
+/**
+ * Get achievement leaderboard
+ * GET /api/achievements/leaderboard
+ */
+app.get('/api/achievements/leaderboard', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const leaderboard = getAchievementLeaderboard(limit);
+
+        res.json({
+            entries: leaderboard,
+            count: leaderboard.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'achievement-leaderboard') });
+    }
+});
+
+/**
+ * Grant achievement (admin only)
+ * POST /api/admin/achievements/grant
+ */
+app.post('/api/admin/achievements/grant', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { wallet, achievementId } = req.body;
+
+        if (!wallet || !achievementId) {
+            return res.status(400).json({ error: 'Wallet and achievementId required' });
+        }
+
+        if (!isValidAddress(wallet)) {
+            return res.status(400).json({ error: 'Invalid wallet address' });
+        }
+
+        const result = grantAchievement(wallet, achievementId);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.json({
+            success: true,
+            achievement: result.achievement
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'grant-achievement') });
+    }
+});
+
+// ============================================
+// ASSET VERIFICATION ROUTES (DAS API)
+// ============================================
+
+/**
+ * Get user's NFTs
+ * GET /api/assets/nfts
+ */
+app.get('/api/assets/nfts', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const rateCheck = checkAssetRateLimit(req.user.wallet);
+        if (!rateCheck.allowed) {
+            return res.status(429).json({
+                error: 'Asset API rate limit exceeded',
+                remaining: rateCheck.remaining
+            });
+        }
+
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(parseInt(req.query.limit) || 100, 1000);
+        const collection = req.query.collection || null;
+
+        const nfts = await getWalletNFTs(req.user.wallet, { page, limit, collection });
+
+        res.json(nfts);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-nfts') });
+    }
+});
+
+/**
+ * Verify NFT ownership
+ * GET /api/assets/verify/nft/:mint
+ */
+app.get('/api/assets/verify/nft/:mint', authMiddleware, async (req, res) => {
+    try {
+        const { mint } = req.params;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const result = await verifyNFTOwnership(req.user.wallet, mint);
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'verify-nft') });
+    }
+});
+
+/**
+ * Verify collection ownership
+ * GET /api/assets/verify/collection/:address
+ */
+app.get('/api/assets/verify/collection/:address', authMiddleware, async (req, res) => {
+    try {
+        const { address } = req.params;
+
+        if (!isValidAddress(address)) {
+            return res.status(400).json({ error: 'Invalid collection address' });
+        }
+
+        const result = await verifyCollectionOwnership(req.user.wallet, address);
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'verify-collection') });
+    }
+});
+
+/**
+ * Get token balances via DAS API
+ * GET /api/assets/tokens
+ */
+app.get('/api/assets/tokens', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const rateCheck = checkAssetRateLimit(req.user.wallet);
+        if (!rateCheck.allowed) {
+            return res.status(429).json({
+                error: 'Asset API rate limit exceeded',
+                remaining: rateCheck.remaining
+            });
+        }
+
+        const balances = await getDASTokenBalances(req.user.wallet);
+
+        res.json(balances);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-tokens') });
+    }
+});
+
+/**
+ * Get asset details
+ * GET /api/assets/:mint
+ */
+app.get('/api/assets/:mint', async (req, res) => {
+    try {
+        const { mint } = req.params;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const details = await getAssetDetails(mint);
+
+        if (details.error) {
+            return res.status(404).json({ error: details.error });
+        }
+
+        res.json(details);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'asset-details') });
+    }
+});
+
+// ============================================
+// ENHANCED WEBHOOK HANDLER
+// ============================================
+
+/**
+ * Enhanced Helius webhook endpoint
+ * POST /api/webhook/helius/v2
+ * Uses the new webhooks service with full event processing
+ */
+app.post('/api/webhook/helius/v2', express.raw({ type: 'application/json' }), async (req, res) => {
+    try {
+        const signature = req.headers['x-helius-signature'];
+        const payload = req.body.toString();
+
+        // Verify webhook signature
+        if (isProduction) {
+            if (!verifyHeliusSignature(payload, signature)) {
+                logAudit('webhook_signature_failed', {});
+                return res.status(401).json({ error: 'Invalid signature' });
+            }
+        }
+
+        const events = JSON.parse(payload);
+        const results = [];
+
+        // Process each event through webhooks service
+        for (const event of events) {
+            const result = await processWebhookEvent(event);
+            results.push(result);
+
+            // Check for achievement unlocks on burns
+            if (result.type === 'burn' && result.wallet) {
+                const newAchievements = recordBurnForAchievements(result.wallet, result.amount);
+                if (newAchievements.length > 0) {
+                    logAudit('achievements_unlocked_via_webhook', {
+                        wallet: result.wallet.slice(0, 8) + '...',
+                        count: newAchievements.length
+                    });
+                }
+            }
+        }
+
+        res.json({
+            received: true,
+            processed: results.filter(r => r.processed).length,
+            total: events.length
+        });
+
+    } catch (error) {
+        console.error('[Webhook v2] Error:', error.message);
+        res.json({ received: true, error: 'Processing error' });
+    }
+});
+
+/**
+ * Webhook management - list webhooks (admin only)
+ * GET /api/admin/webhooks
+ */
+app.get('/api/admin/webhooks', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const webhooks = await listWebhooks();
+        const metrics = getWebhookMetrics();
+
+        res.json({
+            webhooks,
+            metrics
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'list-webhooks') });
+    }
+});
+
+/**
+ * Register new webhook (admin only)
+ * POST /api/admin/webhooks
+ */
+app.post('/api/admin/webhooks', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { webhookUrl, addresses } = req.body;
+
+        if (!webhookUrl || !addresses?.length) {
+            return res.status(400).json({ error: 'webhookUrl and addresses required' });
+        }
+
+        const result = await registerWebhook(webhookUrl, addresses);
+
+        logAudit('webhook_created', {
+            admin: req.user.wallet.slice(0, 8) + '...',
+            webhookId: result.webhookID
+        });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'register-webhook') });
+    }
+});
+
+// ============================================
+// STREAK TRACKING
+// ============================================
+
+/**
+ * Record daily activity (call on any user action)
+ * POST /api/user/activity
+ */
+app.post('/api/user/activity', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const newAchievements = updateStreak(req.user.wallet);
+
+        res.json({
+            recorded: true,
+            newAchievements: newAchievements.map(a => ({
+                id: a.id,
+                name: a.name,
+                rarity: a.rarity,
+                xpReward: a.xpReward
+            }))
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'record-activity') });
     }
 });
 
