@@ -2342,6 +2342,41 @@
     margin-top: var(--jm-space-md);
 }
 
+/* Mark Complete Button */
+.jm-mark-complete {
+    margin-top: var(--jm-space-lg);
+    padding: var(--jm-space-md) var(--jm-space-lg);
+    background: var(--jm-bg-void);
+    border: 1px solid var(--jm-border);
+    color: var(--jm-text);
+    border-radius: var(--jm-radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.jm-mark-complete:hover:not(:disabled) {
+    background: linear-gradient(135deg, #22c55e20, #16a34a20);
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.jm-mark-complete.completed {
+    background: linear-gradient(135deg, #22c55e20, #16a34a20);
+    border-color: #22c55e;
+    color: #22c55e;
+    cursor: default;
+}
+
+.jm-cert-lesson.lesson-completed {
+    border-color: #22c55e40;
+}
+
+.jm-cert-lesson.lesson-completed .jm-lesson-num {
+    background: #22c55e;
+    color: white;
+}
+
 /* Responsive for certification */
 @media (max-width: 768px) {
     .jm-final-cert-header {

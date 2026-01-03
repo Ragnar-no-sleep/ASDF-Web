@@ -1938,7 +1938,426 @@ function celebrateSuccess() {
     };
 })();
 
+// ============================================
+// CERTIFICATION DATA TRACKER
+// ============================================
+
+const CertificationTracker = (function() {
+    'use strict';
+
+    const STORAGE_KEY = 'asdf_certification_data';
+    const VERSION = '1.0.0';
+
+    // Default data structure
+    const defaultData = {
+        version: VERSION,
+        userId: null,
+        walletAddress: null,
+        startedAt: null,
+        lastUpdated: null,
+
+        // Module Progress
+        moduleProgress: {
+            code: { started: false, completedLessons: [], quizScores: [], timeSpent: 0 },
+            design: { started: false, completedLessons: [], quizScores: [], timeSpent: 0 },
+            content: { started: false, completedLessons: [], quizScores: [], timeSpent: 0 },
+            community: { started: false, completedLessons: [], quizScores: [], timeSpent: 0 }
+        },
+
+        // Assessment Results
+        assessment: {
+            started: false,
+            completedAt: null,
+            sections: {
+                code: { score: 0, maxScore: 0, answers: [], timeSpent: 0 },
+                design: { score: 0, maxScore: 0, answers: [], timeSpent: 0 },
+                content: { score: 0, maxScore: 0, answers: [], timeSpent: 0 },
+                community: { score: 0, maxScore: 0, answers: [], timeSpent: 0 }
+            },
+            totalScore: 0,
+            passed: false
+        },
+
+        // Capstone Project
+        capstone: {
+            selectedProject: null,
+            submittedAt: null,
+            projectUrl: null,
+            repoUrl: null,
+            demoUrl: null,
+            description: null,
+            rubricScores: {},
+            feedback: null,
+            status: 'not_started' // not_started, in_progress, submitted, approved, rejected
+        },
+
+        // Certification Status
+        certification: {
+            eligible: false,
+            earnedAt: null,
+            badgeId: null,
+            nftMintAddress: null,
+            txSignature: null
+        },
+
+        // Analytics
+        analytics: {
+            totalTimeSpent: 0,
+            sessionsCount: 0,
+            lastSessionStart: null,
+            interactions: []
+        }
+    };
+
+    // Validate data schema
+    function validateData(data) {
+        if (typeof data !== 'object' || data === null) return false;
+        if (typeof data.version !== 'string') return false;
+        if (typeof data.moduleProgress !== 'object') return false;
+        if (typeof data.assessment !== 'object') return false;
+        if (typeof data.capstone !== 'object') return false;
+        if (typeof data.certification !== 'object') return false;
+        return true;
+    }
+
+    // Load data from localStorage
+    function loadData() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (validateData(parsed)) {
+                    return { ...defaultData, ...parsed };
+                }
+                console.warn('Invalid certification data, resetting');
+            }
+            return { ...defaultData };
+        } catch (e) {
+            console.warn('Error loading certification data');
+            return { ...defaultData };
+        }
+    }
+
+    // Save data to localStorage
+    function saveData(data) {
+        try {
+            data.lastUpdated = new Date().toISOString();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            return true;
+        } catch (e) {
+            console.warn('Could not save certification data');
+            return false;
+        }
+    }
+
+    // Generate unique session ID
+    function generateSessionId() {
+        return 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    return {
+        // Initialize tracker
+        init(userId = null, walletAddress = null) {
+            const data = loadData();
+            if (!data.startedAt) {
+                data.startedAt = new Date().toISOString();
+            }
+            if (userId) data.userId = userId;
+            if (walletAddress) data.walletAddress = walletAddress;
+            data.analytics.sessionsCount++;
+            data.analytics.lastSessionStart = new Date().toISOString();
+            saveData(data);
+            return data;
+        },
+
+        // Get current data
+        getData() {
+            return loadData();
+        },
+
+        // Set user info
+        setUserInfo(userId, walletAddress) {
+            const data = loadData();
+            if (userId) data.userId = userId;
+            if (walletAddress) data.walletAddress = walletAddress;
+            saveData(data);
+        },
+
+        // ========== MODULE PROGRESS ==========
+
+        startModule(pillar, moduleId) {
+            const data = loadData();
+            if (data.moduleProgress[pillar]) {
+                data.moduleProgress[pillar].started = true;
+                data.moduleProgress[pillar].startedAt = new Date().toISOString();
+                this.trackInteraction('module_start', { pillar, moduleId });
+            }
+            saveData(data);
+        },
+
+        completeLesson(pillar, lessonId, timeSpent = 0) {
+            const data = loadData();
+            if (data.moduleProgress[pillar]) {
+                if (!data.moduleProgress[pillar].completedLessons.includes(lessonId)) {
+                    data.moduleProgress[pillar].completedLessons.push(lessonId);
+                }
+                data.moduleProgress[pillar].timeSpent += timeSpent;
+                data.analytics.totalTimeSpent += timeSpent;
+                this.trackInteraction('lesson_complete', { pillar, lessonId, timeSpent });
+            }
+            saveData(data);
+        },
+
+        recordQuizScore(pillar, quizId, score, maxScore, answers) {
+            const data = loadData();
+            if (data.moduleProgress[pillar]) {
+                data.moduleProgress[pillar].quizScores.push({
+                    quizId,
+                    score,
+                    maxScore,
+                    percentage: Math.round((score / maxScore) * 100),
+                    answers,
+                    completedAt: new Date().toISOString()
+                });
+                this.trackInteraction('quiz_complete', { pillar, quizId, score, maxScore });
+            }
+            saveData(data);
+        },
+
+        // ========== ASSESSMENT ==========
+
+        startAssessment() {
+            const data = loadData();
+            data.assessment.started = true;
+            data.assessment.startedAt = new Date().toISOString();
+            this.trackInteraction('assessment_start', {});
+            saveData(data);
+        },
+
+        recordAssessmentSection(section, score, maxScore, answers, timeSpent) {
+            const data = loadData();
+            if (data.assessment.sections[section]) {
+                data.assessment.sections[section] = {
+                    score,
+                    maxScore,
+                    percentage: Math.round((score / maxScore) * 100),
+                    answers,
+                    timeSpent,
+                    completedAt: new Date().toISOString()
+                };
+                this.trackInteraction('assessment_section_complete', { section, score, maxScore });
+            }
+            saveData(data);
+        },
+
+        completeAssessment() {
+            const data = loadData();
+            let totalScore = 0;
+            let totalMax = 0;
+
+            Object.values(data.assessment.sections).forEach(section => {
+                totalScore += section.score || 0;
+                totalMax += section.maxScore || 0;
+            });
+
+            data.assessment.totalScore = totalScore;
+            data.assessment.totalMaxScore = totalMax;
+            data.assessment.percentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+            data.assessment.passed = data.assessment.percentage >= 70;
+            data.assessment.completedAt = new Date().toISOString();
+
+            this.trackInteraction('assessment_complete', {
+                totalScore,
+                totalMax,
+                passed: data.assessment.passed
+            });
+            saveData(data);
+            return data.assessment;
+        },
+
+        // ========== CAPSTONE PROJECT ==========
+
+        selectCapstoneProject(projectId, projectName) {
+            const data = loadData();
+            data.capstone.selectedProject = { id: projectId, name: projectName };
+            data.capstone.status = 'in_progress';
+            data.capstone.selectedAt = new Date().toISOString();
+            this.trackInteraction('capstone_select', { projectId, projectName });
+            saveData(data);
+        },
+
+        updateCapstoneProgress(updates) {
+            const data = loadData();
+            Object.assign(data.capstone, updates);
+            data.capstone.lastUpdated = new Date().toISOString();
+            saveData(data);
+        },
+
+        submitCapstone(projectUrl, repoUrl, demoUrl, description) {
+            const data = loadData();
+            data.capstone.projectUrl = projectUrl;
+            data.capstone.repoUrl = repoUrl;
+            data.capstone.demoUrl = demoUrl;
+            data.capstone.description = description;
+            data.capstone.status = 'submitted';
+            data.capstone.submittedAt = new Date().toISOString();
+            this.trackInteraction('capstone_submit', { projectUrl, repoUrl });
+            saveData(data);
+            return data.capstone;
+        },
+
+        // ========== CERTIFICATION ==========
+
+        checkAndUpdateEligibility() {
+            const data = loadData();
+            const JC = window.JourneyCertification;
+
+            if (JC) {
+                const allModules = JC.getAllModules().map(m => m.id);
+                const completedModules = [];
+
+                // Gather completed modules from all pillars
+                Object.entries(data.moduleProgress).forEach(([pillar, progress]) => {
+                    if (progress.completedLessons && progress.completedLessons.length > 0) {
+                        completedModules.push(...progress.completedLessons);
+                    }
+                });
+
+                const eligibility = JC.checkCertificationEligibility(completedModules);
+                data.certification.eligible = eligibility.eligible && data.assessment.passed;
+                data.certification.eligibilityCheck = {
+                    modulesCompleted: eligibility.completed,
+                    modulesTotal: eligibility.total,
+                    assessmentPassed: data.assessment.passed,
+                    checkedAt: new Date().toISOString()
+                };
+            }
+            saveData(data);
+            return data.certification;
+        },
+
+        earnCertification(badgeId, nftMintAddress = null, txSignature = null) {
+            const data = loadData();
+            data.certification.earned = true;
+            data.certification.earnedAt = new Date().toISOString();
+            data.certification.badgeId = badgeId;
+            data.certification.nftMintAddress = nftMintAddress;
+            data.certification.txSignature = txSignature;
+            this.trackInteraction('certification_earned', { badgeId, nftMintAddress });
+            saveData(data);
+            return data.certification;
+        },
+
+        // ========== ANALYTICS ==========
+
+        trackInteraction(type, details) {
+            const data = loadData();
+            data.analytics.interactions.push({
+                type,
+                details,
+                timestamp: new Date().toISOString()
+            });
+            // Keep only last 500 interactions to prevent bloat
+            if (data.analytics.interactions.length > 500) {
+                data.analytics.interactions = data.analytics.interactions.slice(-500);
+            }
+            saveData(data);
+        },
+
+        updateTimeSpent(seconds) {
+            const data = loadData();
+            data.analytics.totalTimeSpent += seconds;
+            saveData(data);
+        },
+
+        // ========== EXPORT FUNCTIONS ==========
+
+        // Export all data as JSON
+        exportJSON() {
+            const data = loadData();
+            return JSON.stringify(data, null, 2);
+        },
+
+        // Export as downloadable file
+        downloadExport(filename = 'asdf-certification-data.json') {
+            const json = this.exportJSON();
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
+
+        // Get summary for display
+        getSummary() {
+            const data = loadData();
+
+            const moduleStats = {};
+            Object.entries(data.moduleProgress).forEach(([pillar, progress]) => {
+                moduleStats[pillar] = {
+                    lessonsCompleted: progress.completedLessons.length,
+                    quizzesCompleted: progress.quizScores.length,
+                    averageQuizScore: progress.quizScores.length > 0
+                        ? Math.round(progress.quizScores.reduce((sum, q) => sum + q.percentage, 0) / progress.quizScores.length)
+                        : 0,
+                    timeSpent: progress.timeSpent
+                };
+            });
+
+            return {
+                userId: data.userId,
+                walletAddress: data.walletAddress,
+                startedAt: data.startedAt,
+                lastUpdated: data.lastUpdated,
+                moduleStats,
+                assessment: {
+                    completed: !!data.assessment.completedAt,
+                    score: data.assessment.percentage || 0,
+                    passed: data.assessment.passed
+                },
+                capstone: {
+                    status: data.capstone.status,
+                    project: data.capstone.selectedProject?.name || null
+                },
+                certification: {
+                    eligible: data.certification.eligible,
+                    earned: data.certification.earned || false,
+                    earnedAt: data.certification.earnedAt
+                },
+                totalTimeSpent: data.analytics.totalTimeSpent,
+                sessionsCount: data.analytics.sessionsCount
+            };
+        },
+
+        // Get raw data for API submission
+        getSubmissionData() {
+            const data = loadData();
+            return {
+                version: data.version,
+                userId: data.userId,
+                walletAddress: data.walletAddress,
+                moduleProgress: data.moduleProgress,
+                assessment: data.assessment,
+                capstone: data.capstone,
+                certification: data.certification,
+                completedAt: data.certification.earnedAt || null
+            };
+        },
+
+        // Reset all data
+        reset() {
+            localStorage.removeItem(STORAGE_KEY);
+            return { ...defaultData };
+        }
+    };
+})();
+
 // Export for global access
 if (typeof window !== 'undefined') {
     window.JourneyCertification = JourneyCertification;
+    window.CertificationTracker = CertificationTracker;
 }

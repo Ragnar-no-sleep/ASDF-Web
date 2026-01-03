@@ -11020,6 +11020,11 @@ tokenomics if you have them."</pre>
             const lessonsCount = module.lessons ? module.lessons.length : 0;
             const themeIcon = module.theme === 'verify' ? '✓' : module.theme === 'fibonacci' ? '🌀' : module.theme === 'burn' ? '🔥' : '🏅';
 
+            // Determine pillar from module ID
+            const pillar = module.id.includes('code') ? 'code' :
+                          module.id.includes('design') ? 'design' :
+                          module.id.includes('content') ? 'content' : 'community';
+
             moduleCard.innerHTML = `
                 <div class="jm-cert-card-header">
                     <div class="jm-cert-badge">${themeIcon}</div>
@@ -11039,7 +11044,7 @@ tokenomics if you have them."</pre>
                         <span class="jm-meta-icon">🎯</span> Expert Level
                     </span>
                 </div>
-                <button class="jm-start-cert-module btn btn-primary" data-module-id="${module.id}">
+                <button class="jm-start-cert-module btn btn-primary" data-module-id="${module.id}" data-pillar="${pillar}">
                     Master This Skill →
                 </button>
                 <div class="jm-cert-module-content" id="cert-content-${module.id}" style="display: none;"></div>
@@ -11057,15 +11062,26 @@ tokenomics if you have them."</pre>
                 } else {
                     contentArea.style.display = 'block';
                     this.textContent = 'Close Module ↑';
-                    renderCertificationModuleContent(contentArea, module, JM);
+
+                    // Track module start
+                    if (window.CertificationTracker) {
+                        window.CertificationTracker.startModule(pillar, module.id);
+                    }
+
+                    renderCertificationModuleContent(contentArea, module, JM, pillar);
                 }
             });
         }
 
         // Helper: Render certification module content
-        function renderCertificationModuleContent(container, module, JM) {
+        function renderCertificationModuleContent(container, module, JM, pillar) {
             if (container.dataset.loaded === 'true') return;
             container.dataset.loaded = 'true';
+
+            // Determine pillar if not passed
+            const modulePillar = pillar || (module.id.includes('code') ? 'code' :
+                          module.id.includes('design') ? 'design' :
+                          module.id.includes('content') ? 'content' : 'community');
 
             let html = '<div class="jm-cert-lessons">';
 
@@ -11073,9 +11089,10 @@ tokenomics if you have them."</pre>
             if (module.lessons) {
                 module.lessons.forEach((lesson, index) => {
                     const safeTitle = JM ? JM.escapeHtml(lesson.title) : lesson.title;
+                    const lessonId = `${module.id}-lesson-${index}`;
                     html += `
-                        <div class="jm-cert-lesson">
-                            <div class="jm-cert-lesson-header" data-lesson="${index}">
+                        <div class="jm-cert-lesson" data-lesson-id="${lessonId}">
+                            <div class="jm-cert-lesson-header" data-lesson="${index}" data-lesson-id="${lessonId}">
                                 <span class="jm-lesson-num">${index + 1}</span>
                                 <h5>${safeTitle}</h5>
                                 <span class="jm-lesson-toggle">▼</span>
@@ -11090,6 +11107,9 @@ tokenomics if you have them."</pre>
                                         </ul>
                                     </div>
                                 ` : ''}
+                                <button class="jm-mark-complete btn btn-secondary" data-lesson-id="${lessonId}" data-pillar="${modulePillar}">
+                                    ✓ Mark as Complete
+                                </button>
                             </div>
                         </div>
                     `;
@@ -11099,10 +11119,14 @@ tokenomics if you have them."</pre>
             html += '</div>';
             container.innerHTML = html;
 
+            // Track lesson open times for time spent calculation
+            const lessonStartTimes = {};
+
             // Add lesson toggle handlers
             container.querySelectorAll('.jm-cert-lesson-header').forEach(header => {
                 header.addEventListener('click', function() {
                     const lessonIndex = this.dataset.lesson;
+                    const lessonId = this.dataset.lessonId;
                     const content = container.querySelector(`#cert-lesson-${module.id}-${lessonIndex}`);
                     const toggle = this.querySelector('.jm-lesson-toggle');
 
@@ -11110,11 +11134,39 @@ tokenomics if you have them."</pre>
                         content.style.display = 'block';
                         toggle.textContent = '▲';
                         this.classList.add('expanded');
+                        // Track lesson start time
+                        lessonStartTimes[lessonId] = Date.now();
                     } else {
                         content.style.display = 'none';
                         toggle.textContent = '▼';
                         this.classList.remove('expanded');
                     }
+                });
+            });
+
+            // Add mark complete handlers
+            container.querySelectorAll('.jm-mark-complete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lessonId = this.dataset.lessonId;
+                    const lessonPillar = this.dataset.pillar;
+
+                    // Calculate time spent
+                    const startTime = lessonStartTimes[lessonId] || Date.now();
+                    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+                    // Track completion
+                    if (window.CertificationTracker) {
+                        window.CertificationTracker.completeLesson(lessonPillar, lessonId, timeSpent);
+                    }
+
+                    // Update UI
+                    this.textContent = '✓ Completed';
+                    this.disabled = true;
+                    this.classList.add('completed');
+                    this.closest('.jm-cert-lesson').classList.add('lesson-completed');
+
+                    // Show feedback
+                    showAchievement('📚', 'Lesson Complete', 'Progress saved!');
                 });
             });
         }
