@@ -20,11 +20,27 @@ const ApiClient = {
     },
 
     /**
-     * Get CSRF token from meta tag if available
+     * Get CSRF token from meta tag or cookie
+     * Falls back gracefully if not available
      */
     getCSRFToken() {
+        // First try meta tag
         const meta = document.querySelector('meta[name="csrf-token"]');
-        return meta ? meta.getAttribute('content') : null;
+        if (meta) {
+            return meta.getAttribute('content');
+        }
+        // Fall back to cookie if available
+        const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    },
+
+    /**
+     * Get valid JWT token for API requests
+     * Uses the getValidToken function that checks expiration
+     */
+    getJWTToken() {
+        // getValidToken is defined in state.js and checks expiration
+        return typeof getValidToken === 'function' ? getValidToken() : null;
     },
 
     /**
@@ -110,9 +126,24 @@ const ApiClient = {
             ...options.headers
         };
 
-        if (options.auth !== false && appState.wallet) {
+        // Add JWT token for authenticated requests
+        const jwtToken = this.getJWTToken();
+        if (options.auth !== false && jwtToken) {
+            headers['Authorization'] = `Bearer ${jwtToken}`;
+        }
+
+        // Add wallet signature headers if no JWT
+        if (options.auth !== false && appState.wallet && !jwtToken) {
             const authHeaders = await this.getAuthHeaders();
             Object.assign(headers, authHeaders);
+        }
+
+        // Always add CSRF token for state-changing requests
+        if (options.method && options.method !== 'GET') {
+            const csrfToken = this.getCSRFToken();
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+            }
         }
 
         try {
@@ -124,6 +155,12 @@ const ApiClient = {
             const data = await response.json();
 
             if (!response.ok) {
+                // Handle auth errors - clear token if invalid
+                if (response.status === 401 && jwtToken) {
+                    if (typeof clearToken === 'function') {
+                        clearToken();
+                    }
+                }
                 throw new Error(data.message || data.error || 'API request failed');
             }
 
@@ -176,5 +213,37 @@ const ApiClient = {
 
     async getPeriodInfo() {
         return this.request('/users/period', { auth: false });
+    },
+
+    // Auth endpoints
+    async logout() {
+        const token = this.getJWTToken();
+        if (!token) {
+            // No token to revoke, just clear local state
+            if (typeof clearToken === 'function') {
+                clearToken();
+            }
+            this.clearAuthCache();
+            return { success: true, message: 'Already logged out' };
+        }
+
+        try {
+            const result = await this.request('/auth/logout', {
+                method: 'POST'
+            });
+            // Clear local token after successful server-side revocation
+            if (typeof clearToken === 'function') {
+                clearToken();
+            }
+            this.clearAuthCache();
+            return result;
+        } catch (error) {
+            // Still clear local token even if server call fails
+            if (typeof clearToken === 'function') {
+                clearToken();
+            }
+            this.clearAuthCache();
+            throw error;
+        }
     }
 };

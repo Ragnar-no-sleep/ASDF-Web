@@ -19,7 +19,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 // Services
-const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
+const { generateChallenge, verifyAndAuthenticate, refreshToken, revokeToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
 const { getTokenBalance, getTokenSupply, getRecentBurns, getWalletBurnHistory, getBatchTokenBalances, getPriorityFeeEstimate, healthCheck, isValidAddress } = require('./services/helius');
 const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
 const { getTopBurners, getXPLeaderboard, getUserRank, getStatistics, recordBurn, logAudit, syncFromBlockchain, getAuditLog } = require('./services/leaderboard');
@@ -532,6 +532,27 @@ app.get('/api/auth/refresh', authMiddleware, async (req, res) => {
 
     } catch (error) {
         res.status(401).json({ error: sanitizeError(error, 'refresh') });
+    }
+});
+
+/**
+ * Logout - Revoke current JWT token
+ * POST /api/auth/logout
+ */
+app.post('/api/auth/logout', authMiddleware, (req, res) => {
+    try {
+        const token = req.headers.authorization.substring(7);
+        const result = revokeToken(token);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        logAudit('user_logout', { wallet: req.user.wallet.slice(0, 8) + '...' });
+        res.json({ success: true, message: 'Logged out successfully' });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'logout') });
     }
 });
 
@@ -3414,6 +3435,38 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
+// PROCESS ERROR HANDLERS
+// ============================================
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('[FATAL] Uncaught Exception:', error.message);
+    if (!isProduction) {
+        console.error(error.stack);
+    }
+    // Log to audit in production
+    if (isProduction) {
+        logAudit('uncaught_exception', { error: error.message.slice(0, 100) });
+    }
+    // Give time to log, then exit
+    setTimeout(() => process.exit(1), 1000);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    const message = reason instanceof Error ? reason.message : String(reason);
+    console.error('[ERROR] Unhandled Rejection:', message);
+    if (!isProduction && reason instanceof Error) {
+        console.error(reason.stack);
+    }
+    // Log to audit in production
+    if (isProduction) {
+        logAudit('unhandled_rejection', { error: message.slice(0, 100) });
+    }
+    // Don't exit on unhandled rejection, but log it
+});
+
+// ============================================
 // START SERVER
 // ============================================
 
@@ -3421,7 +3474,7 @@ const server = app.listen(PORT, async () => {
     console.log(`🔥 ASDF API running on port ${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
     console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
-    console.log(`   Version: 1.7.0`);
+    console.log(`   Version: 1.8.0`);
 
     // Register server with shutdown service
     registerServer(server);

@@ -32,6 +32,13 @@ const CHALLENGE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 // In-memory challenge store (use Redis in production)
 const challenges = new Map();
 
+// Token revocation blacklist (use Redis in production for distributed systems)
+const revokedTokens = new Map();
+const TOKEN_BLACKLIST_CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+
+// Mutex for concurrent operations (simple implementation)
+let challengeMutex = Promise.resolve();
+
 /**
  * Generate authentication challenge
  * @param {string} wallet - Wallet address requesting auth
@@ -147,6 +154,11 @@ function verifySignature(wallet, message, signature) {
  */
 function verifyToken(token) {
     try {
+        // Check if token is revoked first
+        if (isTokenRevoked(token)) {
+            return { valid: false, error: 'Token has been revoked' };
+        }
+
         const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
         return { valid: true, payload };
     } catch (error) {
@@ -156,6 +168,66 @@ function verifyToken(token) {
         return { valid: false, error: 'Invalid token' };
     }
 }
+
+/**
+ * Revoke a token (logout)
+ * @param {string} token - JWT token to revoke
+ * @returns {{success: boolean, error?: string}}
+ */
+function revokeToken(token) {
+    try {
+        // Decode without verifying to get expiry
+        const decoded = jwt.decode(token);
+        if (!decoded || !decoded.exp) {
+            return { success: false, error: 'Invalid token format' };
+        }
+
+        // Store token hash (not the actual token) with its expiry
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const expiresAt = decoded.exp * 1000; // Convert to ms
+
+        // Only store if not already expired
+        if (Date.now() < expiresAt) {
+            revokedTokens.set(tokenHash, expiresAt);
+        }
+
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Failed to revoke token' };
+    }
+}
+
+/**
+ * Check if a token is revoked
+ * @param {string} token - JWT token
+ * @returns {boolean}
+ */
+function isTokenRevoked(token) {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    return revokedTokens.has(tokenHash);
+}
+
+/**
+ * Cleanup expired revoked tokens
+ */
+function cleanupRevokedTokens() {
+    const now = Date.now();
+    let cleaned = 0;
+
+    for (const [hash, expiry] of revokedTokens.entries()) {
+        if (now > expiry) {
+            revokedTokens.delete(hash);
+            cleaned++;
+        }
+    }
+
+    if (cleaned > 0 && process.env.NODE_ENV !== 'production') {
+        console.log(`[Auth] Cleaned ${cleaned} expired revoked tokens`);
+    }
+}
+
+// Start cleanup interval for revoked tokens
+setInterval(cleanupRevokedTokens, TOKEN_BLACKLIST_CLEANUP_INTERVAL);
 
 /**
  * Refresh token with updated balance
@@ -254,15 +326,26 @@ function optionalAuthMiddleware(req, res, next) {
 }
 
 /**
- * Cleanup expired challenges
+ * Cleanup expired challenges with mutex to prevent race conditions
  */
-function cleanupExpiredChallenges() {
-    const now = Date.now();
-    for (const [wallet, data] of challenges.entries()) {
-        if (now > data.expiresAt) {
-            challenges.delete(wallet);
+async function cleanupExpiredChallenges() {
+    // Use mutex to prevent concurrent cleanup operations
+    challengeMutex = challengeMutex.then(() => {
+        const now = Date.now();
+        let cleaned = 0;
+        for (const [wallet, data] of challenges.entries()) {
+            if (now > data.expiresAt) {
+                challenges.delete(wallet);
+                cleaned++;
+            }
         }
-    }
+        if (cleaned > 0 && process.env.NODE_ENV !== 'production') {
+            console.log(`[Auth] Cleaned ${cleaned} expired challenges`);
+        }
+    }).catch(() => {
+        // Silently handle cleanup errors
+    });
+    return challengeMutex;
 }
 
 module.exports = {
@@ -270,6 +353,8 @@ module.exports = {
     verifyAndAuthenticate,
     verifyToken,
     refreshToken,
+    revokeToken,
+    isTokenRevoked,
     calculateTier,
     authMiddleware,
     optionalAuthMiddleware

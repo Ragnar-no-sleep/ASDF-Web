@@ -1,18 +1,61 @@
 # Security Policy for ASDF Web
-  # See https://securitytxt.org/ for more information
+# See https://securitytxt.org/ for more information
+# Version: 1.8.0 (Updated 2026-01-03)
 
-  # Contact information for security researchers
-  Contact: mailto:security@alonisthe.dev
-  Contact: https://github.com/Ragnar-no-sleep/ASDF-Web/security/advisories/new
+# Contact information for security researchers
+Contact: mailto:security@alonisthe.dev
+Contact: https://github.com/Ragnar-no-sleep/ASDF-Web/security/advisories/new
 
-  # Security policy document
-  Policy: https://github.com/Ragnar-no-sleep/ASDF-Web/security
+# Security policy document
+Policy: https://github.com/Ragnar-no-sleep/ASDF-Web/security
 
-  # Preferred languages for security reports
-  Preferred-Languages: en, fr
+# Preferred languages for security reports
+Preferred-Languages: en, fr
 
-  # Canonical URL for this security.txt file
-  Canonical: https://asdf-web.onrender.com/.well-known/security.txt
+# Canonical URL for this security.txt file
+Canonical: https://asdf-web.onrender.com/.well-known/security.txt
 
-  # Expiration date (update annually)
-  Expires: 2026-12-31T23:59:59.000Z
+# Acknowledgments (Hall of Fame)
+Acknowledgments: https://github.com/Ragnar-no-sleep/ASDF-Web/blob/main/SECURITY.md
+
+# Expiration date (update annually)
+Expires: 2027-01-03T23:59:59.000Z
+
+# ============================================
+# Security Measures Implemented (v1.8.0)
+# ============================================
+#
+# API Security:
+# - JWT authentication with HS256 algorithm enforcement
+# - Token revocation/blacklist mechanism for logout
+# - Request timeouts (30s) to prevent DoS
+# - Webhook payload size limits (1MB)
+# - Rate limiting per endpoint with health endpoint protection
+# - ALLOWED_ORIGINS enforcement in production (fail-fast)
+# - Content-Type validation middleware
+# - Request signing with HMAC and nonce replay protection
+# - Admin wallet format validation at startup
+# - Mutex-protected challenge/nonce cleanup
+# - Global error handlers for uncaught exceptions
+# - Process-level error handlers (uncaughtException, unhandledRejection)
+#
+# Web Security:
+# - Content Security Policy (CSP) with strict directives
+# - HTTPS enforcement with HSTS (1 year, preload)
+# - XSS protection via DOM API (no innerHTML with user data)
+# - DOMPurify integration for user-generated content
+# - Static file serving restrictions (.env, .json, etc. blocked)
+# - CSRF token validation with fallback mechanisms
+# - JWT expiration check before API requests
+#
+# Client Security:
+# - JWT token expiration validation before use
+# - Automatic token cleanup on expiration
+# - Secure auth cache with time-based expiry
+# - Rate limiting on client-side API calls
+#
+# Infrastructure:
+# - Environment variable validation at startup
+# - Production fail-fast for missing critical configs
+# - Graceful shutdown handling
+# - 404 handler for unknown API routes

@@ -30,13 +30,32 @@ const SIGNING_CONFIG = {
     headerPrefix: 'X-ASDF-'
 };
 
-// Admin wallets (should be in env or database in production)
-const ADMIN_WALLETS = new Set(
-    (process.env.ADMIN_WALLETS || '').split(',').filter(w => w.length > 0)
-);
+// Solana address validation regex (base58, 32-44 chars)
+const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
+// Admin wallets (validated at startup)
+const rawAdminWallets = (process.env.ADMIN_WALLETS || '').split(',').filter(w => w.length > 0);
+const ADMIN_WALLETS = new Set();
+
+// Validate admin wallet addresses at startup
+rawAdminWallets.forEach((wallet, index) => {
+    const trimmed = wallet.trim();
+    if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
+        console.error(`[Security] WARNING: Invalid admin wallet format at index ${index}: ${trimmed.slice(0, 8)}...`);
+    } else {
+        ADMIN_WALLETS.add(trimmed);
+    }
+});
+
+if (process.env.NODE_ENV === 'production' && ADMIN_WALLETS.size === 0) {
+    console.warn('[Security] WARNING: No valid admin wallets configured');
+}
 
 // Used nonces for replay protection
 const usedNonces = new Map();
+
+// Mutex for nonce cleanup to prevent race conditions
+let nonceMutex = Promise.resolve();
 
 // Cleanup interval (every 5 minutes)
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
@@ -84,22 +103,28 @@ function validateNonce(nonce, wallet) {
 }
 
 /**
- * Cleanup expired nonces
+ * Cleanup expired nonces with mutex to prevent race conditions
  */
 function cleanupNonces() {
-    const now = Date.now();
-    let cleaned = 0;
+    // Use mutex to prevent concurrent cleanup operations
+    nonceMutex = nonceMutex.then(() => {
+        const now = Date.now();
+        let cleaned = 0;
 
-    for (const [key, expiry] of usedNonces.entries()) {
-        if (now > expiry) {
-            usedNonces.delete(key);
-            cleaned++;
+        for (const [key, expiry] of usedNonces.entries()) {
+            if (now > expiry) {
+                usedNonces.delete(key);
+                cleaned++;
+            }
         }
-    }
 
-    if (cleaned > 0) {
-        console.log(`[Security] Cleaned ${cleaned} expired nonces`);
-    }
+        if (cleaned > 0 && process.env.NODE_ENV !== 'production') {
+            console.log(`[Security] Cleaned ${cleaned} expired nonces`);
+        }
+    }).catch(() => {
+        // Silently handle cleanup errors
+    });
+    return nonceMutex;
 }
 
 // Start cleanup interval
