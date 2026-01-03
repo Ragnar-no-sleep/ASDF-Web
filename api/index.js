@@ -12,6 +12,7 @@
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -20,7 +21,7 @@ const rateLimit = require('express-rate-limit');
 // Services
 const { generateChallenge, verifyAndAuthenticate, refreshToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
 const { getTokenBalance, getTokenSupply, getRecentBurns, healthCheck, isValidAddress } = require('./services/helius');
-const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer } = require('./services/shop');
+const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -124,16 +125,22 @@ app.use('/api/shop/purchase', purchaseLimiter);
 
 app.get('/health', async (req, res) => {
     const heliusHealth = await healthCheck();
+    const shopMetrics = getShopMetrics();
 
     res.json({
-        status: 'ok',
+        status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
         services: {
             api: true,
-            helius: heliusHealth.healthy
+            helius: heliusHealth.healthy,
+            heliusEnhanced: heliusHealth.details?.enhancedApi || false
         },
         latency: {
             helius: heliusHealth.latency
+        },
+        metrics: {
+            shop: shopMetrics,
+            heliusCacheSize: heliusHealth.details?.cacheSize || 0
         }
     });
 });
@@ -278,13 +285,20 @@ app.get('/api/shop/inventory', authMiddleware, async (req, res) => {
 /**
  * Initiate purchase (returns transaction to sign)
  * POST /api/shop/purchase
+ * Supports idempotency key header for safe retries
  */
 app.post('/api/shop/purchase', authMiddleware, async (req, res) => {
     try {
         const { itemId } = req.body;
+        const idempotencyKey = req.headers['x-idempotency-key'] || null;
 
         if (!itemId) {
             return res.status(400).json({ error: 'Item ID required' });
+        }
+
+        // Validate itemId format (alphanumeric with underscores)
+        if (!/^[a-z0-9_]{1,50}$/.test(itemId)) {
+            return res.status(400).json({ error: 'Invalid item ID format' });
         }
 
         const inventory = await getInventory(req.user.wallet);
@@ -293,7 +307,8 @@ app.post('/api/shop/purchase', authMiddleware, async (req, res) => {
             req.user.wallet,
             itemId,
             req.user.tierIndex,
-            inventory
+            inventory,
+            idempotencyKey
         );
 
         res.json(result);
@@ -425,6 +440,94 @@ app.get('/api/config/public', async (req, res) => {
             cycleWeeks: 9,
             rotationEpoch: '2024-01-01T00:00:00Z'
         });
+    }
+});
+
+// ============================================
+// HELIUS WEBHOOK - REAL-TIME BURN TRACKING
+// ============================================
+
+// Webhook secret for signature verification
+const WEBHOOK_SECRET = process.env.HELIUS_WEBHOOK_SECRET;
+
+/**
+ * Verify Helius webhook signature
+ * @param {string} payload - Raw request body
+ * @param {string} signature - X-Helius-Signature header
+ * @returns {boolean} Is valid
+ */
+function verifyWebhookSignature(payload, signature) {
+    if (!WEBHOOK_SECRET) {
+        console.warn('[Webhook] HELIUS_WEBHOOK_SECRET not configured');
+        return false;
+    }
+
+    const expectedSignature = crypto
+        .createHmac('sha256', WEBHOOK_SECRET)
+        .update(payload)
+        .digest('hex');
+
+    // Use timing-safe comparison to prevent timing attacks
+    try {
+        return crypto.timingSafeEqual(
+            Buffer.from(signature),
+            Buffer.from(expectedSignature)
+        );
+    } catch {
+        // Length mismatch
+        return false;
+    }
+}
+
+/**
+ * Helius webhook endpoint for burn events
+ * POST /api/webhook/helius
+ *
+ * Configure in Helius Dashboard:
+ * - URL: https://your-api.com/api/webhook/helius
+ * - Transaction Types: BURN
+ * - Account: ASDF token mint address
+ */
+app.post('/api/webhook/helius', express.raw({ type: 'application/json' }), async (req, res) => {
+    try {
+        const signature = req.headers['x-helius-signature'];
+        const payload = req.body.toString();
+
+        // Verify webhook signature in production
+        if (isProduction && WEBHOOK_SECRET) {
+            if (!signature || !verifyWebhookSignature(payload, signature)) {
+                console.warn('[Webhook] Invalid signature');
+                return res.status(401).json({ error: 'Invalid signature' });
+            }
+        }
+
+        const events = JSON.parse(payload);
+
+        // Process each burn event
+        for (const event of events) {
+            if (event.type === 'BURN' || event.tokenTransfers?.some(t => t.tokenAmount < 0)) {
+                const burn = {
+                    signature: event.signature,
+                    wallet: event.feePayer,
+                    amount: Math.abs(event.tokenTransfers?.[0]?.tokenAmount || 0),
+                    timestamp: event.timestamp,
+                    slot: event.slot
+                };
+
+                console.log(`[Webhook] Burn detected: ${burn.wallet?.slice(0, 8)}... burned ${burn.amount} tokens`);
+
+                // In production: Record to database, update stats, notify clients via WebSocket
+                // await db.query('INSERT INTO burns ...', [burn]);
+                // await redis.publish('burns', JSON.stringify(burn));
+            }
+        }
+
+        res.json({ received: true, processed: events.length });
+
+    } catch (error) {
+        console.error('[Webhook] Error processing:', error.message);
+        // Always return 200 to prevent Helius retries on processing errors
+        res.json({ received: true, error: 'Processing error' });
     }
 });
 
