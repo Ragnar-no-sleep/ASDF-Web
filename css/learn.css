@@ -2375,14 +2375,14 @@
             top: 100px;
             right: 24px;
             width: 300px;
-            background: linear-gradient(135deg, var(--bg-burnt), var(--bg-charred));
-            border: 2px solid var(--gold);
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
             border-radius: var(--radius);
             padding: 20px;
             z-index: 200;
             transform: translateX(400px);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 88, 12, 0.3);
             pointer-events: none;
         }
 
@@ -6790,16 +6790,16 @@
             align-items: center;
             gap: 16px;
             padding: 16px 24px;
-            background: linear-gradient(135deg, var(--bg-burnt), var(--bg-charred));
-            border: 2px solid var(--gold);
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3), 0 0 60px rgba(251, 191, 36, 0.1);
+            box-shadow: 0 8px 32px rgba(234, 88, 12, 0.3), 0 0 60px rgba(234, 88, 12, 0.15);
             animation: badgePulse 2s ease-in-out infinite;
         }
 
         @keyframes badgePulse {
-            0%, 100% { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3), 0 0 60px rgba(251, 191, 36, 0.1); }
-            50% { box-shadow: 0 8px 40px rgba(251, 191, 36, 0.5), 0 0 80px rgba(251, 191, 36, 0.2); }
+            0%, 100% { box-shadow: 0 8px 32px rgba(234, 88, 12, 0.3), 0 0 60px rgba(234, 88, 12, 0.15); }
+            50% { box-shadow: 0 8px 40px rgba(234, 88, 12, 0.5), 0 0 80px rgba(234, 88, 12, 0.25); }
         }
 
         .yj-badge-notif-icon {
