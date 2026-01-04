@@ -458,12 +458,13 @@
         }
 
         .game-card:hover {
-            border-color: var(--accent-bright);
+            background: linear-gradient(135deg, var(--bg-burnt) 0%, rgba(251, 191, 36, 0.15) 50%, var(--bg-burnt) 100%);
+            border-color: var(--gold);
             transform: translateY(-4px);
             box-shadow:
-                0 0 25px rgba(234, 88, 12, 0.35),
+                0 0 30px rgba(251, 191, 36, 0.3),
                 0 8px 25px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(234, 88, 12, 0.2);
+                inset 0 0 20px rgba(251, 191, 36, 0.1);
         }
 
         .game-card.featured {
