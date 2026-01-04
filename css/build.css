@@ -49,16 +49,17 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html {
     scroll-behavior: smooth;
-    background: var(--bg-void);
+    background: #020812;
 }
 
 body {
     font-family: var(--font-mono);
-    background: var(--bg-void);
+    background: transparent;
     color: var(--text-cream);
     line-height: 1.7;
     overflow-x: hidden;
     min-height: 100vh;
+    position: relative;
 }
 
 /* Scrollbar */

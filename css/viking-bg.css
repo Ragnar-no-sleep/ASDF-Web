@@ -224,7 +224,12 @@ body::after {
 }
 
 /* Ensure body has proper setup for the background */
+html {
+    background: #020812 !important;
+}
+
 body {
     position: relative;
     min-height: 100vh;
+    background: transparent !important;
 }
