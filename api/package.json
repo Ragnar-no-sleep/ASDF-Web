@@ -21,7 +21,8 @@
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

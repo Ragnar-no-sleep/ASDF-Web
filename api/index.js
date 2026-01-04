@@ -1644,6 +1644,129 @@ app.get('/api/assets/:mint', async (req, res) => {
 });
 
 // ============================================
+// HELIUS DAS API ROUTES
+// ============================================
+
+// Lazy load heliusEnhanced to avoid circular deps
+let heliusEnhanced = null;
+function getHeliusEnhanced() {
+    if (!heliusEnhanced) {
+        heliusEnhanced = require('./services/heliusEnhanced');
+    }
+    return heliusEnhanced;
+}
+
+/**
+ * Get asset via DAS API (supports cNFTs)
+ * GET /api/das/asset/:id
+ */
+app.get('/api/das/asset/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!isValidAddress(id)) {
+            return res.status(400).json({ error: 'Invalid asset ID' });
+        }
+
+        const asset = await getHeliusEnhanced().getAsset(id);
+
+        if (!asset) {
+            return res.status(404).json({ error: 'Asset not found' });
+        }
+
+        res.json(asset);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'das-asset') });
+    }
+});
+
+/**
+ * Get assets by owner via DAS API
+ * GET /api/das/owner/:address
+ */
+app.get('/api/das/owner/:address', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { address } = req.params;
+        const { page = 1, limit = 50 } = req.query;
+
+        if (!isValidAddress(address)) {
+            return res.status(400).json({ error: 'Invalid wallet address' });
+        }
+
+        const assets = await getHeliusEnhanced().getAssetsByOwner(address, {
+            page: parseInt(page),
+            limit: Math.min(parseInt(limit), 100)
+        });
+
+        res.json(assets);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'das-owner') });
+    }
+});
+
+/**
+ * Simulate transaction
+ * POST /api/transaction/simulate
+ */
+app.post('/api/transaction/simulate', authMiddleware, async (req, res) => {
+    try {
+        const { transaction, accounts } = req.body;
+
+        if (!transaction) {
+            return res.status(400).json({ error: 'Transaction required' });
+        }
+
+        const result = await getHeliusEnhanced().simulateTransaction(transaction, { accounts });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'simulate-tx') });
+    }
+});
+
+/**
+ * Parse transaction with enhanced data
+ * GET /api/transaction/parse/:signature
+ */
+app.get('/api/transaction/parse/:signature', async (req, res) => {
+    try {
+        const { signature } = req.params;
+
+        // Basic signature validation (base58, 88 chars)
+        if (!signature || signature.length < 80 || signature.length > 100) {
+            return res.status(400).json({ error: 'Invalid signature' });
+        }
+
+        const parsed = await getHeliusEnhanced().parseTransaction(signature);
+
+        if (!parsed) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        res.json(parsed);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'parse-tx') });
+    }
+});
+
+/**
+ * Get Helius service health
+ * GET /api/helius/health
+ */
+app.get('/api/helius/health', async (req, res) => {
+    try {
+        const health = await getHeliusEnhanced().healthCheck();
+        res.json(health);
+    } catch (error) {
+        res.status(500).json({ healthy: false, error: error.message });
+    }
+});
+
+// ============================================
 // ENHANCED WEBHOOK HANDLER
 // ============================================
 
