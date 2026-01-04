@@ -1,10 +1,21 @@
 /* ============================================
-   YGGDRASIL / VIKING BACKGROUND
-   Nordic Aurora + World Tree + Stars
+   YGGDRASIL / VIKING BACKGROUND - ENHANCED
+   Nordic Aurora + World Tree + Stars + Runes
    Style inspiré de asdfasdfa.tech
 
    Shared across: learn, tools, build, play, games, faq/glossary
    ============================================ */
+
+/* Ensure body has proper setup for the background */
+html {
+    background: #020812 !important;
+}
+
+body {
+    position: relative;
+    min-height: 100vh;
+    background: transparent !important;
+}
 
 /* Stars layer - fond étoilé visible */
 body::before {
@@ -17,7 +28,7 @@ body::before {
     pointer-events: none;
     z-index: -3;
     background-image:
-        /* Étoiles brillantes */
+        /* Étoiles brillantes - plus nombreuses */
         radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.95), transparent),
         radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.85), transparent),
         radial-gradient(3px 3px at 50px 160px, rgba(255, 255, 255, 0.9), transparent),
@@ -37,8 +48,10 @@ body::before {
         radial-gradient(2px 2px at 580px 80px, rgba(255, 255, 255, 0.95), transparent),
         radial-gradient(2px 2px at 620px 150px, rgba(255, 255, 255, 0.5), transparent),
         radial-gradient(3px 3px at 660px 30px, rgba(255, 255, 255, 0.7), transparent),
-        radial-gradient(2px 2px at 700px 110px, rgba(255, 255, 255, 0.9), transparent);
-    background-size: 720px 220px;
+        radial-gradient(2px 2px at 700px 110px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 750px 190px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(3px 3px at 800px 70px, rgba(255, 255, 255, 0.85), transparent);
+    background-size: 820px 220px;
     background-repeat: repeat;
     animation: starsTwinkle 4s ease-in-out infinite alternate;
 }
@@ -100,17 +113,17 @@ body::after {
     overflow: hidden;
 }
 
-/* Main Yggdrasil tree - visible */
+/* Main Yggdrasil tree - ENHANCED with more branches */
 .yggdrasil-bg::before {
     content: '';
     position: absolute;
-    bottom: -5%;
+    bottom: -10%;
     left: 50%;
     transform: translateX(-50%);
-    width: 140%;
-    height: 110%;
-    opacity: 0.18;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 900'%3E%3Cdefs%3E%3ClinearGradient id='treeGrad' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%2322c55e'/%3E%3Cstop offset='40%25' stop-color='%234ade80'/%3E%3Cstop offset='70%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='4' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23treeGrad)' stroke-linecap='round' filter='url(%23glow)'%3E%3Cpath d='M500 900 L500 500 Q500 420 475 350 Q450 280 500 210 Q550 140 500 70 Q475 30 500 0' stroke-width='6'/%3E%3Cpath d='M500 750 Q380 710 260 760 Q140 810 20 740' stroke-width='4'/%3E%3Cpath d='M500 620 Q360 560 220 620 Q80 680 -60 580' stroke-width='3.5'/%3E%3Cpath d='M500 500 Q380 420 260 480 Q120 540 -20 440' stroke-width='3'/%3E%3Cpath d='M485 380 Q380 300 260 360 Q120 420 -20 320' stroke-width='2.5'/%3E%3Cpath d='M490 270 Q400 190 300 240 Q180 300 40 210' stroke-width='2'/%3E%3Cpath d='M495 170 Q420 100 340 140 Q240 190 120 120' stroke-width='1.5'/%3E%3Cpath d='M500 750 Q620 710 740 760 Q860 810 980 740' stroke-width='4'/%3E%3Cpath d='M500 620 Q640 560 780 620 Q920 680 1060 580' stroke-width='3.5'/%3E%3Cpath d='M500 500 Q620 420 740 480 Q880 540 1020 440' stroke-width='3'/%3E%3Cpath d='M515 380 Q620 300 740 360 Q880 420 1020 320' stroke-width='2.5'/%3E%3Cpath d='M510 270 Q600 190 700 240 Q820 300 960 210' stroke-width='2'/%3E%3Cpath d='M505 170 Q580 100 660 140 Q760 190 880 120' stroke-width='1.5'/%3E%3Cpath d='M500 900 Q380 870 260 910 Q140 950 0 880' stroke-width='5'/%3E%3Cpath d='M500 900 Q620 870 740 910 Q860 950 1000 880' stroke-width='5'/%3E%3Cpath d='M500 900 Q440 950 360 1000' stroke-width='3'/%3E%3Cpath d='M500 900 Q560 950 640 1000' stroke-width='3'/%3E%3Ccircle cx='260' cy='360' r='8' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='740' cy='360' r='8' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='220' cy='620' r='6' fill='%2322d3ee' opacity='0.7'/%3E%3Ccircle cx='780' cy='620' r='6' fill='%2322d3ee' opacity='0.7'/%3E%3Ccircle cx='300' cy='240' r='5' fill='%23a855f7' opacity='0.6'/%3E%3Ccircle cx='700' cy='240' r='5' fill='%23a855f7' opacity='0.6'/%3E%3Ccircle cx='120' cy='480' r='4' fill='%234ade80' opacity='0.5'/%3E%3Ccircle cx='880' cy='480' r='4' fill='%234ade80' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
+    width: 160%;
+    height: 120%;
+    opacity: 0.22;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 1000'%3E%3Cdefs%3E%3ClinearGradient id='treeGrad' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%2322c55e'/%3E%3Cstop offset='30%25' stop-color='%234ade80'/%3E%3Cstop offset='60%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3ClinearGradient id='leafGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234ade80'/%3E%3Cstop offset='100%25' stop-color='%2322c55e'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='3' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3Cfilter id='glowStrong'%3E%3CfeGaussianBlur stdDeviation='6' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23treeGrad)' stroke-linecap='round' filter='url(%23glow)'%3E%3C!-- Main trunk - thicker --%3E%3Cpath d='M600 1000 L600 550 Q600 480 570 400 Q540 320 600 240 Q660 160 600 80 Q570 30 600 0' stroke-width='8'/%3E%3Cpath d='M600 1000 L600 550' stroke-width='12' opacity='0.5'/%3E%3C!-- LEFT BRANCHES - Level 1 (bottom) --%3E%3Cpath d='M600 850 Q480 800 360 860 Q240 920 100 850' stroke-width='5'/%3E%3Cpath d='M360 860 Q300 820 220 850 Q140 880 60 830' stroke-width='3'/%3E%3Cpath d='M360 860 Q320 900 260 920' stroke-width='2'/%3E%3C!-- LEFT BRANCHES - Level 2 --%3E%3Cpath d='M600 720 Q460 660 320 720 Q180 780 40 700' stroke-width='4.5'/%3E%3Cpath d='M320 720 Q260 680 180 710 Q100 740 20 680' stroke-width='3'/%3E%3Cpath d='M460 690 Q400 650 340 680' stroke-width='2'/%3E%3Cpath d='M320 720 Q280 760 220 780' stroke-width='2'/%3E%3C!-- LEFT BRANCHES - Level 3 --%3E%3Cpath d='M600 590 Q440 520 280 590 Q120 660 -40 560' stroke-width='4'/%3E%3Cpath d='M440 555 Q380 510 300 550 Q220 590 140 530' stroke-width='2.5'/%3E%3Cpath d='M280 590 Q220 550 160 580 Q100 610 40 560' stroke-width='2'/%3E%3Cpath d='M280 590 Q240 630 180 650' stroke-width='1.5'/%3E%3C!-- LEFT BRANCHES - Level 4 --%3E%3Cpath d='M585 460 Q460 380 320 450 Q160 520 0 420' stroke-width='3.5'/%3E%3Cpath d='M460 415 Q400 370 320 410 Q240 450 160 390' stroke-width='2.5'/%3E%3Cpath d='M320 450 Q260 420 200 450 Q140 480 80 430' stroke-width='2'/%3E%3C!-- LEFT BRANCHES - Level 5 --%3E%3Cpath d='M590 340 Q480 260 360 330 Q220 400 60 300' stroke-width='3'/%3E%3Cpath d='M480 295 Q420 250 350 290 Q280 330 200 270' stroke-width='2'/%3E%3Cpath d='M360 330 Q300 300 240 330 Q180 360 120 310' stroke-width='1.5'/%3E%3C!-- LEFT BRANCHES - Level 6 (top) --%3E%3Cpath d='M595 220 Q500 150 400 210 Q280 280 140 190' stroke-width='2.5'/%3E%3Cpath d='M500 185 Q450 140 380 180 Q310 220 240 160' stroke-width='1.5'/%3E%3Cpath d='M400 210 Q350 180 300 210 Q250 240 200 190' stroke-width='1'/%3E%3C!-- LEFT BRANCHES - Level 7 --%3E%3Cpath d='M597 120 Q520 60 440 110 Q340 170 220 100' stroke-width='2'/%3E%3Cpath d='M440 110 Q390 80 340 110' stroke-width='1'/%3E%3C!-- RIGHT BRANCHES - Level 1 (bottom) --%3E%3Cpath d='M600 850 Q720 800 840 860 Q960 920 1100 850' stroke-width='5'/%3E%3Cpath d='M840 860 Q900 820 980 850 Q1060 880 1140 830' stroke-width='3'/%3E%3Cpath d='M840 860 Q880 900 940 920' stroke-width='2'/%3E%3C!-- RIGHT BRANCHES - Level 2 --%3E%3Cpath d='M600 720 Q740 660 880 720 Q1020 780 1160 700' stroke-width='4.5'/%3E%3Cpath d='M880 720 Q940 680 1020 710 Q1100 740 1180 680' stroke-width='3'/%3E%3Cpath d='M740 690 Q800 650 860 680' stroke-width='2'/%3E%3Cpath d='M880 720 Q920 760 980 780' stroke-width='2'/%3E%3C!-- RIGHT BRANCHES - Level 3 --%3E%3Cpath d='M600 590 Q760 520 920 590 Q1080 660 1240 560' stroke-width='4'/%3E%3Cpath d='M760 555 Q820 510 900 550 Q980 590 1060 530' stroke-width='2.5'/%3E%3Cpath d='M920 590 Q980 550 1040 580 Q1100 610 1160 560' stroke-width='2'/%3E%3Cpath d='M920 590 Q960 630 1020 650' stroke-width='1.5'/%3E%3C!-- RIGHT BRANCHES - Level 4 --%3E%3Cpath d='M615 460 Q740 380 880 450 Q1040 520 1200 420' stroke-width='3.5'/%3E%3Cpath d='M740 415 Q800 370 880 410 Q960 450 1040 390' stroke-width='2.5'/%3E%3Cpath d='M880 450 Q940 420 1000 450 Q1060 480 1120 430' stroke-width='2'/%3E%3C!-- RIGHT BRANCHES - Level 5 --%3E%3Cpath d='M610 340 Q720 260 840 330 Q980 400 1140 300' stroke-width='3'/%3E%3Cpath d='M720 295 Q780 250 850 290 Q920 330 1000 270' stroke-width='2'/%3E%3Cpath d='M840 330 Q900 300 960 330 Q1020 360 1080 310' stroke-width='1.5'/%3E%3C!-- RIGHT BRANCHES - Level 6 (top) --%3E%3Cpath d='M605 220 Q700 150 800 210 Q920 280 1060 190' stroke-width='2.5'/%3E%3Cpath d='M700 185 Q750 140 820 180 Q890 220 960 160' stroke-width='1.5'/%3E%3Cpath d='M800 210 Q850 180 900 210 Q950 240 1000 190' stroke-width='1'/%3E%3C!-- RIGHT BRANCHES - Level 7 --%3E%3Cpath d='M603 120 Q680 60 760 110 Q860 170 980 100' stroke-width='2'/%3E%3Cpath d='M760 110 Q810 80 860 110' stroke-width='1'/%3E%3C!-- ROOTS - Enhanced --%3E%3Cpath d='M600 1000 Q480 960 360 1010 Q240 1060 80 980' stroke-width='6'/%3E%3Cpath d='M600 1000 Q720 960 840 1010 Q960 1060 1120 980' stroke-width='6'/%3E%3Cpath d='M600 1000 Q540 1040 460 1080' stroke-width='4'/%3E%3Cpath d='M600 1000 Q660 1040 740 1080' stroke-width='4'/%3E%3Cpath d='M600 1000 Q500 1020 400 1000 Q300 980 200 1020' stroke-width='3'/%3E%3Cpath d='M600 1000 Q700 1020 800 1000 Q900 980 1000 1020' stroke-width='3'/%3E%3Cpath d='M360 1010 Q300 1050 220 1040' stroke-width='2'/%3E%3Cpath d='M840 1010 Q900 1050 980 1040' stroke-width='2'/%3E%3C!-- Nine Worlds markers (glowing orbs) --%3E%3Ccircle cx='280' cy='590' r='12' fill='%234ade80' opacity='0.9' filter='url(%23glowStrong)'/%3E%3Ccircle cx='920' cy='590' r='12' fill='%234ade80' opacity='0.9' filter='url(%23glowStrong)'/%3E%3Ccircle cx='320' cy='450' r='10' fill='%2322d3ee' opacity='0.8' filter='url(%23glowStrong)'/%3E%3Ccircle cx='880' cy='450' r='10' fill='%2322d3ee' opacity='0.8' filter='url(%23glowStrong)'/%3E%3Ccircle cx='360' cy='330' r='8' fill='%23a855f7' opacity='0.7' filter='url(%23glowStrong)'/%3E%3Ccircle cx='840' cy='330' r='8' fill='%23a855f7' opacity='0.7' filter='url(%23glowStrong)'/%3E%3Ccircle cx='400' cy='210' r='6' fill='%23ec4899' opacity='0.6' filter='url(%23glowStrong)'/%3E%3Ccircle cx='800' cy='210' r='6' fill='%23ec4899' opacity='0.6' filter='url(%23glowStrong)'/%3E%3Ccircle cx='600' cy='80' r='14' fill='%23fbbf24' opacity='1' filter='url(%23glowStrong)'/%3E%3C!-- Additional energy lines --%3E%3Cpath d='M280 590 Q600 500 920 590' stroke='%234ade80' stroke-width='1' opacity='0.4' stroke-dasharray='10,5'/%3E%3Cpath d='M320 450 Q600 380 880 450' stroke='%2322d3ee' stroke-width='1' opacity='0.3' stroke-dasharray='8,4'/%3E%3Cpath d='M360 330 Q600 280 840 330' stroke='%23a855f7' stroke-width='1' opacity='0.3' stroke-dasharray='6,3'/%3E%3C/g%3E%3C/svg%3E");
     background-size: contain;
     background-position: center bottom;
     background-repeat: no-repeat;
@@ -118,28 +131,28 @@ body::after {
 }
 
 @keyframes treeGlow {
-    0%, 100% { opacity: 0.15; filter: brightness(1) drop-shadow(0 0 20px rgba(74, 222, 128, 0.3)); }
-    50% { opacity: 0.22; filter: brightness(1.2) drop-shadow(0 0 40px rgba(74, 222, 128, 0.5)); }
+    0%, 100% { opacity: 0.18; filter: brightness(1) drop-shadow(0 0 30px rgba(74, 222, 128, 0.4)); }
+    50% { opacity: 0.28; filter: brightness(1.3) drop-shadow(0 0 60px rgba(74, 222, 128, 0.6)); }
 }
 
-/* Floating runes - très visibles */
+/* Floating runes - ligne 1 */
 .yggdrasil-bg::after {
-    content: 'ᚠ   ᚢ   ᚦ   ᚨ   ᚱ   ᚲ   ᚷ   ᚹ   ᚺ   ᚾ   ᛁ   ᛃ   ᛈ   ᛇ   ᛉ   ᛊ   ᛏ   ᛒ   ᛖ   ᛗ   ᛚ   ᛜ   ᛞ   ᛟ';
+    content: 'ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛈ ᛇ ᛉ ᛊ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ   ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ';
     position: absolute;
-    top: 0;
-    left: -50%;
-    width: 200%;
-    font-size: 32px;
-    letter-spacing: 80px;
-    color: rgba(74, 222, 128, 0.25);
+    top: 10%;
+    left: -100%;
+    width: 300%;
+    font-size: 28px;
+    letter-spacing: 40px;
+    color: rgba(74, 222, 128, 0.3);
     white-space: nowrap;
-    animation: runesScroll 80s linear infinite;
-    text-shadow: 0 0 30px rgba(74, 222, 128, 0.5), 0 0 60px rgba(74, 222, 128, 0.3);
+    animation: runesScroll1 60s linear infinite;
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.6), 0 0 40px rgba(74, 222, 128, 0.4);
 }
 
-@keyframes runesScroll {
-    0% { transform: translateX(0) translateY(25vh); }
-    100% { transform: translateX(50%) translateY(75vh); }
+@keyframes runesScroll1 {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(33.33%); }
 }
 
 /* Nordic mist at bottom */
@@ -152,16 +165,57 @@ body::after {
     pointer-events: none;
     z-index: -1;
     background: linear-gradient(to top,
-        rgba(34, 197, 94, 0.1) 0%,
-        rgba(34, 211, 238, 0.06) 20%,
-        rgba(168, 85, 247, 0.04) 40%,
+        rgba(34, 197, 94, 0.12) 0%,
+        rgba(34, 211, 238, 0.08) 20%,
+        rgba(168, 85, 247, 0.05) 40%,
         transparent 100%);
     animation: mistFlow 12s ease-in-out infinite alternate;
 }
 
+/* Runes ligne 2 - direction opposée */
+.nordic-mist::before {
+    content: 'ᛁ ᛃ ᛈ ᛇ ᛉ ᛊ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ   ᛁ ᛃ ᛈ ᛇ ᛉ ᛊ';
+    position: fixed;
+    top: 40%;
+    right: -100%;
+    width: 300%;
+    font-size: 24px;
+    letter-spacing: 50px;
+    color: rgba(168, 85, 247, 0.25);
+    white-space: nowrap;
+    animation: runesScroll2 70s linear infinite;
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+@keyframes runesScroll2 {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.33%); }
+}
+
+/* Viking phrases - THIS IS FINE */
+.nordic-mist::after {
+    content: '⚔ THIS IS FINE ⚔   ᛟᛞᛁᚾ   VALHALLA AWAITS   ᚦᛟᚱ   BURN TO EARN   ᚠᚱᛖᛃᚨ   HODL STRONG   ᛚᛟᚲᛁ   ⚔ THIS IS FINE ⚔';
+    position: fixed;
+    top: 70%;
+    left: -50%;
+    width: 200%;
+    font-size: 18px;
+    font-family: 'Comic Neue', cursive;
+    letter-spacing: 30px;
+    color: rgba(251, 191, 36, 0.2);
+    white-space: nowrap;
+    animation: phrasesScroll 90s linear infinite;
+    text-shadow: 0 0 15px rgba(251, 191, 36, 0.4), 0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+@keyframes phrasesScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(50%); }
+}
+
 @keyframes mistFlow {
-    0% { opacity: 0.8; transform: translateY(0) scaleY(1); }
-    100% { opacity: 0.5; transform: translateY(-30px) scaleY(1.1); }
+    0% { opacity: 0.9; transform: translateY(0) scaleY(1); }
+    100% { opacity: 0.6; transform: translateY(-40px) scaleY(1.15); }
 }
 
 /* Spirit orbs flottants */
@@ -179,57 +233,121 @@ body::after {
 .viking-spirits::before {
     content: '';
     position: absolute;
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.2) 40%, transparent 70%);
-    filter: blur(30px);
-    top: 15%;
-    left: 8%;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.6) 0%, rgba(74, 222, 128, 0.25) 40%, transparent 70%);
+    filter: blur(35px);
+    top: 12%;
+    left: 5%;
     animation: spiritFloat 15s ease-in-out infinite;
 }
 
 .viking-spirits::after {
     content: '';
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, rgba(168, 85, 247, 0.2) 40%, transparent 70%);
-    filter: blur(25px);
-    top: 35%;
-    right: 12%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.55) 0%, rgba(168, 85, 247, 0.2) 40%, transparent 70%);
+    filter: blur(30px);
+    top: 30%;
+    right: 8%;
     animation: spiritFloat 20s ease-in-out infinite reverse;
 }
 
 @keyframes spiritFloat {
-    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
-    25% { transform: translate(60px, -40px) scale(1.2); opacity: 0.9; }
-    50% { transform: translate(30px, 50px) scale(0.9); opacity: 0.5; }
-    75% { transform: translate(-40px, 20px) scale(1.1); opacity: 0.8; }
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+    25% { transform: translate(80px, -50px) scale(1.3); opacity: 1; }
+    50% { transform: translate(40px, 60px) scale(0.85); opacity: 0.6; }
+    75% { transform: translate(-50px, 30px) scale(1.15); opacity: 0.9; }
 }
 
 /* Third spirit - cyan */
 .viking-spirits .spirit-cyan {
     position: absolute;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(34, 211, 238, 0.45) 0%, rgba(34, 211, 238, 0.15) 40%, transparent 70%);
-    filter: blur(20px);
-    bottom: 25%;
-    left: 25%;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.5) 0%, rgba(34, 211, 238, 0.18) 40%, transparent 70%);
+    filter: blur(25px);
+    bottom: 20%;
+    left: 20%;
     animation: spiritFloat 18s ease-in-out infinite;
     animation-delay: -5s;
 }
 
-/* Ensure body has proper setup for the background */
-html {
-    background: #020812 !important;
+/* Fourth spirit - gold (Odin's eye) */
+.viking-spirits .spirit-gold {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(251, 191, 36, 0.15) 40%, transparent 70%);
+    filter: blur(20px);
+    top: 50%;
+    right: 25%;
+    animation: spiritFloat 22s ease-in-out infinite;
+    animation-delay: -10s;
 }
 
-body {
-    position: relative;
-    min-height: 100vh;
-    background: transparent !important;
+/* Fifth spirit - pink */
+.viking-spirits .spirit-pink {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.45) 0%, rgba(236, 72, 153, 0.12) 40%, transparent 70%);
+    filter: blur(18px);
+    bottom: 40%;
+    right: 15%;
+    animation: spiritFloat 25s ease-in-out infinite reverse;
+    animation-delay: -15s;
+}
+
+/* Viking symbols floating */
+.viking-symbols {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* Valknut symbol (three interlocked triangles) */
+.viking-symbols::before {
+    content: '⛰ ☰ ⚡ ⛵ ⚔ 🛡 ⚒ ☠ ⛰ ☰ ⚡ ⛵ ⚔ 🛡 ⚒ ☠';
+    position: absolute;
+    top: 25%;
+    left: -30%;
+    width: 160%;
+    font-size: 36px;
+    letter-spacing: 100px;
+    color: rgba(74, 222, 128, 0.12);
+    white-space: nowrap;
+    animation: symbolsFloat 100s linear infinite;
+    filter: blur(1px);
+}
+
+.viking-symbols::after {
+    content: '◇ ◆ △ ▽ ○ ● ◇ ◆ △ ▽ ○ ● ◇ ◆ △ ▽';
+    position: absolute;
+    top: 55%;
+    right: -30%;
+    width: 160%;
+    font-size: 28px;
+    letter-spacing: 80px;
+    color: rgba(34, 211, 238, 0.1);
+    white-space: nowrap;
+    animation: symbolsFloat 120s linear infinite reverse;
+    filter: blur(1px);
+}
+
+@keyframes symbolsFloat {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(10%) translateY(20px); }
+    100% { transform: translateX(20%) translateY(0); }
 }
