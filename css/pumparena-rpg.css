@@ -3638,14 +3638,15 @@
 }
 
 .event-popup {
-    background: var(--rpg-bg-secondary);
+    background: #12121a;
     border: 2px solid var(--event-color);
-    border-radius: var(--rpg-radius-lg);
+    border-radius: 12px;
     padding: 25px;
     max-width: 450px;
     width: 90%;
     box-shadow: 0 0 40px var(--event-color);
     animation: eventSlideIn 0.4s ease;
+    color: #ffffff;
 }
 
 @keyframes eventSlideIn {
@@ -3707,11 +3708,11 @@
 .event-title {
     font-size: 1.3rem;
     margin: 0 0 10px;
-    color: var(--rpg-text-primary);
+    color: #ffffff;
 }
 
 .event-description {
-    color: var(--rpg-text-secondary);
+    color: #d0d0e0;
     margin-bottom: 20px;
     line-height: 1.5;
 }
@@ -3726,13 +3727,14 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    background: var(--rpg-bg-tertiary);
-    border: 1px solid var(--rpg-border);
-    border-radius: var(--rpg-radius-md);
+    background: #1a1a24;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     padding: 12px 15px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    color: #ffffff;
 }
 
 .event-choice:hover:not(.locked) {
@@ -3758,14 +3760,14 @@
 .event-choice .choice-text {
     display: block;
     font-weight: 600;
-    color: var(--rpg-text-primary);
+    color: #ffffff;
     margin-bottom: 4px;
 }
 
 .event-choice .choice-hint {
     display: block;
     font-size: 0.8rem;
-    color: var(--rpg-text-muted);
+    color: #a0a0b0;
 }
 
 .event-choice .choice-req {

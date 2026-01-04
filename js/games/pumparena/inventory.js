@@ -1249,11 +1249,566 @@ const PumpArenaInventory = {
     }
 };
 
+// ============================================
+// CRAFTING SYSTEM - ASDF PHILOSOPHY ALIGNED
+// Recipe costs and outputs based on Fibonacci
+// ============================================
+
+/**
+ * Crafting Recipes
+ * All material costs use Fibonacci numbers
+ * Higher tier recipes require more rare materials
+ */
+const CRAFTING_RECIPES = {
+    // Tool Upgrades
+    laptop_pro_upgrade: {
+        id: 'laptop_pro_upgrade',
+        name: 'Upgrade to Pro Workstation',
+        icon: '&#128421;',
+        description: 'Upgrade your basic laptop to a pro workstation',
+        category: 'upgrade',
+        materials: [
+            { item: 'laptop_basic', quantity: 1 },
+            { item: 'code_fragment', quantity: 5 },    // fib[5] = 5
+            { item: 'circuit_board', quantity: 3 }     // fib[4] = 3
+        ],
+        output: { item: 'laptop_pro', quantity: 1 },
+        influenceCost: 13,       // fib[7] = 13
+        xpReward: 55,            // fib[10] = 55
+        unlockLevel: 8           // fib[6] = 8
+    },
+
+    analytics_bundle: {
+        id: 'analytics_bundle',
+        name: 'Analytics Suite Bundle',
+        icon: '&#128202;',
+        description: 'Combine tools to create analytics suite',
+        category: 'upgrade',
+        materials: [
+            { item: 'whiteboard', quantity: 1 },
+            { item: 'social_scheduler', quantity: 1 },
+            { item: 'data_crystal', quantity: 8 }      // fib[6] = 8
+        ],
+        output: { item: 'analytics_suite', quantity: 1 },
+        influenceCost: 21,       // fib[8] = 21
+        xpReward: 89,            // fib[11] = 89
+        unlockLevel: 13          // fib[7] = 13
+    },
+
+    // Consumable Crafting
+    energy_drink_pack: {
+        id: 'energy_drink_pack',
+        name: 'Energy Drink Pack',
+        icon: '&#9889;',
+        description: 'Craft multiple energy drinks from materials',
+        category: 'consumable',
+        materials: [
+            { item: 'caffeine_essence', quantity: 3 }, // fib[4] = 3
+            { item: 'pure_water', quantity: 2 }        // fib[3] = 2
+        ],
+        output: { item: 'energy_drink', quantity: 5 },  // fib[5] = 5 outputs
+        influenceCost: 5,        // fib[5] = 5
+        xpReward: 21,            // fib[8] = 21
+        unlockLevel: 5           // fib[5] = 5
+    },
+
+    boost_elixir: {
+        id: 'boost_elixir',
+        name: 'XP Boost Elixir',
+        icon: '&#9883;',
+        description: 'Powerful potion for enhanced XP gain',
+        category: 'consumable',
+        materials: [
+            { item: 'xp_shard', quantity: 5 },         // fib[5] = 5
+            { item: 'rare_essence', quantity: 2 },     // fib[3] = 2
+            { item: 'golden_flask', quantity: 1 }
+        ],
+        output: { item: 'xp_boost_potion', quantity: 1 },
+        influenceCost: 13,       // fib[7] = 13
+        xpReward: 34,            // fib[9] = 34
+        unlockLevel: 13          // fib[7] = 13
+    },
+
+    // Material Refinement
+    circuit_board_refined: {
+        id: 'circuit_board_refined',
+        name: 'Refined Circuit Board',
+        icon: '&#128144;',
+        description: 'Refine basic components into quality circuits',
+        category: 'material',
+        materials: [
+            { item: 'raw_silicon', quantity: 8 },      // fib[6] = 8
+            { item: 'copper_wire', quantity: 5 }       // fib[5] = 5
+        ],
+        output: { item: 'circuit_board', quantity: 3 }, // fib[4] = 3
+        influenceCost: 3,        // fib[4] = 3
+        xpReward: 13,            // fib[7] = 13
+        unlockLevel: 3           // fib[4] = 3
+    },
+
+    code_fragment_synthesis: {
+        id: 'code_fragment_synthesis',
+        name: 'Code Fragment Synthesis',
+        icon: '&#128187;',
+        description: 'Synthesize code fragments from digital essence',
+        category: 'material',
+        materials: [
+            { item: 'digital_dust', quantity: 13 },    // fib[7] = 13
+            { item: 'logic_core', quantity: 2 }        // fib[3] = 2
+        ],
+        output: { item: 'code_fragment', quantity: 5 }, // fib[5] = 5
+        influenceCost: 5,        // fib[5] = 5
+        xpReward: 21,            // fib[8] = 21
+        unlockLevel: 5           // fib[5] = 5
+    },
+
+    // Legendary Crafting
+    satoshi_forge: {
+        id: 'satoshi_forge',
+        name: "Satoshi's Notebook Forge",
+        icon: '&#128213;',
+        description: 'Legendary item creation - requires max dedication',
+        category: 'legendary',
+        materials: [
+            { item: 'ancient_code', quantity: 13 },    // fib[7] = 13
+            { item: 'genesis_block_shard', quantity: 5 }, // fib[5] = 5
+            { item: 'legendary_essence', quantity: 3 }, // fib[4] = 3
+            { item: 'market_terminal', quantity: 1 }   // Sacrifice epic item
+        ],
+        output: { item: 'satoshi_notebook', quantity: 1 },
+        influenceCost: 89,       // fib[11] = 89
+        xpReward: 233,           // fib[13] = 233
+        unlockLevel: 34,         // fib[9] = 34
+        requiresTier: 'FLAME'
+    }
+};
+
+/**
+ * Crafting materials (added to ITEMS)
+ */
+const CRAFTING_MATERIALS = {
+    // Basic Materials
+    raw_silicon: {
+        id: 'raw_silicon',
+        name: 'Raw Silicon',
+        icon: '&#128312;',
+        type: 'material',
+        rarity: 'common',
+        description: 'Basic building block of circuits.',
+        stackable: true,
+        maxStack: 99
+    },
+    copper_wire: {
+        id: 'copper_wire',
+        name: 'Copper Wire',
+        icon: '&#127744;',
+        type: 'material',
+        rarity: 'common',
+        description: 'Conductive wiring for electronics.',
+        stackable: true,
+        maxStack: 99
+    },
+    digital_dust: {
+        id: 'digital_dust',
+        name: 'Digital Dust',
+        icon: '&#10024;',
+        type: 'material',
+        rarity: 'common',
+        description: 'Residue from blockchain operations.',
+        stackable: true,
+        maxStack: 99
+    },
+    logic_core: {
+        id: 'logic_core',
+        name: 'Logic Core',
+        icon: '&#128308;',
+        type: 'material',
+        rarity: 'uncommon',
+        description: 'Processing unit for advanced crafting.',
+        stackable: true,
+        maxStack: 55
+    },
+    circuit_board: {
+        id: 'circuit_board',
+        name: 'Circuit Board',
+        icon: '&#128286;',
+        type: 'material',
+        rarity: 'uncommon',
+        description: 'Essential component for tech upgrades.',
+        stackable: true,
+        maxStack: 55
+    },
+    code_fragment: {
+        id: 'code_fragment',
+        name: 'Code Fragment',
+        icon: '&#128203;',
+        type: 'material',
+        rarity: 'uncommon',
+        description: 'Piece of optimized smart contract code.',
+        stackable: true,
+        maxStack: 55
+    },
+    data_crystal: {
+        id: 'data_crystal',
+        name: 'Data Crystal',
+        icon: '&#128142;',
+        type: 'material',
+        rarity: 'rare',
+        description: 'Crystallized blockchain data.',
+        stackable: true,
+        maxStack: 34
+    },
+    xp_shard: {
+        id: 'xp_shard',
+        name: 'XP Shard',
+        icon: '&#11088;',
+        type: 'material',
+        rarity: 'rare',
+        description: 'Concentrated experience essence.',
+        stackable: true,
+        maxStack: 34
+    },
+    rare_essence: {
+        id: 'rare_essence',
+        name: 'Rare Essence',
+        icon: '&#128156;',
+        type: 'material',
+        rarity: 'rare',
+        description: 'Refined power for potion crafting.',
+        stackable: true,
+        maxStack: 21
+    },
+    golden_flask: {
+        id: 'golden_flask',
+        name: 'Golden Flask',
+        icon: '&#129346;',
+        type: 'material',
+        rarity: 'rare',
+        description: 'Container for magical elixirs.',
+        stackable: true,
+        maxStack: 13
+    },
+    caffeine_essence: {
+        id: 'caffeine_essence',
+        name: 'Caffeine Essence',
+        icon: '&#9749;',
+        type: 'material',
+        rarity: 'common',
+        description: 'Pure productivity in liquid form.',
+        stackable: true,
+        maxStack: 99
+    },
+    pure_water: {
+        id: 'pure_water',
+        name: 'Pure Water',
+        icon: '&#128167;',
+        type: 'material',
+        rarity: 'common',
+        description: 'Crystal clear hydration.',
+        stackable: true,
+        maxStack: 99
+    },
+    // Legendary Materials
+    ancient_code: {
+        id: 'ancient_code',
+        name: 'Ancient Code',
+        icon: '&#128220;',
+        type: 'material',
+        rarity: 'legendary',
+        description: 'Code from the genesis era. Extremely rare.',
+        stackable: true,
+        maxStack: 8
+    },
+    genesis_block_shard: {
+        id: 'genesis_block_shard',
+        name: 'Genesis Block Shard',
+        icon: '&#128310;',
+        type: 'material',
+        rarity: 'legendary',
+        description: 'Fragment from the first block ever mined.',
+        stackable: true,
+        maxStack: 5
+    },
+    legendary_essence: {
+        id: 'legendary_essence',
+        name: 'Legendary Essence',
+        icon: '&#127775;',
+        type: 'material',
+        rarity: 'legendary',
+        description: 'Distilled power of ancient protocols.',
+        stackable: true,
+        maxStack: 3
+    }
+};
+
+// Add crafting materials to ITEMS
+Object.assign(ITEMS, CRAFTING_MATERIALS);
+
+/**
+ * Crafting System Manager
+ */
+const PumpArenaCrafting = {
+    recipes: CRAFTING_RECIPES,
+    materials: CRAFTING_MATERIALS,
+
+    /**
+     * Check if player can craft a recipe
+     */
+    canCraft(recipeId) {
+        const recipe = CRAFTING_RECIPES[recipeId];
+        if (!recipe) return { canCraft: false, reason: 'Recipe not found' };
+
+        const state = window.PumpArenaState?.get();
+        if (!state) return { canCraft: false, reason: 'State not available' };
+
+        // Check level requirement
+        if (state.progression.level < recipe.unlockLevel) {
+            return { canCraft: false, reason: `Requires Level ${recipe.unlockLevel}` };
+        }
+
+        // Check tier requirement
+        if (recipe.requiresTier) {
+            const currentTier = window.PumpArenaState?.getCurrentTier();
+            const tierIndex = ['EMBER', 'SPARK', 'FLAME', 'BLAZE', 'INFERNO'].indexOf(currentTier?.name || 'EMBER');
+            const requiredIndex = ['EMBER', 'SPARK', 'FLAME', 'BLAZE', 'INFERNO'].indexOf(recipe.requiresTier);
+            if (tierIndex < requiredIndex) {
+                return { canCraft: false, reason: `Requires ${recipe.requiresTier} Tier` };
+            }
+        }
+
+        // Check influence
+        if (state.resources.influence < recipe.influenceCost) {
+            return { canCraft: false, reason: `Need ${recipe.influenceCost} Influence` };
+        }
+
+        // Check materials
+        const inventory = PumpArenaInventory.getInventory();
+        for (const material of recipe.materials) {
+            const owned = this.countItem(inventory, material.item);
+            if (owned < material.quantity) {
+                const itemName = ITEMS[material.item]?.name || material.item;
+                return { canCraft: false, reason: `Need ${material.quantity - owned} more ${itemName}` };
+            }
+        }
+
+        return { canCraft: true, reason: 'Ready to craft' };
+    },
+
+    /**
+     * Count how many of an item the player has
+     */
+    countItem(inventory, itemId) {
+        let count = 0;
+        for (const invItem of inventory) {
+            if (invItem.itemId === itemId) {
+                count += invItem.quantity || 1;
+            }
+        }
+        return count;
+    },
+
+    /**
+     * Craft an item
+     */
+    craft(recipeId) {
+        const check = this.canCraft(recipeId);
+        if (!check.canCraft) {
+            return { success: false, message: check.reason };
+        }
+
+        const recipe = CRAFTING_RECIPES[recipeId];
+        const state = window.PumpArenaState.get();
+
+        // Deduct influence
+        window.PumpArenaState.spendInfluence(recipe.influenceCost);
+
+        // Remove materials from inventory
+        for (const material of recipe.materials) {
+            PumpArenaInventory.removeFromInventory(material.item, material.quantity);
+        }
+
+        // Add output to inventory
+        PumpArenaInventory.addToInventory(recipe.output.item, recipe.output.quantity);
+
+        // Grant XP
+        window.PumpArenaState.addXP(recipe.xpReward);
+
+        // Track crafting statistics
+        if (!state.statistics.itemsCrafted) state.statistics.itemsCrafted = 0;
+        state.statistics.itemsCrafted++;
+
+        // Save state
+        window.PumpArenaState.save();
+
+        const outputItem = ITEMS[recipe.output.item];
+        return {
+            success: true,
+            message: `Crafted ${outputItem?.name || recipe.output.item}! +${recipe.xpReward} XP`
+        };
+    },
+
+    /**
+     * Get available recipes for player's level
+     */
+    getAvailableRecipes() {
+        const state = window.PumpArenaState?.get();
+        if (!state) return [];
+
+        const level = state.progression.level;
+        const available = [];
+
+        for (const [id, recipe] of Object.entries(CRAFTING_RECIPES)) {
+            if (level >= recipe.unlockLevel) {
+                const check = this.canCraft(id);
+                available.push({
+                    ...recipe,
+                    canCraft: check.canCraft,
+                    reason: check.reason
+                });
+            }
+        }
+
+        return available;
+    },
+
+    /**
+     * Render crafting panel
+     */
+    renderCraftingPanel(container) {
+        const recipes = this.getAvailableRecipes();
+        const lockedCount = Object.keys(CRAFTING_RECIPES).length - recipes.length;
+
+        const categories = {
+            material: { name: 'Materials', icon: '&#127760;' },
+            consumable: { name: 'Consumables', icon: '&#9889;' },
+            upgrade: { name: 'Upgrades', icon: '&#128295;' },
+            legendary: { name: 'Legendary', icon: '&#128142;' }
+        };
+
+        container.innerHTML = `
+            <div class="crafting-panel">
+                <div class="crafting-header" style="padding: 15px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-bottom: 2px solid #f97316;">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        &#128295; Crafting Workshop
+                        <span style="font-size: 12px; color: #888; font-weight: normal;">ASDF Fibonacci-Based</span>
+                    </h3>
+                </div>
+
+                <div class="crafting-categories" style="display: flex; gap: 10px; padding: 15px; background: #111;">
+                    ${Object.entries(categories).map(([key, cat]) => `
+                        <button class="craft-cat-btn" data-category="${key}" style="flex: 1; padding: 10px; background: #222; border: 1px solid #333; border-radius: 8px; cursor: pointer; color: #ccc;">
+                            <span style="font-size: 18px;">${cat.icon}</span>
+                            <div style="font-size: 11px; margin-top: 5px;">${cat.name}</div>
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="crafting-recipes" style="padding: 15px; max-height: 400px; overflow-y: auto;">
+                    ${recipes.length === 0 ? `
+                        <div style="text-align: center; color: #666; padding: 40px;">
+                            <div style="font-size: 48px;">&#128274;</div>
+                            <p>No recipes unlocked yet. Level up to discover crafting!</p>
+                        </div>
+                    ` : recipes.map(recipe => {
+                        const outputItem = ITEMS[recipe.output.item];
+                        const rarityColor = ITEM_RARITY[outputItem?.rarity?.toUpperCase()]?.color || '#888';
+
+                        return `
+                            <div class="recipe-card" data-recipe="${recipe.id}" style="background: #1a1a1a; border: 1px solid ${recipe.canCraft ? '#22c55e44' : '#33333366'}; border-radius: 12px; padding: 15px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <div style="font-size: 32px; background: ${rarityColor}22; padding: 8px; border-radius: 8px;">${recipe.icon}</div>
+                                        <div>
+                                            <div style="font-weight: bold; color: ${rarityColor};">${recipe.name}</div>
+                                            <div style="font-size: 11px; color: #888; margin-top: 4px;">${recipe.description}</div>
+                                            <div style="font-size: 10px; color: #666; margin-top: 4px;">
+                                                Output: ${recipe.output.quantity}x ${outputItem?.name || recipe.output.item}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 11px; color: #f97316;">${recipe.influenceCost} ⚡</div>
+                                        <div style="font-size: 10px; color: #22c55e;">+${recipe.xpReward} XP</div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #333;">
+                                    <div style="font-size: 10px; color: #888; margin-bottom: 8px;">Required Materials:</div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                        ${recipe.materials.map(mat => {
+                                            const matItem = ITEMS[mat.item];
+                                            const owned = this.countItem(PumpArenaInventory.getInventory(), mat.item);
+                                            const hasEnough = owned >= mat.quantity;
+                                            return `
+                                                <div style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: ${hasEnough ? '#22c55e22' : '#dc262622'}; border-radius: 4px; font-size: 11px;">
+                                                    <span>${matItem?.icon || '?'}</span>
+                                                    <span style="color: ${hasEnough ? '#22c55e' : '#dc2626'};">${owned}/${mat.quantity}</span>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+
+                                <button class="btn-craft ${recipe.canCraft ? 'btn-primary' : 'btn-disabled'}"
+                                        data-recipe="${recipe.id}"
+                                        ${recipe.canCraft ? '' : 'disabled'}
+                                        style="width: 100%; margin-top: 12px; padding: 10px;">
+                                    ${recipe.canCraft ? '&#128295; Craft' : recipe.reason}
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+
+                    ${lockedCount > 0 ? `
+                        <div style="text-align: center; color: #666; padding: 20px; border: 1px dashed #333; border-radius: 8px;">
+                            &#128274; ${lockedCount} more recipes to unlock
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Attach craft button handlers
+        container.querySelectorAll('.btn-craft:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const recipeId = btn.dataset.recipe;
+                const result = this.craft(recipeId);
+
+                if (window.PumpArenaRPG?.showNotification) {
+                    window.PumpArenaRPG.showNotification(result.message, result.success ? 'success' : 'error');
+                }
+
+                // Refresh panel
+                this.renderCraftingPanel(container);
+            });
+        });
+
+        // Category filter handlers
+        container.querySelectorAll('.craft-cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.dataset.category;
+                // Toggle active state
+                container.querySelectorAll('.craft-cat-btn').forEach(b => {
+                    b.style.borderColor = b === btn ? '#f97316' : '#333';
+                    b.style.background = b === btn ? '#f9731622' : '#222';
+                });
+                // Filter recipes
+                container.querySelectorAll('.recipe-card').forEach(card => {
+                    const recipe = CRAFTING_RECIPES[card.dataset.recipe];
+                    card.style.display = recipe?.category === category ? 'block' : 'none';
+                });
+            });
+        });
+    }
+};
+
 // Export for global access
 if (typeof window !== 'undefined') {
     window.PumpArenaInventory = PumpArenaInventory;
+    window.PumpArenaCrafting = PumpArenaCrafting;
     window.ITEMS = ITEMS;
     window.ITEM_RARITY = ITEM_RARITY;
+    window.CRAFTING_RECIPES = CRAFTING_RECIPES;
 
     // ASDF Philosophy helpers
     window.PumpArenaInventory.getDiscountedPrice = getDiscountedPrice;

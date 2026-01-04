@@ -16,7 +16,7 @@ const NPCS = {
         name: 'Marcus Chen',
         title: 'DeFi Protocol Lead',
         project: 'safeyield',
-        icon: '&#128104;',
+        icon: '👨',
         color: '#3b82f6',
         personality: ['analytical', 'cautious', 'loyal'],
         likes: ['technical discussions', 'security audits', 'long-term thinking'],
@@ -36,7 +36,7 @@ const NPCS = {
         name: 'Sarah Kim',
         title: 'Community Lead',
         project: 'safeyield',
-        icon: '&#128105;',
+        icon: '👩',
         color: '#ec4899',
         personality: ['energetic', 'empathetic', 'optimistic'],
         likes: ['community events', 'helping newcomers', 'positive vibes'],
@@ -57,7 +57,7 @@ const NPCS = {
         name: 'Alex Reyes',
         title: 'Game Director',
         project: 'pixelraiders',
-        icon: '&#128102;',
+        icon: '👦',
         color: '#8b5cf6',
         personality: ['creative', 'competitive', 'perfectionist'],
         likes: ['game design', 'esports', 'pixel art'],
@@ -77,7 +77,7 @@ const NPCS = {
         name: 'Mika Tanaka',
         title: 'Esports Manager',
         project: 'pixelraiders',
-        icon: '&#128103;',
+        icon: '👧',
         color: '#f59e0b',
         personality: ['strategic', 'ambitious', 'charismatic'],
         likes: ['tournaments', 'team building', 'winning'],
@@ -98,7 +98,7 @@ const NPCS = {
         name: 'Jordan Blake',
         title: 'DAO Coordinator',
         project: 'basedcollective',
-        icon: '&#129333;',
+        icon: '🧑',
         color: '#22c55e',
         personality: ['diplomatic', 'patient', 'idealistic'],
         likes: ['governance', 'consensus', 'decentralization'],
@@ -118,7 +118,7 @@ const NPCS = {
         name: 'Nova',
         title: 'Culture Lead',
         project: 'basedcollective',
-        icon: '&#129489;',
+        icon: '🧑‍🎤',
         color: '#f97316',
         personality: ['artistic', 'rebellious', 'authentic'],
         likes: ['memes', 'art', 'authenticity'],
@@ -139,7 +139,7 @@ const NPCS = {
         name: 'Dmitri Volkov',
         title: 'Chief Architect',
         project: 'nodeforge',
-        icon: '&#128104;',
+        icon: '👨‍💻',
         color: '#06b6d4',
         personality: ['brilliant', 'intense', 'perfectionist'],
         likes: ['optimization', 'elegant code', 'solving hard problems'],
@@ -159,7 +159,7 @@ const NPCS = {
         name: 'Elena Santos',
         title: 'DevRel Lead',
         project: 'nodeforge',
-        icon: '&#128105;',
+        icon: '👩‍💼',
         color: '#a855f7',
         personality: ['helpful', 'patient', 'knowledgeable'],
         likes: ['documentation', 'tutorials', 'developer success'],
@@ -180,7 +180,7 @@ const NPCS = {
         name: 'The Oracle',
         title: 'Mysterious Advisor',
         project: null,
-        icon: '&#129668;',
+        icon: '🔮',
         color: '#fbbf24',
         personality: ['cryptic', 'wise', 'unpredictable'],
         likes: ['riddles', 'patience', 'seekers of truth'],
@@ -200,7 +200,7 @@ const NPCS = {
         name: 'DeepBlue',
         title: 'Anonymous Whale',
         project: null,
-        icon: '&#128051;',
+        icon: '🐳',
         color: '#0ea5e9',
         personality: ['mysterious', 'influential', 'calculated'],
         likes: ['alpha', 'discretion', 'loyalty'],
@@ -734,7 +734,8 @@ let npcState = {
     relationships: {},  // npcId -> { affinity: 0-100, stage, interactions, lastInteraction, gifts, questsCompleted }
     activeDialogue: null,
     metNPCs: [],
-    favoriteNPC: null
+    favoriteNPC: null,
+    usedTopics: {}  // npcId -> { topicId -> stage } - tracks which topics have been used at which stage
 };
 
 // ============================================
@@ -746,6 +747,11 @@ function initNPCSystem() {
 
     if (state.relationships) {
         npcState.relationships = state.relationships;
+    }
+
+    // Load used topics from saved state
+    if (state.usedTopics) {
+        npcState.usedTopics = state.usedTopics;
     }
 
     // Initialize any NPCs with starting relationships
@@ -936,6 +942,7 @@ function getGiftReactionMessage(npc, reaction) {
 function saveNPCState() {
     const state = window.PumpArenaState.get();
     state.relationships = npcState.relationships;
+    state.usedTopics = npcState.usedTopics;
     window.PumpArenaState.save();
 }
 
@@ -1095,14 +1102,20 @@ function getAvailableTopics(npcId) {
     const stage = relationship.stage;
     const topics = [];
 
+    // Get used topics for this NPC
+    const usedForNpc = npcState.usedTopics[npcId] || {};
+
     for (const [topicId, topic] of Object.entries(conversations.topics)) {
         if (topic.stages.includes(stage)) {
             const dialogue = topic.dialogues[stage];
             if (dialogue) {
+                // Check if this topic has been used at this stage
+                const isUsed = usedForNpc[topicId] === stage;
                 topics.push({
                     id: topicId,
                     title: topic.title,
-                    available: true
+                    available: !isUsed,
+                    used: isUsed
                 });
             }
         } else {
@@ -1146,8 +1159,8 @@ function startConversation(npcId, topicId) {
         text: dialogue.npc,
         options: dialogue.options.map((opt, idx) => ({
             index: idx,
-            text: opt.text,
-            preview: getOptionPreview(opt)
+            text: opt.text
+            // No preview - rewards are hidden until chosen
         }))
     };
 }
@@ -1200,6 +1213,12 @@ function selectDialogueOption(optionIndex) {
         results.unlocked = option.unlocks;
     }
 
+    // Mark this topic as used at this stage
+    if (!npcState.usedTopics[npcId]) {
+        npcState.usedTopics[npcId] = {};
+    }
+    npcState.usedTopics[npcId][topicId] = stage;
+
     // Dispatch event
     document.dispatchEvent(new CustomEvent('pumparena:dialogue-complete', {
         detail: {
@@ -1212,6 +1231,7 @@ function selectDialogueOption(optionIndex) {
     }));
 
     npcState.activeDialogue = null;
+    saveNPCState();
 
     return results;
 }
@@ -1272,11 +1292,12 @@ function renderConversationUI(container, npcId) {
                 <h4>What would you like to discuss?</h4>
                 <div class="topics-list">
                     ${topics.map(topic => `
-                        <button class="topic-btn ${topic.available ? '' : 'locked'}"
+                        <button class="topic-btn ${topic.available ? '' : 'locked'} ${topic.used ? 'used' : ''}"
                                 data-topic="${topic.id}"
                                 ${topic.available ? '' : 'disabled'}>
                             <span class="topic-title">${topic.title}</span>
-                            ${!topic.available ? `<span class="topic-lock">🔒 ${topic.requiredStage}</span>` : ''}
+                            ${topic.used ? '<span class="topic-used">✓ Discussed</span>' : ''}
+                            ${!topic.available && !topic.used && topic.requiredStage ? `<span class="topic-lock">🔒 ${topic.requiredStage}</span>` : ''}
                         </button>
                     `).join('')}
                 </div>
@@ -1319,7 +1340,6 @@ function showTopicDialogue(container, npcId, topicId) {
                 ${convo.options.map(opt => `
                     <button class="dialogue-option" data-option="${opt.index}">
                         <span class="option-text">${opt.text}</span>
-                        ${opt.preview ? `<span class="option-preview">${opt.preview}</span>` : ''}
                     </button>
                 `).join('')}
             </div>

@@ -392,8 +392,8 @@ function calculatePriceImpact(amountIn, reserveIn, reserveOut) {
 
 // Usage
 const monitor = new PriceMonitor(connection, 'PoolAddress...');
-monitor.subscribe(({ price, timestamp }) => {
-    console.log(\`[\\${new Date(timestamp).toISOString()}] Price: \\${price}\`);
+monitor.subscribe(({ price, timestamp }) =&gt; {
+    console.log(\`[&#36;{new Date(timestamp).toISOString()}] Price: &#36;{price}\`);
 });</code></pre>
                         </div>
                     `,

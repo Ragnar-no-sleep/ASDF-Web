@@ -14,7 +14,7 @@ const MINIGAMES = {
         id: 'code_sprint',
         name: 'Code Sprint',
         description: 'Type code snippets as fast as possible!',
-        icon: '&#128187;',
+        icon: '💻',
         color: '#3b82f6',
         influenceCost: 10,
         statBonus: 'dev',
@@ -27,7 +27,7 @@ const MINIGAMES = {
         id: 'chart_analysis',
         name: 'Chart Analysis',
         description: 'Identify the pattern before time runs out!',
-        icon: '&#128200;',
+        icon: '📈',
         color: '#22c55e',
         influenceCost: 10,
         statBonus: 'str',
@@ -40,7 +40,7 @@ const MINIGAMES = {
         id: 'shill_quiz',
         name: 'Crypto Quiz',
         description: 'Test your crypto knowledge!',
-        icon: '&#129504;',
+        icon: '🧠',
         color: '#a855f7',
         influenceCost: 5,
         statBonus: 'str',
@@ -53,13 +53,66 @@ const MINIGAMES = {
         id: 'raid_simulator',
         name: 'Raid Simulator',
         description: 'Hit the targets at the perfect moment!',
-        icon: '&#127919;',
+        icon: '🎯',
         color: '#f97316',
         influenceCost: 15,
         statBonus: 'com',
         rewards: {
             base: { xp: 60, tokens: 30 },
             perfect: { xp: 180, tokens: 100 }
+        }
+    },
+    // NEW ASDF-ALIGNED MINI-GAMES
+    fibonacci_trader: {
+        id: 'fibonacci_trader',
+        name: 'Fibonacci Trader',
+        description: 'Buy and sell at Fibonacci retracement levels!',
+        icon: '🌀',
+        color: '#ec4899',
+        influenceCost: 12,
+        statBonus: 'lck',
+        rewards: {
+            base: { xp: 55, tokens: 30 },
+            perfect: { xp: 165, tokens: 90 }
+        }
+    },
+    hash_match: {
+        id: 'hash_match',
+        name: 'Hash Match',
+        description: 'Match blockchain hashes in sequence!',
+        icon: '🔗',
+        color: '#06b6d4',
+        influenceCost: 8,
+        statBonus: 'dev',
+        rewards: {
+            base: { xp: 45, tokens: 22 },
+            perfect: { xp: 135, tokens: 66 }
+        }
+    },
+    token_catcher: {
+        id: 'token_catcher',
+        name: 'Token Catcher',
+        description: 'Catch falling tokens, avoid the rugs!',
+        icon: '🪙',
+        color: '#fbbf24',
+        influenceCost: 7,
+        statBonus: 'lck',
+        rewards: {
+            base: { xp: 40, tokens: 35 },
+            perfect: { xp: 120, tokens: 105 }
+        }
+    },
+    gas_optimizer: {
+        id: 'gas_optimizer',
+        name: 'Gas Optimizer',
+        description: 'Submit transactions at optimal gas prices!',
+        icon: '⛽',
+        color: '#84cc16',
+        influenceCost: 10,
+        statBonus: 'str',
+        rewards: {
+            base: { xp: 50, tokens: 28 },
+            perfect: { xp: 150, tokens: 84 }
         }
     }
 };
@@ -142,7 +195,7 @@ function startMinigame(gameId, container) {
     const game = MINIGAMES[gameId];
 
     // Deduct influence
-    window.PumpArenaState.useInfluence(game.influenceCost);
+    window.PumpArenaState.spendInfluence(game.influenceCost);
 
     minigameState = {
         active: gameId,
@@ -164,6 +217,18 @@ function startMinigame(gameId, container) {
             break;
         case 'raid_simulator':
             renderRaidSimulator(container);
+            break;
+        case 'fibonacci_trader':
+            renderFibonacciTrader(container);
+            break;
+        case 'hash_match':
+            renderHashMatch(container);
+            break;
+        case 'token_catcher':
+            renderTokenCatcher(container);
+            break;
+        case 'gas_optimizer':
+            renderGasOptimizer(container);
             break;
         default:
             return { success: false, message: 'Unknown game' };
@@ -455,61 +520,112 @@ function renderQuizQuestion(container, question) {
     const shuffledAnswers = question.a.map((a, i) => ({ text: a, isCorrect: i === question.correct }));
     shuffleArray(shuffledAnswers);
 
+    const progressPercent = ((minigameState.gameData.currentIndex) / minigameState.gameData.questions.length) * 100;
+    const answerColors = ['#3b82f6', '#22c55e', '#f97316', '#ec4899'];
+
     container.innerHTML = `
-        <div class="minigame-container shill-quiz">
-            <div class="minigame-header">
-                <h3>&#129504; Crypto Quiz</h3>
-                <div class="quiz-progress">
-                    Question ${minigameState.gameData.currentIndex + 1} / ${minigameState.gameData.questions.length}
+        <div class="minigame-container shill-quiz" style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid #a855f7;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a2e, #2d1b4e); padding: 20px; border-bottom: 1px solid #a855f740;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px;">&#129504;</div>
+                        <div>
+                            <h3 style="color: #ffffff; margin: 0; font-size: 18px;">Crypto Quiz</h3>
+                            <div style="color: #a855f7; font-size: 12px;">Test your knowledge!</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #ffffff; font-size: 16px; font-weight: bold;">Q${minigameState.gameData.currentIndex + 1}/${minigameState.gameData.questions.length}</div>
+                        <div style="color: #22c55e; font-size: 12px;">&#10003; ${minigameState.gameData.correct} correct</div>
+                    </div>
+                </div>
+                <!-- Progress bar -->
+                <div style="margin-top: 15px; height: 6px; background: #2a2a3a; border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, #a855f7, #ec4899); transition: width 0.3s;"></div>
                 </div>
             </div>
 
-            <div class="quiz-score">
-                Score: <span id="quiz-score">${minigameState.gameData.correct}</span>
-            </div>
+            <!-- Question -->
+            <div style="padding: 25px;">
+                <div style="background: linear-gradient(135deg, #1a1a24, #1f1f2e); border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">QUESTION</div>
+                    <p style="color: #ffffff; font-size: 18px; margin: 0; line-height: 1.4;">${question.q}</p>
+                </div>
 
-            <div class="quiz-question">
-                <p>${question.q}</p>
-            </div>
+                <!-- Answers -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    ${shuffledAnswers.map((a, i) => `
+                        <button class="quiz-answer" data-correct="${a.isCorrect}" style="
+                            background: linear-gradient(135deg, #1a1a24, ${answerColors[i]}15);
+                            border: 2px solid ${answerColors[i]}60;
+                            border-radius: 12px;
+                            padding: 15px;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            text-align: left;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        " onmouseover="this.style.borderColor='${answerColors[i]}'; this.style.transform='scale(1.02)';"
+                           onmouseout="this.style.borderColor='${answerColors[i]}60'; this.style.transform='scale(1)';">
+                            <span style="width: 32px; height: 32px; background: ${answerColors[i]}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 14px; flex-shrink: 0;">${String.fromCharCode(65 + i)}</span>
+                            <span style="color: #ffffff; font-size: 14px;">${a.text}</span>
+                        </button>
+                    `).join('')}
+                </div>
 
-            <div class="quiz-answers">
-                ${shuffledAnswers.map((a, i) => `
-                    <button class="quiz-answer" data-correct="${a.isCorrect}">
-                        <span class="answer-letter">${String.fromCharCode(65 + i)}</span>
-                        <span class="answer-text">${a.text}</span>
-                    </button>
-                `).join('')}
+                <!-- Feedback -->
+                <div id="quiz-feedback" style="margin-top: 20px; text-align: center; min-height: 40px;"></div>
             </div>
-
-            <div class="quiz-feedback" id="quiz-feedback"></div>
         </div>
     `;
 
     const feedbackEl = container.querySelector('#quiz-feedback');
-    const scoreEl = container.querySelector('#quiz-score');
 
     container.querySelectorAll('.quiz-answer').forEach(btn => {
         btn.addEventListener('click', () => {
             const isCorrect = btn.dataset.correct === 'true';
 
-            // Disable all buttons
+            // Disable all buttons and show correct/wrong styling
             container.querySelectorAll('.quiz-answer').forEach(b => {
                 b.disabled = true;
+                b.style.cursor = 'default';
+                b.onmouseover = null;
+                b.onmouseout = null;
+
                 if (b.dataset.correct === 'true') {
-                    b.classList.add('correct');
+                    // Correct answer - highlight green
+                    b.style.background = 'linear-gradient(135deg, #0d2d1a, #1a4d2e)';
+                    b.style.borderColor = '#22c55e';
+                    b.style.boxShadow = '0 0 15px #22c55e40';
                 } else if (b === btn && !isCorrect) {
-                    b.classList.add('wrong');
+                    // Selected wrong answer - highlight red
+                    b.style.background = 'linear-gradient(135deg, #2d0d0d, #4d1a1a)';
+                    b.style.borderColor = '#ef4444';
+                    b.style.boxShadow = '0 0 15px #ef444440';
+                } else {
+                    // Other wrong answers - dim
+                    b.style.opacity = '0.4';
                 }
             });
 
             if (isCorrect) {
                 minigameState.gameData.correct++;
-                scoreEl.textContent = minigameState.gameData.correct;
-                feedbackEl.innerHTML = '<span class="correct">&#10003; Correct!</span>';
+                feedbackEl.innerHTML = `
+                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; background: linear-gradient(135deg, #0d2d1a, #1a4d2e); border: 2px solid #22c55e; border-radius: 25px;">
+                        <span style="font-size: 20px;">&#10003;</span>
+                        <span style="color: #22c55e; font-weight: 600;">Correct!</span>
+                    </div>
+                `;
             } else {
-                feedbackEl.innerHTML = '<span class="error">&#10007; Wrong!</span>';
+                feedbackEl.innerHTML = `
+                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; background: linear-gradient(135deg, #2d0d0d, #4d1a1a); border: 2px solid #ef4444; border-radius: 25px;">
+                        <span style="font-size: 20px;">&#10007;</span>
+                        <span style="color: #ef4444; font-weight: 600;">Wrong!</span>
+                    </div>
+                `;
             }
-            feedbackEl.classList.add('show');
 
             minigameState.gameData.currentIndex++;
 
@@ -520,7 +636,7 @@ function renderQuizQuestion(container, question) {
                 } else {
                     renderQuizQuestion(container, minigameState.gameData.questions[minigameState.gameData.currentIndex]);
                 }
-            }, 1000);
+            }, 1200);
         });
     });
 }
@@ -646,6 +762,493 @@ function spawnTarget(arena, callback) {
             target.remove();
         }
     }, 1500);
+}
+
+// ============================================
+// FIBONACCI TRADER
+// ============================================
+
+const FIBONACCI_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+
+function renderFibonacciTrader(container) {
+    const game = MINIGAMES.fibonacci_trader;
+    const targetLevel = FIBONACCI_LEVELS[Math.floor(Math.random() * 5) + 1]; // Skip 0 and 1
+    const rounds = 5;
+
+    minigameState.gameData = {
+        round: 1,
+        totalRounds: rounds,
+        score: 0,
+        targetLevel,
+        price: 100,
+        holdings: 0,
+        cash: 1000
+    };
+
+    container.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a24, #12121a); padding: 20px; border-radius: 16px; border: 2px solid ${game.color}40;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">${game.icon}</span>
+                    <div>
+                        <h3 style="color: ${game.color}; margin: 0;">${game.name}</h3>
+                        <div style="color: #888; font-size: 12px;">Hit the Fibonacci levels!</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div style="text-align: center; padding: 8px 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
+                        <div style="color: #fbbf24; font-size: 16px; font-weight: bold;" id="fib-cash">$${minigameState.gameData.cash}</div>
+                        <div style="color: #888; font-size: 10px;">Cash</div>
+                    </div>
+                    <div style="text-align: center; padding: 8px 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
+                        <div style="color: #22c55e; font-size: 16px; font-weight: bold;" id="fib-holdings">0</div>
+                        <div style="color: #888; font-size: 10px;">Holdings</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: relative; height: 200px; background: #12121a; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; overflow: hidden;" id="fib-chart">
+                <div style="position: absolute; width: 100%; height: 2px; background: ${game.color}; top: 50%; transform: translateY(-50%); opacity: 0.3;"></div>
+                ${FIBONACCI_LEVELS.slice(1, -1).map((level, i) => `
+                    <div style="position: absolute; width: 100%; border-top: 1px dashed #444; top: ${(1 - level) * 100}%; left: 0;">
+                        <span style="position: absolute; right: 5px; top: -10px; color: #666; font-size: 10px;">${level}</span>
+                    </div>
+                `).join('')}
+                <div style="position: absolute; width: 20px; height: 20px; background: ${game.color}; border-radius: 50%; left: 50%; transform: translate(-50%, -50%); transition: top 0.5s ease;" id="fib-marker"></div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="color: #888; font-size: 12px;">Target Fib Level</div>
+                <div style="color: ${game.color}; font-size: 24px; font-weight: bold;" id="fib-target">${targetLevel}</div>
+                <div style="color: #666; font-size: 11px;">Current Price: $<span id="fib-price">100</span></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="fib-buy" style="padding: 12px 30px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">BUY</button>
+                <button id="fib-sell" style="padding: 12px 30px; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">SELL</button>
+                <button id="fib-hold" style="padding: 12px 30px; background: linear-gradient(135deg, #6b7280, #4b5563); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;">HOLD</button>
+            </div>
+
+            <div style="margin-top: 15px; text-align: center; color: #888; font-size: 12px;">
+                Round <span id="fib-round">1</span>/${rounds}
+            </div>
+        </div>
+    `;
+
+    let priceInterval;
+    const marker = container.querySelector('#fib-marker');
+    const priceDisplay = container.querySelector('#fib-price');
+
+    function updatePrice() {
+        const data = minigameState.gameData;
+        // Price moves randomly but tends toward Fibonacci levels
+        const drift = (Math.random() - 0.5) * 20;
+        data.price = Math.max(50, Math.min(150, data.price + drift));
+        priceDisplay.textContent = Math.round(data.price);
+        marker.style.top = `${(1 - (data.price - 50) / 100) * 100}%`;
+    }
+
+    priceInterval = setInterval(updatePrice, 500);
+
+    function handleAction(action) {
+        const data = minigameState.gameData;
+        const currentFibLevel = (data.price - 50) / 100;
+        const distanceToTarget = Math.abs(currentFibLevel - data.targetLevel);
+
+        let points = 0;
+        if (distanceToTarget < 0.05) points = 100;
+        else if (distanceToTarget < 0.1) points = 75;
+        else if (distanceToTarget < 0.2) points = 50;
+        else points = 25;
+
+        if (action === 'buy' && currentFibLevel < data.targetLevel) points *= 1.5;
+        if (action === 'sell' && currentFibLevel > data.targetLevel) points *= 1.5;
+
+        data.score += Math.round(points);
+        data.round++;
+
+        if (data.round > data.totalRounds) {
+            clearInterval(priceInterval);
+            const finalScore = Math.min(100, Math.round(data.score / data.totalRounds));
+            endMinigame(container, finalScore, finalScore >= 90);
+        } else {
+            data.targetLevel = FIBONACCI_LEVELS[Math.floor(Math.random() * 5) + 1];
+            container.querySelector('#fib-target').textContent = data.targetLevel;
+            container.querySelector('#fib-round').textContent = data.round;
+        }
+    }
+
+    container.querySelector('#fib-buy').addEventListener('click', () => handleAction('buy'));
+    container.querySelector('#fib-sell').addEventListener('click', () => handleAction('sell'));
+    container.querySelector('#fib-hold').addEventListener('click', () => handleAction('hold'));
+}
+
+// ============================================
+// HASH MATCH
+// ============================================
+
+function renderHashMatch(container) {
+    const game = MINIGAMES.hash_match;
+    const hashes = generateHashPairs(6);
+
+    minigameState.gameData = {
+        hashes,
+        matched: [],
+        firstPick: null,
+        attempts: 0,
+        timeLeft: 45
+    };
+
+    container.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a24, #12121a); padding: 20px; border-radius: 16px; border: 2px solid ${game.color}40;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">${game.icon}</span>
+                    <div>
+                        <h3 style="color: ${game.color}; margin: 0;">${game.name}</h3>
+                        <div style="color: #888; font-size: 12px;">Match the blockchain hashes!</div>
+                    </div>
+                </div>
+                <div style="padding: 8px 16px; background: ${game.color}20; border: 1px solid ${game.color}; border-radius: 8px;">
+                    <span style="color: ${game.color}; font-size: 18px; font-weight: bold;" id="hash-timer">45s</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;" id="hash-grid">
+                ${shuffleArray([...hashes, ...hashes]).map((hash, i) => `
+                    <div class="hash-card" data-hash="${hash}" data-index="${i}" style="
+                        aspect-ratio: 1; background: #12121a; border: 2px solid #333; border-radius: 12px;
+                        display: flex; align-items: center; justify-content: center; cursor: pointer;
+                        font-family: monospace; font-size: 11px; color: #666; transition: all 0.3s;
+                        padding: 8px; text-align: center; word-break: break-all;
+                    ">
+                        <span style="color: ${game.color}; font-size: 24px;">?</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div style="margin-top: 15px; text-align: center; color: #888; font-size: 12px;">
+                Matched: <span id="hash-matched">0</span>/6
+            </div>
+        </div>
+    `;
+
+    const timer = container.querySelector('#hash-timer');
+    const matchedDisplay = container.querySelector('#hash-matched');
+
+    const countdown = setInterval(() => {
+        minigameState.gameData.timeLeft--;
+        timer.textContent = `${minigameState.gameData.timeLeft}s`;
+
+        if (minigameState.gameData.timeLeft <= 0) {
+            clearInterval(countdown);
+            const score = Math.round((minigameState.gameData.matched.length / 6) * 100);
+            endMinigame(container, score, score >= 90);
+        }
+    }, 1000);
+
+    container.querySelectorAll('.hash-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const data = minigameState.gameData;
+            const index = parseInt(card.dataset.index);
+            const hash = card.dataset.hash;
+
+            if (data.matched.includes(hash) || card.classList.contains('revealed')) return;
+
+            card.innerHTML = hash;
+            card.style.borderColor = game.color;
+            card.classList.add('revealed');
+
+            if (data.firstPick === null) {
+                data.firstPick = { index, hash, card };
+            } else {
+                data.attempts++;
+                if (data.firstPick.hash === hash && data.firstPick.index !== index) {
+                    // Match!
+                    data.matched.push(hash);
+                    matchedDisplay.textContent = data.matched.length;
+                    card.style.background = `${game.color}30`;
+                    data.firstPick.card.style.background = `${game.color}30`;
+
+                    if (data.matched.length === 6) {
+                        clearInterval(countdown);
+                        const timeBonus = Math.round(data.timeLeft * 2);
+                        const score = Math.min(100, 70 + timeBonus - (data.attempts * 2));
+                        endMinigame(container, score, score >= 90);
+                    }
+                } else {
+                    // No match
+                    const firstCard = data.firstPick.card;
+                    setTimeout(() => {
+                        card.innerHTML = `<span style="color: ${game.color}; font-size: 24px;">?</span>`;
+                        card.style.borderColor = '#333';
+                        card.classList.remove('revealed');
+                        firstCard.innerHTML = `<span style="color: ${game.color}; font-size: 24px;">?</span>`;
+                        firstCard.style.borderColor = '#333';
+                        firstCard.classList.remove('revealed');
+                    }, 800);
+                }
+                data.firstPick = null;
+            }
+        });
+    });
+}
+
+function generateHashPairs(count) {
+    const chars = '0123456789abcdef';
+    const hashes = [];
+    for (let i = 0; i < count; i++) {
+        let hash = '0x';
+        for (let j = 0; j < 6; j++) {
+            hash += chars[Math.floor(Math.random() * chars.length)];
+        }
+        hashes.push(hash);
+    }
+    return hashes;
+}
+
+// ============================================
+// TOKEN CATCHER
+// ============================================
+
+function renderTokenCatcher(container) {
+    const game = MINIGAMES.token_catcher;
+
+    minigameState.gameData = {
+        score: 0,
+        caught: 0,
+        missed: 0,
+        timeLeft: 30
+    };
+
+    container.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a24, #12121a); padding: 20px; border-radius: 16px; border: 2px solid ${game.color}40;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">${game.icon}</span>
+                    <div>
+                        <h3 style="color: ${game.color}; margin: 0;">${game.name}</h3>
+                        <div style="color: #888; font-size: 12px;">Catch tokens, avoid rugs!</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="padding: 8px 12px; background: #22c55e20; border: 1px solid #22c55e; border-radius: 8px;">
+                        <span style="color: #22c55e; font-weight: bold;" id="tc-score">0</span>
+                    </div>
+                    <div style="padding: 8px 12px; background: ${game.color}20; border: 1px solid ${game.color}; border-radius: 8px;">
+                        <span style="color: ${game.color}; font-weight: bold;" id="tc-timer">30s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: relative; height: 300px; background: #12121a; border-radius: 12px; border: 1px solid #333; overflow: hidden;" id="tc-arena">
+            </div>
+
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px;">
+                <div style="color: #22c55e; font-size: 14px;">🪙 Caught: <span id="tc-caught">0</span></div>
+                <div style="color: #ef4444; font-size: 14px;">💀 Missed: <span id="tc-missed">0</span></div>
+            </div>
+        </div>
+    `;
+
+    const arena = container.querySelector('#tc-arena');
+    const scoreDisplay = container.querySelector('#tc-score');
+    const timerDisplay = container.querySelector('#tc-timer');
+    const caughtDisplay = container.querySelector('#tc-caught');
+    const missedDisplay = container.querySelector('#tc-missed');
+
+    const spawnInterval = setInterval(() => spawnToken(arena), 800);
+
+    const countdown = setInterval(() => {
+        minigameState.gameData.timeLeft--;
+        timerDisplay.textContent = `${minigameState.gameData.timeLeft}s`;
+
+        if (minigameState.gameData.timeLeft <= 0) {
+            clearInterval(countdown);
+            clearInterval(spawnInterval);
+            const data = minigameState.gameData;
+            const total = data.caught + data.missed;
+            const score = total > 0 ? Math.round((data.score / (total * 10)) * 100) : 0;
+            endMinigame(container, Math.min(100, score), score >= 90);
+        }
+    }, 1000);
+
+    function spawnToken(arena) {
+        const isRug = Math.random() < 0.25;
+        const token = document.createElement('div');
+        token.style.cssText = `
+            position: absolute;
+            width: 40px; height: 40px;
+            left: ${Math.random() * (arena.offsetWidth - 40)}px;
+            top: -40px;
+            font-size: 28px;
+            cursor: pointer;
+            transition: top 3s linear;
+            z-index: 10;
+        `;
+        token.textContent = isRug ? '💀' : '🪙';
+        token.dataset.isRug = isRug;
+
+        arena.appendChild(token);
+
+        setTimeout(() => {
+            token.style.top = `${arena.offsetHeight + 40}px`;
+        }, 50);
+
+        token.addEventListener('click', () => {
+            const data = minigameState.gameData;
+            if (token.dataset.isRug === 'true') {
+                data.score -= 15;
+                data.missed++;
+                token.style.transform = 'scale(1.5)';
+                token.style.opacity = '0.5';
+            } else {
+                data.score += 10;
+                data.caught++;
+                token.style.transform = 'scale(1.5)';
+            }
+            scoreDisplay.textContent = Math.max(0, data.score);
+            caughtDisplay.textContent = data.caught;
+            missedDisplay.textContent = data.missed;
+            setTimeout(() => token.remove(), 200);
+        });
+
+        setTimeout(() => {
+            if (token.parentNode) {
+                const data = minigameState.gameData;
+                if (token.dataset.isRug === 'false') {
+                    data.missed++;
+                    missedDisplay.textContent = data.missed;
+                }
+                token.remove();
+            }
+        }, 3200);
+    }
+}
+
+// ============================================
+// GAS OPTIMIZER
+// ============================================
+
+function renderGasOptimizer(container) {
+    const game = MINIGAMES.gas_optimizer;
+    const rounds = 8;
+
+    minigameState.gameData = {
+        round: 1,
+        totalRounds: rounds,
+        score: 0,
+        gasPrice: 50,
+        targetRange: { min: 30, max: 50 }
+    };
+
+    container.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a24, #12121a); padding: 20px; border-radius: 16px; border: 2px solid ${game.color}40;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">${game.icon}</span>
+                    <div>
+                        <h3 style="color: ${game.color}; margin: 0;">${game.name}</h3>
+                        <div style="color: #888; font-size: 12px;">Submit at optimal gas!</div>
+                    </div>
+                </div>
+                <div style="padding: 8px 16px; background: #1a1a24; border: 1px solid #333; border-radius: 8px;">
+                    <span style="color: #888; font-size: 12px;">Round </span>
+                    <span style="color: ${game.color}; font-weight: bold;" id="gas-round">1</span>
+                    <span style="color: #888; font-size: 12px;">/${rounds}</span>
+                </div>
+            </div>
+
+            <div style="background: #12121a; border-radius: 12px; border: 1px solid #333; padding: 20px; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="color: #888; font-size: 12px;">Current Gas Price</div>
+                    <div style="font-size: 48px; font-weight: bold; color: ${game.color};" id="gas-price">50</div>
+                    <div style="color: #666; font-size: 11px;">gwei</div>
+                </div>
+
+                <div style="position: relative; height: 30px; background: linear-gradient(90deg, #22c55e, #fbbf24, #ef4444); border-radius: 15px; margin-bottom: 10px;">
+                    <div style="position: absolute; width: 4px; height: 40px; background: white; top: -5px; transition: left 0.3s;" id="gas-marker"></div>
+                    <div style="position: absolute; height: 100%; background: rgba(255,255,255,0.3); border-radius: 15px; transition: all 0.3s;" id="gas-target"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; color: #666; font-size: 10px;">
+                    <span>10 gwei</span>
+                    <span>Target Zone</span>
+                    <span>100 gwei</span>
+                </div>
+            </div>
+
+            <button id="gas-submit" style="
+                width: 100%; padding: 15px;
+                background: linear-gradient(135deg, ${game.color}, ${game.color}dd);
+                border: none; border-radius: 10px;
+                color: white; font-size: 16px; font-weight: bold;
+                cursor: pointer; transition: all 0.2s;
+            ">⚡ SUBMIT TRANSACTION</button>
+
+            <div style="margin-top: 15px; text-align: center; color: #888; font-size: 12px;">
+                Score: <span style="color: ${game.color};" id="gas-score">0</span>
+            </div>
+        </div>
+    `;
+
+    const priceDisplay = container.querySelector('#gas-price');
+    const marker = container.querySelector('#gas-marker');
+    const targetZone = container.querySelector('#gas-target');
+    const roundDisplay = container.querySelector('#gas-round');
+    const scoreDisplay = container.querySelector('#gas-score');
+
+    function setTargetZone() {
+        const data = minigameState.gameData;
+        data.targetRange.min = 20 + Math.random() * 30;
+        data.targetRange.max = data.targetRange.min + 15 + Math.random() * 15;
+
+        const left = ((data.targetRange.min - 10) / 90) * 100;
+        const width = ((data.targetRange.max - data.targetRange.min) / 90) * 100;
+        targetZone.style.left = `${left}%`;
+        targetZone.style.width = `${width}%`;
+    }
+
+    setTargetZone();
+
+    const priceInterval = setInterval(() => {
+        const data = minigameState.gameData;
+        data.gasPrice += (Math.random() - 0.5) * 15;
+        data.gasPrice = Math.max(10, Math.min(100, data.gasPrice));
+        priceDisplay.textContent = Math.round(data.gasPrice);
+        marker.style.left = `${((data.gasPrice - 10) / 90) * 100}%`;
+    }, 200);
+
+    container.querySelector('#gas-submit').addEventListener('click', () => {
+        const data = minigameState.gameData;
+        let points = 0;
+
+        if (data.gasPrice >= data.targetRange.min && data.gasPrice <= data.targetRange.max) {
+            // Perfect hit
+            const center = (data.targetRange.min + data.targetRange.max) / 2;
+            const distFromCenter = Math.abs(data.gasPrice - center);
+            points = 100 - Math.round(distFromCenter * 2);
+        } else {
+            // Miss - give some points based on distance
+            const distFromZone = data.gasPrice < data.targetRange.min
+                ? data.targetRange.min - data.gasPrice
+                : data.gasPrice - data.targetRange.max;
+            points = Math.max(0, 50 - Math.round(distFromZone * 2));
+        }
+
+        data.score += points;
+        scoreDisplay.textContent = data.score;
+        data.round++;
+
+        if (data.round > data.totalRounds) {
+            clearInterval(priceInterval);
+            const finalScore = Math.round(data.score / data.totalRounds);
+            endMinigame(container, Math.min(100, finalScore), finalScore >= 90);
+        } else {
+            roundDisplay.textContent = data.round;
+            setTargetZone();
+        }
+    });
 }
 
 // ============================================

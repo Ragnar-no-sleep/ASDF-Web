@@ -25,6 +25,48 @@ const GAME_CONFIG = {
     dailyLoginInfluence: 21          // fib[8] = 21 (daily bonus)
 };
 
+/**
+ * STAT_INFO - Full stat names and descriptions for UI
+ */
+const STAT_INFO = {
+    dev: {
+        name: 'Development',
+        icon: '&#128187;',
+        desc: 'Technical skills & coding ability',
+        howToIncrease: 'Level up, allocate stat points, or equip tech gear'
+    },
+    com: {
+        name: 'Community',
+        icon: '&#128101;',
+        desc: 'Social engagement & networking',
+        howToIncrease: 'Level up, allocate stat points, or equip social gear'
+    },
+    mkt: {
+        name: 'Marketing',
+        icon: '&#128226;',
+        desc: 'Promotion & visibility skills',
+        howToIncrease: 'Level up, allocate stat points, or equip marketing gear'
+    },
+    str: {
+        name: 'Strategy',
+        icon: '&#129504;',
+        desc: 'Planning & decision making',
+        howToIncrease: 'Level up, allocate stat points, or equip strategy gear'
+    },
+    cha: {
+        name: 'Charisma',
+        icon: '&#10024;',
+        desc: 'Influence & persuasion power',
+        howToIncrease: 'Level up, allocate stat points, or equip charisma gear'
+    },
+    lck: {
+        name: 'Luck',
+        icon: '&#127808;',
+        desc: 'Affects random outcomes & drops',
+        howToIncrease: 'Level up, allocate stat points, or equip lucky gear'
+    }
+};
+
 // ============================================
 // SECURITY UTILITIES (Security by Design)
 // ============================================
@@ -79,6 +121,248 @@ function sanitizeNumber(num) {
     const parsed = Number(num);
     if (!Number.isFinite(parsed)) return 0;
     return parsed;
+}
+
+// ============================================
+// TUTORIAL SYSTEM
+// ============================================
+
+const TUTORIALS = {
+    character_sheet: {
+        title: 'Character Sheet',
+        icon: '👤',
+        color: '#3b82f6',
+        steps: [
+            { title: 'Your Stats', content: 'Your character has 6 stats: Development, Community, Marketing, Strategy, Charisma, and Luck. Each affects different aspects of gameplay.' },
+            { title: 'Stat Points', content: 'You earn 3 stat points per level. Spend them wisely to build your character!' },
+            { title: 'Experience', content: 'Gain XP by completing quests, winning battles, and playing mini-games. Level up to unlock new content!' }
+        ]
+    },
+    battle_arena: {
+        title: 'Battle Arena',
+        icon: '⚔️',
+        color: '#ef4444',
+        steps: [
+            { title: 'Combat System', content: 'Battles are turn-based strategy. Choose your actions wisely - each decision matters!' },
+            { title: 'Combat Stats', content: 'ATK = Dev + Str, DEF = Com + Cha, SPD = Mkt + Lck, CRIT = (Lck + Dev) / 2' },
+            { title: 'Skills', content: 'Unlock powerful skills in the Skill Tree. Use them strategically to gain advantage!' },
+            { title: 'Enemies', content: 'Enemies have tiers (EMBER → INFERNO). Higher tiers give better rewards but are harder!' }
+        ]
+    },
+    equipment: {
+        title: 'Equipment',
+        icon: '🛡️',
+        color: '#a855f7',
+        steps: [
+            { title: 'Gear Slots', content: 'Equip items in 6 slots: Weapon, Armor, Accessory, Tool, Badge, and Companion.' },
+            { title: 'Rarity', content: 'Items have rarity tiers: Common → Uncommon → Rare → Epic → Legendary. Higher rarity = better stats!' },
+            { title: 'Set Bonuses', content: 'Equip items from the same set to unlock powerful bonus effects.' }
+        ]
+    },
+    trading: {
+        title: 'Trading Post',
+        icon: '🔄',
+        color: '#22c55e',
+        steps: [
+            { title: 'Create Trades', content: 'Offer tokens or items to create trade offers. Other players can accept your trades!' },
+            { title: 'Daily Limits', content: 'Your tier determines how many trades you can make per day and maximum trade value.' },
+            { title: 'Trading Fees', content: 'A small fee is taken from completed trades. Factor this into your pricing!' }
+        ]
+    },
+    skill_tree: {
+        title: 'Skill Tree',
+        icon: '🌳',
+        color: '#fbbf24',
+        steps: [
+            { title: 'Skill Points', content: 'You earn 1 Skill Point per level. Spend them to unlock powerful abilities!' },
+            { title: 'Tier Requirements', content: 'Tier 1 = Level 5, Tier 2 = Level 10, Tier 3 = Level 15, Tier 4 = Level 20, Ultimate = Level 25' },
+            { title: 'Skill Branches', content: 'Choose between Offensive, Defensive, and Support skills. Build your playstyle!' }
+        ]
+    },
+    relationships: {
+        title: 'Relationships',
+        icon: '💬',
+        color: '#ec4899',
+        steps: [
+            { title: 'Meet NPCs', content: 'Talk to NPCs to build relationships. Each has unique personality and preferences.' },
+            { title: 'Affinity', content: 'Increase affinity through conversations and gifts. Higher affinity unlocks new dialogue and rewards!' },
+            { title: 'Topics', content: 'Each conversation topic can only be discussed once per relationship stage. Choose wisely!' }
+        ]
+    },
+    minigames: {
+        title: 'Mini-Games',
+        icon: '🎮',
+        color: '#06b6d4',
+        steps: [
+            { title: 'Play Games', content: 'Mini-games cost Influence to play but reward XP and tokens!' },
+            { title: 'Stat Bonuses', content: 'Each game is boosted by a specific stat. Higher stats = better rewards!' },
+            { title: 'Perfect Score', content: 'Achieve high scores for bonus rewards. Aim for that S rank!' }
+        ]
+    },
+    quests: {
+        title: 'Quests',
+        icon: '📜',
+        color: '#f97316',
+        steps: [
+            { title: 'Main Story', content: 'Follow the campaign quests to progress through the story and unlock new areas.' },
+            { title: 'Side Quests', content: 'Take on side quests for extra XP and rewards. Many are repeatable!' },
+            { title: 'Daily Quests', content: 'Daily quests reset regularly. Complete them for steady progression!' }
+        ]
+    }
+};
+
+const TUTORIAL_STORAGE_KEY = 'pumparena_tutorials_seen';
+
+function getTutorialsSeen() {
+    try {
+        const stored = localStorage.getItem(TUTORIAL_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function markTutorialSeen(tutorialId) {
+    try {
+        const seen = getTutorialsSeen();
+        seen[tutorialId] = Date.now();
+        localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(seen));
+    } catch (e) {
+        console.warn('Failed to save tutorial state');
+    }
+}
+
+function shouldShowTutorial(tutorialId) {
+    const seen = getTutorialsSeen();
+    return !seen[tutorialId];
+}
+
+function showTutorial(tutorialId, onComplete) {
+    const tutorial = TUTORIALS[tutorialId];
+    if (!tutorial) return;
+
+    let currentStep = 0;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'tutorial-overlay';
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.85); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        animation: fadeIn 0.3s ease;
+    `;
+
+    function renderStep() {
+        const step = tutorial.steps[currentStep];
+        const isLast = currentStep === tutorial.steps.length - 1;
+        const isFirst = currentStep === 0;
+
+        overlay.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, #1a1a24, #12121a);
+                border: 2px solid ${tutorial.color}40;
+                border-radius: 20px; max-width: 450px; width: 90%;
+                padding: 0; overflow: hidden;
+                animation: scaleIn 0.3s ease;
+            ">
+                <div style="
+                    background: linear-gradient(135deg, ${tutorial.color}30, ${tutorial.color}10);
+                    padding: 20px; border-bottom: 1px solid ${tutorial.color}30;
+                ">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 36px;">${tutorial.icon}</span>
+                        <div>
+                            <h2 style="color: ${tutorial.color}; margin: 0; font-size: 22px;">${tutorial.title}</h2>
+                            <div style="color: #888; font-size: 12px;">Tutorial ${currentStep + 1} of ${tutorial.steps.length}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 25px;">
+                    <h3 style="color: white; margin: 0 0 12px 0; font-size: 18px;">${step.title}</h3>
+                    <p style="color: #aaa; margin: 0; font-size: 14px; line-height: 1.6;">${step.content}</p>
+
+                    <div style="display: flex; justify-content: center; gap: 6px; margin: 20px 0 15px 0;">
+                        ${tutorial.steps.map((_, i) => `
+                            <div style="
+                                width: 8px; height: 8px; border-radius: 50%;
+                                background: ${i === currentStep ? tutorial.color : '#333'};
+                                transition: all 0.3s;
+                            "></div>
+                        `).join('')}
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        ${!isFirst ? `
+                            <button id="tutorial-prev" style="
+                                padding: 10px 20px; background: #333; border: 1px solid #444;
+                                border-radius: 8px; color: #aaa; font-size: 14px; cursor: pointer;
+                            ">← Previous</button>
+                        ` : ''}
+                        <button id="tutorial-next" style="
+                            padding: 10px 30px;
+                            background: linear-gradient(135deg, ${tutorial.color}, ${tutorial.color}cc);
+                            border: none; border-radius: 8px;
+                            color: white; font-size: 14px; font-weight: 600; cursor: pointer;
+                        ">${isLast ? '✓ Got it!' : 'Next →'}</button>
+                    </div>
+
+                    <button id="tutorial-skip" style="
+                        display: block; margin: 15px auto 0; padding: 8px 16px;
+                        background: none; border: none; color: #666;
+                        font-size: 12px; cursor: pointer;
+                    ">Skip tutorial</button>
+                </div>
+            </div>
+        `;
+
+        overlay.querySelector('#tutorial-next').addEventListener('click', () => {
+            if (isLast) {
+                closeTutorial();
+            } else {
+                currentStep++;
+                renderStep();
+            }
+        });
+
+        if (!isFirst) {
+            overlay.querySelector('#tutorial-prev').addEventListener('click', () => {
+                currentStep--;
+                renderStep();
+            });
+        }
+
+        overlay.querySelector('#tutorial-skip').addEventListener('click', closeTutorial);
+    }
+
+    function closeTutorial() {
+        markTutorialSeen(tutorialId);
+        overlay.style.animation = 'fadeOut 0.2s ease forwards';
+        setTimeout(() => {
+            overlay.remove();
+            if (onComplete) onComplete();
+        }, 200);
+    }
+
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    `;
+    overlay.appendChild(style);
+
+    renderStep();
+    document.body.appendChild(overlay);
+}
+
+function checkAndShowTutorial(tutorialId, onComplete) {
+    if (shouldShowTutorial(tutorialId)) {
+        showTutorial(tutorialId, onComplete);
+        return true;
+    }
+    return false;
 }
 
 // ============================================
@@ -432,6 +716,18 @@ function renderMainGameUI() {
                             <span class="action-icon">&#127942;</span>
                             <span class="action-label">Achieve</span>
                         </button>
+                        <button class="action-btn" id="btn-battle" title="Battle Arena" style="background: linear-gradient(135deg, #dc2626, #7c3aed);">
+                            <span class="action-icon">&#9876;</span>
+                            <span class="action-label">Battle</span>
+                        </button>
+                        <button class="action-btn" id="btn-equipment" title="Equipment">
+                            <span class="action-icon">&#128737;</span>
+                            <span class="action-label">Equipment</span>
+                        </button>
+                        <button class="action-btn" id="btn-trading" title="Trading Post">
+                            <span class="action-icon">&#128257;</span>
+                            <span class="action-label">Trade</span>
+                        </button>
                     </div>
                 </div>
 
@@ -461,6 +757,9 @@ function attachMainGameListeners() {
     document.getElementById('btn-map')?.addEventListener('click', showMapPanel);
     document.getElementById('btn-stats')?.addEventListener('click', showCharacterSheet);
     document.getElementById('btn-achievements')?.addEventListener('click', showAchievementsPanel);
+    document.getElementById('btn-battle')?.addEventListener('click', showBattlePanel);
+    document.getElementById('btn-equipment')?.addEventListener('click', showEquipmentPanel);
+    document.getElementById('btn-trading')?.addEventListener('click', showTradingPanel);
     document.getElementById('events-btn')?.addEventListener('click', checkAndShowEvent);
 
     // Listen for tier up events
@@ -1199,17 +1498,23 @@ function showActiveQuestInContent() {
             <div class="quest-objectives-panel">
                 <h3>Objectives</h3>
                 <div class="objectives-list">
-                    ${quest.objectives.map((obj, i) => `
-                        <div class="objective-item ${quest.objectiveProgress[i] ? 'completed' : 'active'}" data-index="${i}">
-                            <span class="obj-check">${quest.objectiveProgress[i] ? '&#10003;' : '&#9675;'}</span>
-                            <span class="obj-text">${obj.description}</span>
-                            ${!quest.objectiveProgress[i] ? `
-                                <button class="btn-do-objective" data-quest="${quest.id}" data-obj="${i}" data-type="${obj.type}" data-target="${obj.target || ''}" data-game="${obj.game || ''}" data-min="${obj.minScore || obj.min || 0}">
-                                    ${getObjectiveButtonText(obj)}
-                                </button>
-                            ` : ''}
-                        </div>
-                    `).join('')}
+                    ${quest.objectives.map((obj, i) => {
+                        const hint = getObjectiveHint(obj);
+                        return `
+                            <div class="objective-item ${quest.objectiveProgress[i] ? 'completed' : 'active'}" data-index="${i}">
+                                <span class="obj-check">${quest.objectiveProgress[i] ? '&#10003;' : '&#9675;'}</span>
+                                <div class="obj-info">
+                                    <span class="obj-text">${obj.description}</span>
+                                    ${hint && !quest.objectiveProgress[i] ? `<span class="obj-hint" style="font-size: 11px; color: #9ca3af; display: block; margin-top: 4px;">${hint}</span>` : ''}
+                                </div>
+                                ${!quest.objectiveProgress[i] ? `
+                                    <button class="btn-do-objective" data-quest="${quest.id}" data-obj="${i}" data-type="${obj.type}" data-target="${obj.target || ''}" data-game="${obj.game || ''}" data-min="${obj.minScore || obj.min || 0}">
+                                        ${getObjectiveButtonText(obj)}
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
 
@@ -1247,13 +1552,33 @@ function getObjectiveButtonText(obj) {
         case 'minigame':
             return 'Play';
         case 'stat_check':
-            return 'Check';
+            return 'Check Stats';
         case 'choice':
-            return 'Choose';
+            return 'View Options';
         case 'resource_check':
             return 'Verify';
         default:
             return 'Do';
+    }
+}
+
+/**
+ * Get a hint text for objectives to help players understand requirements
+ */
+function getObjectiveHint(obj) {
+    switch (obj.type) {
+        case 'stat_check':
+            const statInfo = STAT_INFO[obj.target];
+            if (statInfo) {
+                return `Requires: ${statInfo.name} ${obj.min || obj.minScore || 0}`;
+            }
+            return '';
+        case 'choice':
+            return 'Multiple options with different stat requirements';
+        case 'minigame':
+            return `Score ${obj.minScore || 0}+ to complete`;
+        default:
+            return '';
     }
 }
 
@@ -1352,14 +1677,92 @@ function showNPCMeetingForQuest(questId, objIndex, npcId) {
 function performStatCheck(questId, objIndex, stat, minValue) {
     const state = window.PumpArenaState.get();
     const currentStat = state.stats[stat] || 0;
+    const statInfo = STAT_INFO[stat] || { name: stat.toUpperCase(), icon: '&#10067;', desc: 'Unknown stat', howToIncrease: 'Level up' };
+    const statPoints = window.PumpArenaState.getStatPoints();
 
     if (currentStat >= minValue) {
+        // Success - pass the check
         window.PumpArenaQuests.updateObjective(questId, objIndex, true);
-        showNotification(`Stat check passed! (${stat.toUpperCase()}: ${currentStat}/${minValue})`, 'success');
+        showNotification(`${statInfo.name} check passed! (${currentStat}/${minValue})`, 'success');
+        showActiveQuestInContent();
     } else {
-        showNotification(`Need ${stat.toUpperCase()} ${minValue}. You have ${currentStat}.`, 'warning');
+        // Fail - show helpful popup explaining what's needed
+        const needed = minValue - currentStat;
+        const canAllocate = statPoints >= needed;
+
+        const modal = document.createElement('div');
+        modal.className = 'game-modal-overlay';
+        modal.innerHTML = `
+            <div class="game-modal-panel stat-check-panel" style="max-width: 450px; background: #12121a; border: 2px solid #ea580c;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #1a1a24, #2a1a10); padding: 15px; border-bottom: 1px solid #333;">
+                    <h3 style="color: #ffffff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">${statInfo.icon}</span>
+                        <span>Stat Check Required</span>
+                    </h3>
+                </div>
+                <div class="modal-body" style="padding: 20px; color: #ffffff;">
+                    <div class="stat-check-info" style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 18px; color: #ea580c; margin-bottom: 5px;">${escapeHtml(statInfo.name)}</div>
+                        <div style="font-size: 14px; color: #9ca3af; margin-bottom: 15px;">${escapeHtml(statInfo.desc)}</div>
+
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 20px 0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; color: ${currentStat >= minValue ? '#22c55e' : '#ef4444'};">${currentStat}</div>
+                                <div style="font-size: 12px; color: #9ca3af;">Your ${escapeHtml(statInfo.name)}</div>
+                            </div>
+                            <div style="font-size: 24px; color: #666;">&#10145;</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; color: #ea580c;">${minValue}</div>
+                                <div style="font-size: 12px; color: #9ca3af;">Required</div>
+                            </div>
+                        </div>
+
+                        <div style="background: #1a1a24; border-radius: 8px; padding: 15px; margin-top: 15px;">
+                            <div style="color: #ef4444; font-size: 14px; margin-bottom: 10px;">
+                                &#9888; You need ${needed} more ${escapeHtml(statInfo.name)} point${needed > 1 ? 's' : ''}
+                            </div>
+                            <div style="color: #9ca3af; font-size: 13px;">
+                                <strong style="color: #ffffff;">How to increase:</strong><br>
+                                ${escapeHtml(statInfo.howToIncrease)}
+                            </div>
+                            ${statPoints > 0 ? `
+                                <div style="color: #22c55e; font-size: 13px; margin-top: 10px;">
+                                    &#11088; You have <strong>${statPoints}</strong> stat point${statPoints > 1 ? 's' : ''} available!
+                                    ${canAllocate ? '<br>Open Character Sheet to allocate them.' : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="stat-check-char-btn" class="btn" style="background: linear-gradient(135deg, #7c3aed, #4c1d95); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                            &#128100; Character Sheet
+                        </button>
+                        <button id="stat-check-close-btn" class="btn" style="background: #333; border: 1px solid #555; color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Event handlers
+        modal.querySelector('#stat-check-close-btn').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.querySelector('#stat-check-char-btn').addEventListener('click', () => {
+            modal.remove();
+            showCharacterSheet();
+        });
+
+        // Click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
     }
-    showActiveQuestInContent();
 }
 
 function performResourceCheck(questId, objIndex, resource, minValue) {
@@ -1384,30 +1787,65 @@ function showQuestChoice(questId, objIndex) {
         return;
     }
 
+    const state = window.PumpArenaState.get();
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
-        <div class="game-modal-panel choice-panel" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3>Make a Choice</h3>
+        <div class="game-modal-panel choice-panel" style="max-width: 550px; background: #12121a; border: 2px solid #3b82f6;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a24, #1a2040); padding: 15px; border-bottom: 1px solid #333;">
+                <h3 style="color: #ffffff; margin: 0;">&#128161; Make a Choice</h3>
+                <button class="modal-close choice-close" style="background: none; border: none; color: #888; font-size: 24px; cursor: pointer;">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="choices-list">
+            <div class="modal-body" style="padding: 20px;">
+                <p style="color: #9ca3af; margin-bottom: 15px; text-align: center;">Choose the path that matches your strengths!</p>
+
+                <div class="choices-list" style="display: flex; flex-direction: column; gap: 12px;">
                     ${quest.choices.map((choice, i) => {
                         const canChoose = !choice.statRequired || checkStatRequirement(choice.statRequired);
+                        const reqDetails = choice.statRequired ? formatStatReqDetailed(choice.statRequired, state.stats) : '';
                         return `
-                            <button class="choice-option ${canChoose ? '' : 'locked'}" data-choice="${i}" ${canChoose ? '' : 'disabled'}>
-                                <span class="choice-text">${choice.text}</span>
-                                ${choice.statRequired ? `<span class="stat-req ${canChoose ? 'met' : 'unmet'}">${formatStatReq(choice.statRequired)}</span>` : ''}
+                            <button class="choice-option ${canChoose ? '' : 'locked'}" data-choice="${i}" ${canChoose ? '' : 'disabled'} style="
+                                background: ${canChoose ? 'linear-gradient(135deg, #1a3a1a, #0d2010)' : '#1a1a24'};
+                                border: 2px solid ${canChoose ? '#22c55e' : '#555'};
+                                border-radius: 10px;
+                                padding: 15px;
+                                cursor: ${canChoose ? 'pointer' : 'not-allowed'};
+                                text-align: left;
+                                transition: all 0.2s;
+                                opacity: ${canChoose ? '1' : '0.6'};
+                            ">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span class="choice-text" style="color: #ffffff; font-weight: 600; font-size: 14px;">${choice.text}</span>
+                                    ${canChoose ? '<span style="color: #22c55e; font-size: 16px;">&#10003;</span>' : '<span style="color: #ef4444; font-size: 16px;">&#128274;</span>'}
+                                </div>
+                                ${choice.description ? `<p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">${choice.description}</p>` : ''}
+                                ${reqDetails ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; font-size: 12px;">${reqDetails}</div>` : ''}
                             </button>
                         `;
                     }).join('')}
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
+                    <div style="color: #9ca3af; font-size: 12px; text-align: center;">
+                        <span style="color: #ffffff;">&#128161; Tip:</span> Can't choose an option? Open your <a href="#" id="choice-char-link" style="color: #7c3aed;">Character Sheet</a> to allocate stat points!
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
+
+    // Close button
+    modal.querySelector('.choice-close').addEventListener('click', () => modal.remove());
+
+    // Character sheet link
+    modal.querySelector('#choice-char-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.remove();
+        showCharacterSheet();
+    });
 
     modal.querySelectorAll('.choice-option:not(.locked)').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1433,6 +1871,24 @@ function showQuestChoice(questId, objIndex) {
     });
 }
 
+/**
+ * Format stat requirements with detailed comparison to player stats
+ */
+function formatStatReqDetailed(statReq, playerStats) {
+    return Object.entries(statReq).map(([stat, min]) => {
+        const info = STAT_INFO[stat] || { name: stat.toUpperCase(), icon: '&#10067;' };
+        const current = playerStats[stat] || 0;
+        const met = current >= min;
+        return `
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                <span style="font-size: 16px;">${info.icon}</span>
+                <span style="color: ${met ? '#22c55e' : '#ef4444'};">${info.name}: ${current}/${min}</span>
+                ${met ? '<span style="color: #22c55e;">&#10003;</span>' : `<span style="color: #ef4444;">(need ${min - current} more)</span>`}
+            </div>
+        `;
+    }).join('');
+}
+
 function checkStatRequirement(statReq) {
     const state = window.PumpArenaState.get();
     for (const [stat, min] of Object.entries(statReq)) {
@@ -1442,7 +1898,11 @@ function checkStatRequirement(statReq) {
 }
 
 function formatStatReq(statReq) {
-    return Object.entries(statReq).map(([stat, min]) => `${stat.toUpperCase()} ${min}`).join(', ');
+    return Object.entries(statReq).map(([stat, min]) => {
+        const info = STAT_INFO[stat];
+        const name = info ? info.name : stat.toUpperCase();
+        return `${name} ${min}`;
+    }).join(', ');
 }
 
 function applyChoiceOutcomes(outcomes) {
@@ -1498,7 +1958,7 @@ function showDefaultGameContent() {
 
     content.querySelector('#btn-explore')?.addEventListener('click', showProjectSelection);
     content.querySelector('#btn-relationships')?.addEventListener('click', showRelationsPanel);
-    content.querySelector('#btn-daily')?.addEventListener('click', showDailyPanel);
+    content.querySelector('#btn-daily')?.addEventListener('click', showDailyPopup);
     content.querySelector('#btn-minigames-play')?.addEventListener('click', showMinigamesPanel);
 }
 
@@ -2489,6 +2949,9 @@ function showAchievementsPanel() {
 }
 
 function showMinigamesPanel() {
+    // Check for tutorial
+    checkAndShowTutorial('minigames');
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
@@ -2522,6 +2985,9 @@ function showMinigamesPanel() {
 }
 
 function showSkillsPanel() {
+    // Check for tutorial
+    checkAndShowTutorial('skill_tree');
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
@@ -2553,6 +3019,9 @@ function showSkillsPanel() {
 }
 
 function showRelationsPanel() {
+    // Check for tutorial
+    checkAndShowTutorial('relationships');
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
@@ -3013,21 +3482,179 @@ function showTravelAnimation(location, callback) {
 }
 
 function showCharacterSheet() {
+    // Check for tutorial
+    checkAndShowTutorial('character_sheet');
+
     const state = window.PumpArenaState.get();
     const stats = state.stats;
+    const statPoints = window.PumpArenaState.getStatPoints();
+    const skillPoints = window.PumpArenaState.getSkillPoints();
 
-    showModal('Character Sheet', `
-        <div class="character-sheet">
-            <div class="stats-detail">
-                <div class="stat-row"><span>Development:</span> <span>${stats.dev}</span></div>
-                <div class="stat-row"><span>Community:</span> <span>${stats.com}</span></div>
-                <div class="stat-row"><span>Marketing:</span> <span>${stats.mkt}</span></div>
-                <div class="stat-row"><span>Strategy:</span> <span>${stats.str}</span></div>
-                <div class="stat-row"><span>Charisma:</span> <span>${stats.cha}</span></div>
-                <div class="stat-row"><span>Luck:</span> <span>${stats.lck}</span></div>
+    const statNames = {
+        dev: { name: 'Development', icon: '&#128187;', desc: 'Technical skills & coding', color: '#3b82f6' },
+        com: { name: 'Community', icon: '&#128101;', desc: 'Social engagement', color: '#22c55e' },
+        mkt: { name: 'Marketing', icon: '&#128226;', desc: 'Promotion & visibility', color: '#f97316' },
+        str: { name: 'Strategy', icon: '&#129504;', desc: 'Planning & decisions', color: '#a855f7' },
+        cha: { name: 'Charisma', icon: '&#10024;', desc: 'Influence & persuasion', color: '#ec4899' },
+        lck: { name: 'Luck', icon: '&#127808;', desc: 'Random outcomes', color: '#eab308' }
+    };
+
+    const xpCurrent = state.progression.xp;
+    const xpNeeded = window.PumpArenaState.getXPForLevel(state.progression.level);
+    const xpPercent = Math.min(100, Math.round((xpCurrent / xpNeeded) * 100));
+
+    const modal = document.createElement('div');
+    modal.className = 'game-modal-overlay';
+    modal.innerHTML = `
+        <div class="game-modal-panel" style="max-width: 520px; background: #12121a; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e, #2d1b4e); padding: 20px; border-bottom: 1px solid #7c3aed40;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #7c3aed, #4c1d95); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 3px solid #a855f7;">
+                        &#128100;
+                    </div>
+                    <div>
+                        <h3 style="color: #ffffff; margin: 0; font-size: 20px;">${escapeHtml(state.character.name) || 'Hero'}</h3>
+                        <div style="color: #a855f7; font-size: 13px;">Level ${state.progression.level} ${state.asdfTier?.current || 'EMBER'}</div>
+                    </div>
+                </div>
+                <button class="modal-close" id="close-char-sheet" style="background: none; border: none; color: #888; font-size: 28px; cursor: pointer; position: absolute; top: 15px; right: 15px;">&times;</button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                <!-- XP Progress Bar -->
+                <div style="margin-bottom: 20px; padding: 15px; background: #1a1a24; border-radius: 12px; border: 1px solid #333;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #9ca3af; font-size: 12px;">Experience</span>
+                        <span style="color: #a855f7; font-size: 12px;">${xpCurrent} / ${xpNeeded} XP</span>
+                    </div>
+                    <div style="height: 8px; background: #2a2a3a; border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; width: ${xpPercent}%; background: linear-gradient(90deg, #7c3aed, #a855f7); transition: width 0.3s;"></div>
+                    </div>
+                </div>
+
+                <!-- Points Available -->
+                ${statPoints > 0 || skillPoints > 0 ? `
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        ${statPoints > 0 ? `
+                            <div style="flex: 1; padding: 12px; background: linear-gradient(135deg, #1a2a1a, #0d200d); border: 2px solid #22c55e; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 24px; color: #22c55e; font-weight: bold;" id="stat-points-display">${statPoints}</div>
+                                <div style="font-size: 11px; color: #86efac;">Stat Points</div>
+                            </div>
+                        ` : ''}
+                        ${skillPoints > 0 ? `
+                            <div style="flex: 1; padding: 12px; background: linear-gradient(135deg, #1a1a2a, #0d0d20); border: 2px solid #3b82f6; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 24px; color: #3b82f6; font-weight: bold;">${skillPoints}</div>
+                                <div style="font-size: 11px; color: #93c5fd;">Skill Points</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                <!-- Stats Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    ${Object.entries(statNames).map(([key, info]) => `
+                        <div style="padding: 12px; background: linear-gradient(135deg, #1a1a24, ${info.color}15); border: 1px solid ${info.color}40; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 20px;">${info.icon}</span>
+                                    <div>
+                                        <div style="color: ${info.color}; font-size: 13px; font-weight: 600;">${info.name}</div>
+                                        <div style="color: #666; font-size: 10px;">${info.desc}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="color: #ffffff; font-size: 20px; font-weight: bold;" id="stat-val-${key}">${stats[key]}</span>
+                                    ${statPoints > 0 ? `
+                                        <button class="stat-allocate-btn" data-stat="${key}" ${stats[key] >= 144 ? 'disabled' : ''} style="
+                                            width: 28px; height: 28px; border-radius: 50%; border: 2px solid ${info.color};
+                                            background: ${info.color}30; color: ${info.color}; font-size: 16px; font-weight: bold;
+                                            cursor: pointer; transition: all 0.2s;
+                                        " onmouseover="this.style.background='${info.color}'; this.style.color='#fff';"
+                                           onmouseout="this.style.background='${info.color}30'; this.style.color='${info.color}';">+</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Character Info -->
+                <div style="padding: 15px; background: #1a1a24; border-radius: 12px; border: 1px solid #333;">
+                    <h4 style="color: #ffffff; margin: 0 0 12px 0; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                        <span>&#128202;</span> Statistics
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #12121a; border-radius: 6px;">
+                            <span style="color: #9ca3af; font-size: 12px;">Reputation</span>
+                            <span style="color: #eab308; font-size: 12px; font-weight: 600;">&#11088; ${state.resources.reputation}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #12121a; border-radius: 6px;">
+                            <span style="color: #9ca3af; font-size: 12px;">Tokens</span>
+                            <span style="color: #22c55e; font-size: 12px; font-weight: 600;">&#128176; ${state.resources.tokens}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #12121a; border-radius: 6px;">
+                            <span style="color: #9ca3af; font-size: 12px;">Influence</span>
+                            <span style="color: #3b82f6; font-size: 12px; font-weight: 600;">&#9889; ${state.resources.influence}/${state.resources.maxInfluence}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #12121a; border-radius: 6px;">
+                            <span style="color: #9ca3af; font-size: 12px;">Quests Done</span>
+                            <span style="color: #a855f7; font-size: 12px; font-weight: 600;">&#128203; ${state.statistics?.questsCompleted || 0}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    `);
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close button
+    modal.querySelector('#close-char-sheet').addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // Click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+
+    // Stat allocation buttons
+    modal.querySelectorAll('.stat-allocate-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const stat = btn.dataset.stat;
+            const result = window.PumpArenaState.allocateStatPoint(stat);
+
+            if (result.success) {
+                // Update stat value display
+                modal.querySelector(`#stat-val-${stat}`).textContent = result.newValue;
+
+                // Update points display (new ID)
+                const pointsEl = modal.querySelector('#stat-points-display');
+                if (pointsEl) {
+                    pointsEl.textContent = result.remainingPoints;
+                }
+
+                // Disable all buttons if no more points
+                if (result.remainingPoints <= 0) {
+                    modal.querySelectorAll('.stat-allocate-btn').forEach(b => {
+                        b.style.display = 'none';
+                    });
+                }
+
+                // Disable button if at max (144)
+                if (result.newValue >= 144) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.3';
+                    btn.style.cursor = 'not-allowed';
+                }
+
+                showNotification(`+1 ${statNames[stat].name}!`, 'success');
+            } else {
+                showNotification(result.message, 'error');
+            }
+        });
+    });
 }
 
 // ============================================
@@ -3313,6 +3940,78 @@ function getTimeIcon(timeOfDay) {
         night: '&#127769;'
     };
     return icons[timeOfDay] || '&#9728;';
+}
+
+// ============================================
+// BATTLE PANEL
+// ============================================
+
+function showBattlePanel() {
+    // Check for tutorial
+    checkAndShowTutorial('battle_arena');
+
+    const content = document.getElementById('game-content');
+    if (!content) return;
+
+    if (!window.PumpArenaBattle) {
+        content.innerHTML = `
+            <div class="panel-error">
+                <h3>⚔️ Battle System</h3>
+                <p>Battle system is loading...</p>
+            </div>
+        `;
+        return;
+    }
+
+    window.PumpArenaBattle.renderPanel(content);
+}
+
+// ============================================
+// EQUIPMENT PANEL
+// ============================================
+
+function showEquipmentPanel() {
+    // Check for tutorial
+    checkAndShowTutorial('equipment');
+
+    const content = document.getElementById('game-content');
+    if (!content) return;
+
+    if (!window.PumpArenaEquipment) {
+        content.innerHTML = `
+            <div class="panel-error">
+                <h3>🛡️ Equipment</h3>
+                <p>Equipment system is loading...</p>
+            </div>
+        `;
+        return;
+    }
+
+    window.PumpArenaEquipment.renderPanel(content);
+}
+
+// ============================================
+// TRADING PANEL
+// ============================================
+
+function showTradingPanel() {
+    // Check for tutorial
+    checkAndShowTutorial('trading');
+
+    const content = document.getElementById('game-content');
+    if (!content) return;
+
+    if (!window.PumpArenaTrading) {
+        content.innerHTML = `
+            <div class="panel-error">
+                <h3>🔄 Trading</h3>
+                <p>Trading system is loading...</p>
+            </div>
+        `;
+        return;
+    }
+
+    window.PumpArenaTrading.renderPanel(content);
 }
 
 // ============================================

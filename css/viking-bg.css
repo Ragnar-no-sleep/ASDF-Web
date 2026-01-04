@@ -1,0 +1,230 @@
+/* ============================================
+   YGGDRASIL / VIKING BACKGROUND
+   Nordic Aurora + World Tree + Stars
+   Style inspiré de asdfasdfa.tech
+
+   Shared across: learn, tools, build, play, games, faq/glossary
+   ============================================ */
+
+/* Stars layer - fond étoilé visible */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -3;
+    background-image:
+        /* Étoiles brillantes */
+        radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.95), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.85), transparent),
+        radial-gradient(3px 3px at 50px 160px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 90px 40px, rgba(255, 255, 255, 0.95), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 160px 120px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(3px 3px at 200px 50px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 220px 140px, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(2px 2px at 260px 90px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 300px 180px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(3px 3px at 340px 60px, rgba(255, 255, 255, 0.95), transparent),
+        radial-gradient(2px 2px at 380px 130px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 420px 100px, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(2px 2px at 460px 170px, rgba(255, 255, 255, 0.85), transparent),
+        radial-gradient(3px 3px at 500px 45px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 540px 200px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(2px 2px at 580px 80px, rgba(255, 255, 255, 0.95), transparent),
+        radial-gradient(2px 2px at 620px 150px, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(3px 3px at 660px 30px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 700px 110px, rgba(255, 255, 255, 0.9), transparent);
+    background-size: 720px 220px;
+    background-repeat: repeat;
+    animation: starsTwinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes starsTwinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Aurora + Nebula layer - TRÈS VISIBLE */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -2;
+    background:
+        /* Aurora verte principale - intense */
+        radial-gradient(ellipse 180% 80% at 10% -20%, rgba(34, 197, 94, 0.5) 0%, rgba(34, 197, 94, 0.2) 30%, transparent 60%),
+        radial-gradient(ellipse 150% 70% at 90% -10%, rgba(74, 222, 128, 0.45) 0%, rgba(74, 222, 128, 0.15) 35%, transparent 55%),
+        /* Aurora bleue/cyan - intense */
+        radial-gradient(ellipse 140% 60% at 50% -15%, rgba(34, 211, 238, 0.4) 0%, rgba(34, 211, 238, 0.12) 40%, transparent 60%),
+        radial-gradient(ellipse 160% 55% at 75% 0%, rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.1) 40%, transparent 55%),
+        /* Aurora violette - mystique */
+        radial-gradient(ellipse 120% 50% at 20% 10%, rgba(168, 85, 247, 0.4) 0%, rgba(139, 92, 246, 0.15) 35%, transparent 55%),
+        radial-gradient(ellipse 100% 45% at 85% 15%, rgba(192, 132, 252, 0.35) 0%, rgba(167, 139, 250, 0.1) 40%, transparent 50%),
+        /* Nebula effects en profondeur */
+        radial-gradient(ellipse 80% 50% at 25% 60%, rgba(34, 197, 94, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 45% at 80% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 45%),
+        radial-gradient(ellipse 90% 40% at 50% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+        /* Base gradient - Nordic night */
+        linear-gradient(180deg,
+            rgba(2, 8, 18, 1) 0%,
+            rgba(5, 10, 20, 1) 30%,
+            rgba(8, 10, 15, 1) 60%,
+            rgba(10, 10, 15, 1) 100%);
+    animation: auroraPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes auroraPulse {
+    0% { filter: hue-rotate(0deg) brightness(1); }
+    33% { filter: hue-rotate(-10deg) brightness(1.15); }
+    66% { filter: hue-rotate(8deg) brightness(0.95); }
+    100% { filter: hue-rotate(5deg) brightness(1.1); }
+}
+
+/* Yggdrasil container avec effets */
+.yggdrasil-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* Main Yggdrasil tree - visible */
+.yggdrasil-bg::before {
+    content: '';
+    position: absolute;
+    bottom: -5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140%;
+    height: 110%;
+    opacity: 0.18;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 900'%3E%3Cdefs%3E%3ClinearGradient id='treeGrad' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%2322c55e'/%3E%3Cstop offset='40%25' stop-color='%234ade80'/%3E%3Cstop offset='70%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='4' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23treeGrad)' stroke-linecap='round' filter='url(%23glow)'%3E%3Cpath d='M500 900 L500 500 Q500 420 475 350 Q450 280 500 210 Q550 140 500 70 Q475 30 500 0' stroke-width='6'/%3E%3Cpath d='M500 750 Q380 710 260 760 Q140 810 20 740' stroke-width='4'/%3E%3Cpath d='M500 620 Q360 560 220 620 Q80 680 -60 580' stroke-width='3.5'/%3E%3Cpath d='M500 500 Q380 420 260 480 Q120 540 -20 440' stroke-width='3'/%3E%3Cpath d='M485 380 Q380 300 260 360 Q120 420 -20 320' stroke-width='2.5'/%3E%3Cpath d='M490 270 Q400 190 300 240 Q180 300 40 210' stroke-width='2'/%3E%3Cpath d='M495 170 Q420 100 340 140 Q240 190 120 120' stroke-width='1.5'/%3E%3Cpath d='M500 750 Q620 710 740 760 Q860 810 980 740' stroke-width='4'/%3E%3Cpath d='M500 620 Q640 560 780 620 Q920 680 1060 580' stroke-width='3.5'/%3E%3Cpath d='M500 500 Q620 420 740 480 Q880 540 1020 440' stroke-width='3'/%3E%3Cpath d='M515 380 Q620 300 740 360 Q880 420 1020 320' stroke-width='2.5'/%3E%3Cpath d='M510 270 Q600 190 700 240 Q820 300 960 210' stroke-width='2'/%3E%3Cpath d='M505 170 Q580 100 660 140 Q760 190 880 120' stroke-width='1.5'/%3E%3Cpath d='M500 900 Q380 870 260 910 Q140 950 0 880' stroke-width='5'/%3E%3Cpath d='M500 900 Q620 870 740 910 Q860 950 1000 880' stroke-width='5'/%3E%3Cpath d='M500 900 Q440 950 360 1000' stroke-width='3'/%3E%3Cpath d='M500 900 Q560 950 640 1000' stroke-width='3'/%3E%3Ccircle cx='260' cy='360' r='8' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='740' cy='360' r='8' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='220' cy='620' r='6' fill='%2322d3ee' opacity='0.7'/%3E%3Ccircle cx='780' cy='620' r='6' fill='%2322d3ee' opacity='0.7'/%3E%3Ccircle cx='300' cy='240' r='5' fill='%23a855f7' opacity='0.6'/%3E%3Ccircle cx='700' cy='240' r='5' fill='%23a855f7' opacity='0.6'/%3E%3Ccircle cx='120' cy='480' r='4' fill='%234ade80' opacity='0.5'/%3E%3Ccircle cx='880' cy='480' r='4' fill='%234ade80' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    animation: treeGlow 5s ease-in-out infinite alternate;
+}
+
+@keyframes treeGlow {
+    0%, 100% { opacity: 0.15; filter: brightness(1) drop-shadow(0 0 20px rgba(74, 222, 128, 0.3)); }
+    50% { opacity: 0.22; filter: brightness(1.2) drop-shadow(0 0 40px rgba(74, 222, 128, 0.5)); }
+}
+
+/* Floating runes - très visibles */
+.yggdrasil-bg::after {
+    content: 'ᚠ   ᚢ   ᚦ   ᚨ   ᚱ   ᚲ   ᚷ   ᚹ   ᚺ   ᚾ   ᛁ   ᛃ   ᛈ   ᛇ   ᛉ   ᛊ   ᛏ   ᛒ   ᛖ   ᛗ   ᛚ   ᛜ   ᛞ   ᛟ';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    font-size: 32px;
+    letter-spacing: 80px;
+    color: rgba(74, 222, 128, 0.25);
+    white-space: nowrap;
+    animation: runesScroll 80s linear infinite;
+    text-shadow: 0 0 30px rgba(74, 222, 128, 0.5), 0 0 60px rgba(74, 222, 128, 0.3);
+}
+
+@keyframes runesScroll {
+    0% { transform: translateX(0) translateY(25vh); }
+    100% { transform: translateX(50%) translateY(75vh); }
+}
+
+/* Nordic mist at bottom */
+.nordic-mist {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(to top,
+        rgba(34, 197, 94, 0.1) 0%,
+        rgba(34, 211, 238, 0.06) 20%,
+        rgba(168, 85, 247, 0.04) 40%,
+        transparent 100%);
+    animation: mistFlow 12s ease-in-out infinite alternate;
+}
+
+@keyframes mistFlow {
+    0% { opacity: 0.8; transform: translateY(0) scaleY(1); }
+    100% { opacity: 0.5; transform: translateY(-30px) scaleY(1.1); }
+}
+
+/* Spirit orbs flottants */
+.viking-spirits {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.viking-spirits::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.2) 40%, transparent 70%);
+    filter: blur(30px);
+    top: 15%;
+    left: 8%;
+    animation: spiritFloat 15s ease-in-out infinite;
+}
+
+.viking-spirits::after {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, rgba(168, 85, 247, 0.2) 40%, transparent 70%);
+    filter: blur(25px);
+    top: 35%;
+    right: 12%;
+    animation: spiritFloat 20s ease-in-out infinite reverse;
+}
+
+@keyframes spiritFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+    25% { transform: translate(60px, -40px) scale(1.2); opacity: 0.9; }
+    50% { transform: translate(30px, 50px) scale(0.9); opacity: 0.5; }
+    75% { transform: translate(-40px, 20px) scale(1.1); opacity: 0.8; }
+}
+
+/* Third spirit - cyan */
+.viking-spirits .spirit-cyan {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.45) 0%, rgba(34, 211, 238, 0.15) 40%, transparent 70%);
+    filter: blur(20px);
+    bottom: 25%;
+    left: 25%;
+    animation: spiritFloat 18s ease-in-out infinite;
+    animation-delay: -5s;
+}
+
+/* Ensure body has proper setup for the background */
+body {
+    position: relative;
+    min-height: 100vh;
+}

@@ -1,9 +1,93 @@
 /**
  * Pump Arena RPG - Random Events System
  * Dynamic events that occur during gameplay
+ *
+ * ASDF Philosophy Integration:
+ * - Event rewards scale with Fibonacci sequence
+ * - Tier bonuses apply to all rewards
+ * - Rarity affects reward multipliers
  */
 
 'use strict';
+
+// ============================================
+// ASDF FIBONACCI HELPERS FOR EVENTS
+// ============================================
+
+const EVENT_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987];
+
+/**
+ * Get Fibonacci number for event calculations
+ */
+function getEventFib(n) {
+    if (typeof window.PumpArenaState !== 'undefined' && window.PumpArenaState.getFib) {
+        return window.PumpArenaState.getFib(n);
+    }
+    if (n < 0) return 0;
+    if (n < EVENT_FIB.length) return EVENT_FIB[n];
+    return EVENT_FIB[EVENT_FIB.length - 1];
+}
+
+/**
+ * Calculate event rewards based on ASDF Philosophy
+ * Base rewards use Fibonacci, scaled by tier and event rarity
+ * @param {Object} baseReward - Base reward object
+ * @param {number} rarity - Event rarity (0-1)
+ * @returns {Object} Scaled reward object
+ */
+function calculateEventReward(baseReward, rarity = 0.5) {
+    if (!baseReward) return {};
+
+    // Get player tier for bonus
+    const tier = window.PumpArenaState?.getCurrentTier() || { index: 0 };
+    const tierMultiplier = 1 + (getEventFib(tier.index + 3) / 100); // +2%, +3%, +5%, +8%, +13%
+
+    // Rarity multiplier: rarer events give more
+    const rarityMultiplier = 1 + ((1 - rarity) * 0.5); // 0.1 rarity = 1.45x, 0.5 rarity = 1.25x
+
+    const scaled = {};
+
+    // Scale each reward type using Fibonacci indices
+    if (baseReward.reputation) {
+        // Reputation: fib[8-11] range = 21-89
+        scaled.reputation = Math.floor(baseReward.reputation * tierMultiplier * rarityMultiplier);
+    }
+
+    if (baseReward.tokens) {
+        // Tokens: scaled by tier significantly
+        scaled.tokens = Math.floor(baseReward.tokens * tierMultiplier * rarityMultiplier);
+    }
+
+    if (baseReward.xp) {
+        // XP: scaled by tier
+        scaled.xp = Math.floor(baseReward.xp * tierMultiplier * rarityMultiplier);
+    }
+
+    if (baseReward.influence) {
+        // Influence: fixed based on Fibonacci
+        scaled.influence = Math.floor(baseReward.influence * tierMultiplier);
+    }
+
+    // Keep non-numeric rewards unchanged
+    if (baseReward.affinity) scaled.affinity = baseReward.affinity;
+    if (baseReward.message) scaled.message = baseReward.message;
+    if (baseReward.chance) scaled.chance = baseReward.chance;
+
+    return scaled;
+}
+
+/**
+ * Fibonacci-based event reward presets (for quick reference)
+ * All values derived from Fibonacci sequence
+ */
+const EVENT_REWARD_PRESETS = {
+    tiny:   { reputation: getEventFib(7), tokens: getEventFib(8) * 5, xp: getEventFib(7) },    // 13 rep, 105 tokens, 13 xp
+    small:  { reputation: getEventFib(8), tokens: getEventFib(9) * 5, xp: getEventFib(8) },    // 21 rep, 170 tokens, 21 xp
+    medium: { reputation: getEventFib(9), tokens: getEventFib(10) * 5, xp: getEventFib(9) },   // 34 rep, 275 tokens, 34 xp
+    large:  { reputation: getEventFib(10), tokens: getEventFib(11) * 5, xp: getEventFib(10) }, // 55 rep, 445 tokens, 55 xp
+    huge:   { reputation: getEventFib(11), tokens: getEventFib(12) * 5, xp: getEventFib(11) }, // 89 rep, 720 tokens, 89 xp
+    epic:   { reputation: getEventFib(12), tokens: getEventFib(13) * 5, xp: getEventFib(12) }  // 144 rep, 1165 tokens, 144 xp
+};
 
 // ============================================
 // EVENT DEFINITIONS
@@ -564,8 +648,9 @@ function handleEventChoice(choiceId) {
     const isSuccess = Math.random() < successChance;
     const outcome = isSuccess ? choice.outcomes.success : choice.outcomes.fail;
 
-    // Apply rewards/penalties
-    const result = applyEventOutcome(outcome);
+    // Apply rewards/penalties with ASDF Fibonacci scaling based on event rarity
+    const eventRarity = event.rarity || 0.5;
+    const result = applyEventOutcome(outcome, eventRarity);
 
     // Record in history
     eventState.eventHistory.unshift({
@@ -600,36 +685,46 @@ function handleEventChoice(choiceId) {
     };
 }
 
-function applyEventOutcome(outcome) {
+/**
+ * Apply event outcome with ASDF Fibonacci scaling
+ * @param {Object} outcome - Base outcome from event definition
+ * @param {number} eventRarity - Event rarity for scaling (0-1)
+ * @returns {Object} Applied rewards summary
+ */
+function applyEventOutcome(outcome, eventRarity = 0.5) {
     if (!outcome) return {};
+
+    // Scale rewards using Fibonacci-based calculation
+    const scaledOutcome = calculateEventReward(outcome, eventRarity);
 
     const result = {};
 
-    if (outcome.xp) {
-        window.PumpArenaState.addXP(outcome.xp);
-        result.xp = outcome.xp;
+    if (scaledOutcome.xp) {
+        window.PumpArenaState.addXP(scaledOutcome.xp);
+        result.xp = scaledOutcome.xp;
     }
 
-    if (outcome.tokens) {
-        window.PumpArenaState.addTokens(outcome.tokens);
-        result.tokens = outcome.tokens;
+    if (scaledOutcome.tokens) {
+        window.PumpArenaState.addTokens(scaledOutcome.tokens);
+        result.tokens = scaledOutcome.tokens;
     }
 
-    if (outcome.reputation) {
-        window.PumpArenaState.addReputation(outcome.reputation);
-        result.reputation = outcome.reputation;
+    if (scaledOutcome.reputation) {
+        window.PumpArenaState.addReputation(scaledOutcome.reputation);
+        result.reputation = scaledOutcome.reputation;
     }
 
-    if (outcome.influence) {
+    if (scaledOutcome.influence) {
         const state = window.PumpArenaState.get();
         state.resources.influence = Math.min(
-            state.resources.influence + outcome.influence,
+            state.resources.influence + scaledOutcome.influence,
             window.PumpArenaState.getMaxInfluence()
         );
         window.PumpArenaState.save();
-        result.influence = outcome.influence;
+        result.influence = scaledOutcome.influence;
     }
 
+    // Affinity changes are not scaled (relationship changes should remain fixed)
     if (outcome.affinity && window.PumpArenaNPCs) {
         for (const [npcId, change] of Object.entries(outcome.affinity)) {
             if (npcId === 'random') {

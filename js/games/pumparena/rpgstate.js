@@ -326,24 +326,145 @@ let rpgState = JSON.parse(JSON.stringify(DEFAULT_RPG_STATE));
 // INTEGRITY CHECKING
 // ============================================
 
+/**
+ * Generate secure hash for save data integrity
+ * Uses multiple factors for tamper detection
+ * @param {Object} data - State data to hash
+ * @returns {string} Hash string
+ */
 function generateRPGHash(data) {
-    const str = JSON.stringify({
+    // Extract critical fields for hashing
+    const criticalData = {
         character: data.character,
         progression: data.progression,
         stats: data.stats,
         resources: data.resources,
-        skills: data.skills,
-        quests: data.quests,
-        achievements: data.achievements
-    });
-    let hash = 0;
+        asdfTier: data.asdfTier,
+        session: {
+            totalPlayTime: data.session?.totalPlayTime || 0,
+            lastSave: data.session?.lastSave || 0
+        }
+    };
+
+    const str = JSON.stringify(criticalData);
+
+    // Multi-pass hash for better distribution
+    let hash1 = 0;
+    let hash2 = 0;
+
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
+        // First hash (djb2 algorithm)
+        hash1 = ((hash1 << 5) + hash1) + char;
+        hash1 = hash1 & hash1;
+        // Second hash (sdbm algorithm)
+        hash2 = char + (hash2 << 6) + (hash2 << 16) - hash2;
+        hash2 = hash2 & hash2;
     }
-    const fp = navigator.userAgent.length + screen.width + screen.height;
-    return ((hash ^ fp) >>> 0).toString(36);
+
+    // Device fingerprint with more factors
+    const fp = generateDeviceFingerprint();
+
+    // Combine hashes with XOR and fingerprint
+    const combined = ((hash1 ^ hash2) ^ fp) >>> 0;
+
+    // Add checksum byte
+    const checksum = (hash1 & 0xFF) ^ (hash2 & 0xFF) ^ (fp & 0xFF);
+
+    return combined.toString(36) + '-' + checksum.toString(16);
+}
+
+/**
+ * Generate device fingerprint for hash salting
+ * Makes it harder to forge hashes on different devices
+ */
+function generateDeviceFingerprint() {
+    let fp = 0;
+
+    // Browser/UA factors
+    if (typeof navigator !== 'undefined') {
+        fp += navigator.userAgent?.length || 0;
+        fp += navigator.language?.length || 0;
+        fp += navigator.hardwareConcurrency || 0;
+    }
+
+    // Screen factors
+    if (typeof screen !== 'undefined') {
+        fp += screen.width || 0;
+        fp += screen.height || 0;
+        fp += screen.colorDepth || 0;
+    }
+
+    // Timezone offset
+    fp += new Date().getTimezoneOffset();
+
+    // Performance timing (if available)
+    if (typeof performance !== 'undefined' && performance.timing) {
+        fp += (performance.timing.navigationStart % 10000) || 0;
+    }
+
+    return fp;
+}
+
+/**
+ * Enhanced encryption for sensitive data
+ * Uses XOR cipher with rotating key (Fibonacci-based)
+ * @param {string} text - Text to encrypt
+ * @param {string} key - Encryption key
+ * @returns {string} Encrypted text (base64)
+ */
+function encryptData(text, key) {
+    if (!text || !key) return text;
+
+    // Generate key stream from Fibonacci + key
+    const keyStream = [];
+    let a = 1, b = 1;
+    for (let i = 0; i < text.length; i++) {
+        [a, b] = [b, a + b];
+        keyStream.push((b + key.charCodeAt(i % key.length)) & 0xFF);
+    }
+
+    // XOR encrypt
+    const encrypted = [];
+    for (let i = 0; i < text.length; i++) {
+        encrypted.push(text.charCodeAt(i) ^ keyStream[i]);
+    }
+
+    // Convert to base64
+    return btoa(String.fromCharCode(...encrypted));
+}
+
+/**
+ * Decrypt data encrypted with encryptData
+ * @param {string} encrypted - Encrypted text (base64)
+ * @param {string} key - Encryption key
+ * @returns {string} Decrypted text
+ */
+function decryptData(encrypted, key) {
+    if (!encrypted || !key) return encrypted;
+
+    try {
+        // Decode base64
+        const decoded = atob(encrypted);
+
+        // Generate same key stream
+        const keyStream = [];
+        let a = 1, b = 1;
+        for (let i = 0; i < decoded.length; i++) {
+            [a, b] = [b, a + b];
+            keyStream.push((b + key.charCodeAt(i % key.length)) & 0xFF);
+        }
+
+        // XOR decrypt
+        const decrypted = [];
+        for (let i = 0; i < decoded.length; i++) {
+            decrypted.push(decoded.charCodeAt(i) ^ keyStream[i]);
+        }
+
+        return String.fromCharCode(...decrypted);
+    } catch {
+        return null;
+    }
 }
 
 function verifyRPGIntegrity(data) {
@@ -486,7 +607,7 @@ function loadRPGState() {
             return false;
         }
 
-        const parsed = JSON.parse(saved);
+        let parsed = JSON.parse(saved);
 
         // Validate schema
         if (!validateRPGSchema(parsed)) {
@@ -502,8 +623,11 @@ function loadRPGState() {
             return false;
         }
 
-        // Migration handling for version differences
-        if (parsed.version !== PUMPARENA_VERSION) {
+        // Migration handling for version differences or invalid stats
+        const needsMigration = parsed.version !== PUMPARENA_VERSION ||
+            (parsed.stats && Object.values(parsed.stats).some(v => typeof v !== 'number' || v < 5));
+
+        if (needsMigration) {
             parsed = migrateState(parsed);
         }
 
@@ -526,8 +650,32 @@ function resetRPGState() {
 }
 
 function migrateState(oldState) {
-    // Future migration logic here
-    // For now, just return with updated version
+    console.log('[PumpArena] Migrating state from version', oldState.version, 'to', PUMPARENA_VERSION);
+
+    // Migration: Ensure minimum stats of 5 (base starting value)
+    // This fixes old save data that may have had stats initialized at 0
+    if (oldState.stats) {
+        const minStat = 5; // Base stat value (fib[5] = 5)
+        const statsToCheck = ['dev', 'com', 'mkt', 'str', 'cha', 'lck'];
+        statsToCheck.forEach(stat => {
+            if (typeof oldState.stats[stat] !== 'number' || oldState.stats[stat] < minStat) {
+                oldState.stats[stat] = minStat;
+                console.log(`[PumpArena] Migrated ${stat} stat to minimum ${minStat}`);
+            }
+        });
+    }
+
+    // Migration: Ensure progression has stat/skill points fields
+    if (oldState.progression) {
+        if (typeof oldState.progression.statPoints !== 'number') {
+            oldState.progression.statPoints = 0;
+        }
+        if (typeof oldState.progression.skillPoints !== 'number') {
+            oldState.progression.skillPoints = 0;
+        }
+    }
+
+    // Update version
     oldState.version = PUMPARENA_VERSION;
     return oldState;
 }
@@ -757,6 +905,115 @@ function spendInfluence(amount) {
     rpgState.resources.influence -= amount;
     saveRPGState();
     return true;
+}
+
+// ============================================
+// STAT POINT ALLOCATION
+// ============================================
+
+/**
+ * Get available stat points
+ * @returns {number} Available stat points
+ */
+function getStatPoints() {
+    return rpgState.progression.statPoints || 0;
+}
+
+/**
+ * Get available skill points (based on progression.skillPoints)
+ * @returns {number} Available skill points
+ */
+function getSkillPoints() {
+    return rpgState.progression.skillPoints || 0;
+}
+
+/**
+ * Allocate a stat point to a specific stat
+ * @param {string} statName - Stat to increase (dev, com, mkt, str, cha, lck)
+ * @returns {Object} Result with success status
+ */
+function allocateStatPoint(statName) {
+    // Valid stat names
+    const validStats = ['dev', 'com', 'mkt', 'str', 'cha', 'lck'];
+
+    if (!validStats.includes(statName)) {
+        return { success: false, message: 'Invalid stat name' };
+    }
+
+    if (rpgState.progression.statPoints <= 0) {
+        return { success: false, message: 'No stat points available' };
+    }
+
+    // Fibonacci-based max stat: fib[12] = 144
+    const maxStat = 144;
+    if (rpgState.stats[statName] >= maxStat) {
+        return { success: false, message: `${statName.toUpperCase()} is already at maximum` };
+    }
+
+    // Allocate the point
+    rpgState.progression.statPoints--;
+    rpgState.stats[statName]++;
+
+    saveRPGState();
+
+    // Dispatch stat change event
+    document.dispatchEvent(new CustomEvent('pumparena:stat-allocated', {
+        detail: {
+            stat: statName,
+            newValue: rpgState.stats[statName],
+            remainingPoints: rpgState.progression.statPoints
+        }
+    }));
+
+    return {
+        success: true,
+        stat: statName,
+        newValue: rpgState.stats[statName],
+        remainingPoints: rpgState.progression.statPoints
+    };
+}
+
+/**
+ * Allocate multiple stat points at once
+ * @param {Object} allocation - Object with stat names as keys and points as values
+ * @returns {Object} Result with success status
+ */
+function allocateStatPoints(allocation) {
+    const validStats = ['dev', 'com', 'mkt', 'str', 'cha', 'lck'];
+    const maxStat = 144;
+
+    // Calculate total points needed
+    let totalNeeded = 0;
+    for (const [stat, points] of Object.entries(allocation)) {
+        if (!validStats.includes(stat)) {
+            return { success: false, message: `Invalid stat: ${stat}` };
+        }
+        if (typeof points !== 'number' || points < 0 || !Number.isInteger(points)) {
+            return { success: false, message: 'Points must be positive integers' };
+        }
+        if (rpgState.stats[stat] + points > maxStat) {
+            return { success: false, message: `${stat.toUpperCase()} would exceed maximum` };
+        }
+        totalNeeded += points;
+    }
+
+    if (totalNeeded > rpgState.progression.statPoints) {
+        return { success: false, message: `Need ${totalNeeded} points, have ${rpgState.progression.statPoints}` };
+    }
+
+    // Apply allocations
+    for (const [stat, points] of Object.entries(allocation)) {
+        rpgState.stats[stat] += points;
+    }
+    rpgState.progression.statPoints -= totalNeeded;
+
+    saveRPGState();
+
+    return {
+        success: true,
+        allocated: allocation,
+        remainingPoints: rpgState.progression.statPoints
+    };
 }
 
 /**
@@ -1074,6 +1331,203 @@ function endSession() {
     }
 }
 
+// ============================================
+// PRESTIGE SYSTEM (NEW GAME+ ASDF Philosophy)
+// Fibonacci-based bonuses for each prestige level
+// ============================================
+
+/**
+ * Prestige Level Requirements (Fibonacci-based)
+ * Each prestige requires reaching max level + completing specific challenges
+ */
+const PRESTIGE_REQUIREMENTS = {
+    minLevel: 55,              // fib[10] = 55 (max level cap)
+    minTier: 'BLAZE',          // Must reach BLAZE tier
+    minQuestsCompleted: 21,    // fib[8] = 21 quests
+    minBurned: 987             // fib[16] = 987 tokens burned
+};
+
+/**
+ * Prestige bonuses per level (ASDF Philosophy: Fibonacci multipliers)
+ * Each prestige gives permanent bonuses that persist through New Game+
+ */
+const PRESTIGE_BONUSES = {
+    // Per prestige level bonuses
+    xpMultiplierBonus: 0.05,       // +5% XP per prestige (fib[5]/100)
+    statBonus: 1,                  // +1 to all base stats per prestige
+    influenceBonus: 5,             // +5 max influence per prestige (fib[5])
+    burnEfficiencyBonus: 0.02,     // +2% burn efficiency per prestige
+    shopDiscountBonus: 0.01        // +1% shop discount per prestige
+};
+
+/**
+ * Get prestige level
+ */
+function getPrestigeLevel() {
+    return rpgState.progression.prestigeLevel || 0;
+}
+
+/**
+ * Check if player can prestige
+ */
+function canPrestige() {
+    const state = rpgState;
+
+    // Check level
+    if (state.progression.level < PRESTIGE_REQUIREMENTS.minLevel) {
+        return {
+            canPrestige: false,
+            reason: `Requires Level ${PRESTIGE_REQUIREMENTS.minLevel}`,
+            progress: state.progression.level / PRESTIGE_REQUIREMENTS.minLevel
+        };
+    }
+
+    // Check tier
+    const tierIndex = TIER_NAMES.indexOf(state.asdfTier.current);
+    const requiredTierIndex = TIER_NAMES.indexOf(PRESTIGE_REQUIREMENTS.minTier);
+    if (tierIndex < requiredTierIndex) {
+        return {
+            canPrestige: false,
+            reason: `Requires ${PRESTIGE_REQUIREMENTS.minTier} Tier`,
+            progress: tierIndex / requiredTierIndex
+        };
+    }
+
+    // Check quests completed
+    if (state.statistics.questsCompleted < PRESTIGE_REQUIREMENTS.minQuestsCompleted) {
+        return {
+            canPrestige: false,
+            reason: `Requires ${PRESTIGE_REQUIREMENTS.minQuestsCompleted} quests completed`,
+            progress: state.statistics.questsCompleted / PRESTIGE_REQUIREMENTS.minQuestsCompleted
+        };
+    }
+
+    // Check burn total
+    if (state.resources.burnedTotal < PRESTIGE_REQUIREMENTS.minBurned) {
+        return {
+            canPrestige: false,
+            reason: `Requires ${PRESTIGE_REQUIREMENTS.minBurned} tokens burned`,
+            progress: state.resources.burnedTotal / PRESTIGE_REQUIREMENTS.minBurned
+        };
+    }
+
+    return { canPrestige: true, reason: 'Ready to Prestige!' };
+}
+
+/**
+ * Get all prestige bonuses for current prestige level
+ */
+function getPrestigeBonuses() {
+    const level = getPrestigeLevel();
+    return {
+        xpMultiplier: 1 + (level * PRESTIGE_BONUSES.xpMultiplierBonus),
+        allStatsBonus: level * PRESTIGE_BONUSES.statBonus,
+        maxInfluenceBonus: level * PRESTIGE_BONUSES.influenceBonus,
+        burnEfficiency: level * PRESTIGE_BONUSES.burnEfficiencyBonus,
+        shopDiscount: level * PRESTIGE_BONUSES.shopDiscountBonus,
+        prestigeLevel: level
+    };
+}
+
+/**
+ * Perform prestige (New Game+)
+ * Resets most progress but keeps prestige bonuses and some achievements
+ */
+function performPrestige() {
+    const check = canPrestige();
+    if (!check.canPrestige) {
+        return { success: false, message: check.reason };
+    }
+
+    // Store prestige data to keep
+    const newPrestigeLevel = (rpgState.progression.prestigeLevel || 0) + 1;
+    const keepAchievements = rpgState.achievements.unlocked.slice();
+    const keepTitle = rpgState.achievements.currentTitle;
+    const keepTotalBurned = rpgState.resources.burnedTotal;
+    const keepStatistics = {
+        totalPlaytime: rpgState.statistics.totalPlaytime,
+        sessionsPlayed: rpgState.statistics.sessionsPlayed,
+        bestStreak: Math.max(rpgState.statistics.bestStreak, rpgState.daily.loginStreak)
+    };
+
+    // Reset state to defaults
+    rpgState = JSON.parse(JSON.stringify(DEFAULT_RPG_STATE));
+
+    // Apply prestige data
+    rpgState.progression.prestigeLevel = newPrestigeLevel;
+    rpgState.achievements.unlocked = keepAchievements;
+    rpgState.achievements.currentTitle = keepTitle;
+    rpgState.resources.burnedTotal = keepTotalBurned;
+    rpgState.statistics.totalPlaytime = keepStatistics.totalPlaytime;
+    rpgState.statistics.sessionsPlayed = keepStatistics.sessionsPlayed;
+    rpgState.statistics.bestStreak = keepStatistics.bestStreak;
+
+    // Apply prestige bonuses
+    const bonuses = getPrestigeBonuses();
+
+    // Add stat bonuses
+    for (const stat of Object.keys(rpgState.stats)) {
+        rpgState.stats[stat] += bonuses.allStatsBonus;
+    }
+
+    // Add max influence bonus
+    rpgState.resources.maxInfluence += bonuses.maxInfluenceBonus;
+    rpgState.resources.influence = rpgState.resources.maxInfluence;
+
+    // Set XP multiplier (character will be re-created, but base is set)
+    rpgState.character.xpMultiplier = bonuses.xpMultiplier;
+
+    // Save state
+    saveRPGState();
+
+    // Dispatch prestige event
+    document.dispatchEvent(new CustomEvent('pumparena:prestige', {
+        detail: {
+            prestigeLevel: newPrestigeLevel,
+            bonuses: bonuses
+        }
+    }));
+
+    return {
+        success: true,
+        prestigeLevel: newPrestigeLevel,
+        message: `Prestige ${newPrestigeLevel}! You keep your wisdom and start anew.`,
+        bonuses: bonuses
+    };
+}
+
+/**
+ * Show prestige requirements and progress
+ */
+function getPrestigeProgress() {
+    const state = rpgState;
+
+    return {
+        level: {
+            current: state.progression.level,
+            required: PRESTIGE_REQUIREMENTS.minLevel,
+            met: state.progression.level >= PRESTIGE_REQUIREMENTS.minLevel
+        },
+        tier: {
+            current: state.asdfTier.current,
+            required: PRESTIGE_REQUIREMENTS.minTier,
+            met: TIER_NAMES.indexOf(state.asdfTier.current) >= TIER_NAMES.indexOf(PRESTIGE_REQUIREMENTS.minTier)
+        },
+        quests: {
+            current: state.statistics.questsCompleted,
+            required: PRESTIGE_REQUIREMENTS.minQuestsCompleted,
+            met: state.statistics.questsCompleted >= PRESTIGE_REQUIREMENTS.minQuestsCompleted
+        },
+        burned: {
+            current: state.resources.burnedTotal,
+            required: PRESTIGE_REQUIREMENTS.minBurned,
+            met: state.resources.burnedTotal >= PRESTIGE_REQUIREMENTS.minBurned
+        },
+        prestigeLevel: getPrestigeLevel(),
+        currentBonuses: getPrestigeBonuses()
+    };
+}
+
 // Export for module usage
 if (typeof window !== 'undefined') {
     window.PumpArenaState = {
@@ -1094,6 +1548,12 @@ if (typeof window !== 'undefined') {
         getXPForLevel,
         getTotalXPForLevel,
         addXP,
+
+        // Stat/Skill Points
+        getStatPoints,
+        getSkillPoints,
+        allocateStatPoint,
+        allocateStatPoints,
 
         // Resources
         getResources,
@@ -1130,6 +1590,13 @@ if (typeof window !== 'undefined') {
         burnTokensForReputation,
         getBurnStats,
 
+        // Prestige System (New Game+)
+        getPrestigeLevel,
+        getPrestigeBonuses,
+        getPrestigeProgress,
+        canPrestige,
+        performPrestige,
+
         // Rate Limiting (Security by Design)
         RateLimiter: ActionRateLimiter,
 
@@ -1138,6 +1605,8 @@ if (typeof window !== 'undefined') {
         ASDF_TIERS,
         TIER_NAMES,
         REPUTATION_RANKS,
-        RELATIONSHIP_THRESHOLDS
+        RELATIONSHIP_THRESHOLDS,
+        PRESTIGE_REQUIREMENTS,
+        PRESTIGE_BONUSES
     };
 }

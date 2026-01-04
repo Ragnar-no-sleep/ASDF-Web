@@ -62,19 +62,19 @@ const CAMPAIGNS = {
                     {
                         id: 'sy_q1_first_task',
                         name: 'Prove Your Worth',
-                        description: 'Complete your first real task for SafeYield.',
+                        description: 'Complete your first real task for SafeYield. Show any of your skills to contribute.',
                         type: 'main',
                         requires: ['sy_q1_community'],
                         objectives: [
-                            { type: 'choice', description: 'Choose how to contribute' },
-                            { type: 'stat_check', stat: 'dev', min: 5, description: 'Show technical ability' }
+                            { type: 'choice', description: 'Choose how to contribute to the project' }
                         ],
                         rewards: { xp: 200, reputation: 50, tokens: 100 },
                         choices: [
                             {
                                 id: 'technical',
                                 text: 'Review smart contract code',
-                                statRequired: { dev: 8 },
+                                description: 'Use your Development skill to analyze code',
+                                statRequired: { dev: 5 },
                                 outcomes: {
                                     success: { xpBonus: 50, affinityChange: { marcus: 10 } },
                                     fail: { xpBonus: 0, affinityChange: { marcus: -5 } }
@@ -83,7 +83,8 @@ const CAMPAIGNS = {
                             {
                                 id: 'community',
                                 text: 'Help moderate Discord',
-                                statRequired: { com: 6 },
+                                description: 'Use your Community skill to engage users',
+                                statRequired: { com: 5 },
                                 outcomes: {
                                     success: { xpBonus: 30, affinityChange: { sarah: 15 } },
                                     fail: { xpBonus: 0, affinityChange: { sarah: -5 } }
@@ -92,7 +93,8 @@ const CAMPAIGNS = {
                             {
                                 id: 'marketing',
                                 text: 'Create educational content',
-                                statRequired: { mkt: 7 },
+                                description: 'Use your Marketing skill to spread the word',
+                                statRequired: { mkt: 5 },
                                 outcomes: {
                                     success: { xpBonus: 40, reputationBonus: 20 },
                                     fail: { xpBonus: 0 }
@@ -100,7 +102,7 @@ const CAMPAIGNS = {
                             }
                         ],
                         dialogue: {
-                            intro: "It's time to show what you can do. How will you contribute?",
+                            intro: "It's time to show what you can do. Choose a path that matches your strengths!",
                             complete: "You've proven yourself. SafeYield officially welcomes you to the team."
                         }
                     }
@@ -1124,6 +1126,214 @@ const SIDE_QUESTS = [
         dialogue: {
             intro: "Breaking news: A major exploit. The community is in panic.",
             complete: "The crisis passes. Your contribution didn't go unnoticed."
+        }
+    },
+
+    // ============================================
+    // DAILY REPEATABLE QUESTS (Easy XP for leveling)
+    // ============================================
+    {
+        id: 'sq_daily_training',
+        name: 'Daily Training',
+        description: 'Practice your skills with a quick training session.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'minigame', game: 'code_sprint', minScore: 100, description: 'Complete a coding challenge' }
+        ],
+        rewards: { xp: 75, tokens: 25 },
+        repeatable: true,
+        repeatCooldown: 43200000, // 12 hours
+        dialogue: {
+            intro: "Time to sharpen your skills! Practice makes perfect.",
+            complete: "Good session! Your skills are improving."
+        }
+    },
+    {
+        id: 'sq_market_watch',
+        name: 'Market Watch',
+        description: 'Analyze the market trends and spot opportunities.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'minigame', game: 'chart_analysis', minScore: 200, description: 'Analyze market patterns' }
+        ],
+        rewards: { xp: 80, tokens: 30 },
+        repeatable: true,
+        repeatCooldown: 43200000, // 12 hours
+        dialogue: {
+            intro: "The markets are moving. Can you spot the patterns?",
+            complete: "Sharp eyes! You're getting better at reading the market."
+        }
+    },
+    {
+        id: 'sq_community_post',
+        name: 'Community Contribution',
+        description: 'Share knowledge with the community.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'stat_check', stat: 'com', min: 2, description: 'Engage with the community' }
+        ],
+        rewards: { xp: 50, reputation: 15 },
+        repeatable: true,
+        repeatCooldown: 28800000, // 8 hours
+        dialogue: {
+            intro: "The community values your input. Share what you know!",
+            complete: "Your contribution helped others. Reputation increased!"
+        }
+    },
+    {
+        id: 'sq_token_hunt',
+        name: 'Token Hunt',
+        description: 'Search for token opportunities in the ecosystem.',
+        type: 'daily',
+        requires: { level: 2 },
+        objectives: [
+            { type: 'stat_check', stat: 'lck', min: 1, description: 'Explore token opportunities' }
+        ],
+        rewards: { xp: 60, tokens: 50 },
+        repeatable: true,
+        repeatCooldown: 21600000, // 6 hours
+        dialogue: {
+            intro: "There are tokens to be found if you know where to look...",
+            complete: "Nice find! Every token counts."
+        }
+    },
+    {
+        id: 'sq_skill_grind',
+        name: 'Skill Grinding',
+        description: 'Intensive training to improve your abilities.',
+        type: 'side',
+        requires: { level: 2 },
+        objectives: [
+            { type: 'minigame', game: 'code_sprint', minScore: 250, description: 'Complete coding challenges' }
+        ],
+        rewards: { xp: 120, tokens: 40 },
+        repeatable: true,
+        repeatCooldown: 14400000, // 4 hours
+        dialogue: {
+            intro: "Time to push your limits. Ready to grind?",
+            complete: "Excellent work! Your persistence pays off."
+        }
+    },
+    {
+        id: 'sq_quick_trade',
+        name: 'Quick Flip',
+        description: 'Make a quick profit on the market.',
+        type: 'side',
+        requires: { level: 3 },
+        objectives: [
+            { type: 'minigame', game: 'chart_analysis', minScore: 350, description: 'Execute a profitable trade' }
+        ],
+        rewards: { xp: 100, tokens: 75 },
+        repeatable: true,
+        repeatCooldown: 18000000, // 5 hours
+        dialogue: {
+            intro: "Opportunity knocks. Can you make a quick flip?",
+            complete: "Profit secured! You've got good instincts."
+        }
+    },
+    {
+        id: 'sq_meme_creation',
+        name: 'Meme Factory',
+        description: 'Create content that resonates with the community.',
+        type: 'side',
+        requires: { level: 2 },
+        objectives: [
+            { type: 'stat_check', stat: 'mkt', min: 3, description: 'Create viral content' }
+        ],
+        rewards: { xp: 90, reputation: 30, tokens: 20 },
+        repeatable: true,
+        repeatCooldown: 36000000, // 10 hours
+        dialogue: {
+            intro: "The timeline needs fresh content. Time to create!",
+            complete: "Nice one! The community loves it."
+        }
+    },
+    {
+        id: 'sq_knowledge_test',
+        name: 'Pop Quiz',
+        description: 'Test your crypto knowledge.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'minigame', game: 'shill_quiz', minScore: 400, description: 'Answer crypto trivia' }
+        ],
+        rewards: { xp: 100, tokens: 35 },
+        repeatable: true,
+        repeatCooldown: 28800000, // 8 hours
+        dialogue: {
+            intro: "Think you know crypto? Prove it!",
+            complete: "Impressive knowledge! You really know your stuff."
+        }
+    },
+    {
+        id: 'sq_meditation',
+        name: 'Diamond Hands Training',
+        description: 'Practice patience and discipline.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'stat_check', stat: 'str', min: 1, description: 'Practice discipline' }
+        ],
+        rewards: { xp: 40, reputation: 10 },
+        repeatable: true,
+        repeatCooldown: 14400000, // 4 hours
+        dialogue: {
+            intro: "In crypto, patience is a virtue. Center yourself.",
+            complete: "Calm and focused. Your diamond hands grow stronger."
+        }
+    },
+    {
+        id: 'sq_network_expand',
+        name: 'Expand Your Network',
+        description: 'Connect with new people in the ecosystem.',
+        type: 'side',
+        requires: { level: 4 },
+        objectives: [
+            { type: 'stat_check', stat: 'cha', min: 5, description: 'Make new connections' }
+        ],
+        rewards: { xp: 150, reputation: 50, influence: 5 },
+        repeatable: true,
+        repeatCooldown: 86400000, // 24 hours
+        dialogue: {
+            intro: "Your network is your net worth. Time to expand!",
+            complete: "New connections made! Your influence grows."
+        }
+    },
+    {
+        id: 'sq_battle_practice',
+        name: 'Arena Practice',
+        description: 'Train in the battle arena.',
+        type: 'daily',
+        requires: { level: 3 },
+        objectives: [
+            { type: 'battle', minWins: 1, description: 'Win a battle' }
+        ],
+        rewards: { xp: 130, tokens: 45 },
+        repeatable: true,
+        repeatCooldown: 21600000, // 6 hours
+        dialogue: {
+            intro: "The arena awaits. Test your combat skills!",
+            complete: "Victory! Your battle prowess improves."
+        }
+    },
+    {
+        id: 'sq_study_session',
+        name: 'Study Session',
+        description: 'Deep dive into blockchain fundamentals.',
+        type: 'daily',
+        requires: { level: 1 },
+        objectives: [
+            { type: 'stat_check', stat: 'dev', min: 1, description: 'Study blockchain concepts' }
+        ],
+        rewards: { xp: 55, tokens: 15 },
+        repeatable: true,
+        repeatCooldown: 21600000, // 6 hours
+        dialogue: {
+            intro: "Knowledge is power. Time for a study session!",
+            complete: "Your understanding deepens. Keep learning!"
         }
     }
 ];

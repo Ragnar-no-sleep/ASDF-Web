@@ -1656,6 +1656,15 @@ function getHeliusEnhanced() {
     return heliusEnhanced;
 }
 
+// Lazy load tokenMetadata service
+let tokenMetadata = null;
+function getTokenMetadata() {
+    if (!tokenMetadata) {
+        tokenMetadata = require('./services/tokenMetadata');
+    }
+    return tokenMetadata;
+}
+
 /**
  * Get asset via DAS API (supports cNFTs)
  * GET /api/das/asset/:id
@@ -1763,6 +1772,246 @@ app.get('/api/helius/health', async (req, res) => {
         res.json(health);
     } catch (error) {
         res.status(500).json({ healthy: false, error: error.message });
+    }
+});
+
+// ============================================
+// TOKEN METADATA ROUTES
+// ============================================
+
+/**
+ * Get token metadata
+ * GET /api/token/:mint/metadata
+ */
+app.get('/api/token/:mint/metadata', async (req, res) => {
+    try {
+        const { mint } = req.params;
+
+        // Basic validation (base58, 32-44 chars)
+        if (!mint || !isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const metadata = await getTokenMetadata().getTokenMetadata(mint);
+
+        if (!metadata) {
+            return res.status(404).json({ error: 'Token not found' });
+        }
+
+        res.json(metadata);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-metadata') });
+    }
+});
+
+/**
+ * Get batch token metadata
+ * POST /api/token/metadata/batch
+ */
+app.post('/api/token/metadata/batch', async (req, res) => {
+    try {
+        const { mints } = req.body;
+
+        if (!Array.isArray(mints) || mints.length === 0) {
+            return res.status(400).json({ error: 'Mints array required' });
+        }
+
+        if (mints.length > 100) {
+            return res.status(400).json({ error: 'Maximum 100 tokens per batch' });
+        }
+
+        // Validate all addresses
+        for (const mint of mints) {
+            if (!isValidAddress(mint)) {
+                return res.status(400).json({ error: `Invalid mint: ${mint}` });
+            }
+        }
+
+        const results = await getTokenMetadata().getBatchTokenMetadata(mints);
+
+        // Convert Map to object for JSON
+        const response = {};
+        for (const [key, value] of results) {
+            response[key] = value;
+        }
+
+        res.json(response);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'batch-metadata') });
+    }
+});
+
+/**
+ * Get token holders
+ * GET /api/token/:mint/holders
+ */
+app.get('/api/token/:mint/holders', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { mint } = req.params;
+        const { limit = 100, cursor } = req.query;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const holders = await getTokenMetadata().getTokenHolders(mint, {
+            limit: Math.min(parseInt(limit) || 100, 1000),
+            cursor: cursor || null
+        });
+
+        res.json(holders);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-holders') });
+    }
+});
+
+/**
+ * Get token holder distribution analysis
+ * GET /api/token/:mint/distribution
+ */
+app.get('/api/token/:mint/distribution', authMiddleware, walletRateLimiter, async (req, res) => {
+    try {
+        const { mint } = req.params;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const distribution = await getTokenMetadata().analyzeHolderDistribution(mint);
+
+        if (!distribution) {
+            return res.status(404).json({ error: 'Unable to analyze distribution' });
+        }
+
+        res.json(distribution);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-distribution') });
+    }
+});
+
+/**
+ * Get recent token transfers
+ * GET /api/token/:mint/transfers
+ */
+app.get('/api/token/:mint/transfers', async (req, res) => {
+    try {
+        const { mint } = req.params;
+        const { limit = 100, before } = req.query;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const transfers = await getTokenMetadata().getTokenTransfers(mint, {
+            limit: Math.min(parseInt(limit) || 100, 100),
+            before: before || ''
+        });
+
+        res.json({ transfers });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-transfers') });
+    }
+});
+
+/**
+ * Get token burns
+ * GET /api/token/:mint/burns
+ */
+app.get('/api/token/:mint/burns', async (req, res) => {
+    try {
+        const { mint } = req.params;
+        const { limit = 100 } = req.query;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const burns = await getTokenMetadata().getTokenBurns(mint, {
+            limit: Math.min(parseInt(limit) || 100, 100)
+        });
+
+        res.json({ burns });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-burns') });
+    }
+});
+
+/**
+ * Get token price
+ * GET /api/token/:mint/price
+ */
+app.get('/api/token/:mint/price', async (req, res) => {
+    try {
+        const { mint } = req.params;
+
+        if (!isValidAddress(mint)) {
+            return res.status(400).json({ error: 'Invalid mint address' });
+        }
+
+        const price = await getTokenMetadata().getTokenPrice(mint);
+        res.json(price);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'token-price') });
+    }
+});
+
+/**
+ * Get token metadata service health
+ * GET /api/token/health
+ */
+app.get('/api/token/health', async (req, res) => {
+    try {
+        const health = await getTokenMetadata().healthCheck();
+        res.json(health);
+    } catch (error) {
+        res.status(500).json({ healthy: false, error: error.message });
+    }
+});
+
+// ============================================
+// HELIUS METRICS ROUTES
+// ============================================
+
+// Lazy load heliusMetrics service
+let heliusMetrics = null;
+function getHeliusMetrics() {
+    if (!heliusMetrics) {
+        heliusMetrics = require('./services/heliusMetrics');
+    }
+    return heliusMetrics;
+}
+
+/**
+ * Get Helius metrics (Prometheus format)
+ * GET /api/helius/metrics
+ */
+app.get('/api/helius/metrics', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const metrics = getHeliusMetrics().getPrometheusMetrics();
+        res.set('Content-Type', 'text/plain');
+        res.send(metrics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Get Helius metrics (JSON format)
+ * GET /api/helius/metrics/json
+ */
+app.get('/api/helius/metrics/json', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const metrics = getHeliusMetrics().getJsonMetrics();
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

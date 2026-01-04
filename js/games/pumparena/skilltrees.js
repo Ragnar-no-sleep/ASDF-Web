@@ -1218,74 +1218,152 @@ const PumpArenaSkillTrees = {
     renderSkillTreePanel(container) {
         const state = window.PumpArenaState?.get();
         if (!state || !state.character) {
-            container.innerHTML = '<p>No character data</p>';
+            container.innerHTML = '<p style="color: #fff; padding: 20px;">No character data</p>';
             return;
         }
 
         const archetype = state.character.archetype;
         const tree = this.getTree(archetype);
         if (!tree) {
-            container.innerHTML = '<p>No skill tree for this archetype</p>';
+            container.innerHTML = '<p style="color: #fff; padding: 20px;">No skill tree for this archetype</p>';
             return;
         }
 
         const availablePoints = this.getAvailableSkillPoints();
+        const usedPoints = this.getUsedSkillPoints();
+        const totalPoints = state.progression.level;
         const unlockedSkills = state.progression.skills || [];
+        const playerLevel = state.progression.level;
 
         container.innerHTML = `
-            <div class="skill-tree-container">
-                <div class="skill-tree-header">
-                    <div class="tree-icon" style="background: ${tree.color}33; color: ${tree.color};">
-                        ${tree.icon}
-                    </div>
-                    <div class="tree-info">
-                        <h4>${tree.name}</h4>
-                        <p>${tree.description}</p>
-                    </div>
-                    <div class="skill-points-display">
-                        <span class="points-label">Skill Points:</span>
-                        <span class="points-value">${availablePoints}</span>
-                    </div>
-                </div>
-
-                <div class="skill-branches">
-                    ${Object.entries(tree.branches).map(([branchId, branch]) => `
-                        <div class="skill-branch ${branchId === 'ultimate' ? 'ultimate-branch' : ''}" data-branch="${branchId}">
-                            <div class="branch-header">
-                                <span class="branch-icon">${branch.icon}</span>
-                                <span class="branch-name">${branch.name}</span>
-                            </div>
-                            <div class="branch-skills">
-                                ${branch.skills.map(skill => {
-                                    const isUnlocked = unlockedSkills.includes(skill.id);
-                                    const canUnlock = this.canUnlockSkill(archetype, skill.id);
-                                    const statusClass = isUnlocked ? 'unlocked' : (canUnlock.can ? 'available' : 'locked');
-
-                                    return `
-                                        <div class="skill-node ${statusClass}" data-skill="${skill.id}">
-                                            <div class="skill-tier">T${skill.tier}</div>
-                                            <div class="skill-icon">${skill.icon}</div>
-                                            <div class="skill-name">${skill.name}</div>
-                                            <div class="skill-type-badge ${skill.type}">${skill.type}</div>
-                                            ${!isUnlocked ? `<div class="skill-cost">${skill.cost} SP</div>` : ''}
-                                            ${isUnlocked ? '<div class="unlocked-badge">&#10003;</div>' : ''}
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
+            <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid ${tree.color};">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #1a1a24, ${tree.color}20); padding: 20px; border-bottom: 1px solid ${tree.color}40;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, ${tree.color}, ${tree.color}80); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">${tree.icon}</div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #ffffff; margin: 0; font-size: 18px;">${tree.name}</h3>
+                            <div style="color: ${tree.color}; font-size: 12px;">${tree.description}</div>
                         </div>
-                    `).join('')}
+                    </div>
+
+                    <!-- Skill Points Display -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="flex: 1; padding: 12px; background: linear-gradient(135deg, ${tree.color}20, ${tree.color}10); border: 2px solid ${tree.color}60; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 28px; color: ${tree.color}; font-weight: bold;">${availablePoints}</div>
+                            <div style="font-size: 11px; color: #9ca3af;">Available SP</div>
+                        </div>
+                        <div style="flex: 1; padding: 12px; background: #1a1a24; border: 1px solid #333; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 28px; color: #666; font-weight: bold;">${usedPoints}/${totalPoints}</div>
+                            <div style="font-size: 11px; color: #666;">Used/Total</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="skill-details-panel" id="skill-details" style="display: none;"></div>
+                <!-- How Skills Work -->
+                <div style="padding: 12px 20px; background: #1a1a24; border-bottom: 1px solid #333;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 11px; color: #9ca3af;">
+                        <div>&#128218; <span style="color: #fff;">1 SP</span> per level (You: Lv.${playerLevel})</div>
+                        <div>&#128274; Tier 1 = Lv.5 | Tier 2 = Lv.10 | Tier 3 = Lv.15</div>
+                        <div>&#128161; Click a skill to view details & unlock</div>
+                    </div>
+                </div>
+
+                <!-- Skill Branches -->
+                <div style="padding: 20px; display: grid; gap: 15px;">
+                    ${Object.entries(tree.branches).map(([branchId, branch]) => {
+                        const isUltimate = branchId === 'ultimate';
+                        return `
+                            <div style="background: ${isUltimate ? 'linear-gradient(135deg, #1a1a24, #2d1b4e)' : '#1a1a24'}; border: 1px solid ${isUltimate ? '#a855f7' : '#333'}; border-radius: 12px; overflow: hidden;">
+                                <div style="padding: 12px 15px; background: ${isUltimate ? 'linear-gradient(90deg, #a855f720, transparent)' : '#12121a'}; border-bottom: 1px solid ${isUltimate ? '#a855f740' : '#333'}; display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 18px;">${branch.icon}</span>
+                                    <span style="color: #ffffff; font-weight: 600;">${branch.name}</span>
+                                    ${isUltimate ? '<span style="background: #a855f7; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: auto;">ULTIMATE</span>' : ''}
+                                </div>
+                                <div style="padding: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                                    ${branch.skills.map(skill => {
+                                        const isUnlocked = unlockedSkills.includes(skill.id);
+                                        const canUnlock = this.canUnlockSkill(archetype, skill.id);
+                                        const requiredLevel = skill.tier * 5;
+                                        const levelOk = playerLevel >= requiredLevel;
+
+                                        let statusColor = '#333';
+                                        let statusBg = '#1a1a24';
+                                        let statusBorder = '#333';
+                                        if (isUnlocked) {
+                                            statusColor = '#22c55e';
+                                            statusBg = 'linear-gradient(135deg, #0d2d1a, #1a4d2e)';
+                                            statusBorder = '#22c55e';
+                                        } else if (canUnlock.can) {
+                                            statusColor = tree.color;
+                                            statusBg = 'linear-gradient(135deg, #1a1a24, ' + tree.color + '15)';
+                                            statusBorder = tree.color;
+                                        }
+
+                                        return `
+                                            <div class="skill-node-card" data-skill="${skill.id}" style="
+                                                background: ${statusBg};
+                                                border: 2px solid ${statusBorder};
+                                                border-radius: 10px;
+                                                padding: 12px;
+                                                cursor: pointer;
+                                                transition: all 0.2s;
+                                                position: relative;
+                                                opacity: ${isUnlocked || canUnlock.can ? '1' : '0.5'};
+                                            ">
+                                                <!-- Tier Badge -->
+                                                <div style="position: absolute; top: 6px; right: 6px; background: #333; color: #888; font-size: 9px; padding: 2px 5px; border-radius: 4px;">T${skill.tier}</div>
+
+                                                <!-- Icon -->
+                                                <div style="font-size: 24px; margin-bottom: 8px;">${skill.icon}</div>
+
+                                                <!-- Name -->
+                                                <div style="color: ${statusColor}; font-size: 12px; font-weight: 600; margin-bottom: 4px;">${skill.name}</div>
+
+                                                <!-- Type Badge -->
+                                                <div style="font-size: 9px; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 8px;
+                                                    background: ${skill.type === 'passive' ? '#3b82f620' : skill.type === 'active' ? '#22c55e20' : '#a855f720'};
+                                                    color: ${skill.type === 'passive' ? '#3b82f6' : skill.type === 'active' ? '#22c55e' : '#a855f7'};">
+                                                    ${skill.type.toUpperCase()}
+                                                </div>
+
+                                                <!-- Status -->
+                                                ${isUnlocked ? `
+                                                    <div style="color: #22c55e; font-size: 11px;">&#10003; Unlocked</div>
+                                                ` : canUnlock.can ? `
+                                                    <div style="color: ${tree.color}; font-size: 11px;">&#128275; ${skill.cost} SP to unlock</div>
+                                                ` : `
+                                                    <div style="color: #666; font-size: 10px;">${!levelOk ? 'Lv.' + requiredLevel + ' required' : canUnlock.reason}</div>
+                                                `}
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Skill Details Panel -->
+                <div id="skill-details" style="display: none;"></div>
             </div>
         `;
 
         // Attach listeners
-        container.querySelectorAll('.skill-node').forEach(node => {
+        container.querySelectorAll('.skill-node-card').forEach(node => {
             node.addEventListener('click', () => {
                 const skillId = node.dataset.skill;
                 this.showSkillDetails(container, archetype, skillId);
+            });
+
+            // Hover effects
+            node.addEventListener('mouseover', () => {
+                node.style.transform = 'scale(1.03)';
+                node.style.boxShadow = '0 0 15px ' + tree.color + '40';
+            });
+            node.addEventListener('mouseout', () => {
+                node.style.transform = 'scale(1)';
+                node.style.boxShadow = 'none';
             });
         });
     },
@@ -1297,56 +1375,92 @@ const PumpArenaSkillTrees = {
         const isUnlocked = this.isSkillUnlocked(skillId);
         const canUnlock = this.canUnlockSkill(archetype, skillId);
         const tree = this.getTree(archetype);
+        const availablePoints = this.getAvailableSkillPoints();
 
         const detailsPanel = container.querySelector('#skill-details');
         detailsPanel.style.display = 'block';
         detailsPanel.innerHTML = `
-            <div class="skill-detail-card" style="border-color: ${tree.color};">
-                <div class="skill-detail-header">
-                    <div class="skill-detail-icon" style="background: ${tree.color}33;">
-                        ${skill.icon}
+            <div style="margin: 0 20px 20px; background: linear-gradient(135deg, #1a1a24, ${tree.color}10); border: 2px solid ${tree.color}; border-radius: 12px; overflow: hidden;">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, ${tree.color}30, ${tree.color}10); padding: 15px; border-bottom: 1px solid ${tree.color}40; display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, ${tree.color}, ${tree.color}80); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px;">${skill.icon}</div>
+                    <div style="flex: 1;">
+                        <div style="color: #ffffff; font-size: 16px; font-weight: 600;">${skill.name}</div>
+                        <div style="display: flex; gap: 8px; margin-top: 5px;">
+                            <span style="font-size: 10px; padding: 2px 8px; border-radius: 4px;
+                                background: ${skill.type === 'passive' ? '#3b82f620' : skill.type === 'active' ? '#22c55e20' : '#a855f720'};
+                                color: ${skill.type === 'passive' ? '#3b82f6' : skill.type === 'active' ? '#22c55e' : '#a855f7'};">
+                                ${skill.type.toUpperCase()}
+                            </span>
+                            <span style="font-size: 10px; padding: 2px 8px; border-radius: 4px; background: #33333380; color: #888;">Tier ${skill.tier}</span>
+                        </div>
                     </div>
-                    <div class="skill-detail-info">
-                        <h4>${skill.name}</h4>
-                        <span class="skill-type-badge ${skill.type}">${skill.type}</span>
-                    </div>
-                    <button class="skill-detail-close" id="close-skill-detail">&times;</button>
+                    <button id="close-skill-detail" style="background: none; border: none; color: #888; font-size: 24px; cursor: pointer;">&times;</button>
                 </div>
 
-                <p class="skill-description">${skill.description}</p>
+                <!-- Content -->
+                <div style="padding: 15px;">
+                    <p style="color: #9ca3af; font-size: 13px; line-height: 1.5; margin: 0 0 15px 0;">${skill.description}</p>
 
-                <div class="skill-effect-list">
-                    <h5>Effects:</h5>
-                    ${this.formatSkillEffects(skill.effect)}
-                </div>
-
-                ${skill.cooldown ? `<div class="skill-cooldown-info">Cooldown: ${skill.cooldown}s</div>` : ''}
-
-                ${skill.requires.length > 0 ? `
-                    <div class="skill-requires">
-                        <span>Requires: </span>
-                        ${skill.requires.map(reqId => {
-                            const reqSkill = this.getSkill(archetype, reqId);
-                            const isReqUnlocked = this.isSkillUnlocked(reqId);
-                            return `<span class="req-skill ${isReqUnlocked ? 'met' : 'unmet'}">${reqSkill?.name || reqId}</span>`;
-                        }).join(', ')}
+                    <!-- Effects -->
+                    <div style="background: #12121a; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                        <div style="color: #ffffff; font-size: 12px; font-weight: 600; margin-bottom: 8px;">Effects:</div>
+                        <div style="color: #9ca3af; font-size: 12px;">${this.formatSkillEffects(skill.effect)}</div>
                     </div>
-                ` : ''}
 
-                <div class="skill-detail-actions">
-                    ${isUnlocked ? `
-                        ${skill.type === SKILL_TYPES.ACTIVE || skill.type === SKILL_TYPES.ULTIMATE ? `
-                            <button class="btn-use-ability" id="use-ability-btn" ${this.isOnCooldown(skillId) ? 'disabled' : ''}>
-                                ${this.isOnCooldown(skillId) ? `Cooldown (${Math.ceil(this.getCooldownRemaining(skillId) / 1000)}s)` : 'Use Ability'}
-                            </button>
+                    ${skill.cooldown ? `
+                        <div style="color: #888; font-size: 11px; margin-bottom: 10px;">&#9201; Cooldown: ${skill.cooldown}s</div>
+                    ` : ''}
+
+                    ${skill.requires.length > 0 ? `
+                        <div style="margin-bottom: 15px;">
+                            <span style="color: #888; font-size: 11px;">Requires: </span>
+                            ${skill.requires.map(reqId => {
+                                const reqSkill = this.getSkill(archetype, reqId);
+                                const isReqUnlocked = this.isSkillUnlocked(reqId);
+                                return `<span style="color: ${isReqUnlocked ? '#22c55e' : '#ef4444'}; font-size: 11px;">${isReqUnlocked ? '&#10003;' : '&#128274;'} ${reqSkill?.name || reqId}</span>`;
+                            }).join(', ')}
+                        </div>
+                    ` : ''}
+
+                    <!-- Action Button -->
+                    <div style="display: flex; gap: 10px;">
+                        ${isUnlocked ? `
+                            ${skill.type === SKILL_TYPES.ACTIVE || skill.type === SKILL_TYPES.ULTIMATE ? `
+                                <button id="use-ability-btn" ${this.isOnCooldown(skillId) ? 'disabled' : ''} style="
+                                    flex: 1; padding: 12px; border-radius: 8px;
+                                    background: ${this.isOnCooldown(skillId) ? '#333' : 'linear-gradient(135deg, #22c55e, #16a34a)'};
+                                    border: 2px solid ${this.isOnCooldown(skillId) ? '#555' : '#22c55e'};
+                                    color: #fff; font-size: 14px; font-weight: 600;
+                                    cursor: ${this.isOnCooldown(skillId) ? 'not-allowed' : 'pointer'};
+                                    opacity: ${this.isOnCooldown(skillId) ? '0.5' : '1'};
+                                ">
+                                    ${this.isOnCooldown(skillId) ? `&#9201; Cooldown (${Math.ceil(this.getCooldownRemaining(skillId) / 1000)}s)` : '&#9889; Use Ability'}
+                                </button>
+                            ` : `
+                                <div style="flex: 1; padding: 12px; background: linear-gradient(135deg, #0d2d1a, #1a4d2e); border: 2px solid #22c55e; border-radius: 8px; text-align: center; color: #22c55e; font-size: 14px;">
+                                    &#10003; Passive Active
+                                </div>
+                            `}
                         ` : `
-                            <span class="passive-active-label">&#10003; Active</span>
+                            <button id="unlock-skill-btn" ${canUnlock.can ? '' : 'disabled'} style="
+                                flex: 1; padding: 12px; border-radius: 8px;
+                                background: ${canUnlock.can ? 'linear-gradient(135deg, ' + tree.color + ', ' + tree.color + '80)' : '#333'};
+                                border: 2px solid ${canUnlock.can ? tree.color : '#555'};
+                                color: #fff; font-size: 14px; font-weight: 600;
+                                cursor: ${canUnlock.can ? 'pointer' : 'not-allowed'};
+                                opacity: ${canUnlock.can ? '1' : '0.5'};
+                            ">
+                                ${canUnlock.can ? `&#128275; Unlock (${skill.cost} SP)` : canUnlock.reason}
+                            </button>
                         `}
-                    ` : `
-                        <button class="btn-unlock-skill" id="unlock-skill-btn" ${canUnlock.can ? '' : 'disabled'}>
-                            ${canUnlock.can ? `Unlock (${skill.cost} SP)` : canUnlock.reason}
-                        </button>
-                    `}
+                    </div>
+
+                    ${!isUnlocked && !canUnlock.can ? `
+                        <div style="margin-top: 10px; padding: 10px; background: #1a1a24; border-radius: 6px; font-size: 11px; color: #888; text-align: center;">
+                            &#128161; ${canUnlock.reason.includes('level') ? 'Level up to unlock this skill!' : canUnlock.reason.includes('point') ? 'Earn more skill points by leveling up!' : 'Complete requirements to unlock!'}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
