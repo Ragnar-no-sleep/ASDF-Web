@@ -281,11 +281,12 @@
             font-size: 32px;
             font-weight: 700;
             color: var(--accent-bright);
-            background: var(--bg-charred);
-            border: 2px solid var(--border-rust);
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
             border-radius: var(--radius);
             padding: 10px 16px;
             min-width: 70px;
+            box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
         }
 
         .countdown-label {
@@ -360,11 +361,12 @@
             justify-content: center;
             gap: 40px;
             padding: 20px;
-            background: var(--bg-charred);
-            border: 2px solid var(--border-rust);
+            background: var(--bg-burnt);
+            border: 2px solid var(--accent-fire);
             border-radius: var(--radius);
             margin: 40px auto;
             max-width: 800px;
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.15);
         }
 
         .access-item {
@@ -421,7 +423,7 @@
 
         .game-card {
             background: var(--bg-burnt);
-            border: 2px solid var(--gold);
+            border: 2px solid var(--accent-fire);
             border-radius: var(--radius);
             padding: 24px;
             text-align: center;
@@ -429,8 +431,8 @@
             position: relative;
             overflow: hidden;
             box-shadow:
-                0 0 10px rgba(251, 191, 36, 0.15),
-                inset 0 1px 0 rgba(251, 191, 36, 0.1);
+                0 0 15px rgba(234, 88, 12, 0.2),
+                inset 0 1px 0 rgba(234, 88, 12, 0.1);
         }
 
         .game-card::before {
@@ -443,7 +445,7 @@
             background: linear-gradient(
                 90deg,
                 transparent,
-                rgba(251, 191, 36, 0.08),
+                rgba(234, 88, 12, 0.1),
                 transparent
             );
             animation: cardShimmer 3s ease-in-out infinite;
@@ -456,12 +458,12 @@
         }
 
         .game-card:hover {
-            border-color: var(--gold);
+            border-color: var(--accent-bright);
             transform: translateY(-4px);
             box-shadow:
-                0 0 20px rgba(251, 191, 36, 0.25),
+                0 0 25px rgba(234, 88, 12, 0.35),
                 0 8px 25px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(251, 191, 36, 0.15);
+                inset 0 1px 0 rgba(234, 88, 12, 0.2);
         }
 
         .game-card.featured {

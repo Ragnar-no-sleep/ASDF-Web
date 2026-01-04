@@ -3956,6 +3956,305 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================
+// GAME SYSTEM ROUTES
+// ============================================
+
+// Lazy load game services
+let gameReplay = null;
+let antiCheat = null;
+let progression = null;
+let gameAnalytics = null;
+
+function getGameReplay() {
+    if (!gameReplay) gameReplay = require('./services/gameReplay');
+    return gameReplay;
+}
+
+function getAntiCheat() {
+    if (!antiCheat) antiCheat = require('./services/antiCheat');
+    return antiCheat;
+}
+
+function getProgression() {
+    if (!progression) progression = require('./services/progression');
+    return progression;
+}
+
+function getGameAnalytics() {
+    if (!gameAnalytics) gameAnalytics = require('./services/gameAnalytics');
+    return gameAnalytics;
+}
+
+/**
+ * Get player progression
+ * GET /api/progression/:wallet
+ */
+app.get('/api/progression/:wallet', async (req, res) => {
+    try {
+        const { wallet } = req.params;
+
+        if (!isValidAddress(wallet)) {
+            return res.status(400).json({ error: 'Invalid wallet address' });
+        }
+
+        const progress = getProgression().getProgress(wallet);
+        res.json(progress);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'progression') });
+    }
+});
+
+/**
+ * Update player streak
+ * POST /api/progression/streak
+ */
+app.post('/api/progression/streak', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const result = getProgression().updateStreak(wallet);
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'streak') });
+    }
+});
+
+/**
+ * Get XP table
+ * GET /api/progression/xp-table
+ */
+app.get('/api/progression/xp-table', (req, res) => {
+    try {
+        const { maxLevel = 20 } = req.query;
+        const table = getProgression().getXPTable(parseInt(maxLevel) || 20);
+        res.json(table);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'xp-table') });
+    }
+});
+
+/**
+ * Get progression leaderboard
+ * GET /api/progression/leaderboard
+ */
+app.get('/api/progression/leaderboard', (req, res) => {
+    try {
+        const { limit = 100, sortBy = 'totalXP' } = req.query;
+        const leaderboard = getProgression().getLeaderboard({
+            limit: Math.min(parseInt(limit) || 100, 500),
+            sortBy
+        });
+        res.json(leaderboard);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'progression-leaderboard') });
+    }
+});
+
+/**
+ * Check if player is banned
+ * GET /api/anticheat/status/:wallet
+ */
+app.get('/api/anticheat/status/:wallet', async (req, res) => {
+    try {
+        const { wallet } = req.params;
+
+        if (!isValidAddress(wallet)) {
+            return res.status(400).json({ error: 'Invalid wallet address' });
+        }
+
+        const banStatus = getAntiCheat().checkBan(wallet);
+        const profile = getAntiCheat().getProfile(wallet);
+
+        res.json({
+            ...banStatus,
+            trustScore: profile.found ? profile.trustScore : null,
+            status: profile.found ? profile.status : 'unknown'
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'anticheat-status') });
+    }
+});
+
+/**
+ * Get anti-cheat stats (admin)
+ * GET /api/admin/anticheat/stats
+ */
+app.get('/api/admin/anticheat/stats', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const stats = getAntiCheat().getStats();
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'anticheat-stats') });
+    }
+});
+
+/**
+ * Get recent detections (admin)
+ * GET /api/admin/anticheat/detections
+ */
+app.get('/api/admin/anticheat/detections', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const { limit = 50 } = req.query;
+        const detections = getAntiCheat().getRecentDetections(parseInt(limit) || 50);
+        res.json(detections);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'anticheat-detections') });
+    }
+});
+
+/**
+ * Lift sanction (admin)
+ * POST /api/admin/anticheat/lift-sanction
+ */
+app.post('/api/admin/anticheat/lift-sanction', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { wallet, sanctionId, reason } = req.body;
+
+        if (!wallet || !sanctionId) {
+            return res.status(400).json({ error: 'Wallet and sanctionId required' });
+        }
+
+        const result = getAntiCheat().liftSanction(wallet, sanctionId, reason || 'Admin action');
+        res.json({ success: result });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'lift-sanction') });
+    }
+});
+
+/**
+ * Get game analytics dashboard (admin)
+ * GET /api/admin/analytics/realtime
+ */
+app.get('/api/admin/analytics/realtime', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const dashboard = getGameAnalytics().getRealtimeDashboard();
+        res.json(dashboard);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'analytics-realtime') });
+    }
+});
+
+/**
+ * Get game-specific analytics (admin)
+ * GET /api/admin/analytics/game/:gameType
+ */
+app.get('/api/admin/analytics/game/:gameType', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const { gameType } = req.params;
+        const dashboard = getGameAnalytics().getGameDashboard(gameType);
+        res.json(dashboard);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'game-analytics') });
+    }
+});
+
+/**
+ * Get funnel analysis (admin)
+ * GET /api/admin/analytics/funnel/:funnelId
+ */
+app.get('/api/admin/analytics/funnel/:funnelId', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const { funnelId } = req.params;
+        const analysis = getGameAnalytics().getFunnelAnalysis(funnelId);
+        res.json(analysis);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'funnel-analysis') });
+    }
+});
+
+/**
+ * Get experiment results (admin)
+ * GET /api/admin/analytics/experiment/:experimentId
+ */
+app.get('/api/admin/analytics/experiment/:experimentId', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const { experimentId } = req.params;
+        const results = getGameAnalytics().getExperimentResults(experimentId);
+        res.json(results);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'experiment-results') });
+    }
+});
+
+/**
+ * Get analytics stats (admin)
+ * GET /api/admin/analytics/stats
+ */
+app.get('/api/admin/analytics/stats', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const stats = getGameAnalytics().getStats();
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'analytics-stats') });
+    }
+});
+
+/**
+ * Get replay stats (admin)
+ * GET /api/admin/replay/stats
+ */
+app.get('/api/admin/replay/stats', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const stats = getGameReplay().getStats();
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'replay-stats') });
+    }
+});
+
+/**
+ * Get progression stats (admin)
+ * GET /api/admin/progression/stats
+ */
+app.get('/api/admin/progression/stats', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const stats = getProgression().getStats();
+        res.json(stats);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'progression-stats') });
+    }
+});
+
+/**
+ * Start XP event (admin)
+ * POST /api/admin/progression/event
+ */
+app.post('/api/admin/progression/event', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { eventId, multiplier, durationHours } = req.body;
+
+        if (!eventId || !multiplier || !durationHours) {
+            return res.status(400).json({ error: 'eventId, multiplier, and durationHours required' });
+        }
+
+        const event = getProgression().startEvent(
+            eventId,
+            parseFloat(multiplier),
+            parseInt(durationHours) * 60 * 60 * 1000
+        );
+
+        res.json(event);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'start-event') });
+    }
+});
+
+// ============================================
 // PROCESS ERROR HANDLERS
 // ============================================
 
