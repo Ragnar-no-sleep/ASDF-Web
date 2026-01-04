@@ -5592,6 +5592,20 @@ Play at alonisthe.dev/learn #ASDF #ThisIsFine`;
                 if (hash && hash.startsWith('view-')) {
                     const viewName = hash.replace('view-', '');
                     switchView(viewName);
+                } else if (hash === 'find-your-path') {
+                    // Switch to build view and open Project Finder modal
+                    switchView('build');
+                    setTimeout(() => {
+                        const projectFinderBtn = document.getElementById('project-finder-btn');
+                        if (projectFinderBtn) projectFinderBtn.click();
+                    }, 100);
+                } else if (hash === 'your-journey') {
+                    // Switch to build view and open Your Journey modal
+                    switchView('build');
+                    setTimeout(() => {
+                        const yourJourneyBtn = document.getElementById('your-journey-btn');
+                        if (yourJourneyBtn) yourJourneyBtn.click();
+                    }, 100);
                 }
             }
             handleHashChange();
