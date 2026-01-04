@@ -54,6 +54,111 @@
             line-height: 1.7;
             overflow-x: hidden;
             min-height: 100vh;
+            position: relative;
+        }
+
+        /* ============================================
+           YGGDRASIL / VIKING BACKGROUND
+           Aurora Borealis + World Tree
+           ============================================ */
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: -2;
+            background:
+                /* Aurora layer 1 - Green waves */
+                radial-gradient(ellipse 120% 40% at 20% 10%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 35% at 80% 15%, rgba(74, 222, 128, 0.06) 0%, transparent 45%),
+                /* Aurora layer 2 - Blue/Purple waves */
+                radial-gradient(ellipse 90% 30% at 60% 8%, rgba(59, 130, 246, 0.07) 0%, transparent 40%),
+                radial-gradient(ellipse 110% 25% at 30% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 35%),
+                /* Aurora layer 3 - Cyan accents */
+                radial-gradient(ellipse 80% 20% at 70% 5%, rgba(34, 211, 238, 0.04) 0%, transparent 30%),
+                /* Base gradient - Deep Nordic night */
+                linear-gradient(180deg,
+                    rgba(10, 15, 25, 1) 0%,
+                    rgba(10, 10, 15, 1) 30%,
+                    var(--bg-void) 100%);
+            animation: auroraShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes auroraShift {
+            0% {
+                opacity: 1;
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                opacity: 0.85;
+                filter: hue-rotate(-10deg);
+            }
+            100% {
+                opacity: 1;
+                filter: hue-rotate(10deg);
+            }
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cdefs%3E%3ClinearGradient id='treeGrad' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%234ade80' stop-opacity='0.8'/%3E%3Cstop offset='100%25' stop-color='%2322c55e' stop-opacity='0.3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23treeGrad)' stroke-width='1.5' stroke-linecap='round'%3E%3C!-- Main trunk --%3E%3Cpath d='M400 600 L400 300 Q400 250 380 200 Q360 150 400 100 Q440 50 400 0'/%3E%3C!-- Left branches --%3E%3Cpath d='M400 450 Q350 430 300 450 Q250 470 200 440'/%3E%3Cpath d='M400 380 Q340 350 280 370 Q220 390 160 350'/%3E%3Cpath d='M400 300 Q350 260 300 280 Q250 300 180 260'/%3E%3Cpath d='M390 220 Q340 180 280 200 Q220 220 150 170'/%3E%3Cpath d='M395 140 Q350 100 300 120 Q240 140 180 90'/%3E%3C!-- Right branches --%3E%3Cpath d='M400 450 Q450 430 500 450 Q550 470 600 440'/%3E%3Cpath d='M400 380 Q460 350 520 370 Q580 390 640 350'/%3E%3Cpath d='M400 300 Q450 260 500 280 Q550 300 620 260'/%3E%3Cpath d='M410 220 Q460 180 520 200 Q580 220 650 170'/%3E%3Cpath d='M405 140 Q450 100 500 120 Q560 140 620 90'/%3E%3C!-- Roots --%3E%3Cpath d='M400 600 Q350 580 300 600 Q250 620 200 590'/%3E%3Cpath d='M400 600 Q450 580 500 600 Q550 620 600 590'/%3E%3Cpath d='M400 600 Q380 620 350 650'/%3E%3Cpath d='M400 600 Q420 620 450 650'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 100% auto;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+        }
+
+        /* Floating Nordic runes/particles */
+        .yggdrasil-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .yggdrasil-particles::before,
+        .yggdrasil-particles::after {
+            content: '᛫ ᚱ ᛫ ᚢ ᛫ ᚾ ᛫ ᛖ ᛫ ᛊ ᛫';
+            position: absolute;
+            font-size: 14px;
+            color: rgba(74, 222, 128, 0.15);
+            white-space: nowrap;
+            animation: runeFloat 30s linear infinite;
+        }
+
+        .yggdrasil-particles::before {
+            top: 20%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .yggdrasil-particles::after {
+            top: 60%;
+            left: -10%;
+            animation-delay: -15s;
+            color: rgba(168, 85, 247, 0.12);
+        }
+
+        @keyframes runeFloat {
+            0% { transform: translateX(0) translateY(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateX(120vw) translateY(-50px); opacity: 0; }
         }
 
         /* Scrollbar styling - Webkit (Chrome, Safari, Edge) */
