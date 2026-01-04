@@ -676,16 +676,16 @@
         }
 
         /* ============================================
-           AIRDROP INFO SECTION
+           REWARD INFO SECTION
            ============================================ */
 
-        .airdrop-section {
+        .reward-section {
             padding: 60px 0;
             background: var(--bg-charred);
             margin-top: 40px;
         }
 
-        .airdrop-card {
+        .reward-card {
             max-width: 700px;
             margin: 0 auto;
             background: var(--bg-burnt);
@@ -695,12 +695,12 @@
             text-align: center;
         }
 
-        .airdrop-icon {
+        .reward-icon {
             font-size: 60px;
             margin-bottom: 16px;
         }
 
-        .airdrop-title {
+        .reward-title {
             font-family: var(--font-display);
             font-size: 28px;
             font-weight: 700;
@@ -708,27 +708,27 @@
             color: var(--gold);
         }
 
-        .airdrop-subtitle {
+        .reward-subtitle {
             font-size: 14px;
             color: var(--text-muted);
             margin-bottom: 24px;
         }
 
-        .airdrop-countdown {
+        .reward-countdown {
             display: flex;
             justify-content: center;
             gap: 16px;
             margin-bottom: 24px;
         }
 
-        .airdrop-countdown .countdown-value {
+        .reward-countdown .countdown-value {
             font-size: 24px;
             min-width: 60px;
             padding: 8px 12px;
             border-color: var(--gold);
         }
 
-        .airdrop-rules {
+        .reward-rules {
             text-align: left;
             background: var(--bg-charred);
             border-radius: 8px;
@@ -736,20 +736,20 @@
             margin-top: 20px;
         }
 
-        .airdrop-rules h4 {
+        .reward-rules h4 {
             font-family: var(--font-display);
             font-size: 16px;
             margin-bottom: 12px;
             color: var(--text-cream);
         }
 
-        .airdrop-rules ul {
+        .reward-rules ul {
             list-style: none;
             font-size: 13px;
             color: var(--text-muted);
         }
 
-        .airdrop-rules li {
+        .reward-rules li {
             padding: 8px 0;
             border-bottom: 1px solid var(--border-rust);
             display: flex;
@@ -757,11 +757,11 @@
             gap: 10px;
         }
 
-        .airdrop-rules li:last-child {
+        .reward-rules li:last-child {
             border-bottom: none;
         }
 
-        .airdrop-rules .rule-icon {
+        .reward-rules .rule-icon {
             font-size: 16px;
         }
 

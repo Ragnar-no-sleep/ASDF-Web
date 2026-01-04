@@ -311,7 +311,7 @@ function getEngageState() {
         ...EngageState,
         tier: tier,
         discount: ASDF.engage.getDiscount(tier.index),
-        airdropBoost: ASDF.engage.getAirdropBoost(tier.index),
+        rewardBoost: ASDF.engage.getRewardBoost(tier.index),
         exclusiveTiers: ASDF.engage.getExclusiveTiers(tier.index)
     };
 }
@@ -389,7 +389,7 @@ function getAllTierThresholds() {
             name: ASDF.engageTierNames[i],
             threshold: ASDF.xp.getThreshold(i),
             discount: ASDF.engage.getDiscount(i),
-            airdropBoost: ASDF.engage.getAirdropBoost(i),
+            rewardBoost: ASDF.engage.getRewardBoost(i),
             exclusives: ASDF.engage.getExclusiveTiers(i),
             color: ASDF.getTierColor(i, 'engage')
         });
@@ -463,7 +463,7 @@ function showTierUpCelebration(fromTier, toTier) {
         </div>
         <div class="tier-up-benefits">
             <div>Discount: ${(ASDF.engage.getDiscount(tierIndex) * 100).toFixed(0)}%</div>
-            <div>Airdrop: ${ASDF.engage.getAirdropBoost(tierIndex)}x</div>
+            <div>Reward Boost: ${ASDF.engage.getRewardBoost(tierIndex)}x</div>
         </div>
         <button class="tier-up-close">Continue</button>
     `;

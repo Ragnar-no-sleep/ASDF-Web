@@ -181,8 +181,8 @@ const ApiClient = {
         return this.request('/users/refresh-balance', { method: 'POST' });
     },
 
-    async getAirdropSlots() {
-        return this.request('/users/airdrop-slots');
+    async getRewardSlots() {
+        return this.request('/users/reward-slots');
     },
 
     async getPeriodInfo() {

@@ -248,7 +248,382 @@ const ENEMY_TYPES = {
 };
 
 // ============================================
-// COMBAT SKILLS
+// CARD SYSTEM (ASDF Philosophy)
+// ============================================
+
+// Card rarities with Fibonacci-based draw weights
+const CARD_RARITY = {
+    common: { weight: getBattleFib(8), color: '#9ca3af', name: 'Common' },      // 21
+    uncommon: { weight: getBattleFib(7), color: '#22c55e', name: 'Uncommon' },  // 13
+    rare: { weight: getBattleFib(6), color: '#3b82f6', name: 'Rare' },          // 8
+    epic: { weight: getBattleFib(5), color: '#a855f7', name: 'Epic' },          // 5
+    legendary: { weight: getBattleFib(4), color: '#f97316', name: 'Legendary' } // 3
+};
+
+// Action cards - player draws these each turn
+const ACTION_CARDS = {
+    // Common Attack Cards
+    quick_strike: {
+        id: 'quick_strike',
+        name: 'Quick Strike',
+        icon: '⚔️',
+        description: 'A fast, basic attack',
+        type: 'attack',
+        rarity: 'common',
+        mpCost: 0,
+        damage: getBattleFib(6),  // 8 base damage
+        effects: []
+    },
+    code_slash: {
+        id: 'code_slash',
+        name: 'Code Slash',
+        icon: '💻',
+        description: 'Attack with coding prowess',
+        type: 'attack',
+        rarity: 'common',
+        mpCost: getBattleFib(4),  // 3 MP
+        damage: getBattleFib(7),  // 13 base damage
+        statBonus: 'dev',
+        effects: []
+    },
+
+    // Uncommon Attack Cards
+    market_crash: {
+        id: 'market_crash',
+        name: 'Market Crash',
+        icon: '📉',
+        description: 'Cause a sudden market crash',
+        type: 'attack',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(5),  // 5 MP
+        damage: getBattleFib(8),  // 21 base damage
+        effects: ['weaken']  // Reduces enemy ATK
+    },
+    viral_post: {
+        id: 'viral_post',
+        name: 'Viral Post',
+        icon: '📢',
+        description: 'Your marketing goes viral',
+        type: 'attack',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(5),
+        damage: getBattleFib(7),
+        statBonus: 'mkt',
+        effects: ['burn']  // DoT damage
+    },
+
+    // Rare Attack Cards
+    whale_slam: {
+        id: 'whale_slam',
+        name: 'Whale Slam',
+        icon: '🐋',
+        description: 'Call a whale for massive impact',
+        type: 'attack',
+        rarity: 'rare',
+        mpCost: getBattleFib(6),  // 8 MP
+        damage: getBattleFib(9),  // 34 base damage
+        effects: ['stun']  // Enemy skips next turn
+    },
+    token_burn: {
+        id: 'token_burn',
+        name: 'Token Burn',
+        icon: '🔥',
+        description: 'Burn tokens for massive damage',
+        type: 'attack',
+        rarity: 'rare',
+        mpCost: getBattleFib(4),
+        tokenCost: getBattleFib(6),  // 8 tokens
+        damage: getBattleFib(10),    // 55 base damage
+        effects: []
+    },
+
+    // Epic Attack Cards
+    fomo_frenzy: {
+        id: 'fomo_frenzy',
+        name: 'FOMO Frenzy',
+        icon: '😱',
+        description: 'Damage scales with missing HP',
+        type: 'attack',
+        rarity: 'epic',
+        mpCost: getBattleFib(6),
+        damage: getBattleFib(8),
+        effects: ['fomo']  // Damage * (1 + missing HP%)
+    },
+    rug_pull: {
+        id: 'rug_pull',
+        name: 'Rug Pull',
+        icon: '🧶',
+        description: 'Pull the rug - devastating attack',
+        type: 'attack',
+        rarity: 'epic',
+        mpCost: getBattleFib(7),
+        damage: getBattleFib(10),
+        effects: ['lifesteal']  // Heal for 50% damage dealt
+    },
+
+    // Legendary Attack Cards
+    moon_shot: {
+        id: 'moon_shot',
+        name: 'Moon Shot',
+        icon: '🚀',
+        description: 'TO THE MOON! Ultimate attack',
+        type: 'attack',
+        rarity: 'legendary',
+        mpCost: getBattleFib(8),  // 21 MP
+        damage: getBattleFib(11), // 89 base damage
+        effects: ['pierce']  // Ignores defense
+    },
+
+    // Common Defense Cards
+    basic_block: {
+        id: 'basic_block',
+        name: 'Basic Block',
+        icon: '🛡️',
+        description: 'Block incoming damage',
+        type: 'defense',
+        rarity: 'common',
+        mpCost: 0,
+        block: getBattleFib(6),  // Block 8 damage
+        effects: []
+    },
+    community_wall: {
+        id: 'community_wall',
+        name: 'Community Wall',
+        icon: '🧱',
+        description: 'Rally community for defense',
+        type: 'defense',
+        rarity: 'common',
+        mpCost: getBattleFib(4),
+        block: getBattleFib(7),  // Block 13 damage
+        statBonus: 'com',
+        effects: ['defense_buff']
+    },
+
+    // Uncommon Defense Cards
+    diamond_stance: {
+        id: 'diamond_stance',
+        name: 'Diamond Stance',
+        icon: '💎',
+        description: 'HODL position - strong defense',
+        type: 'defense',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(5),
+        block: getBattleFib(8),  // Block 21 damage
+        effects: ['reflect']  // Reflect 25% damage
+    },
+
+    // Rare Defense Cards
+    audit_shield: {
+        id: 'audit_shield',
+        name: 'Audit Shield',
+        icon: '📋',
+        description: 'Audited code protects you',
+        type: 'defense',
+        rarity: 'rare',
+        mpCost: getBattleFib(6),
+        block: getBattleFib(9),  // Block 34 damage
+        effects: ['immunity']  // Immune to effects this turn
+    },
+
+    // Common Support Cards
+    quick_heal: {
+        id: 'quick_heal',
+        name: 'Quick Heal',
+        icon: '💚',
+        description: 'Heal a small amount',
+        type: 'support',
+        rarity: 'common',
+        mpCost: getBattleFib(4),
+        heal: getBattleFib(6),  // Heal 8 HP
+        effects: []
+    },
+    energy_drink: {
+        id: 'energy_drink',
+        name: 'Energy Drink',
+        icon: '⚡',
+        description: 'Restore energy (MP)',
+        type: 'support',
+        rarity: 'common',
+        mpCost: 0,
+        mpRestore: getBattleFib(6),  // Restore 8 MP
+        effects: []
+    },
+
+    // Uncommon Support Cards
+    pump_it_up: {
+        id: 'pump_it_up',
+        name: 'Pump It Up',
+        icon: '📈',
+        description: 'Boost your next attack',
+        type: 'support',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(4),
+        effects: ['attack_buff']  // +50% next attack
+    },
+    market_analysis: {
+        id: 'market_analysis',
+        name: 'Market Analysis',
+        icon: '📊',
+        description: 'Analyze enemy weaknesses',
+        type: 'support',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(5),
+        effects: ['expose']  // Enemy takes +25% damage
+    },
+
+    // Rare Support Cards
+    diamond_hands: {
+        id: 'diamond_hands',
+        name: 'Diamond Hands',
+        icon: '💎',
+        description: 'Strong HODL - big heal',
+        type: 'support',
+        rarity: 'rare',
+        mpCost: getBattleFib(6),
+        heal: getBattleFib(8),  // Heal 21 HP
+        effects: ['defense_buff']
+    },
+
+    // Epic Support Cards
+    bull_run: {
+        id: 'bull_run',
+        name: 'Bull Run',
+        icon: '🐂',
+        description: 'Start a bull run - massive buffs',
+        type: 'support',
+        rarity: 'epic',
+        mpCost: getBattleFib(7),
+        effects: ['attack_buff', 'defense_buff', 'speed_buff']
+    },
+
+    // Common Special Cards
+    position_shift: {
+        id: 'position_shift',
+        name: 'Position Shift',
+        icon: '🔄',
+        description: 'Move to any adjacent position',
+        type: 'special',
+        rarity: 'common',
+        mpCost: 0,
+        effects: ['move']  // Free movement
+    },
+
+    // Uncommon Special Cards
+    counter_trade: {
+        id: 'counter_trade',
+        name: 'Counter Trade',
+        icon: '↩️',
+        description: 'Counter the next attack',
+        type: 'special',
+        rarity: 'uncommon',
+        mpCost: getBattleFib(5),
+        effects: ['counter']  // Counter next attack
+    },
+
+    // Rare Special Cards
+    flash_crash: {
+        id: 'flash_crash',
+        name: 'Flash Crash',
+        icon: '💥',
+        description: 'Instant position swap with enemy',
+        type: 'special',
+        rarity: 'rare',
+        mpCost: getBattleFib(6),
+        effects: ['swap_positions']
+    },
+
+    // Legendary Special Card
+    golden_bull: {
+        id: 'golden_bull',
+        name: 'Golden Bull',
+        icon: '🏆',
+        description: 'Ultimate card - attack + heal + buff',
+        type: 'special',
+        rarity: 'legendary',
+        mpCost: getBattleFib(8),
+        damage: getBattleFib(9),
+        heal: getBattleFib(7),
+        effects: ['attack_buff', 'defense_buff']
+    }
+};
+
+// Player's base deck (cards they start with)
+const BASE_DECK = [
+    'quick_strike', 'quick_strike', 'quick_strike',
+    'code_slash', 'code_slash',
+    'basic_block', 'basic_block',
+    'community_wall',
+    'quick_heal', 'quick_heal',
+    'energy_drink',
+    'position_shift'
+];
+
+/**
+ * Initialize card deck for battle
+ */
+function initializeDeck() {
+    const deck = [...BASE_DECK];
+
+    // Add bonus cards based on player level
+    const state = window.PumpArenaState?.get();
+    const level = state?.progression.level || 1;
+
+    // Add uncommon cards at level 5+
+    if (level >= 5) {
+        deck.push('market_crash', 'viral_post', 'diamond_stance', 'pump_it_up');
+    }
+
+    // Add rare cards at level 15+
+    if (level >= 15) {
+        deck.push('whale_slam', 'token_burn', 'audit_shield', 'diamond_hands', 'counter_trade');
+    }
+
+    // Add epic cards at level 25+
+    if (level >= 25) {
+        deck.push('fomo_frenzy', 'rug_pull', 'bull_run', 'flash_crash');
+    }
+
+    // Add legendary cards at level 40+
+    if (level >= 40) {
+        deck.push('moon_shot', 'golden_bull');
+    }
+
+    return shuffleDeck(deck);
+}
+
+/**
+ * Shuffle deck (Fisher-Yates algorithm)
+ */
+function shuffleDeck(deck) {
+    const shuffled = [...deck];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+/**
+ * Draw cards from deck
+ */
+function drawCards(count) {
+    const drawn = [];
+    for (let i = 0; i < count && battleState.deck.length > 0; i++) {
+        drawn.push(battleState.deck.pop());
+    }
+
+    // If deck is empty, shuffle discard pile back
+    if (battleState.deck.length === 0 && battleState.discardPile.length > 0) {
+        battleState.deck = shuffleDeck(battleState.discardPile);
+        battleState.discardPile = [];
+        battleState.log.push('Deck reshuffled!');
+    }
+
+    return drawn;
+}
+
+// ============================================
+// COMBAT SKILLS (Legacy - kept for compatibility)
 // ============================================
 
 const COMBAT_SKILLS = {
@@ -383,6 +758,66 @@ const COMBAT_SKILLS = {
 };
 
 // ============================================
+// CIRCULAR ARENA SYSTEM (9 positions)
+// ============================================
+
+// Arena layout: 9 positions in a circle
+// Positions 0-2: Inner ring (CLOSE) - melee advantage
+// Positions 3-5: Middle ring (MID) - balanced
+// Positions 6-8: Outer ring (FAR) - ranged advantage
+
+const ARENA_POSITIONS = {
+    0: { id: 0, ring: 'close', name: 'Center', x: 50, y: 50, angle: 0 },
+    1: { id: 1, ring: 'close', name: 'Inner Left', x: 30, y: 40, angle: 120 },
+    2: { id: 2, ring: 'close', name: 'Inner Right', x: 70, y: 40, angle: 240 },
+    3: { id: 3, ring: 'mid', name: 'Mid Top', x: 50, y: 20, angle: 0 },
+    4: { id: 4, ring: 'mid', name: 'Mid Left', x: 20, y: 60, angle: 120 },
+    5: { id: 5, ring: 'mid', name: 'Mid Right', x: 80, y: 60, angle: 240 },
+    6: { id: 6, ring: 'far', name: 'Outer Top', x: 50, y: 5, angle: 0 },
+    7: { id: 7, ring: 'far', name: 'Outer Left', x: 5, y: 75, angle: 120 },
+    8: { id: 8, ring: 'far', name: 'Outer Right', x: 95, y: 75, angle: 240 }
+};
+
+// Adjacent positions for movement
+const ARENA_ADJACENCY = {
+    0: [1, 2, 3, 4, 5], // Center connects to inner and mid
+    1: [0, 2, 4],
+    2: [0, 1, 5],
+    3: [0, 4, 5, 6],
+    4: [1, 3, 5, 7],
+    5: [2, 3, 4, 8],
+    6: [3, 7, 8],
+    7: [4, 6, 8],
+    8: [5, 6, 7]
+};
+
+// Ring combat modifiers
+const RING_MODIFIERS = {
+    close: { melee: 1.3, ranged: 0.7, defense: 0.9 },  // Melee strong, ranged weak
+    mid: { melee: 1.0, ranged: 1.0, defense: 1.0 },    // Balanced
+    far: { melee: 0.7, ranged: 1.3, defense: 1.1 }     // Ranged strong, melee weak
+};
+
+/**
+ * Calculate distance between two positions
+ */
+function getPositionDistance(pos1, pos2) {
+    if (pos1 === pos2) return 0;
+    const p1 = ARENA_POSITIONS[pos1];
+    const p2 = ARENA_POSITIONS[pos2];
+    if (p1.ring === p2.ring) return 1;
+    if ((p1.ring === 'close' && p2.ring === 'far') || (p1.ring === 'far' && p2.ring === 'close')) return 2;
+    return 1;
+}
+
+/**
+ * Check if movement is valid
+ */
+function canMoveTo(fromPos, toPos) {
+    return ARENA_ADJACENCY[fromPos]?.includes(toPos) || false;
+}
+
+// ============================================
 // BATTLE STATE
 // ============================================
 
@@ -391,11 +826,28 @@ let battleState = {
     player: null,
     enemy: null,
     turn: 0,
+    phase: 'player',      // 'player' or 'enemy' - turn-based system
     playerHp: 0,
     playerMp: 0,
     enemyHp: 0,
+    playerPosition: 0,    // Player starts at center
+    enemyPosition: 6,     // Enemy starts at outer top
+    // Card system
+    deck: [],             // Draw pile
+    hand: [],             // Cards in hand (max 5)
+    discardPile: [],      // Used cards
+    cardsPerTurn: 3,      // Cards drawn each turn
+    maxHandSize: 5,       // Maximum cards in hand
+    // Status effects
     buffs: [],
     debuffs: [],
+    enemyDebuffs: [],     // Debuffs on enemy
+    // Block for this turn
+    currentBlock: 0,
+    // Special states
+    isStunned: false,     // Enemy stunned (skips turn)
+    hasCounter: false,    // Player has counter active
+    isExposed: false,     // Enemy takes extra damage
     cooldowns: {},
     log: []
 };
@@ -476,19 +928,40 @@ function startBattle(enemyId) {
         spd: Math.floor(enemyTemplate.baseSpd * levelScale)
     };
 
-    // Initialize battle state
+    // Initialize battle state with arena positions
+    // Player starts at center (0), enemy at outer ring based on enemy type
+    const enemyStartPos = enemy.isBoss ? 6 : (3 + Math.floor(Math.random() * 3)); // Bosses at far, others at mid
+
+    // Initialize card deck
+    const deck = initializeDeck();
+
     battleState = {
         active: true,
         player: playerStats,
         enemy: enemy,
         turn: 1,
+        phase: 'player',
         playerHp: playerStats.maxHp,
         playerMp: playerStats.maxMp,
         enemyHp: enemy.hp,
+        playerPosition: 0,        // Player starts at center
+        enemyPosition: enemyStartPos,
+        // Card system
+        deck: deck.slice(5),      // Rest of deck after initial draw
+        hand: deck.slice(0, 5),   // Draw initial hand of 5 cards
+        discardPile: [],
+        cardsPerTurn: 3,
+        maxHandSize: 5,
+        // Status effects
         buffs: [],
         debuffs: [],
+        enemyDebuffs: [],
+        currentBlock: 0,
+        isStunned: false,
+        hasCounter: false,
+        isExposed: false,
         cooldowns: {},
-        log: [`Battle started against ${enemy.name}!`]
+        log: [`Battle started against ${enemy.name}!`, `You are at ${ARENA_POSITIONS[0].name}, enemy at ${ARENA_POSITIONS[enemyStartPos].name}`, `Drew 5 cards - Choose wisely!`]
     };
 
     // Dispatch battle start event
@@ -503,14 +976,84 @@ function startBattle(enemyId) {
 }
 
 /**
+ * Move player to a new position
+ */
+function movePlayer(targetPos) {
+    if (!battleState.active) {
+        return { success: false, message: 'No active battle' };
+    }
+
+    if (typeof targetPos !== 'number' || !ARENA_POSITIONS[targetPos]) {
+        return { success: false, message: 'Invalid position' };
+    }
+
+    if (targetPos === battleState.playerPosition) {
+        return { success: false, message: 'Already at this position' };
+    }
+
+    if (targetPos === battleState.enemyPosition) {
+        return { success: false, message: 'Position occupied by enemy' };
+    }
+
+    if (!canMoveTo(battleState.playerPosition, targetPos)) {
+        return { success: false, message: 'Cannot move there from current position' };
+    }
+
+    const oldPos = ARENA_POSITIONS[battleState.playerPosition];
+    const newPos = ARENA_POSITIONS[targetPos];
+
+    battleState.playerPosition = targetPos;
+    battleState.log.push(`Moved from ${oldPos.name} to ${newPos.name}`);
+
+    // Enemy gets a turn after player moves
+    if (battleState.enemyHp > 0 && battleState.playerHp > 0) {
+        const enemyResult = enemyTurn();
+    }
+
+    // Reduce cooldowns
+    Object.keys(battleState.cooldowns).forEach(key => {
+        if (battleState.cooldowns[key] > 0) {
+            battleState.cooldowns[key]--;
+        }
+    });
+
+    battleState.turn++;
+
+    return {
+        success: true,
+        message: `Moved to ${newPos.name}`,
+        state: getBattleState()
+    };
+}
+
+/**
  * Get current battle state (safe copy)
  */
 function getBattleState() {
     if (!battleState.active) return null;
 
+    const playerPos = ARENA_POSITIONS[battleState.playerPosition];
+    const enemyPos = ARENA_POSITIONS[battleState.enemyPosition];
+    const distance = getPositionDistance(battleState.playerPosition, battleState.enemyPosition);
+
+    // Get full card objects for hand
+    const handCards = battleState.hand.map(cardId => ({
+        ...ACTION_CARDS[cardId],
+        id: cardId
+    })).filter(c => c.name); // Filter out invalid cards
+
     return {
         active: battleState.active,
         turn: battleState.turn,
+        phase: battleState.phase,
+        arena: {
+            playerPosition: battleState.playerPosition,
+            enemyPosition: battleState.enemyPosition,
+            playerRing: playerPos?.ring || 'close',
+            enemyRing: enemyPos?.ring || 'far',
+            distance,
+            validMoves: ARENA_ADJACENCY[battleState.playerPosition]?.filter(p => p !== battleState.enemyPosition) || []
+        },
         player: {
             hp: battleState.playerHp,
             maxHp: battleState.player.maxHp,
@@ -518,7 +1061,9 @@ function getBattleState() {
             maxMp: battleState.player.maxMp,
             atk: battleState.player.atk,
             def: battleState.player.def,
-            buffs: [...battleState.buffs]
+            block: battleState.currentBlock,
+            buffs: [...battleState.buffs],
+            hasCounter: battleState.hasCounter
         },
         enemy: {
             name: battleState.enemy.name,
@@ -528,7 +1073,17 @@ function getBattleState() {
             atk: battleState.enemy.atk,
             def: battleState.enemy.def,
             spd: battleState.enemy.spd,
-            isBoss: battleState.enemy.isBoss || false
+            isBoss: battleState.enemy.isBoss || false,
+            isStunned: battleState.isStunned,
+            isExposed: battleState.isExposed,
+            debuffs: [...battleState.enemyDebuffs]
+        },
+        // Card system
+        cards: {
+            hand: handCards,
+            handSize: battleState.hand.length,
+            deckSize: battleState.deck.length,
+            discardSize: battleState.discardPile.length
         },
         cooldowns: { ...battleState.cooldowns },
         log: [...battleState.log.slice(-5)] // Last 5 log entries
@@ -536,7 +1091,360 @@ function getBattleState() {
 }
 
 // ============================================
-// COMBAT ACTIONS
+// CARD-BASED COMBAT ACTIONS
+// ============================================
+
+/**
+ * Play a card from hand
+ * @param {number} cardIndex - Index of card in hand to play
+ * @param {number} targetPosition - Optional target position for movement cards
+ * @returns {Object} Result of playing the card
+ */
+function playCard(cardIndex, targetPosition = null) {
+    // Rate limiting
+    const rateCheck = BattleRateLimiter.checkAction();
+    if (!rateCheck.allowed) {
+        return { success: false, message: rateCheck.message };
+    }
+
+    if (!battleState.active) {
+        return { success: false, message: 'No active battle' };
+    }
+
+    if (battleState.phase !== 'player') {
+        return { success: false, message: 'Not your turn!' };
+    }
+
+    if (cardIndex < 0 || cardIndex >= battleState.hand.length) {
+        return { success: false, message: 'Invalid card selection' };
+    }
+
+    const cardId = battleState.hand[cardIndex];
+    const card = ACTION_CARDS[cardId];
+
+    if (!card) {
+        return { success: false, message: 'Invalid card' };
+    }
+
+    // Check MP cost
+    if (card.mpCost && battleState.playerMp < card.mpCost) {
+        return { success: false, message: 'Not enough energy!' };
+    }
+
+    // Check token cost
+    if (card.tokenCost) {
+        const state = window.PumpArenaState?.get();
+        if (!state || state.resources.tokens < card.tokenCost) {
+            return { success: false, message: 'Not enough tokens!' };
+        }
+    }
+
+    BattleRateLimiter.recordAction();
+
+    // Deduct costs
+    if (card.mpCost) {
+        battleState.playerMp -= card.mpCost;
+    }
+    if (card.tokenCost) {
+        window.PumpArenaState.addTokens(-card.tokenCost);
+        battleState.log.push(`Burned ${card.tokenCost} tokens!`);
+    }
+
+    // Remove card from hand and add to discard pile
+    battleState.hand.splice(cardIndex, 1);
+    battleState.discardPile.push(cardId);
+
+    // Execute card effect
+    const result = executeCardEffect(card, targetPosition);
+
+    battleState.log.push(`Played ${card.name}!`);
+
+    // Check for battle end after player action
+    if (battleState.enemyHp <= 0) {
+        result.victory = true;
+        result.rewards = endBattle(true);
+        return { success: true, ...result, state: getBattleState() };
+    }
+
+    return { success: true, ...result, state: getBattleState() };
+}
+
+/**
+ * Execute card effect
+ */
+function executeCardEffect(card, targetPosition) {
+    const result = { damage: 0, healed: 0, blocked: 0, effects: [] };
+
+    // Get position modifiers
+    const playerRing = ARENA_POSITIONS[battleState.playerPosition]?.ring || 'mid';
+    const ringMod = RING_MODIFIERS[playerRing];
+    const distance = getPositionDistance(battleState.playerPosition, battleState.enemyPosition);
+
+    // Handle damage
+    if (card.damage) {
+        let damage = card.damage;
+
+        // Add player ATK
+        damage += Math.floor(battleState.player.atk / 2);
+
+        // Add stat bonus
+        if (card.statBonus) {
+            const state = window.PumpArenaState?.get();
+            if (state) {
+                damage += state.stats[card.statBonus] || 0;
+            }
+        }
+
+        // Apply position modifiers (melee if close, ranged if far)
+        const isMelee = distance <= 1;
+        if (isMelee) {
+            damage = Math.floor(damage * ringMod.melee);
+        } else {
+            damage = Math.floor(damage * ringMod.ranged);
+        }
+
+        // FOMO effect: damage scales with missing HP
+        if (card.effects.includes('fomo')) {
+            const missingHpPercent = 1 - (battleState.playerHp / battleState.player.maxHp);
+            const fomoBonus = 1 + (missingHpPercent * 2);
+            damage = Math.floor(damage * fomoBonus);
+            if (missingHpPercent > 0.3) {
+                battleState.log.push(`FOMO bonus! (+${Math.floor(missingHpPercent * 200)}%)`);
+            }
+        }
+
+        // Expose effect: enemy takes extra damage
+        if (battleState.isExposed) {
+            damage = Math.floor(damage * 1.25);
+            battleState.log.push('Enemy exposed! (+25% damage)');
+        }
+
+        // Pierce effect: ignores defense
+        if (!card.effects.includes('pierce')) {
+            const defReduction = Math.floor(battleState.enemy.def / getBattleFib(5));
+            damage = Math.max(1, damage - defReduction);
+        } else {
+            battleState.log.push('Piercing attack! Ignores defense');
+        }
+
+        // Critical hit check
+        if (Math.random() * 100 < battleState.player.crt) {
+            damage = Math.floor(damage * 1.5);
+            battleState.log.push('CRITICAL HIT!');
+            result.critical = true;
+        }
+
+        // Apply damage
+        battleState.enemyHp -= damage;
+        battleState.enemyHp = Math.max(0, battleState.enemyHp);
+        result.damage = damage;
+        battleState.log.push(`Dealt ${damage} damage!`);
+
+        // Lifesteal effect
+        if (card.effects.includes('lifesteal')) {
+            const healAmount = Math.floor(damage * 0.5);
+            battleState.playerHp = Math.min(battleState.player.maxHp, battleState.playerHp + healAmount);
+            result.healed = healAmount;
+            battleState.log.push(`Lifesteal: +${healAmount} HP`);
+        }
+    }
+
+    // Handle block
+    if (card.block) {
+        let blockAmount = card.block;
+
+        // Add stat bonus
+        if (card.statBonus) {
+            const state = window.PumpArenaState?.get();
+            if (state) {
+                blockAmount += Math.floor((state.stats[card.statBonus] || 0) / 2);
+            }
+        }
+
+        battleState.currentBlock += blockAmount;
+        result.blocked = blockAmount;
+        battleState.log.push(`Gained ${blockAmount} block`);
+    }
+
+    // Handle heal
+    if (card.heal) {
+        const healAmount = card.heal;
+        battleState.playerHp = Math.min(battleState.player.maxHp, battleState.playerHp + healAmount);
+        result.healed = (result.healed || 0) + healAmount;
+        battleState.log.push(`Healed ${healAmount} HP`);
+    }
+
+    // Handle MP restore
+    if (card.mpRestore) {
+        battleState.playerMp = Math.min(battleState.player.maxMp, battleState.playerMp + card.mpRestore);
+        battleState.log.push(`Restored ${card.mpRestore} energy`);
+    }
+
+    // Process card effects
+    for (const effect of card.effects) {
+        switch (effect) {
+            case 'weaken':
+                battleState.enemyDebuffs.push({ type: 'weaken', amount: getBattleFib(4), duration: 2 });
+                battleState.log.push('Enemy weakened! (-ATK)');
+                result.effects.push('weaken');
+                break;
+
+            case 'burn':
+                battleState.enemyDebuffs.push({ type: 'burn', damage: getBattleFib(4), duration: 3 });
+                battleState.log.push('Enemy burning! (DoT)');
+                result.effects.push('burn');
+                break;
+
+            case 'stun':
+                battleState.isStunned = true;
+                battleState.log.push('Enemy stunned! (Skips next turn)');
+                result.effects.push('stun');
+                break;
+
+            case 'defense_buff':
+                battleState.buffs.push({ type: 'defense_buff', amount: getBattleFib(5), duration: 2 });
+                battleState.log.push('Defense increased!');
+                result.effects.push('defense_buff');
+                break;
+
+            case 'attack_buff':
+                battleState.buffs.push({ type: 'attack_buff', amount: getBattleFib(5), duration: 2 });
+                battleState.log.push('Attack increased!');
+                result.effects.push('attack_buff');
+                break;
+
+            case 'speed_buff':
+                battleState.buffs.push({ type: 'speed_buff', amount: getBattleFib(4), duration: 2 });
+                battleState.log.push('Speed increased!');
+                result.effects.push('speed_buff');
+                break;
+
+            case 'reflect':
+                battleState.buffs.push({ type: 'reflect', amount: 0.25, duration: 1 });
+                battleState.log.push('Reflecting damage!');
+                result.effects.push('reflect');
+                break;
+
+            case 'immunity':
+                battleState.buffs.push({ type: 'immunity', duration: 1 });
+                battleState.log.push('Immune to effects!');
+                result.effects.push('immunity');
+                break;
+
+            case 'expose':
+                battleState.isExposed = true;
+                battleState.log.push('Enemy exposed! (+25% damage taken)');
+                result.effects.push('expose');
+                break;
+
+            case 'counter':
+                battleState.hasCounter = true;
+                battleState.log.push('Counter ready!');
+                result.effects.push('counter');
+                break;
+
+            case 'move':
+                // Movement card - handled separately
+                if (targetPosition !== null && canMoveTo(battleState.playerPosition, targetPosition)) {
+                    const oldPos = ARENA_POSITIONS[battleState.playerPosition];
+                    const newPos = ARENA_POSITIONS[targetPosition];
+                    battleState.playerPosition = targetPosition;
+                    battleState.log.push(`Moved to ${newPos.name}`);
+                    result.effects.push('move');
+                }
+                break;
+
+            case 'swap_positions':
+                // Swap positions with enemy
+                const tempPos = battleState.playerPosition;
+                battleState.playerPosition = battleState.enemyPosition;
+                battleState.enemyPosition = tempPos;
+                battleState.log.push('Swapped positions with enemy!');
+                result.effects.push('swap');
+                break;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * End player turn and start enemy turn
+ */
+function endPlayerTurn() {
+    if (!battleState.active || battleState.phase !== 'player') {
+        return { success: false, message: 'Cannot end turn now' };
+    }
+
+    battleState.phase = 'enemy';
+
+    // Process burn damage on enemy
+    battleState.enemyDebuffs = battleState.enemyDebuffs.filter(debuff => {
+        if (debuff.type === 'burn' && debuff.damage) {
+            battleState.enemyHp -= debuff.damage;
+            battleState.log.push(`Burn deals ${debuff.damage} damage!`);
+        }
+        debuff.duration--;
+        return debuff.duration > 0;
+    });
+
+    // Check if enemy died from burn
+    if (battleState.enemyHp <= 0) {
+        const rewards = endBattle(true);
+        return { success: true, victory: true, rewards, state: getBattleState() };
+    }
+
+    // Enemy turn (if not stunned)
+    let enemyResult = null;
+    if (battleState.isStunned) {
+        battleState.log.push(`${battleState.enemy.name} is stunned and skips their turn!`);
+        battleState.isStunned = false;
+    } else {
+        enemyResult = enemyTurn();
+    }
+
+    // Check for player defeat
+    if (battleState.playerHp <= 0) {
+        endBattle(false);
+        return { success: true, defeat: true, enemyAction: enemyResult, state: getBattleState() };
+    }
+
+    // Start new turn
+    battleState.turn++;
+    battleState.phase = 'player';
+
+    // Reset block
+    battleState.currentBlock = 0;
+
+    // Reset counter
+    battleState.hasCounter = false;
+
+    // Reset exposed
+    battleState.isExposed = false;
+
+    // Process buff durations
+    battleState.buffs = battleState.buffs.filter(buff => {
+        buff.duration--;
+        return buff.duration > 0;
+    });
+
+    // Draw cards (up to max hand size)
+    const cardsToDraw = Math.min(battleState.cardsPerTurn, battleState.maxHandSize - battleState.hand.length);
+    if (cardsToDraw > 0) {
+        const newCards = drawCards(cardsToDraw);
+        battleState.hand.push(...newCards);
+        battleState.log.push(`Drew ${newCards.length} card${newCards.length > 1 ? 's' : ''}`);
+    }
+
+    // Regenerate some MP each turn
+    const mpRegen = getBattleFib(4); // 3 MP per turn
+    battleState.playerMp = Math.min(battleState.player.maxMp, battleState.playerMp + mpRegen);
+
+    return { success: true, enemyAction: enemyResult, state: getBattleState() };
+}
+
+// ============================================
+// LEGACY COMBAT ACTIONS (for compatibility)
 // ============================================
 
 /**
@@ -660,6 +1568,34 @@ function executeSkillEffect(skill) {
         // Apply multiplier
         let damage = Math.floor(baseDamage * skill.damageMultiplier);
 
+        // Apply position modifier based on attack type and ring
+        const playerRing = ARENA_POSITIONS[battleState.playerPosition]?.ring || 'mid';
+        const ringMod = RING_MODIFIERS[playerRing];
+        const distance = getPositionDistance(battleState.playerPosition, battleState.enemyPosition);
+
+        // Determine attack type: melee if close, ranged if far
+        const isMelee = skill.type === 'attack' && distance <= 1;
+        const isRanged = skill.type === 'attack' && distance > 1;
+
+        if (isMelee) {
+            damage = Math.floor(damage * ringMod.melee);
+            if (ringMod.melee > 1) {
+                battleState.log.push(`Close range bonus! (+${Math.floor((ringMod.melee - 1) * 100)}%)`);
+            }
+        } else if (isRanged) {
+            damage = Math.floor(damage * ringMod.ranged);
+            if (ringMod.ranged > 1) {
+                battleState.log.push(`Long range bonus! (+${Math.floor((ringMod.ranged - 1) * 100)}%)`);
+            }
+        }
+
+        // Distance penalty for melee attacks at far range
+        if (isMelee && distance > 1) {
+            const distancePenalty = 0.7;
+            damage = Math.floor(damage * distancePenalty);
+            battleState.log.push(`Distance penalty (-30%)`);
+        }
+
         // FOMO effect: damage scales with missing HP
         if (skill.effect === 'fomo') {
             const missingHpPercent = 1 - (battleState.playerHp / battleState.player.maxHp);
@@ -780,6 +1716,12 @@ function enemyTurn() {
         }
     }
 
+    // Apply weaken debuff to enemy attack
+    const weakenDebuff = battleState.enemyDebuffs.find(d => d.type === 'weaken');
+    if (weakenDebuff) {
+        damageMultiplier *= (1 - weakenDebuff.amount / 100);
+    }
+
     // Calculate base damage
     let damage = Math.floor(enemy.atk * damageMultiplier);
 
@@ -797,19 +1739,48 @@ function enemyTurn() {
     const defReduction = Math.floor(totalDef / getBattleFib(5));
     damage = Math.max(1, damage - defReduction);
 
-    battleState.playerHp -= damage;
-    battleState.playerHp = Math.max(0, battleState.playerHp);
+    // Check for counter
+    if (battleState.hasCounter) {
+        const counterDamage = Math.floor(damage * 0.5);
+        battleState.enemyHp -= counterDamage;
+        battleState.log.push(`Counter! ${enemy.name} takes ${counterDamage} damage!`);
+    }
+
+    // Apply block first
+    let blockedDamage = 0;
+    if (battleState.currentBlock > 0) {
+        blockedDamage = Math.min(damage, battleState.currentBlock);
+        damage -= blockedDamage;
+        battleState.currentBlock -= blockedDamage;
+        if (blockedDamage > 0) {
+            battleState.log.push(`Blocked ${blockedDamage} damage!`);
+        }
+    }
+
+    // Check for reflect
+    const reflectBuff = battleState.buffs.find(b => b.type === 'reflect');
+    if (reflectBuff && damage > 0) {
+        const reflectedDamage = Math.floor(damage * reflectBuff.amount);
+        battleState.enemyHp -= reflectedDamage;
+        battleState.log.push(`Reflected ${reflectedDamage} damage!`);
+    }
+
+    // Apply remaining damage to player
+    if (damage > 0) {
+        battleState.playerHp -= damage;
+        battleState.playerHp = Math.max(0, battleState.playerHp);
+    }
 
     let logMsg = '';
     if (critical) {
-        logMsg = `${enemy.name} ${attackName} - CRITICAL HIT for ${damage} damage!`;
+        logMsg = `${enemy.name} ${attackName} - CRITICAL HIT for ${damage + blockedDamage} damage!`;
     } else {
-        logMsg = `${enemy.name} ${attackName} for ${damage} damage!`;
+        logMsg = `${enemy.name} ${attackName} for ${damage + blockedDamage} damage!`;
     }
 
     battleState.log.push(logMsg);
 
-    return { damage, critical, attackType };
+    return { damage: damage + blockedDamage, actualDamage: damage, blocked: blockedDamage, critical, attackType };
 }
 
 // ============================================
@@ -1224,6 +2195,111 @@ function renderBattleUI(container) {
                 </div>
             </div>
 
+            <!-- Circular Arena -->
+            <div style="padding: 15px 20px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="color: #666; font-size: 11px; text-transform: uppercase;">🏟️ Arena Position</div>
+                    <div style="display: flex; gap: 10px; font-size: 10px;">
+                        <span style="color: #22c55e;">● CLOSE (+30% melee)</span>
+                        <span style="color: #fbbf24;">● MID (balanced)</span>
+                        <span style="color: #3b82f6;">● FAR (+30% ranged)</span>
+                    </div>
+                </div>
+                <div style="position: relative; width: 100%; height: 180px; background: radial-gradient(circle at center, #0a0a0f 30%, #12121a 70%, #1a1a24 100%); border-radius: 50%; border: 2px solid #333; overflow: hidden;">
+                    <!-- Arena rings -->
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; border: 2px dashed #fbbf2430; border-radius: 50%;"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 85%; border: 2px dashed #3b82f630; border-radius: 50%;"></div>
+
+                    <!-- Position markers -->
+                    ${Object.values(ARENA_POSITIONS).map(pos => {
+                        const isPlayer = pos.id === state.arena.playerPosition;
+                        const isEnemy = pos.id === state.arena.enemyPosition;
+                        const canMoveHere = state.arena.validMoves.includes(pos.id);
+                        const ringColor = pos.ring === 'close' ? '#22c55e' : pos.ring === 'mid' ? '#fbbf24' : '#3b82f6';
+
+                        let content = '';
+                        let bgColor = '#1a1a24';
+                        let borderColor = `${ringColor}30`;
+                        let cursor = 'default';
+                        let size = 28;
+
+                        if (isPlayer) {
+                            content = '🧑‍💻';
+                            bgColor = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                            borderColor = '#22c55e';
+                            size = 36;
+                        } else if (isEnemy) {
+                            content = state.enemy.icon;
+                            bgColor = `linear-gradient(135deg, ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}, ${state.enemy.isBoss ? '#7c3aed' : '#dc2626'})`;
+                            borderColor = state.enemy.isBoss ? '#a855f7' : '#ef4444';
+                            size = 36;
+                        } else if (canMoveHere) {
+                            content = '👆';
+                            bgColor = `${ringColor}20`;
+                            borderColor = `${ringColor}80`;
+                            cursor = 'pointer';
+                        } else {
+                            content = '';
+                            bgColor = '#12121a';
+                        }
+
+                        return `
+                            <div class="${canMoveHere && !isPlayer && !isEnemy ? 'move-btn' : ''}"
+                                 data-pos="${pos.id}"
+                                 style="
+                                     position: absolute;
+                                     left: ${pos.x}%;
+                                     top: ${pos.y}%;
+                                     transform: translate(-50%, -50%);
+                                     width: ${size}px;
+                                     height: ${size}px;
+                                     background: ${bgColor};
+                                     border: 2px solid ${borderColor};
+                                     border-radius: 50%;
+                                     display: flex;
+                                     align-items: center;
+                                     justify-content: center;
+                                     font-size: ${size * 0.5}px;
+                                     cursor: ${cursor};
+                                     transition: all 0.2s;
+                                     z-index: ${isPlayer || isEnemy ? 10 : 5};
+                                     ${canMoveHere && !isPlayer && !isEnemy ? 'animation: pulse 1.5s ease-in-out infinite;' : ''}
+                                 "
+                                 ${canMoveHere && !isPlayer && !isEnemy ? `
+                                     onmouseover="this.style.transform='translate(-50%, -50%) scale(1.2)'; this.style.boxShadow='0 0 15px ${ringColor}';"
+                                     onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'; this.style.boxShadow='none';"
+                                 ` : ''}
+                            >${content}</div>
+                        `;
+                    }).join('')}
+
+                    <!-- Ring labels -->
+                    <div style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); color: #22c55e50; font-size: 9px; font-weight: bold;">CLOSE</div>
+                    <div style="position: absolute; top: 25%; left: 50%; transform: translateX(-50%); color: #fbbf2450; font-size: 9px; font-weight: bold;">MID</div>
+                    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); color: #3b82f650; font-size: 9px; font-weight: bold;">FAR</div>
+                </div>
+
+                <!-- Current position info -->
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 8px 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #22c55e;">📍</span>
+                        <span style="color: #fff; font-size: 11px;">You: <span style="color: ${state.arena.playerRing === 'close' ? '#22c55e' : state.arena.playerRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${ARENA_POSITIONS[state.arena.playerPosition]?.name || 'Unknown'}</span></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #ef4444;">📍</span>
+                        <span style="color: #fff; font-size: 11px;">Enemy: <span style="color: ${state.arena.enemyRing === 'close' ? '#22c55e' : state.arena.enemyRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${ARENA_POSITIONS[state.arena.enemyPosition]?.name || 'Unknown'}</span></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #a855f7;">📏</span>
+                        <span style="color: #a855f7; font-size: 11px; font-weight: 600;">Distance: ${state.arena.distance}</span>
+                    </div>
+                </div>
+
+                <div style="color: #666; font-size: 10px; text-align: center; margin-top: 8px;">
+                    💡 Click on a highlighted position to move (uses your turn)
+                </div>
+            </div>
+
             <!-- Battle Log -->
             <div style="max-height: 80px; overflow-y: auto; padding: 12px 20px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
                 <div style="color: #666; font-size: 10px; margin-bottom: 6px; text-transform: uppercase;">Battle Log</div>
@@ -1232,85 +2308,171 @@ function renderBattleUI(container) {
                 `).join('')}
             </div>
 
-            <!-- Skills Section -->
+            <!-- Card Hand Section -->
             <div style="padding: 20px; background: linear-gradient(180deg, #12121a, #1a1a24);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div style="color: #ffffff; font-size: 14px; font-weight: 600;">⚔️ Combat Actions</div>
-                    <div style="color: #666; font-size: 11px;">Select an action to continue</div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="color: #ffffff; font-size: 14px; font-weight: 600;">🃏 Your Hand</div>
+                        <div style="display: flex; gap: 8px;">
+                            <div style="padding: 4px 10px; background: #1a1a2480; border: 1px solid #333; border-radius: 6px; font-size: 10px; color: #666;">
+                                📚 Deck: ${state.cards?.deckSize || 0}
+                            </div>
+                            <div style="padding: 4px 10px; background: #1a1a2480; border: 1px solid #333; border-radius: 6px; font-size: 10px; color: #666;">
+                                🗑️ Discard: ${state.cards?.discardSize || 0}
+                            </div>
+                            ${state.player.block > 0 ? `
+                                <div style="padding: 4px 10px; background: #3b82f620; border: 1px solid #3b82f6; border-radius: 6px; font-size: 10px; color: #3b82f6; font-weight: bold;">
+                                    🛡️ Block: ${state.player.block}
+                                </div>
+                            ` : ''}
+                            ${state.player.hasCounter ? `
+                                <div style="padding: 4px 10px; background: #f9731620; border: 1px solid #f97316; border-radius: 6px; font-size: 10px; color: #f97316; font-weight: bold;">
+                                    ↩️ Counter Ready
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <button id="end-turn-btn" style="
+                        padding: 10px 20px; background: linear-gradient(135deg, #f97316, #ea580c);
+                        border: 2px solid #fb923c; border-radius: 8px;
+                        color: #fff; font-size: 12px; font-weight: 600;
+                        cursor: pointer; transition: all 0.2s;
+                    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px #f9731660';"
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                        ⏭️ End Turn
+                    </button>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
-                    ${Object.values(COMBAT_SKILLS).map(skill => {
-                        const onCooldown = state.cooldowns[skill.id] > 0;
-                        const noMp = state.player.mp < skill.mpCost;
-                        const levelLocked = skill.requiresLevel && (combatStats?.level || 1) < skill.requiresLevel;
-                        const disabled = onCooldown || noMp || levelLocked;
-                        const estimatedDmg = getSkillDamage(skill);
-                        const skillTypeColor = skill.type === 'attack' ? '#ef4444' : skill.type === 'defense' ? '#3b82f6' : '#22c55e';
-                        const skillTypeLabel = skill.type === 'attack' ? 'ATK' : skill.type === 'defense' ? 'DEF' : 'SUP';
 
-                        // Get effect description
+                <!-- Cards Display -->
+                <div style="display: flex; gap: 12px; overflow-x: auto; padding: 10px 0;">
+                    ${(state.cards?.hand || []).map((card, index) => {
+                        const noMp = card.mpCost && state.player.mp < card.mpCost;
+                        const noTokens = card.tokenCost && (() => {
+                            const playerState = window.PumpArenaState?.get();
+                            return !playerState || playerState.resources.tokens < card.tokenCost;
+                        })();
+                        const disabled = noMp || noTokens;
+                        const rarityColor = CARD_RARITY[card.rarity]?.color || '#666';
+                        const cardTypeColor = card.type === 'attack' ? '#ef4444' : card.type === 'defense' ? '#3b82f6' : card.type === 'support' ? '#22c55e' : '#a855f7';
+                        const cardTypeLabel = card.type === 'attack' ? 'ATK' : card.type === 'defense' ? 'DEF' : card.type === 'support' ? 'SUP' : 'SPL';
+
+                        // Get card effect description
                         let effectDesc = '';
-                        if (skill.damageMultiplier > 0) {
-                            effectDesc = `~${estimatedDmg} DMG`;
-                        } else if (skill.effect === 'heal') {
-                            effectDesc = `+${skill.healAmount} HP`;
-                        } else if (skill.effect === 'defense_buff') {
-                            effectDesc = `+${skill.buffAmount} DEF`;
-                        } else if (skill.effect === 'attack_buff') {
-                            effectDesc = `+${skill.buffAmount} ATK`;
-                        } else {
-                            effectDesc = 'Support';
-                        }
+                        if (card.damage) effectDesc = `${card.damage} DMG`;
+                        else if (card.block) effectDesc = `${card.block} Block`;
+                        else if (card.heal) effectDesc = `+${card.heal} HP`;
+                        else if (card.mpRestore) effectDesc = `+${card.mpRestore} MP`;
+                        else if (card.effects?.length > 0) effectDesc = card.effects[0].replace('_', ' ');
 
                         return `
-                            <button class="skill-btn" data-skill="${skill.id}" ${disabled ? 'disabled' : ''} style="
-                                padding: 15px 12px; border-radius: 12px;
-                                background: ${disabled ? '#1a1a24' : `linear-gradient(135deg, ${skillTypeColor}15, #12121a)`};
-                                border: 2px solid ${disabled ? '#333' : `${skillTypeColor}60`};
-                                color: ${disabled ? '#555' : '#fff'};
+                            <div class="card-btn" data-card-index="${index}" ${disabled ? 'data-disabled="true"' : ''} style="
+                                min-width: 120px; max-width: 120px;
+                                background: linear-gradient(180deg, #1a1a24, #0a0a0f);
+                                border: 2px solid ${disabled ? '#333' : rarityColor};
+                                border-radius: 12px;
+                                padding: 12px;
                                 cursor: ${disabled ? 'not-allowed' : 'pointer'};
                                 transition: all 0.2s;
-                                position: relative;
                                 opacity: ${disabled ? '0.5' : '1'};
-                                text-align: center;
-                            " ${!disabled ? `onmouseover="this.style.borderColor='${skillTypeColor}'; this.style.boxShadow='0 0 20px ${skillTypeColor}30'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='${skillTypeColor}60'; this.style.boxShadow='none'; this.style.transform='translateY(0)';"` : ''}>
-                                <div style="position: absolute; top: 6px; left: 6px; font-size: 9px; color: ${skillTypeColor}; background: ${skillTypeColor}20; padding: 2px 5px; border-radius: 3px;">${skillTypeLabel}</div>
-                                <div style="font-size: 24px; margin-bottom: 6px;">${skill.icon}</div>
-                                <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: ${disabled ? '#555' : '#fff'};">${skill.name}</div>
-                                <div style="font-size: 10px; color: ${disabled ? '#444' : skillTypeColor}; font-weight: 600;">${effectDesc}</div>
-                                <div style="display: flex; justify-content: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                                    ${skill.mpCost > 0 ? `<span style="font-size: 9px; color: ${disabled ? '#444' : '#3b82f6'}; background: ${disabled ? '#1a1a24' : '#3b82f620'}; padding: 2px 5px; border-radius: 4px;">⚡${skill.mpCost}</span>` : '<span style="font-size: 9px; color: #22c55e; background: #22c55e20; padding: 2px 5px; border-radius: 4px;">FREE</span>'}
-                                    ${skill.cooldown > 0 ? `<span style="font-size: 9px; color: ${disabled ? '#444' : '#666'}; background: ${disabled ? '#1a1a24' : '#33333380'}; padding: 2px 5px; border-radius: 4px;">CD${skill.cooldown}</span>` : ''}
-                                    ${skill.tokenCost ? `<span style="font-size: 9px; color: ${disabled ? '#444' : '#f97316'}; background: ${disabled ? '#1a1a24' : '#f9731620'}; padding: 2px 5px; border-radius: 4px;">🪙${skill.tokenCost}</span>` : ''}
+                                position: relative;
+                                flex-shrink: 0;
+                            ">
+                                <!-- Rarity indicator -->
+                                <div style="position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 50%; height: 3px; background: ${rarityColor}; border-radius: 0 0 3px 3px;"></div>
+
+                                <!-- Card type badge -->
+                                <div style="position: absolute; top: 6px; left: 6px; font-size: 8px; color: ${cardTypeColor}; background: ${cardTypeColor}20; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${cardTypeLabel}</div>
+
+                                <!-- MP cost badge -->
+                                <div style="position: absolute; top: 6px; right: 6px; font-size: 9px; color: ${card.mpCost > 0 ? '#3b82f6' : '#22c55e'}; background: ${card.mpCost > 0 ? '#3b82f620' : '#22c55e20'}; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
+                                    ${card.mpCost > 0 ? `⚡${card.mpCost}` : 'FREE'}
                                 </div>
-                                ${onCooldown ? `<div style="position: absolute; top: 6px; right: 6px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${state.cooldowns[skill.id]}T</div>` : ''}
-                                ${levelLocked ? `<div style="position: absolute; top: 6px; right: 6px; background: linear-gradient(135deg, #666, #444); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px;">Lv${skill.requiresLevel}</div>` : ''}
-                            </button>
+
+                                <!-- Card icon -->
+                                <div style="text-align: center; margin: 20px 0 8px 0;">
+                                    <span style="font-size: 32px;">${card.icon}</span>
+                                </div>
+
+                                <!-- Card name -->
+                                <div style="text-align: center; color: #fff; font-size: 11px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${card.name}</div>
+
+                                <!-- Rarity -->
+                                <div style="text-align: center; color: ${rarityColor}; font-size: 9px; text-transform: uppercase; margin-bottom: 6px;">${card.rarity}</div>
+
+                                <!-- Effect -->
+                                <div style="text-align: center; color: ${cardTypeColor}; font-size: 10px; font-weight: 600; margin-bottom: 6px;">${effectDesc}</div>
+
+                                <!-- Description -->
+                                <div style="text-align: center; color: #666; font-size: 9px; line-height: 1.3;">${card.description}</div>
+
+                                ${card.tokenCost ? `
+                                    <div style="text-align: center; margin-top: 6px;">
+                                        <span style="font-size: 9px; color: #f97316; background: #f9731620; padding: 2px 6px; border-radius: 4px;">🪙 ${card.tokenCost}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
                         `;
                     }).join('')}
+
+                    ${(state.cards?.hand || []).length === 0 ? `
+                        <div style="flex: 1; text-align: center; color: #666; padding: 30px;">
+                            No cards in hand. Click "End Turn" to draw new cards!
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div style="color: #666; font-size: 10px; text-align: center; margin-top: 10px;">
+                    💡 Click a card to play it, or End Turn to draw 3 new cards and let the enemy attack
                 </div>
             </div>
         </div>
     `;
 
-    // Skill button handlers
-    container.querySelectorAll('.skill-btn:not([disabled])').forEach(btn => {
+    // Card button handlers
+    container.querySelectorAll('.card-btn:not([data-disabled])').forEach(btn => {
+        // Add hover effects
+        btn.addEventListener('mouseover', () => {
+            btn.style.transform = 'translateY(-8px) scale(1.02)';
+            btn.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            btn.style.zIndex = '10';
+        });
+        btn.addEventListener('mouseout', () => {
+            btn.style.transform = 'translateY(0) scale(1)';
+            btn.style.boxShadow = 'none';
+            btn.style.zIndex = '1';
+        });
+
         btn.addEventListener('click', () => {
-            const skillId = btn.dataset.skill;
-            const result = useSkill(skillId);
+            const cardIndex = parseInt(btn.dataset.cardIndex, 10);
+            const result = playCard(cardIndex);
 
             if (result.success) {
                 renderBattleUI(container);
 
                 if (result.victory) {
                     showBattleNotification(`Victory! +${result.rewards.xp} XP, +${result.rewards.tokens} tokens`, 'success');
-                } else if (result.defeat) {
-                    showBattleNotification('Defeated! Try again when stronger.', 'error');
                 }
             } else {
                 showBattleNotification(result.message, 'error');
             }
         });
+    });
+
+    // End Turn button handler
+    container.querySelector('#end-turn-btn')?.addEventListener('click', () => {
+        const result = endPlayerTurn();
+
+        if (result.success) {
+            renderBattleUI(container);
+
+            if (result.victory) {
+                showBattleNotification(`Victory! +${result.rewards?.xp || 0} XP, +${result.rewards?.tokens || 0} tokens`, 'success');
+            } else if (result.defeat) {
+                showBattleNotification('Defeated! Try again when stronger.', 'error');
+            }
+        } else {
+            showBattleNotification(result.message, 'error');
+        }
     });
 
     // Flee button
@@ -1322,6 +2484,15 @@ function renderBattleUI(container) {
         } else {
             showBattleNotification(result.message, 'error');
         }
+    });
+
+    // Movement buttons (no longer trigger enemy turn - just preview)
+    container.querySelectorAll('.move-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // For movement, we need a movement card or use the move action
+            // Show notification that movement requires a Position Shift card
+            showBattleNotification('Use a Position Shift card to move!', 'info');
+        });
     });
 }
 
@@ -1383,6 +2554,27 @@ function showBattleNotification(message, type) {
     }
 }
 
+// Check if battle has ended after movement
+function checkBattleEnd() {
+    if (!battleState.active) return null;
+
+    if (battleState.enemyHp <= 0) {
+        // Victory
+        const rewards = calculateRewards();
+        applyRewards(rewards);
+        battleState.active = false;
+        return { victory: true, rewards };
+    }
+
+    if (battleState.playerHp <= 0) {
+        // Defeat
+        battleState.active = false;
+        return { defeat: true };
+    }
+
+    return null;
+}
+
 // Security helper
 function escapeHtml(text) {
     if (typeof text !== 'string') return '';
@@ -1402,6 +2594,14 @@ if (typeof window !== 'undefined') {
         getState: getBattleState,
         useSkill,
         flee: fleeBattle,
+        move: movePlayer,
+
+        // Card system
+        playCard,
+        endTurn: endPlayerTurn,
+        drawCards,
+        CARDS: ACTION_CARDS,
+        CARD_RARITY,
 
         // Encounters
         randomEncounter,
@@ -1409,6 +2609,12 @@ if (typeof window !== 'undefined') {
 
         // Combat stats
         calculateCombatStats,
+
+        // Arena system
+        ARENA_POSITIONS,
+        RING_MODIFIERS,
+        getPositionDistance,
+        canMoveTo,
 
         // UI
         renderPanel: renderBattleUI,

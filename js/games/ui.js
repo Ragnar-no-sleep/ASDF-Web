@@ -116,7 +116,7 @@ async function renderLeaderboards() {
         if (cycleEl) {
             cycleEl.innerHTML = cycleData.length > 0
                 ? renderCycleLeaderboard(cycleData)
-                : '<div class="leaderboard-empty">No airdrop slots earned yet.</div>';
+                : '<div class="leaderboard-empty">No reward slots earned yet.</div>';
         }
     } catch (error) {
         console.error('Failed to load leaderboards:', error);
@@ -136,7 +136,7 @@ function renderWeeklyLeaderboard(data) {
         const score = Number.isFinite(entry.score) ? Math.floor(entry.score) : 0;
         const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
         const isYou = appState.wallet && typeof entry.player === 'string' && entry.player.includes(appState.wallet.slice(0, 4));
-        const slots = AIRDROP_SLOTS[rank] || 0;
+        const slots = REWARD_SLOTS[rank] || 0;
         const slotBadge = slots > 0 ? `<span style="color: var(--gold); font-size: 11px; margin-left: 8px;">+${slots} slots</span>` : '';
 
         return `

@@ -788,7 +788,7 @@ node server.js</pre></div>`
                 sections: [
                     {
                         title: '📖 Overview',
-                        content: 'Token launcher for Solana. Ships tokens that end with "ASDF". Built-in airdrop rewards and holder tracking.'
+                        content: 'Token launcher for Solana. Ships tokens that end with "ASDF". Built-in burn mechanics and holder tracking.'
                     },
                     {
                         title: '✨ Features',
@@ -796,7 +796,7 @@ node server.js</pre></div>`
                             <li>Token deployment queuing</li>
                             <li>Vanity address generation (ASDF suffix)</li>
                             <li>Metadata upload to IPFS via Pinata</li>
-                            <li>Airdrop eligibility checking</li>
+                            <li>Built-in burn mechanics</li>
                             <li>Holder tracking (top 50 per token)</li>
                             <li>Leaderboard by volume</li>
                             <li>Real-time launch feed</li>
@@ -2040,12 +2040,12 @@ ws.<span class="function">onmessage</span> = (event) => {
                 content: {
                     'Introduction': `
                         <h3>What is ASDev?</h3>
-                        <p>ASDev is a <strong>token launcher platform for Solana</strong> that creates tokens with addresses ending in "ASDF". It includes built-in airdrop rewards and holder tracking.</p>
+                        <p>ASDev is a <strong>token launcher platform for Solana</strong> that creates tokens with addresses ending in "ASDF". It includes built-in burn mechanics and holder tracking.</p>
 
                         <h4>Key Features</h4>
                         <ul>
                             <li><strong>Vanity addresses</strong> - All tokens end with "ASDF"</li>
-                            <li><strong>Airdrop integration</strong> - Automatic eligibility checking</li>
+                            <li><strong>Burn mechanics</strong> - Automatic token burns</li>
                             <li><strong>Holder tracking</strong> - Top 50 holders per token</li>
                             <li><strong>Leaderboards</strong> - Volume-based rankings</li>
                             <li><strong>Real-time feed</strong> - Live launch notifications</li>

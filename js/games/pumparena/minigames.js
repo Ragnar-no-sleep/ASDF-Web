@@ -146,7 +146,7 @@ const CHART_PATTERNS = [
 // Quiz questions
 const QUIZ_QUESTIONS = [
     { q: 'What does "HODL" mean?', a: ['Hold On for Dear Life', 'Buy More', 'Sell Now', 'Trade Often'], correct: 0 },
-    { q: 'What is a "rug pull"?', a: ['Scam exit', 'Price increase', 'New launch', 'Airdrop'], correct: 0 },
+    { q: 'What is a "rug pull"?', a: ['Scam exit', 'Price increase', 'New launch', 'Burn event'], correct: 0 },
     { q: 'What does "WAGMI" stand for?', a: ["We're All Gonna Make It", 'Wait And Get More Info', 'Wallet Address Guide', 'Web3 Gaming'], correct: 0 },
     { q: 'What is "gas" in Ethereum?', a: ['Transaction fee', 'Token name', 'Wallet type', 'Exchange'], correct: 0 },
     { q: 'What does "DeFi" stand for?', a: ['Decentralized Finance', 'Digital Finance', 'Defined Interest', 'Derivative Fund'], correct: 0 },

@@ -282,5 +282,5 @@ const GAMES = [
     }
 ];
 
-// Airdrop slots per rank
-const AIRDROP_SLOTS = { 1: 5, 2: 2, 3: 1 };
+// Reward slots per rank
+const REWARD_SLOTS = { 1: 5, 2: 2, 3: 1 };

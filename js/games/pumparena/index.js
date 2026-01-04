@@ -159,14 +159,14 @@ const TUTORIALS = {
             { title: 'Set Bonuses', content: 'Equip items from the same set to unlock powerful bonus effects.' }
         ]
     },
-    trading: {
-        title: 'Trading Post',
-        icon: '🔄',
+    shop: {
+        title: 'Shop',
+        icon: '🛒',
         color: '#22c55e',
         steps: [
-            { title: 'Create Trades', content: 'Offer tokens or items to create trade offers. Other players can accept your trades!' },
-            { title: 'Daily Limits', content: 'Your tier determines how many trades you can make per day and maximum trade value.' },
-            { title: 'Trading Fees', content: 'A small fee is taken from completed trades. Factor this into your pricing!' }
+            { title: 'Buy Items', content: 'Purchase equipment, materials, and cosmetics with your tokens!' },
+            { title: 'Daily Deals', content: 'Check back daily for special discounted items and limited offers.' },
+            { title: 'Cosmetics Preview', content: 'Get ready for the upcoming major cosmetics update! New skins and visual upgrades coming soon!' }
         ]
     },
     skill_tree: {
@@ -724,9 +724,9 @@ function renderMainGameUI() {
                             <span class="action-icon">&#128737;</span>
                             <span class="action-label">Equipment</span>
                         </button>
-                        <button class="action-btn" id="btn-trading" title="Trading Post">
-                            <span class="action-icon">&#128257;</span>
-                            <span class="action-label">Trade</span>
+                        <button class="action-btn" id="btn-shop" title="Shop">
+                            <span class="action-icon">🛒</span>
+                            <span class="action-label">Shop</span>
                         </button>
                     </div>
                 </div>
@@ -759,7 +759,7 @@ function attachMainGameListeners() {
     document.getElementById('btn-achievements')?.addEventListener('click', showAchievementsPanel);
     document.getElementById('btn-battle')?.addEventListener('click', showBattlePanel);
     document.getElementById('btn-equipment')?.addEventListener('click', showEquipmentPanel);
-    document.getElementById('btn-trading')?.addEventListener('click', showTradingPanel);
+    document.getElementById('btn-shop')?.addEventListener('click', showShopPanel);
     document.getElementById('events-btn')?.addEventListener('click', checkAndShowEvent);
 
     // Listen for tier up events
@@ -3991,27 +3991,285 @@ function showEquipmentPanel() {
 }
 
 // ============================================
-// TRADING PANEL
+// SHOP PANEL
 // ============================================
 
-function showTradingPanel() {
-    // Check for tutorial
-    checkAndShowTutorial('trading');
+const SHOP_ITEMS = {
+    // Equipment pieces
+    basic_sword: { id: 'basic_sword', name: 'Basic Sword', icon: '🗡️', type: 'equipment', slot: 'weapon', price: 50, rarity: 'common', stats: { str: 3, dev: 1 } },
+    iron_shield: { id: 'iron_shield', name: 'Iron Shield', icon: '🛡️', type: 'equipment', slot: 'armor', price: 75, rarity: 'common', stats: { com: 3, cha: 1 } },
+    lucky_charm: { id: 'lucky_charm', name: 'Lucky Charm', icon: '🍀', type: 'equipment', slot: 'accessory', price: 100, rarity: 'uncommon', stats: { lck: 5 } },
+    dev_toolkit: { id: 'dev_toolkit', name: 'Dev Toolkit', icon: '🔧', type: 'equipment', slot: 'tool', price: 120, rarity: 'uncommon', stats: { dev: 4, str: 2 } },
+
+    // Crafting materials
+    raw_silicon: { id: 'raw_silicon', name: 'Raw Silicon', icon: '💎', type: 'material', price: 15, description: 'Basic crafting material' },
+    circuit_board: { id: 'circuit_board', name: 'Circuit Board', icon: '📟', type: 'material', price: 30, description: 'For tech equipment' },
+    energy_cell: { id: 'energy_cell', name: 'Energy Cell', icon: '🔋', type: 'material', price: 45, description: 'Powers advanced gear' },
+    code_fragment: { id: 'code_fragment', name: 'Code Fragment', icon: '📝', type: 'material', price: 25, description: 'Essential for crafting' },
+
+    // Consumables
+    health_potion: { id: 'health_potion', name: 'Health Potion', icon: '🧪', type: 'consumable', price: 20, effect: 'heal', value: 30, description: 'Restores 30 HP in battle' },
+    energy_drink: { id: 'energy_drink', name: 'Energy Drink', icon: '🥤', type: 'consumable', price: 25, effect: 'mp', value: 15, description: 'Restores 15 MP in battle' },
+    xp_boost: { id: 'xp_boost', name: 'XP Booster', icon: '⭐', type: 'consumable', price: 100, effect: 'xp_boost', value: 1.5, description: '+50% XP for 1 hour' },
+
+    // Cosmetics (Preview for upcoming update)
+    golden_aura: { id: 'golden_aura', name: 'Golden Aura', icon: '✨', type: 'cosmetic', price: 500, rarity: 'epic', preview: true, description: 'Coming in cosmetics update!' },
+    flame_trail: { id: 'flame_trail', name: 'Flame Trail', icon: '🔥', type: 'cosmetic', price: 750, rarity: 'epic', preview: true, description: 'Coming in cosmetics update!' },
+    neon_glow: { id: 'neon_glow', name: 'Neon Glow', icon: '💜', type: 'cosmetic', price: 600, rarity: 'rare', preview: true, description: 'Coming in cosmetics update!' }
+};
+
+const DAILY_DEALS_KEY = 'pumparena_daily_deals';
+
+function getDailyDeals() {
+    try {
+        const stored = localStorage.getItem(DAILY_DEALS_KEY);
+        if (stored) {
+            const data = JSON.parse(stored);
+            const today = new Date().toDateString();
+            if (data.date === today) {
+                return data.deals;
+            }
+        }
+    } catch (e) {}
+
+    // Generate new daily deals
+    const allItems = Object.values(SHOP_ITEMS).filter(i => !i.preview);
+    const shuffled = allItems.sort(() => Math.random() - 0.5);
+    const deals = shuffled.slice(0, 3).map(item => ({
+        ...item,
+        originalPrice: item.price,
+        price: Math.floor(item.price * 0.7) // 30% off
+    }));
+
+    try {
+        localStorage.setItem(DAILY_DEALS_KEY, JSON.stringify({
+            date: new Date().toDateString(),
+            deals
+        }));
+    } catch (e) {}
+
+    return deals;
+}
+
+function buyShopItem(itemId, isDeal = false) {
+    const state = window.PumpArenaState?.get();
+    if (!state) return { success: false, message: 'Game not loaded' };
+
+    let item;
+    if (isDeal) {
+        const deals = getDailyDeals();
+        item = deals.find(d => d.id === itemId);
+    } else {
+        item = SHOP_ITEMS[itemId];
+    }
+
+    if (!item) return { success: false, message: 'Item not found' };
+    if (item.preview) return { success: false, message: 'Coming soon in cosmetics update!' };
+
+    if (state.resources.tokens < item.price) {
+        return { success: false, message: 'Not enough tokens!' };
+    }
+
+    // Deduct tokens
+    window.PumpArenaState.addTokens(-item.price);
+
+    // Add item to inventory
+    if (window.PumpArenaInventory) {
+        window.PumpArenaInventory.addItem(item.id, 1);
+    }
+
+    return { success: true, message: `Purchased ${item.name}!`, item };
+}
+
+function showShopPanel() {
+    checkAndShowTutorial('shop');
 
     const content = document.getElementById('game-content');
     if (!content) return;
 
-    if (!window.PumpArenaTrading) {
-        content.innerHTML = `
-            <div class="panel-error">
-                <h3>🔄 Trading</h3>
-                <p>Trading system is loading...</p>
-            </div>
-        `;
-        return;
-    }
+    const state = window.PumpArenaState?.get();
+    const dailyDeals = getDailyDeals();
+    const tierColors = { common: '#9ca3af', uncommon: '#22c55e', rare: '#3b82f6', epic: '#a855f7', legendary: '#f97316' };
 
-    window.PumpArenaTrading.renderPanel(content);
+    content.innerHTML = `
+        <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid #22c55e;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a24, #0d2010); padding: 20px; border-bottom: 1px solid #22c55e40;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🛒</div>
+                        <div>
+                            <h3 style="color: #ffffff; margin: 0; font-size: 20px;">Shop</h3>
+                            <div style="color: #22c55e; font-size: 12px;">Buy equipment, materials & more!</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fbbf2420, #f9731620); border: 1px solid #fbbf2450; border-radius: 10px; padding: 10px 15px;">
+                        <div style="color: #fbbf24; font-size: 12px;">Your Tokens</div>
+                        <div style="color: #fbbf24; font-size: 20px; font-weight: bold;">🪙 ${state?.resources.tokens || 0}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cosmetics Banner -->
+            <div style="background: linear-gradient(135deg, #a855f720, #ec489920); border-bottom: 1px solid #a855f740; padding: 15px 20px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 30px;">✨🎨🔥</div>
+                    <div style="flex: 1;">
+                        <div style="color: #a855f7; font-weight: 700; font-size: 14px;">MAJOR COSMETICS UPDATE COMING SOON!</div>
+                        <div style="color: #c084fc; font-size: 12px;">New skins, auras, trails and visual effects for your character!</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; font-size: 11px; padding: 6px 12px; border-radius: 6px; font-weight: bold;">PREVIEW</div>
+                </div>
+            </div>
+
+            <!-- Daily Deals -->
+            <div style="padding: 20px; border-bottom: 1px solid #333;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <span style="font-size: 20px;">🏷️</span>
+                    <span style="color: #ffffff; font-size: 16px; font-weight: 600;">Daily Deals</span>
+                    <span style="color: #ef4444; font-size: 12px; background: #ef444420; padding: 3px 8px; border-radius: 4px;">-30% OFF</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    ${dailyDeals.map(item => `
+                        <div style="background: linear-gradient(135deg, #1a1a24, ${tierColors[item.rarity] || '#333'}15); border: 2px solid ${tierColors[item.rarity] || '#333'}50; border-radius: 12px; padding: 15px; text-align: center;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">${item.icon}</div>
+                            <div style="color: #fff; font-weight: 600; font-size: 13px; margin-bottom: 4px;">${item.name}</div>
+                            <div style="color: ${tierColors[item.rarity]}; font-size: 10px; text-transform: uppercase; margin-bottom: 8px;">${item.rarity || item.type}</div>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
+                                <span style="color: #666; font-size: 12px; text-decoration: line-through;">🪙${item.originalPrice}</span>
+                                <span style="color: #22c55e; font-size: 14px; font-weight: bold;">🪙${item.price}</span>
+                            </div>
+                            <button class="buy-deal-btn" data-item="${item.id}" style="
+                                width: 100%; padding: 8px; background: linear-gradient(135deg, #22c55e, #16a34a);
+                                border: none; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600;
+                                cursor: pointer; transition: all 0.2s;
+                            ">Buy Now</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Shop Categories -->
+            <div style="padding: 20px;">
+                <!-- Equipment -->
+                <div style="margin-bottom: 25px;">
+                    <div style="color: #a855f7; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>🛡️</span> Equipment
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                        ${Object.values(SHOP_ITEMS).filter(i => i.type === 'equipment').map(item => `
+                            <div style="background: linear-gradient(135deg, #1a1a24, ${tierColors[item.rarity] || '#333'}10); border: 1px solid ${tierColors[item.rarity] || '#333'}40; border-radius: 10px; padding: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">${item.icon}</span>
+                                    <div>
+                                        <div style="color: #fff; font-size: 12px; font-weight: 600;">${item.name}</div>
+                                        <div style="color: ${tierColors[item.rarity]}; font-size: 9px; text-transform: uppercase;">${item.rarity}</div>
+                                    </div>
+                                </div>
+                                <div style="color: #888; font-size: 10px; margin-bottom: 8px;">
+                                    ${Object.entries(item.stats || {}).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(', ')}
+                                </div>
+                                <button class="buy-item-btn" data-item="${item.id}" style="
+                                    width: 100%; padding: 6px; background: linear-gradient(135deg, #374151, #1f2937);
+                                    border: 1px solid #4b5563; border-radius: 6px; color: #fbbf24; font-size: 11px;
+                                    cursor: pointer; transition: all 0.2s;
+                                ">🪙 ${item.price}</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Materials -->
+                <div style="margin-bottom: 25px;">
+                    <div style="color: #3b82f6; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>📦</span> Crafting Materials
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                        ${Object.values(SHOP_ITEMS).filter(i => i.type === 'material').map(item => `
+                            <div style="background: #1a1a24; border: 1px solid #3b82f640; border-radius: 10px; padding: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                    <span style="font-size: 20px;">${item.icon}</span>
+                                    <div style="color: #fff; font-size: 12px; font-weight: 600;">${item.name}</div>
+                                </div>
+                                <div style="color: #666; font-size: 10px; margin-bottom: 8px;">${item.description}</div>
+                                <button class="buy-item-btn" data-item="${item.id}" style="
+                                    width: 100%; padding: 6px; background: linear-gradient(135deg, #374151, #1f2937);
+                                    border: 1px solid #4b5563; border-radius: 6px; color: #fbbf24; font-size: 11px;
+                                    cursor: pointer;
+                                ">🪙 ${item.price}</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Consumables -->
+                <div style="margin-bottom: 25px;">
+                    <div style="color: #22c55e; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>🧪</span> Consumables
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                        ${Object.values(SHOP_ITEMS).filter(i => i.type === 'consumable').map(item => `
+                            <div style="background: #1a1a24; border: 1px solid #22c55e40; border-radius: 10px; padding: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                    <span style="font-size: 20px;">${item.icon}</span>
+                                    <div style="color: #fff; font-size: 12px; font-weight: 600;">${item.name}</div>
+                                </div>
+                                <div style="color: #666; font-size: 10px; margin-bottom: 8px;">${item.description}</div>
+                                <button class="buy-item-btn" data-item="${item.id}" style="
+                                    width: 100%; padding: 6px; background: linear-gradient(135deg, #374151, #1f2937);
+                                    border: 1px solid #4b5563; border-radius: 6px; color: #fbbf24; font-size: 11px;
+                                    cursor: pointer;
+                                ">🪙 ${item.price}</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Cosmetics Preview -->
+                <div>
+                    <div style="color: #a855f7; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>✨</span> Cosmetics <span style="background: #a855f730; color: #c084fc; font-size: 10px; padding: 2px 8px; border-radius: 4px;">COMING SOON</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                        ${Object.values(SHOP_ITEMS).filter(i => i.type === 'cosmetic').map(item => `
+                            <div style="background: linear-gradient(135deg, #1a1a24, #a855f710); border: 1px solid #a855f730; border-radius: 10px; padding: 12px; opacity: 0.7;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                    <span style="font-size: 24px;">${item.icon}</span>
+                                    <div>
+                                        <div style="color: #fff; font-size: 12px; font-weight: 600;">${item.name}</div>
+                                        <div style="color: ${tierColors[item.rarity]}; font-size: 9px; text-transform: uppercase;">${item.rarity}</div>
+                                    </div>
+                                </div>
+                                <div style="color: #a855f7; font-size: 10px; margin-bottom: 8px;">${item.description}</div>
+                                <button disabled style="
+                                    width: 100%; padding: 6px; background: #333;
+                                    border: 1px solid #555; border-radius: 6px; color: #666; font-size: 11px;
+                                    cursor: not-allowed;
+                                ">🔒 ${item.price} tokens</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Buy handlers
+    content.querySelectorAll('.buy-item-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const result = buyShopItem(btn.dataset.item);
+            showNotification(result.message, result.success ? 'success' : 'error');
+            if (result.success) showShopPanel(); // Refresh
+        });
+    });
+
+    content.querySelectorAll('.buy-deal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const result = buyShopItem(btn.dataset.item, true);
+            showNotification(result.message, result.success ? 'success' : 'error');
+            if (result.success) showShopPanel(); // Refresh
+        });
+    });
 }
 
 // ============================================

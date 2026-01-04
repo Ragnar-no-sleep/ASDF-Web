@@ -165,12 +165,12 @@ const ASDF = {
         },
 
         /**
-         * Get airdrop boost multiplier for a tier
+         * Get reward boost multiplier for a tier
          * Formula: fib[tier] or 1 (minimum 1x)
          * @param {number} tier - Tier index
          * @returns {number} Multiplier
          */
-        getAirdropBoost(tier) {
+        getRewardBoost(tier) {
             return Math.max(1, ASDF.fib[tier] || 1);
         },
 
@@ -302,11 +302,11 @@ const ASDF = {
         },
 
         /**
-         * Get airdrop slots per rank
+         * Get reward slots per rank
          * Derived from Fibonacci: 1st = fib[4], 2nd = fib[2], 3rd = fib[1]
          * @returns {Object} Slots per rank
          */
-        getAirdropSlots() {
+        getRewardSlots() {
             return {
                 1: ASDF.fib[4],  // 3 slots for 1st place
                 2: ASDF.fib[2],  // 1 slot for 2nd place

@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 {
                     name: 'Initial distribution tools',
-                    what: 'Batch transfer functionality to distribute tokens to team, investors, or airdrop recipients.',
+                    what: 'Batch transfer functionality to distribute tokens to team members and investors.',
                     how: 'CSV upload parses recipient addresses and amounts. Backend constructs versioned transactions with multiple transfer instructions, optimizing for compute budget.',
                     why: 'Fair distribution is crucial for project credibility. Automated tools prevent manual errors and provide verifiable proof of distribution.'
                 },
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     what: 'Post-launch control panel for managing token authorities, minting, and monitoring metrics.',
                     how: 'React dashboard fetches on-chain data for launched tokens. Actions like minting, freezing, or updating metadata are available to authorities.',
                     why: 'Launch is just the beginning. Ongoing management tools help token creators maintain their project.',
-                    future: 'Holder analytics. Airdrop tools. Vesting schedule management.'
+                    future: 'Holder analytics. Vesting schedule management.'
                 },
                 {
                     icon: '🔐',

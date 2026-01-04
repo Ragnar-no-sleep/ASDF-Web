@@ -216,8 +216,8 @@ const DEFAULT_RPG_STATE = {
     progression: {
         level: 1,
         xp: 0,
-        skillPoints: 0,
-        statPoints: 0,
+        skillPoints: 1,   // Start with 1 skill point
+        statPoints: 5,    // Start with 5 stat points to allocate (fib[5])
         prestigeLevel: 0,
         skills: []  // Unlocked skill IDs from skill trees
     },
@@ -851,9 +851,12 @@ function addXP(amount) {
         // Recalculate max influence (Fibonacci-based)
         rpgState.resources.maxInfluence = getMaxInfluence();
 
-        // Bonus stat point every fib[5]=5 levels
+        // Give 3 stat points per level (ASDF Philosophy: fib[4] = 3)
+        rpgState.progression.statPoints += 3;
+
+        // Bonus stat points at milestone levels (5, 10, 15, 20, ...)
         if (rpgState.progression.level % 5 === 0) {
-            rpgState.progression.statPoints++;
+            rpgState.progression.statPoints += 2; // Extra bonus at milestones
         }
 
         // Update ASDF tier

@@ -471,11 +471,11 @@ const RANDOM_EVENTS = {
         timeLimit: 120
     },
 
-    airdrop_rush: {
-        id: 'airdrop_rush',
+    bonus_rush: {
+        id: 'bonus_rush',
         type: 'special',
-        name: 'Airdrop Alert!',
-        description: 'A massive airdrop just went live! You have seconds to act!',
+        name: 'Bonus Alert!',
+        description: 'A massive bonus reward just dropped! You have seconds to act!',
         rarity: 0.05,
         choices: [
             {
