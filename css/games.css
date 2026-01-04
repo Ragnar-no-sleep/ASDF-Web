@@ -419,7 +419,7 @@
         }
 
         .game-card {
-            background: var(--bg-charred);
+            background: var(--bg-burnt);
             border: 2px solid var(--border-rust);
             border-radius: var(--radius);
             padding: 24px;
