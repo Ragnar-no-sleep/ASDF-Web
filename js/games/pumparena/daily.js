@@ -355,9 +355,7 @@ function renderDailyPanel(container) {
             if (result.success) {
                 renderDailyPanel(container);
                 // Show notification
-                if (window.PumpArenaRPG && window.PumpArenaRPG.showNotification) {
-                    window.PumpArenaRPG.showNotification(result.message, 'success');
-                }
+                window.PumpArenaRPG?.showNotification?.(result.message, 'success');
             }
         });
     }

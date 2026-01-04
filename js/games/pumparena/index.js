@@ -123,6 +123,71 @@ function sanitizeNumber(num) {
     return parsed;
 }
 
+/**
+ * Create a modal overlay with standard close behavior (DRY helper)
+ * @param {Object} options - Modal configuration
+ * @param {string} options.className - Additional CSS class (optional)
+ * @param {string} options.title - Modal title (will be escaped)
+ * @param {string} options.titleIcon - Icon to display before title (optional)
+ * @param {string} options.headerStyle - Additional header inline styles (optional)
+ * @param {string} options.panelStyle - Additional panel inline styles (optional)
+ * @param {string} options.bodyContent - HTML content for modal body (must be pre-sanitized)
+ * @param {string} options.bodyId - ID for the body div (optional)
+ * @param {boolean} options.autoAppend - Whether to append to document.body (default: true)
+ * @returns {HTMLElement} The modal overlay element
+ */
+function createModal(options = {}) {
+    const modal = document.createElement('div');
+    modal.className = 'game-modal-overlay' + (options.className ? ' ' + options.className : '');
+
+    const safeTitle = escapeHtml(options.title || 'Modal');
+    const titleIcon = options.titleIcon ? `<span>${options.titleIcon}</span> ` : '';
+    const headerStyle = options.headerStyle ? ` style="${options.headerStyle}"` : '';
+    const panelStyle = options.panelStyle || 'max-width: 600px;';
+    const bodyId = options.bodyId ? ` id="${escapeHtml(options.bodyId)}"` : '';
+
+    modal.innerHTML = `
+        <div class="game-modal-panel" style="${panelStyle}">
+            <div class="modal-header"${headerStyle}>
+                <h3>${titleIcon}${safeTitle}</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body"${bodyId}>${options.bodyContent || ''}</div>
+        </div>
+    `;
+
+    // Set up close behaviors
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    // Auto-append to body unless disabled
+    if (options.autoAppend !== false) {
+        document.body.appendChild(modal);
+    }
+
+    return modal;
+}
+
+// ============================================
+// SHARED FIBONACCI SEQUENCE (DRY - Single Source of Truth)
+// ============================================
+
+/**
+ * Fibonacci sequence used throughout the game for mathematical harmony
+ * Indices: 0  1  2  3  4  5  6   7   8   9  10  11
+ * Values:  0  1  1  2  3  5  8  13  21  34  55  89
+ */
+const SHARED_FIB = Object.freeze([0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]);
+
+/**
+ * Get Fibonacci value at index (safe accessor)
+ * @param {number} n - Index in Fibonacci sequence
+ * @returns {number} Fibonacci value or 0 if out of range
+ */
+function getSharedFib(n) {
+    return SHARED_FIB[n] || 0;
+}
+
 // ============================================
 // TUTORIAL SYSTEM
 // ============================================
@@ -383,71 +448,86 @@ let gameState = {
 // ============================================
 
 async function initPumpArenaRPG(containerId) {
-    const container = document.getElementById(containerId) || document.getElementById('arena-pumparena');
+    try {
+        const container = document.getElementById(containerId) || document.getElementById('arena-pumparena');
 
-    if (!container) {
-        console.error('[PumpArena] Container not found:', containerId);
+        if (!container) {
+            console.error('[PumpArena] Container not found:', containerId);
+            return false;
+        }
+
+        gameState.container = container;
+
+        // Load state
+        window.PumpArenaState.load();
+
+        // Start session
+        window.PumpArenaState.startSession();
+
+        // Initialize daily system
+        if (window.PumpArenaDaily) {
+            window.PumpArenaDaily.init();
+        }
+
+        // Initialize NPC system
+        if (window.PumpArenaNPCs) {
+            window.PumpArenaNPCs.init();
+        }
+
+        // Initialize Quest system
+        if (window.PumpArenaQuests) {
+            window.PumpArenaQuests.init();
+        }
+
+        // Initialize Events system
+        if (window.PumpArenaEvents) {
+            window.PumpArenaEvents.init();
+        }
+
+        // Initialize Achievements system
+        if (window.startAchievementChecker) {
+            window.startAchievementChecker();
+        }
+
+        // Check for existing character
+        if (window.PumpArenaState.hasCharacter()) {
+            // Returning player - check daily reset and show main game
+            const isNewDay = window.PumpArenaDaily ? window.PumpArenaDaily.checkReset() : false;
+            showMainGame();
+
+            // Show daily popup if it's a new day and reward not claimed
+            if (window.PumpArenaDaily) {
+                const dailyState = window.PumpArenaDaily.getState();
+                if (!dailyState.todayClaimed) {
+                    setTimeout(() => showDailyPopup(), 500);
+                }
+            }
+        } else {
+            // New player - show character creation
+            showCharacterCreation();
+        }
+
+        // Set up event listeners
+        setupEventListeners();
+
+        gameState.initialized = true;
+
+        console.log('[PumpArena] RPG initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('[PumpArena] Initialization failed:', error);
+        // Show user-friendly error message in container if available
+        const container = document.getElementById(containerId) || document.getElementById('arena-pumparena');
+        if (container) {
+            container.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: #ef4444;">
+                    <h3>Failed to initialize game</h3>
+                    <p>Please refresh the page or try again later.</p>
+                </div>
+            `;
+        }
         return false;
     }
-
-    gameState.container = container;
-
-    // Load state
-    window.PumpArenaState.load();
-
-    // Start session
-    window.PumpArenaState.startSession();
-
-    // Initialize daily system
-    if (window.PumpArenaDaily) {
-        window.PumpArenaDaily.init();
-    }
-
-    // Initialize NPC system
-    if (window.PumpArenaNPCs) {
-        window.PumpArenaNPCs.init();
-    }
-
-    // Initialize Quest system
-    if (window.PumpArenaQuests) {
-        window.PumpArenaQuests.init();
-    }
-
-    // Initialize Events system
-    if (window.PumpArenaEvents) {
-        window.PumpArenaEvents.init();
-    }
-
-    // Initialize Achievements system
-    if (window.startAchievementChecker) {
-        window.startAchievementChecker();
-    }
-
-    // Check for existing character
-    if (window.PumpArenaState.hasCharacter()) {
-        // Returning player - check daily reset and show main game
-        const isNewDay = window.PumpArenaDaily ? window.PumpArenaDaily.checkReset() : false;
-        showMainGame();
-
-        // Show daily popup if it's a new day and reward not claimed
-        if (window.PumpArenaDaily) {
-            const dailyState = window.PumpArenaDaily.getState();
-            if (!dailyState.todayClaimed) {
-                setTimeout(() => showDailyPopup(), 500);
-            }
-        }
-    } else {
-        // New player - show character creation
-        showCharacterCreation();
-    }
-
-    // Set up event listeners
-    setupEventListeners();
-
-    gameState.initialized = true;
-
-    console.log('[PumpArena] RPG initialized successfully');
-    return true;
 }
 
 function setupEventListeners() {
@@ -893,8 +973,14 @@ function showBurnPanel() {
     // Burn for XP
     modal.querySelector('#burn-xp-btn')?.addEventListener('click', () => {
         const amount = parseInt(xpInput.value) || 0;
-        if (amount <= 0) {
+        // SECURITY: Validate input (defense in depth - also validated in PumpArenaState)
+        if (amount <= 0 || !Number.isFinite(amount)) {
             showNotification('Enter a valid amount', 'warning');
+            return;
+        }
+        // Reasonable maximum to prevent UI issues (actual max is validated in state)
+        if (amount > 1000000000) {
+            showNotification('Amount too large', 'warning');
             return;
         }
         const result = window.PumpArenaState.burnTokensForXP(amount);
@@ -910,8 +996,18 @@ function showBurnPanel() {
     // Burn for Reputation
     modal.querySelector('#burn-rep-btn')?.addEventListener('click', () => {
         const amount = parseInt(repInput.value) || 0;
+        // SECURITY: Validate input (defense in depth - also validated in PumpArenaState)
+        if (!Number.isFinite(amount)) {
+            showNotification('Enter a valid amount', 'warning');
+            return;
+        }
         if (amount < repConversionRate) {
             showNotification(`Need at least ${repConversionRate} tokens`, 'warning');
+            return;
+        }
+        // Reasonable maximum to prevent UI issues (actual max is validated in state)
+        if (amount > 1000000000) {
+            showNotification('Amount too large', 'warning');
             return;
         }
         const result = window.PumpArenaState.burnTokensForReputation(amount);
@@ -1508,7 +1604,7 @@ function showActiveQuestInContent() {
                                     ${hint && !quest.objectiveProgress[i] ? `<span class="obj-hint" style="font-size: 11px; color: #9ca3af; display: block; margin-top: 4px;">${hint}</span>` : ''}
                                 </div>
                                 ${!quest.objectiveProgress[i] ? `
-                                    <button class="btn-do-objective" data-quest="${quest.id}" data-obj="${i}" data-type="${obj.type}" data-target="${obj.target || ''}" data-game="${obj.game || ''}" data-min="${obj.minScore || obj.min || 0}">
+                                    <button class="btn-do-objective" data-quest="${quest.id}" data-obj="${i}" data-type="${obj.type}" data-target="${obj.stat || obj.target || ''}" data-game="${obj.game || ''}" data-min="${obj.minScore || obj.min || 0}">
                                         ${getObjectiveButtonText(obj)}
                                     </button>
                                 ` : ''}
@@ -1568,7 +1664,7 @@ function getObjectiveButtonText(obj) {
 function getObjectiveHint(obj) {
     switch (obj.type) {
         case 'stat_check':
-            const statInfo = STAT_INFO[obj.target];
+            const statInfo = STAT_INFO[obj.stat || obj.target];
             if (statInfo) {
                 return `Requires: ${statInfo.name} ${obj.min || obj.minScore || 0}`;
             }
@@ -1804,6 +1900,9 @@ function showQuestChoice(questId, objIndex) {
                     ${quest.choices.map((choice, i) => {
                         const canChoose = !choice.statRequired || checkStatRequirement(choice.statRequired);
                         const reqDetails = choice.statRequired ? formatStatReqDetailed(choice.statRequired, state.stats) : '';
+                        // SECURITY: Escape user-controllable content
+                        const safeText = escapeHtml(choice.text || '');
+                        const safeDesc = choice.description ? escapeHtml(choice.description) : '';
                         return `
                             <button class="choice-option ${canChoose ? '' : 'locked'}" data-choice="${i}" ${canChoose ? '' : 'disabled'} style="
                                 background: ${canChoose ? 'linear-gradient(135deg, #1a3a1a, #0d2010)' : '#1a1a24'};
@@ -1816,10 +1915,10 @@ function showQuestChoice(questId, objIndex) {
                                 opacity: ${canChoose ? '1' : '0.6'};
                             ">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span class="choice-text" style="color: #ffffff; font-weight: 600; font-size: 14px;">${choice.text}</span>
+                                    <span class="choice-text" style="color: #ffffff; font-weight: 600; font-size: 14px;">${safeText}</span>
                                     ${canChoose ? '<span style="color: #22c55e; font-size: 16px;">&#10003;</span>' : '<span style="color: #ef4444; font-size: 16px;">&#128274;</span>'}
                                 </div>
-                                ${choice.description ? `<p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">${choice.description}</p>` : ''}
+                                ${safeDesc ? `<p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">${safeDesc}</p>` : ''}
                                 ${reqDetails ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #333; font-size: 12px;">${reqDetails}</div>` : ''}
                             </button>
                         `;
@@ -2690,10 +2789,10 @@ function showSettingsMenu() {
 
 /**
  * Get Fibonacci number for settings
+ * Uses shared SHARED_FIB constant (DRY)
  */
 function getFibForSettings(n) {
-    const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
-    return fib[n] || fib[fib.length - 1];
+    return SHARED_FIB[n] || SHARED_FIB[SHARED_FIB.length - 1];
 }
 
 /**
@@ -2783,19 +2882,118 @@ function exportGameData() {
 }
 
 /**
+ * Validate imported save data schema (Security by Design)
+ * @param {object} data - The imported data to validate
+ * @returns {object} - { valid: boolean, error?: string }
+ */
+function validateImportSchema(data) {
+    // Check basic structure
+    if (!data || typeof data !== 'object') {
+        return { valid: false, error: 'Invalid data format' };
+    }
+
+    // Check required fields
+    if (!data.version || typeof data.version !== 'string') {
+        return { valid: false, error: 'Missing or invalid version' };
+    }
+
+    if (!data.state || typeof data.state !== 'object') {
+        return { valid: false, error: 'Missing or invalid state' };
+    }
+
+    // SECURITY: Check for prototype pollution attempts
+    const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
+
+    function checkForDangerousKeys(obj, path = '') {
+        if (!obj || typeof obj !== 'object') return null;
+
+        for (const key of Object.keys(obj)) {
+            if (DANGEROUS_KEYS.includes(key)) {
+                return `Dangerous key "${key}" found at ${path || 'root'}`;
+            }
+
+            // Recursively check nested objects (limit depth to prevent DoS)
+            if (path.split('.').length < 10 && typeof obj[key] === 'object' && obj[key] !== null) {
+                const result = checkForDangerousKeys(obj[key], path ? `${path}.${key}` : key);
+                if (result) return result;
+            }
+        }
+        return null;
+    }
+
+    const dangerousKeyError = checkForDangerousKeys(data);
+    if (dangerousKeyError) {
+        return { valid: false, error: `Security: ${dangerousKeyError}` };
+    }
+
+    // Validate state structure
+    const state = data.state;
+
+    // Check required state fields
+    const requiredStateFields = ['character', 'progression', 'resources', 'stats'];
+    for (const field of requiredStateFields) {
+        if (!(field in state)) {
+            return { valid: false, error: `Missing state field: ${field}` };
+        }
+    }
+
+    // Validate numeric fields to prevent NaN/Infinity injection
+    const numericValidations = [
+        { path: 'progression.level', min: 1, max: 100 },
+        { path: 'progression.xp', min: 0, max: 1000000000 },
+        { path: 'resources.tokens', min: 0, max: 1000000000 },
+        { path: 'resources.influence', min: 0, max: 10000 }
+    ];
+
+    for (const validation of numericValidations) {
+        const parts = validation.path.split('.');
+        let value = state;
+        for (const part of parts) {
+            value = value?.[part];
+        }
+
+        if (value !== undefined) {
+            if (typeof value !== 'number' || !Number.isFinite(value)) {
+                return { valid: false, error: `Invalid numeric value at state.${validation.path}` };
+            }
+            if (value < validation.min || value > validation.max) {
+                return { valid: false, error: `Value out of range at state.${validation.path}` };
+            }
+        }
+    }
+
+    // Validate character name (prevent XSS in name field)
+    if (state.character?.name) {
+        if (typeof state.character.name !== 'string' || state.character.name.length > 50) {
+            return { valid: false, error: 'Invalid character name' };
+        }
+    }
+
+    return { valid: true };
+}
+
+/**
  * Import game data from JSON file
  */
 function importGameData(file) {
     if (!file) return;
+
+    // SECURITY: Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('File too large (max 5MB)', 'error');
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
 
-            // Validate import data
-            if (!data.version || !data.state) {
-                showNotification('Invalid save file', 'error');
+            // SECURITY: Validate import data schema
+            const validation = validateImportSchema(data);
+            if (!validation.valid) {
+                console.warn('[PumpArena] Import validation failed:', validation.error);
+                showNotification(`Invalid save file: ${validation.error}`, 'error');
                 return;
             }
 
@@ -2803,7 +3001,7 @@ function importGameData(file) {
             if (confirm('This will replace your current save. Are you sure?')) {
                 // Import state
                 localStorage.setItem('asdf_pumparena_rpg_v2', JSON.stringify(data.state));
-                if (data.settings) {
+                if (data.settings && typeof data.settings === 'object') {
                     localStorage.setItem('asdf_pumparena_settings', JSON.stringify(data.settings));
                 }
 
@@ -2874,18 +3072,13 @@ function showResetConfirmation(parentModal) {
 }
 
 function showQuestsPanel() {
-    const modal = document.createElement('div');
-    modal.className = 'game-modal-overlay';
-    modal.innerHTML = `
-        <div class="game-modal-panel" style="max-width: 650px; max-height: 80vh;">
-            <div class="modal-header">
-                <h3>&#128203; Active Quests</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" id="quests-panel-content" style="overflow-y: auto;"></div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    const modal = createModal({
+        title: 'Active Quests',
+        titleIcon: '&#128203;',
+        panelStyle: 'max-width: 650px; max-height: 80vh;',
+        bodyId: 'quests-panel-content',
+        bodyContent: '<div style="overflow-y: auto;"></div>'
+    });
 
     // Render quests
     if (window.PumpArenaQuests) {
@@ -2893,34 +3086,147 @@ function showQuestsPanel() {
     } else {
         modal.querySelector('#quests-panel-content').innerHTML = '<p>Quest system loading...</p>';
     }
+}
+
+function showInventoryPanel(initialTab = 'inventory') {
+    const modal = document.createElement('div');
+    modal.className = 'game-modal-overlay';
+    modal.innerHTML = `
+        <div class="game-modal-panel" style="max-width: 700px; max-height: 85vh;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a24, #2a1a30);">
+                <h3 style="display: flex; align-items: center; gap: 10px;">
+                    <span>&#127890;</span> Inventory & Crafting
+                </h3>
+                <button class="modal-close">&times;</button>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; border-bottom: 2px solid #333; background: #12121a;">
+                <button class="inv-tab ${initialTab === 'inventory' ? 'active' : ''}" data-tab="inventory" style="
+                    flex: 1; padding: 12px; background: ${initialTab === 'inventory' ? '#1a1a24' : 'transparent'};
+                    border: none; border-bottom: ${initialTab === 'inventory' ? '2px solid #a855f7' : 'none'};
+                    color: ${initialTab === 'inventory' ? '#a855f7' : '#888'}; font-size: 14px; font-weight: 600;
+                    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+                ">
+                    <span>&#128188;</span> Inventory
+                </button>
+                <button class="inv-tab ${initialTab === 'crafting' ? 'active' : ''}" data-tab="crafting" style="
+                    flex: 1; padding: 12px; background: ${initialTab === 'crafting' ? '#1a1a24' : 'transparent'};
+                    border: none; border-bottom: ${initialTab === 'crafting' ? '2px solid #f97316' : 'none'};
+                    color: ${initialTab === 'crafting' ? '#f97316' : '#888'}; font-size: 14px; font-weight: 600;
+                    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+                ">
+                    <span>&#128295;</span> Crafting
+                </button>
+            </div>
+
+            <div class="modal-body" id="inventory-panel-content" style="overflow-y: auto; padding: 0;"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Tab switching function
+    function switchTab(tabName) {
+        const content = modal.querySelector('#inventory-panel-content');
+
+        // Update tab styles
+        modal.querySelectorAll('.inv-tab').forEach(tab => {
+            const isActive = tab.dataset.tab === tabName;
+            tab.style.background = isActive ? '#1a1a24' : 'transparent';
+            tab.style.borderBottom = isActive ? '2px solid ' + (tabName === 'inventory' ? '#a855f7' : '#f97316') : 'none';
+            tab.style.color = isActive ? (tabName === 'inventory' ? '#a855f7' : '#f97316') : '#888';
+        });
+
+        if (tabName === 'inventory') {
+            if (window.PumpArenaInventory) {
+                window.PumpArenaInventory.renderInventoryPanel(content);
+            } else {
+                content.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Inventory loading...</div>';
+            }
+        } else if (tabName === 'crafting') {
+            if (window.PumpArenaCrafting) {
+                window.PumpArenaCrafting.renderCraftingPanel(content);
+            } else {
+                content.innerHTML = renderBasicCraftingPanel();
+            }
+        }
+    }
+
+    // Tab click handlers
+    modal.querySelectorAll('.inv-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // Initial render
+    switchTab(initialTab);
 
     modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
-function showInventoryPanel() {
-    const modal = document.createElement('div');
-    modal.className = 'game-modal-overlay';
-    modal.innerHTML = `
-        <div class="game-modal-panel" style="max-width: 650px; max-height: 85vh;">
-            <div class="modal-header">
-                <h3>&#127890; Inventory</h3>
-                <button class="modal-close">&times;</button>
+// Basic crafting panel if PumpArenaCrafting isn't available
+function renderBasicCraftingPanel() {
+    const state = window.PumpArenaState?.get();
+    const materials = state?.inventory?.materials || [];
+
+    return `
+        <div style="padding: 20px;">
+            <div style="background: linear-gradient(135deg, #f9731620, #dc262620); border: 1px solid #f9731650; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #f97316; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                    <span>&#128295;</span> Crafting Station
+                </h4>
+                <p style="color: #9ca3af; font-size: 13px; margin: 0;">
+                    Combine materials to create powerful equipment and items!
+                </p>
             </div>
-            <div class="modal-body" id="inventory-panel-content" style="overflow-y: auto;"></div>
+
+            <!-- Your Materials -->
+            <div style="margin-bottom: 20px;">
+                <h5 style="color: #3b82f6; margin: 0 0 12px 0; font-size: 14px;">&#128230; Your Materials</h5>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+                    ${materials.length > 0 ? materials.map(m => `
+                        <div style="background: #1a1a24; border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center;">
+                            <div style="font-size: 24px;">${m.icon || '📦'}</div>
+                            <div style="color: #fff; font-size: 11px; margin-top: 4px;">${m.name || m.id}</div>
+                            <div style="color: #22c55e; font-size: 12px; font-weight: bold;">x${m.quantity || 1}</div>
+                        </div>
+                    `).join('') : '<div style="grid-column: 1/-1; color: #666; text-align: center; padding: 20px;">No materials yet. Buy some from the Shop!</div>'}
+                </div>
+            </div>
+
+            <!-- Available Recipes Preview -->
+            <div>
+                <h5 style="color: #a855f7; margin: 0 0 12px 0; font-size: 14px;">&#128220; Available Recipes</h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="background: linear-gradient(135deg, #1a1a24, #22c55e10); border: 1px solid #22c55e30; border-radius: 10px; padding: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span style="font-size: 24px;">🥽</span>
+                            <div>
+                                <div style="color: #fff; font-weight: 600;">Crypto Visor</div>
+                                <div style="color: #22c55e; font-size: 10px;">UNCOMMON</div>
+                            </div>
+                        </div>
+                        <div style="color: #888; font-size: 11px; margin-bottom: 10px;">+5 STR, +3 DEV</div>
+                        <div style="color: #9ca3af; font-size: 10px;">Needs: 3x Raw Silicon, 2x Circuit Board</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #1a1a24, #3b82f610); border: 1px solid #3b82f630; border-radius: 10px; padding: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span style="font-size: 24px;">🧥</span>
+                            <div>
+                                <div style="color: #fff; font-weight: 600;">Blockchain Jacket</div>
+                                <div style="color: #3b82f6; font-size: 10px;">RARE</div>
+                            </div>
+                        </div>
+                        <div style="color: #888; font-size: 11px; margin-bottom: 10px;">+5 COM, +3 STR</div>
+                        <div style="color: #9ca3af; font-size: 10px;">Needs: 4x Code Fragment, 2x Raw Silicon</div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 11px; text-align: center; margin-top: 15px;">
+                    More recipes unlock as you progress!
+                </p>
+            </div>
         </div>
     `;
-    document.body.appendChild(modal);
-
-    // Render inventory
-    if (window.PumpArenaInventory) {
-        window.PumpArenaInventory.renderInventoryPanel(modal.querySelector('#inventory-panel-content'));
-    } else {
-        modal.querySelector('#inventory-panel-content').innerHTML = '<p>Inventory system loading...</p>';
-    }
-
-    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
 function showAchievementsPanel() {
@@ -3602,6 +3908,30 @@ function showCharacterSheet() {
                         </div>
                     </div>
                 </div>
+
+                <!-- Skill Tree Button -->
+                <div style="margin-top: 15px;">
+                    <button id="btn-open-skill-tree" style="
+                        width: 100%; padding: 14px 20px;
+                        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                        border: 2px solid #60a5fa;
+                        border-radius: 10px;
+                        color: #fff;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(59,130,246,0.4)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                        <span style="font-size: 18px;">&#127795;</span>
+                        <span>Skill Trees</span>
+                        ${skillPoints > 0 ? `<span style="background: #22c55e; padding: 2px 8px; border-radius: 10px; font-size: 11px;">${skillPoints} points</span>` : ''}
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -3654,6 +3984,16 @@ function showCharacterSheet() {
                 showNotification(result.message, 'error');
             }
         });
+    });
+
+    // Skill Tree button
+    modal.querySelector('#btn-open-skill-tree')?.addEventListener('click', () => {
+        modal.remove();
+        if (window.PumpArenaSkillTrees) {
+            window.PumpArenaSkillTrees.showSkillTreesPanel();
+        } else {
+            showNotification('Skill Trees not available yet', 'warning');
+        }
     });
 }
 
@@ -3727,16 +4067,35 @@ function showDailyPopup() {
         modal.remove();
     });
 
-    // Claim button
+    // Claim button - always attach handler
     const claimBtn = modal.querySelector('#claim-daily-popup-btn');
-    if (claimBtn && !dailyState.todayClaimed) {
+    if (claimBtn) {
         claimBtn.addEventListener('click', () => {
+            if (dailyState.todayClaimed) {
+                showNotification('Already claimed today!', 'warning');
+                return;
+            }
+
+            if (!window.PumpArenaDaily) {
+                showNotification('Daily system not loaded', 'error');
+                return;
+            }
+
             const result = window.PumpArenaDaily.claimReward();
             if (result.success) {
                 showNotification(result.message, 'success');
-                modal.remove();
+                // Update button visually
+                claimBtn.textContent = '✓ Claimed';
+                claimBtn.classList.add('claimed');
+                claimBtn.disabled = true;
                 // Refresh sidebar resources
                 refreshSidebarResources();
+                // Refresh the main UI
+                if (typeof renderMainGameUI === 'function') {
+                    setTimeout(() => renderMainGameUI(), 500);
+                }
+            } else {
+                showNotification(result.message || 'Failed to claim', 'error');
             }
         });
     }
@@ -3893,16 +4252,23 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-function showModal(title, content) {
+function showModal(title, content, allowHtmlContent = false) {
+    // SECURITY: Sanitize title (always escaped)
+    const safeTitle = escapeHtml(title);
+
+    // SECURITY: Content can be HTML (for complex modals) or plain text
+    // If allowHtmlContent is false, escape the content
+    const safeContent = allowHtmlContent ? content : escapeHtml(content);
+
     const modal = document.createElement('div');
     modal.className = 'game-modal-overlay';
     modal.innerHTML = `
         <div class="game-modal-panel">
             <div class="modal-header">
-                <h3>${title}</h3>
+                <h3>${safeTitle}</h3>
                 <button class="modal-close">&#10005;</button>
             </div>
-            <div class="modal-body">${content}</div>
+            <div class="modal-body">${safeContent}</div>
         </div>
     `;
 
@@ -3919,6 +4285,11 @@ function showModal(title, content) {
 // ============================================
 
 function formatNumber(num) {
+    // Handle undefined, null, NaN
+    if (num === undefined || num === null || isNaN(num)) return '0';
+    num = Number(num);
+    if (!Number.isFinite(num)) return '0';
+
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
@@ -4073,10 +4444,49 @@ function buyShopItem(itemId, isDeal = false) {
     // Deduct tokens
     window.PumpArenaState.addTokens(-item.price);
 
-    // Add item to inventory
-    if (window.PumpArenaInventory) {
-        window.PumpArenaInventory.addItem(item.id, 1);
+    // Add item directly to state inventory with correct category mapping
+    if (!state.inventory) {
+        state.inventory = { tools: [], consumables: [], collectibles: [], materials: [], equipment: [] };
     }
+
+    // Map shop types to inventory categories
+    const typeToCategory = {
+        'equipment': 'equipment',
+        'material': 'materials',
+        'consumable': 'consumables',
+        'cosmetic': 'cosmetics'
+    };
+
+    const category = typeToCategory[item.type] || 'materials';
+
+    if (!state.inventory[category]) {
+        state.inventory[category] = [];
+    }
+
+    // Check if item already exists (stackable)
+    const existingItem = state.inventory[category].find(i => i.id === item.id);
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+        state.inventory[category].push({
+            id: item.id,
+            name: item.name,
+            icon: item.icon,
+            type: item.type,
+            rarity: item.rarity,
+            stats: item.stats,
+            description: item.description,
+            quantity: 1,
+            acquired: Date.now()
+        });
+    }
+
+    window.PumpArenaState.save();
+
+    // Dispatch event for other systems
+    document.dispatchEvent(new CustomEvent('pumparena:item-purchased', {
+        detail: { item, category }
+    }));
 
     return { success: true, message: `Purchased ${item.name}!`, item };
 }
@@ -4273,6 +4683,862 @@ function showShopPanel() {
 }
 
 // ============================================
+// DAILY CHALLENGES & MINI-GAMES INTEGRATION
+// (Random events are in events.js - use window.PumpArenaEvents)
+// ============================================
+
+// Use getDailyFib from daily.js if available, otherwise fallback to shared constant
+function getDailyFib(n) {
+    if (typeof window.PumpArenaDaily !== 'undefined' && window.PumpArenaDaily.getFib) {
+        return window.PumpArenaDaily.getFib(n);
+    }
+    // Fallback to shared Fibonacci constant (DRY)
+    return SHARED_FIB[n] || 0;
+}
+
+// ============================================
+// DAILY CHALLENGES SYSTEM
+// ============================================
+
+// Daily challenge definitions
+const DAILY_CHALLENGES = {
+    battle_wins: {
+        id: 'battle_wins',
+        name: 'Battle Master',
+        icon: '⚔️',
+        description: 'Win battles in the Arena',
+        type: 'battle',
+        tiers: [
+            { target: 3, rewards: { xp: getDailyFib(7), tokens: getDailyFib(5) } },
+            { target: 5, rewards: { xp: getDailyFib(8), tokens: getDailyFib(6) } },
+            { target: 10, rewards: { xp: getDailyFib(9), tokens: getDailyFib(7), materials: ['circuit_board'] } }
+        ]
+    },
+    quest_complete: {
+        id: 'quest_complete',
+        name: 'Quest Seeker',
+        icon: '📜',
+        description: 'Complete quests',
+        type: 'quest',
+        tiers: [
+            { target: 2, rewards: { xp: getDailyFib(7), reputation: getDailyFib(5) } },
+            { target: 4, rewards: { xp: getDailyFib(8), reputation: getDailyFib(6) } },
+            { target: 6, rewards: { xp: getDailyFib(9), tokens: getDailyFib(6), materials: ['energy_cell'] } }
+        ]
+    },
+    xp_earned: {
+        id: 'xp_earned',
+        name: 'XP Hunter',
+        icon: '⭐',
+        description: 'Earn XP today',
+        type: 'xp',
+        tiers: [
+            { target: getDailyFib(9), rewards: { tokens: getDailyFib(6) } }, // 34 XP
+            { target: getDailyFib(10), rewards: { tokens: getDailyFib(7), influence: getDailyFib(5) } }, // 55 XP
+            { target: getDailyFib(11), rewards: { tokens: getDailyFib(8), materials: ['code_fragment'] } } // 89 XP
+        ]
+    },
+    tokens_earned: {
+        id: 'tokens_earned',
+        name: 'Token Collector',
+        icon: '🪙',
+        description: 'Earn tokens today',
+        type: 'tokens',
+        tiers: [
+            { target: getDailyFib(8), rewards: { xp: getDailyFib(7) } }, // 21 tokens
+            { target: getDailyFib(9), rewards: { xp: getDailyFib(8), reputation: getDailyFib(5) } }, // 34 tokens
+            { target: getDailyFib(10), rewards: { xp: getDailyFib(9), materials: ['raw_silicon'] } } // 55 tokens
+        ]
+    },
+    games_played: {
+        id: 'games_played',
+        name: 'Mini-Game Master',
+        icon: '🎮',
+        description: 'Play mini-games',
+        type: 'games',
+        tiers: [
+            { target: 3, rewards: { xp: getDailyFib(6), tokens: getDailyFib(5) } },
+            { target: 5, rewards: { xp: getDailyFib(7), tokens: getDailyFib(6) } },
+            { target: 8, rewards: { xp: getDailyFib(8), tokens: getDailyFib(7) } }
+        ]
+    },
+    login_streak: {
+        id: 'login_streak',
+        name: 'Daily Dedication',
+        icon: '📅',
+        description: 'Login streak bonus',
+        type: 'login',
+        tiers: [
+            { target: 1, rewards: { xp: getDailyFib(6), influence: getDailyFib(5) } }, // Day 1
+            { target: 3, rewards: { xp: getDailyFib(7), tokens: getDailyFib(6) } }, // Day 3
+            { target: 7, rewards: { xp: getDailyFib(9), tokens: getDailyFib(8), materials: ['rare_alloy'] } } // Day 7
+        ]
+    }
+};
+
+// Daily challenges state
+let dailyChallengesState = {
+    lastResetDate: null,
+    loginStreak: 0,
+    lastLoginDate: null,
+    activeChallenges: [], // Today's 3 random challenges
+    progress: {},
+    claimedTiers: {}
+};
+
+// Load daily challenges state
+function loadDailyChallengesState() {
+    try {
+        const saved = localStorage.getItem('pumparena_daily_v1');
+        if (saved) {
+            dailyChallengesState = { ...dailyChallengesState, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.warn('Failed to load daily challenges state:', e);
+    }
+}
+
+// Save daily challenges state
+function saveDailyChallengesState() {
+    try {
+        localStorage.setItem('pumparena_daily_v1', JSON.stringify(dailyChallengesState));
+    } catch (e) {
+        console.warn('Failed to save daily challenges state:', e);
+    }
+}
+
+// Initialize daily challenges
+loadDailyChallengesState();
+
+/**
+ * Check and reset daily challenges if needed
+ */
+function checkDailyReset() {
+    const today = new Date().toDateString();
+
+    if (dailyChallengesState.lastResetDate !== today) {
+        // Reset for new day
+        dailyChallengesState.lastResetDate = today;
+        dailyChallengesState.progress = {};
+        dailyChallengesState.claimedTiers = {};
+
+        // Select 3 random challenges for today
+        const challengeIds = Object.keys(DAILY_CHALLENGES);
+        const shuffled = challengeIds.sort(() => Math.random() - 0.5);
+        dailyChallengesState.activeChallenges = shuffled.slice(0, 3);
+
+        // Update login streak
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (dailyChallengesState.lastLoginDate === yesterday.toDateString()) {
+            dailyChallengesState.loginStreak++;
+        } else if (dailyChallengesState.lastLoginDate !== today) {
+            dailyChallengesState.loginStreak = 1;
+        }
+        dailyChallengesState.lastLoginDate = today;
+
+        // Set login streak progress
+        dailyChallengesState.progress['login_streak'] = dailyChallengesState.loginStreak;
+
+        saveDailyChallengesState();
+    }
+}
+
+/**
+ * Update challenge progress
+ */
+function updateChallengeProgress(type, amount = 1) {
+    checkDailyReset();
+
+    // Find active challenges of this type
+    dailyChallengesState.activeChallenges.forEach(challengeId => {
+        const challenge = DAILY_CHALLENGES[challengeId];
+        if (challenge && challenge.type === type) {
+            dailyChallengesState.progress[challengeId] = (dailyChallengesState.progress[challengeId] || 0) + amount;
+            saveDailyChallengesState();
+        }
+    });
+}
+
+/**
+ * Claim challenge tier reward
+ */
+function claimChallengeTier(challengeId, tierIndex) {
+    const challenge = DAILY_CHALLENGES[challengeId];
+    if (!challenge) return { success: false, message: 'Invalid challenge' };
+
+    const tier = challenge.tiers[tierIndex];
+    if (!tier) return { success: false, message: 'Invalid tier' };
+
+    const progress = dailyChallengesState.progress[challengeId] || 0;
+    if (progress < tier.target) {
+        return { success: false, message: 'Target not reached' };
+    }
+
+    const claimKey = `${challengeId}_${tierIndex}`;
+    if (dailyChallengesState.claimedTiers[claimKey]) {
+        return { success: false, message: 'Already claimed' };
+    }
+
+    // Apply rewards
+    const rewards = tier.rewards;
+    const effects = [];
+
+    if (rewards.xp) {
+        window.PumpArenaState?.addXP(rewards.xp);
+        effects.push(`+${rewards.xp} XP`);
+    }
+    if (rewards.tokens) {
+        window.PumpArenaState?.addTokens(rewards.tokens);
+        effects.push(`+${rewards.tokens} tokens`);
+    }
+    if (rewards.reputation) {
+        window.PumpArenaState?.addReputation(rewards.reputation);
+        effects.push(`+${rewards.reputation} reputation`);
+    }
+    if (rewards.influence) {
+        const state = window.PumpArenaState?.get();
+        if (state) {
+            state.resources.influence = Math.min(state.resources.maxInfluence, state.resources.influence + rewards.influence);
+        }
+        effects.push(`+${rewards.influence} influence`);
+    }
+    if (rewards.materials) {
+        rewards.materials.forEach(m => {
+            window.PumpArenaInventory?.addItem(m, 1);
+            effects.push(`+1 ${m.replace('_', ' ')}`);
+        });
+    }
+
+    dailyChallengesState.claimedTiers[claimKey] = true;
+    saveDailyChallengesState();
+
+    return { success: true, effects, message: `Claimed: ${effects.join(', ')}` };
+}
+
+/**
+ * Get daily challenges status
+ */
+function getDailyChallengesStatus() {
+    checkDailyReset();
+
+    return dailyChallengesState.activeChallenges.map(challengeId => {
+        const challenge = DAILY_CHALLENGES[challengeId];
+        const progress = dailyChallengesState.progress[challengeId] || 0;
+
+        return {
+            ...challenge,
+            progress,
+            tiers: challenge.tiers.map((tier, index) => ({
+                ...tier,
+                completed: progress >= tier.target,
+                claimed: dailyChallengesState.claimedTiers[`${challengeId}_${index}`] || false
+            }))
+        };
+    });
+}
+
+/**
+ * Render daily challenges panel
+ */
+function renderDailyChallengesPanel(container) {
+    checkDailyReset();
+    const challenges = getDailyChallengesStatus();
+
+    container.innerHTML = `
+        <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid #fbbf24;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a24, #3d2f00); padding: 20px; border-bottom: 1px solid #fbbf2440;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📅</div>
+                        <div>
+                            <h3 style="color: #fbbf24; margin: 0; font-size: 18px;">Daily Challenges</h3>
+                            <div style="color: #9ca3af; font-size: 12px;">Complete challenges for rewards!</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #22c55e; font-size: 14px; font-weight: 600;">🔥 ${dailyChallengesState.loginStreak} Day Streak</div>
+                        <div style="color: #666; font-size: 10px;">Resets at midnight</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenges -->
+            <div style="padding: 20px;">
+                ${challenges.map(challenge => {
+                    const maxTarget = challenge.tiers[challenge.tiers.length - 1].target;
+                    const progressPercent = Math.min(100, (challenge.progress / maxTarget) * 100);
+
+                    return `
+                        <div style="background: #1a1a24; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="font-size: 28px;">${challenge.icon}</span>
+                                <div style="flex: 1;">
+                                    <div style="color: #fff; font-weight: 600; font-size: 14px;">${challenge.name}</div>
+                                    <div style="color: #666; font-size: 11px;">${challenge.description}</div>
+                                </div>
+                                <div style="color: #fbbf24; font-weight: 600; font-size: 16px;">${challenge.progress}/${maxTarget}</div>
+                            </div>
+
+                            <!-- Progress bar -->
+                            <div style="height: 6px; background: #0a0a0f; border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                                <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, #fbbf24, #22c55e); transition: width 0.5s;"></div>
+                            </div>
+
+                            <!-- Tiers -->
+                            <div style="display: flex; gap: 10px;">
+                                ${challenge.tiers.map((tier, index) => {
+                                    const tierColor = tier.claimed ? '#22c55e' : tier.completed ? '#fbbf24' : '#666';
+                                    const canClaim = tier.completed && !tier.claimed;
+
+                                    return `
+                                        <div style="flex: 1; text-align: center; padding: 10px; background: ${tier.claimed ? '#22c55e20' : tier.completed ? '#fbbf2420' : '#0a0a0f'}; border: 1px solid ${tierColor}40; border-radius: 8px;">
+                                            <div style="color: ${tierColor}; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Tier ${index + 1}</div>
+                                            <div style="color: #666; font-size: 10px; margin-bottom: 6px;">${tier.target} ${challenge.type}</div>
+                                            ${canClaim ? `
+                                                <button class="claim-tier-btn" data-challenge="${challenge.id}" data-tier="${index}" style="
+                                                    padding: 4px 12px; background: linear-gradient(135deg, #fbbf24, #d97706);
+                                                    border: none; border-radius: 4px; color: #000; font-size: 10px; font-weight: 600;
+                                                    cursor: pointer;
+                                                ">Claim!</button>
+                                            ` : tier.claimed ? `
+                                                <span style="color: #22c55e; font-size: 10px;">✓ Claimed</span>
+                                            ` : `
+                                                <span style="color: #666; font-size: 10px;">🔒 Locked</span>
+                                            `}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+
+                ${challenges.length === 0 ? `
+                    <div style="text-align: center; color: #666; padding: 40px;">
+                        No active challenges. Check back tomorrow!
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    // Claim tier handlers
+    container.querySelectorAll('.claim-tier-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const result = claimChallengeTier(btn.dataset.challenge, parseInt(btn.dataset.tier));
+            showNotification(result.message, result.success ? 'success' : 'error');
+            if (result.success) renderDailyChallengesPanel(container); // Refresh
+        });
+    });
+}
+
+// Listen for game events to update challenge progress
+document.addEventListener('pumparena:battle-victory', () => updateChallengeProgress('battle', 1));
+document.addEventListener('pumparena:quest-complete', () => updateChallengeProgress('quest', 1));
+document.addEventListener('pumparena:xp-gained', (e) => updateChallengeProgress('xp', e.detail?.amount || 0));
+document.addEventListener('pumparena:tokens-gained', (e) => updateChallengeProgress('tokens', e.detail?.amount || 0));
+document.addEventListener('pumparena:game-played', () => updateChallengeProgress('games', 1));
+
+// ============================================
+// MINI-GAMES SYSTEM (With XP Rewards)
+// ============================================
+
+// Fibonacci helper for games - uses shared constant (DRY)
+function getGamesFib(n) {
+    return SHARED_FIB[n] || 0;
+}
+
+// Mini-game definitions
+const MINI_GAMES = {
+    token_flip: {
+        id: 'token_flip',
+        name: 'Token Flip',
+        icon: '🪙',
+        description: 'Predict the coin flip! Higher streaks = more rewards.',
+        influenceCost: getGamesFib(4), // 3 influence
+        baseXP: getGamesFib(5),        // 5 base XP
+        baseTokens: getGamesFib(4),    // 3 base tokens
+        maxStreak: 5
+    },
+    hash_match: {
+        id: 'hash_match',
+        name: 'Hash Matcher',
+        icon: '🔗',
+        description: 'Match the blockchain hashes! Memory game with rewards.',
+        influenceCost: getGamesFib(5), // 5 influence
+        baseXP: getGamesFib(6),        // 8 base XP
+        baseTokens: getGamesFib(5),    // 5 base tokens
+        gridSize: 4
+    },
+    block_builder: {
+        id: 'block_builder',
+        name: 'Block Builder',
+        icon: '🧱',
+        description: 'Build blocks before time runs out! Speed game.',
+        influenceCost: getGamesFib(5), // 5 influence
+        baseXP: getGamesFib(7),        // 13 base XP
+        baseTokens: getGamesFib(6),    // 8 base tokens
+        timeLimit: 30
+    },
+    whale_watch: {
+        id: 'whale_watch',
+        name: 'Whale Watch',
+        icon: '🐋',
+        description: 'Spot the whale! Reaction speed game.',
+        influenceCost: getGamesFib(4), // 3 influence
+        baseXP: getGamesFib(6),        // 8 base XP
+        baseTokens: getGamesFib(5),    // 5 base tokens
+        rounds: 5
+    }
+};
+
+// Mini-games state
+let miniGamesState = {
+    gamesPlayed: 0,
+    totalXPEarned: 0,
+    totalTokensEarned: 0,
+    highScores: {}
+};
+
+// Load mini-games state
+function loadMiniGamesState() {
+    try {
+        const saved = localStorage.getItem('pumparena_minigames_v1');
+        if (saved) {
+            miniGamesState = { ...miniGamesState, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.warn('Failed to load mini-games state:', e);
+    }
+}
+
+// Save mini-games state
+function saveMiniGamesState() {
+    try {
+        localStorage.setItem('pumparena_minigames_v1', JSON.stringify(miniGamesState));
+    } catch (e) {
+        console.warn('Failed to save mini-games state:', e);
+    }
+}
+
+// Initialize mini-games
+loadMiniGamesState();
+
+/**
+ * Play Token Flip mini-game
+ */
+function playTokenFlip(container) {
+    const game = MINI_GAMES.token_flip;
+    const state = window.PumpArenaState?.get();
+
+    if (!state || state.resources.influence < game.influenceCost) {
+        showNotification('Not enough influence!', 'error');
+        return;
+    }
+
+    window.PumpArenaState.spendInfluence(game.influenceCost);
+
+    let streak = 0;
+    let gameActive = true;
+
+    function renderFlipGame() {
+        container.innerHTML = `
+            <div style="background: #12121a; border-radius: 16px; padding: 25px; border: 2px solid #fbbf24; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 15px;">${game.icon}</div>
+                <h3 style="color: #fbbf24; margin: 0 0 10px 0;">${game.name}</h3>
+                <div style="color: #22c55e; font-size: 18px; margin-bottom: 20px;">Streak: ${streak} / ${game.maxStreak}</div>
+
+                <div id="coin-result" style="font-size: 80px; margin: 20px 0; height: 100px; display: flex; align-items: center; justify-content: center;">
+                    🪙
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                    <button id="guess-heads" style="
+                        padding: 15px 40px; background: linear-gradient(135deg, #22c55e, #16a34a);
+                        border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 600;
+                        cursor: pointer;
+                    ">HEADS 🦅</button>
+                    <button id="guess-tails" style="
+                        padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #2563eb);
+                        border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 600;
+                        cursor: pointer;
+                    ">TAILS 🐂</button>
+                </div>
+
+                <div style="color: #666; font-size: 12px;">
+                    Win ${game.maxStreak} in a row for maximum rewards!
+                </div>
+            </div>
+        `;
+
+        function flip(guess) {
+            if (!gameActive) return;
+
+            const result = Math.random() < 0.5 ? 'heads' : 'tails';
+            const coinEl = document.getElementById('coin-result');
+
+            // Animate
+            coinEl.style.transition = 'transform 0.5s';
+            coinEl.style.transform = 'rotateY(720deg)';
+
+            setTimeout(() => {
+                coinEl.textContent = result === 'heads' ? '🦅' : '🐂';
+
+                if (guess === result) {
+                    streak++;
+                    if (streak >= game.maxStreak) {
+                        // Won max streak!
+                        gameActive = false;
+                        endGame(true);
+                    } else {
+                        showNotification(`Correct! Streak: ${streak}`, 'success');
+                        renderFlipGame();
+                    }
+                } else {
+                    // Lost
+                    gameActive = false;
+                    endGame(false);
+                }
+            }, 500);
+        }
+
+        container.querySelector('#guess-heads')?.addEventListener('click', () => flip('heads'));
+        container.querySelector('#guess-tails')?.addEventListener('click', () => flip('tails'));
+    }
+
+    function endGame(maxStreak) {
+        const xpMultiplier = 1 + (streak * 0.3); // 30% per streak
+        const xpEarned = Math.floor(game.baseXP * xpMultiplier);
+        const tokensEarned = Math.floor(game.baseTokens * xpMultiplier);
+
+        // Award rewards
+        window.PumpArenaState?.addXP(xpEarned);
+        window.PumpArenaState?.addTokens(tokensEarned);
+
+        // Update stats
+        miniGamesState.gamesPlayed++;
+        miniGamesState.totalXPEarned += xpEarned;
+        miniGamesState.totalTokensEarned += tokensEarned;
+        if (!miniGamesState.highScores.token_flip || streak > miniGamesState.highScores.token_flip) {
+            miniGamesState.highScores.token_flip = streak;
+        }
+        saveMiniGamesState();
+
+        // Dispatch event
+        document.dispatchEvent(new CustomEvent('pumparena:game-played'));
+        document.dispatchEvent(new CustomEvent('pumparena:xp-gained', { detail: { amount: xpEarned } }));
+        document.dispatchEvent(new CustomEvent('pumparena:tokens-gained', { detail: { amount: tokensEarned } }));
+
+        // Try random event via events.js
+        if (window.PumpArenaEvents) {
+            const randomEvent = window.PumpArenaEvents.checkForRandomEvent();
+            if (randomEvent) {
+                setTimeout(() => {
+                    window.PumpArenaEvents.triggerEvent(randomEvent.id);
+                }, 1000);
+            }
+        }
+
+        container.innerHTML = `
+            <div style="background: #12121a; border-radius: 16px; padding: 25px; border: 2px solid ${maxStreak ? '#22c55e' : '#fbbf24'}; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 15px;">${maxStreak ? '🎉' : '🪙'}</div>
+                <h3 style="color: ${maxStreak ? '#22c55e' : '#fbbf24'}; margin: 0 0 20px 0;">
+                    ${maxStreak ? 'PERFECT STREAK!' : `Streak: ${streak}`}
+                </h3>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 25px;">
+                    <div style="padding: 15px 25px; background: #22c55e20; border: 1px solid #22c55e40; border-radius: 10px;">
+                        <div style="color: #22c55e; font-size: 20px; font-weight: bold;">+${xpEarned}</div>
+                        <div style="color: #22c55e80; font-size: 11px;">XP</div>
+                    </div>
+                    <div style="padding: 15px 25px; background: #fbbf2420; border: 1px solid #fbbf2440; border-radius: 10px;">
+                        <div style="color: #fbbf24; font-size: 20px; font-weight: bold;">+${tokensEarned}</div>
+                        <div style="color: #fbbf2480; font-size: 11px;">Tokens</div>
+                    </div>
+                </div>
+
+                <button id="play-again-btn" style="
+                    padding: 12px 30px; background: linear-gradient(135deg, #fbbf24, #d97706);
+                    border: none; border-radius: 8px; color: #000; font-size: 14px; font-weight: 600;
+                    cursor: pointer; margin-right: 10px;
+                ">Play Again (${game.influenceCost}⚡)</button>
+                <button id="back-btn" style="
+                    padding: 12px 30px; background: #333;
+                    border: 1px solid #555; border-radius: 8px; color: #fff; font-size: 14px;
+                    cursor: pointer;
+                ">Back to Games</button>
+            </div>
+        `;
+
+        container.querySelector('#play-again-btn')?.addEventListener('click', () => playTokenFlip(container));
+        container.querySelector('#back-btn')?.addEventListener('click', () => renderMiniGamesPanel(container));
+    }
+
+    renderFlipGame();
+}
+
+/**
+ * Play Whale Watch mini-game
+ */
+function playWhaleWatch(container) {
+    const game = MINI_GAMES.whale_watch;
+    const state = window.PumpArenaState?.get();
+
+    if (!state || state.resources.influence < game.influenceCost) {
+        showNotification('Not enough influence!', 'error');
+        return;
+    }
+
+    window.PumpArenaState.spendInfluence(game.influenceCost);
+
+    let round = 0;
+    let score = 0;
+    let totalReactionTime = 0;
+
+    function playRound() {
+        round++;
+
+        if (round > game.rounds) {
+            endGame();
+            return;
+        }
+
+        // Random delay before whale appears
+        const delay = 1000 + Math.random() * 3000;
+
+        container.innerHTML = `
+            <div style="background: #12121a; border-radius: 16px; padding: 25px; border: 2px solid #3b82f6; text-align: center;">
+                <div style="color: #3b82f6; font-size: 14px; margin-bottom: 10px;">Round ${round} / ${game.rounds}</div>
+                <h3 style="color: #fff; margin: 0 0 20px 0;">Wait for the Whale...</h3>
+
+                <div id="whale-area" style="
+                    height: 200px; background: linear-gradient(180deg, #0a0a0f, #1a1a24);
+                    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+                    font-size: 80px; margin-bottom: 20px;
+                ">
+                    <span style="color: #1a3a5c;">🌊</span>
+                </div>
+
+                <div style="color: #666; font-size: 12px;">Click when you see the whale!</div>
+            </div>
+        `;
+
+        const whaleArea = document.getElementById('whale-area');
+        let whaleShown = false;
+        let startTime = 0;
+
+        // Show whale after delay
+        setTimeout(() => {
+            if (!whaleArea) return;
+            whaleShown = true;
+            startTime = Date.now();
+            whaleArea.innerHTML = '<span>🐋</span>';
+            whaleArea.style.background = 'linear-gradient(180deg, #1e40af, #3b82f6)';
+            whaleArea.style.cursor = 'pointer';
+
+            // Auto-fail after 2 seconds
+            setTimeout(() => {
+                if (whaleShown && whaleArea) {
+                    whaleShown = false;
+                    showNotification('Too slow!', 'error');
+                    playRound();
+                }
+            }, 2000);
+        }, delay);
+
+        whaleArea?.addEventListener('click', () => {
+            if (whaleShown) {
+                const reactionTime = Date.now() - startTime;
+                totalReactionTime += reactionTime;
+                score++;
+                whaleShown = false;
+                showNotification(`${reactionTime}ms - Nice!`, 'success');
+                setTimeout(playRound, 500);
+            } else {
+                // Clicked too early
+                showNotification('Too early!', 'error');
+            }
+        });
+    }
+
+    function endGame() {
+        const avgReaction = Math.floor(totalReactionTime / game.rounds);
+        const accuracy = score / game.rounds;
+        const xpMultiplier = 1 + (accuracy * 1.5); // Up to 2.5x for perfect
+        const speedBonus = avgReaction < 500 ? 1.5 : avgReaction < 750 ? 1.25 : 1;
+
+        const xpEarned = Math.floor(game.baseXP * xpMultiplier * speedBonus);
+        const tokensEarned = Math.floor(game.baseTokens * xpMultiplier);
+
+        // Award rewards
+        window.PumpArenaState?.addXP(xpEarned);
+        window.PumpArenaState?.addTokens(tokensEarned);
+
+        // Update stats
+        miniGamesState.gamesPlayed++;
+        miniGamesState.totalXPEarned += xpEarned;
+        miniGamesState.totalTokensEarned += tokensEarned;
+        saveMiniGamesState();
+
+        // Dispatch events
+        document.dispatchEvent(new CustomEvent('pumparena:game-played'));
+        document.dispatchEvent(new CustomEvent('pumparena:xp-gained', { detail: { amount: xpEarned } }));
+        document.dispatchEvent(new CustomEvent('pumparena:tokens-gained', { detail: { amount: tokensEarned } }));
+
+        // Try random event via events.js
+        if (window.PumpArenaEvents) {
+            const randomEvent = window.PumpArenaEvents.checkForRandomEvent();
+            if (randomEvent) {
+                setTimeout(() => {
+                    window.PumpArenaEvents.triggerEvent(randomEvent.id);
+                }, 1000);
+            }
+        }
+
+        container.innerHTML = `
+            <div style="background: #12121a; border-radius: 16px; padding: 25px; border: 2px solid #3b82f6; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 15px;">🐋</div>
+                <h3 style="color: #3b82f6; margin: 0 0 10px 0;">Whale Watch Complete!</h3>
+                <div style="color: #9ca3af; margin-bottom: 20px;">
+                    Score: ${score}/${game.rounds} | Avg: ${avgReaction}ms
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 25px;">
+                    <div style="padding: 15px 25px; background: #22c55e20; border: 1px solid #22c55e40; border-radius: 10px;">
+                        <div style="color: #22c55e; font-size: 20px; font-weight: bold;">+${xpEarned}</div>
+                        <div style="color: #22c55e80; font-size: 11px;">XP</div>
+                    </div>
+                    <div style="padding: 15px 25px; background: #fbbf2420; border: 1px solid #fbbf2440; border-radius: 10px;">
+                        <div style="color: #fbbf24; font-size: 20px; font-weight: bold;">+${tokensEarned}</div>
+                        <div style="color: #fbbf2480; font-size: 11px;">Tokens</div>
+                    </div>
+                </div>
+
+                <button id="play-again-btn" style="
+                    padding: 12px 30px; background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600;
+                    cursor: pointer; margin-right: 10px;
+                ">Play Again (${game.influenceCost}⚡)</button>
+                <button id="back-btn" style="
+                    padding: 12px 30px; background: #333;
+                    border: 1px solid #555; border-radius: 8px; color: #fff; font-size: 14px;
+                    cursor: pointer;
+                ">Back to Games</button>
+            </div>
+        `;
+
+        container.querySelector('#play-again-btn')?.addEventListener('click', () => playWhaleWatch(container));
+        container.querySelector('#back-btn')?.addEventListener('click', () => renderMiniGamesPanel(container));
+    }
+
+    playRound();
+}
+
+/**
+ * Render mini-games panel
+ */
+function renderMiniGamesPanel(container) {
+    const state = window.PumpArenaState?.get();
+    const influence = state?.resources.influence || 0;
+
+    container.innerHTML = `
+        <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid #a855f7;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a24, #2d1d3d); padding: 20px; border-bottom: 1px solid #a855f740;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #a855f7, #7c3aed); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🎮</div>
+                        <div>
+                            <h3 style="color: #a855f7; margin: 0; font-size: 18px;">Mini-Games Arcade</h3>
+                            <div style="color: #9ca3af; font-size: 12px;">Earn XP and tokens while having fun!</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #22c55e; font-size: 14px; font-weight: 600;">Total XP: ${miniGamesState.totalXPEarned}</div>
+                        <div style="color: #666; font-size: 10px;">Games Played: ${miniGamesState.gamesPlayed}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Games Grid -->
+            <div style="padding: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${Object.values(MINI_GAMES).map(game => {
+                        const canPlay = influence >= game.influenceCost;
+                        const highScore = miniGamesState.highScores[game.id];
+
+                        return `
+                            <div class="mini-game-card" data-game="${game.id}" style="
+                                background: linear-gradient(135deg, #1a1a24, #0a0a0f);
+                                border: 2px solid ${canPlay ? '#a855f760' : '#333'};
+                                border-radius: 16px; padding: 20px;
+                                cursor: ${canPlay ? 'pointer' : 'not-allowed'};
+                                opacity: ${canPlay ? '1' : '0.6'};
+                                transition: all 0.2s;
+                            " ${canPlay ? `onmouseover="this.style.borderColor='#a855f7'; this.style.transform='translateY(-3px)';" onmouseout="this.style.borderColor='#a855f760'; this.style.transform='translateY(0)';"` : ''}>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">${game.icon}</div>
+                                    <div style="color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 5px;">${game.name}</div>
+                                    <div style="color: #666; font-size: 11px; margin-bottom: 15px; line-height: 1.4;">${game.description}</div>
+
+                                    <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 10px;">
+                                        <div style="padding: 4px 10px; background: #22c55e20; border: 1px solid #22c55e40; border-radius: 6px; font-size: 10px; color: #22c55e;">
+                                            +${game.baseXP} XP
+                                        </div>
+                                        <div style="padding: 4px 10px; background: #fbbf2420; border: 1px solid #fbbf2440; border-radius: 6px; font-size: 10px; color: #fbbf24;">
+                                            +${game.baseTokens} Tokens
+                                        </div>
+                                    </div>
+
+                                    <div style="color: ${canPlay ? '#a855f7' : '#ef4444'}; font-size: 11px; font-weight: 600;">
+                                        ${canPlay ? `Cost: ${game.influenceCost}⚡` : 'Not enough influence'}
+                                    </div>
+
+                                    ${highScore !== undefined ? `
+                                        <div style="color: #fbbf24; font-size: 10px; margin-top: 8px;">
+                                            🏆 Best: ${highScore}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Game card click handlers
+    container.querySelectorAll('.mini-game-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const gameId = card.dataset.game;
+            const game = MINI_GAMES[gameId];
+            const state = window.PumpArenaState?.get();
+
+            if (!state || state.resources.influence < game.influenceCost) {
+                showNotification('Not enough influence!', 'error');
+                return;
+            }
+
+            switch (gameId) {
+                case 'token_flip':
+                    playTokenFlip(container);
+                    break;
+                case 'whale_watch':
+                    playWhaleWatch(container);
+                    break;
+                case 'hash_match':
+                case 'block_builder':
+                    showNotification('Coming soon!', 'info');
+                    break;
+            }
+        });
+    });
+}
+
+// ============================================
 // PUBLIC API
 // ============================================
 
@@ -4293,6 +5559,19 @@ if (typeof window !== 'undefined') {
         showProjectSelection,
         showNotification,
         showModal,
-        CONFIG: GAME_CONFIG
+        CONFIG: GAME_CONFIG,
+
+        // Events system (use window.PumpArenaEvents for full event functionality)
+        getEvents: () => window.PumpArenaEvents,
+
+        // Daily challenges system
+        getDailyChallengesStatus,
+        renderDailyChallengesPanel,
+        updateChallengeProgress,
+        DAILY_CHALLENGES,
+
+        // Mini-games system
+        renderMiniGamesPanel,
+        MINI_GAMES
     };
 }

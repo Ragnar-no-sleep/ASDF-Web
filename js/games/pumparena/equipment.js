@@ -385,10 +385,10 @@ const EQUIPMENT_SETS = {
 };
 
 // ============================================
-// CRAFTING SYSTEM
+// EQUIPMENT CRAFTING SYSTEM
 // ============================================
 
-const CRAFTING_RECIPES = {
+const EQUIPMENT_CRAFTING_RECIPES = {
     // Tier 1 - Basic Equipment (from quest materials)
     crypto_visor: {
         id: 'crypto_visor',
@@ -533,7 +533,7 @@ const CRAFTING_RECIPES = {
 };
 
 // Crafting materials that can drop from quests
-const CRAFTING_MATERIALS = {
+const EQUIPMENT_MATERIALS = {
     raw_silicon: { id: 'raw_silicon', name: 'Raw Silicon', icon: '💎', rarity: 'common', description: 'Basic crafting material' },
     circuit_board: { id: 'circuit_board', name: 'Circuit Board', icon: '📟', rarity: 'common', description: 'For tech equipment' },
     code_fragment: { id: 'code_fragment', name: 'Code Fragment', icon: '📝', rarity: 'common', description: 'Essential for crafting' },
@@ -548,7 +548,7 @@ const CRAFTING_MATERIALS = {
  * Craft an equipment item
  */
 function craftItem(recipeId) {
-    const recipe = CRAFTING_RECIPES[recipeId];
+    const recipe = EQUIPMENT_CRAFTING_RECIPES[recipeId];
     if (!recipe) {
         return { success: false, message: 'Recipe not found' };
     }
@@ -616,7 +616,7 @@ function craftItem(recipeId) {
  * Check if a recipe can be crafted
  */
 function canCraft(recipeId) {
-    const recipe = CRAFTING_RECIPES[recipeId];
+    const recipe = EQUIPMENT_CRAFTING_RECIPES[recipeId];
     if (!recipe) return false;
 
     const inventory = window.PumpArenaInventory?.getInventory() || [];
@@ -1172,7 +1172,7 @@ function renderCraftingTabContent(rarityColors) {
                     <span style="color: #666; font-size: 11px; font-weight: normal;">(Earn from quests & battles)</span>
                 </h4>
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                    ${Object.values(CRAFTING_MATERIALS).map(mat => {
+                    ${Object.values(EQUIPMENT_MATERIALS).map(mat => {
                         const count = getMaterialCount(mat.id);
                         const color = rarityColors[mat.rarity] || '#666';
                         return `
@@ -1192,7 +1192,7 @@ function renderCraftingTabContent(rarityColors) {
                     <span>⚒️</span> Recipes
                 </h4>
                 <div style="display: grid; gap: 12px;">
-                    ${Object.values(CRAFTING_RECIPES).map(recipe => {
+                    ${Object.values(EQUIPMENT_CRAFTING_RECIPES).map(recipe => {
                         const canCraftRecipe = canCraft(recipe.id);
                         const color = rarityColors[recipe.rarity] || '#666';
 
@@ -1370,8 +1370,8 @@ if (typeof window !== 'undefined') {
         ITEMS: EQUIPMENT_ITEMS,
         RARITY: EQUIPMENT_RARITY,
         SETS: EQUIPMENT_SETS,
-        RECIPES: CRAFTING_RECIPES,
-        MATERIALS: CRAFTING_MATERIALS,
+        RECIPES: EQUIPMENT_CRAFTING_RECIPES,
+        MATERIALS: EQUIPMENT_MATERIALS,
         getFib: getEquipFib
     };
 }

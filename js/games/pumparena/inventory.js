@@ -11,6 +11,24 @@
 'use strict';
 
 // ============================================
+// SECURITY UTILITIES (Security by Design)
+// ============================================
+
+/**
+ * Escape HTML to prevent XSS attacks
+ * @param {*} str - Input to escape
+ * @returns {string} Escaped string
+ */
+function escapeHtmlInv(str) {
+    if (typeof str !== 'string') {
+        str = String(str ?? '');
+    }
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ============================================
 // ASDF FIBONACCI HELPER
 // ============================================
 
@@ -1029,15 +1047,16 @@ const PumpArenaInventory = {
                     const def = this.getItem(item.id);
                     if (!def) return '';
                     const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    // SECURITY: Escape user-controllable content
                     return `
                         <div class="inv-item tool-item" style="border-color: ${rarity.color}">
                             <div class="item-icon">${def.icon}</div>
                             <div class="item-info">
-                                <div class="item-name" style="color: ${rarity.color}">${def.name}</div>
-                                <div class="item-desc">${def.description}</div>
-                                <div class="item-effect">${this.formatEffect(def.effect)}</div>
+                                <div class="item-name" style="color: ${rarity.color}">${escapeHtmlInv(def.name)}</div>
+                                <div class="item-desc">${escapeHtmlInv(def.description)}</div>
+                                <div class="item-effect">${escapeHtmlInv(this.formatEffect(def.effect))}</div>
                             </div>
-                            <div class="item-rarity" style="background: ${rarity.color}">${rarity.name}</div>
+                            <div class="item-rarity" style="background: ${rarity.color}">${escapeHtmlInv(rarity.name)}</div>
                         </div>
                     `;
                 }).join('')}
@@ -1062,15 +1081,16 @@ const PumpArenaInventory = {
                     const def = this.getItem(item.id);
                     if (!def) return '';
                     const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    // SECURITY: Escape user-controllable content
                     return `
-                        <div class="inv-item consumable-item" data-item="${item.id}" style="border-color: ${rarity.color}">
-                            <div class="item-quantity">${item.quantity}x</div>
+                        <div class="inv-item consumable-item" data-item="${escapeHtmlInv(item.id)}" style="border-color: ${rarity.color}">
+                            <div class="item-quantity">${escapeHtmlInv(item.quantity)}x</div>
                             <div class="item-icon">${def.icon}</div>
                             <div class="item-info">
-                                <div class="item-name" style="color: ${rarity.color}">${def.name}</div>
-                                <div class="item-effect">${this.formatConsumableEffect(def.effect)}</div>
+                                <div class="item-name" style="color: ${rarity.color}">${escapeHtmlInv(def.name)}</div>
+                                <div class="item-effect">${escapeHtmlInv(this.formatConsumableEffect(def.effect))}</div>
                             </div>
-                            <button class="btn-use-item" data-item="${item.id}">Use</button>
+                            <button class="btn-use-item" data-item="${escapeHtmlInv(item.id)}">Use</button>
                         </div>
                     `;
                 }).join('')}
@@ -1090,21 +1110,22 @@ const PumpArenaInventory = {
                 ${allCollectibles.map(def => {
                     const owned = ownedIds.includes(def.id);
                     const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
+                    // SECURITY: Escape user-controllable content
                     return `
                         <div class="inv-item collectible-item ${owned ? 'owned' : 'locked'}" style="border-color: ${owned ? rarity.color : 'var(--rpg-border)'}">
                             <div class="item-icon ${owned ? '' : 'locked-icon'}">${owned ? def.icon : '&#10067;'}</div>
                             <div class="item-info">
                                 <div class="item-name" style="color: ${owned ? rarity.color : 'var(--rpg-text-muted)'}">
-                                    ${owned ? def.name : '???'}
+                                    ${owned ? escapeHtmlInv(def.name) : '???'}
                                 </div>
                                 ${owned ? `
-                                    <div class="item-desc">${def.description}</div>
-                                    <div class="item-lore">"${def.lore}"</div>
+                                    <div class="item-desc">${escapeHtmlInv(def.description)}</div>
+                                    <div class="item-lore">"${escapeHtmlInv(def.lore)}"</div>
                                 ` : `
                                     <div class="item-locked-hint">Find this collectible in-game</div>
                                 `}
                             </div>
-                            ${owned ? `<div class="item-rarity" style="background: ${rarity.color}">${rarity.name}</div>` : ''}
+                            ${owned ? `<div class="item-rarity" style="background: ${rarity.color}">${escapeHtmlInv(rarity.name)}</div>` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -1134,17 +1155,18 @@ const PumpArenaInventory = {
                                         if (!def) return '';
                                         const rarity = ITEM_RARITY[def.rarity?.toUpperCase()] || ITEM_RARITY.COMMON;
                                         const owned = this.hasItem(itemId) && def.type === ITEM_TYPES.TOOL;
+                                        // SECURITY: Escape user-controllable content
                                         return `
-                                            <div class="shop-item ${owned ? 'owned' : ''}" data-item="${itemId}" style="border-color: ${rarity.color}">
+                                            <div class="shop-item ${owned ? 'owned' : ''}" data-item="${escapeHtmlInv(itemId)}" style="border-color: ${rarity.color}">
                                                 <div class="shop-item-icon">${def.icon}</div>
                                                 <div class="shop-item-info">
-                                                    <div class="shop-item-name" style="color: ${rarity.color}">${def.name}</div>
-                                                    <div class="shop-item-desc">${def.description}</div>
+                                                    <div class="shop-item-name" style="color: ${rarity.color}">${escapeHtmlInv(def.name)}</div>
+                                                    <div class="shop-item-desc">${escapeHtmlInv(def.description)}</div>
                                                 </div>
                                                 <div class="shop-item-price">
                                                     ${owned ? '<span class="owned-label">Owned</span>' : `
-                                                        <span class="price-value">&#129689; ${def.price}</span>
-                                                        <button class="btn-buy" data-item="${itemId}">Buy</button>
+                                                        <span class="price-value">&#129689; ${escapeHtmlInv(def.price)}</span>
+                                                        <button class="btn-buy" data-item="${escapeHtmlInv(itemId)}">Buy</button>
                                                     `}
                                                 </div>
                                             </div>

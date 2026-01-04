@@ -14,10 +14,419 @@
 'use strict';
 
 // ============================================
+// BATTLE ANIMATIONS CSS (Injected on init)
+// ============================================
+
+function injectBattleStyles() {
+    if (document.getElementById('pumparena-battle-styles')) return;
+
+    const styles = document.createElement('style');
+    styles.id = 'pumparena-battle-styles';
+    styles.textContent = `
+        /* Battle Animations */
+        @keyframes battleShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes battleFlash {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(2) saturate(1.5); }
+        }
+
+        @keyframes battleCrit {
+            0% { transform: scale(1); filter: brightness(1); }
+            25% { transform: scale(1.15); filter: brightness(1.5) saturate(2); }
+            50% { transform: scale(1.05); filter: brightness(2) saturate(2.5); }
+            75% { transform: scale(1.1); filter: brightness(1.5); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        @keyframes battleDeath {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(0.8) rotate(10deg); opacity: 0.7; }
+            100% { transform: scale(0) rotate(45deg); opacity: 0; }
+        }
+
+        @keyframes damageFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.5); opacity: 0; }
+        }
+
+        @keyframes healFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+        }
+
+        @keyframes projectile {
+            0% { transform: translateX(0) scale(1); opacity: 1; }
+            50% { transform: translateX(100px) scale(1.2); opacity: 1; }
+            100% { transform: translateX(200px) scale(0.5); opacity: 0; }
+        }
+
+        @keyframes projectileReverse {
+            0% { transform: translateX(0) scale(1); opacity: 1; }
+            50% { transform: translateX(-100px) scale(1.2); opacity: 1; }
+            100% { transform: translateX(-200px) scale(0.5); opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+        }
+
+        @keyframes cardGlow {
+            0%, 100% { box-shadow: 0 0 5px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+        }
+
+        @keyframes victoryBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes particleExplode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx, 30px), var(--ty, -30px)) scale(0); opacity: 0; }
+        }
+
+        .battle-shake { animation: battleShake 0.4s ease-in-out; }
+        .battle-flash { animation: battleFlash 0.3s ease-in-out; }
+        .battle-crit { animation: battleCrit 0.5s ease-out; }
+        .battle-death { animation: battleDeath 0.6s ease-in forwards; }
+        .battle-victory { animation: victoryBounce 0.5s ease-in-out 3; }
+        .card-glow { animation: cardGlow 1s ease-in-out infinite; }
+
+        .damage-number {
+            position: absolute;
+            font-weight: bold;
+            font-size: 24px;
+            color: #ef4444;
+            text-shadow: 0 0 10px #ef4444, 2px 2px 0 #000;
+            animation: damageFloat 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .heal-number {
+            position: absolute;
+            font-weight: bold;
+            font-size: 20px;
+            color: #22c55e;
+            text-shadow: 0 0 10px #22c55e, 2px 2px 0 #000;
+            animation: healFloat 0.7s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .crit-number {
+            position: absolute;
+            font-weight: bold;
+            font-size: 32px;
+            color: #fbbf24;
+            text-shadow: 0 0 15px #fbbf24, 0 0 25px #f97316, 2px 2px 0 #000;
+            animation: damageFloat 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .projectile {
+            position: absolute;
+            font-size: 28px;
+            animation: projectile 0.4s ease-in-out forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .projectile-reverse {
+            animation: projectileReverse 0.4s ease-in-out forwards;
+        }
+
+        /* Responsive Battle UI */
+        .battle-container {
+            background: #12121a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #dc2626;
+            max-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .battle-field {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
+            gap: 10px;
+            padding: 12px;
+            background: linear-gradient(180deg, #0a0a0f, #12121a);
+            align-items: stretch;
+        }
+
+        .battle-unit {
+            background: linear-gradient(135deg, #1a2a1a, #0d200d);
+            border: 2px solid #22c55e50;
+            border-radius: 12px;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            min-height: 80px;
+        }
+
+        .battle-unit.enemy {
+            background: linear-gradient(135deg, #2d1515, #200d0d);
+            border-color: #ef444450;
+        }
+
+        .battle-cards {
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #12121a, #1a1a24);
+            overflow-x: auto;
+            max-height: 160px;
+        }
+
+        .battle-card {
+            min-width: 95px;
+            max-width: 95px;
+            padding: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .battle-card:hover:not([data-disabled]) {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        /* Compact arena */
+        .battle-arena {
+            position: relative;
+            width: 100%;
+            height: 130px;
+            background: radial-gradient(circle at center, #0a0a0f 30%, #12121a 70%, #1a1a24 100%);
+            border-radius: 50%;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        /* Battle log compact */
+        .battle-log {
+            max-height: 60px;
+            overflow-y: auto;
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #0a0a0f, #05050a);
+            border-top: 1px solid #222;
+        }
+
+        /* Laptop screens (1366x768 and similar) */
+        @media (max-height: 800px) {
+            .battle-container { max-height: calc(100vh - 100px); }
+            .battle-field { padding: 8px; gap: 6px; }
+            .battle-unit { padding: 8px; min-height: 70px; }
+            .battle-cards { padding: 6px 10px; max-height: 130px; }
+            .battle-card { min-width: 85px; max-width: 85px; padding: 5px; }
+            .battle-arena { height: 100px; }
+            .battle-log { max-height: 45px; padding: 6px 10px; }
+        }
+
+        /* Very small screens */
+        @media (max-height: 700px) {
+            .battle-container { max-height: calc(100vh - 80px); }
+            .battle-field { padding: 6px; gap: 4px; }
+            .battle-unit { padding: 6px; min-height: 60px; border-radius: 8px; }
+            .battle-cards { padding: 5px 8px; max-height: 110px; }
+            .battle-card { min-width: 75px; max-width: 75px; padding: 4px; border-radius: 8px; }
+            .battle-arena { height: 80px; }
+            .battle-log { max-height: 35px; padding: 4px 8px; }
+        }
+
+        @media (max-width: 1400px) {
+            .battle-field { grid-template-columns: 1fr 50px 1fr; }
+        }
+    `;
+    document.head.appendChild(styles);
+}
+
+// ============================================
+// BATTLE ANIMATION HELPERS
+// ============================================
+
+/**
+ * Show floating damage number on a target element
+ * @param {Element} targetEl - The target element
+ * @param {number} amount - Damage amount
+ * @param {boolean} isCrit - Whether it's a critical hit
+ */
+function showDamageNumber(targetEl, amount, isCrit = false) {
+    if (!targetEl) return;
+
+    const rect = targetEl.getBoundingClientRect();
+    const dmgEl = document.createElement('div');
+    dmgEl.className = isCrit ? 'crit-number' : 'damage-number';
+    dmgEl.textContent = isCrit ? `CRIT! -${amount}` : `-${amount}`;
+    dmgEl.style.left = `${rect.left + rect.width / 2 + (Math.random() * 40 - 20)}px`;
+    dmgEl.style.top = `${rect.top + rect.height / 3}px`;
+    document.body.appendChild(dmgEl);
+
+    setTimeout(() => dmgEl.remove(), 1000);
+}
+
+/**
+ * Show floating heal number on a target element
+ * @param {Element} targetEl - The target element
+ * @param {number} amount - Heal amount
+ */
+function showHealNumber(targetEl, amount) {
+    if (!targetEl) return;
+
+    const rect = targetEl.getBoundingClientRect();
+    const healEl = document.createElement('div');
+    healEl.className = 'heal-number';
+    healEl.textContent = `+${amount}`;
+    healEl.style.left = `${rect.left + rect.width / 2}px`;
+    healEl.style.top = `${rect.top + rect.height / 3}px`;
+    document.body.appendChild(healEl);
+
+    setTimeout(() => healEl.remove(), 800);
+}
+
+/**
+ * Fire a projectile from source to target
+ * @param {Element} sourceEl - The source element
+ * @param {Element} targetEl - The target element
+ * @param {string} emoji - The projectile emoji
+ * @param {boolean} reverse - Direction (player to enemy or vice versa)
+ */
+function fireProjectile(sourceEl, targetEl, emoji = '💥', reverse = false) {
+    if (!sourceEl || !targetEl) return;
+
+    const sourceRect = sourceEl.getBoundingClientRect();
+    const projEl = document.createElement('div');
+    projEl.className = reverse ? 'projectile projectile-reverse' : 'projectile';
+    projEl.textContent = emoji;
+    projEl.style.left = `${sourceRect.left + sourceRect.width / 2}px`;
+    projEl.style.top = `${sourceRect.top + sourceRect.height / 2}px`;
+    document.body.appendChild(projEl);
+
+    setTimeout(() => projEl.remove(), 500);
+}
+
+/**
+ * Create particle explosion effect
+ * @param {Element} targetEl - The target element
+ * @param {string} color - Particle color
+ * @param {number} count - Number of particles
+ */
+function createParticles(targetEl, color = '#ef4444', count = 8) {
+    if (!targetEl) return;
+
+    const rect = targetEl.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.style.cssText = `
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: ${color};
+            border-radius: 50%;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            pointer-events: none;
+            z-index: 1000;
+            --tx: ${(Math.random() - 0.5) * 100}px;
+            --ty: ${(Math.random() - 0.5) * 100}px;
+            animation: particleExplode 0.5s ease-out forwards;
+        `;
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 500);
+    }
+}
+
+/**
+ * Apply shake effect to element
+ * @param {Element} el - Target element
+ */
+function shakeElement(el) {
+    if (!el) return;
+    el.classList.add('battle-shake');
+    setTimeout(() => el.classList.remove('battle-shake'), 400);
+}
+
+/**
+ * Apply flash effect to element
+ * @param {Element} el - Target element
+ */
+function flashElement(el) {
+    if (!el) return;
+    el.classList.add('battle-flash');
+    setTimeout(() => el.classList.remove('battle-flash'), 300);
+}
+
+/**
+ * Apply critical hit effect to element
+ * @param {Element} el - Target element
+ */
+function critElement(el) {
+    if (!el) return;
+    el.classList.add('battle-crit');
+    setTimeout(() => el.classList.remove('battle-crit'), 500);
+}
+
+/**
+ * Apply death animation to element
+ * @param {Element} el - Target element
+ */
+function deathAnimation(el) {
+    if (!el) return;
+    el.classList.add('battle-death');
+}
+
+/**
+ * Apply victory bounce animation
+ * @param {Element} el - Target element
+ */
+function victoryAnimation(el) {
+    if (!el) return;
+    el.classList.add('battle-victory');
+    setTimeout(() => el.classList.remove('battle-victory'), 1500);
+}
+
+// ============================================
 // FIBONACCI HELPER (ASDF Philosophy)
 // ============================================
 
 const BATTLE_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597];
+
+// ============================================
+// BATTLE CONSTANTS (ASDF Philosophy - Fibonacci-based)
+// ============================================
+
+const BATTLE_CONSTANTS = Object.freeze({
+    // Stat caps (fib[10] = 55)
+    MAX_CRIT_CHANCE: 55,
+
+    // Tier calculations (fib[6] = 8 levels per tier, fib[6]/100 = 8% bonus)
+    LEVELS_PER_TIER: 8,
+    TIER_BONUS_PERCENT: 0.08,
+
+    // Damage multipliers (Golden ratio φ ≈ 1.618, fib[n+1]/fib[n])
+    CRIT_MULTIPLIER: 1.618,        // Golden ratio for critical hits
+    DIAMOND_HANDS_BONUS: 1.34,     // fib[8]/fib[7] = 21/13 ≈ 1.615, using 34% bonus
+    LIFESTEAL_PERCENT: 0.34,       // fib[9]/100 = 34%
+    COUNTER_DAMAGE_PERCENT: 0.34,  // fib[9]/100 = 34%
+
+    // Win streak limits (fib[7] = 13)
+    MAX_STREAK_BONUS: 13,
+
+    // Drop chance base (fib[6] = 8)
+    BASE_DROP_CHANCE: 8
+});
 
 function getBattleFib(n) {
     if (n < 0) return 0;
@@ -48,7 +457,7 @@ function calculateCombatStats() {
 
     const stats = state.stats;
     const tier = window.PumpArenaState.getCurrentTier();
-    const tierBonus = 1 + (tier.index * 0.1); // 10% per tier
+    const tierBonus = 1 + (tier.index * BATTLE_CONSTANTS.TIER_BONUS_PERCENT);
 
     // Base combat stats from character stats
     const baseAtk = Math.floor((stats.dev + stats.str) * tierBonus);
@@ -67,7 +476,7 @@ function calculateCombatStats() {
         atk: baseAtk,
         def: baseDef,
         spd: baseSpd,
-        crt: Math.min(baseCrt, 50), // Cap at 50%
+        crt: Math.min(baseCrt, BATTLE_CONSTANTS.MAX_CRIT_CHANCE),
         maxHp,
         maxMp,
         level,
@@ -247,6 +656,10 @@ const ENEMY_TYPES = {
     }
 };
 
+// SECURITY: Freeze constants to prevent runtime modification
+Object.freeze(ENEMY_TYPES);
+Object.values(ENEMY_TYPES).forEach(enemy => Object.freeze(enemy));
+
 // ============================================
 // CARD SYSTEM (ASDF Philosophy)
 // ============================================
@@ -259,6 +672,10 @@ const CARD_RARITY = {
     epic: { weight: getBattleFib(5), color: '#a855f7', name: 'Epic' },          // 5
     legendary: { weight: getBattleFib(4), color: '#f97316', name: 'Legendary' } // 3
 };
+
+// SECURITY: Freeze constants to prevent runtime modification
+Object.freeze(CARD_RARITY);
+Object.values(CARD_RARITY).forEach(rarity => Object.freeze(rarity));
 
 // Action cards - player draws these each turn
 const ACTION_CARDS = {
@@ -547,6 +964,10 @@ const ACTION_CARDS = {
     }
 };
 
+// SECURITY: Freeze constants to prevent runtime modification
+Object.freeze(ACTION_CARDS);
+Object.values(ACTION_CARDS).forEach(card => Object.freeze(card));
+
 // Player's base deck (cards they start with)
 const BASE_DECK = [
     'quick_strike', 'quick_strike', 'quick_strike',
@@ -557,6 +978,9 @@ const BASE_DECK = [
     'energy_drink',
     'position_shift'
 ];
+
+// SECURITY: Freeze constants to prevent runtime modification
+Object.freeze(BASE_DECK);
 
 /**
  * Initialize card deck for battle
@@ -757,6 +1181,10 @@ const COMBAT_SKILLS = {
     }
 };
 
+// SECURITY: Freeze constants to prevent runtime modification
+Object.freeze(COMBAT_SKILLS);
+Object.values(COMBAT_SKILLS).forEach(skill => Object.freeze(skill));
+
 // ============================================
 // CIRCULAR ARENA SYSTEM (9 positions)
 // ============================================
@@ -797,6 +1225,14 @@ const RING_MODIFIERS = {
     mid: { melee: 1.0, ranged: 1.0, defense: 1.0 },    // Balanced
     far: { melee: 0.7, ranged: 1.3, defense: 1.1 }     // Ranged strong, melee weak
 };
+
+// SECURITY: Freeze arena constants to prevent runtime modification
+Object.freeze(ARENA_POSITIONS);
+Object.values(ARENA_POSITIONS).forEach(pos => Object.freeze(pos));
+Object.freeze(ARENA_ADJACENCY);
+Object.values(ARENA_ADJACENCY).forEach(adj => Object.freeze(adj));
+Object.freeze(RING_MODIFIERS);
+Object.values(RING_MODIFIERS).forEach(mod => Object.freeze(mod));
 
 /**
  * Calculate distance between two positions
@@ -889,6 +1325,31 @@ const BattleRateLimiter = {
 };
 
 // ============================================
+// BATTLE UTILITY FUNCTIONS (DRY Helpers)
+// ============================================
+
+/**
+ * Reduce all active cooldowns by 1 (DRY - extracted to prevent duplication)
+ */
+function reduceCooldowns() {
+    Object.keys(battleState.cooldowns).forEach(key => {
+        if (battleState.cooldowns[key] > 0) {
+            battleState.cooldowns[key]--;
+        }
+    });
+}
+
+/**
+ * Process buff durations and remove expired buffs
+ */
+function processBuffDurations() {
+    battleState.buffs = battleState.buffs.filter(buff => {
+        buff.duration--;
+        return buff.duration > 0;
+    });
+}
+
+// ============================================
 // BATTLE INITIALIZATION
 // ============================================
 
@@ -916,7 +1377,7 @@ function startBattle(enemyId) {
     const playerLevel = playerStats.level;
 
     // Scale enemy to player level (Fibonacci-based scaling)
-    const levelDiff = Math.max(0, playerLevel - (enemyTemplate.tier * 10));
+    const levelDiff = Math.max(0, playerLevel - (enemyTemplate.tier * BATTLE_CONSTANTS.LEVELS_PER_TIER));
     const levelScale = 1 + (levelDiff * 0.05); // 5% per level
 
     const enemy = {
@@ -1010,12 +1471,8 @@ function movePlayer(targetPos) {
         const enemyResult = enemyTurn();
     }
 
-    // Reduce cooldowns
-    Object.keys(battleState.cooldowns).forEach(key => {
-        if (battleState.cooldowns[key] > 0) {
-            battleState.cooldowns[key]--;
-        }
-    });
+    // Reduce cooldowns (DRY helper)
+    reduceCooldowns();
 
     battleState.turn++;
 
@@ -1213,10 +1670,10 @@ function executeCardEffect(card, targetPosition) {
             }
         }
 
-        // Expose effect: enemy takes extra damage
+        // Expose effect: enemy takes extra damage (fib[9] = 34%)
         if (battleState.isExposed) {
-            damage = Math.floor(damage * 1.25);
-            battleState.log.push('Enemy exposed! (+25% damage)');
+            damage = Math.floor(damage * BATTLE_CONSTANTS.DIAMOND_HANDS_BONUS);
+            battleState.log.push('Enemy exposed! (+34% damage)');
         }
 
         // Pierce effect: ignores defense
@@ -1227,9 +1684,9 @@ function executeCardEffect(card, targetPosition) {
             battleState.log.push('Piercing attack! Ignores defense');
         }
 
-        // Critical hit check
+        // Critical hit check (Golden ratio multiplier φ ≈ 1.618)
         if (Math.random() * 100 < battleState.player.crt) {
-            damage = Math.floor(damage * 1.5);
+            damage = Math.floor(damage * BATTLE_CONSTANTS.CRIT_MULTIPLIER);
             battleState.log.push('CRITICAL HIT!');
             result.critical = true;
         }
@@ -1240,9 +1697,9 @@ function executeCardEffect(card, targetPosition) {
         result.damage = damage;
         battleState.log.push(`Dealt ${damage} damage!`);
 
-        // Lifesteal effect
+        // Lifesteal effect (fib[9]/100 = 34%)
         if (card.effects.includes('lifesteal')) {
-            const healAmount = Math.floor(damage * 0.5);
+            const healAmount = Math.floor(damage * BATTLE_CONSTANTS.LIFESTEAL_PERCENT);
             battleState.playerHp = Math.min(battleState.player.maxHp, battleState.playerHp + healAmount);
             result.healed = healAmount;
             battleState.log.push(`Lifesteal: +${healAmount} HP`);
@@ -1525,18 +1982,9 @@ function useSkill(skillId) {
         endBattle(false);
     }
 
-    // Reduce cooldowns
-    Object.keys(battleState.cooldowns).forEach(key => {
-        if (battleState.cooldowns[key] > 0) {
-            battleState.cooldowns[key]--;
-        }
-    });
-
-    // Process buff durations
-    battleState.buffs = battleState.buffs.filter(buff => {
-        buff.duration--;
-        return buff.duration > 0;
-    });
+    // Reduce cooldowns and process buffs (DRY helpers)
+    reduceCooldowns();
+    processBuffDurations();
 
     battleState.turn++;
 
@@ -1612,9 +2060,9 @@ function executeSkillEffect(skill) {
             return { ...result, missed: true };
         }
 
-        // Critical hit check
+        // Critical hit check (Golden ratio multiplier)
         if (Math.random() * 100 < battleState.player.crt) {
-            damage = Math.floor(damage * 1.5);
+            damage = Math.floor(damage * BATTLE_CONSTANTS.CRIT_MULTIPLIER);
             battleState.log.push(`Critical hit!`);
             result.critical = true;
         }
@@ -1725,11 +2173,11 @@ function enemyTurn() {
     // Calculate base damage
     let damage = Math.floor(enemy.atk * damageMultiplier);
 
-    // Critical hit check (higher chance on special attacks)
+    // Critical hit check (higher chance on special attacks, Golden ratio multiplier)
     let critical = false;
-    const critChance = attackType === 'special' ? enemy.critChance * 1.5 : enemy.critChance;
+    const critChance = attackType === 'special' ? enemy.critChance * BATTLE_CONSTANTS.CRIT_MULTIPLIER : enemy.critChance;
     if (Math.random() * 100 < critChance) {
-        damage = Math.floor(damage * 1.5);
+        damage = Math.floor(damage * BATTLE_CONSTANTS.CRIT_MULTIPLIER);
         critical = true;
     }
 
@@ -1739,9 +2187,9 @@ function enemyTurn() {
     const defReduction = Math.floor(totalDef / getBattleFib(5));
     damage = Math.max(1, damage - defReduction);
 
-    // Check for counter
+    // Check for counter (fib[9]/100 = 34% counter damage)
     if (battleState.hasCounter) {
-        const counterDamage = Math.floor(damage * 0.5);
+        const counterDamage = Math.floor(damage * BATTLE_CONSTANTS.COUNTER_DAMAGE_PERCENT);
         battleState.enemyHp -= counterDamage;
         battleState.log.push(`Counter! ${enemy.name} takes ${counterDamage} damage!`);
     }
@@ -1827,24 +2275,37 @@ function endBattle(victory) {
             });
         }
 
+        // Calculate performance bonus for ranking
+        const hpPercent = battleState.playerHp / battleState.player.maxHp;
+        const performanceBonus = Math.floor(hpPercent * getBattleFib(5)); // Up to +5 bonus for high HP
+
+        // Award ranking points
+        const rankingResult = addRankingPoints(true, enemy, performanceBonus);
+
         rewards = {
             xp: xpReward,
             tokens: tokenReward,
-            items: droppedItems
+            items: droppedItems,
+            rankingPoints: rankingResult.pointsChange,
+            newRankingTotal: rankingResult.newTotal,
+            currentRank: rankingResult.currentRank
         };
 
-        battleState.log.push(`Victory! Gained ${xpReward} XP and ${tokenReward} tokens!`);
+        battleState.log.push(`Victory! +${xpReward} XP, +${tokenReward} tokens, +${rankingResult.pointsChange} ranking!`);
 
         // Dispatch victory event
         document.dispatchEvent(new CustomEvent('pumparena:battle-victory', {
             detail: { enemy: enemy.name, rewards }
         }));
     } else {
-        battleState.log.push(`Defeated by ${enemy.name}...`);
+        // Award negative ranking points for loss
+        const rankingResult = addRankingPoints(false, enemy);
+
+        battleState.log.push(`Defeated by ${enemy.name}... (${rankingResult.pointsChange} ranking pts)`);
 
         // Dispatch defeat event
         document.dispatchEvent(new CustomEvent('pumparena:battle-defeat', {
-            detail: { enemy: enemy.name }
+            detail: { enemy: enemy.name, rankingChange: rankingResult.pointsChange }
         }));
     }
 
@@ -1894,7 +2355,7 @@ function getRandomEnemy() {
     if (!state) return null;
 
     const playerLevel = state.progression.level;
-    const playerTier = Math.floor(playerLevel / 10);
+    const playerTier = Math.floor(playerLevel / BATTLE_CONSTANTS.LEVELS_PER_TIER);
 
     // Filter enemies by tier
     const availableEnemies = Object.values(ENEMY_TYPES).filter(e =>
@@ -1926,6 +2387,9 @@ function randomEncounter() {
 // ============================================
 
 function renderBattleUI(container) {
+    // Inject battle styles on first render
+    injectBattleStyles();
+
     const state = getBattleState();
     const combatStats = calculateCombatStats();
 
@@ -2061,33 +2525,31 @@ function renderBattleUI(container) {
     };
 
     container.innerHTML = `
-        <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid #dc2626;">
+        <div class="battle-container" style="background: #12121a; border-radius: 12px; overflow: hidden; border: 2px solid #dc2626;">
             <!-- Battle Header -->
-            <div style="background: linear-gradient(135deg, #1a1a24, #2d1515); padding: 15px 20px; border-bottom: 1px solid #dc262640;">
+            <div style="background: linear-gradient(135deg, #1a1a24, #2d1515); padding: 8px 12px; border-bottom: 1px solid #dc262640;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 20px;">⚔️</span>
-                            </div>
-                            <div>
-                                <div style="color: #ffffff; font-weight: 600; font-size: 16px;">Turn ${state.turn}</div>
-                                <div style="color: #dc2626; font-size: 11px;">Your Move</div>
-                            </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 14px;">⚔️</span>
+                        </div>
+                        <div>
+                            <div style="color: #ffffff; font-weight: 600; font-size: 13px;">Turn ${state.turn}</div>
+                            <div style="color: #dc2626; font-size: 9px;">Your Move</div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div style="padding: 8px 12px; background: #22c55e15; border: 1px solid #22c55e40; border-radius: 8px; text-align: center;">
-                            <div style="color: #22c55e; font-size: 14px; font-weight: bold;">${combatStats?.atk || 0}</div>
-                            <div style="color: #22c55e80; font-size: 9px;">ATK</div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <div style="padding: 4px 8px; background: #22c55e15; border: 1px solid #22c55e40; border-radius: 6px; text-align: center;">
+                            <span style="color: #22c55e; font-size: 12px; font-weight: bold;">${combatStats?.atk || 0}</span>
+                            <span style="color: #22c55e80; font-size: 9px;">ATK</span>
                         </div>
-                        <div style="padding: 8px 12px; background: #3b82f615; border: 1px solid #3b82f640; border-radius: 8px; text-align: center;">
-                            <div style="color: #3b82f6; font-size: 14px; font-weight: bold;">${combatStats?.def || 0}</div>
-                            <div style="color: #3b82f680; font-size: 9px;">DEF</div>
+                        <div style="padding: 4px 8px; background: #3b82f615; border: 1px solid #3b82f640; border-radius: 6px; text-align: center;">
+                            <span style="color: #3b82f6; font-size: 12px; font-weight: bold;">${combatStats?.def || 0}</span>
+                            <span style="color: #3b82f680; font-size: 9px;">DEF</span>
                         </div>
                         <button id="flee-btn" style="
-                            padding: 8px 16px; background: linear-gradient(135deg, #374151, #1f2937); border: 1px solid #4b5563;
-                            border-radius: 8px; color: #9ca3af; font-size: 12px; cursor: pointer; transition: all 0.2s;
+                            padding: 4px 10px; background: linear-gradient(135deg, #374151, #1f2937); border: 1px solid #4b5563;
+                            border-radius: 6px; color: #9ca3af; font-size: 10px; cursor: pointer; transition: all 0.2s;
                         " onmouseover="this.style.borderColor='#ef4444'; this.style.color='#ef4444';" onmouseout="this.style.borderColor='#4b5563'; this.style.color='#9ca3af';">
                             🏃 Flee
                         </button>
@@ -2096,30 +2558,30 @@ function renderBattleUI(container) {
             </div>
 
             <!-- Strategy Tip -->
-            <div style="padding: 10px 20px; background: linear-gradient(90deg, #1a1a24, #0a0a0f); border-bottom: 1px solid #333;">
-                <div style="color: #fbbf24; font-size: 12px; text-align: center;">${strategyTip}</div>
+            <div style="padding: 5px 12px; background: linear-gradient(90deg, #1a1a24, #0a0a0f); border-bottom: 1px solid #333;">
+                <div style="color: #fbbf24; font-size: 10px; text-align: center;">${strategyTip}</div>
             </div>
 
             <!-- Battle Field -->
-            <div style="padding: 25px 20px; display: grid; grid-template-columns: 1fr 80px 1fr; gap: 15px; align-items: stretch; background: linear-gradient(180deg, #0a0a0f, #12121a);">
+            <div class="battle-field" style="padding: 15px 12px; display: grid; grid-template-columns: 1fr 60px 1fr; gap: 10px; align-items: stretch; background: linear-gradient(180deg, #0a0a0f, #12121a);">
                 <!-- Player Side -->
-                <div style="background: linear-gradient(135deg, #1a2a1a, #0d200d); border: 2px solid #22c55e50; border-radius: 16px; padding: 20px; position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #22c55e, transparent);"></div>
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 0 20px #22c55e40;">🧑‍💻</div>
+                <div id="battle-player-unit" class="battle-unit" style="background: linear-gradient(135deg, #1a2a1a, #0d200d); border: 2px solid #22c55e50; border-radius: 12px; padding: 12px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #22c55e, transparent);"></div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px #22c55e40;">🧑‍💻</div>
                         <div style="flex: 1;">
-                            <div style="color: #22c55e; font-weight: 700; font-size: 16px;">You</div>
-                            <div style="color: #86efac; font-size: 11px;">Level ${combatStats?.level || 1} • ${combatStats?.tier || 'EMBER'}</div>
+                            <div style="color: #22c55e; font-weight: 700; font-size: 14px;">You</div>
+                            <div style="color: #86efac; font-size: 10px;">Lv.${combatStats?.level || 1} • ${combatStats?.tier || 'EMBER'}</div>
                         </div>
                     </div>
 
                     <!-- HP Bar -->
-                    <div style="margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
                             <span style="color: #22c55e; font-weight: 600;">❤️ HP</span>
-                            <span style="color: ${hpColor}; font-weight: bold;">${state.player.hp} / ${state.player.maxHp}</span>
+                            <span style="color: ${hpColor}; font-weight: bold;">${state.player.hp}/${state.player.maxHp}</span>
                         </div>
-                        <div style="height: 14px; background: #0d200d; border-radius: 7px; overflow: hidden; border: 1px solid #22c55e30;">
+                        <div style="height: 10px; background: #0d200d; border-radius: 5px; overflow: hidden; border: 1px solid #22c55e30;">
                             <div style="height: 100%; width: ${playerHpPercent}%; background: linear-gradient(90deg, ${hpColor}, ${hpColor}cc); transition: width 0.5s ease; position: relative;">
                                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);"></div>
                             </div>
@@ -2128,17 +2590,17 @@ function renderBattleUI(container) {
 
                     <!-- MP Bar -->
                     <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px;">
                             <span style="color: #3b82f6;">⚡ Energy</span>
-                            <span style="color: #3b82f6;">${state.player.mp} / ${state.player.maxMp}</span>
+                            <span style="color: #3b82f6;">${state.player.mp}/${state.player.maxMp}</span>
                         </div>
-                        <div style="height: 8px; background: #0d1520; border-radius: 4px; overflow: hidden; border: 1px solid #3b82f630;">
+                        <div style="height: 6px; background: #0d1520; border-radius: 3px; overflow: hidden; border: 1px solid #3b82f630;">
                             <div style="height: 100%; width: ${playerMpPercent}%; background: linear-gradient(90deg, #3b82f6, #60a5fa); transition: width 0.3s;"></div>
                         </div>
                     </div>
 
                     ${state.player.buffs?.length > 0 ? `
-                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #22c55e30; display: flex; gap: 6px; flex-wrap: wrap;">
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #22c55e30; display: flex; gap: 4px; flex-wrap: wrap;">
                             ${state.player.buffs.map(b => {
                                 const buffInfo = b.type === 'defense_buff'
                                     ? { icon: '🛡️', color: '#3b82f6', name: 'DEF' }
@@ -2146,8 +2608,8 @@ function renderBattleUI(container) {
                                     ? { icon: '⚔️', color: '#ef4444', name: 'ATK' }
                                     : { icon: '✨', color: '#a855f7', name: 'BUFF' };
                                 return `
-                                    <span style="padding: 4px 10px; background: linear-gradient(135deg, ${buffInfo.color}30, ${buffInfo.color}10); border: 1px solid ${buffInfo.color}50; border-radius: 6px; font-size: 10px; color: ${buffInfo.color}; display: flex; align-items: center; gap: 4px;">
-                                        ${buffInfo.icon} +${b.amount} ${buffInfo.name} <span style="opacity: 0.6;">(${b.duration}t)</span>
+                                    <span style="padding: 2px 6px; background: linear-gradient(135deg, ${buffInfo.color}30, ${buffInfo.color}10); border: 1px solid ${buffInfo.color}50; border-radius: 4px; font-size: 9px; color: ${buffInfo.color}; display: flex; align-items: center; gap: 3px;">
+                                        ${buffInfo.icon}+${b.amount}(${b.duration})
                                     </span>
                                 `;
                             }).join('')}
@@ -2156,37 +2618,32 @@ function renderBattleUI(container) {
                 </div>
 
                 <!-- VS Indicator -->
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
-                    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #1a1a24, #0a0a0f); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5);">
-                        <span style="color: #ef4444; font-weight: 900; font-size: 20px; text-shadow: 0 0 10px #ef444480;">VS</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-                        <div style="width: 8px; height: 8px; background: #333; border-radius: 50%;"></div>
-                        <div style="width: 8px; height: 8px; background: #333; border-radius: 50%;"></div>
-                        <div style="width: 8px; height: 8px; background: #333; border-radius: 50%;"></div>
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #1a1a24, #0a0a0f); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                        <span style="color: #ef4444; font-weight: 900; font-size: 14px; text-shadow: 0 0 8px #ef444480;">VS</span>
                     </div>
                 </div>
 
                 <!-- Enemy Side -->
-                <div style="background: linear-gradient(135deg, #2d1515, #200d0d); border: 2px solid ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}50; border-radius: 16px; padding: 20px; position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}, transparent);"></div>
-                    ${state.enemy.isBoss ? '<div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">👑 BOSS</div>' : ''}
+                <div id="battle-enemy-unit" class="battle-unit enemy" style="background: linear-gradient(135deg, #2d1515, #200d0d); border: 2px solid ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}50; border-radius: 12px; padding: 12px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}, transparent);"></div>
+                    ${state.enemy.isBoss ? '<div style="position: absolute; top: 6px; right: 6px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">👑 BOSS</div>' : ''}
 
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}, ${state.enemy.isBoss ? '#7c3aed' : '#dc2626'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 0 20px ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}40;">${state.enemy.icon}</div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}, ${state.enemy.isBoss ? '#7c3aed' : '#dc2626'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}40;">${state.enemy.icon}</div>
                         <div style="flex: 1;">
-                            <div style="color: ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}; font-weight: 700; font-size: 16px;">${escapeHtml(state.enemy.name)}</div>
-                            <div style="color: #f87171; font-size: 11px;">ATK: ${state.enemy.atk} • DEF: ${state.enemy.def}</div>
+                            <div style="color: ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}; font-weight: 700; font-size: 14px;">${escapeHtml(state.enemy.name)}</div>
+                            <div style="color: #f87171; font-size: 10px;">ATK:${state.enemy.atk} DEF:${state.enemy.def}</div>
                         </div>
                     </div>
 
                     <!-- Enemy HP Bar -->
                     <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
                             <span style="color: ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}; font-weight: 600;">❤️ HP</span>
-                            <span style="color: ${enemyHpColor}; font-weight: bold;">${state.enemy.hp} / ${state.enemy.maxHp}</span>
+                            <span style="color: ${enemyHpColor}; font-weight: bold;">${state.enemy.hp}/${state.enemy.maxHp}</span>
                         </div>
-                        <div style="height: 14px; background: #200d0d; border-radius: 7px; overflow: hidden; border: 1px solid ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}30;">
+                        <div style="height: 10px; background: #200d0d; border-radius: 5px; overflow: hidden; border: 1px solid ${state.enemy.isBoss ? '#a855f7' : '#ef4444'}30;">
                             <div style="height: 100%; width: ${enemyHpPercent}%; background: linear-gradient(90deg, ${enemyHpColor}, ${enemyHpColor}cc); transition: width 0.5s ease; position: relative;">
                                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);"></div>
                             </div>
@@ -2196,16 +2653,16 @@ function renderBattleUI(container) {
             </div>
 
             <!-- Circular Arena -->
-            <div style="padding: 15px 20px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="color: #666; font-size: 11px; text-transform: uppercase;">🏟️ Arena Position</div>
-                    <div style="display: flex; gap: 10px; font-size: 10px;">
-                        <span style="color: #22c55e;">● CLOSE (+30% melee)</span>
-                        <span style="color: #fbbf24;">● MID (balanced)</span>
-                        <span style="color: #3b82f6;">● FAR (+30% ranged)</span>
+            <div style="padding: 10px 12px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="color: #666; font-size: 10px; text-transform: uppercase;">🏟️ Arena</div>
+                    <div style="display: flex; gap: 8px; font-size: 9px;">
+                        <span style="color: #22c55e;">●CLOSE</span>
+                        <span style="color: #fbbf24;">●MID</span>
+                        <span style="color: #3b82f6;">●FAR</span>
                     </div>
                 </div>
-                <div style="position: relative; width: 100%; height: 180px; background: radial-gradient(circle at center, #0a0a0f 30%, #12121a 70%, #1a1a24 100%); border-radius: 50%; border: 2px solid #333; overflow: hidden;">
+                <div class="battle-arena" style="position: relative; width: 100%; height: 120px; background: radial-gradient(circle at center, #0a0a0f 30%, #12121a 70%, #1a1a24 100%); border-radius: 50%; border: 2px solid #333; overflow: hidden;">
                     <!-- Arena rings -->
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; border: 2px dashed #fbbf2430; border-radius: 50%;"></div>
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 85%; border: 2px dashed #3b82f630; border-radius: 50%;"></div>
@@ -2273,69 +2730,52 @@ function renderBattleUI(container) {
                         `;
                     }).join('')}
 
-                    <!-- Ring labels -->
-                    <div style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); color: #22c55e50; font-size: 9px; font-weight: bold;">CLOSE</div>
-                    <div style="position: absolute; top: 25%; left: 50%; transform: translateX(-50%); color: #fbbf2450; font-size: 9px; font-weight: bold;">MID</div>
-                    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); color: #3b82f650; font-size: 9px; font-weight: bold;">FAR</div>
+                    <!-- Ring labels (hidden for compact view) -->
                 </div>
 
                 <!-- Current position info -->
-                <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 8px 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #22c55e;">📍</span>
-                        <span style="color: #fff; font-size: 11px;">You: <span style="color: ${state.arena.playerRing === 'close' ? '#22c55e' : state.arena.playerRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${ARENA_POSITIONS[state.arena.playerPosition]?.name || 'Unknown'}</span></span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #ef4444;">📍</span>
-                        <span style="color: #fff; font-size: 11px;">Enemy: <span style="color: ${state.arena.enemyRing === 'close' ? '#22c55e' : state.arena.enemyRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${ARENA_POSITIONS[state.arena.enemyPosition]?.name || 'Unknown'}</span></span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #a855f7;">📏</span>
-                        <span style="color: #a855f7; font-size: 11px; font-weight: 600;">Distance: ${state.arena.distance}</span>
-                    </div>
-                </div>
-
-                <div style="color: #666; font-size: 10px; text-align: center; margin-top: 8px;">
-                    💡 Click on a highlighted position to move (uses your turn)
+                <div style="display: flex; justify-content: space-between; margin-top: 6px; padding: 4px 8px; background: #1a1a24; border-radius: 6px; border: 1px solid #333; font-size: 10px;">
+                    <span style="color: #fff;">You: <span style="color: ${state.arena.playerRing === 'close' ? '#22c55e' : state.arena.playerRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${state.arena.playerRing?.toUpperCase() || '?'}</span></span>
+                    <span style="color: #a855f7; font-weight: 600;">Dist: ${state.arena.distance}</span>
+                    <span style="color: #fff;">Enemy: <span style="color: ${state.arena.enemyRing === 'close' ? '#22c55e' : state.arena.enemyRing === 'mid' ? '#fbbf24' : '#3b82f6'}; font-weight: 600;">${state.arena.enemyRing?.toUpperCase() || '?'}</span></span>
                 </div>
             </div>
 
             <!-- Battle Log -->
-            <div style="max-height: 80px; overflow-y: auto; padding: 12px 20px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
-                <div style="color: #666; font-size: 10px; margin-bottom: 6px; text-transform: uppercase;">Battle Log</div>
-                ${state.log.slice(-4).map((msg, i) => `
-                    <div style="color: ${i === state.log.slice(-4).length - 1 ? '#ffffff' : '#6b7280'}; font-size: 12px; padding: 3px 0; ${i < state.log.slice(-4).length - 1 ? 'opacity: 0.7;' : ''}">${i === state.log.slice(-4).length - 1 ? '→ ' : ''}${escapeHtml(msg)}</div>
+            <div class="battle-log" style="max-height: 55px; overflow-y: auto; padding: 6px 12px; background: linear-gradient(180deg, #0a0a0f, #05050a); border-top: 1px solid #222;">
+                ${state.log.slice(-3).map((msg, i) => `
+                    <div style="color: ${i === state.log.slice(-3).length - 1 ? '#ffffff' : '#6b7280'}; font-size: 10px; padding: 1px 0; ${i < state.log.slice(-3).length - 1 ? 'opacity: 0.7;' : ''}">${i === state.log.slice(-3).length - 1 ? '→ ' : ''}${escapeHtml(msg)}</div>
                 `).join('')}
             </div>
 
             <!-- Card Hand Section -->
-            <div style="padding: 20px; background: linear-gradient(180deg, #12121a, #1a1a24);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="color: #ffffff; font-size: 14px; font-weight: 600;">🃏 Your Hand</div>
-                        <div style="display: flex; gap: 8px;">
-                            <div style="padding: 4px 10px; background: #1a1a2480; border: 1px solid #333; border-radius: 6px; font-size: 10px; color: #666;">
-                                📚 Deck: ${state.cards?.deckSize || 0}
+            <div class="battle-cards" style="padding: 10px 12px; background: linear-gradient(180deg, #12121a, #1a1a24);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="color: #ffffff; font-size: 12px; font-weight: 600;">🃏 Hand</div>
+                        <div style="display: flex; gap: 4px;">
+                            <div style="padding: 2px 6px; background: #1a1a2480; border: 1px solid #333; border-radius: 4px; font-size: 9px; color: #666;">
+                                📚${state.cards?.deckSize || 0}
                             </div>
-                            <div style="padding: 4px 10px; background: #1a1a2480; border: 1px solid #333; border-radius: 6px; font-size: 10px; color: #666;">
-                                🗑️ Discard: ${state.cards?.discardSize || 0}
+                            <div style="padding: 2px 6px; background: #1a1a2480; border: 1px solid #333; border-radius: 4px; font-size: 9px; color: #666;">
+                                🗑️${state.cards?.discardSize || 0}
                             </div>
                             ${state.player.block > 0 ? `
-                                <div style="padding: 4px 10px; background: #3b82f620; border: 1px solid #3b82f6; border-radius: 6px; font-size: 10px; color: #3b82f6; font-weight: bold;">
-                                    🛡️ Block: ${state.player.block}
+                                <div style="padding: 2px 6px; background: #3b82f620; border: 1px solid #3b82f6; border-radius: 4px; font-size: 9px; color: #3b82f6; font-weight: bold;">
+                                    🛡️${state.player.block}
                                 </div>
                             ` : ''}
                             ${state.player.hasCounter ? `
-                                <div style="padding: 4px 10px; background: #f9731620; border: 1px solid #f97316; border-radius: 6px; font-size: 10px; color: #f97316; font-weight: bold;">
-                                    ↩️ Counter Ready
+                                <div style="padding: 2px 6px; background: #f9731620; border: 1px solid #f97316; border-radius: 4px; font-size: 9px; color: #f97316; font-weight: bold;">
+                                    ↩️CTR
                                 </div>
                             ` : ''}
                         </div>
                     </div>
                     <button id="end-turn-btn" style="
-                        padding: 10px 20px; background: linear-gradient(135deg, #f97316, #ea580c);
-                        border: 2px solid #fb923c; border-radius: 8px;
-                        color: #fff; font-size: 12px; font-weight: 600;
+                        padding: 6px 12px; background: linear-gradient(135deg, #f97316, #ea580c);
+                        border: 2px solid #fb923c; border-radius: 6px;
+                        color: #fff; font-size: 11px; font-weight: 600;
                         cursor: pointer; transition: all 0.2s;
                     " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px #f9731660';"
                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
@@ -2344,7 +2784,7 @@ function renderBattleUI(container) {
                 </div>
 
                 <!-- Cards Display -->
-                <div style="display: flex; gap: 12px; overflow-x: auto; padding: 10px 0;">
+                <div style="display: flex; gap: 8px; overflow-x: auto; padding: 4px 0;">
                     ${(state.cards?.hand || []).map((card, index) => {
                         const noMp = card.mpCost && state.player.mp < card.mpCost;
                         const noTokens = card.tokenCost && (() => {
@@ -2365,12 +2805,12 @@ function renderBattleUI(container) {
                         else if (card.effects?.length > 0) effectDesc = card.effects[0].replace('_', ' ');
 
                         return `
-                            <div class="card-btn" data-card-index="${index}" ${disabled ? 'data-disabled="true"' : ''} style="
-                                min-width: 120px; max-width: 120px;
+                            <div class="card-btn battle-card" data-card-index="${index}" data-card-type="${card.type}" ${disabled ? 'data-disabled="true"' : ''} style="
+                                min-width: 85px; max-width: 85px;
                                 background: linear-gradient(180deg, #1a1a24, #0a0a0f);
                                 border: 2px solid ${disabled ? '#333' : rarityColor};
-                                border-radius: 12px;
-                                padding: 12px;
+                                border-radius: 8px;
+                                padding: 6px;
                                 cursor: ${disabled ? 'not-allowed' : 'pointer'};
                                 transition: all 0.2s;
                                 opacity: ${disabled ? '0.5' : '1'};
@@ -2378,36 +2818,30 @@ function renderBattleUI(container) {
                                 flex-shrink: 0;
                             ">
                                 <!-- Rarity indicator -->
-                                <div style="position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 50%; height: 3px; background: ${rarityColor}; border-radius: 0 0 3px 3px;"></div>
+                                <div style="position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 40%; height: 2px; background: ${rarityColor}; border-radius: 0 0 2px 2px;"></div>
 
-                                <!-- Card type badge -->
-                                <div style="position: absolute; top: 6px; left: 6px; font-size: 8px; color: ${cardTypeColor}; background: ${cardTypeColor}20; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${cardTypeLabel}</div>
-
-                                <!-- MP cost badge -->
-                                <div style="position: absolute; top: 6px; right: 6px; font-size: 9px; color: ${card.mpCost > 0 ? '#3b82f6' : '#22c55e'}; background: ${card.mpCost > 0 ? '#3b82f620' : '#22c55e20'}; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
-                                    ${card.mpCost > 0 ? `⚡${card.mpCost}` : 'FREE'}
+                                <!-- Card type + MP cost row -->
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                    <div style="font-size: 7px; color: ${cardTypeColor}; background: ${cardTypeColor}20; padding: 1px 3px; border-radius: 2px; font-weight: bold;">${cardTypeLabel}</div>
+                                    <div style="font-size: 7px; color: ${card.mpCost > 0 ? '#3b82f6' : '#22c55e'}; background: ${card.mpCost > 0 ? '#3b82f620' : '#22c55e20'}; padding: 1px 3px; border-radius: 2px; font-weight: bold;">
+                                        ${card.mpCost > 0 ? `⚡${card.mpCost}` : '✓'}
+                                    </div>
                                 </div>
 
                                 <!-- Card icon -->
-                                <div style="text-align: center; margin: 20px 0 8px 0;">
-                                    <span style="font-size: 32px;">${card.icon}</span>
+                                <div style="text-align: center; margin: 4px 0;">
+                                    <span style="font-size: 24px;">${card.icon}</span>
                                 </div>
 
                                 <!-- Card name -->
-                                <div style="text-align: center; color: #fff; font-size: 11px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${card.name}</div>
-
-                                <!-- Rarity -->
-                                <div style="text-align: center; color: ${rarityColor}; font-size: 9px; text-transform: uppercase; margin-bottom: 6px;">${card.rarity}</div>
+                                <div style="text-align: center; color: #fff; font-size: 9px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${card.name}</div>
 
                                 <!-- Effect -->
-                                <div style="text-align: center; color: ${cardTypeColor}; font-size: 10px; font-weight: 600; margin-bottom: 6px;">${effectDesc}</div>
-
-                                <!-- Description -->
-                                <div style="text-align: center; color: #666; font-size: 9px; line-height: 1.3;">${card.description}</div>
+                                <div style="text-align: center; color: ${cardTypeColor}; font-size: 9px; font-weight: 600;">${effectDesc}</div>
 
                                 ${card.tokenCost ? `
-                                    <div style="text-align: center; margin-top: 6px;">
-                                        <span style="font-size: 9px; color: #f97316; background: #f9731620; padding: 2px 6px; border-radius: 4px;">🪙 ${card.tokenCost}</span>
+                                    <div style="text-align: center; margin-top: 2px;">
+                                        <span style="font-size: 8px; color: #f97316;">🪙${card.tokenCost}</span>
                                     </div>
                                 ` : ''}
                             </div>
@@ -2415,14 +2849,10 @@ function renderBattleUI(container) {
                     }).join('')}
 
                     ${(state.cards?.hand || []).length === 0 ? `
-                        <div style="flex: 1; text-align: center; color: #666; padding: 30px;">
-                            No cards in hand. Click "End Turn" to draw new cards!
+                        <div style="flex: 1; text-align: center; color: #666; padding: 15px; font-size: 11px;">
+                            No cards. End Turn to draw!
                         </div>
                     ` : ''}
-                </div>
-
-                <div style="color: #666; font-size: 10px; text-align: center; margin-top: 10px;">
-                    💡 Click a card to play it, or End Turn to draw 3 new cards and let the enemy attack
                 </div>
             </div>
         </div>
@@ -2432,8 +2862,8 @@ function renderBattleUI(container) {
     container.querySelectorAll('.card-btn:not([data-disabled])').forEach(btn => {
         // Add hover effects
         btn.addEventListener('mouseover', () => {
-            btn.style.transform = 'translateY(-8px) scale(1.02)';
-            btn.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            btn.style.transform = 'translateY(-6px) scale(1.02)';
+            btn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.5)';
             btn.style.zIndex = '10';
         });
         btn.addEventListener('mouseout', () => {
@@ -2444,14 +2874,59 @@ function renderBattleUI(container) {
 
         btn.addEventListener('click', () => {
             const cardIndex = parseInt(btn.dataset.cardIndex, 10);
+            const cardType = btn.dataset.cardType;
+            const playerUnit = document.getElementById('battle-player-unit');
+            const enemyUnit = document.getElementById('battle-enemy-unit');
+
+            // Play card
             const result = playCard(cardIndex);
 
             if (result.success) {
-                renderBattleUI(container);
+                // Trigger animations based on card type and result
+                if (cardType === 'attack' && result.damage > 0) {
+                    // Fire projectile from player to enemy
+                    fireProjectile(playerUnit, enemyUnit, result.critical ? '💥' : '⚔️', false);
 
-                if (result.victory) {
-                    showBattleNotification(`Victory! +${result.rewards.xp} XP, +${result.rewards.tokens} tokens`, 'success');
+                    // Delay shake and damage number
+                    setTimeout(() => {
+                        shakeElement(enemyUnit);
+                        if (result.critical) {
+                            critElement(enemyUnit);
+                            createParticles(enemyUnit, '#fbbf24', 12);
+                        } else {
+                            createParticles(enemyUnit, '#ef4444', 6);
+                        }
+                        showDamageNumber(enemyUnit, result.damage, result.critical);
+
+                        // Check for enemy death
+                        if (result.victory) {
+                            setTimeout(() => {
+                                deathAnimation(enemyUnit);
+                                victoryAnimation(playerUnit);
+                            }, 200);
+                        }
+                    }, 350);
+                } else if (cardType === 'defense') {
+                    // Defense animation
+                    flashElement(playerUnit);
+                    createParticles(playerUnit, '#3b82f6', 6);
+                } else if (cardType === 'support') {
+                    // Support/heal animation
+                    if (result.healed > 0) {
+                        showHealNumber(playerUnit, result.healed);
+                        createParticles(playerUnit, '#22c55e', 8);
+                    }
+                    flashElement(playerUnit);
                 }
+
+                // Delay re-render to allow animations to play
+                setTimeout(() => {
+                    renderBattleUI(container);
+
+                    if (result.victory) {
+                        showBattleNotification(`Victory! +${result.rewards.xp} XP, +${result.rewards.tokens} tokens`, 'success');
+                    }
+                }, result.victory ? 800 : 500);
             } else {
                 showBattleNotification(result.message, 'error');
             }
@@ -2460,15 +2935,55 @@ function renderBattleUI(container) {
 
     // End Turn button handler
     container.querySelector('#end-turn-btn')?.addEventListener('click', () => {
+        const playerUnit = document.getElementById('battle-player-unit');
+        const enemyUnit = document.getElementById('battle-enemy-unit');
+
         const result = endPlayerTurn();
 
         if (result.success) {
-            renderBattleUI(container);
+            // Get enemy damage from enemyAction
+            const enemyDamage = result.enemyAction?.actualDamage || 0;
+            const enemyCrit = result.enemyAction?.critical || false;
 
-            if (result.victory) {
-                showBattleNotification(`Victory! +${result.rewards?.xp || 0} XP, +${result.rewards?.tokens || 0} tokens`, 'success');
-            } else if (result.defeat) {
-                showBattleNotification('Defeated! Try again when stronger.', 'error');
+            // Show enemy attack animation if enemy dealt damage
+            if (enemyDamage > 0) {
+                // Fire projectile from enemy to player
+                fireProjectile(enemyUnit, playerUnit, enemyCrit ? '💥' : '💢', true);
+
+                // Delay player hit effects
+                setTimeout(() => {
+                    shakeElement(playerUnit);
+                    if (enemyCrit) {
+                        critElement(playerUnit);
+                        createParticles(playerUnit, '#fbbf24', 10);
+                    } else {
+                        createParticles(playerUnit, '#ef4444', 6);
+                    }
+                    showDamageNumber(playerUnit, enemyDamage, enemyCrit);
+
+                    // Check for defeat
+                    if (result.defeat) {
+                        setTimeout(() => {
+                            deathAnimation(playerUnit);
+                        }, 200);
+                    }
+                }, 350);
+
+                // Delay re-render
+                setTimeout(() => {
+                    renderBattleUI(container);
+
+                    if (result.defeat) {
+                        showBattleNotification('Defeated! Try again when stronger.', 'error');
+                    }
+                }, result.defeat ? 800 : 500);
+            } else {
+                // No damage taken, just re-render
+                renderBattleUI(container);
+
+                if (result.victory) {
+                    showBattleNotification(`Victory! +${result.rewards?.xp || 0} XP, +${result.rewards?.tokens || 0} tokens`, 'success');
+                }
             }
         } else {
             showBattleNotification(result.message, 'error');
@@ -2499,7 +3014,7 @@ function renderBattleUI(container) {
 function renderEnemyList() {
     const state = window.PumpArenaState?.get();
     const playerLevel = state?.progression.level || 1;
-    const playerTier = Math.floor(playerLevel / 10);
+    const playerTier = Math.floor(playerLevel / BATTLE_CONSTANTS.LEVELS_PER_TIER);
 
     const tierColors = ['#22c55e', '#3b82f6', '#a855f7', '#f97316', '#ef4444'];
     const tierNames = ['EMBER', 'SPARK', 'FLAME', 'BLAZE', 'INFERNO'];
@@ -2584,6 +3099,402 @@ function escapeHtml(text) {
 }
 
 // ============================================
+// RANKING/LADDER SYSTEM
+// ============================================
+
+// Ranking tiers with Fibonacci-based point thresholds
+const RANKING_TIERS = {
+    bronze: { id: 'bronze', name: 'Bronze', icon: '🥉', minPoints: 0, color: '#cd7f32', rewards: { xp: getBattleFib(6), tokens: getBattleFib(5) } },
+    silver: { id: 'silver', name: 'Silver', icon: '🥈', minPoints: getBattleFib(10), color: '#c0c0c0', rewards: { xp: getBattleFib(7), tokens: getBattleFib(6) } },
+    gold: { id: 'gold', name: 'Gold', icon: '🥇', minPoints: getBattleFib(12), color: '#ffd700', rewards: { xp: getBattleFib(8), tokens: getBattleFib(7) } },
+    platinum: { id: 'platinum', name: 'Platinum', icon: '💎', minPoints: getBattleFib(13), color: '#e5e4e2', rewards: { xp: getBattleFib(9), tokens: getBattleFib(8) } },
+    diamond: { id: 'diamond', name: 'Diamond', icon: '💠', minPoints: getBattleFib(14), color: '#b9f2ff', rewards: { xp: getBattleFib(10), tokens: getBattleFib(9) } },
+    champion: { id: 'champion', name: 'Champion', icon: '👑', minPoints: getBattleFib(15), color: '#ff6b6b', rewards: { xp: getBattleFib(11), tokens: getBattleFib(10) } },
+    legend: { id: 'legend', name: 'Legend', icon: '🌟', minPoints: getBattleFib(16), color: '#fbbf24', rewards: { xp: getBattleFib(12), tokens: getBattleFib(11) } }
+};
+
+// Ranking rewards by tier (weekly rewards)
+const RANKING_REWARDS = {
+    bronze: { xp: getBattleFib(8), tokens: getBattleFib(6), materials: ['raw_silicon'] },
+    silver: { xp: getBattleFib(9), tokens: getBattleFib(7), materials: ['raw_silicon', 'circuit_board'] },
+    gold: { xp: getBattleFib(10), tokens: getBattleFib(8), materials: ['circuit_board', 'energy_cell'] },
+    platinum: { xp: getBattleFib(11), tokens: getBattleFib(9), materials: ['energy_cell', 'code_fragment'], equipment: 'random_uncommon' },
+    diamond: { xp: getBattleFib(12), tokens: getBattleFib(10), materials: ['rare_alloy', 'ancient_code'], equipment: 'random_rare' },
+    champion: { xp: getBattleFib(13), tokens: getBattleFib(11), materials: ['quantum_chip', 'ancient_code'], equipment: 'random_epic', cosmetic: 'champion_aura' },
+    legend: { xp: getBattleFib(14), tokens: getBattleFib(12), materials: ['legendary_core', 'quantum_chip'], equipment: 'random_legendary', cosmetic: 'legend_crown' }
+};
+
+// Ranking state
+let rankingState = {
+    points: 0,
+    wins: 0,
+    losses: 0,
+    winStreak: 0,
+    bestWinStreak: 0,
+    totalBattles: 0,
+    bossDefeated: 0,
+    lastWeeklyReward: null,
+    seasonStart: null
+};
+
+// SECURITY: Validate ranking state data
+function validateRankingState(data) {
+    if (!data || typeof data !== 'object') return false;
+
+    // Check for dangerous keys (prototype pollution prevention)
+    const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
+    for (const key of Object.keys(data)) {
+        if (DANGEROUS_KEYS.includes(key)) return false;
+    }
+
+    // Validate numeric fields
+    const numericFields = ['points', 'wins', 'losses', 'winStreak', 'bestWinStreak', 'totalBattles', 'bossDefeated'];
+    for (const field of numericFields) {
+        if (field in data) {
+            if (typeof data[field] !== 'number' || !Number.isFinite(data[field]) || data[field] < 0) {
+                return false;
+            }
+            // Cap values to prevent unrealistic numbers
+            if (data[field] > 1000000) return false;
+        }
+    }
+
+    // Validate date fields
+    if (data.lastWeeklyReward !== null && data.lastWeeklyReward !== undefined) {
+        if (typeof data.lastWeeklyReward !== 'string' && typeof data.lastWeeklyReward !== 'number') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Load ranking state
+function loadRankingState() {
+    try {
+        const saved = localStorage.getItem('pumparena_ranking_v1');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // SECURITY: Validate before merging
+            if (validateRankingState(parsed)) {
+                rankingState = { ...rankingState, ...parsed };
+            } else {
+                console.warn('[Security] Invalid ranking state data, using defaults');
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to load ranking state:', e);
+    }
+}
+
+// Save ranking state
+function saveRankingState() {
+    try {
+        localStorage.setItem('pumparena_ranking_v1', JSON.stringify(rankingState));
+    } catch (e) {
+        console.warn('Failed to save ranking state:', e);
+    }
+}
+
+// Initialize ranking on load
+loadRankingState();
+
+/**
+ * Get current rank based on points
+ */
+function getCurrentRank() {
+    const tiers = Object.values(RANKING_TIERS).sort((a, b) => b.minPoints - a.minPoints);
+    for (const tier of tiers) {
+        if (rankingState.points >= tier.minPoints) {
+            return tier;
+        }
+    }
+    return RANKING_TIERS.bronze;
+}
+
+/**
+ * Get next rank tier
+ */
+function getNextRank() {
+    const current = getCurrentRank();
+    const tiers = Object.values(RANKING_TIERS).sort((a, b) => a.minPoints - b.minPoints);
+    const currentIndex = tiers.findIndex(t => t.id === current.id);
+    return currentIndex < tiers.length - 1 ? tiers[currentIndex + 1] : null;
+}
+
+/**
+ * Add ranking points from battle
+ */
+function addRankingPoints(won, enemy, performanceBonus = 0) {
+    let points = 0;
+
+    if (won) {
+        // Base points for winning
+        points = getBattleFib(5); // 5 base points
+
+        // Bonus for enemy tier
+        points += enemy.tier * getBattleFib(4); // +3 per tier
+
+        // Bonus for boss
+        if (enemy.isBoss) {
+            points += getBattleFib(7); // +13 for boss
+            rankingState.bossDefeated++;
+        }
+
+        // Win streak bonus
+        rankingState.winStreak++;
+        if (rankingState.winStreak > rankingState.bestWinStreak) {
+            rankingState.bestWinStreak = rankingState.winStreak;
+        }
+        points += Math.min(rankingState.winStreak, BATTLE_CONSTANTS.MAX_STREAK_BONUS) * getBattleFib(3); // +2 per streak (max fib[7]=13)
+
+        // Performance bonus (based on HP remaining, critical hits, etc.)
+        points += performanceBonus;
+
+        rankingState.wins++;
+    } else {
+        // Lose points for losing (less than gained for winning)
+        points = -getBattleFib(4); // -3 base
+
+        // Can't go below 0
+        rankingState.winStreak = 0;
+        rankingState.losses++;
+    }
+
+    rankingState.points = Math.max(0, rankingState.points + points);
+    rankingState.totalBattles++;
+
+    saveRankingState();
+
+    return {
+        pointsChange: points,
+        newTotal: rankingState.points,
+        currentRank: getCurrentRank(),
+        nextRank: getNextRank()
+    };
+}
+
+/**
+ * Get ranking stats
+ */
+function getRankingStats() {
+    const currentRank = getCurrentRank();
+    const nextRank = getNextRank();
+    const winRate = rankingState.totalBattles > 0
+        ? Math.round((rankingState.wins / rankingState.totalBattles) * 100)
+        : 0;
+
+    return {
+        points: rankingState.points,
+        currentRank,
+        nextRank,
+        pointsToNextRank: nextRank ? nextRank.minPoints - rankingState.points : 0,
+        wins: rankingState.wins,
+        losses: rankingState.losses,
+        winRate,
+        winStreak: rankingState.winStreak,
+        bestWinStreak: rankingState.bestWinStreak,
+        totalBattles: rankingState.totalBattles,
+        bossDefeated: rankingState.bossDefeated
+    };
+}
+
+/**
+ * Claim weekly ranking rewards
+ */
+function claimWeeklyRewards() {
+    const now = new Date();
+    const lastClaim = rankingState.lastWeeklyReward ? new Date(rankingState.lastWeeklyReward) : null;
+
+    // Check if a week has passed
+    if (lastClaim) {
+        const weekMs = 7 * 24 * 60 * 60 * 1000;
+        if (now - lastClaim < weekMs) {
+            const daysLeft = Math.ceil((weekMs - (now - lastClaim)) / (24 * 60 * 60 * 1000));
+            return { success: false, message: `Wait ${daysLeft} days for next rewards` };
+        }
+    }
+
+    const currentRank = getCurrentRank();
+    const rewards = RANKING_REWARDS[currentRank.id];
+
+    // Apply rewards
+    window.PumpArenaState?.addXP(rewards.xp);
+    window.PumpArenaState?.addTokens(rewards.tokens);
+
+    // Add materials to inventory
+    if (rewards.materials) {
+        rewards.materials.forEach(materialId => {
+            window.PumpArenaInventory?.addItem(materialId, 1);
+        });
+    }
+
+    rankingState.lastWeeklyReward = now.toISOString();
+    saveRankingState();
+
+    return {
+        success: true,
+        rewards: rewards,
+        rank: currentRank,
+        message: `Claimed ${currentRank.name} rewards!`
+    };
+}
+
+/**
+ * Render ranking panel UI
+ */
+function renderRankingPanel(container) {
+    const stats = getRankingStats();
+    const progressPercent = stats.nextRank
+        ? Math.min(100, ((stats.points - stats.currentRank.minPoints) / (stats.nextRank.minPoints - stats.currentRank.minPoints)) * 100)
+        : 100;
+
+    container.innerHTML = `
+        <div style="background: #12121a; border-radius: 16px; overflow: hidden; border: 2px solid ${stats.currentRank.color};">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a24, ${stats.currentRank.color}20); padding: 20px; border-bottom: 1px solid ${stats.currentRank.color}40;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, ${stats.currentRank.color}, ${stats.currentRank.color}80); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 0 20px ${stats.currentRank.color}40;">
+                            ${stats.currentRank.icon}
+                        </div>
+                        <div>
+                            <h3 style="color: ${stats.currentRank.color}; margin: 0; font-size: 20px;">${stats.currentRank.name}</h3>
+                            <div style="color: #9ca3af; font-size: 12px;">${stats.points} Ranking Points</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #fbbf24; font-size: 14px; font-weight: 600;">${stats.winStreak} Win Streak</div>
+                        <div style="color: #666; font-size: 11px;">Best: ${stats.bestWinStreak}</div>
+                    </div>
+                </div>
+
+                <!-- Progress to next rank -->
+                ${stats.nextRank ? `
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
+                            <span style="color: ${stats.currentRank.color};">${stats.currentRank.name}</span>
+                            <span style="color: #666;">${stats.pointsToNextRank} points to ${stats.nextRank.name}</span>
+                            <span style="color: ${stats.nextRank.color};">${stats.nextRank.name}</span>
+                        </div>
+                        <div style="height: 8px; background: #1a1a24; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, ${stats.currentRank.color}, ${stats.nextRank.color}); transition: width 0.5s;"></div>
+                        </div>
+                    </div>
+                ` : `
+                    <div style="margin-top: 15px; text-align: center; color: #fbbf24; font-size: 12px;">
+                        🌟 Maximum Rank Achieved!
+                    </div>
+                `}
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                <div style="text-align: center; padding: 15px; background: #22c55e10; border: 1px solid #22c55e30; border-radius: 10px;">
+                    <div style="color: #22c55e; font-size: 24px; font-weight: bold;">${stats.wins}</div>
+                    <div style="color: #22c55e80; font-size: 10px; text-transform: uppercase;">Wins</div>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #ef444410; border: 1px solid #ef444430; border-radius: 10px;">
+                    <div style="color: #ef4444; font-size: 24px; font-weight: bold;">${stats.losses}</div>
+                    <div style="color: #ef444480; font-size: 10px; text-transform: uppercase;">Losses</div>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #3b82f610; border: 1px solid #3b82f630; border-radius: 10px;">
+                    <div style="color: #3b82f6; font-size: 24px; font-weight: bold;">${stats.winRate}%</div>
+                    <div style="color: #3b82f680; font-size: 10px; text-transform: uppercase;">Win Rate</div>
+                </div>
+                <div style="text-align: center; padding: 15px; background: #a855f710; border: 1px solid #a855f730; border-radius: 10px;">
+                    <div style="color: #a855f7; font-size: 24px; font-weight: bold;">${stats.bossDefeated}</div>
+                    <div style="color: #a855f780; font-size: 10px; text-transform: uppercase;">Bosses</div>
+                </div>
+            </div>
+
+            <!-- Weekly Rewards -->
+            <div style="padding: 20px; background: linear-gradient(180deg, #0a0a0f, #12121a); border-top: 1px solid #333;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="color: #ffffff; font-size: 14px; font-weight: 600;">🎁 Weekly Rewards</div>
+                    <div style="color: #666; font-size: 11px;">Based on your current rank</div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, ${stats.currentRank.color}10, #1a1a24); border: 1px solid ${stats.currentRank.color}30; border-radius: 12px; padding: 15px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <span style="font-size: 24px;">${stats.currentRank.icon}</span>
+                        <div>
+                            <div style="color: ${stats.currentRank.color}; font-weight: 600;">${stats.currentRank.name} Rewards</div>
+                            <div style="color: #666; font-size: 11px;">Claim once per week</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div style="padding: 6px 12px; background: #22c55e20; border: 1px solid #22c55e40; border-radius: 6px; font-size: 11px; color: #22c55e;">
+                            +${RANKING_REWARDS[stats.currentRank.id].xp} XP
+                        </div>
+                        <div style="padding: 6px 12px; background: #fbbf2420; border: 1px solid #fbbf2440; border-radius: 6px; font-size: 11px; color: #fbbf24;">
+                            +${RANKING_REWARDS[stats.currentRank.id].tokens} Tokens
+                        </div>
+                        ${RANKING_REWARDS[stats.currentRank.id].materials?.map(m => `
+                            <div style="padding: 6px 12px; background: #3b82f620; border: 1px solid #3b82f640; border-radius: 6px; font-size: 11px; color: #3b82f6;">
+                                + ${m.replace('_', ' ')}
+                            </div>
+                        `).join('') || ''}
+                        ${RANKING_REWARDS[stats.currentRank.id].equipment ? `
+                            <div style="padding: 6px 12px; background: #a855f720; border: 1px solid #a855f740; border-radius: 6px; font-size: 11px; color: #a855f7;">
+                                + Random Equipment
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <button id="claim-rewards-btn" style="
+                        width: 100%; padding: 12px;
+                        background: linear-gradient(135deg, ${stats.currentRank.color}, ${stats.currentRank.color}80);
+                        border: none; border-radius: 8px;
+                        color: #fff; font-size: 13px; font-weight: 600;
+                        cursor: pointer; transition: all 0.2s;
+                    " onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
+                        🎁 Claim Weekly Rewards
+                    </button>
+                </div>
+            </div>
+
+            <!-- All Ranks -->
+            <div style="padding: 20px; border-top: 1px solid #333;">
+                <div style="color: #ffffff; font-size: 14px; font-weight: 600; margin-bottom: 15px;">📊 All Ranks</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+                    ${Object.values(RANKING_TIERS).map(tier => {
+                        const isCurrentRank = tier.id === stats.currentRank.id;
+                        const isAchieved = stats.points >= tier.minPoints;
+                        return `
+                            <div style="
+                                text-align: center; padding: 12px;
+                                background: ${isCurrentRank ? `${tier.color}20` : '#1a1a24'};
+                                border: 2px solid ${isCurrentRank ? tier.color : isAchieved ? `${tier.color}60` : '#333'};
+                                border-radius: 10px;
+                                opacity: ${isAchieved ? '1' : '0.5'};
+                            ">
+                                <div style="font-size: 24px; margin-bottom: 4px;">${tier.icon}</div>
+                                <div style="color: ${tier.color}; font-size: 11px; font-weight: 600;">${tier.name}</div>
+                                <div style="color: #666; font-size: 9px;">${tier.minPoints}+ pts</div>
+                                ${isCurrentRank ? '<div style="color: #22c55e; font-size: 9px; margin-top: 4px;">Current</div>' : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Claim rewards handler
+    container.querySelector('#claim-rewards-btn')?.addEventListener('click', () => {
+        const result = claimWeeklyRewards();
+        if (result.success) {
+            showBattleNotification(result.message, 'success');
+            renderRankingPanel(container); // Re-render
+        } else {
+            showBattleNotification(result.message, 'error');
+        }
+    });
+}
+
+// ============================================
 // EXPORTS
 // ============================================
 
@@ -2616,8 +3527,31 @@ if (typeof window !== 'undefined') {
         getPositionDistance,
         canMoveTo,
 
+        // Ranking system
+        getRankingStats,
+        getCurrentRank,
+        getNextRank,
+        claimWeeklyRewards,
+        renderRankingPanel,
+        RANKING_TIERS,
+        RANKING_REWARDS,
+
         // UI
         renderPanel: renderBattleUI,
+
+        // Animation helpers
+        animations: {
+            showDamageNumber,
+            showHealNumber,
+            fireProjectile,
+            createParticles,
+            shakeElement,
+            flashElement,
+            critElement,
+            deathAnimation,
+            victoryAnimation,
+            injectStyles: injectBattleStyles
+        },
 
         // Constants
         ENEMIES: ENEMY_TYPES,

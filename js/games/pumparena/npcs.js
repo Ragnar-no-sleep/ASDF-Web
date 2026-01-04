@@ -6,6 +6,24 @@
 'use strict';
 
 // ============================================
+// SECURITY UTILITIES (Security by Design)
+// ============================================
+
+/**
+ * Escape HTML to prevent XSS attacks
+ * @param {*} str - Input to escape
+ * @returns {string} Escaped string
+ */
+function escapeHtmlNpc(str) {
+    if (typeof str !== 'string') {
+        str = String(str ?? '');
+    }
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ============================================
 // NPC DEFINITIONS
 // ============================================
 
@@ -974,36 +992,38 @@ function renderNPCCard(npcId, compact = false) {
     const hasMetBefore = npcState.metNPCs.includes(npcId);
 
     if (compact) {
+        // SECURITY: Escape user-controllable content
         return `
-            <div class="npc-card-compact" data-npc="${npcId}" style="--npc-color: ${npc.color}">
+            <div class="npc-card-compact" data-npc="${escapeHtmlNpc(npcId)}" style="--npc-color: ${npc.color}">
                 <div class="npc-avatar">${npc.icon}</div>
                 <div class="npc-info">
-                    <div class="npc-name">${npc.name}</div>
-                    <div class="npc-title">${npc.title}</div>
+                    <div class="npc-name">${escapeHtmlNpc(npc.name)}</div>
+                    <div class="npc-title">${escapeHtmlNpc(npc.title)}</div>
                 </div>
                 <div class="npc-affinity" style="color: ${stage.color}">
                     <div class="affinity-bar">
                         <div class="affinity-fill" style="width: ${relationship.affinity}%; background: ${stage.color}"></div>
                     </div>
-                    <span class="affinity-stage">${stage.name}</span>
+                    <span class="affinity-stage">${escapeHtmlNpc(stage.name)}</span>
                 </div>
             </div>
         `;
     }
 
+    // SECURITY: Escape user-controllable content
     return `
-        <div class="npc-card" data-npc="${npcId}" style="--npc-color: ${npc.color}">
+        <div class="npc-card" data-npc="${escapeHtmlNpc(npcId)}" style="--npc-color: ${npc.color}">
             <div class="npc-header">
                 <div class="npc-avatar-large">${npc.icon}</div>
                 <div class="npc-identity">
-                    <h3 class="npc-name">${npc.name}</h3>
-                    <div class="npc-title">${npc.title}</div>
-                    ${npc.project ? `<div class="npc-project">${formatProjectName(npc.project)}</div>` : ''}
+                    <h3 class="npc-name">${escapeHtmlNpc(npc.name)}</h3>
+                    <div class="npc-title">${escapeHtmlNpc(npc.title)}</div>
+                    ${npc.project ? `<div class="npc-project">${escapeHtmlNpc(formatProjectName(npc.project))}</div>` : ''}
                 </div>
             </div>
 
             <div class="npc-relationship">
-                <div class="relationship-stage" style="color: ${stage.color}">${stage.name}</div>
+                <div class="relationship-stage" style="color: ${stage.color}">${escapeHtmlNpc(stage.name)}</div>
                 <div class="relationship-bar">
                     <div class="relationship-fill" style="width: ${relationship.affinity}%; background: ${stage.color}"></div>
                 </div>
@@ -1011,25 +1031,25 @@ function renderNPCCard(npcId, compact = false) {
             </div>
 
             <div class="npc-bio">
-                <p>${hasMetBefore ? npc.bio : '???'}</p>
+                <p>${hasMetBefore ? escapeHtmlNpc(npc.bio) : '???'}</p>
             </div>
 
             ${hasMetBefore ? `
                 <div class="npc-traits">
                     <div class="trait-section">
                         <span class="trait-label">Likes:</span>
-                        <span class="trait-values">${npc.likes.slice(0, 2).join(', ')}</span>
+                        <span class="trait-values">${escapeHtmlNpc(npc.likes.slice(0, 2).join(', '))}</span>
                     </div>
                     <div class="trait-section">
                         <span class="trait-label">Dislikes:</span>
-                        <span class="trait-values">${npc.dislikes.slice(0, 2).join(', ')}</span>
+                        <span class="trait-values">${escapeHtmlNpc(npc.dislikes.slice(0, 2).join(', '))}</span>
                     </div>
                 </div>
             ` : ''}
 
             <div class="npc-actions">
-                <button class="btn-npc-talk" data-npc="${npcId}">Talk</button>
-                ${relationship.affinity >= 20 ? `<button class="btn-npc-gift" data-npc="${npcId}">Gift</button>` : ''}
+                <button class="btn-npc-talk" data-npc="${escapeHtmlNpc(npcId)}">Talk</button>
+                ${relationship.affinity >= 20 ? `<button class="btn-npc-gift" data-npc="${escapeHtmlNpc(npcId)}">Gift</button>` : ''}
             </div>
         </div>
     `;
@@ -1072,9 +1092,7 @@ function showNPCDetail(npcId) {
 
     const content = renderNPCCard(npcId, false);
 
-    if (window.PumpArenaRPG && window.PumpArenaRPG.showModal) {
-        window.PumpArenaRPG.showModal(npc.name, content);
-    }
+    window.PumpArenaRPG?.showModal?.(npc.name, content);
 }
 
 function formatProjectName(projectId) {
@@ -1284,7 +1302,7 @@ function renderConversationUI(container, npcId) {
 
             <div class="conversation-greeting">
                 <div class="speech-bubble">
-                    <p>${meeting.isFirstMeeting ? meeting.dialogue : `"${npc.greeting}"`}</p>
+                    <p>${meeting.isFirstMeeting ? escapeHtmlNpc(meeting.dialogue) : `"${escapeHtmlNpc(npc.greeting)}"`}</p>
                 </div>
             </div>
 
@@ -1293,11 +1311,11 @@ function renderConversationUI(container, npcId) {
                 <div class="topics-list">
                     ${topics.map(topic => `
                         <button class="topic-btn ${topic.available ? '' : 'locked'} ${topic.used ? 'used' : ''}"
-                                data-topic="${topic.id}"
+                                data-topic="${escapeHtmlNpc(topic.id)}"
                                 ${topic.available ? '' : 'disabled'}>
-                            <span class="topic-title">${topic.title}</span>
+                            <span class="topic-title">${escapeHtmlNpc(topic.title)}</span>
                             ${topic.used ? '<span class="topic-used">✓ Discussed</span>' : ''}
-                            ${!topic.available && !topic.used && topic.requiredStage ? `<span class="topic-lock">🔒 ${topic.requiredStage}</span>` : ''}
+                            ${!topic.available && !topic.used && topic.requiredStage ? `<span class="topic-lock">🔒 ${escapeHtmlNpc(topic.requiredStage)}</span>` : ''}
                         </button>
                     `).join('')}
                 </div>
@@ -1330,16 +1348,17 @@ function showTopicDialogue(container, npcId, topicId) {
     greetingArea.style.display = 'none';
     dialogueArea.style.display = 'block';
 
+    // SECURITY: Escape user-controllable content
     dialogueArea.innerHTML = `
         <div class="dialogue-content">
             <div class="speech-bubble npc-speech">
-                <p>${convo.text}</p>
+                <p>${escapeHtmlNpc(convo.text)}</p>
             </div>
 
             <div class="dialogue-options">
                 ${convo.options.map(opt => `
                     <button class="dialogue-option" data-option="${opt.index}">
-                        <span class="option-text">${opt.text}</span>
+                        <span class="option-text">${escapeHtmlNpc(opt.text)}</span>
                     </button>
                 `).join('')}
             </div>
@@ -1361,10 +1380,11 @@ function showDialogueResponse(container, npcId, optionIndex) {
 
     const dialogueArea = container.querySelector('#dialogue-area');
 
+    // SECURITY: Escape user-controllable content
     dialogueArea.innerHTML = `
         <div class="dialogue-response">
             <div class="speech-bubble npc-speech">
-                <p>${results.response}</p>
+                <p>${escapeHtmlNpc(results.response)}</p>
             </div>
 
             ${Object.keys(results.rewards).length > 0 ? `

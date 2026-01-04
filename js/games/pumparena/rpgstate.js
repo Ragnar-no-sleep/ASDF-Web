@@ -9,6 +9,29 @@
  * - Verify everything
  *
  * Version: 2.0.0 - ASDF Philosophy Integration
+ *
+ * ============================================
+ * SECURITY NOTICE - CLIENT-SIDE LIMITATIONS
+ * ============================================
+ *
+ * This is a client-side only game. All security measures implemented here
+ * (rate limiting, integrity checking, schema validation, input sanitization)
+ * are DEFENSE IN DEPTH and can be bypassed by a determined attacker with
+ * access to browser DevTools.
+ *
+ * For any future features requiring true security (leaderboards, multiplayer,
+ * real-money transactions, competitive modes), SERVER-SIDE VALIDATION is
+ * MANDATORY. The client should NEVER be trusted for authoritative game state.
+ *
+ * Current client-side security measures:
+ * - XSS prevention via escapeHtml() and sanitizeColor()
+ * - Prototype pollution prevention in deepMerge() and data imports
+ * - Schema validation for localStorage and imported saves
+ * - Rate limiting to discourage casual exploitation
+ * - Integrity hashing (djb2+sdbm) for tamper detection (NOT cryptographic)
+ *
+ * These measures prevent accidental corruption and casual cheating, but
+ * should NOT be relied upon for competitive integrity.
  */
 
 'use strict';
@@ -16,6 +39,12 @@
 const PUMPARENA_STORAGE_KEY = 'asdf_pumparena_rpg_v2';
 const PUMPARENA_INTEGRITY_KEY = 'asdf_pumparena_integrity_v2';
 const PUMPARENA_VERSION = '2.0.0';
+
+// SECURITY: Maximum burn amount to prevent integer overflow (2^52 - half of MAX_SAFE_INTEGER)
+const MAX_BURN_AMOUNT = Math.pow(2, 52);
+
+// SECURITY: List of dangerous property keys (prototype pollution prevention)
+const DANGEROUS_PROPERTY_KEYS = ['__proto__', 'constructor', 'prototype'];
 
 // ============================================
 // RATE LIMITING (Security by Design)
@@ -398,9 +427,9 @@ function generateDeviceFingerprint() {
     // Timezone offset
     fp += new Date().getTimezoneOffset();
 
-    // Performance timing (if available)
-    if (typeof performance !== 'undefined' && performance.timing) {
-        fp += (performance.timing.navigationStart % 10000) || 0;
+    // Performance timing (if available) - use timeOrigin instead of deprecated timing
+    if (typeof performance !== 'undefined' && performance.timeOrigin) {
+        fp += (Math.floor(performance.timeOrigin) % 10000) || 0;
     }
 
     return fp;
@@ -470,7 +499,19 @@ function decryptData(encrypted, key) {
 function verifyRPGIntegrity(data) {
     try {
         const storedHash = localStorage.getItem(PUMPARENA_INTEGRITY_KEY);
-        if (!storedHash) return true;
+        const hasSaveData = localStorage.getItem(PUMPARENA_STORAGE_KEY);
+
+        // SECURITY: If there's save data but no integrity hash, that's suspicious
+        // This could indicate tampering (deleting the hash to bypass checks)
+        if (!storedHash) {
+            // Only return true if this is genuinely a new game (no save data exists)
+            if (hasSaveData) {
+                console.warn('[Security] Save data exists but integrity hash is missing - possible tampering');
+                return false;
+            }
+            return true; // New game, no data yet
+        }
+
         const currentHash = generateRPGHash(data);
         return storedHash === currentHash;
     } catch {
@@ -492,8 +533,9 @@ function validateRPGSchema(data) {
     if (!data.character || typeof data.character !== 'object') return false;
     if (data.character.name && typeof data.character.name !== 'string') return false;
     if (data.character.name && data.character.name.length > 20) return false;
-    // Sanitize character name against XSS patterns
-    if (data.character.name && /[<>\"\'&]/.test(data.character.name)) return false;
+    // SECURITY: Use whitelist approach for character names (letters, numbers, spaces, underscores, hyphens)
+    // This is more secure than blacklisting XSS characters as it prevents unicode encoding attacks
+    if (data.character.name && !/^[a-zA-Z0-9_\- À-ÿ]+$/.test(data.character.name)) return false;
 
     // Progression validation
     if (!data.progression || typeof data.progression !== 'object') return false;
@@ -563,6 +605,19 @@ function validateRPGSchema(data) {
         for (const [slot, limit] of Object.entries(inventoryLimits)) {
             if (data.inventory[slot] && !Array.isArray(data.inventory[slot])) return false;
             if (data.inventory[slot] && data.inventory[slot].length > limit) return false;
+
+            // SECURITY: Validate individual inventory items
+            if (data.inventory[slot] && Array.isArray(data.inventory[slot])) {
+                for (const item of data.inventory[slot]) {
+                    // Each item must be an object with valid id
+                    if (typeof item !== 'object' || item === null) return false;
+                    if (typeof item.id !== 'string' || item.id.length > 50) return false;
+                    // Prevent prototype pollution in item properties
+                    if (DANGEROUS_PROPERTY_KEYS.some(key => key in item)) return false;
+                    // Validate quantity if present
+                    if ('quantity' in item && (typeof item.quantity !== 'number' || item.quantity < 0 || item.quantity > 9999)) return false;
+                }
+            }
         }
     }
 
@@ -570,11 +625,18 @@ function validateRPGSchema(data) {
     if (data.session) {
         if (data.session.startTime && typeof data.session.startTime !== 'number') return false;
         if (data.session.lastSave && typeof data.session.lastSave !== 'number') return false;
-        // Prevent future timestamps
+
         const now = Date.now();
-        const futureBuffer = 60000; // 1 minute buffer
+        const futureBuffer = 60000; // 1 minute buffer for clock drift
+        const maxAge = 365 * 24 * 60 * 60 * 1000; // 1 year maximum age
+
+        // Prevent future timestamps
         if (data.session.startTime && data.session.startTime > now + futureBuffer) return false;
         if (data.session.lastSave && data.session.lastSave > now + futureBuffer) return false;
+
+        // SECURITY: Prevent unreasonably old timestamps (could be used to exploit time-based mechanics)
+        if (data.session.startTime && data.session.startTime < now - maxAge) return false;
+        if (data.session.lastSave && data.session.lastSave < now - maxAge) return false;
     }
 
     return true;
@@ -684,9 +746,17 @@ function migrateState(oldState) {
 // UTILITY FUNCTIONS
 // ============================================
 
+// SECURITY: Keys that could cause prototype pollution
+const DANGEROUS_PROTOTYPE_KEYS = ['__proto__', 'constructor', 'prototype'];
+
 function deepMerge(target, source) {
     const output = { ...target };
     for (const key in source) {
+        // SECURITY: Prevent prototype pollution attacks
+        if (DANGEROUS_PROTOTYPE_KEYS.includes(key) || !Object.hasOwn(source, key)) {
+            console.warn(`[Security] Blocked potentially dangerous key in deepMerge: ${key}`);
+            continue;
+        }
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
             if (target[key] && typeof target[key] === 'object') {
                 output[key] = deepMerge(target[key], source[key]);
@@ -701,7 +771,8 @@ function deepMerge(target, source) {
 }
 
 function generateCharacterId() {
-    return 'char_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
+    // Use slice instead of deprecated substr
+    return 'char_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 11);
 }
 
 // ============================================
@@ -1051,6 +1122,43 @@ function regenerateInfluence() {
 // ============================================
 
 /**
+ * Validate burn amount (DRY helper - Security by Design)
+ * Performs rate limiting, type validation, and bounds checking
+ * @param {*} amount - Amount to validate
+ * @returns {Object} { valid: boolean, amount?: number, error?: Object }
+ */
+function validateBurnAmount(amount) {
+    // Rate limiting check
+    const rateCheck = ActionRateLimiter.checkAction('burn');
+    if (!rateCheck.allowed) {
+        return { valid: false, error: { success: false, message: rateCheck.message, rateLimited: true } };
+    }
+
+    // Type validation
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+        return { valid: false, error: { success: false, message: 'Invalid amount type' } };
+    }
+
+    // Ensure integer and positive
+    const validatedAmount = Math.floor(amount);
+    if (validatedAmount <= 0) {
+        return { valid: false, error: { success: false, message: 'Amount must be positive' } };
+    }
+
+    // Cap to prevent integer overflow
+    if (validatedAmount > MAX_BURN_AMOUNT) {
+        return { valid: false, error: { success: false, message: 'Amount exceeds maximum' } };
+    }
+
+    // Check sufficient tokens
+    if (rpgState.resources.tokens < validatedAmount) {
+        return { valid: false, error: { success: false, message: 'Insufficient tokens' } };
+    }
+
+    return { valid: true, amount: validatedAmount };
+}
+
+/**
  * Burn tokens for XP (ASDF Philosophy)
  * 1 token burned = 1 XP (identity ratio)
  * Burns contribute to collective pool
@@ -1058,32 +1166,12 @@ function regenerateInfluence() {
  * @returns {Object} Result object with success status
  */
 function burnTokensForXP(amount) {
-    // Rate limiting check (Security by Design)
-    const rateCheck = ActionRateLimiter.checkAction('burn');
-    if (!rateCheck.allowed) {
-        return { success: false, message: rateCheck.message, rateLimited: true };
+    // Validate burn amount (DRY helper)
+    const validation = validateBurnAmount(amount);
+    if (!validation.valid) {
+        return validation.error;
     }
-
-    // Input validation (Security by Design)
-    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
-        return { success: false, message: 'Invalid amount type' };
-    }
-
-    // Ensure integer and positive
-    amount = Math.floor(amount);
-    if (amount <= 0) {
-        return { success: false, message: 'Amount must be positive' };
-    }
-
-    // Cap to prevent integer overflow (max safe integer / 2)
-    const MAX_BURN = 4503599627370496; // 2^52
-    if (amount > MAX_BURN) {
-        return { success: false, message: 'Amount exceeds maximum' };
-    }
-
-    if (rpgState.resources.tokens < amount) {
-        return { success: false, message: 'Insufficient tokens' };
-    }
+    amount = validation.amount;
 
     // Deduct tokens
     rpgState.resources.tokens -= amount;
@@ -1123,32 +1211,12 @@ function burnTokensForXP(amount) {
  * @returns {Object} Result object with success status
  */
 function burnTokensForReputation(amount) {
-    // Rate limiting check (Security by Design)
-    const rateCheck = ActionRateLimiter.checkAction('burn');
-    if (!rateCheck.allowed) {
-        return { success: false, message: rateCheck.message, rateLimited: true };
+    // Validate burn amount (DRY helper)
+    const validation = validateBurnAmount(amount);
+    if (!validation.valid) {
+        return validation.error;
     }
-
-    // Input validation (Security by Design)
-    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
-        return { success: false, message: 'Invalid amount type' };
-    }
-
-    // Ensure integer and positive
-    amount = Math.floor(amount);
-    if (amount <= 0) {
-        return { success: false, message: 'Amount must be positive' };
-    }
-
-    // Cap to prevent integer overflow
-    const MAX_BURN = 4503599627370496; // 2^52
-    if (amount > MAX_BURN) {
-        return { success: false, message: 'Amount exceeds maximum' };
-    }
-
-    if (rpgState.resources.tokens < amount) {
-        return { success: false, message: 'Insufficient tokens' };
-    }
+    amount = validation.amount;
 
     const tier = getCurrentTier();
     const conversionRate = getFib(tier.index + 5);  // 5, 8, 13, 21, 34 tokens per rep
@@ -1196,6 +1264,12 @@ function getBurnStats() {
 // ============================================
 
 function getRelationship(npcId) {
+    // SECURITY: Validate npcId to prevent prototype pollution
+    if (typeof npcId !== 'string' || DANGEROUS_PROPERTY_KEYS.includes(npcId)) {
+        console.warn('[Security] Invalid NPC ID:', npcId);
+        return { affinity: 0, stage: 'stranger', history: [] };
+    }
+
     if (!rpgState.relationships[npcId]) {
         rpgState.relationships[npcId] = {
             affinity: 0,
