@@ -54,6 +54,47 @@
 }
 
 /* ============================================
+   NAVIGATION TABS
+   ============================================ */
+
+.nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--valhalla-obsidian);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--valhalla-iron);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nav-tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--valhalla-steel);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--valhalla-transition);
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.nav-tab:hover {
+    color: var(--valhalla-gold-light);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.nav-tab.active {
+    background: var(--valhalla-sunset);
+    color: #fff;
+    box-shadow: var(--valhalla-glow-gold);
+}
+
+/* ============================================
    RUNE DECORATIONS (SVG Borders)
    ============================================ */
 
