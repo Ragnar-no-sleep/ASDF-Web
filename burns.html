@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+    <style>html,body{background:#0a0a0f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDF Burns - Hall of Flames | This is Fine</title>
+    <meta name="description" content="Watch ASDF tokens burn in real-time. Join the Hall of Flames. This is fine.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="ASDF Burns - Hall of Flames">
+    <meta property="og:description" content="Watch ASDF tokens burn in real-time. This is fine.">
+    <meta property="og:image" content="https://alonisthe.dev/og-burns.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://asdf-api.onrender.com https://*.solana.com;
+    ">
+
+    <link rel="stylesheet" href="css/burns.css">
+</head>
+<body>
+    <!-- Fire Particles Background -->
+    <div class="fire-particles" id="fire-particles"></div>
+
+    <!-- Navigation -->
+    <nav class="burns-nav">
+        <a href="index.html" class="nav-logo">
+            <span class="fire-icon">🔥</span>
+            <span>ASDFASDFA</span>
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="learn.html">Learn</a>
+            <a href="games.html">Games</a>
+            <a href="burns.html" class="active">Burns</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="burns-hero">
+        <div class="hero-content">
+            <div class="this-is-fine-container">
+                <div class="dog-scene">
+                    <div class="flames flame-1"></div>
+                    <div class="flames flame-2"></div>
+                    <div class="flames flame-3"></div>
+                    <div class="coffee-dog">
+                        <span class="dog-emoji">🐕</span>
+                        <span class="coffee-emoji">☕</span>
+                    </div>
+                    <div class="flames flame-4"></div>
+                    <div class="flames flame-5"></div>
+                </div>
+                <h1 class="hero-title">
+                    <span class="title-line">THIS IS</span>
+                    <span class="title-fire">FINE</span>
+                </h1>
+                <p class="hero-subtitle">Welcome to the eternal flame. Watch tokens return to the void.</p>
+            </div>
+        </div>
+
+        <!-- Floating Embers -->
+        <div class="ember ember-1">🔥</div>
+        <div class="ember ember-2">✨</div>
+        <div class="ember ember-3">🔥</div>
+        <div class="ember ember-4">💀</div>
+        <div class="ember ember-5">🔥</div>
+    </section>
+
+    <!-- Main Stats Section -->
+    <section class="burns-stats">
+        <div class="container">
+            <!-- Total Burned Counter -->
+            <div class="mega-counter">
+                <div class="counter-label">TOTAL TOKENS SACRIFICED</div>
+                <div class="counter-value" id="total-burned">
+                    <span class="counter-number">0</span>
+                    <span class="counter-suffix">ASDF</span>
+                </div>
+                <div class="counter-subtext">Gone. Reduced to atoms. Forever.</div>
+                <div class="burn-progress-container">
+                    <div class="burn-progress-bar">
+                        <div class="burn-progress-fill" id="burn-progress"></div>
+                        <div class="burn-progress-flames"></div>
+                    </div>
+                    <div class="burn-progress-labels">
+                        <span>0%</span>
+                        <span id="burn-percentage">0%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card fire-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="burns-today">0</div>
+                    <div class="stat-label">Burned Today</div>
+                    <div class="stat-trend up" id="today-trend">+0%</div>
+                </div>
+
+                <div class="stat-card skull-card">
+                    <div class="stat-icon">💀</div>
+                    <div class="stat-value" id="total-burners">0</div>
+                    <div class="stat-label">Unique Burners</div>
+                    <div class="stat-trend">Cultists</div>
+                </div>
+
+                <div class="stat-card diamond-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-value" id="remaining-supply">0</div>
+                    <div class="stat-label">Circulating Supply</div>
+                    <div class="stat-trend down" id="supply-trend">-0%</div>
+                </div>
+
+                <div class="stat-card crown-card">
+                    <div class="stat-icon">👑</div>
+                    <div class="stat-value" id="biggest-burn">0</div>
+                    <div class="stat-label">Largest Single Burn</div>
+                    <div class="stat-trend">Legend</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hall of Flames - Leaderboard -->
+    <section class="hall-of-flames">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="flame-bracket">🔥</span>
+                    HALL OF FLAMES
+                    <span class="flame-bracket">🔥</span>
+                </h2>
+                <p class="section-subtitle">The brave souls who sacrificed the most</p>
+
+                <div class="leaderboard-tabs">
+                    <button class="tab-btn active" data-period="all">All Time</button>
+                    <button class="tab-btn" data-period="cycle">This Cycle</button>
+                    <button class="tab-btn" data-period="weekly">This Week</button>
+                </div>
+            </div>
+
+            <!-- Top 3 Podium -->
+            <div class="podium">
+                <div class="podium-place second" id="place-2">
+                    <div class="place-badge">🥈</div>
+                    <div class="place-avatar">💀</div>
+                    <div class="place-wallet">---</div>
+                    <div class="place-amount">0 ASDF</div>
+                    <div class="place-pedestal">2</div>
+                </div>
+
+                <div class="podium-place first" id="place-1">
+                    <div class="place-crown">👑</div>
+                    <div class="place-badge">🥇</div>
+                    <div class="place-avatar fire-avatar">🔥</div>
+                    <div class="place-wallet">---</div>
+                    <div class="place-amount">0 ASDF</div>
+                    <div class="place-pedestal">1</div>
+                </div>
+
+                <div class="podium-place third" id="place-3">
+                    <div class="place-badge">🥉</div>
+                    <div class="place-avatar">⚰️</div>
+                    <div class="place-wallet">---</div>
+                    <div class="place-amount">0 ASDF</div>
+                    <div class="place-pedestal">3</div>
+                </div>
+            </div>
+
+            <!-- Full Leaderboard -->
+            <div class="leaderboard-table">
+                <div class="table-header">
+                    <span class="col-rank">Rank</span>
+                    <span class="col-wallet">Wallet</span>
+                    <span class="col-burned">Total Burned</span>
+                    <span class="col-burns">Burns</span>
+                </div>
+                <div class="table-body" id="leaderboard-body">
+                    <!-- Populated by JS -->
+                    <div class="loading-skeleton">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Burns Feed -->
+    <section class="live-burns">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="pulse-dot"></span>
+                    LIVE BURN FEED
+                </h2>
+                <p class="section-subtitle">Real-time token sacrifices</p>
+            </div>
+
+            <div class="burns-feed" id="burns-feed">
+                <!-- Populated by JS -->
+                <div class="feed-empty">
+                    <span class="empty-icon">🕯️</span>
+                    <span>Waiting for burns...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Burn CTA -->
+    <section class="burn-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Join the Flames?</h2>
+                <p class="cta-text">Sacrifice your tokens. Earn eternal glory. This is fine.</p>
+                <a href="games.html#shop" class="cta-btn">
+                    <span class="btn-icon">🔥</span>
+                    <span>BURN TOKENS</span>
+                    <span class="btn-icon">🔥</span>
+                </a>
+            </div>
+            <div class="cta-flames">
+                <div class="cta-flame f1"></div>
+                <div class="cta-flame f2"></div>
+                <div class="cta-flame f3"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="burns-footer">
+        <div class="container">
+            <div class="footer-tagline">
+                <span class="tagline-icon">🐕</span>
+                <span>This is fine. Everything is fine.</span>
+                <span class="tagline-icon">☕</span>
+            </div>
+            <div class="footer-links">
+                <a href="https://twitter.com/asikisFINE" target="_blank">Twitter</a>
+                <a href="https://dexscreener.com/solana/9zb5wraRXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank">DexScreener</a>
+                <a href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank">Solscan</a>
+            </div>
+            <div class="footer-copy">© 2024 ASDFASDFA. All tokens eventually burn.</div>
+        </div>
+    </footer>
+
+    <script src="js/burns.js"></script>
+</body>
+</html>
