@@ -446,12 +446,11 @@
         .yggdrasil-particles { display: none; }
 
         /* Scrollbar styling - Webkit (Chrome, Safari, Edge) */
-        @supports selector(::-webkit-scrollbar) {
-            ::-webkit-scrollbar { width: 8px; }
-            ::-webkit-scrollbar-track { background: var(--bg-charred); }
-            ::-webkit-scrollbar-thumb { background: var(--border-rust); border-radius: 4px; }
-            ::-webkit-scrollbar-thumb:hover { background: var(--accent-fire); }
-        }
+        /* Note: Firefox ignores ::-webkit-* selectors automatically */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-charred); }
+        ::-webkit-scrollbar-thumb { background: var(--border-rust); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-fire); }
 
         /* ============================================
            NAVIGATION BAR

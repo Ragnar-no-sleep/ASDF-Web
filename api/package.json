@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"No tests yet\" && exit 0",
+    "test": "node tests/api.test.js",
+    "test:prod": "TEST_API_URL=https://asdf-api.onrender.com node tests/api.test.js",
     "audit": "npm audit --audit-level=moderate",
-    "security-check": "npm audit && npm outdated"
+    "security-check": "npm audit && npm outdated",
+    "health": "curl -s http://localhost:3001/health | node -e \"const d=require('fs').readFileSync(0,'utf8');console.log(JSON.parse(d).status)\""
   },
   "dependencies": {
     "@solana/spl-token": "^0.1.8",
@@ -21,6 +23,8 @@
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "redis": "^4.7.0",
     "tweetnacl": "^1.0.3",
     "ws": "^8.16.0"
   },

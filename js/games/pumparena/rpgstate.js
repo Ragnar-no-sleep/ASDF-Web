@@ -288,6 +288,10 @@ const DEFAULT_RPG_STATE = {
     // Skill Cooldowns (timestamp when ability can be used again)
     skillCooldowns: {},
 
+    // Faction Skills (combat abilities from faction membership)
+    factionSkills: [],
+    factionSkillCooldowns: {},
+
     // Inventory
     inventory: {
         tools: [],
@@ -345,6 +349,47 @@ const DEFAULT_RPG_STATE = {
     session: {
         startTime: null,
         lastSave: null
+    },
+
+    // Faction System (New)
+    faction: {
+        current: null,              // Current faction ID
+        standing: {},               // faction_id -> reputation (-100 to +100)
+        joinedAt: null,             // Timestamp when joined current faction
+        previousFactions: [],       // History of factions player was in
+        storyGatesDeclined: {},     // gate_id -> decline count
+        storyGatesCooldowns: {},    // gate_id -> cooldown timestamp
+        chapterProgress: {}         // faction_id -> { chapter, questsCompleted }
+    },
+
+    // Summons System (New)
+    summons: {
+        unlockedCreatures: [],      // Creature IDs player can use
+        unlockedAllies: [],         // Ally IDs (NPC-based) player can use
+        activeParty: {
+            creatures: [],          // Max 3 creature IDs for battle
+            allies: []              // Max 3 ally IDs for battle
+        },
+        creatureExp: {},            // creature_id -> experience points
+        creatureLevels: {},         // creature_id -> level (1-10)
+        creatureAffinity: {}        // creature_id -> bond level (0-100)
+    },
+
+    // Deckbuilding System (New)
+    deckbuilding: {
+        collection: [],             // All owned card IDs
+        activeDeck: [],             // Current deck (20-30 cards)
+        deckPresets: {},            // Named deck configurations { name: [cardIds] }
+        cardCopies: {},             // card_id -> count owned
+        favoriteCards: []           // Starred cards for quick access
+    },
+
+    // Story Flags (New) - Tracks player choices for branching narratives
+    storyFlags: {
+        majorChoices: {},           // choice_id -> selected_option
+        factionEvents: {},          // event_id -> outcome
+        secretsDiscovered: [],      // Secret IDs found
+        endings: []                 // Ending IDs achieved
     }
 };
 
@@ -406,31 +451,30 @@ function generateRPGHash(data) {
 /**
  * Generate device fingerprint for hash salting
  * Makes it harder to forge hashes on different devices
+ * NOTE: Only use STABLE factors that don't change between sessions
  */
 function generateDeviceFingerprint() {
     let fp = 0;
 
-    // Browser/UA factors
+    // Browser/UA factors (stable)
     if (typeof navigator !== 'undefined') {
         fp += navigator.userAgent?.length || 0;
         fp += navigator.language?.length || 0;
         fp += navigator.hardwareConcurrency || 0;
     }
 
-    // Screen factors
+    // Screen factors (stable unless display changes)
     if (typeof screen !== 'undefined') {
         fp += screen.width || 0;
         fp += screen.height || 0;
         fp += screen.colorDepth || 0;
     }
 
-    // Timezone offset
+    // Timezone offset (stable unless timezone changes)
     fp += new Date().getTimezoneOffset();
 
-    // Performance timing (if available) - use timeOrigin instead of deprecated timing
-    if (typeof performance !== 'undefined' && performance.timeOrigin) {
-        fp += (Math.floor(performance.timeOrigin) % 10000) || 0;
-    }
+    // NOTE: Removed performance.timeOrigin - it changes on every page load!
+    // This was causing integrity checks to fail on every reload.
 
     return fp;
 }
@@ -496,10 +540,15 @@ function decryptData(encrypted, key) {
     }
 }
 
+// Hash algorithm version - increment when changing generateDeviceFingerprint or generateRPGHash
+const HASH_VERSION = 2; // v2: removed unstable performance.timeOrigin from fingerprint
+const HASH_VERSION_KEY = 'pumparena_hash_version';
+
 function verifyRPGIntegrity(data) {
     try {
         const storedHash = localStorage.getItem(PUMPARENA_INTEGRITY_KEY);
         const hasSaveData = localStorage.getItem(PUMPARENA_STORAGE_KEY);
+        const storedHashVersion = parseInt(localStorage.getItem(HASH_VERSION_KEY) || '1', 10);
 
         // SECURITY: If there's save data but no integrity hash, that's suspicious
         // This could indicate tampering (deleting the hash to bypass checks)
@@ -513,7 +562,25 @@ function verifyRPGIntegrity(data) {
         }
 
         const currentHash = generateRPGHash(data);
-        return storedHash === currentHash;
+
+        // If hash matches, we're good
+        if (storedHash === currentHash) {
+            return true;
+        }
+
+        // Hash mismatch - check if it's due to algorithm version change
+        if (storedHashVersion < HASH_VERSION) {
+            console.log('[PumpArena] Hash algorithm updated, migrating to v' + HASH_VERSION);
+            // One-time migration: regenerate hash with new algorithm
+            // This is safe because we're upgrading our own algorithm, not accepting tampered data
+            localStorage.setItem(PUMPARENA_INTEGRITY_KEY, currentHash);
+            localStorage.setItem(HASH_VERSION_KEY, String(HASH_VERSION));
+            return true;
+        }
+
+        // Hash mismatch with current algorithm version = tampering
+        console.warn('[Security] Hash mismatch detected - possible tampering');
+        return false;
     } catch {
         return false;
     }
@@ -653,6 +720,7 @@ function saveRPGState() {
         const safeState = JSON.parse(JSON.stringify(rpgState));
         localStorage.setItem(PUMPARENA_STORAGE_KEY, JSON.stringify(safeState));
         localStorage.setItem(PUMPARENA_INTEGRITY_KEY, generateRPGHash(safeState));
+        localStorage.setItem(HASH_VERSION_KEY, String(HASH_VERSION));
 
         return true;
     } catch (e) {
@@ -1605,6 +1673,204 @@ function getPrestigeProgress() {
     };
 }
 
+// ============================================
+// FACTION STATE ACCESSORS
+// ============================================
+
+function getFactionState() {
+    return rpgState.faction;
+}
+
+function getCurrentFaction() {
+    return rpgState.faction.current;
+}
+
+function setCurrentFaction(factionId) {
+    rpgState.faction.current = factionId;
+    rpgState.faction.joinedAt = Date.now();
+    saveRPGState();
+}
+
+function getFactionStanding(factionId) {
+    return rpgState.faction.standing[factionId] || 0;
+}
+
+function modifyFactionStanding(factionId, amount) {
+    if (!rpgState.faction.standing[factionId]) {
+        rpgState.faction.standing[factionId] = 0;
+    }
+    rpgState.faction.standing[factionId] = Math.max(-100,
+        Math.min(100, rpgState.faction.standing[factionId] + amount));
+    saveRPGState();
+    return rpgState.faction.standing[factionId];
+}
+
+function recordStoryGateDecline(gateId) {
+    if (!rpgState.faction.storyGatesDeclined[gateId]) {
+        rpgState.faction.storyGatesDeclined[gateId] = 0;
+    }
+    rpgState.faction.storyGatesDeclined[gateId]++;
+    // Set 24-hour cooldown
+    rpgState.faction.storyGatesCooldowns[gateId] = Date.now() + 86400000;
+    saveRPGState();
+}
+
+function getStoryGateDeclineCount(gateId) {
+    return rpgState.faction.storyGatesDeclined[gateId] || 0;
+}
+
+function isStoryGateOnCooldown(gateId) {
+    const cooldown = rpgState.faction.storyGatesCooldowns[gateId];
+    return cooldown && cooldown > Date.now();
+}
+
+// ============================================
+// SUMMONS STATE ACCESSORS
+// ============================================
+
+function getSummonsState() {
+    return rpgState.summons;
+}
+
+function getActiveParty() {
+    return rpgState.summons.activeParty;
+}
+
+function unlockCreature(creatureId) {
+    if (!rpgState.summons.unlockedCreatures.includes(creatureId)) {
+        rpgState.summons.unlockedCreatures.push(creatureId);
+        rpgState.summons.creatureLevels[creatureId] = 1;
+        rpgState.summons.creatureExp[creatureId] = 0;
+        rpgState.summons.creatureAffinity[creatureId] = 0;
+        saveRPGState();
+        return true;
+    }
+    return false;
+}
+
+function unlockAlly(allyId) {
+    if (!rpgState.summons.unlockedAllies.includes(allyId)) {
+        rpgState.summons.unlockedAllies.push(allyId);
+        saveRPGState();
+        return true;
+    }
+    return false;
+}
+
+function setActiveCreatures(creatureIds) {
+    // Max 3 creatures
+    rpgState.summons.activeParty.creatures = creatureIds.slice(0, 3);
+    saveRPGState();
+}
+
+function setActiveAllies(allyIds) {
+    // Max 3 allies
+    rpgState.summons.activeParty.allies = allyIds.slice(0, 3);
+    saveRPGState();
+}
+
+function addCreatureExp(creatureId, amount) {
+    if (!rpgState.summons.creatureExp[creatureId]) {
+        rpgState.summons.creatureExp[creatureId] = 0;
+    }
+    rpgState.summons.creatureExp[creatureId] += amount;
+
+    // Level up check (Fibonacci XP thresholds)
+    const currentLevel = rpgState.summons.creatureLevels[creatureId] || 1;
+    const xpNeeded = getFib(currentLevel + 6) * 10; // fib[7]*10=130, fib[8]*10=210, etc.
+
+    if (rpgState.summons.creatureExp[creatureId] >= xpNeeded && currentLevel < 10) {
+        rpgState.summons.creatureLevels[creatureId] = currentLevel + 1;
+        rpgState.summons.creatureExp[creatureId] -= xpNeeded;
+        saveRPGState();
+        return { leveledUp: true, newLevel: currentLevel + 1 };
+    }
+
+    saveRPGState();
+    return { leveledUp: false };
+}
+
+// ============================================
+// DECKBUILDING STATE ACCESSORS
+// ============================================
+
+function getDeckState() {
+    return rpgState.deckbuilding;
+}
+
+function getActiveDeck() {
+    return rpgState.deckbuilding.activeDeck;
+}
+
+function addCardToCollection(cardId, count = 1) {
+    if (!rpgState.deckbuilding.cardCopies[cardId]) {
+        rpgState.deckbuilding.cardCopies[cardId] = 0;
+    }
+    rpgState.deckbuilding.cardCopies[cardId] += count;
+
+    if (!rpgState.deckbuilding.collection.includes(cardId)) {
+        rpgState.deckbuilding.collection.push(cardId);
+    }
+    saveRPGState();
+}
+
+function setActiveDeck(cardIds) {
+    // Validate deck size (20-30 cards)
+    if (cardIds.length < 20 || cardIds.length > 30) {
+        return { success: false, error: 'Deck must have 20-30 cards' };
+    }
+    rpgState.deckbuilding.activeDeck = cardIds;
+    saveRPGState();
+    return { success: true };
+}
+
+function saveDeckPreset(name, cardIds) {
+    rpgState.deckbuilding.deckPresets[name] = cardIds;
+    saveRPGState();
+}
+
+function loadDeckPreset(name) {
+    return rpgState.deckbuilding.deckPresets[name] || null;
+}
+
+// ============================================
+// STORY FLAGS ACCESSORS
+// ============================================
+
+function getStoryFlags() {
+    return rpgState.storyFlags;
+}
+
+function setMajorChoice(choiceId, selectedOption) {
+    rpgState.storyFlags.majorChoices[choiceId] = selectedOption;
+    rpgState.statistics.decisionsCount++;
+    saveRPGState();
+}
+
+function getMajorChoice(choiceId) {
+    return rpgState.storyFlags.majorChoices[choiceId] || null;
+}
+
+function discoverSecret(secretId) {
+    if (!rpgState.storyFlags.secretsDiscovered.includes(secretId)) {
+        rpgState.storyFlags.secretsDiscovered.push(secretId);
+        saveRPGState();
+        return true;
+    }
+    return false;
+}
+
+function hasDiscoveredSecret(secretId) {
+    return rpgState.storyFlags.secretsDiscovered.includes(secretId);
+}
+
+function recordEnding(endingId) {
+    if (!rpgState.storyFlags.endings.includes(endingId)) {
+        rpgState.storyFlags.endings.push(endingId);
+        saveRPGState();
+    }
+}
+
 // Export for module usage
 if (typeof window !== 'undefined') {
     window.PumpArenaState = {
@@ -1684,6 +1950,41 @@ if (typeof window !== 'undefined') {
         REPUTATION_RANKS,
         RELATIONSHIP_THRESHOLDS,
         PRESTIGE_REQUIREMENTS,
-        PRESTIGE_BONUSES
+        PRESTIGE_BONUSES,
+
+        // Faction System
+        getFactionState,
+        getCurrentFaction,
+        setCurrentFaction,
+        getFactionStanding,
+        modifyFactionStanding,
+        recordStoryGateDecline,
+        getStoryGateDeclineCount,
+        isStoryGateOnCooldown,
+
+        // Summons System
+        getSummonsState,
+        getActiveParty,
+        unlockCreature,
+        unlockAlly,
+        setActiveCreatures,
+        setActiveAllies,
+        addCreatureExp,
+
+        // Deckbuilding System
+        getDeckState,
+        getActiveDeck,
+        addCardToCollection,
+        setActiveDeck,
+        saveDeckPreset,
+        loadDeckPreset,
+
+        // Story Flags
+        getStoryFlags,
+        setMajorChoice,
+        getMajorChoice,
+        discoverSecret,
+        hasDiscoveredSecret,
+        recordEnding
     };
 }

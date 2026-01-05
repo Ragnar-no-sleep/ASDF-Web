@@ -71,7 +71,7 @@ const CONFIG = {
     // API endpoints (environment-specific)
     API_BASE: Environment.isDev
         ? 'http://localhost:3001/api'
-        : 'https://api.asdf-games.com/api',
+        : 'https://asdf-api.onrender.com/api',
 
     // DEPRECATED: Direct RPC calls from frontend
     // All RPC calls should go through the API (which uses Helius with proper rate limiting)

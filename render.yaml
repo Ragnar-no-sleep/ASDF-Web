@@ -1,12 +1,64 @@
 services:
-    - type: web
-      name: asdf-web
-      env: node
-      region: frankfurt
-      plan: free
-      buildCommand: npm install
-      startCommand: npm start
-      healthCheckPath: /health
-      envVars:
-        - key: NODE_ENV
-          value: production
+  # ===========================================
+  # FRONTEND - Web Static Server
+  # ===========================================
+  - type: web
+    name: asdf-web
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  # ===========================================
+  # API - Backend Server
+  # ===========================================
+  - type: web
+    name: asdf-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Server
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: 3001
+
+      # Helius RPC (set in Render dashboard)
+      - key: HELIUS_API_KEY
+        sync: false
+      - key: HELIUS_RPC_URL
+        sync: false
+
+      # Authentication (set in Render dashboard)
+      - key: JWT_SECRET
+        sync: false
+
+      # CORS - Update with your actual domains
+      - key: ALLOWED_ORIGINS
+        value: https://asdf-web.onrender.com,https://alonisthe.dev
+
+      # Solana
+      - key: ASDF_TOKEN_MINT
+        value: 9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump
+
+      # Redis Storage (Cache)
+      - key: STORAGE_BACKEND
+        value: redis
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_PREFIX
+        value: asdf:
+
+      # PostgreSQL Database (set in Render dashboard)
+      - key: DATABASE_URL
+        sync: false

@@ -4635,14 +4635,25 @@ function showShopPanel() {
                     </div>
                 </div>
 
-                <!-- Cosmetics Preview -->
+                <!-- Cosmetics Shop -->
                 <div>
-                    <div style="color: #a855f7; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span>✨</span> Cosmetics <span style="background: #a855f730; color: #c084fc; font-size: 10px; padding: 2px 8px; border-radius: 4px;">COMING SOON</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="color: #a855f7; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <span>✨</span> Cosmetics
+                        </div>
+                        <button id="open-cosmetics-shop" style="
+                            background: linear-gradient(135deg, #a855f7, #7c3aed);
+                            border: none; border-radius: 8px; padding: 8px 16px;
+                            color: #fff; font-size: 12px; font-weight: 600;
+                            cursor: pointer; display: flex; align-items: center; gap: 6px;
+                            transition: all 0.2s;
+                        ">
+                            <span>🎨</span> Open Shop
+                        </button>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                         ${Object.values(SHOP_ITEMS).filter(i => i.type === 'cosmetic').map(item => `
-                            <div style="background: linear-gradient(135deg, #1a1a24, #a855f710); border: 1px solid #a855f730; border-radius: 10px; padding: 12px; opacity: 0.7;">
+                            <div class="cosmetic-preview-card" style="background: linear-gradient(135deg, #1a1a24, #a855f710); border: 1px solid #a855f730; border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#a855f7'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#a855f730'; this.style.transform='none'">
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                                     <span style="font-size: 24px;">${item.icon}</span>
                                     <div>
@@ -4651,11 +4662,11 @@ function showShopPanel() {
                                     </div>
                                 </div>
                                 <div style="color: #a855f7; font-size: 10px; margin-bottom: 8px;">${item.description}</div>
-                                <button disabled style="
-                                    width: 100%; padding: 6px; background: #333;
-                                    border: 1px solid #555; border-radius: 6px; color: #666; font-size: 11px;
-                                    cursor: not-allowed;
-                                ">🔒 ${item.price} tokens</button>
+                                <div style="
+                                    width: 100%; padding: 6px; background: linear-gradient(135deg, #a855f720, #7c3aed20);
+                                    border: 1px solid #a855f750; border-radius: 6px; color: #c084fc; font-size: 11px;
+                                    text-align: center;
+                                ">🪙 ${item.price} tokens</div>
                             </div>
                         `).join('')}
                     </div>
@@ -4678,6 +4689,25 @@ function showShopPanel() {
             const result = buyShopItem(btn.dataset.item, true);
             showNotification(result.message, result.success ? 'success' : 'error');
             if (result.success) showShopPanel(); // Refresh
+        });
+    });
+
+    // Cosmetics shop handler
+    const cosmeticsBtn = content.querySelector('#open-cosmetics-shop');
+    if (cosmeticsBtn) {
+        cosmeticsBtn.addEventListener('click', () => {
+            if (window.PumpArenaCosmetics) {
+                window.PumpArenaCosmetics.openShop();
+            }
+        });
+    }
+
+    // Cosmetic preview cards - open shop on click
+    content.querySelectorAll('.cosmetic-preview-card').forEach(card => {
+        card.addEventListener('click', () => {
+            if (window.PumpArenaCosmetics) {
+                window.PumpArenaCosmetics.openShop();
+            }
         });
     });
 }

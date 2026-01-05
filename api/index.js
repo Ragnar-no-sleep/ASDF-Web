@@ -23,6 +23,7 @@ const rateLimit = require('express-rate-limit');
 const { generateChallenge, verifyAndAuthenticate, refreshToken, revokeToken, authMiddleware, optionalAuthMiddleware } = require('./services/auth');
 const { getTokenBalance, getTokenSupply, getRecentBurns, getWalletBurnHistory, getBatchTokenBalances, getPriorityFeeEstimate, healthCheck, isValidAddress } = require('./services/helius');
 const { getCatalogWithPrices, initiatePurchase, confirmPurchase, getInventory, getEquipped, equipItem, unequipLayer, getShopMetrics } = require('./services/shop');
+const shopV2 = require('./services/shopV2');
 const { getTopBurners, getXPLeaderboard, getUserRank, getStatistics, recordBurn, logAudit, syncFromBlockchain, getAuditLog } = require('./services/leaderboard');
 const { startGameSession, submitScore, getPlayerStats, getValidationMetrics } = require('./services/gameValidation');
 const { requireAdmin, getSecurityMetrics, generateNonce, isAdmin } = require('./services/security');
@@ -61,6 +62,9 @@ const { requestExport, downloadExport, requestDeletion, getRequestStatus: getExp
 const { middleware: idempotencyMiddleware, generateKey: generateIdempotencyKey, invalidateKey: invalidateIdempotencyKey, getStats: getIdempotencyStats } = require('./services/idempotency');
 const { createSession, validateSession, refreshSession, revokeSession, revokeAllUserSessions, getUserSessions, getUserDevices, blockDevice, trustDevice, getStats: getSessionStats } = require('./services/sessionManager');
 const { registerTag: registerApiTag, registerSchema: registerApiSchema, registerRoute: registerApiRoute, generateSpec, serveDocumentation, serveSwaggerUI, getStats: getOpenApiStats } = require('./services/openApiGenerator');
+
+// Phase 15: Storage Abstraction (Redis/Memory)
+const { getStorage, isStorageReady, BACKENDS } = require('./services/storage');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -318,6 +322,10 @@ app.use('/api', versioningMiddleware({ strict: false, warnDeprecated: true }));
 // Metrics collection (before rate limiting)
 app.use(metricsMiddleware);
 
+// Monitoring middleware
+const { requestTrackingMiddleware, errorTrackingMiddleware } = require('./services/monitoring');
+app.use(requestTrackingMiddleware);
+
 // Rate limiting by IP
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
@@ -441,15 +449,21 @@ app.get('/health', healthLimiter, async (req, res) => {
     const sessionStats = getSessionStats();
     const openApiStats = getOpenApiStats();
 
+    // Phase 15: Storage stats
+    const storage = getStorage();
+    const storageInfo = await storage.info().catch(() => ({ backend: 'unknown', error: true }));
+
     res.json({
         status: heliusHealth.healthy ? 'ok' : 'degraded',
         timestamp: new Date().toISOString(),
-        version: '1.7.0',
+        version: '1.8.0',
         services: {
             api: true,
             helius: heliusHealth.healthy,
             heliusEnhanced: heliusHealth.details?.enhancedApi || false,
             database: dbHealth.type,
+            storage: storageInfo.backend,
+            storageReady: isStorageReady(),
             webhooks: webhookMetrics.config.hasSecret,
             eventBus: eventBusMetrics.registeredEvents > 0
         },
@@ -588,6 +602,11 @@ app.get('/health', healthLimiter, async (req, res) => {
             openApi: {
                 routes: openApiStats.totalRoutes,
                 requests: openApiStats.requestsServed
+            },
+            storage: {
+                backend: storageInfo.backend,
+                keys: storageInfo.keys || 0,
+                stats: storageInfo.stats || {}
             }
         }
     });
@@ -869,6 +888,342 @@ app.post('/api/shop/unequip', authMiddleware, async (req, res) => {
 
     } catch (error) {
         res.status(400).json({ error: sanitizeError(error, 'unequip') });
+    }
+});
+
+// ============================================
+// ============================================
+// CSRF TOKEN ENDPOINT
+// ============================================
+
+/**
+ * Get CSRF token for state-changing requests
+ * GET /api/v2/csrf-token
+ */
+app.get('/api/v2/csrf-token', (req, res) => {
+    // Generate a simple CSRF token based on session/time
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Set token in cookie (httpOnly for security)
+    res.cookie('csrftoken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 3600000 // 1 hour
+    });
+
+    res.json({ token });
+});
+
+// ============================================
+// SHOP V2 ROUTES (Enhanced Cosmetic Shop)
+// ============================================
+
+/**
+ * Initialize shop (seed items on startup)
+ */
+shopV2.initializeShop().catch(err => console.error('[ShopV2] Init error:', err.message));
+
+/**
+ * Get shop v2 catalog with filters
+ * GET /api/v2/shop/catalog
+ * Query: ?layer=background&tier=3&rarity=rare&collection=dogs
+ */
+app.get('/api/v2/shop/catalog', optionalAuthMiddleware, async (req, res) => {
+    try {
+        const { layer, tier, rarity, collection_id } = req.query;
+        const engageTier = req.user?.tierIndex || 0;
+        const wallet = req.user?.wallet || null;
+
+        // Get current supply for dynamic pricing
+        const supply = await getTokenSupply();
+        const currentSupply = supply?.current || 1_000_000_000;
+
+        const filters = {};
+        if (layer) filters.layer = layer;
+        if (tier !== undefined) filters.tier = parseInt(tier);
+        if (rarity) filters.rarity = rarity;
+        if (collection_id) filters.collection_id = collection_id;
+
+        const catalog = await shopV2.getCatalog(filters, wallet, currentSupply, engageTier);
+
+        res.json({
+            items: catalog,
+            total: catalog.length,
+            supply: currentSupply
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-catalog') });
+    }
+});
+
+/**
+ * Get single item details
+ * GET /api/v2/shop/item/:itemId
+ */
+app.get('/api/v2/shop/item/:itemId', optionalAuthMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.params;
+        const engageTier = req.user?.tierIndex || 0;
+        const wallet = req.user?.wallet || null;
+
+        const supply = await getTokenSupply();
+        const currentSupply = supply?.current || 1_000_000_000;
+
+        const item = await shopV2.getItem(itemId, wallet, currentSupply, engageTier);
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' });
+        }
+
+        res.json({ item });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-item') });
+    }
+});
+
+/**
+ * Get user's inventory
+ * GET /api/v2/shop/inventory
+ */
+app.get('/api/v2/shop/inventory', authMiddleware, async (req, res) => {
+    try {
+        const inventory = await shopV2.getInventory(req.user.wallet);
+        const equipped = await shopV2.getEquipped(req.user.wallet);
+
+        res.json({ inventory, equipped });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-inventory') });
+    }
+});
+
+/**
+ * Get user's favorites
+ * GET /api/v2/shop/favorites
+ */
+app.get('/api/v2/shop/favorites', authMiddleware, async (req, res) => {
+    try {
+        const favorites = await shopV2.getFavorites(req.user.wallet);
+        res.json({ favorites });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-favorites') });
+    }
+});
+
+/**
+ * Toggle favorite
+ * POST /api/v2/shop/favorites/:itemId
+ */
+app.post('/api/v2/shop/favorites/:itemId', authMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.params;
+
+        if (!/^[a-z0-9_]{1,50}$/.test(itemId)) {
+            return res.status(400).json({ error: 'Invalid item ID format' });
+        }
+
+        const result = await shopV2.toggleFavorite(req.user.wallet, itemId);
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-favorite') });
+    }
+});
+
+/**
+ * Remove favorite
+ * DELETE /api/v2/shop/favorites/:itemId
+ */
+app.delete('/api/v2/shop/favorites/:itemId', authMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.params;
+        const db = require('./services/postgres');
+        await db.removeFavorite(req.user.wallet, itemId);
+        res.json({ success: true, favorited: false });
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-unfavorite') });
+    }
+});
+
+/**
+ * Get collections with progress
+ * GET /api/v2/shop/collections
+ */
+app.get('/api/v2/shop/collections', optionalAuthMiddleware, async (req, res) => {
+    try {
+        const wallet = req.user?.wallet || null;
+        const collections = await shopV2.getCollections(wallet);
+        res.json({ collections });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-collections') });
+    }
+});
+
+/**
+ * Get active shop events
+ * GET /api/v2/shop/events
+ */
+app.get('/api/v2/shop/events', async (req, res) => {
+    try {
+        const events = await shopV2.getActiveEvents();
+        res.json({ events });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'shop-v2-events') });
+    }
+});
+
+/**
+ * Initiate v2 purchase (supports dual currency)
+ * POST /api/v2/shop/purchase/initiate
+ * Body: { itemId, currency: 'burn' | 'ingame' }
+ */
+app.post('/api/v2/shop/purchase/initiate', authMiddleware, async (req, res) => {
+    try {
+        const { itemId, currency = 'burn' } = req.body;
+
+        if (!itemId) {
+            return res.status(400).json({ error: 'Item ID required' });
+        }
+
+        if (!/^[a-z0-9_]{1,50}$/.test(itemId)) {
+            return res.status(400).json({ error: 'Invalid item ID format' });
+        }
+
+        if (!['burn', 'ingame'].includes(currency)) {
+            return res.status(400).json({ error: 'Invalid currency type' });
+        }
+
+        const supply = await getTokenSupply();
+        const currentSupply = supply?.current || 1_000_000_000;
+
+        const result = await shopV2.initiatePurchase(
+            req.user.wallet,
+            itemId,
+            currency,
+            currentSupply,
+            req.user.tierIndex || 0
+        );
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-purchase-init') });
+    }
+});
+
+/**
+ * Confirm v2 purchase
+ * POST /api/v2/shop/purchase/confirm
+ * Body: { purchaseId, signature? }
+ */
+app.post('/api/v2/shop/purchase/confirm', authMiddleware, async (req, res) => {
+    try {
+        const { purchaseId, signature } = req.body;
+
+        if (!purchaseId) {
+            return res.status(400).json({ error: 'Purchase ID required' });
+        }
+
+        const result = await shopV2.confirmPurchase(purchaseId, signature);
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-purchase-confirm') });
+    }
+});
+
+/**
+ * Equip v2 item
+ * POST /api/v2/shop/equip
+ */
+app.post('/api/v2/shop/equip', authMiddleware, async (req, res) => {
+    try {
+        const { itemId } = req.body;
+
+        if (!itemId) {
+            return res.status(400).json({ error: 'Item ID required' });
+        }
+
+        const result = await shopV2.equipItem(req.user.wallet, itemId);
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-equip') });
+    }
+});
+
+/**
+ * Unequip v2 layer
+ * POST /api/v2/shop/unequip
+ */
+app.post('/api/v2/shop/unequip', authMiddleware, async (req, res) => {
+    try {
+        const { layer } = req.body;
+
+        if (!layer) {
+            return res.status(400).json({ error: 'Layer required' });
+        }
+
+        const result = await shopV2.unequipLayer(req.user.wallet, layer);
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'shop-v2-unequip') });
+    }
+});
+
+/**
+ * Get in-game currency balance
+ * GET /api/v2/currency/balance
+ */
+app.get('/api/v2/currency/balance', authMiddleware, async (req, res) => {
+    try {
+        const currency = await shopV2.getCurrencyBalance(req.user.wallet);
+        res.json(currency);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'currency-balance') });
+    }
+});
+
+/**
+ * Earn in-game currency (internal use, should be secured)
+ * POST /api/v2/currency/earn
+ */
+app.post('/api/v2/currency/earn', authMiddleware, async (req, res) => {
+    try {
+        const { amount, source, sourceId } = req.body;
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Valid amount required' });
+        }
+
+        if (!source) {
+            return res.status(400).json({ error: 'Source required' });
+        }
+
+        // Limit earning to prevent abuse (max 1000 per call)
+        const safeAmount = Math.min(amount, 1000);
+
+        const result = await shopV2.earnCurrency(
+            req.user.wallet,
+            safeAmount,
+            source,
+            sourceId
+        );
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(400).json({ error: sanitizeError(error, 'currency-earn') });
     }
 });
 
@@ -4255,6 +4610,481 @@ app.post('/api/admin/progression/event', authMiddleware, requireAdmin, async (re
 });
 
 // ============================================
+// REAL-TIME NOTIFICATIONS (Phase 15)
+// ============================================
+
+// Lazy load notification services
+let realtimeNotifications = null;
+let notificationPreferences = null;
+let pushNotifications = null;
+
+function getRealtimeNotifications() {
+    if (!realtimeNotifications) realtimeNotifications = require('./services/realtimeNotifications');
+    return realtimeNotifications;
+}
+
+function getNotificationPreferencesService() {
+    if (!notificationPreferences) notificationPreferences = require('./services/notificationPreferences');
+    return notificationPreferences;
+}
+
+function getPushNotifications() {
+    if (!pushNotifications) pushNotifications = require('./services/pushNotifications');
+    return pushNotifications;
+}
+
+/**
+ * Get user notification preferences
+ * GET /api/notifications/preferences
+ */
+app.get('/api/notifications/preferences', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const preferences = await getNotificationPreferencesService().getPreferences(wallet);
+        res.json(preferences);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'notification-preferences') });
+    }
+});
+
+/**
+ * Update notification preferences
+ * PUT /api/notifications/preferences
+ */
+app.put('/api/notifications/preferences', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const updates = req.body;
+
+        // Validate updates structure
+        const allowedKeys = ['enabled', 'channels', 'quietHours', 'digest'];
+        const invalidKeys = Object.keys(updates).filter(k => !allowedKeys.includes(k));
+        if (invalidKeys.length > 0) {
+            return res.status(400).json({ error: `Invalid keys: ${invalidKeys.join(', ')}` });
+        }
+
+        const result = await getNotificationPreferencesService().updatePreferences(wallet, updates);
+
+        // Log preference change
+        auditLog(AUDIT_EVENTS.SETTINGS_CHANGE, {
+            wallet,
+            category: 'notification_preferences',
+            changes: Object.keys(updates)
+        }, { severity: AUDIT_SEVERITY.LOW });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'update-preferences') });
+    }
+});
+
+/**
+ * Get notification history
+ * GET /api/notifications/history
+ */
+app.get('/api/notifications/history', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const { limit = 50, offset = 0, type, unreadOnly } = req.query;
+
+        const notifications = await getRealtimeNotifications().getNotificationHistory(wallet, {
+            limit: Math.min(parseInt(limit) || 50, 200),
+            offset: parseInt(offset) || 0,
+            type: type || null,
+            unreadOnly: unreadOnly === 'true'
+        });
+
+        res.json(notifications);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'notification-history') });
+    }
+});
+
+/**
+ * Get unread notification count
+ * GET /api/notifications/unread-count
+ */
+app.get('/api/notifications/unread-count', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const history = await getRealtimeNotifications().getNotificationHistory(wallet, { limit: 0 });
+        res.json({ count: history.unreadCount });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'unread-count') });
+    }
+});
+
+/**
+ * Mark notification(s) as read
+ * POST /api/notifications/read
+ */
+app.post('/api/notifications/read', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const { notificationIds, all = false } = req.body;
+
+        if (all) {
+            await getRealtimeNotifications().markAllRead(wallet);
+            return res.json({ success: true, message: 'All notifications marked as read' });
+        }
+
+        if (!notificationIds || !Array.isArray(notificationIds) || notificationIds.length === 0) {
+            return res.status(400).json({ error: 'notificationIds array required or set all=true' });
+        }
+
+        // Limit batch size
+        if (notificationIds.length > 100) {
+            return res.status(400).json({ error: 'Maximum 100 notifications per request' });
+        }
+
+        // Mark each notification as read
+        for (const id of notificationIds) {
+            await getRealtimeNotifications().markNotificationRead(wallet, id);
+        }
+        res.json({ success: true, marked: notificationIds.length });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'mark-read') });
+    }
+});
+
+/**
+ * Clear all notification history
+ * DELETE /api/notifications
+ */
+app.delete('/api/notifications', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        await getRealtimeNotifications().clearHistory(wallet);
+        res.json({ success: true, message: 'Notification history cleared' });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'delete-notifications') });
+    }
+});
+
+/**
+ * Register push notification token
+ * POST /api/notifications/push/register
+ */
+app.post('/api/notifications/push/register', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const { platform, token, subscription } = req.body;
+
+        // Validate platform
+        const validPlatforms = ['android', 'ios', 'web'];
+        if (!platform || !validPlatforms.includes(platform)) {
+            return res.status(400).json({ error: `Invalid platform. Must be one of: ${validPlatforms.join(', ')}` });
+        }
+
+        // Validate token/subscription based on platform
+        if (platform === 'web') {
+            if (!subscription || !subscription.endpoint || !subscription.keys) {
+                return res.status(400).json({ error: 'Web push requires subscription object with endpoint and keys' });
+            }
+        } else {
+            if (!token) {
+                return res.status(400).json({ error: 'Mobile push requires token' });
+            }
+        }
+
+        const tokenData = {
+            platform,
+            token: platform === 'web' ? null : token,
+            subscription: platform === 'web' ? subscription : null,
+            userAgent: req.headers['user-agent'],
+            ip: extractIP(req),
+            registeredAt: Date.now()
+        };
+
+        const result = await getNotificationPreferencesService().registerPushToken(wallet, tokenData);
+
+        // Log token registration
+        auditLog(AUDIT_EVENTS.DEVICE_LINKED, {
+            wallet,
+            platform,
+            tokenPrefix: token ? token.slice(0, 20) + '...' : 'web-push'
+        }, { severity: AUDIT_SEVERITY.LOW });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'register-push') });
+    }
+});
+
+/**
+ * Unregister push notification token
+ * DELETE /api/notifications/push/token
+ */
+app.delete('/api/notifications/push/token', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const { tokenId } = req.body;
+
+        if (!tokenId) {
+            return res.status(400).json({ error: 'tokenId required' });
+        }
+
+        const result = await getNotificationPreferencesService().unregisterPushToken(wallet, tokenId);
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'unregister-push') });
+    }
+});
+
+/**
+ * Get VAPID public key for web push
+ * GET /api/notifications/push/vapid-key
+ */
+app.get('/api/notifications/push/vapid-key', (req, res) => {
+    try {
+        const vapidKey = getPushNotifications().getVapidPublicKey();
+
+        if (!vapidKey) {
+            return res.status(503).json({ error: 'Web push not configured' });
+        }
+
+        res.json({ publicKey: vapidKey });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'vapid-key') });
+    }
+});
+
+/**
+ * Get user's registered push tokens
+ * GET /api/notifications/push/tokens
+ */
+app.get('/api/notifications/push/tokens', authMiddleware, async (req, res) => {
+    try {
+        const wallet = req.wallet;
+        const tokens = await getNotificationPreferencesService().getPushTokens(wallet);
+
+        // Return sanitized token info (hide full tokens)
+        const sanitizedTokens = tokens.map(t => ({
+            id: t.id,
+            platform: t.platform,
+            registeredAt: t.registeredAt,
+            lastUsed: t.lastUsed,
+            active: t.active
+        }));
+
+        res.json({ tokens: sanitizedTokens });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'get-tokens') });
+    }
+});
+
+/**
+ * Test push notification (development only)
+ * POST /api/notifications/push/test
+ */
+app.post('/api/notifications/push/test', authMiddleware, async (req, res) => {
+    try {
+        // Only allow in development
+        if (isProduction) {
+            return res.status(403).json({ error: 'Test endpoint disabled in production' });
+        }
+
+        const wallet = req.wallet;
+        const { title = 'Test Notification', body = 'This is a test from ASDF!' } = req.body;
+
+        const result = await getPushNotifications().sendPushNotification(wallet, {
+            type: 'test',
+            title,
+            body,
+            data: { test: true, timestamp: Date.now() }
+        });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'test-push') });
+    }
+});
+
+/**
+ * Subscribe to WebSocket notifications
+ * GET /api/notifications/subscribe-info
+ * Returns WebSocket connection info
+ */
+app.get('/api/notifications/subscribe-info', authMiddleware, (req, res) => {
+    try {
+        const wsPort = process.env.WS_PORT || 3002;
+        const wsHost = process.env.WS_HOST || (isProduction ? req.hostname : 'localhost');
+        const wsProtocol = isProduction ? 'wss' : 'ws';
+
+        res.json({
+            url: `${wsProtocol}://${wsHost}:${wsPort}`,
+            protocols: ['asdf-notifications-v1'],
+            heartbeatInterval: 21000, // 21 seconds (Fibonacci)
+            reconnectDelay: 1000,
+            maxReconnectDelay: 34000 // 34 seconds (Fibonacci)
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'subscribe-info') });
+    }
+});
+
+/**
+ * Send notification (admin/internal only)
+ * POST /api/admin/notifications/send
+ */
+app.post('/api/admin/notifications/send', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const { wallet, type, title, body, data, broadcast = false } = req.body;
+
+        // Validate required fields
+        if (!type || !title) {
+            return res.status(400).json({ error: 'type and title required' });
+        }
+
+        // Validate notification type
+        const validTypes = Object.values(getRealtimeNotifications().NOTIFICATION_TYPES);
+        if (!validTypes.includes(type)) {
+            return res.status(400).json({ error: `Invalid type. Must be one of: ${validTypes.join(', ')}` });
+        }
+
+        // Either wallet or broadcast required
+        if (!wallet && !broadcast) {
+            return res.status(400).json({ error: 'Either wallet or broadcast=true required' });
+        }
+
+        const notification = {
+            type,
+            title,
+            body: body || '',
+            data: data || {},
+            createdAt: Date.now()
+        };
+
+        let result;
+        if (broadcast) {
+            getRealtimeNotifications().broadcastToAll({
+                type: 'notification',
+                notification
+            });
+            result = { success: true, broadcast: true };
+        } else {
+            if (!isValidAddress(wallet)) {
+                return res.status(400).json({ error: 'Invalid wallet address' });
+            }
+            result = await getRealtimeNotifications().notifyWallet(wallet, notification);
+        }
+
+        // Log admin action
+        logAdminAction(AUDIT_EVENTS.ADMIN_ACTION, {
+            action: 'send_notification',
+            adminWallet: req.wallet,
+            targetWallet: wallet || 'broadcast',
+            notificationType: type
+        });
+
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'admin-send-notification') });
+    }
+});
+
+/**
+ * Get notification stats (admin)
+ * GET /api/admin/notifications/stats
+ */
+app.get('/api/admin/notifications/stats', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const wsStats = getRealtimeNotifications().getStats();
+        const pushStats = getPushNotifications().getStats();
+        const prefStats = getNotificationPreferencesService().getStats();
+
+        res.json({
+            websocket: wsStats,
+            push: pushStats,
+            preferences: prefStats,
+            timestamp: Date.now()
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'notification-stats') });
+    }
+});
+
+/**
+ * Get connected WebSocket clients (admin)
+ * GET /api/admin/notifications/connections
+ */
+app.get('/api/admin/notifications/connections', authMiddleware, requireAdmin, (req, res) => {
+    try {
+        const connectionInfo = getRealtimeNotifications().getConnectionInfo();
+        res.json(connectionInfo);
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'notification-connections') });
+    }
+});
+
+// ============================================
+// MONITORING ROUTES
+// ============================================
+
+/**
+ * Get monitoring stats (admin)
+ * GET /api/admin/monitoring
+ */
+app.get('/api/admin/monitoring', authMiddleware, requireAdmin, async (req, res) => {
+    try {
+        const monitoring = require('./services/monitoring');
+        const stats = monitoring.getStats();
+        const healthChecks = await monitoring.performHealthChecks();
+
+        res.json({
+            ...stats,
+            health: healthChecks,
+            timestamp: Date.now()
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: sanitizeError(error, 'monitoring') });
+    }
+});
+
+/**
+ * Get monitoring stats (public - limited info)
+ * GET /api/status
+ */
+app.get('/api/status', async (req, res) => {
+    try {
+        const monitoring = require('./services/monitoring');
+        const stats = monitoring.getStats();
+
+        res.json({
+            status: 'operational',
+            uptime: stats.uptime.human,
+            requests: {
+                total: stats.requests.total,
+                errorRate: stats.requests.errorRate
+            },
+            performance: {
+                avgLatency: stats.performance.avgLatency,
+                p95: stats.performance.p95
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+// ============================================
 // PROCESS ERROR HANDLERS
 // ============================================
 
@@ -4295,6 +5125,30 @@ const server = app.listen(PORT, async () => {
     console.log(`   Health: http://localhost:${PORT}/health`);
     console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
     console.log(`   Version: 1.8.0`);
+
+    // Initialize storage (Redis or Memory)
+    const { waitForStorage } = require('./services/storage');
+    try {
+        const storage = await waitForStorage();
+        const info = await storage.info();
+        console.log(`   Storage: ${info.backend} ${info.connected !== undefined ? (info.connected ? '(connected)' : '(disconnected)') : ''}`);
+    } catch (error) {
+        console.warn('   Storage: initialization warning -', error.message);
+    }
+
+    // Initialize PostgreSQL
+    const postgres = require('./services/postgres');
+    try {
+        await postgres.initialize();
+        if (postgres.isAvailable()) {
+            const health = await postgres.healthCheck();
+            console.log(`   Database: PostgreSQL (${health.latency}ms)`);
+        } else {
+            console.log('   Database: Memory-only mode (no DATABASE_URL)');
+        }
+    } catch (error) {
+        console.warn('   Database: initialization warning -', error.message);
+    }
 
     // Register server with shutdown service
     registerServer(server);
