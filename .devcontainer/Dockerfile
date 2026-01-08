@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/devcontainers/javascript-node:20
 
 # Metadata
 LABEL maintainer="ASDF Team"
-LABEL description="ASDF-Web development environment with Claude CLI and testing tools"
+LABEL description="ASDF-Web development environment with Claude CLI"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,18 +15,8 @@ RUN apt-get update && apt-get install -y \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude CLI globally
+# Install Claude CLI globally (not in devDependencies)
 RUN npm install -g @anthropic-ai/claude-code
-
-# Install testing tools globally
-RUN npm install -g \
-    eslint \
-    prettier \
-    jest \
-    playwright
-
-# Install Playwright browsers
-RUN npx playwright install --with-deps chromium
 
 # Set working directory
 WORKDIR /workspaces/ASDF-Web

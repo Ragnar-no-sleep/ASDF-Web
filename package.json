@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "dev": "npx serve . -p 3000 -C",
+    "dev": "node server.js",
     "preview": "npx serve . -p 3000",
     "test": "jest",
     "test:watch": "jest --watch",

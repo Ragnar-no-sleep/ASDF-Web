@@ -11,35 +11,44 @@ echo "=========================="
 echo "📦 Installing dependencies..."
 npm install
 
-# Setup git configuration for commits
+# Generate package-lock.json if missing (for CI)
+if [ ! -f "package-lock.json" ]; then
+    echo "📝 Generating package-lock.json..."
+    npm install --package-lock-only
+fi
+
+# Setup git configuration
 echo "🔧 Configuring git..."
 git config --global init.defaultBranch main
 git config --global pull.rebase false
 
-# Create Claude memory directories if they don't exist
-echo "🧠 Setting up Claude memory structure..."
+# Create directory structure
+echo "📁 Setting up project structure..."
 mkdir -p .claude/memory/decisions
 mkdir -p .claude/memory/sessions
+mkdir -p docs
+mkdir -p tests/unit
+mkdir -p tests/e2e
 
-# Setup pre-commit hooks
+# Initialize Husky (creates .husky/_)
 echo "🪝 Installing git hooks..."
-if [ -f ".husky/pre-commit" ]; then
-    npx husky install
-fi
+npx husky install 2>/dev/null || true
+chmod +x .husky/pre-commit 2>/dev/null || true
 
-# Verify Claude CLI installation
+# Install Playwright browsers
+echo "🎭 Installing Playwright browsers..."
+npx playwright install chromium
+
+# Verify Claude CLI
 echo "🤖 Verifying Claude CLI..."
 if command -v claude &> /dev/null; then
     echo "✅ Claude CLI installed"
-    echo ""
-    echo "📝 Pour activer Claude avec ton compte Max:"
-    echo "   claude login"
 else
     echo "⚠️  Claude CLI not found, installing..."
     npm install -g @anthropic-ai/claude-code
 fi
 
-# Setup MCP configuration if API keys are present
+# MCP setup hint
 if [ -n "$RENDER_API_KEY" ]; then
     echo "🔌 Render MCP configured"
 fi
@@ -48,10 +57,9 @@ echo ""
 echo "=========================="
 echo "✅ ASDF-Web Codespace Ready!"
 echo ""
-echo "Quick commands:"
-echo "  npm run dev     - Start dev server"
-echo "  npm test        - Run tests"
-echo "  npm run lint    - Check code quality"
-echo "  claude          - Start Claude CLI"
+echo "Next steps:"
+echo "  1. claude login     - Authenticate with Claude Max"
+echo "  2. npm start        - Start Express server"
+echo "  3. npm run validate - Run all checks"
 echo ""
 echo "This is fine. 🐕‍🦺🔥"
