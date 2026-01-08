@@ -8,44 +8,6 @@
 const API_BASE = 'https://asdf-api.onrender.com/api';
 
 // ============================================
-// FIRE PARTICLES
-// ============================================
-
-function initFireParticles() {
-    const container = document.getElementById('fire-particles');
-    if (!container) return;
-
-    // Create particles
-    for (let i = 0; i < 50; i++) {
-        createParticle(container);
-    }
-
-    // Continuously add new particles
-    setInterval(() => {
-        if (container.children.length < 100) {
-            createParticle(container);
-        }
-    }, 200);
-}
-
-function createParticle(container) {
-    const particle = document.createElement('div');
-    particle.className = 'fire-particle';
-    particle.style.left = `${Math.random() * 100}%`;
-    particle.style.animationDuration = `${3 + Math.random() * 4}s`;
-    particle.style.animationDelay = `${Math.random() * 2}s`;
-    particle.style.width = `${5 + Math.random() * 10}px`;
-    particle.style.height = particle.style.width;
-
-    container.appendChild(particle);
-
-    // Remove particle after animation
-    particle.addEventListener('animationend', () => {
-        particle.remove();
-    });
-}
-
-// ============================================
 // DATA FETCHING
 // ============================================
 
@@ -203,7 +165,7 @@ async function updateLeaderboard(period = 'all') {
             <span class="col-rank">#${index + 4}</span>
             <span class="col-wallet">${formatWallet(entry.wallet)}</span>
             <span class="col-burned">${formatNumber(entry.totalBurned)} ASDF</span>
-            <span class="col-burns">${entry.burnCount || '-'}</span>
+            <span class="col-count">${entry.burnCount || '-'}</span>
         </div>
     `).join('');
 }
@@ -234,7 +196,6 @@ async function updateRecentBurns() {
     if (data.burns.length === 0) {
         feedEl.innerHTML = `
             <div class="feed-empty">
-                <span class="empty-icon">🕯️</span>
                 <span>No recent burns</span>
             </div>
         `;
@@ -278,9 +239,6 @@ function setupTabListeners() {
 
 async function init() {
     console.log('[Burns] Initializing...');
-
-    // Start fire particles
-    initFireParticles();
 
     // Setup event listeners
     setupTabListeners();

@@ -1,0 +1,105 @@
+{
+  "project": "ASDF-Web",
+  "version": "2.0.0",
+  "environment": "codespaces",
+
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Task",
+      "mcp__*"
+    ],
+    "deny": []
+  },
+
+  "memory": {
+    "type": "github",
+    "path": ".claude/memory/",
+    "contextFile": ".claude/memory/context.md",
+    "decisionsDir": ".claude/memory/decisions/",
+    "backup": "claude-mem"
+  },
+
+  "mcp": {
+    "render": {
+      "enabled": true,
+      "workspace": "tea-d598ujshg0os73c7cj1g",
+      "services": {
+        "web": "srv-d599rtshg0os73c7u3qg",
+        "api": "srv-d5dhcs3e5dus739clqhg"
+      }
+    },
+    "github": {
+      "enabled": true,
+      "repo": "Ragnar-no-sleep/ASDF-Web"
+    },
+    "context7": {
+      "enabled": true,
+      "priority": ["solana", "helius", "express"]
+    }
+  },
+
+  "workflow": {
+    "gitFlow": true,
+    "branches": {
+      "main": "production",
+      "develop": "integration"
+    },
+    "prTemplate": ".github/PULL_REQUEST_TEMPLATE.md",
+    "commitValidation": "manual-pr"
+  },
+
+  "testing": {
+    "lint": "npm run lint",
+    "unit": "npm test",
+    "e2e": "npm run test:e2e",
+    "security": "npm audit",
+    "validate": "npm run validate"
+  },
+
+  "agentBudgets": {
+    "librarian": {
+      "maxTokens": 50000,
+      "description": "Research docs (context7, web, codebase)"
+    },
+    "integrity-auditor": {
+      "maxTokens": 20000,
+      "description": "Audit securite rapide (Haiku)"
+    },
+    "commit-analyzer": {
+      "maxTokens": 30000,
+      "description": "Git history analysis"
+    },
+    "ui-ux-architect": {
+      "maxTokens": 40000,
+      "description": "Design Apple x Helius, system.css"
+    },
+    "helius-architect": {
+      "maxTokens": 60000,
+      "description": "RPC patterns, K-Score, production"
+    }
+  },
+
+  "contextRatios": {
+    "comment": "Phi-based ratios: 61.8% / 23.6% / 14.6%",
+    "ACTIVE_WORK": 0.618,
+    "RESEARCH": 0.236,
+    "OVERHEAD": 0.146
+  },
+
+  "philosophy": {
+    "verify": "Test everything, assume nothing",
+    "burn": "Remove waste, keep only essential",
+    "hold": "Stability over speed, quality over quantity"
+  }
+}

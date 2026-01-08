@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+    <style>html,body{background:#0a0a0f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HolDEX - Token Tracker for Holders | ASDF Ecosystem</title>
+    <meta name="description" content="DEX screener built for holders. Track Solana tokens with K-Score conviction metrics. Fees fuel the ASDF burn.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="HolDEX - Token Tracker for Holders">
+    <meta property="og:description" content="Track Solana tokens with K-Score conviction metrics. Built for holders, by holders.">
+    <meta property="og:image" content="https://alonisthe.dev/og-holdex.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://holdex.onrender.com https://*.solana.com https://api.dexscreener.com;
+    ">
+
+    <link rel="stylesheet" href="css/holdex.css">
+</head>
+<body>
+    <!-- Subtle Background -->
+    <div class="bg-ambient">
+        <div class="bg-gradient"></div>
+        <div class="bg-grid"></div>
+        <div class="bg-glow"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">
+                    <span class="logo-asdf">ASDF</span>
+                    <span class="logo-sep">/</span>
+                    <span class="logo-page">HolDEX</span>
+                </a>
+            </div>
+
+            <div class="header-center">
+                <div class="search-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" id="search-input" placeholder="Search token name, symbol, or address...">
+                </div>
+            </div>
+
+            <div class="header-right">
+                <nav class="nav">
+                    <a href="/">Home</a>
+                    <a href="/ignition">Ignition</a>
+                    <a href="/forecast">Forecast</a>
+                    <a href="/burns">Burns</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Left Sidebar - Stats & K-Score Info -->
+            <aside class="sidebar sidebar-left">
+                <div class="widget">
+                    <div class="widget-header">
+                        <span class="widget-title">Market Overview</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value" id="stat-tokens">847</span>
+                            <span class="stat-label">Tokens</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value" id="stat-volume">$24.7M</span>
+                            <span class="stat-label">24h Volume</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget widget-kscore">
+                    <div class="widget-header">
+                        <span class="widget-title">K-Score</span>
+                        <span class="widget-badge">Conviction Metric</span>
+                    </div>
+                    <div class="kscore-display">
+                        <div class="kscore-ring">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="kscore-bg" cx="50" cy="50" r="42"/>
+                                <circle class="kscore-progress" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="35"/>
+                            </svg>
+                            <span class="kscore-value">87</span>
+                        </div>
+                    </div>
+                    <div class="kscore-factors">
+                        <div class="factor">
+                            <span class="factor-label">Distribution</span>
+                            <div class="factor-bar"><div class="factor-fill" style="width:85%"></div></div>
+                            <span class="factor-pct">35%</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-label">Velocity</span>
+                            <div class="factor-bar"><div class="factor-fill" style="width:70%"></div></div>
+                            <span class="factor-pct">25%</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-label">Whale Risk</span>
+                            <div class="factor-bar"><div class="factor-fill" style="width:60%"></div></div>
+                            <span class="factor-pct">20%</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-label">Activity</span>
+                            <div class="factor-bar"><div class="factor-fill" style="width:90%"></div></div>
+                            <span class="factor-pct">20%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center - Token Table -->
+            <section class="content">
+                <div class="table-controls">
+                    <div class="filters">
+                        <button class="filter active" data-filter="all">All</button>
+                        <button class="filter" data-filter="trending">Trending</button>
+                        <button class="filter" data-filter="new">New</button>
+                        <button class="filter" data-filter="verified">Verified</button>
+                    </div>
+                    <div class="sort">
+                        <span class="sort-label">Sort:</span>
+                        <select id="sort-select" class="sort-select">
+                            <option value="kscore">K-Score</option>
+                            <option value="volume">Volume</option>
+                            <option value="mcap">Market Cap</option>
+                            <option value="change">24h Change</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="token-table">
+                        <thead>
+                            <tr>
+                                <th class="col-rank">#</th>
+                                <th class="col-token">Token</th>
+                                <th class="col-price">Price</th>
+                                <th class="col-change">24h</th>
+                                <th class="col-volume">Volume</th>
+                                <th class="col-mcap">Market Cap</th>
+                                <th class="col-holders">Holders</th>
+                                <th class="col-kscore">K-Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="token-list">
+                            <tr class="token-row" data-token="asdf">
+                                <td class="rank">1</td>
+                                <td class="token-info">
+                                    <div class="token-icon">A</div>
+                                    <div class="token-details">
+                                        <span class="token-name">ASDFASDFA</span>
+                                        <span class="token-symbol">$ASDF</span>
+                                    </div>
+                                </td>
+                                <td class="price">$0.0042</td>
+                                <td class="change positive">+12.5%</td>
+                                <td class="volume">$1.2M</td>
+                                <td class="mcap">$4.2M</td>
+                                <td class="holders">2,847</td>
+                                <td class="kscore">
+                                    <div class="kscore-mini">
+                                        <span>87</span>
+                                        <div class="kscore-bar-mini"><div style="width:87%"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="token-row" data-token="sample1">
+                                <td class="rank">2</td>
+                                <td class="token-info">
+                                    <div class="token-icon">S</div>
+                                    <div class="token-details">
+                                        <span class="token-name">Sample Token</span>
+                                        <span class="token-symbol">$SMPL</span>
+                                    </div>
+                                </td>
+                                <td class="price">$0.0015</td>
+                                <td class="change negative">-3.2%</td>
+                                <td class="volume">$450K</td>
+                                <td class="mcap">$1.5M</td>
+                                <td class="holders">1,234</td>
+                                <td class="kscore">
+                                    <div class="kscore-mini">
+                                        <span>72</span>
+                                        <div class="kscore-bar-mini"><div style="width:72%"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="token-row" data-token="sample2">
+                                <td class="rank">3</td>
+                                <td class="token-info">
+                                    <div class="token-icon">T</div>
+                                    <div class="token-details">
+                                        <span class="token-name">Test Token</span>
+                                        <span class="token-symbol">$TEST</span>
+                                    </div>
+                                </td>
+                                <td class="price">$0.00089</td>
+                                <td class="change positive">+45.8%</td>
+                                <td class="volume">$890K</td>
+                                <td class="mcap">$890K</td>
+                                <td class="holders">567</td>
+                                <td class="kscore">
+                                    <div class="kscore-mini">
+                                        <span>65</span>
+                                        <div class="kscore-bar-mini"><div style="width:65%"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="token-row" data-token="sample3">
+                                <td class="rank">4</td>
+                                <td class="token-info">
+                                    <div class="token-icon">M</div>
+                                    <div class="token-details">
+                                        <span class="token-name">Moon Token</span>
+                                        <span class="token-symbol">$MOON</span>
+                                    </div>
+                                </td>
+                                <td class="price">$0.0028</td>
+                                <td class="change positive">+8.3%</td>
+                                <td class="volume">$2.1M</td>
+                                <td class="mcap">$3.8M</td>
+                                <td class="holders">4,521</td>
+                                <td class="kscore">
+                                    <div class="kscore-mini">
+                                        <span>79</span>
+                                        <div class="kscore-bar-mini"><div style="width:79%"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="token-row" data-token="sample4">
+                                <td class="rank">5</td>
+                                <td class="token-info">
+                                    <div class="token-icon">D</div>
+                                    <div class="token-details">
+                                        <span class="token-name">Diamond Hands</span>
+                                        <span class="token-symbol">$DIAM</span>
+                                    </div>
+                                </td>
+                                <td class="price">$0.0067</td>
+                                <td class="change negative">-1.8%</td>
+                                <td class="volume">$780K</td>
+                                <td class="mcap">$2.1M</td>
+                                <td class="holders">1,892</td>
+                                <td class="kscore">
+                                    <div class="kscore-mini">
+                                        <span>82</span>
+                                        <div class="kscore-bar-mini"><div style="width:82%"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Right Sidebar - Selected Token Details -->
+            <aside class="sidebar sidebar-right">
+                <div class="widget" id="token-detail">
+                    <div class="widget-header">
+                        <span class="widget-title">Token Details</span>
+                    </div>
+                    <div class="detail-placeholder">
+                        <span>Select a token to view details</span>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">
+                        <span class="widget-title">Top Gainers</span>
+                    </div>
+                    <div class="gainers-list">
+                        <div class="gainer">
+                            <span class="gainer-symbol">$TEST</span>
+                            <span class="gainer-change">+45.8%</span>
+                        </div>
+                        <div class="gainer">
+                            <span class="gainer-symbol">$ASDF</span>
+                            <span class="gainer-change">+12.5%</span>
+                        </div>
+                        <div class="gainer">
+                            <span class="gainer-symbol">$MOON</span>
+                            <span class="gainer-change">+8.3%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span class="footer-brand">HolDEX</span>
+            <span class="footer-sep">·</span>
+            <span class="footer-text">Fees fuel the <a href="/burns">ASDF burn</a></span>
+            <span class="footer-right">Built for holders</span>
+        </footer>
+    </div>
+
+    <!-- Token Detail Modal -->
+    <div class="modal" id="token-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-token">
+                    <div class="modal-icon" id="modal-icon">A</div>
+                    <div>
+                        <div class="modal-name" id="modal-name">ASDFASDFA</div>
+                        <div class="modal-symbol" id="modal-symbol">$ASDF</div>
+                    </div>
+                </div>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-stats">
+                    <div class="modal-stat">
+                        <span class="modal-stat-value" id="modal-price">$0.0042</span>
+                        <span class="modal-stat-label">Price</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span class="modal-stat-value" id="modal-mcap">$4.2M</span>
+                        <span class="modal-stat-label">Market Cap</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span class="modal-stat-value" id="modal-volume">$1.2M</span>
+                        <span class="modal-stat-label">24h Volume</span>
+                    </div>
+                    <div class="modal-stat">
+                        <span class="modal-stat-value" id="modal-kscore">87</span>
+                        <span class="modal-stat-label">K-Score</span>
+                    </div>
+                </div>
+                <div class="modal-chart">
+                    <span>Chart integration coming soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/holdex.js"></script>
+</body>
+</html>

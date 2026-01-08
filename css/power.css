@@ -1,0 +1,597 @@
+/* ============================================
+   ASDF POWER
+   "I can build anything."
+   ============================================ */
+
+:root {
+    /* The void - where creation begins */
+    --void: #000000;
+    --void-soft: #050508;
+    --void-glow: #0a0a10;
+
+    /* Energy - the spark of creation */
+    --energy: #ffffff;
+    --energy-soft: rgba(255, 255, 255, 0.7);
+    --energy-dim: rgba(255, 255, 255, 0.4);
+    --energy-ghost: rgba(255, 255, 255, 0.1);
+    --energy-whisper: rgba(255, 255, 255, 0.05);
+
+    /* Fire - the forge */
+    --fire: #ff6b35;
+    --fire-glow: rgba(255, 107, 53, 0.15);
+
+    /* Typography - commanding */
+    --font-power: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+    /* Motion */
+    --ease-power: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration: 0.4s;
+}
+
+/* Reset */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    background: var(--void);
+    color: var(--energy);
+    font-family: var(--font-power);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+::selection {
+    background: var(--fire);
+    color: var(--void);
+}
+
+/* ============================================
+   THE VOID - Background
+   ============================================ */
+
+.void {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--void);
+}
+
+/* Subtle energy field - barely perceptible */
+.void::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    width: 800px;
+    height: 800px;
+    transform: translateX(-50%);
+    background: radial-gradient(
+        ellipse at center,
+        var(--energy-whisper) 0%,
+        transparent 60%
+    );
+    pointer-events: none;
+}
+
+/* ============================================
+   NAVIGATION - Minimal
+   ============================================ */
+
+.nav-power {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    color: var(--energy);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--energy);
+    color: var(--void);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--energy-dim);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color var(--duration) var(--ease-power);
+}
+
+.nav-links a:hover {
+    color: var(--energy);
+}
+
+.nav-cta {
+    padding: 10px 20px;
+    background: var(--energy);
+    color: var(--void);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all var(--duration) var(--ease-power);
+}
+
+.nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px var(--energy-ghost);
+}
+
+/* ============================================
+   HERO - The Command
+   ============================================ */
+
+.hero-power {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+}
+
+.hero-command {
+    font-size: clamp(48px, 12vw, 140px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    margin-bottom: 48px;
+}
+
+.hero-command span {
+    display: block;
+}
+
+/* "anything" with subtle energy */
+.hero-command .word-anything {
+    background: linear-gradient(
+        135deg,
+        var(--energy) 0%,
+        var(--energy-soft) 50%,
+        var(--energy) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+}
+
+/* ============================================
+   THE QUESTION
+   ============================================ */
+
+.question {
+    margin-bottom: 40px;
+}
+
+.question-text {
+    font-size: 18px;
+    color: var(--energy-dim);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+/* ============================================
+   PATH SELECTION - What will you create?
+   ============================================ */
+
+.paths {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 80px;
+}
+
+.path {
+    position: relative;
+    padding: 20px 36px;
+    background: transparent;
+    border: 1px solid var(--energy-ghost);
+    border-radius: 12px;
+    color: var(--energy-soft);
+    font-family: var(--font-power);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--duration) var(--ease-power);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.path:hover {
+    background: var(--energy-whisper);
+    border-color: var(--energy-dim);
+    color: var(--energy);
+    transform: translateY(-4px);
+}
+
+.path:active {
+    transform: translateY(-2px);
+}
+
+.path-icon {
+    font-size: 18px;
+}
+
+/* Explore path - subtle */
+.path-explore {
+    padding: 20px 24px;
+    border-color: transparent;
+}
+
+.path-explore:hover {
+    border-color: var(--energy-ghost);
+}
+
+/* ============================================
+   LIVE PROOF - The Heartbeat
+   ============================================ */
+
+.proof {
+    width: 100%;
+    max-width: 700px;
+    padding: 20px 0;
+    border-top: 1px solid var(--energy-whisper);
+}
+
+.proof-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+}
+
+.proof-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--energy-dim);
+}
+
+.proof-stat-value {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--energy-soft);
+}
+
+.proof-stat-icon {
+    color: var(--fire);
+}
+
+/* Live indicator */
+.proof-live {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.proof-live::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--fire);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* ============================================
+   ACTIVITY FEED - Creation happening now
+   ============================================ */
+
+.feed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 40px;
+    background: linear-gradient(to top, var(--void) 0%, transparent 100%);
+}
+
+.feed-track {
+    display: flex;
+    gap: 32px;
+    animation: scroll-feed 30s linear infinite;
+    white-space: nowrap;
+}
+
+.feed-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--energy-dim);
+}
+
+.feed-item-icon {
+    color: var(--fire);
+}
+
+.feed-item-action {
+    color: var(--energy-soft);
+}
+
+.feed-item-time {
+    color: var(--energy-ghost);
+}
+
+@keyframes scroll-feed {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* ============================================
+   SCROLL INDICATOR
+   ============================================ */
+
+.scroll-hint {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--energy-ghost);
+    font-size: 12px;
+}
+
+.scroll-hint-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--energy-ghost), transparent);
+    animation: scroll-pulse 2s ease-in-out infinite;
+}
+
+@keyframes scroll-pulse {
+    0%, 100% { transform: scaleY(1); opacity: 0.5; }
+    50% { transform: scaleY(0.6); opacity: 1; }
+}
+
+/* ============================================
+   TOOLS SECTION - Instruments of Power
+   ============================================ */
+
+.tools-section {
+    min-height: 100vh;
+    padding: 120px 40px;
+}
+
+.tools-header {
+    max-width: 600px;
+    margin-bottom: 80px;
+}
+
+.tools-title {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+}
+
+.tools-subtitle {
+    font-size: 18px;
+    color: var(--energy-dim);
+    line-height: 1.6;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+}
+
+.tool-card {
+    padding: 32px;
+    background: var(--energy-whisper);
+    border: 1px solid var(--energy-ghost);
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--duration) var(--ease-power);
+}
+
+.tool-card:hover {
+    background: var(--energy-ghost);
+    border-color: var(--energy-dim);
+    transform: translateY(-8px);
+}
+
+.tool-card-icon {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.tool-card-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.tool-card-desc {
+    font-size: 14px;
+    color: var(--energy-dim);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.tool-card-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--fire-glow);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fire);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================
+   FOOTER - Minimal
+   ============================================ */
+
+.footer-power {
+    padding: 40px;
+    border-top: 1px solid var(--energy-whisper);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-brand {
+    font-size: 14px;
+    color: var(--energy-dim);
+}
+
+.footer-links {
+    display: flex;
+    gap: 24px;
+}
+
+.footer-links a {
+    font-size: 14px;
+    color: var(--energy-dim);
+    text-decoration: none;
+    transition: color var(--duration) var(--ease-power);
+}
+
+.footer-links a:hover {
+    color: var(--energy);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .nav-power {
+        padding: 20px 24px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hero-power {
+        padding: 100px 24px 60px;
+    }
+
+    .hero-command {
+        font-size: clamp(36px, 15vw, 80px);
+        margin-bottom: 32px;
+    }
+
+    .question-text {
+        font-size: 16px;
+    }
+
+    .paths {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .path {
+        justify-content: center;
+    }
+
+    .proof-stats {
+        flex-wrap: wrap;
+        gap: 24px;
+    }
+
+    .tools-section {
+        padding: 80px 24px;
+    }
+
+    .footer-power {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-command {
+        font-size: clamp(32px, 18vw, 60px);
+    }
+
+    .proof-stats {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-command .word-anything {
+        animation: none;
+    }
+
+    .feed-track {
+        animation: none;
+    }
+
+    .scroll-hint-line {
+        animation: none;
+    }
+
+    .proof-live::before {
+        animation: none;
+    }
+}

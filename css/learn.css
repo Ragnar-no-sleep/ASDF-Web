@@ -9477,3 +9477,83 @@
         width: 100%;
     }
 }
+
+/* ===========================================
+   GAMES SUB-NAVIGATION STYLES
+   =========================================== */
+
+/* Sub-tabs container */
+.games-sub-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-ember);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-rust);
+}
+
+/* Sub-tab button */
+.games-sub-tab {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.games-sub-tab:hover {
+    color: var(--text-cream);
+    background: rgba(234, 88, 12, 0.15);
+}
+
+.games-sub-tab.active {
+    background: var(--accent-fire);
+    color: #fff;
+}
+
+/* Sub-sections */
+.games-sub-section {
+    min-height: 400px;
+}
+
+.games-sub-section.active {
+    display: block;
+}
+
+/* Hub navigation cards */
+.hub-nav-card {
+    background: var(--bg-charred);
+    border: 2px solid var(--border-rust);
+    border-radius: 16px;
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hub-nav-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-fire);
+    box-shadow: 0 0 30px rgba(234, 88, 12, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .games-sub-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .games-sub-tab {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .hub-nav-card {
+        padding: 20px;
+    }
+}

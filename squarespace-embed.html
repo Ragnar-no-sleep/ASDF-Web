@@ -1,68 +1,32 @@
 <!--
   ASDF Ecosystem - Squarespace Integration
-
-  OPTION 1: Full Page Embed (Recommended)
-  Copy this entire code into a Squarespace Code Block
-
   Backend URL: https://asdf-web.onrender.com
-  Widget URL:  https://asdf-web.onrender.com/widget
 
-  Routes available:
-  /        → Homepage (Optimistic Burn Protocol)
-  /widget  → Dedicated embeddable endpoint
-  /story   → Learn platform
-  /ignition → Games platform
+  Copy this code into a Squarespace Code Block
 -->
 
 <style>
-  /* Reset Squarespace container */
-  .sqs-block-content {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .asdf-embed-container {
+  .sqs-block-content { padding: 0 !important; margin: 0 !important; }
+  .asdf-container {
     position: relative;
     width: 100%;
     min-height: 100vh;
-    margin: -50px -50px 0 -50px; /* Override Squarespace padding */
+    margin: -50px -50px 0 -50px;
     padding: 0;
   }
-
-  .asdf-embed-container iframe {
+  .asdf-container iframe {
     width: 100vw;
     height: 100vh;
     border: none;
     display: block;
   }
-
-  /* Hide Squarespace header/footer if needed */
-  /* Uncomment these if you want full takeover:
-  header, footer, .header, .footer { display: none !important; }
-  */
 </style>
 
-<div class="asdf-embed-container">
+<div class="asdf-container">
   <iframe
-    src="https://asdf-web.onrender.com/widget?v=2024123001"
+    src="https://asdf-web.onrender.com/?embed=true&v=20260105"
     title="ASDFASDFA - The Optimistic Burn Protocol"
     loading="eager"
     allow="clipboard-write"
   ></iframe>
 </div>
-
-<!--
-  OPTION 2: Simple Redirect
-  If iframe doesn't work well, use this instead:
-
-  <script>
-    window.location.href = 'https://asdf-web.onrender.com/widget';
-  </script>
-
-  OPTION 3: Direct Link Buttons
-  Add these anywhere in Squarespace for direct navigation:
-
-  <a href="https://asdf-web.onrender.com" class="asdf-btn">Enter ASDF</a>
-  <a href="https://asdf-web.onrender.com/ignition" class="asdf-btn">Play Games</a>
-  <a href="https://asdf-web.onrender.com/story" class="asdf-btn">Learn More</a>
--->

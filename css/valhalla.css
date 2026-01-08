@@ -54,6 +54,108 @@
 }
 
 /* ============================================
+   NAVIGATION BAR
+   ============================================ */
+
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 12px 24px;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 2px solid var(--valhalla-iron);
+}
+
+.nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #f5f5f4;
+}
+
+.nav-logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    background: var(--valhalla-sunset);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* DEV Mode Button */
+.dev-mode-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    background: transparent;
+    border: 1px solid var(--valhalla-violet);
+    color: var(--valhalla-violet);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--valhalla-transition);
+}
+
+.dev-mode-btn:hover {
+    background: var(--valhalla-violet);
+    color: #fff;
+}
+
+.dev-mode-btn.active {
+    background: var(--valhalla-violet);
+    color: #fff;
+    box-shadow: var(--valhalla-glow-violet);
+}
+
+/* Visitor Badge */
+.visitor-badge {
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--valhalla-stone);
+    color: var(--valhalla-steel);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Wallet Button */
+.wallet-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--valhalla-sunset);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--valhalla-transition);
+}
+
+.wallet-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--valhalla-glow-gold);
+}
+
+/* ============================================
    NAVIGATION TABS
    ============================================ */
 
@@ -92,6 +194,62 @@
     background: var(--valhalla-sunset);
     color: #fff;
     box-shadow: var(--valhalla-glow-gold);
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+
+.main {
+    padding-top: 80px; /* Account for fixed nav */
+    min-height: 100vh;
+}
+
+/* ============================================
+   NAVIGATION RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .nav {
+        padding: 10px 16px;
+    }
+
+    .nav-content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .nav-logo {
+        order: 1;
+    }
+
+    .nav-tabs {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .nav-right {
+        order: 2;
+    }
+
+    .nav-tab {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .wallet-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .main {
+        padding-top: 120px; /* More space for wrapped nav */
+    }
 }
 
 /* ============================================

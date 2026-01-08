@@ -555,4 +555,83 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // ============================================
+    // GAMES SUB-NAVIGATION
+    // Handle Hub, Games, Shop, Profile, Settings sub-tabs
+    // ============================================
+
+    /**
+     * Switch between games sub-sections
+     * @param {string} subView - The sub-view to show (hub, play, shop, profile, settings)
+     */
+    function switchGamesSubView(subView) {
+        // Hide all sub-sections
+        document.querySelectorAll('.games-sub-section').forEach(function(section) {
+            section.style.display = 'none';
+            section.classList.remove('active');
+        });
+
+        // Show the target sub-section
+        const targetSection = document.getElementById('games-sub-' + subView);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            targetSection.classList.add('active');
+        }
+
+        // Update sub-tab active states
+        document.querySelectorAll('.games-sub-tab').forEach(function(tab) {
+            tab.classList.remove('active');
+            tab.style.background = 'transparent';
+            tab.style.color = 'var(--text-muted)';
+        });
+
+        const activeTab = document.querySelector('.games-sub-tab[data-games-view="' + subView + '"]');
+        if (activeTab) {
+            activeTab.classList.add('active');
+            activeTab.style.background = 'var(--accent-fire)';
+            activeTab.style.color = '#fff';
+        }
+
+        // Initialize shop if switching to shop view
+        if (subView === 'shop' && window.ShopV2 && !window.ShopV2.initialized) {
+            window.ShopV2.init({ containerId: 'shop-container' });
+        }
+    }
+
+    // Expose function globally
+    window.switchGamesSubView = switchGamesSubView;
+
+    // Games sub-tab click handlers
+    document.querySelectorAll('.games-sub-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            const subView = this.dataset.gamesView;
+            if (subView) {
+                switchGamesSubView(subView);
+            }
+        });
+    });
+
+    // Hub navigation card click handlers
+    document.querySelectorAll('.hub-nav-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            const subView = this.dataset.gamesView;
+            if (subView) {
+                switchGamesSubView(subView);
+            }
+        });
+
+        // Hover effect
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.borderColor = 'var(--accent-fire)';
+            this.style.boxShadow = '0 0 30px rgba(234, 88, 12, 0.3)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+            this.style.borderColor = 'var(--border-rust)';
+            this.style.boxShadow = '';
+        });
+    });
 });

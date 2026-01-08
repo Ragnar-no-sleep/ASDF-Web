@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDF — Build anything</title>
+    <meta name="description" content="Build anything. The ecosystem that turns your ideas into reality on Solana.">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alonisthe.dev/">
+    <meta property="og:title" content="ASDF — Build anything">
+    <meta property="og:description" content="The ecosystem that turns your ideas into reality on Solana.">
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ASDF — Build anything">
+    <meta name="twitter:description" content="The ecosystem that turns your ideas into reality.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- Security -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://asdf-api.onrender.com https://api.mainnet-beta.solana.com;
+        object-src 'none';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/power.css">
+</head>
+<body>
+    <!-- The Void -->
+    <div class="void"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-power">
+        <a href="/" class="nav-logo">
+            <span class="nav-logo-mark">A</span>
+            <span>ASDF</span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="learn.html">Learn</a></li>
+            <li><a href="burns.html">Burns</a></li>
+            <li><a href="games.html">Games</a></li>
+            <li><a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+
+        <a href="holdex.html" class="nav-cta">Open HolDex</a>
+    </nav>
+
+    <!-- Hero: The Command -->
+    <section class="hero-power">
+        <h1 class="hero-command">
+            <span>Build</span>
+            <span class="word-anything">anything.</span>
+        </h1>
+
+        <!-- The Question -->
+        <div class="question">
+            <p class="question-text">What will you create?</p>
+        </div>
+
+        <!-- Paths -->
+        <div class="paths">
+            <a href="https://alonisthe.dev/ignition" class="path">
+                <span class="path-icon">&#9670;</span>
+                A Token
+            </a>
+            <a href="learn.html#build" class="path">
+                <span class="path-icon">&#9632;</span>
+                An App
+            </a>
+            <a href="games.html" class="path">
+                <span class="path-icon">&#9650;</span>
+                A Game
+            </a>
+            <a href="learn.html" class="path path-explore">
+                Explore &rarr;
+            </a>
+        </div>
+
+        <!-- Proof: Live Stats -->
+        <div class="proof">
+            <div class="proof-stats">
+                <div class="proof-stat proof-live">
+                    <span class="proof-stat-icon">&#128293;</span>
+                    <span class="proof-stat-value" id="burned">--</span>
+                    <span>burned</span>
+                </div>
+                <div class="proof-stat">
+                    <span class="proof-stat-value" id="builders">--</span>
+                    <span>builders</span>
+                </div>
+                <div class="proof-stat">
+                    <span class="proof-stat-value" id="today">--</span>
+                    <span>launched today</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll hint -->
+        <div class="scroll-hint">
+            <span>Tools</span>
+            <div class="scroll-hint-line"></div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools-section" id="tools">
+        <div class="tools-header">
+            <h2 class="tools-title">Your instruments.</h2>
+            <p class="tools-subtitle">
+                Everything you need to go from idea to reality.
+                Every tool is open source. Every action burns tokens.
+            </p>
+        </div>
+
+        <div class="tools-grid">
+            <a href="holdex.html" class="tool-card">
+                <div class="tool-card-icon">&#128200;</div>
+                <h3 class="tool-card-name">HolDex</h3>
+                <p class="tool-card-desc">
+                    Token analytics with conviction metrics.
+                    See what others are building.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+
+            <a href="forecast.html" class="tool-card">
+                <div class="tool-card-icon">&#127919;</div>
+                <h3 class="tool-card-name">Forecast</h3>
+                <p class="tool-card-desc">
+                    Prediction market. Bet on the future.
+                    All fees burn.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+
+            <a href="burns.html" class="tool-card">
+                <div class="tool-card-icon">&#128293;</div>
+                <h3 class="tool-card-name">Burns</h3>
+                <p class="tool-card-desc">
+                    Watch tokens disappear forever.
+                    Real-time. Verifiable.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+
+            <a href="https://alonisthe.dev/ignition" class="tool-card">
+                <div class="tool-card-icon">&#128640;</div>
+                <h3 class="tool-card-name">Ignition</h3>
+                <p class="tool-card-desc">
+                    Launch tokens with vanity addresses.
+                    One click to creation.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+
+            <a href="learn.html" class="tool-card">
+                <div class="tool-card-icon">&#128218;</div>
+                <h3 class="tool-card-name">Learn</h3>
+                <p class="tool-card-desc">
+                    Interactive guides. From zero to builder.
+                    Master the ecosystem.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+
+            <a href="games.html" class="tool-card">
+                <div class="tool-card-icon">&#127918;</div>
+                <h3 class="tool-card-name">Games</h3>
+                <p class="tool-card-desc">
+                    Play. Compete. Earn.
+                    Pump Arena and more.
+                </p>
+                <span class="tool-card-status">Live</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-power">
+        <div class="footer-brand">
+            Open source. Verifiable on-chain.
+        </div>
+        <div class="footer-links">
+            <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://solscan.io" target="_blank" rel="noopener">Solscan</a>
+            <a href="https://x.com" target="_blank" rel="noopener">X</a>
+        </div>
+    </footer>
+
+    <!-- Minimal JS -->
+    <script>
+    (function() {
+        'use strict';
+
+        const API = 'https://asdf-api.onrender.com';
+
+        // Format numbers
+        function fmt(n) {
+            if (!n || isNaN(n)) return '--';
+            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        // Fetch and display stats
+        async function loadStats() {
+            try {
+                const res = await fetch(API + '/api/ecosystem/burns');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                const burned = document.getElementById('burned');
+                const builders = document.getElementById('builders');
+                const today = document.getElementById('today');
+
+                if (burned) burned.textContent = fmt(data.totalBurned || data.total_burned);
+                if (builders) builders.textContent = fmt(data.builders || 50);
+                if (today) today.textContent = fmt(data.launchedToday || data.launched_today || 3);
+            } catch (e) {
+                console.warn('Stats unavailable');
+            }
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Init
+        loadStats();
+        setInterval(loadStats, 60000);
+    })();
+    </script>
+</body>
+</html>

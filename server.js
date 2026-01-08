@@ -155,6 +155,41 @@ app.get('/privacy', (req, res) => {
     res.sendFile(path.join(__dirname, 'privacy.html'));
 });
 
+// Route /burns to burns.html (Hall of Flames)
+app.get('/burns', (req, res) => {
+    res.sendFile(path.join(__dirname, 'burns.html'));
+});
+
+// Route /asdforecast to forecast.html (Prediction Market)
+app.get('/asdforecast', (req, res) => {
+    res.sendFile(path.join(__dirname, 'forecast.html'));
+});
+
+// Route /holdex to holdex.html (Token Tracker)
+app.get('/holdex', (req, res) => {
+    res.sendFile(path.join(__dirname, 'holdex.html'));
+});
+
+// Route /v2 to index-new.html (New Landing Page Preview)
+app.get('/v2', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index-new.html'));
+});
+
+// Route /power to index-power.html (Power-focused Landing)
+app.get('/power', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index-power.html'));
+});
+
+// Route /m to index-marketing.html (Marketing-first Landing)
+app.get('/m', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index-marketing.html'));
+});
+
+// Route /learn-v3 to learn-v3.html (New Learn Page)
+app.get('/learn-v3', (req, res) => {
+    res.sendFile(path.join(__dirname, 'learn-v3.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
     // If it's a file request that doesn't exist, 404

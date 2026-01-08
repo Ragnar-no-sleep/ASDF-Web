@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn ASDF — The Optimistic Burn Protocol</title>
+    <meta name="description" content="Understand the ASDF ecosystem. From basics to building. Interactive guide with quizzes.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learn ASDF - Interactive Guide">
+    <meta property="og:description" content="Master the Optimistic Burn Protocol. Interactive quizzes and guides.">
+    <meta property="og:image" content="https://alonisthe.dev/og-learn.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://asdf-api.onrender.com;
+    ">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="css/system.css">
+    <style>
+        /* =============================================
+           LEARN PAGE - Custom Styles
+           ============================================= */
+
+        /* Layout */
+        .learn-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: var(--space-6);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: calc(var(--nav-height) + var(--space-8)) var(--space-6) var(--space-16);
+            min-height: 100vh;
+        }
+
+        @media (max-width: 1024px) {
+            .learn-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .learn-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + var(--space-8));
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        @media (max-width: 1024px) {
+            .learn-sidebar {
+                position: static;
+                display: none;
+            }
+        }
+
+        .sidebar-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+        }
+
+        .sidebar-title {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-widest);
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-4);
+        }
+
+        /* XP & Progress */
+        .xp-display {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-4);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-4);
+        }
+
+        .xp-icon {
+            font-size: var(--text-xl);
+        }
+
+        .xp-value {
+            font-family: var(--font-mono);
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            color: var(--accent);
+        }
+
+        .xp-label {
+            font-size: var(--text-xs);
+            color: var(--text-tertiary);
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-default);
+        }
+
+        .progress-step:hover {
+            background: var(--bg-hover);
+        }
+
+        .progress-step.active {
+            background: var(--accent-soft);
+        }
+
+        .progress-step.completed .step-number {
+            background: var(--success);
+            color: var(--bg-base);
+        }
+
+        .progress-step.active .step-number {
+            background: var(--accent);
+            color: var(--bg-base);
+        }
+
+        .progress-step.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-hover);
+            border-radius: var(--radius-full);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            font-weight: var(--font-bold);
+        }
+
+        .step-info {
+            flex: 1;
+        }
+
+        .step-name {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+        }
+
+        .step-xp {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            color: var(--text-tertiary);
+        }
+
+        /* Badges Grid */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-2);
+        }
+
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-3);
+            background: var(--bg-hover);
+            border-radius: var(--radius-md);
+            text-align: center;
+            transition: all var(--duration-normal) var(--ease-default);
+        }
+
+        .badge-item.locked {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+
+        .badge-item.unlocked {
+            background: var(--accent-soft);
+            border: 1px solid var(--accent);
+        }
+
+        .badge-icon {
+            font-size: var(--text-xl);
+            margin-bottom: var(--space-1);
+        }
+
+        .badge-name {
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content */
+        .learn-content {
+            max-width: 800px;
+        }
+
+        /* Section Navigation */
+        .section-tabs {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-8);
+            padding: var(--space-2);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+        }
+
+        .section-tab {
+            padding: var(--space-3) var(--space-5);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-default);
+            white-space: nowrap;
+        }
+
+        .section-tab:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .section-tab.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        /* View Sections */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Content Cards */
+        .content-block {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            margin-bottom: var(--space-6);
+        }
+
+        .content-block h2 {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-4);
+        }
+
+        .content-block h3 {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-3);
+            color: var(--text-primary);
+        }
+
+        .content-block p {
+            color: var(--text-secondary);
+            line-height: var(--leading-relaxed);
+            margin-bottom: var(--space-4);
+        }
+
+        .content-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            padding: var(--space-5);
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius-md);
+            margin: var(--space-5) 0;
+        }
+
+        .highlight-box strong {
+            color: var(--accent);
+        }
+
+        /* Flywheel Visual */
+        .flywheel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-3);
+            padding: var(--space-8);
+            background: var(--bg-elevated);
+            border-radius: var(--radius-lg);
+            margin: var(--space-6) 0;
+            flex-wrap: wrap;
+        }
+
+        .flywheel-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            min-width: 80px;
+        }
+
+        .flywheel-icon {
+            font-size: var(--text-2xl);
+        }
+
+        .flywheel-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+        }
+
+        .flywheel-arrow {
+            color: var(--accent);
+            font-size: var(--text-xl);
+        }
+
+        /* Tools Grid */
+        .tools-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-4);
+            margin: var(--space-6) 0;
+        }
+
+        .tool-mini-card {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-4);
+            background: var(--bg-hover);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: inherit;
+            transition: all var(--duration-normal) var(--ease-default);
+        }
+
+        .tool-mini-card:hover {
+            background: var(--bg-surface);
+            border-color: var(--border-default);
+            transform: translateY(-2px);
+        }
+
+        .tool-mini-icon {
+            font-size: var(--text-xl);
+        }
+
+        .tool-mini-name {
+            font-weight: var(--font-medium);
+        }
+
+        .tool-mini-status {
+            font-size: var(--text-xs);
+            color: var(--success);
+        }
+
+        /* Quiz Container */
+        .quiz-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin: var(--space-8) 0;
+        }
+
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-4);
+        }
+
+        .quiz-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-widest);
+            color: var(--text-tertiary);
+        }
+
+        .quiz-xp {
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            color: var(--accent);
+        }
+
+        .quiz-question {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-5);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .quiz-option {
+            padding: var(--space-4);
+            background: var(--bg-hover);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-default);
+        }
+
+        .quiz-option:hover {
+            border-color: var(--border-default);
+            background: var(--bg-elevated);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: var(--success-soft);
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--error);
+            background: var(--error-soft);
+        }
+
+        .quiz-feedback {
+            margin-top: var(--space-4);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback.success {
+            background: var(--success-soft);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .quiz-feedback.error {
+            background: var(--error-soft);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        /* Level Complete */
+        .level-complete {
+            display: none;
+            text-align: center;
+            padding: var(--space-8);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-lg);
+            margin: var(--space-8) 0;
+        }
+
+        .level-complete.show {
+            display: block;
+            animation: celebrate 0.5s ease;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .level-complete-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-4);
+        }
+
+        .level-complete-title {
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            color: var(--accent);
+            margin-bottom: var(--space-2);
+        }
+
+        .level-complete-xp {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        /* Navigation Buttons */
+        .level-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--space-8);
+        }
+
+        /* FAQ Styles */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .faq-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-5);
+            cursor: pointer;
+            font-weight: var(--font-medium);
+            transition: background var(--duration-normal) var(--ease-default);
+        }
+
+        .faq-question:hover {
+            background: var(--bg-hover);
+        }
+
+        .faq-arrow {
+            color: var(--text-tertiary);
+            transition: transform var(--duration-normal) var(--ease-default);
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--duration-normal) var(--ease-default);
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 500px;
+        }
+
+        .faq-answer-inner {
+            padding: 0 var(--space-5) var(--space-5);
+            color: var(--text-secondary);
+            line-height: var(--leading-relaxed);
+        }
+
+        /* Glossary */
+        .glossary-search {
+            width: 100%;
+            padding: var(--space-4);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            margin-bottom: var(--space-6);
+        }
+
+        .glossary-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .glossary-item {
+            padding: var(--space-5);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+        }
+
+        .glossary-term {
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-2);
+        }
+
+        .glossary-def {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            line-height: var(--leading-relaxed);
+        }
+
+        /* Holder Journey (Play) */
+        .journey-intro {
+            text-align: center;
+            padding: var(--space-12) var(--space-6);
+        }
+
+        .journey-logo {
+            font-size: 64px;
+            margin-bottom: var(--space-6);
+        }
+
+        .journey-title {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-4);
+        }
+
+        .journey-tagline {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-8);
+        }
+
+        .journey-stats-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-4);
+            max-width: 700px;
+            margin: 0 auto var(--space-8);
+        }
+
+        .stat-preview {
+            padding: var(--space-5);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            text-align: center;
+        }
+
+        .stat-preview .stat-icon {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-preview .stat-name {
+            font-weight: var(--font-semibold);
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-preview .stat-desc {
+            font-size: var(--text-xs);
+            color: var(--text-tertiary);
+        }
+
+        /* Achievement Popup */
+        .achievement-popup {
+            position: fixed;
+            top: calc(var(--nav-height) + var(--space-4));
+            right: var(--space-4);
+            padding: var(--space-4) var(--space-6);
+            background: var(--bg-surface);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .achievement-popup.show {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .achievement-icon {
+            font-size: var(--text-2xl);
+        }
+
+        .achievement-title {
+            font-weight: var(--font-semibold);
+        }
+
+        .achievement-subtitle {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .achievement-xp {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-weight: var(--font-bold);
+        }
+    </style>
+</head>
+<body>
+    <!-- Achievement Popup -->
+    <div class="achievement-popup" id="achievement-popup">
+        <span class="achievement-icon" id="achievement-icon">&#127942;</span>
+        <div>
+            <div class="achievement-title" id="achievement-title">Achievement Unlocked!</div>
+            <div class="achievement-subtitle" id="achievement-subtitle">You earned a badge</div>
+        </div>
+        <div class="achievement-xp" id="achievement-xp">+50 XP</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-inner">
+                <a href="/" class="nav-logo">
+                    <span class="nav-logo-icon">A</span>
+                    <span>ASDF</span>
+                </a>
+
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="learn.html" class="nav-link active">Learn</a></li>
+                    <li><a href="burns.html" class="nav-link">Burns</a></li>
+                    <li><a href="holdex.html" class="nav-link">HolDex</a></li>
+                    <li><a href="games.html" class="nav-link">Games</a></li>
+                </ul>
+
+                <div class="nav-actions">
+                    <div class="xp-badge" style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--accent-soft); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-sm); color: var(--accent);">
+                        <span>&#11088;</span>
+                        <span id="nav-xp">0 XP</span>
+                    </div>
+                </div>
+
+                <button class="nav-toggle" aria-label="Menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="learn-layout">
+        <!-- Sidebar -->
+        <aside class="learn-sidebar">
+            <!-- XP Display -->
+            <div class="sidebar-panel">
+                <div class="xp-display">
+                    <span class="xp-icon">&#11088;</span>
+                    <div>
+                        <div class="xp-value" id="total-xp">0 XP</div>
+                        <div class="xp-label">Total Earned</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-title">Progress</div>
+                <div class="progress-steps">
+                    <div class="progress-step active" data-section="what">
+                        <div class="step-number">1</div>
+                        <div class="step-info">
+                            <div class="step-name">What is it</div>
+                            <div class="step-xp">+25 XP</div>
+                        </div>
+                    </div>
+                    <div class="progress-step" data-section="why">
+                        <div class="step-number">2</div>
+                        <div class="step-info">
+                            <div class="step-name">Why ASDF</div>
+                            <div class="step-xp">+25 XP</div>
+                        </div>
+                    </div>
+                    <div class="progress-step" data-section="process">
+                        <div class="step-number">3</div>
+                        <div class="step-info">
+                            <div class="step-name">The Process</div>
+                            <div class="step-xp">+25 XP</div>
+                        </div>
+                    </div>
+                    <div class="progress-step" data-section="quiz">
+                        <div class="step-number">4</div>
+                        <div class="step-info">
+                            <div class="step-name">Quiz</div>
+                            <div class="step-xp">+150 XP</div>
+                        </div>
+                    </div>
+                    <div class="progress-step locked" data-section="play">
+                        <div class="step-number">5</div>
+                        <div class="step-info">
+                            <div class="step-name">Play</div>
+                            <div class="step-xp">+100 XP</div>
+                        </div>
+                    </div>
+                    <div class="progress-step" data-section="analytics">
+                        <div class="step-number">6</div>
+                        <div class="step-info">
+                            <div class="step-name">Analytics</div>
+                            <div class="step-xp">Live Data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="sidebar-panel">
+                <div class="sidebar-title">Badges</div>
+                <div class="badges-grid">
+                    <div class="badge-item locked" id="badge-reader">
+                        <div class="badge-icon">&#128214;</div>
+                        <div class="badge-name">Reader</div>
+                    </div>
+                    <div class="badge-item locked" id="badge-scholar">
+                        <div class="badge-icon">&#127891;</div>
+                        <div class="badge-name">Scholar</div>
+                    </div>
+                    <div class="badge-item locked" id="badge-quiz">
+                        <div class="badge-icon">&#127942;</div>
+                        <div class="badge-name">Quiz Master</div>
+                    </div>
+                    <div class="badge-item locked" id="badge-journey">
+                        <div class="badge-icon">&#128142;</div>
+                        <div class="badge-name">Journey</div>
+                    </div>
+                    <div class="badge-item locked" id="badge-perfect">
+                        <div class="badge-icon">&#127919;</div>
+                        <div class="badge-name">Perfect</div>
+                    </div>
+                    <div class="badge-item locked" id="badge-master">
+                        <div class="badge-icon">&#128081;</div>
+                        <div class="badge-name">Master</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="learn-content">
+            <!-- Section Tabs -->
+            <div class="section-tabs">
+                <button class="section-tab active" data-view="what">What is it</button>
+                <button class="section-tab" data-view="why">Why ASDF</button>
+                <button class="section-tab" data-view="process">The Process</button>
+                <button class="section-tab" data-view="quiz">Learn Quiz</button>
+                <button class="section-tab" data-view="play">Play</button>
+                <button class="section-tab" data-view="analytics">Analytics</button>
+                <button class="section-tab" data-view="faq">FAQ</button>
+            </div>
+
+            <!-- ================================
+                 SECTION: WHAT IS IT
+                 ================================ -->
+            <div class="view-section active" id="view-what">
+                <div class="content-block">
+                    <h2>&#128021; What is ASDF?</h2>
+                    <p>ASDF is a <strong>deflationary token</strong> on Solana. Every trade generates fees that automatically buy back and burn tokens - permanently reducing supply.</p>
+
+                    <div class="highlight-box">
+                        <strong>The one-sentence pitch:</strong> Trading fees buy tokens. Bought tokens get burned. Supply goes down. THIS IS FINE.
+                    </div>
+
+                    <p>You know the "This is Fine" meme - the dog sitting in a burning room. That's our mascot and philosophy. In crypto chaos, most tokens pump and dump. ASDF turns the chaos into fuel.</p>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#128293; The Burn Mechanism</h3>
+                    <p>When you "burn" tokens, you send them to an address with no private key. They're gone forever. No one can access them - ever.</p>
+                    <p>Think of it like throwing money into a volcano. When supply decreases while demand stays constant, each remaining token becomes more scarce.</p>
+                    <p style="color: var(--accent);">All burns are on-chain and publicly verifiable on Solscan.</p>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#128295; Live Tools</h3>
+                    <p>ASDF is more than a token - it's an ecosystem of tools. Each tool generates fees that fuel the burn.</p>
+
+                    <div class="tools-mini-grid">
+                        <a href="holdex.html" class="tool-mini-card">
+                            <span class="tool-mini-icon">&#128200;</span>
+                            <div>
+                                <div class="tool-mini-name">HolDex</div>
+                                <div class="tool-mini-status">&#10003; Live</div>
+                            </div>
+                        </a>
+                        <a href="https://alonisthe.dev/ignition" class="tool-mini-card">
+                            <span class="tool-mini-icon">&#128640;</span>
+                            <div>
+                                <div class="tool-mini-name">Ignition</div>
+                                <div class="tool-mini-status">&#10003; Live</div>
+                            </div>
+                        </a>
+                        <a href="forecast.html" class="tool-mini-card">
+                            <span class="tool-mini-icon">&#127919;</span>
+                            <div>
+                                <div class="tool-mini-name">Forecast</div>
+                                <div class="tool-mini-status">&#10003; Live</div>
+                            </div>
+                        </a>
+                        <a href="burns.html" class="tool-mini-card">
+                            <span class="tool-mini-icon">&#128293;</span>
+                            <div>
+                                <div class="tool-mini-name">Burns</div>
+                                <div class="tool-mini-status">&#10003; Live</div>
+                            </div>
+                        </a>
+                        <a href="burns.html#analytics" class="tool-mini-card">
+                            <span class="tool-mini-icon">&#128202;</span>
+                            <div>
+                                <div class="tool-mini-name">Analytics</div>
+                                <div class="tool-mini-status">&#10003; Live</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="level-nav">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="switchView('why')">Continue: Why ASDF &#8594;</button>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: WHY ASDF
+                 ================================ -->
+            <div class="view-section" id="view-why">
+                <div class="content-block">
+                    <h2>&#9889; Why ASDF?</h2>
+                    <p>Most deflationary tokens take a percentage from each transfer. ASDF is different.</p>
+
+                    <div class="highlight-box">
+                        <strong>External Revenue Source:</strong> Burns are funded by creator fees from Pump.fun trading - not from your transfers. This means burns happen regardless of ASDF-specific activity.
+                    </div>
+                </div>
+
+                <!-- THIS IS FINE - 3 Layers -->
+                <div class="content-block" style="border-color: var(--accent);">
+                    <h3>&#128021;&#128293; "THIS IS FINE" - Three Layers Deep</h3>
+                    <p>Our mascot isn't just a meme. It's a philosophy with three levels of meaning:</p>
+
+                    <div style="display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-6);">
+                        <div style="padding: var(--space-5); background: var(--bg-hover); border-radius: var(--radius-md); border-left: 3px solid var(--text-tertiary);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; margin-bottom: var(--space-2);">Surface Level</div>
+                            <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Acceptance of Chaos</div>
+                            <div style="color: var(--text-secondary); font-size: var(--text-sm);">Crypto markets are wild. Prices swing 50% in a day. Most panic. We accept the chaos as fuel.</div>
+                        </div>
+                        <div style="padding: var(--space-5); background: var(--bg-hover); border-radius: var(--radius-md); border-left: 3px solid var(--accent);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent); text-transform: uppercase; margin-bottom: var(--space-2);">Milieu</div>
+                            <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Anti-Panic Conviction</div>
+                            <div style="color: var(--text-secondary); font-size: var(--text-sm);">Diamond hands through volatility. No FOMO, no FUD. The mechanism works regardless of short-term price.</div>
+                        </div>
+                        <div style="padding: var(--space-5); background: linear-gradient(135deg, var(--bg-hover) 0%, rgba(234, 78, 51, 0.1) 100%); border-radius: var(--radius-md); border-left: 3px solid var(--accent);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent); text-transform: uppercase; margin-bottom: var(--space-2);">Profond</div>
+                            <div style="font-weight: var(--font-semibold); margin-bottom: var(--space-2);">Lucid Irony</div>
+                            <div style="color: var(--text-secondary); font-size: var(--text-sm);">We <em>know</em> everything is on fire. We build anyway. With mathematical rigor. With verifiable code. The dog drinks coffee because he understands - and builds through the flames.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUILD > USE > HOLD -->
+                <div class="content-block">
+                    <h3>&#128736; Conviction Hierarchy: BUILD > USE > HOLD</h3>
+                    <p>Not all participation is equal. The ecosystem rewards active contribution with &phi;-weighted multipliers:</p>
+
+                    <div style="display: flex; flex-direction: column; gap: var(--space-4); margin: var(--space-6) 0;">
+                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5); background: linear-gradient(90deg, rgba(234, 78, 51, 0.2) 0%, var(--bg-surface) 100%); border-radius: var(--radius-md);">
+                            <div style="font-size: var(--text-3xl);">&#128736;</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: var(--font-bold); color: var(--accent);">BUILD</div>
+                                <div style="font-size: var(--text-sm); color: var(--text-secondary);">Create tools, contribute code, generate ecosystem value</div>
+                            </div>
+                            <div style="font-family: var(--font-mono); color: var(--accent); font-weight: var(--font-bold);">&phi;&sup2; = 2.618x</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5); background: linear-gradient(90deg, rgba(234, 78, 51, 0.12) 0%, var(--bg-surface) 100%); border-radius: var(--radius-md);">
+                            <div style="font-size: var(--text-3xl);">&#128295;</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: var(--font-bold);">USE</div>
+                                <div style="font-size: var(--text-sm); color: var(--text-secondary);">Active ecosystem participant, using tools generates fees</div>
+                            </div>
+                            <div style="font-family: var(--font-mono); color: var(--text-secondary); font-weight: var(--font-bold);">&phi; = 1.618x</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                            <div style="font-size: var(--text-3xl);">&#128142;</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: var(--font-bold);">HOLD</div>
+                                <div style="font-size: var(--text-sm); color: var(--text-secondary);">Entry point - conviction demonstrated by holding</div>
+                            </div>
+                            <div style="font-family: var(--font-mono); color: var(--text-tertiary); font-weight: var(--font-bold);">1.0x</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>Conviction > Speculation.</strong> Holding is the minimum. Building is the maximum. The ecosystem aligns incentives so that those who create the most value capture the most benefit.
+                    </div>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#128161; Technical Advantages</h3>
+                    <ul style="color: var(--text-secondary); margin-left: var(--space-5);">
+                        <li style="margin-bottom: var(--space-3);"><strong>Automated:</strong> The daemon runs 24/7, no human intervention needed</li>
+                        <li style="margin-bottom: var(--space-3);"><strong>Transparent:</strong> All transactions on-chain, verifiable on Solscan</li>
+                        <li style="margin-bottom: var(--space-3);"><strong>Open Source:</strong> Code is public on GitHub - audit it yourself</li>
+                        <li style="margin-bottom: var(--space-3);"><strong>Ecosystem Revenue:</strong> Multiple apps contribute fees, not just trading</li>
+                    </ul>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#128640; What Makes Us Different</h3>
+                    <p>Most memecoins launch, pump, dump, and die. Creator fees go to the dev's pocket. Holders get nothing.</p>
+                    <p>ASDF flips the script:</p>
+                    <ul style="color: var(--text-secondary); margin-left: var(--space-5);">
+                        <li style="margin-bottom: var(--space-3);">Creator fees fuel buybacks, not developer wallets</li>
+                        <li style="margin-bottom: var(--space-3);">Selling generates burns too - sellers aren't enemies, they're fuel</li>
+                        <li style="margin-bottom: var(--space-3);">Building apps? Your fees contribute to the burn</li>
+                        <li style="margin-bottom: var(--space-3);">8% already burned and growing</li>
+                    </ul>
+                </div>
+
+                <div class="level-nav">
+                    <button class="btn btn-secondary" onclick="switchView('what')">&#8592; Back</button>
+                    <button class="btn btn-primary" onclick="switchView('process')">Continue: The Process &#8594;</button>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: THE PROCESS
+                 ================================ -->
+            <div class="view-section" id="view-process">
+                <div class="content-block">
+                    <h2>&#128260; The Process</h2>
+                    <p>Here's how the flywheel works - visualized.</p>
+
+                    <div class="flywheel">
+                        <div class="flywheel-step">
+                            <div class="flywheel-icon">&#128260;</div>
+                            <div class="flywheel-label">Trade</div>
+                        </div>
+                        <span class="flywheel-arrow">&#8594;</span>
+                        <div class="flywheel-step">
+                            <div class="flywheel-icon">&#128176;</div>
+                            <div class="flywheel-label">Fees</div>
+                        </div>
+                        <span class="flywheel-arrow">&#8594;</span>
+                        <div class="flywheel-step">
+                            <div class="flywheel-icon">&#128722;</div>
+                            <div class="flywheel-label">Buyback</div>
+                        </div>
+                        <span class="flywheel-arrow">&#8594;</span>
+                        <div class="flywheel-step">
+                            <div class="flywheel-icon">&#128293;</div>
+                            <div class="flywheel-label">Burn</div>
+                        </div>
+                        <span class="flywheel-arrow">&#8594;</span>
+                        <div class="flywheel-step">
+                            <div class="flywheel-icon">&#128200;</div>
+                            <div class="flywheel-label">Scarcity</div>
+                        </div>
+                    </div>
+
+                    <p style="text-align: center; color: var(--text-tertiary); font-style: italic;">More trading &#8594; More fees &#8594; More burns &#8594; Less supply &#8594; More scarcity &#8594; More trading... repeat.</p>
+                </div>
+
+                <!-- PHI PHILOSOPHY SECTION -->
+                <div class="content-block" style="border-color: var(--accent); background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.05) 100%);">
+                    <h3 style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span style="font-family: 'Times New Roman', serif; font-size: var(--text-3xl); color: var(--accent);">&phi;</span>
+                        The Golden Ratio
+                    </h3>
+                    <p>Every ratio in the ASDF ecosystem is derived from <strong style="color: var(--accent);">&phi; (phi) = 1.618...</strong> - the golden ratio found in nature, from spiral galaxies to seashells.</p>
+
+                    <div class="highlight-box">
+                        <strong>No magic numbers.</strong> When you see 61.8%, it's 1/&phi;. When you see 38.2%, it's 1/&phi;&sup2;. Every parameter has mathematical elegance - not arbitrary human decisions.
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-4); margin-top: var(--space-6);">
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xl); color: var(--accent);">1/&phi;</div>
+                            <div style="font-size: var(--text-lg); font-weight: var(--font-bold);">61.8%</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Primary ratio</div>
+                        </div>
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xl); color: var(--accent);">1/&phi;&sup2;</div>
+                            <div style="font-size: var(--text-lg); font-weight: var(--font-bold);">38.2%</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Secondary ratio</div>
+                        </div>
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xl); color: var(--accent);">1/&phi;&sup3;</div>
+                            <div style="font-size: var(--text-lg); font-weight: var(--font-bold);">23.6%</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-tertiary);">Tertiary ratio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- K-SCORE SECTION -->
+                <div class="content-block">
+                    <h3>&#128200; K-Score: Measuring Conviction</h3>
+                    <p>The K-Score uses <strong>geometric mean</strong> - if ANY dimension is zero, the entire score is zero. No shortcuts.</p>
+
+                    <div style="text-align: center; padding: var(--space-8); background: var(--bg-elevated); border-radius: var(--radius-lg); margin: var(--space-6) 0;">
+                        <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); margin-bottom: var(--space-3);">
+                            K = 100 &times; &sup3;&radic;(D &times; O &times; L)
+                        </div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">
+                            Diamond &times; Organic &times; Longevity
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);">
+                        <div style="padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md); text-align: center;">
+                            <div style="font-size: var(--text-2xl);">&#128142;</div>
+                            <div style="font-weight: var(--font-bold); margin: var(--space-2) 0;">D (Diamond)</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Holder conviction depth</div>
+                        </div>
+                        <div style="padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md); text-align: center;">
+                            <div style="font-size: var(--text-2xl);">&#127793;</div>
+                            <div style="font-weight: var(--font-bold); margin: var(--space-2) 0;">O (Organic)</div>
+                            <div style="font-size: var(--text-secondary);">Natural distribution</div>
+                        </div>
+                        <div style="padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md); text-align: center;">
+                            <div style="font-size: var(--text-2xl);">&#9203;</div>
+                            <div style="font-weight: var(--font-bold); margin: var(--space-2) 0;">L (Longevity)</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Time-tested survival</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: var(--space-6);">
+                        <strong>Critical:</strong> If D=0 (no conviction), K=0. If O=0 (all whales), K=0. If L=0 (brand new), K=0. This enforces <strong>balanced quality</strong> - you can't fake your way to a high score.
+                    </div>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#129302; The Daemon</h3>
+                    <p>The "Daemon" is an automated program running 24/7. It's not a person - it's deterministic code that:</p>
+                    <ol style="color: var(--text-secondary); margin-left: var(--space-5);">
+                        <li style="margin-bottom: var(--space-2);">Detects accumulated fees in the treasury</li>
+                        <li style="margin-bottom: var(--space-2);">Collects and consolidates them</li>
+                        <li style="margin-bottom: var(--space-2);">Executes market buys for ASDF (via Jupiter)</li>
+                        <li style="margin-bottom: var(--space-2);">Sends purchased tokens to the burn address</li>
+                        <li style="margin-bottom: var(--space-2);">Logs everything on-chain</li>
+                    </ol>
+                </div>
+
+                <div class="content-block">
+                    <h3>&#128138; Key Numbers</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4);">
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">8%</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Already Burned</div>
+                        </div>
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">44.8%</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Fee Routing</div>
+                        </div>
+                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">24/7</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Automated</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-nav">
+                    <button class="btn btn-secondary" onclick="switchView('why')">&#8592; Back</button>
+                    <button class="btn btn-primary" onclick="switchView('quiz')">Start Quiz &#8594;</button>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: QUIZ (3 Levels)
+                 ================================ -->
+            <div class="view-section" id="view-quiz">
+                <!-- Level 1: Token -->
+                <div class="quiz-level" id="quiz-level-1">
+                    <div class="content-block">
+                        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+                            <span class="badge badge-accent">Level 1</span>
+                            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">Token Basics</span>
+                        </div>
+                        <h2>&#128293; Understanding the Token</h2>
+                    </div>
+
+                    <div class="quiz-container">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 1/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">What happens to ASDF trading fees?</div>
+                        <div class="quiz-options" id="quiz-1-options">
+                            <div class="quiz-option" data-correct="false">They go to the development team</div>
+                            <div class="quiz-option" data-correct="true">They buy back and burn ASDF tokens</div>
+                            <div class="quiz-option" data-correct="false">They're distributed to holders as dividends</div>
+                            <div class="quiz-option" data-correct="false">They fund marketing campaigns</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-1-feedback"></div>
+                    </div>
+
+                    <div class="quiz-container" id="quiz-1-2" style="display: none;">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 2/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">What does "burn" mean in crypto?</div>
+                        <div class="quiz-options" id="quiz-1-2-options">
+                            <div class="quiz-option" data-correct="false">Converting to another cryptocurrency</div>
+                            <div class="quiz-option" data-correct="false">Staking tokens for rewards</div>
+                            <div class="quiz-option" data-correct="true">Sending tokens to an inaccessible address forever</div>
+                            <div class="quiz-option" data-correct="false">Selling at a loss</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-1-2-feedback"></div>
+                    </div>
+
+                    <div class="level-complete" id="level-1-complete">
+                        <div class="level-complete-icon">&#127942;</div>
+                        <div class="level-complete-title">Level 1 Complete!</div>
+                        <div class="level-complete-xp">+50 XP earned</div>
+                        <button class="btn btn-primary" style="margin-top: var(--space-4);" onclick="startLevel(2)">Continue to Level 2 &#8594;</button>
+                    </div>
+                </div>
+
+                <!-- Level 2: Ecosystem -->
+                <div class="quiz-level" id="quiz-level-2" style="display: none;">
+                    <div class="content-block">
+                        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+                            <span class="badge badge-accent">Level 2</span>
+                            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">Ecosystem</span>
+                        </div>
+                        <h2>&#128161; The Ecosystem</h2>
+                    </div>
+
+                    <div class="quiz-container">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 1/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">What happens when someone sells ASDF?</div>
+                        <div class="quiz-options" id="quiz-2-options">
+                            <div class="quiz-option" data-correct="false">The burn mechanism stops</div>
+                            <div class="quiz-option" data-correct="true">Fees are still collected for future burns</div>
+                            <div class="quiz-option" data-correct="false">Holders lose their tokens</div>
+                            <div class="quiz-option" data-correct="false">The token becomes worthless</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-2-feedback"></div>
+                    </div>
+
+                    <div class="quiz-container" id="quiz-2-2" style="display: none;">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 2/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">The daemon is best described as:</div>
+                        <div class="quiz-options" id="quiz-2-2-options">
+                            <div class="quiz-option" data-correct="false">A person manually executing trades</div>
+                            <div class="quiz-option" data-correct="true">An automated program running 24/7</div>
+                            <div class="quiz-option" data-correct="false">A Discord bot</div>
+                            <div class="quiz-option" data-correct="false">A smart contract on Ethereum</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-2-2-feedback"></div>
+                    </div>
+
+                    <div class="level-complete" id="level-2-complete">
+                        <div class="level-complete-icon">&#127775;</div>
+                        <div class="level-complete-title">Level 2 Complete!</div>
+                        <div class="level-complete-xp">+50 XP earned</div>
+                        <button class="btn btn-primary" style="margin-top: var(--space-4);" onclick="startLevel(3)">Continue to Level 3 &#8594;</button>
+                    </div>
+                </div>
+
+                <!-- Level 3: Building -->
+                <div class="quiz-level" id="quiz-level-3" style="display: none;">
+                    <div class="content-block">
+                        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+                            <span class="badge badge-accent">Level 3</span>
+                            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">Building</span>
+                        </div>
+                        <h2>&#128736; Building on ASDF</h2>
+                    </div>
+
+                    <div class="quiz-container">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 1/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">What makes ASDF different from a typical memecoin?</div>
+                        <div class="quiz-options" id="quiz-3-options">
+                            <div class="quiz-option" data-correct="false">It has a cute mascot</div>
+                            <div class="quiz-option" data-correct="false">It's on Solana instead of Ethereum</div>
+                            <div class="quiz-option" data-correct="true">Fees fuel burns instead of going to devs</div>
+                            <div class="quiz-option" data-correct="false">It has a higher supply</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-3-feedback"></div>
+                    </div>
+
+                    <div class="quiz-container" id="quiz-3-2" style="display: none;">
+                        <div class="quiz-header">
+                            <span class="quiz-label">Question 2/2</span>
+                            <span class="quiz-xp">+25 XP</span>
+                        </div>
+                        <div class="quiz-question">What's the core philosophy of ASDF?</div>
+                        <div class="quiz-options" id="quiz-3-2-options">
+                            <div class="quiz-option" data-correct="false">Trust the team blindly</div>
+                            <div class="quiz-option" data-correct="false">Buy and hold forever</div>
+                            <div class="quiz-option" data-correct="true">Verify on-chain, trust the code</div>
+                            <div class="quiz-option" data-correct="false">Sell when in doubt</div>
+                        </div>
+                        <div class="quiz-feedback" id="quiz-3-2-feedback"></div>
+                    </div>
+
+                    <div class="level-complete" id="level-3-complete">
+                        <div class="level-complete-icon">&#128081;</div>
+                        <div class="level-complete-title">Quiz Complete!</div>
+                        <div class="level-complete-xp">+50 XP earned</div>
+                        <p style="color: var(--text-secondary); margin-top: var(--space-4);">You've mastered the ASDF knowledge. Ready for the Holder's Journey?</p>
+                        <button class="btn btn-primary" style="margin-top: var(--space-4);" onclick="switchView('play')">Start Holder Journey &#8594;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: PLAY (Holder Journey)
+                 ================================ -->
+            <div class="view-section" id="view-play">
+                <div class="journey-intro" id="journey-intro">
+                    <div class="journey-logo">&#128021;&#128293;</div>
+                    <h1 class="journey-title">Holder's Journey</h1>
+                    <p class="journey-tagline">Navigate the chaos. Learn the truth. THIS IS FINE.</p>
+
+                    <div style="max-width: 500px; margin: 0 auto; color: var(--text-secondary); margin-bottom: var(--space-8);">
+                        <p>You're about to enter the chaotic world of crypto. Every choice matters. Every decision shapes your destiny.</p>
+                        <p style="color: var(--accent);">Will you become a diamond-handed legend or fall victim to the market's chaos?</p>
+                    </div>
+
+                    <div class="journey-stats-preview">
+                        <div class="stat-preview">
+                            <span class="stat-icon">&#128142;</span>
+                            <span class="stat-name">Diamond Hands</span>
+                            <span class="stat-desc">HODL through volatility</span>
+                        </div>
+                        <div class="stat-preview">
+                            <span class="stat-icon">&#129504;</span>
+                            <span class="stat-name">Knowledge</span>
+                            <span class="stat-desc">Ecosystem understanding</span>
+                        </div>
+                        <div class="stat-preview">
+                            <span class="stat-icon">&#129309;</span>
+                            <span class="stat-name">Community</span>
+                            <span class="stat-desc">Fellow holder standing</span>
+                        </div>
+                        <div class="stat-preview">
+                            <span class="stat-icon">&#128176;</span>
+                            <span class="stat-name">Portfolio</span>
+                            <span class="stat-desc">Your holdings value</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg" id="journey-start-btn">Begin Your Journey &#8594;</button>
+                </div>
+
+                <!-- Journey game content will be loaded dynamically -->
+                <div id="journey-game" style="display: none;">
+                    <p style="text-align: center; color: var(--text-tertiary); padding: var(--space-12);">
+                        Journey game loading... (Connect to learn-journey.js)
+                    </p>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: ANALYTICS
+                 ================================ -->
+            <div class="view-section" id="view-analytics">
+                <div class="content-block">
+                    <h2>&#128202; Live Analytics</h2>
+                    <p>Real-time burn metrics. Verified on-chain. <strong style="color: var(--accent);">Don't trust, verify.</strong></p>
+                </div>
+
+                <!-- Live Stats Grid -->
+                <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-8);">
+                    <div class="analytics-card" style="padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); text-align: center;">
+                        <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-widest); margin-bottom: var(--space-2);">Total Burned</div>
+                        <div id="stat-total-burned" style="font-family: var(--font-mono); font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--accent);">--</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">ASDF tokens</div>
+                    </div>
+                    <div class="analytics-card" style="padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); text-align: center;">
+                        <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-widest); margin-bottom: var(--space-2);">Burn %</div>
+                        <div id="stat-burn-pct" style="font-family: var(--font-mono); font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--accent);">8%</div>
+                        <div style="font-size: var(--text-secondary);">of initial supply</div>
+                    </div>
+                    <div class="analytics-card" style="padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); text-align: center;">
+                        <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-widest); margin-bottom: var(--space-2);">Burn Cycles</div>
+                        <div id="stat-cycles" style="font-family: var(--font-mono); font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--accent);">--</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">completed</div>
+                    </div>
+                    <div class="analytics-card" style="padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); text-align: center;">
+                        <div style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-widest); margin-bottom: var(--space-2);">Last Burn</div>
+                        <div id="stat-last-burn" style="font-family: var(--font-mono); font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--text-primary);">--</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-secondary);">ago</div>
+                    </div>
+                </div>
+
+                <!-- Recent Burns -->
+                <div class="content-block">
+                    <h3>&#128293; Recent Burns</h3>
+                    <p style="margin-bottom: var(--space-4);">Every transaction verifiable on Solscan.</p>
+                    <div id="recent-burns-list" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                        <div class="burn-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
+                            <span style="color: var(--text-tertiary);">Loading burns data...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Links -->
+                <div class="content-block" style="background: var(--accent-soft); border-color: var(--accent);">
+                    <h3 style="color: var(--accent);">&#128270; Verify Yourself</h3>
+                    <p>True to "Don't Trust, Verify" - check every transaction on-chain:</p>
+                    <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-4);">
+                        <a href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
+                            &#128293; Burn Address
+                        </a>
+                        <a href="burns.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
+                            &#128200; Full Burns Page
+                        </a>
+                    </div>
+                </div>
+
+                <div class="level-nav">
+                    <button class="btn btn-secondary" onclick="switchView('play')">&#8592; Back</button>
+                    <button class="btn btn-primary" onclick="switchView('faq')">FAQ & Glossary &#8594;</button>
+                </div>
+            </div>
+
+            <!-- ================================
+                 SECTION: FAQ / GLOSSARY
+                 ================================ -->
+            <div class="view-section" id="view-faq">
+                <div class="content-block">
+                    <h2>&#10067; Frequently Asked Questions</h2>
+                </div>
+
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            What is the burn address? Is it really inaccessible?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                The burn address is a Solana address with no known private key. Once tokens are sent there, they cannot be recovered by anyone - ever. You can verify this on Solscan by checking that the address has never signed any transactions.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            How often do burns happen?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Burns happen in "cycles" when accumulated fees reach a threshold. During high activity, burns can happen multiple times per day. You can monitor cycles via the /burns page.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            Can the team "rug" or stop the burns?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                The daemon is automated code running independently. All transactions are transparent and on-chain. The code is open-source - anyone can audit it on GitHub.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            What's the total supply and how much has been burned?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Initial supply was 1 billion tokens. Approximately 8% has been burned. Check real-time stats at <a href="burns.html" style="color: var(--accent);">alonisthe.dev/burns</a>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            Is this a good investment?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                We don't give financial advice. ASDF is a memecoin with experimental tokenomics. Do your own research, understand the risks, and never invest more than you can afford to lose.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            How can I contribute?
+                            <span class="faq-arrow">&#9660;</span>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                All code is open-source on GitHub! You can contribute code, build apps that integrate with the burn mechanism, or simply spread the word.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Glossary -->
+                <div class="content-block" style="margin-top: var(--space-8);">
+                    <h2>&#128214; Glossary</h2>
+                    <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms...">
+                </div>
+
+                <div class="glossary-grid" id="glossary-grid">
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#128293; Burn</div>
+                        <div class="glossary-def">Permanently removing tokens by sending to an inaccessible address.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#128722; Buyback</div>
+                        <div class="glossary-def">Using fees to purchase tokens from the market before burning.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#129302; Daemon</div>
+                        <div class="glossary-def">Automated 24/7 program executing the burn mechanism.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#128176; Creator Fees</div>
+                        <div class="glossary-def">Percentage of each Pump.fun trade going to token creator.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#128260; Flywheel</div>
+                        <div class="glossary-def">Self-reinforcing cycle: trade &#8594; fees &#8594; burn &#8594; scarcity &#8594; trade.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#127974; Treasury</div>
+                        <div class="glossary-def">Wallet where fees accumulate before buybacks.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#9203; Cycle</div>
+                        <div class="glossary-def">Complete execution of collect &#8594; buyback &#8594; burn sequence.</div>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">&#128201; Deflationary</div>
+                        <div class="glossary-def">Tokenomics where total supply decreases over time.</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">Open source. Verifiable on-chain.</div>
+                <div class="footer-links">
+                    <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener" class="footer-link">GitHub</a>
+                    <a href="https://solscan.io" target="_blank" rel="noopener" class="footer-link">Solscan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/learn-v3.js"></script>
+</body>
+</html>

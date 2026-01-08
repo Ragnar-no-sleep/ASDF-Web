@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#000">
+<head>
+    <style>html,body{background:#000!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDForecast - Prediction Market | ASDF Ecosystem</title>
+    <meta name="description" content="The first prediction market on a Pump.fun coin. Predict SOL price movements. Earn rewards. Fuel the burn.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="ASDForecast - Prediction Market">
+    <meta property="og:description" content="Predict SOL price movements. Earn rewards. Fees fuel the ASDF burn.">
+    <meta property="og:image" content="https://alonisthe.dev/og-forecast.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://asdforecast.onrender.com https://*.solana.com;
+    ">
+
+    <link rel="stylesheet" href="css/forecast.css">
+</head>
+<body>
+    <!-- Animated Background - HACKER/MATRIX THEME -->
+    <div class="cosmic-bg">
+        <!-- Matrix rain -->
+        <div class="data-streams">
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+            <div class="data-column"></div>
+        </div>
+
+        <!-- Binary particles -->
+        <div class="binary-particle">1</div>
+        <div class="binary-particle">0</div>
+        <div class="binary-particle">1</div>
+        <div class="binary-particle">0</div>
+        <div class="binary-particle">1</div>
+        <div class="binary-particle">0</div>
+        <div class="binary-particle">1</div>
+        <div class="binary-particle">0</div>
+
+        <!-- Data nodes -->
+        <div class="data-node"></div>
+        <div class="data-node"></div>
+        <div class="data-node"></div>
+        <div class="data-node"></div>
+        <div class="data-node"></div>
+        <div class="data-node"></div>
+
+        <div class="grid-overlay"></div>
+        <div class="scan-line"></div>
+    </div>
+
+    <!-- Full Page Dashboard -->
+    <div class="dashboard">
+        <!-- Top Bar -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <a href="/" class="nav-logo">
+                    <span class="status-led"></span>
+                    <span>ASDF</span>
+                    <span class="separator">/</span>
+                    <span class="page-name">Forecast</span>
+                </a>
+                <span class="system-status">system.status: ONLINE</span>
+            </div>
+            <div class="header-center">
+                <span class="terminal-command">$ ./asdforecast --run</span>
+            </div>
+            <div class="header-right">
+                <nav class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/ignition">Ignition</a>
+                    <a href="/burns">Burns</a>
+                    <a href="/holdex">HolDEX</a>
+                </nav>
+                <button class="btn-connect" id="connect-wallet">wallet.connect()</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-main">
+            <!-- Left Panel - Stats -->
+            <aside class="panel panel-left">
+                <div class="panel-title">// SYSTEM_METRICS</div>
+                <div class="stats-compact">
+                    <div class="stat-item">
+                        <span class="stat-icon">$</span>
+                        <span class="stat-value" id="stat-volume">0</span>
+                        <span class="stat-label">total_volume</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">#</span>
+                        <span class="stat-value" id="stat-frames">0</span>
+                        <span class="stat-label">frames_completed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">@</span>
+                        <span class="stat-value" id="stat-users">0</span>
+                        <span class="stat-label">unique_predictors</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">~</span>
+                        <span class="stat-value" id="stat-burned">0</span>
+                        <span class="stat-label">asdf_burned</span>
+                    </div>
+                </div>
+
+                <div class="panel-title">// LEADERBOARD</div>
+                <div class="leaderboard-compact" id="leaderboard-body">
+                    <div class="leader-row">
+                        <span class="rank gold">#1</span>
+                        <span class="wallet">---</span>
+                        <span class="winrate">--%</span>
+                    </div>
+                    <div class="leader-row">
+                        <span class="rank silver">#2</span>
+                        <span class="wallet">---</span>
+                        <span class="winrate">--%</span>
+                    </div>
+                    <div class="leader-row">
+                        <span class="rank bronze">#3</span>
+                        <span class="wallet">---</span>
+                        <span class="winrate">--%</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center - Trade Terminal -->
+            <section class="panel panel-center">
+                <div class="terminal-header">
+                    <span class="terminal-title">PREDICTION_TERMINAL v1.0</span>
+                    <span class="terminal-status">[ READY ]</span>
+                </div>
+
+                <div class="market-info">
+                    <div class="market-pair">
+                        <div class="market-icon">S</div>
+                        <div>
+                            <div class="market-name">SOL/USD</div>
+                            <div class="market-type">interval: 15m | type: binary</div>
+                        </div>
+                    </div>
+                    <div class="market-timer">
+                        <div class="timer-label">next_resolution</div>
+                        <div class="timer-value" id="countdown">14:59</div>
+                    </div>
+                </div>
+
+                <div class="prediction-buttons">
+                    <button class="prediction-btn up" id="btn-up">
+                        <div class="prediction-icon">▲</div>
+                        <div class="prediction-label">direction: up</div>
+                        <div class="prediction-odds" id="odds-up">multiplier: 1.95x</div>
+                    </button>
+                    <button class="prediction-btn down" id="btn-down">
+                        <div class="prediction-icon">▼</div>
+                        <div class="prediction-label">direction: down</div>
+                        <div class="prediction-odds" id="odds-down">multiplier: 1.95x</div>
+                    </button>
+                </div>
+
+                <div class="amount-section">
+                    <div class="amount-label">
+                        <span>amount:</span>
+                        <span class="amount-balance">balance: <span id="user-balance">0.00</span> SOL</span>
+                    </div>
+                    <div class="amount-input-wrapper">
+                        <input type="number" class="amount-input" id="bet-amount" placeholder="0.00" step="0.01" min="0.01">
+                        <span class="amount-currency">SOL</span>
+                    </div>
+                    <div class="amount-presets">
+                        <button class="preset-btn" data-amount="0.1">0.1</button>
+                        <button class="preset-btn" data-amount="0.5">0.5</button>
+                        <button class="preset-btn" data-amount="1">1</button>
+                        <button class="preset-btn" data-amount="max">MAX</button>
+                    </div>
+                </div>
+
+                <button class="btn-predict" id="btn-predict" disabled>
+                    await wallet.connect() to execute
+                </button>
+            </section>
+
+            <!-- Right Panel - History -->
+            <aside class="panel panel-right">
+                <div class="panel-title">// RECENT_FRAMES</div>
+                <div class="history-compact" id="history-list">
+                    <div class="history-row">
+                        <span class="result win">+</span>
+                        <span class="frame">Frame #---</span>
+                        <span class="amount">-- SOL</span>
+                    </div>
+                    <div class="history-row">
+                        <span class="result loss">-</span>
+                        <span class="frame">Frame #---</span>
+                        <span class="amount">-- SOL</span>
+                    </div>
+                    <div class="history-row">
+                        <span class="result win">+</span>
+                        <span class="frame">Frame #---</span>
+                        <span class="amount">-- SOL</span>
+                    </div>
+                    <div class="history-row">
+                        <span class="result win">+</span>
+                        <span class="frame">Frame #---</span>
+                        <span class="amount">-- SOL</span>
+                    </div>
+                    <div class="history-row">
+                        <span class="result loss">-</span>
+                        <span class="frame">Frame #---</span>
+                        <span class="amount">-- SOL</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Bottom Bar -->
+        <footer class="dashboard-footer">
+            <span class="footer-status">[STATUS: ACTIVE]</span>
+            <span class="footer-info">fees.transfer(asdf_burn_address)</span>
+            <a href="/burns" class="footer-link">[view_burns]</a>
+            <span class="footer-meta">v1.0.0 | pid: 31337 | uptime: 99.9%</span>
+        </footer>
+    </div>
+
+    <script src="js/forecast.js"></script>
+</body>
+</html>

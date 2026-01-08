@@ -422,16 +422,16 @@
         }
 
         .game-card {
-            background: var(--bg-burnt);
+            background: var(--bg-charred);
             border: 2px solid var(--accent-fire);
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 28px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             box-shadow:
-                0 0 15px rgba(234, 88, 12, 0.2),
+                0 0 20px rgba(234, 88, 12, 0.25),
                 inset 0 1px 0 rgba(234, 88, 12, 0.1);
         }
 
@@ -507,40 +507,50 @@
         }
 
         .game-icon {
-            font-size: 48px;
+            font-size: 56px;
             margin-bottom: 16px;
+            filter: drop-shadow(0 0 10px rgba(234, 88, 12, 0.5));
         }
 
         .game-name {
             font-family: var(--font-display);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             margin-bottom: 8px;
+            color: var(--text-cream);
+            text-shadow: 0 0 20px rgba(234, 88, 12, 0.3);
         }
 
         .game-type {
-            font-size: 12px;
-            color: var(--text-muted);
+            font-size: 14px;
+            color: var(--accent-bright);
             margin-bottom: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .game-highscore {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            background: var(--bg-burnt);
-            border: 1px solid var(--border-rust);
+            padding: 8px 16px;
+            background: var(--bg-charred);
+            border: 2px solid var(--gold);
             border-radius: 100px;
-            font-size: 12px;
+            font-size: 14px;
             color: var(--gold);
             margin-bottom: 16px;
+            font-weight: 600;
         }
 
         .game-play-btn {
             width: 100%;
-            padding: 12px;
-            font-size: 13px;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* ============================================
@@ -1575,7 +1585,7 @@
 
 .leaderboard-global-section {
     padding: 60px 20px;
-    background: linear-gradient(180deg, var(--bg-charred) 0%, var(--bg-burnt) 50%, var(--bg-charred) 100%);
+    background: transparent;
 }
 
 .leaderboard-tabs {

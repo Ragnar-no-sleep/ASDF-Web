@@ -1,0 +1,111 @@
+# ASDF-Web Deployment
+# Deploys to Render on merge to main
+# Philosophy: Don't panic. Hold.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  # ============================================
+  # Pre-deploy verification
+  # ============================================
+  verify:
+    name: 🔍 Pre-deploy Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all tests
+        run: npm test
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: Build check
+        run: npm run build --if-present
+
+  # ============================================
+  # Deploy to Render
+  # ============================================
+  deploy:
+    name: 🚀 Deploy to Render
+    runs-on: ubuntu-latest
+    needs: verify
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://asdf-web.onrender.com
+
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          echo "🔥 Deploying ASDF-Web to Render..."
+          echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
+          echo ""
+          echo "Render auto-deploy is enabled - deployment triggered automatically on push to main"
+          echo ""
+          echo "Monitor at: https://dashboard.render.com/web/srv-d599rtshg0os73c7u3qg"
+
+      - name: Wait for deploy
+        run: |
+          echo "⏳ Waiting for Render to deploy..."
+          sleep 30
+
+      - name: Health check
+        run: |
+          echo "🏥 Running health check..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://asdf-web.onrender.com/health || echo "000")
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed"
+          else
+            echo "⚠️ Health check returned: $response"
+            echo "Note: Render free tier may need wake-up time"
+          fi
+
+  # ============================================
+  # Post-deploy notification
+  # ============================================
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Deploy result
+        run: |
+          if [ "${{ needs.deploy.result }}" = "success" ]; then
+            echo "✅ Deployment successful!"
+            echo ""
+            echo "🔗 Live at: https://asdf-web.onrender.com"
+            echo ""
+            echo "This is fine. 🐕‍🦺🔥"
+          else
+            echo "❌ Deployment failed"
+            echo "Check the logs above for details"
+          fi

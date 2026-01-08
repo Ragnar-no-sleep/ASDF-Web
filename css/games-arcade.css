@@ -1,0 +1,538 @@
+/**
+ * ASDF ARCADE HUB - Clean Retro 80s Edition
+ * Simple, black background with subtle retro animations
+ */
+
+/* ============================================
+   CSS VARIABLES
+   ============================================ */
+:root {
+    /* Dark palette */
+    --arcade-black: #000000;
+    --arcade-dark: #0a0a0a;
+    --arcade-gray: #1a1a1a;
+    --arcade-light-gray: #2a2a2a;
+
+    /* Neon accents (subtle) */
+    --neon-cyan: #00f5ff;
+    --neon-pink: #ff2d95;
+    --neon-green: #39ff14;
+    --neon-purple: #bf00ff;
+
+    /* Text */
+    --text-white: #ffffff;
+    --text-gray: #888888;
+    --text-dim: #555555;
+
+    /* Fonts */
+    --font-arcade: 'Orbitron', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+    /* Timing */
+    --transition: 0.3s ease;
+}
+
+/* ============================================
+   BASE - BLACK BACKGROUND
+   ============================================ */
+.arcade-page {
+    background: #0a0a0f !important;
+    min-height: 100vh;
+    color: var(--text-white);
+    font-family: var(--font-mono);
+    overflow-x: hidden;
+}
+
+.arcade-page * {
+    box-sizing: border-box;
+}
+
+/* Hide old Viking backgrounds */
+.arcade-page .yggdrasil-bg,
+.arcade-page .nordic-mist,
+.arcade-page .viking-symbols,
+.arcade-page .viking-spirits,
+.arcade-page .valhalla-particles {
+    display: none !important;
+}
+
+/* ============================================
+   BACKGROUND - IMMERSIVE ARCADE
+   ============================================ */
+.arcade-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Perspective grid floor - synthwave style */
+.arcade-grid {
+    position: absolute;
+    bottom: 0;
+    left: -50%;
+    width: 200%;
+    height: 60%;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 48px,
+            rgba(0, 245, 255, 0.07) 48px,
+            rgba(0, 245, 255, 0.07) 50px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 48px,
+            rgba(0, 245, 255, 0.07) 48px,
+            rgba(0, 245, 255, 0.07) 50px
+        );
+    transform: perspective(400px) rotateX(65deg);
+    transform-origin: center top;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+    animation: grid-move 15s linear infinite;
+}
+
+@keyframes grid-move {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 0 50px, 50px 0; }
+}
+
+/* ============================================
+   SUN AT HORIZON
+   ============================================ */
+.arcade-sun {
+    position: absolute;
+    bottom: 28%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(180deg,
+        #ff2d95 0%,
+        #ff6b35 30%,
+        #ffcc00 60%,
+        #ff6b35 80%,
+        #ff2d95 100%
+    );
+    border-radius: 50%;
+    opacity: 0.6;
+    filter: blur(2px);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+/* Sun stripes */
+.arcade-sun::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 8px,
+        rgba(0, 0, 0, 0.3) 8px,
+        rgba(0, 0, 0, 0.3) 12px
+    );
+    border-radius: 50%;
+}
+
+/* ============================================
+   MOUNTAINS SILHOUETTE
+   ============================================ */
+.arcade-mountains {
+    position: absolute;
+    bottom: 28%;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background:
+        linear-gradient(135deg, transparent 40%, #0a0a12 40%, #0a0a12 42%, transparent 42%),
+        linear-gradient(215deg, transparent 45%, #080810 45%, #080810 47%, transparent 47%),
+        linear-gradient(155deg, transparent 35%, #0c0c18 35%, #0c0c18 37%, transparent 37%),
+        linear-gradient(195deg, transparent 50%, #0a0a12 50%, #0a0a12 52%, transparent 52%);
+    background-size: 25% 100%, 30% 100%, 20% 100%, 35% 100%;
+    background-position: 10% bottom, 35% bottom, 60% bottom, 85% bottom;
+    background-repeat: no-repeat;
+}
+
+/* ============================================
+   HORIZON GLOW
+   ============================================ */
+.arcade-glow {
+    position: absolute;
+    bottom: 25%;
+    left: 0;
+    right: 0;
+    height: 250px;
+    background:
+        radial-gradient(ellipse 100% 80% at 50% 100%, rgba(255, 45, 149, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 245, 255, 0.1) 0%, transparent 60%);
+}
+
+/* ============================================
+   STARS
+   ============================================ */
+.arcade-glow::before {
+    content: '';
+    position: absolute;
+    top: -500px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 25%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 40% 8%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 85% 18%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 28%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 5% 10%, rgba(0, 245, 255, 0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 95% 22%, rgba(255, 45, 149, 0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50% 5%, rgba(0, 245, 255, 0.35) 0%, transparent 100%);
+    animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* ============================================
+   FLOATING SHAPES
+   ============================================ */
+.arcade-shapes {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    opacity: 0.15;
+    animation: float 20s ease-in-out infinite;
+}
+
+.shape-1 {
+    top: 15%;
+    left: 8%;
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--neon-cyan);
+    transform: rotate(45deg);
+    animation-delay: 0s;
+}
+
+.shape-2 {
+    top: 25%;
+    right: 10%;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--neon-pink);
+    border-radius: 50%;
+    animation-delay: -5s;
+}
+
+.shape-3 {
+    top: 40%;
+    left: 5%;
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 40px solid rgba(0, 245, 255, 0.3);
+    animation-delay: -10s;
+}
+
+.shape-4 {
+    top: 20%;
+    right: 5%;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 35px solid rgba(255, 45, 149, 0.25);
+    animation-delay: -15s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.15;
+    }
+    25% {
+        transform: translateY(-20px) rotate(5deg);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translateY(-10px) rotate(-3deg);
+        opacity: 0.12;
+    }
+    75% {
+        transform: translateY(-25px) rotate(3deg);
+        opacity: 0.18;
+    }
+}
+
+/* ============================================
+   SIDE NEON LINES
+   ============================================ */
+.arcade-sidelines {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.arcade-sidelines::before,
+.arcade-sidelines::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 40%;
+    top: 20%;
+}
+
+.arcade-sidelines::before {
+    left: 3%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(0, 245, 255, 0.4) 20%,
+        rgba(0, 245, 255, 0.6) 50%,
+        rgba(0, 245, 255, 0.4) 80%,
+        transparent 100%
+    );
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+}
+
+.arcade-sidelines::after {
+    right: 3%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(255, 45, 149, 0.4) 20%,
+        rgba(255, 45, 149, 0.6) 50%,
+        rgba(255, 45, 149, 0.4) 80%,
+        transparent 100%
+    );
+    box-shadow: 0 0 10px rgba(255, 45, 149, 0.3);
+}
+
+/* Scanlines overlay - authentic CRT */
+.arcade-scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 1px,
+        rgba(0, 0, 0, 0.15) 1px,
+        rgba(0, 0, 0, 0.15) 2px
+    );
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+/* Hide noise - too much */
+.arcade-noise {
+    display: none;
+}
+
+/* ============================================
+   VIGNETTE + AMBIENT LIGHT
+   ============================================ */
+.arcade-vignette {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.85) 100%),
+        radial-gradient(ellipse 120% 60% at 50% 100%, rgba(0, 245, 255, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ============================================
+   HUB CONTAINER - NO BORDER
+   ============================================ */
+.arcade-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    padding: 40px 50px;
+}
+
+/* ============================================
+   HUB CARDS GRID
+   ============================================ */
+.arcade-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 240px);
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .arcade-cards {
+        grid-template-columns: 260px;
+    }
+}
+
+/* ============================================
+   CARD STYLE - BORDERLESS NEO ARCADE
+   ============================================ */
+.arcade-card {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 30px 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.arcade-card:hover {
+    transform: translateY(-4px);
+}
+
+.arcade-card:hover .arcade-card-icon {
+    transform: scale(1.15);
+}
+
+/* Card icon */
+.arcade-card-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+/* Card title - Neo Arcade Font */
+.arcade-card-title {
+    font-family: var(--font-arcade);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: color 0.2s ease;
+}
+
+.arcade-card:hover .arcade-card-title {
+    color: var(--neon-cyan);
+}
+
+
+/* Active cards */
+.arcade-card.card-games .arcade-card-title,
+.arcade-card.card-settings .arcade-card-title {
+    color: #999;
+}
+
+/* Not Available state */
+.arcade-card.not-available {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.arcade-card.not-available:hover {
+    transform: none;
+}
+
+.arcade-card.not-available:hover .arcade-card-icon {
+    transform: none;
+}
+
+.arcade-card.not-available:hover .arcade-card-title {
+    color: #666;
+}
+
+.arcade-card-status {
+    font-family: var(--font-arcade);
+    font-size: 0.55rem;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+}
+
+/* ============================================
+   TOP NAV - NEO ARCADE
+   ============================================ */
+.arcade-page .nav {
+    background: #050508 !important;
+    border-bottom: 1px solid #151520;
+}
+
+.arcade-page .nav-content {
+    justify-content: flex-start;
+}
+
+.arcade-page .nav-tabs {
+    display: none;
+}
+
+.arcade-page .nav-logo {
+    margin-right: auto;
+}
+
+.arcade-page .nav-logo-text {
+    font-family: var(--font-arcade);
+    color: var(--neon-cyan);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.arcade-page .nav-right {
+    margin-left: auto;
+}
+
+.arcade-page .wallet-btn {
+    font-family: var(--font-arcade);
+    background: transparent;
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.arcade-page .wallet-btn:hover {
+    background: var(--neon-cyan);
+    color: #000;
+}
+
+.arcade-page .dev-mode-btn {
+    font-family: var(--font-arcade);
+    border-color: #444;
+    color: #555;
+    font-size: 0.7rem;
+}
+
+.arcade-page .visitor-badge {
+    font-family: var(--font-arcade);
+    border-color: #333;
+    color: #555;
+    font-size: 0.65rem;
+}
+
+
+/* ============================================
+   UTILITY
+   ============================================ */
+.arcade-page .valhalla-section,
+.arcade-page .hero,
+.arcade-page .games-section,
+.arcade-page .pump-arena-section {
+    background: transparent !important;
+}
