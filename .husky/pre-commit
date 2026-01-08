@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # ASDF-Web Pre-Commit Hook
 # Philosophy: Don't trust. Verify.
 
@@ -9,7 +6,6 @@ echo "🔍 Running pre-commit checks..."
 # Run lint-staged (ESLint + Prettier on staged files)
 npx lint-staged
 
-# If lint-staged passes, we're good
 if [ $? -eq 0 ]; then
   echo "✅ Pre-commit checks passed"
   echo "This is fine. 🐕‍🦺🔥"
