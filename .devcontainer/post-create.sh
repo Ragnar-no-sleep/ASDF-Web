@@ -30,7 +30,10 @@ fi
 # Verify Claude CLI installation
 echo "🤖 Verifying Claude CLI..."
 if command -v claude &> /dev/null; then
-    echo "✅ Claude CLI installed: $(claude --version 2>/dev/null || echo 'available')"
+    echo "✅ Claude CLI installed"
+    echo ""
+    echo "📝 Pour activer Claude avec ton compte Max:"
+    echo "   claude login"
 else
     echo "⚠️  Claude CLI not found, installing..."
     npm install -g @anthropic-ai/claude-code

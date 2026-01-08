@@ -59,11 +59,8 @@
   },
 
   "secrets": {
-    "ANTHROPIC_API_KEY": {
-      "description": "API key for Claude CLI"
-    },
     "RENDER_API_KEY": {
-      "description": "API key for Render MCP integration"
+      "description": "API key for Render MCP integration (optional)"
     }
   }
 }
