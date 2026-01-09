@@ -383,6 +383,7 @@ function validateWalletAddress(address) {
 function sanitizeForLog(str, maxLen = 100) {
     if (typeof str !== 'string') return String(str).slice(0, maxLen);
     // Remove control characters and limit length
+    // eslint-disable-next-line no-control-regex
     return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, maxLen);
 }
 

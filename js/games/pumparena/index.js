@@ -4401,7 +4401,7 @@ function getDailyDeals() {
                 return data.deals;
             }
         }
-    } catch (e) {}
+    } catch (e) { /* ignore localStorage errors */ }
 
     // Generate new daily deals
     const allItems = Object.values(SHOP_ITEMS).filter(i => !i.preview);
@@ -4417,7 +4417,7 @@ function getDailyDeals() {
             date: new Date().toDateString(),
             deals
         }));
-    } catch (e) {}
+    } catch (e) { /* ignore localStorage errors */ }
 
     return deals;
 }

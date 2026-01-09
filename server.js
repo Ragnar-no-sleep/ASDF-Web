@@ -190,6 +190,11 @@ app.get('/learn-v3', (req, res) => {
     res.sendFile(path.join(__dirname, 'learn-v3.html'));
 });
 
+// Route /hub to hub-majestic.html (New Majestic Hub)
+app.get('/hub', (req, res) => {
+    res.sendFile(path.join(__dirname, 'hub-majestic.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
     // If it's a file request that doesn't exist, 404

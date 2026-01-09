@@ -203,6 +203,7 @@ app.use('/api', (req, res, next) => {
     for (const key of Object.keys(req.query)) {
         if (typeof req.query[key] === 'string') {
             // Remove null bytes and control characters
+            // eslint-disable-next-line no-control-regex
             req.query[key] = req.query[key].replace(/[\x00-\x1F\x7F]/g, '');
             // Limit length
             if (req.query[key].length > 1000) {
@@ -941,10 +942,10 @@ app.get('/api/v2/shop/catalog', optionalAuthMiddleware, async (req, res) => {
         const currentSupply = supply?.current || 1_000_000_000;
 
         const filters = {};
-        if (layer) filters.layer = layer;
-        if (tier !== undefined) filters.tier = parseInt(tier);
-        if (rarity) filters.rarity = rarity;
-        if (collection_id) filters.collection_id = collection_id;
+        if (layer) { filters.layer = layer; }
+        if (tier !== undefined) { filters.tier = parseInt(tier); }
+        if (rarity) { filters.rarity = rarity; }
+        if (collection_id) { filters.collection_id = collection_id; }
 
         const catalog = await shopV2.getCatalog(filters, wallet, currentSupply, engageTier);
 
@@ -4321,22 +4322,22 @@ let progression = null;
 let gameAnalytics = null;
 
 function getGameReplay() {
-    if (!gameReplay) gameReplay = require('./services/gameReplay');
+    if (!gameReplay) { gameReplay = require('./services/gameReplay'); }
     return gameReplay;
 }
 
 function getAntiCheat() {
-    if (!antiCheat) antiCheat = require('./services/antiCheat');
+    if (!antiCheat) { antiCheat = require('./services/antiCheat'); }
     return antiCheat;
 }
 
 function getProgression() {
-    if (!progression) progression = require('./services/progression');
+    if (!progression) { progression = require('./services/progression'); }
     return progression;
 }
 
 function getGameAnalytics() {
-    if (!gameAnalytics) gameAnalytics = require('./services/gameAnalytics');
+    if (!gameAnalytics) { gameAnalytics = require('./services/gameAnalytics'); }
     return gameAnalytics;
 }
 
@@ -4619,17 +4620,17 @@ let notificationPreferences = null;
 let pushNotifications = null;
 
 function getRealtimeNotifications() {
-    if (!realtimeNotifications) realtimeNotifications = require('./services/realtimeNotifications');
+    if (!realtimeNotifications) { realtimeNotifications = require('./services/realtimeNotifications'); }
     return realtimeNotifications;
 }
 
 function getNotificationPreferencesService() {
-    if (!notificationPreferences) notificationPreferences = require('./services/notificationPreferences');
+    if (!notificationPreferences) { notificationPreferences = require('./services/notificationPreferences'); }
     return notificationPreferences;
 }
 
 function getPushNotifications() {
-    if (!pushNotifications) pushNotifications = require('./services/pushNotifications');
+    if (!pushNotifications) { pushNotifications = require('./services/pushNotifications'); }
     return pushNotifications;
 }
 

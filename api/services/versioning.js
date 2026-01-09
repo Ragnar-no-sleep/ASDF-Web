@@ -61,6 +61,9 @@ const versionHandlers = new Map();
 // Route transformers per version
 const routeTransformers = new Map();
 
+// Deprecation dates for versions
+const deprecationDates = new Map();
+
 // Response transformers per version
 const responseTransformers = new Map();
 
@@ -397,9 +400,6 @@ function deprecateVersion(version, sunsetDate) {
     }
 
     // Store sunset date
-    if (!deprecationDates) {
-        global.deprecationDates = new Map();
-    }
     deprecationDates.set(normalized, sunsetDate);
 
     logAudit('version_deprecated', {

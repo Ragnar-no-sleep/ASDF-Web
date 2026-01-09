@@ -1,0 +1,815 @@
+/* ============================================
+   ASDF HUB MAJESTIC - Landing Page
+   Version: 1.0
+   Style: Warm, Premium, Radial
+   ============================================ */
+
+/* ============================================
+   WARM PALETTE - Gold, Amber, Cream
+   ============================================ */
+
+:root {
+    /* Background layers - warm dark tones */
+    --hub-bg-deep: #0d0906;
+    --hub-bg-base: #1a120d;
+    --hub-bg-elevated: #231810;
+    --hub-bg-surface: #2d1f15;
+
+    /* Gold spectrum */
+    --gold-50: #fefce8;
+    --gold-100: #fef9c3;
+    --gold-200: #fef08a;
+    --gold-300: #fde047;
+    --gold-400: #facc15;
+    --gold-500: #eab308;
+    --gold-600: #ca8a04;
+    --gold-700: #a16207;
+
+    /* Amber spectrum */
+    --amber-50: #fffbeb;
+    --amber-100: #fef3c7;
+    --amber-200: #fde68a;
+    --amber-300: #fcd34d;
+    --amber-400: #fbbf24;
+    --amber-500: #f59e0b;
+    --amber-600: #d97706;
+    --amber-700: #b45309;
+
+    /* Cream spectrum */
+    --cream-50: #faf8f5;
+    --cream-100: #f5f0e8;
+    --cream-200: #ebe3d6;
+    --cream-300: #ddd1be;
+    --cream-400: #c9b89a;
+    --cream-500: #b5a07d;
+
+    /* Text hierarchy */
+    --text-warm-primary: #faf8f5;
+    --text-warm-secondary: #c9b89a;
+    --text-warm-muted: #8a7a65;
+    --text-warm-ghost: #5a4d40;
+
+    /* Accent glow */
+    --glow-gold: rgba(234, 179, 8, 0.4);
+    --glow-amber: rgba(245, 158, 11, 0.3);
+    --glow-soft: rgba(250, 240, 220, 0.1);
+
+    /* Borders */
+    --border-warm-subtle: rgba(201, 184, 154, 0.1);
+    --border-warm-default: rgba(201, 184, 154, 0.2);
+    --border-warm-strong: rgba(201, 184, 154, 0.35);
+
+    /* Timing */
+    --entrance-duration: 2.55s;
+    --entrance-stagger: 0.15s;
+
+    /* Easing - smooth, premium feel */
+    --ease-majestic: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-float: cubic-bezier(0.45, 0, 0.55, 1);
+    --ease-magnetic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+body.hub-majestic {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--hub-bg-deep);
+    color: var(--text-warm-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   BACKGROUND - Warm Ambient
+   ============================================ */
+
+.hub-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse 120% 80% at 50% 50%, var(--hub-bg-base) 0%, var(--hub-bg-deep) 100%);
+    overflow: hidden;
+}
+
+/* Warm glow orbs - with parallax support */
+.hub-background::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 30%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--glow-gold) 0%, transparent 70%);
+    filter: blur(100px);
+    opacity: 0.5;
+    animation: float-glow 20s ease-in-out infinite;
+    transform: translate(var(--parallax-x, 0), var(--parallax-y, 0));
+    transition: transform 0.8s var(--ease-float);
+}
+
+.hub-background::after {
+    content: '';
+    position: absolute;
+    bottom: 10%;
+    right: 20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--glow-amber) 0%, transparent 70%);
+    filter: blur(120px);
+    opacity: 0.4;
+    animation: float-glow 25s ease-in-out infinite reverse;
+    transform: translate(calc(var(--parallax-x, 0) * -0.5), calc(var(--parallax-y, 0) * -0.5));
+    transition: transform 0.8s var(--ease-float);
+}
+
+@keyframes float-glow {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -20px) scale(1.05); }
+    50% { transform: translate(-20px, 30px) scale(0.95); }
+    75% { transform: translate(20px, 20px) scale(1.02); }
+}
+
+/* Subtle grain texture */
+.hub-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+.hub-container {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+}
+
+/* ============================================
+   RADIAL HUB LAYOUT
+   ============================================ */
+
+.hub-radial {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Center element */
+.hub-center {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 30%, var(--hub-bg-surface) 0%, var(--hub-bg-elevated) 100%);
+    border: 1px solid var(--border-warm-default);
+    box-shadow:
+        0 0 60px var(--glow-soft),
+        0 0 120px rgba(234, 179, 8, 0.1),
+        inset 0 0 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Subtle breathing animation for center */
+.hub-ready .hub-center {
+    animation: center-breathe 6s var(--ease-float) infinite;
+}
+
+@keyframes center-breathe {
+    0%, 100% {
+        box-shadow:
+            0 0 60px var(--glow-soft),
+            0 0 120px rgba(234, 179, 8, 0.1),
+            inset 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 80px var(--glow-soft),
+            0 0 150px rgba(234, 179, 8, 0.15),
+            inset 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.hub-center-logo {
+    font-size: 48px;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 20px var(--glow-gold));
+}
+
+/* Fire logo flicker after entrance */
+.hub-ready .hub-center-logo {
+    animation: logo-flicker 4s ease-in-out infinite;
+}
+
+@keyframes logo-flicker {
+    0%, 100% { filter: drop-shadow(0 0 20px var(--glow-gold)); }
+    50% { filter: drop-shadow(0 0 30px var(--glow-gold)) drop-shadow(0 0 10px var(--glow-amber)); }
+}
+
+.hub-center-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-400);
+}
+
+/* Orbital ring */
+.hub-orbit {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-warm-subtle);
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.hub-orbit-inner {
+    width: 70%;
+    height: 70%;
+    top: 15%;
+    left: 15%;
+}
+
+.hub-orbit-outer {
+    width: 100%;
+    height: 100%;
+}
+
+/* Subtle orbit rotation after entrance */
+.hub-ready .hub-orbit-inner {
+    animation: orbit-rotate 60s linear infinite;
+}
+
+.hub-ready .hub-orbit-outer {
+    animation: orbit-rotate 90s linear infinite reverse;
+}
+
+@keyframes orbit-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   PORTAL ITEMS (Radial positioned)
+   ============================================ */
+
+.hub-portal {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    background:
+        linear-gradient(145deg, var(--hub-bg-surface) 0%, var(--hub-bg-elevated) 100%);
+    border: 1px solid var(--border-warm-default);
+    border-radius: 24px;
+    padding: 20px;
+    cursor: pointer;
+    transition:
+        transform 0.4s var(--ease-majestic),
+        box-shadow 0.4s var(--ease-majestic),
+        border-color 0.3s ease;
+    transform-origin: center center;
+}
+
+.hub-portal:hover {
+    transform: scale(1.08) translateY(-4px);
+    border-color: var(--gold-500);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.4),
+        0 0 40px var(--glow-gold);
+}
+
+/* Cursor-following glow effect */
+.hub-portal::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+        circle at var(--glow-x, 50%) var(--glow-y, 50%),
+        var(--glow-gold) 0%,
+        transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.hub-portal:hover::after {
+    opacity: 0.15;
+}
+
+.hub-portal-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 10px var(--glow-soft));
+    transition: transform 0.3s var(--ease-majestic);
+}
+
+.hub-portal:hover .hub-portal-icon {
+    transform: scale(1.15);
+}
+
+.hub-portal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-warm-primary);
+    margin-bottom: 4px;
+}
+
+.hub-portal-subtitle {
+    font-size: 11px;
+    color: var(--text-warm-muted);
+    line-height: 1.3;
+}
+
+/* Portal positions (5 items in radial layout) */
+.hub-portal[data-position="top"] {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.hub-portal[data-position="top-right"] {
+    top: 15%;
+    right: 5%;
+}
+
+.hub-portal[data-position="bottom-right"] {
+    bottom: 15%;
+    right: 5%;
+}
+
+.hub-portal[data-position="bottom-left"] {
+    bottom: 15%;
+    left: 5%;
+}
+
+.hub-portal[data-position="top-left"] {
+    top: 15%;
+    left: 5%;
+}
+
+/* Hover adjustments for positioned portals */
+.hub-portal[data-position="top"]:hover { transform: translateX(-50%) scale(1.08) translateY(-4px); }
+.hub-portal[data-position="top-right"]:hover { transform: scale(1.08) translate(4px, -4px); }
+.hub-portal[data-position="bottom-right"]:hover { transform: scale(1.08) translate(4px, 4px); }
+.hub-portal[data-position="bottom-left"]:hover { transform: scale(1.08) translate(-4px, 4px); }
+.hub-portal[data-position="top-left"]:hover { transform: scale(1.08) translate(-4px, -4px); }
+
+/* ============================================
+   UNAVAILABLE STATE (Build, Play)
+   ============================================ */
+
+.hub-portal.unavailable {
+    opacity: 0.5;
+    cursor: default;
+    filter: grayscale(0.6);
+}
+
+.hub-portal.unavailable:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border-warm-default);
+}
+
+.hub-portal.unavailable::after {
+    display: none;
+}
+
+.hub-portal.unavailable[data-position="top"]:hover { transform: translateX(-50%); }
+.hub-portal.unavailable[data-position="top-right"]:hover { transform: none; }
+.hub-portal.unavailable[data-position="bottom-right"]:hover { transform: none; }
+.hub-portal.unavailable[data-position="bottom-left"]:hover { transform: none; }
+.hub-portal.unavailable[data-position="top-left"]:hover { transform: none; }
+
+/* Tooltip */
+.hub-portal-tooltip {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    padding: 8px 16px;
+    background: var(--hub-bg-surface);
+    border: 1px solid var(--border-warm-default);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-warm-secondary);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s var(--ease-majestic);
+    pointer-events: none;
+}
+
+.hub-portal.unavailable:hover .hub-portal-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================
+   TOOLS SECTION - Magnetic/Orbital
+   ============================================ */
+
+.hub-tools-zone {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 180px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.hub-tools-trigger {
+    position: relative;
+    width: 160px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+        linear-gradient(145deg, var(--hub-bg-surface) 0%, var(--hub-bg-elevated) 100%);
+    border: 1px solid var(--border-warm-default);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.4s var(--ease-majestic);
+}
+
+.hub-tools-trigger:hover {
+    border-color: var(--amber-500);
+    box-shadow: 0 0 40px var(--glow-amber);
+}
+
+.hub-tools-trigger-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.hub-tools-trigger-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-warm-primary);
+}
+
+/* Orbital tools (hidden by default) */
+.hub-tool-item {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    background: var(--hub-bg-surface);
+    border: 1px solid var(--border-warm-subtle);
+    border-radius: 16px;
+    padding: 8px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition:
+        opacity 0.4s var(--ease-majestic),
+        transform 0.5s var(--ease-magnetic),
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+    pointer-events: none;
+}
+
+.hub-tool-item-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.hub-tool-item-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-warm-secondary);
+}
+
+/* Tool positions when expanded */
+.hub-tool-item[data-tool="burnengine"] {
+    --expand-x: -100px;
+    --expand-y: -80px;
+}
+
+.hub-tool-item[data-tool="forecast"] {
+    --expand-x: -50px;
+    --expand-y: -120px;
+}
+
+.hub-tool-item[data-tool="holdex"] {
+    --expand-x: 50px;
+    --expand-y: -120px;
+}
+
+.hub-tool-item[data-tool="gazdf"] {
+    --expand-x: 100px;
+    --expand-y: -80px;
+}
+
+/* Expanded state */
+.hub-tools-zone.expanded .hub-tool-item {
+    opacity: 1;
+    transform: scale(1) translate(var(--expand-x), var(--expand-y));
+    pointer-events: auto;
+}
+
+.hub-tool-item:hover {
+    border-color: var(--gold-400);
+    box-shadow: 0 0 25px var(--glow-gold);
+    transform: scale(1.1) translate(var(--expand-x), var(--expand-y));
+}
+
+/* ============================================
+   ENTRANCE ANIMATION
+   ============================================ */
+
+/* Initial hidden state */
+.hub-entrance .hub-center,
+.hub-entrance .hub-portal,
+.hub-entrance .hub-tools-trigger,
+.hub-entrance .hub-orbit {
+    opacity: 0;
+}
+
+.hub-entrance .hub-center {
+    transform: scale(0.8);
+}
+
+.hub-entrance .hub-orbit {
+    transform: scale(0.6);
+}
+
+/* Animate in sequence */
+@keyframes entrance-center {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes entrance-orbit {
+    0% {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+}
+
+@keyframes entrance-portal {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes entrance-portal-top {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(30px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+/* Animation classes applied by JS */
+.hub-animate .hub-center {
+    animation: entrance-center 0.8s var(--ease-majestic) 0.2s forwards;
+}
+
+.hub-animate .hub-orbit-inner {
+    animation: entrance-orbit 1s var(--ease-majestic) 0.4s forwards;
+}
+
+.hub-animate .hub-orbit-outer {
+    animation: entrance-orbit 1.2s var(--ease-majestic) 0.5s forwards;
+}
+
+.hub-animate .hub-portal[data-position="top"] {
+    animation: entrance-portal-top 0.7s var(--ease-majestic) 0.8s forwards;
+}
+
+.hub-animate .hub-portal[data-position="top-right"] {
+    animation: entrance-portal 0.7s var(--ease-majestic) 1s forwards;
+}
+
+.hub-animate .hub-portal[data-position="bottom-right"] {
+    animation: entrance-portal 0.7s var(--ease-majestic) 1.2s forwards;
+}
+
+.hub-animate .hub-portal[data-position="bottom-left"] {
+    animation: entrance-portal 0.7s var(--ease-majestic) 1.4s forwards;
+}
+
+.hub-animate .hub-portal[data-position="top-left"] {
+    animation: entrance-portal 0.7s var(--ease-majestic) 1.6s forwards;
+}
+
+.hub-animate .hub-tools-trigger {
+    animation: entrance-portal 0.7s var(--ease-majestic) 1.8s forwards;
+}
+
+/* Unavailable portal special handling */
+.hub-animate .hub-portal.unavailable {
+    animation-fill-mode: forwards;
+}
+
+.hub-animate .hub-portal.unavailable[data-position="top"] {
+    animation: entrance-portal-top 0.7s var(--ease-majestic) 0.8s forwards;
+}
+
+/* After entrance, set final opacity for unavailable */
+.hub-portal.unavailable {
+    --final-opacity: 0.5;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.hub-footer {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-warm-ghost);
+}
+
+.hub-footer a {
+    color: var(--text-warm-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.hub-footer a:hover {
+    color: var(--gold-400);
+}
+
+.hub-footer-divider {
+    width: 1px;
+    height: 12px;
+    background: var(--border-warm-subtle);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .hub-radial {
+        max-width: 700px;
+    }
+
+    .hub-portal {
+        width: 120px;
+        height: 120px;
+        padding: 16px;
+    }
+
+    .hub-portal-icon {
+        font-size: 28px;
+    }
+
+    .hub-center {
+        width: 160px;
+        height: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hub-radial {
+        max-width: 500px;
+    }
+
+    .hub-portal {
+        width: 100px;
+        height: 100px;
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    .hub-portal-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .hub-portal-title {
+        font-size: 10px;
+    }
+
+    .hub-portal-subtitle {
+        display: none;
+    }
+
+    .hub-center {
+        width: 130px;
+        height: 130px;
+    }
+
+    .hub-center-logo {
+        font-size: 36px;
+    }
+
+    .hub-tools-zone {
+        width: 250px;
+    }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .hub-background::before,
+    .hub-background::after {
+        animation: none;
+    }
+}

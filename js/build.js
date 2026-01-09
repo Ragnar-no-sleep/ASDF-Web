@@ -2304,6 +2304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Store current project/component when opening component modal
     const originalOpenComponentModal = openComponentModal;
+    // eslint-disable-next-line no-func-assign
     openComponentModal = function(projectId, componentIndex) {
         currentLearningProject = projectId;
         currentLearningComponent = componentIndex;
@@ -2491,13 +2492,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const duration = 1500;
             let startTime = null;
 
-            function animate(time) {
+            const animate = function(time) {
                 if (!startTime) startTime = time;
                 const progress = Math.min((time - startTime) / duration, 1);
                 stat.textContent = Math.floor(progress * num);
                 if (progress < 1) requestAnimationFrame(animate);
                 else stat.textContent = num;
-            }
+            };
 
             const observer = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {

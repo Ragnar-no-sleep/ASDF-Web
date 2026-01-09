@@ -999,10 +999,10 @@ const JourneyModules = (function() {
 
         if (animated) {
             let animationFrame = 0;
-            function animate() {
+            const animate = function() {
                 drawSpiral();
                 animationFrame = requestAnimationFrame(animate);
-            }
+            };
             animate();
 
             // Cleanup on remove

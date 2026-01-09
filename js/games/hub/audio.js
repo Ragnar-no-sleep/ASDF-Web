@@ -487,7 +487,7 @@ const ValhallaAudio = {
         if (this.sources.ambient) {
             try {
                 this.sources.ambient.stop();
-            } catch (e) {}
+            } catch (e) { /* intentionally empty */ }
             this.sources.ambient = null;
         }
     },

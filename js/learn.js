@@ -2670,7 +2670,7 @@ CMD ["asdf_grinder"]</div>
         }
 
         function saveGameState(state) {
-            try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+            try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(state)); } catch(e) { /* ignore */ }
         }
 
         function openGame(gameId) {
@@ -9473,7 +9473,7 @@ tokenomics if you have them."</pre>
             }
         }
 
-        function saveJourneyState() {
+        function saveYourJourneyState() {
             try {
                 localStorage.setItem(YJ_STORAGE_KEY, JSON.stringify(journeyState));
                 checkForNewBadges();
@@ -10350,14 +10350,14 @@ tokenomics if you have them."</pre>
                 journeyState.moduleProgress[moduleId] = {};
             }
             journeyState.moduleProgress[moduleId][step] = 'completed';
-            saveJourneyState();
+            saveYourJourneyState();
         }
 
         function completeModule(mod, modules) {
             if (!journeyState.completedModules.includes(mod.id)) {
                 journeyState.completedModules.push(mod.id);
             }
-            saveJourneyState();
+            saveYourJourneyState();
             checkAndAwardBadges();
 
             // Check if level complete
@@ -11383,7 +11383,7 @@ tokenomics if you have them."</pre>
             if (!journeyState.completedModules.includes(mod.id)) {
                 journeyState.completedModules.push(mod.id);
                 addXP(50);
-                saveJourneyState();
+                saveYourJourneyState();
             }
 
             // Check if level complete
@@ -11544,7 +11544,7 @@ tokenomics if you have them."</pre>
 
                 if (!journeyState.completedModules.includes(mod.id)) {
                     journeyState.completedModules.push(mod.id);
-                    saveJourneyState();
+                    saveYourJourneyState();
                 }
 
                 setTimeout(() => {
@@ -11585,7 +11585,7 @@ tokenomics if you have them."</pre>
             if (!journeyState.completedLevels) journeyState.completedLevels = [];
             if (!journeyState.completedLevels.includes(levelKey)) {
                 journeyState.completedLevels.push(levelKey);
-                saveJourneyState();
+                saveYourJourneyState();
             }
 
             // Hide other sections, show completion
@@ -11642,7 +11642,7 @@ tokenomics if you have them."</pre>
                 nextLevelBtn.addEventListener('click', function() {
                     journeyState.currentLevel = nextLevel;
                     journeyState.currentModuleIndex = 0;
-                    saveJourneyState();
+                    saveYourJourneyState();
                     document.getElementById('yj-level-complete').style.display = 'none';
                     showJourneyContent();
                 });
@@ -11654,7 +11654,7 @@ tokenomics if you have them."</pre>
                     journeyState.currentPillar = newPillar;
                     journeyState.currentLevel = 'beginner';
                     journeyState.currentModuleIndex = 0;
-                    saveJourneyState();
+                    saveYourJourneyState();
                     document.getElementById('yj-level-complete').style.display = 'none';
                     showJourneyContent();
                 });
@@ -11666,7 +11666,7 @@ tokenomics if you have them."</pre>
         function selectJourneyPillar(pillar) {
             journeyState.currentPillar = pillar;
             journeyState.currentModuleIndex = 0;
-            saveJourneyState();
+            saveYourJourneyState();
             showJourneyContent();
         }
 
@@ -11736,7 +11736,7 @@ tokenomics if you have them."</pre>
             journeyState.currentModuleIndex = 0;
             journeyState.currentStep = LEARNING_STEPS.ENTRY_QUIZ;
             journeyState.currentSubIndex = 0;
-            saveJourneyState();
+            saveYourJourneyState();
 
             hidePathSelector();
         }
@@ -11748,7 +11748,7 @@ tokenomics if you have them."</pre>
             journeyState.currentModuleIndex = 0;
             journeyState.currentStep = LEARNING_STEPS.ENTRY_QUIZ;
             journeyState.currentSubIndex = 0;
-            saveJourneyState();
+            saveYourJourneyState();
 
             updateLevelTabs();
             updateJourneyProfile();
