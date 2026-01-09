@@ -1,37 +1,46 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#0a0a0f">
-<head>
-    <style>html,body{background:#0a0a0f!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASDFASDFA - Hold + Build on Solana</title>
-    <meta name="description" content="The utility coin with automated buyback and burn. Hold for profit. Build in the ecosystem. This is fine.">
+<!doctype html>
+<html lang="en" style="background: #000">
+  <head>
+    <style>
+      html,
+      body {
+        background: #000 !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASDF - This is Fine</title>
+    <meta name="description" content="Hold. Build. Play. Verify. The $asdfasdfa ecosystem hub." />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://alonisthe.dev/">
-    <meta property="og:title" content="ASDFASDFA - Hold + Build on Solana">
-    <meta property="og:description" content="The utility coin with automated buyback and burn. Hold for profit. Build in the ecosystem.">
-    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
-    <meta property="og:site_name" content="ASDFASDFA">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alonisthe.dev/" />
+    <meta property="og:title" content="ASDF - This is Fine" />
+    <meta
+      property="og:description"
+      content="Hold. Build. Play. Verify. The $asdfasdfa ecosystem hub."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png" />
+    <meta property="og:site_name" content="ASDFASDFA" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://alonisthe.dev/">
-    <meta name="twitter:title" content="ASDFASDFA - Hold + Build on Solana">
-    <meta name="twitter:description" content="The utility coin with automated buyback and burn. Hold for profit. Build in the ecosystem.">
-    <meta name="twitter:image" content="https://alonisthe.dev/og-image.png">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ASDF - This is Fine" />
+    <meta name="twitter:description" content="Hold. Build. Play. Verify." />
+    <meta name="twitter:image" content="https://alonisthe.dev/og-image.png" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Security Headers -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
         default-src 'self';
         script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
         script-src-attr 'unsafe-inline';
@@ -43,313 +52,176 @@
         base-uri 'self';
         form-action 'self';
         upgrade-insecure-requests;
-    ">
+    "
+    />
 
     <!-- Prefetch -->
-    <link rel="prefetch" href="learn.html">
-    <link rel="prefetch" href="holdex.html">
-    <link rel="prefetch" href="games.html">
+    <link rel="prefetch" href="learn.html" />
+    <link rel="prefetch" href="games.html" />
+    <link rel="prefetch" href="burns.html" />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/home.css">
-</head>
-<body>
-    <!-- ============================================
-         ONBOARDING QUIZ OVERLAY
-         ============================================ -->
-    <div id="onboarding-overlay" class="onboarding-overlay">
-        <div class="onboarding-container">
-            <!-- Progress -->
-            <div class="onboarding-progress">
-                <div class="progress-step active" data-step="1">1</div>
-                <div class="progress-connector"></div>
-                <div class="progress-step" data-step="2">2</div>
-            </div>
+    <link rel="stylesheet" href="css/system.css" />
+    <link rel="stylesheet" href="css/hub.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="hub-nav" id="hub-nav">
+      <div class="hub-nav-inner">
+        <a href="/" class="hub-nav-logo">
+          <span class="hub-nav-logo-fire">&#128293;</span>
+          <span>ASDF</span>
+        </a>
 
-            <!-- Skip -->
-            <button class="onboarding-skip" id="skip-onboarding">
-                Skip <span class="skip-arrow">&rarr;</span>
-            </button>
+        <ul class="hub-nav-links">
+          <li><a href="learn.html" class="hub-nav-link">Learn</a></li>
+          <li><a href="games.html" class="hub-nav-link">Play</a></li>
+          <li><a href="burns.html" class="hub-nav-link">Burns</a></li>
+          <li>
+            <a
+              href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hub-nav-link"
+              >GitHub</a
+            >
+          </li>
+        </ul>
 
-            <!-- Step 1: Crypto Level -->
-            <div class="onboarding-step active" id="step-1">
-                <span class="step-icon">&#128293;</span>
-                <h2 class="step-title">Welcome to ASDF</h2>
-                <p class="step-subtitle">What's your crypto experience?</p>
-
-                <div class="quiz-options-grid">
-                    <button class="quiz-option-card" data-level="beginner" data-step="1">
-                        <span class="option-icon">&#127793;</span>
-                        <span class="option-title">Beginner</span>
-                        <span class="option-desc">New to crypto</span>
-                    </button>
-                    <button class="quiz-option-card" data-level="intermediate" data-step="1">
-                        <span class="option-icon">&#128293;</span>
-                        <span class="option-title">Intermediate</span>
-                        <span class="option-desc">I know the basics</span>
-                    </button>
-                    <button class="quiz-option-card" data-level="expert" data-step="1">
-                        <span class="option-icon">&#128142;</span>
-                        <span class="option-title">Expert</span>
-                        <span class="option-desc">Degen mode</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 2: Goal -->
-            <div class="onboarding-step" id="step-2">
-                <span class="step-icon">&#127919;</span>
-                <h2 class="step-title">What brings you here?</h2>
-                <p class="step-subtitle">Choose your path</p>
-
-                <div class="quiz-options-grid">
-                    <button class="quiz-option-card" data-goal="hold" data-step="2">
-                        <span class="option-icon">&#128176;</span>
-                        <span class="option-title">Hold for Profit</span>
-                        <span class="option-desc">Watch burns reduce supply</span>
-                    </button>
-                    <button class="quiz-option-card" data-goal="build" data-step="2">
-                        <span class="option-icon">&#128736;</span>
-                        <span class="option-title">Build in Ecosystem</span>
-                        <span class="option-desc">Create apps & tools</span>
-                    </button>
-                    <button class="quiz-option-card" data-goal="both" data-step="2">
-                        <span class="option-icon">&#128640;</span>
-                        <span class="option-title">Both</span>
-                        <span class="option-desc">Hold + Build = Win</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================
-         NAVIGATION
-         ============================================ -->
-    <nav class="nav-home">
-        <div class="nav-home-content">
-            <a href="/" class="nav-home-logo">
-                <span class="nav-home-logo-icon">&#128293;</span>
-                <span>ASDFASDFA</span>
-            </a>
-
-            <ul class="nav-home-links">
-                <li><a href="learn.html">Learn</a></li>
-                <li><a href="games.html">Games</a></li>
-                <li><a href="burns.html">Burns</a></li>
-                <li><a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-            </ul>
-
-            <div class="nav-home-cta">
-                <a href="holdex.html" class="btn btn-primary">Open HolDEX</a>
-            </div>
-
-            <button class="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
-        </div>
+        <a href="holdex.html" class="hub-nav-cta">HolDEX</a>
+      </div>
     </nav>
 
-    <!-- ============================================
-         MAIN DASHBOARD
-         ============================================ -->
-    <main class="dashboard" id="main-dashboard">
+    <!-- Hero -->
+    <section class="hub-hero">
+      <p class="hub-tagline">
+        <span>&#128021;</span>
+        <span>$asdfasdfa ecosystem</span>
+      </p>
 
-        <!-- Hero Compact -->
-        <section class="hero-compact">
-            <div class="container">
-                <div class="hero-split">
-                    <!-- Left: Value Proposition -->
-                    <div class="hero-message">
-                        <div class="hero-tagline">
-                            &#128021; THIS IS FINE &#128293;
-                        </div>
+      <h1 class="hub-title">THIS IS FINE</h1>
 
-                        <h1 class="hero-title">
-                            <span class="title-hold">HOLD</span>
-                            <span class="title-plus">+</span>
-                            <span class="title-build">BUILD</span>
-                        </h1>
+      <p class="hub-subtitle">Hold. Build. Play. Verify.</p>
 
-                        <p class="hero-subtitle">
-                            Tokens burn automatically. Supply goes down.<br>
-                            Your apps fuel the flywheel. <strong>Everyone wins.</strong>
-                        </p>
-                    </div>
-
-                    <!-- Right: Live Stats -->
-                    <div class="hero-stats-mini">
-                        <div class="stat-mini">
-                            <span class="stat-value" id="stat-burned-mini">--</span>
-                            <span class="stat-label">Tokens Burned</span>
-                        </div>
-                        <div class="stat-mini">
-                            <span class="stat-value" id="stat-supply-mini">--</span>
-                            <span class="stat-label">Supply Left</span>
-                        </div>
-                        <div class="stat-mini status-live">
-                            <span class="status-dot"></span>
-                            <span class="stat-label">Daemon Live</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Hub Grid -->
-        <section class="hub-grid-section">
-            <div class="container">
-
-                <!-- HOLD Hub -->
-                <div class="hub-category" id="hub-hold">
-                    <h2 class="hub-category-title">
-                        <span class="category-icon">&#128176;</span>
-                        HOLD
-                    </h2>
-                    <div class="hub-cards">
-                        <div class="hub-card" data-hub-link="holdex.html">
-                            <span class="hub-card-icon">&#128200;</span>
-                            <h3 class="hub-card-title">HolDEX</h3>
-                            <p class="hub-card-desc">Token explorer & charts</p>
-                            <span class="hub-card-badge live">LIVE</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="forecast.html">
-                            <span class="hub-card-icon">&#127919;</span>
-                            <h3 class="hub-card-title">Forecast</h3>
-                            <p class="hub-card-desc">Prediction market</p>
-                            <span class="hub-card-badge live">LIVE</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="burns.html">
-                            <span class="hub-card-icon">&#128293;</span>
-                            <h3 class="hub-card-title">Burns</h3>
-                            <p class="hub-card-desc">Track burns live</p>
-                            <span class="hub-card-badge live">LIVE</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BUILD Hub -->
-                <div class="hub-category" id="hub-build">
-                    <h2 class="hub-category-title">
-                        <span class="category-icon">&#128736;</span>
-                        BUILD
-                    </h2>
-                    <div class="hub-cards">
-                        <div class="hub-card" data-hub-link="https://www.alonisthe.dev/ignition">
-                            <span class="hub-card-icon">&#128640;</span>
-                            <h3 class="hub-card-title">Ignition</h3>
-                            <p class="hub-card-desc">Launch tokens</p>
-                            <span class="hub-card-badge live">LIVE</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="#">
-                            <span class="hub-card-icon">&#9881;</span>
-                            <h3 class="hub-card-title">Control</h3>
-                            <p class="hub-card-desc">Admin panel</p>
-                            <span class="hub-card-badge soon">SOON</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem/blob/main/docs/API.md">
-                            <span class="hub-card-icon">&#128218;</span>
-                            <h3 class="hub-card-title">API Docs</h3>
-                            <p class="hub-card-desc">Developer resources</p>
-                            <span class="hub-card-badge docs">DOCS</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LEARN Hub -->
-                <div class="hub-category" id="hub-learn">
-                    <h2 class="hub-category-title">
-                        <span class="category-icon">&#128218;</span>
-                        LEARN
-                    </h2>
-                    <div class="hub-cards">
-                        <div class="hub-card featured" data-hub-link="learn.html">
-                            <span class="hub-card-icon">&#127891;</span>
-                            <h3 class="hub-card-title">Tutorial</h3>
-                            <p class="hub-card-desc">Interactive 5-level guide</p>
-                            <span class="hub-card-badge new">NEW</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="learn.html#ecosystem">
-                            <span class="hub-card-icon">&#127760;</span>
-                            <h3 class="hub-card-title">Ecosystem</h3>
-                            <p class="hub-card-desc">How it all works</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GAMES Hub -->
-                <div class="hub-category" id="hub-games">
-                    <h2 class="hub-category-title">
-                        <span class="category-icon">&#127918;</span>
-                        GAMES
-                    </h2>
-                    <div class="hub-cards">
-                        <div class="hub-card" data-hub-link="games.html#games">
-                            <span class="hub-card-icon">&#128200;</span>
-                            <h3 class="hub-card-title">Pump Arena</h3>
-                            <p class="hub-card-desc">Trading simulator RPG</p>
-                            <span class="hub-card-badge live">PLAY</span>
-                        </div>
-                        <div class="hub-card" data-hub-link="games.html">
-                            <span class="hub-card-icon">&#128377;</span>
-                            <h3 class="hub-card-title">Arcade</h3>
-                            <p class="hub-card-desc">9 mini-games</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ============================================
-         QUICK ACCESS BAR (Mobile)
-         ============================================ -->
-    <div class="quick-access-bar">
-        <a href="holdex.html" class="quick-btn">
-            <span>&#128200;</span>
-            <span>HolDEX</span>
-        </a>
-        <a href="forecast.html" class="quick-btn">
-            <span>&#127919;</span>
-            <span>Forecast</span>
-        </a>
-        <a href="burns.html" class="quick-btn">
-            <span>&#128293;</span>
-            <span>Burns</span>
-        </a>
-        <a href="learn.html" class="quick-btn">
-            <span>&#128218;</span>
-            <span>Learn</span>
-        </a>
-    </div>
-
-    <!-- ============================================
-         FOOTER COMPACT
-         ============================================ -->
-    <footer class="footer-compact">
-        <div class="footer-compact-content">
-            <div class="footer-compact-brand">
-                <span>&#128293;</span>
-                <span>ASDFASDFA</span>
-            </div>
-            <p class="footer-compact-text">
-                Open source. Verifiable on-chain. This is fine.
-            </p>
-            <div class="footer-compact-links">
-                <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener noreferrer">GitHub</a>
-                <a href="https://solscan.io" target="_blank" rel="noopener noreferrer">Solscan</a>
-                <a href="https://x.com/i/chat/group_join/g2003056813512577366/52RDE5IO0J" target="_blank" rel="noopener noreferrer">X Community</a>
-            </div>
+      <!-- Live Stats -->
+      <div class="hub-stats" id="hub-stats">
+        <div class="hub-stat">
+          <span class="hub-stat-label">Burned</span>
+          <span class="hub-stat-value accent" id="stat-burned">--</span>
         </div>
+        <div class="hub-stat-divider"></div>
+        <div class="hub-stat">
+          <span class="hub-stat-label">Supply</span>
+          <span class="hub-stat-value" id="stat-supply">--</span>
+        </div>
+        <div class="hub-stat-divider"></div>
+        <div class="hub-stat hub-stat-live">
+          <span class="hub-stat-label">Live</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portals -->
+    <section class="hub-portals">
+      <div class="hub-portals-inner">
+        <div class="portals-grid">
+          <!-- LEARN Portal -->
+          <a href="learn.html" class="portal portal-learn">
+            <span class="portal-icon">&#128218;</span>
+            <h2 class="portal-title">LEARN</h2>
+            <p class="portal-desc">
+              Comprendre $asdfasdfa. La philosophie, le process, le K-Score.
+            </p>
+            <span class="portal-cta"> Entrer <span class="portal-cta-arrow">&rarr;</span> </span>
+          </a>
+
+          <!-- BUILD Portal -->
+          <a href="build.html" class="portal portal-build">
+            <span class="portal-icon">&#127795;</span>
+            <h2 class="portal-title">BUILD</h2>
+            <p class="portal-desc">Contribuer. Yggdrasil, paths, Academy.</p>
+            <span class="portal-cta"> Entrer <span class="portal-cta-arrow">&rarr;</span> </span>
+          </a>
+
+          <!-- PLAY Portal -->
+          <a href="games.html" class="portal portal-play">
+            <span class="portal-icon">&#127918;</span>
+            <h2 class="portal-title">PLAY</h2>
+            <p class="portal-desc">Apprendre en jouant. Arcade, Pump Arena.</p>
+            <span class="portal-cta"> Entrer <span class="portal-cta-arrow">&rarr;</span> </span>
+          </a>
+
+          <!-- ANALYTICS Portal -->
+          <div class="portal portal-analytics">
+            <span class="portal-icon">&#128200;</span>
+            <h2 class="portal-title">ANALYTICS</h2>
+            <p class="portal-desc">Don't trust. Verify on-chain.</p>
+            <div class="portal-links">
+              <a href="burns.html" class="portal-link"> <span>&#128293;</span> Burns </a>
+              <a href="forecast.html" class="portal-link"> <span>&#127919;</span> Forecast </a>
+            </div>
+          </div>
+
+          <!-- TOOLS Portal -->
+          <div class="portal portal-tools">
+            <span class="portal-icon">&#128736;</span>
+            <h2 class="portal-title">TOOLS</h2>
+            <p class="portal-desc">Outils de l'ecosysteme.</p>
+            <div class="portal-links">
+              <a href="holdex.html" class="portal-link"> <span>&#128200;</span> HolDEX </a>
+              <a
+                href="https://www.alonisthe.dev/ignition"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="portal-link"
+              >
+                <span>&#128640;</span> Ignition
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+      <div class="hub-footer-inner">
+        <p class="hub-footer-text">Open source. On-chain. This is fine.</p>
+        <div class="hub-footer-links">
+          <a
+            href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hub-footer-link"
+            >GitHub</a
+          >
+          <a
+            href="https://solscan.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hub-footer-link"
+            >Solscan</a
+          >
+          <a
+            href="https://x.com/i/chat/group_join/g2003056813512577366/52RDE5IO0J"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hub-footer-link"
+            >Community</a
+          >
+        </div>
+      </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="js/home.js"></script>
-</body>
+    <script src="js/hub.js"></script>
+  </body>
 </html>
