@@ -1,7 +1,8 @@
 {
   "project": "ASDF-Web",
-  "version": "2.0.0",
-  "environment": "codespaces",
+  "version": "3.0.0",
+  "environment": "local",
+  "description": "Hub Central de l'Écosystème $asdfasdfa",
 
   "permissions": {
     "allow": [
@@ -27,6 +28,7 @@
     "path": ".claude/memory/",
     "contextFile": ".claude/memory/context.md",
     "decisionsDir": ".claude/memory/decisions/",
+    "internalRoadmap": ".claude/INTERNAL_ROADMAP.md",
     "backup": "claude-mem"
   },
 
@@ -45,7 +47,44 @@
     },
     "context7": {
       "enabled": true,
-      "priority": ["solana", "helius", "express"]
+      "priority": ["solana", "helius", "express", "anchor"]
+    }
+  },
+
+  "architecture": {
+    "hub": {
+      "description": "Sections à refactorer",
+      "sections": ["learn", "build", "games"],
+      "landingBase": "index-marketing.html"
+    },
+    "tools": {
+      "description": "NE PAS TOUCHER",
+      "pages": ["burns.html", "forecast.html", "holdex.html"],
+      "external": {
+        "gasdf": "https://status.asdfasdfa.tech"
+      }
+    },
+    "yggdrasil": {
+      "core": "burns",
+      "branches": ["holdex", "forecast", "gasdf"],
+      "style": "organic-fire-ice-storm"
+    }
+  },
+
+  "academy": {
+    "storage": "wallet-based",
+    "domains": [
+      "blockchain-fundamentals",
+      "web-development",
+      "smart-contracts",
+      "trading-defi",
+      "game-development",
+      "app-development",
+      "content-creation"
+    ],
+    "progression": {
+      "tiers": ["HOLD", "USE", "BUILD"],
+      "levels": ["MOLDU", "INITIÉ", "HOLDER", "APPRENTI", "ARTISAN", "MAÎTRE", "BUILDER", "ARCHITECT"]
     }
   },
 
@@ -56,7 +95,9 @@
       "develop": "integration"
     },
     "prTemplate": ".github/PULL_REQUEST_TEMPLATE.md",
-    "commitValidation": "manual-pr"
+    "commitValidation": "manual-pr",
+    "releaseStrategy": "organic-regular",
+    "priority": "quality-over-speed"
   },
 
   "testing": {
@@ -70,23 +111,33 @@
   "agentBudgets": {
     "librarian": {
       "maxTokens": 50000,
+      "model": "sonnet",
       "description": "Research docs (context7, web, codebase)"
     },
     "integrity-auditor": {
       "maxTokens": 20000,
-      "description": "Audit securite rapide (Haiku)"
+      "model": "haiku",
+      "description": "Audit securite rapide"
     },
     "commit-analyzer": {
       "maxTokens": 30000,
+      "model": "sonnet",
       "description": "Git history analysis"
     },
     "ui-ux-architect": {
       "maxTokens": 40000,
-      "description": "Design Apple x Helius, system.css"
+      "model": "sonnet",
+      "description": "Design Apple x Helius, system.css, Yggdrasil"
     },
     "helius-architect": {
       "maxTokens": 60000,
-      "description": "RPC patterns, K-Score, production"
+      "model": "opus",
+      "description": "RPC patterns, K-Score, wallet integration"
+    },
+    "academy-designer": {
+      "maxTokens": 45000,
+      "model": "sonnet",
+      "description": "Learning paths, skill trees, XP system"
     }
   },
 
@@ -98,8 +149,20 @@
   },
 
   "philosophy": {
-    "verify": "Test everything, assume nothing",
-    "burn": "Remove waste, keep only essential",
-    "hold": "Stability over speed, quality over quantity"
+    "mantra": [
+      "Don't trust. Verify.",
+      "Don't extract. Burn.",
+      "Don't panic. Hold.",
+      "This is fine."
+    ],
+    "kscore": "K = 100 × ∛(D × O × L)",
+    "phi": 1.618033988749895,
+    "hierarchy": "BUILD > USE > HOLD",
+    "development": {
+      "verify": "Read before Edit, test before ship",
+      "burn": "No bloat, no unused features, minimal",
+      "hold": "Stability over speed, quality over quantity",
+      "fine": "Chaos is the filter, stay calm, ship regularly"
+    }
   }
 }

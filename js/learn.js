@@ -9473,15 +9473,6 @@ tokenomics if you have them."</pre>
             }
         }
 
-        function saveJourneyState() {
-            try {
-                localStorage.setItem(YJ_STORAGE_KEY, JSON.stringify(journeyState));
-                checkForNewBadges();
-            } catch (e) {
-                console.warn('Could not save journey state');
-            }
-        }
-
         function checkForNewBadges() {
             const newBadges = [];
             for (const [badgeId, badge] of Object.entries(JOURNEY_BADGES)) {
