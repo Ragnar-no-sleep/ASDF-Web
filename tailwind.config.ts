@@ -10,12 +10,19 @@ const config: Config = {
     extend: {
       // Warm color palette - Gold, Amber, Cream
       colors: {
-        // Background layers
+        // Background layers (warm - for hub/learn)
         hub: {
           deep: '#0d0906',
           base: '#1a120d',
           elevated: '#231810',
           surface: '#2d1f15',
+        },
+        // Ragnar dark backgrounds (for deep-learn/build)
+        dark: {
+          base: '#000000',
+          elevated: '#111114',
+          surface: '#1a1a1d',
+          card: '#0a0a0c',
         },
         // Gold spectrum
         gold: {

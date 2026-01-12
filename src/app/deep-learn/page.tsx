@@ -77,7 +77,7 @@ function Sidebar({
   return (
     <aside className="hidden lg:block sticky top-24 h-fit space-y-4">
       {/* XP Display */}
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-5">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-5">
         <div className="flex items-center gap-3 p-4 bg-ragnar/10 border border-ragnar/30 rounded-lg mb-4">
           <span className="text-xl">⭐</span>
           <div>
@@ -99,13 +99,13 @@ function Sidebar({
                 onClick={() => !isLocked && onSectionChange(section.id)}
                 disabled={isLocked}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
-                  isActive ? 'bg-ragnar/10' : 'hover:bg-hub-base'
+                  isActive ? 'bg-ragnar/10' : 'hover:bg-dark-surface'
                 } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className={`w-6 h-6 flex items-center justify-center rounded-full font-mono text-xs font-bold ${
                   isCompleted ? 'bg-green-500 text-hub-deep' :
                   isActive ? 'bg-ragnar text-hub-deep' :
-                  'bg-hub-base'
+                  'bg-dark-card'
                 }`}>
                   {isCompleted ? '✓' : SECTIONS.findIndex(s => s.id === section.id) + 1}
                 </div>
@@ -123,7 +123,7 @@ function Sidebar({
       </div>
 
       {/* Badges */}
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-5">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-5">
         <div className="font-mono text-xs uppercase tracking-widest text-warm-ghost mb-4">Badges</div>
         <div className="grid grid-cols-3 gap-2">
           {BADGES.map((badge) => {
@@ -134,7 +134,7 @@ function Sidebar({
                 className={`flex flex-col items-center p-3 rounded-lg text-center transition-all ${
                   isUnlocked
                     ? 'bg-ragnar/10 border border-ragnar/30'
-                    : 'bg-hub-base opacity-30 grayscale'
+                    : 'bg-dark-card opacity-30 grayscale'
                 }`}
               >
                 <span className="text-xl mb-1">{badge.icon}</span>
@@ -168,7 +168,7 @@ function WhatSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">🐕 What is ASDF?</h2>
         <p className="text-warm-secondary mb-4">
           ASDF is a <strong className="text-warm-primary">deflationary token</strong> on Solana.
@@ -188,7 +188,7 @@ function WhatSection() {
         </p>
       </div>
 
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-3">🔥 The Burn Mechanism</h3>
         <p className="text-warm-secondary mb-4">
           When you "burn" tokens, you send them to an address with no private key.
@@ -203,7 +203,7 @@ function WhatSection() {
         </p>
       </div>
 
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-3">🔧 Live Tools</h3>
         <p className="text-warm-secondary mb-4">
           ASDF is more than a token - it's an ecosystem of tools. Each tool generates fees that fuel the burn.
@@ -220,7 +220,7 @@ function WhatSection() {
             <Link
               key={tool.name}
               href={tool.href}
-              className="flex items-center gap-3 p-4 bg-hub-base rounded-lg hover:bg-hub-elevated transition-all hover:-translate-y-0.5"
+              className="flex items-center gap-3 p-4 bg-dark-card rounded-lg hover:bg-dark-elevated transition-all hover:-translate-y-0.5"
             >
               <span className="text-xl">{tool.icon}</span>
               <div>
@@ -255,7 +255,7 @@ function WhySection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">⚡ Why ASDF?</h2>
         <p className="text-warm-secondary mb-4">
           Most deflationary tokens take a percentage from each transfer. ASDF is different.
@@ -271,14 +271,14 @@ function WhySection() {
       </div>
 
       {/* THIS IS FINE - 3 Layers */}
-      <div className="bg-hub-elevated border border-ragnar rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">🐕🔥 "THIS IS FINE" - Three Layers Deep</h3>
         <p className="text-warm-secondary mb-6">
           Our mascot isn't just a meme. It's a philosophy with three levels of meaning:
         </p>
 
         <div className="space-y-4">
-          <div className="p-5 bg-hub-base rounded-lg border-l-4 border-warm-ghost">
+          <div className="p-5 bg-dark-card rounded-lg border-l-4 border-warm-ghost">
             <div className="font-mono text-xs uppercase text-warm-ghost mb-2">Surface Level</div>
             <div className="font-semibold mb-2">Acceptance of Chaos</div>
             <div className="text-sm text-warm-secondary">
@@ -286,7 +286,7 @@ function WhySection() {
             </div>
           </div>
 
-          <div className="p-5 bg-hub-base rounded-lg border-l-4 border-ragnar">
+          <div className="p-5 bg-dark-card rounded-lg border-l-4 border-ragnar">
             <div className="font-mono text-xs uppercase text-ragnar mb-2">Milieu</div>
             <div className="font-semibold mb-2">Anti-Panic Conviction</div>
             <div className="text-sm text-warm-secondary">
@@ -306,7 +306,7 @@ function WhySection() {
       </div>
 
       {/* BUILD > USE > HOLD */}
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">🔨 Conviction Hierarchy: BUILD {'>'} USE {'>'} HOLD</h3>
         <p className="text-warm-secondary mb-6">
           Not all participation is equal. The ecosystem rewards active contribution with φ-weighted multipliers:
@@ -331,7 +331,7 @@ function WhySection() {
             <div className="font-mono text-warm-secondary font-bold">φ = 1.618x</div>
           </div>
 
-          <div className="flex items-center gap-4 p-5 bg-hub-base border border-ragnar/10 rounded-lg">
+          <div className="flex items-center gap-4 p-5 bg-dark-card border border-ragnar/10 rounded-lg">
             <span className="text-3xl">💎</span>
             <div className="flex-1">
               <div className="font-bold">HOLD</div>
@@ -378,12 +378,12 @@ function ProcessSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">🔄 The Process</h2>
         <p className="text-warm-secondary mb-6">Here's how the flywheel works - visualized.</p>
 
         {/* Flywheel */}
-        <div className="flex flex-wrap items-center justify-center gap-3 p-8 bg-hub-base rounded-xl">
+        <div className="flex flex-wrap items-center justify-center gap-3 p-8 bg-dark-card rounded-xl">
           {[
             { icon: '🔄', label: 'Trade' },
             { icon: '💰', label: 'Fees' },
@@ -392,7 +392,7 @@ function ProcessSection() {
             { icon: '📈', label: 'Scarcity' },
           ].map((step, i) => (
             <div key={step.label} className="flex items-center gap-3">
-              <div className="flex flex-col items-center gap-2 p-4 bg-hub-elevated border border-ragnar/10 rounded-lg min-w-[80px]">
+              <div className="flex flex-col items-center gap-2 p-4 bg-dark-elevated border border-ragnar/10 rounded-lg min-w-[80px]">
                 <span className="text-2xl">{step.icon}</span>
                 <span className="font-mono text-xs font-medium uppercase tracking-wider">{step.label}</span>
               </div>
@@ -431,7 +431,7 @@ function ProcessSection() {
             { formula: '1/φ²', value: '38.2%', label: 'Secondary ratio' },
             { formula: '1/φ³', value: '23.6%', label: 'Tertiary ratio' },
           ].map((ratio) => (
-            <div key={ratio.formula} className="text-center p-4 bg-hub-base rounded-lg">
+            <div key={ratio.formula} className="text-center p-4 bg-dark-card rounded-lg">
               <div className="font-mono text-xl text-ragnar">{ratio.formula}</div>
               <div className="text-lg font-bold">{ratio.value}</div>
               <div className="text-xs text-warm-ghost">{ratio.label}</div>
@@ -441,13 +441,13 @@ function ProcessSection() {
       </div>
 
       {/* K-Score */}
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">📈 K-Score: Measuring Conviction</h3>
         <p className="text-warm-secondary mb-4">
           The K-Score uses <strong>geometric mean</strong> - if ANY dimension is zero, the entire score is zero. No shortcuts.
         </p>
 
-        <div className="text-center p-8 bg-hub-base rounded-xl my-6">
+        <div className="text-center p-8 bg-dark-card rounded-xl my-6">
           <div className="font-mono text-2xl text-ragnar mb-3">
             K = 100 × ∛(D × O × L)
           </div>
@@ -462,7 +462,7 @@ function ProcessSection() {
             { icon: '🌱', letter: 'O', name: 'Organic', desc: 'Natural distribution' },
             { icon: '⏳', letter: 'L', name: 'Longevity', desc: 'Time-tested survival' },
           ].map((dim) => (
-            <div key={dim.letter} className="p-4 bg-hub-base rounded-lg text-center">
+            <div key={dim.letter} className="p-4 bg-dark-card rounded-lg text-center">
               <span className="text-2xl">{dim.icon}</span>
               <div className="font-bold my-2">{dim.letter} ({dim.name})</div>
               <div className="text-sm text-warm-secondary">{dim.desc}</div>
@@ -651,7 +651,7 @@ function QuizSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <div className="flex items-center gap-3 mb-4">
           <span className="px-3 py-1 bg-ragnar/20 border border-ragnar/40 rounded-full text-ragnar text-sm font-mono">
             Level {currentLevel}
@@ -672,7 +672,7 @@ function QuizSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-hub-elevated border border-ragnar/20 rounded-xl p-6"
+            className="bg-dark-elevated border border-ragnar/20 rounded-xl p-6"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="font-mono text-xs uppercase tracking-widest text-warm-ghost">
@@ -693,12 +693,12 @@ function QuizSection() {
                   } else if (index === selectedAnswer) {
                     className += 'bg-red-500/20 border-red-500 text-red-400'
                   } else {
-                    className += 'bg-hub-base border-ragnar/10 opacity-50'
+                    className += 'bg-dark-card border-ragnar/10 opacity-50'
                   }
                 } else if (selectedAnswer === index) {
                   className += 'bg-ragnar/10 border-ragnar'
                 } else {
-                  className += 'bg-hub-base border-ragnar/10 hover:border-ragnar/30 hover:bg-hub-elevated cursor-pointer'
+                  className += 'bg-dark-card border-ragnar/10 hover:border-ragnar/30 hover:bg-dark-elevated cursor-pointer'
                 }
 
                 return (
@@ -908,7 +908,7 @@ function PlaySection() {
             { icon: '🤝', name: 'Community', desc: 'Fellow holder standing' },
             { icon: '💰', name: 'Portfolio', desc: 'Your holdings value' },
           ].map((stat) => (
-            <div key={stat.name} className="p-5 bg-hub-elevated border border-ragnar/20 rounded-xl text-center">
+            <div key={stat.name} className="p-5 bg-dark-elevated border border-ragnar/20 rounded-xl text-center">
               <span className="text-2xl">{stat.icon}</span>
               <div className="font-semibold text-sm mt-2">{stat.name}</div>
               <div className="text-xs text-warm-ghost">{stat.desc}</div>
@@ -944,19 +944,19 @@ function PlaySection() {
         </div>
 
         <div className="grid grid-cols-4 gap-4 max-w-md mx-auto mb-8">
-          <div className="p-4 bg-hub-elevated rounded-lg">
+          <div className="p-4 bg-dark-elevated rounded-lg">
             <div className="text-2xl">💎</div>
             <div className="font-mono font-bold">{stats.diamond}</div>
           </div>
-          <div className="p-4 bg-hub-elevated rounded-lg">
+          <div className="p-4 bg-dark-elevated rounded-lg">
             <div className="text-2xl">🧠</div>
             <div className="font-mono font-bold">{stats.knowledge}</div>
           </div>
-          <div className="p-4 bg-hub-elevated rounded-lg">
+          <div className="p-4 bg-dark-elevated rounded-lg">
             <div className="text-2xl">🤝</div>
             <div className="font-mono font-bold">{stats.community}</div>
           </div>
-          <div className="p-4 bg-hub-elevated rounded-lg">
+          <div className="p-4 bg-dark-elevated rounded-lg">
             <div className="text-2xl">💰</div>
             <div className="font-mono font-bold">{stats.portfolio.toLocaleString()}</div>
           </div>
@@ -984,7 +984,7 @@ function PlaySection() {
       className="max-w-2xl mx-auto"
     >
       {/* Stats Bar */}
-      <div className="flex justify-around p-4 bg-hub-elevated border border-ragnar/20 rounded-xl mb-6">
+      <div className="flex justify-around p-4 bg-dark-elevated border border-ragnar/20 rounded-xl mb-6">
         <div className="text-center">
           <div className="text-2xl">💎</div>
           <div className="font-mono text-ragnar">{stats.diamond}</div>
@@ -1018,7 +1018,7 @@ function PlaySection() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8 mb-6"
+          className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8 mb-6"
         >
           <div className="text-5xl text-center mb-4">{currentChapter.icon}</div>
           <h3 className="text-xl font-bold text-center mb-4">{currentChapter.title}</h3>
@@ -1034,7 +1034,7 @@ function PlaySection() {
           <button
             key={i}
             onClick={() => handleChoice(i)}
-            className="w-full p-4 text-left bg-hub-base border border-ragnar/10 rounded-lg hover:border-ragnar/30 hover:bg-hub-elevated transition-all"
+            className="w-full p-4 text-left bg-dark-card border border-ragnar/10 rounded-lg hover:border-ragnar/30 hover:bg-dark-elevated transition-all"
           >
             {choice.text}
           </button>
@@ -1097,7 +1097,7 @@ function AnalyticsSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">📊 Live Analytics</h2>
         <p className="text-warm-secondary">
           Real-time burn metrics. Verified on-chain. <strong className="text-ragnar">Don't trust, verify.</strong>
@@ -1111,7 +1111,7 @@ function AnalyticsSection() {
           { label: 'Burn Cycles', value: stats.cycles, sub: 'completed' },
           { label: 'Last Burn', value: stats.lastBurn, sub: 'ago' },
         ].map((stat) => (
-          <div key={stat.label} className="p-6 bg-hub-elevated border border-ragnar/20 rounded-xl text-center">
+          <div key={stat.label} className="p-6 bg-dark-elevated border border-ragnar/20 rounded-xl text-center">
             <div className="text-xs text-warm-ghost uppercase tracking-widest mb-2">{stat.label}</div>
             <div className="font-mono text-3xl font-bold text-ragnar">{stat.value}</div>
             <div className="text-sm text-warm-secondary">{stat.sub}</div>
@@ -1127,7 +1127,7 @@ function AnalyticsSection() {
             href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-hub-base border border-ragnar/20 rounded-lg hover:bg-hub-elevated transition-colors"
+            className="px-4 py-2 bg-dark-card border border-ragnar/20 rounded-lg hover:bg-dark-elevated transition-colors"
           >
             🔥 Burn Address
           </a>
@@ -1200,16 +1200,16 @@ function FAQSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold">❓ Frequently Asked Questions</h2>
       </div>
 
       <div className="space-y-3">
         {FAQ_DATA.map((faq, i) => (
-          <div key={i} className="bg-hub-elevated border border-ragnar/20 rounded-xl overflow-hidden">
+          <div key={i} className="bg-dark-elevated border border-ragnar/20 rounded-xl overflow-hidden">
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex items-center justify-between p-5 text-left font-medium hover:bg-hub-base transition-colors"
+              className="w-full flex items-center justify-between p-5 text-left font-medium hover:bg-dark-surface transition-colors"
             >
               {faq.q}
               <span className={`transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>▼</span>
@@ -1233,20 +1233,20 @@ function FAQSection() {
       </div>
 
       {/* Glossary */}
-      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
+      <div className="bg-dark-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">📖 Glossary</h2>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search terms..."
-          className="w-full p-4 bg-hub-base border border-ragnar/20 rounded-lg mb-6 focus:outline-none focus:border-ragnar"
+          className="w-full p-4 bg-dark-card border border-ragnar/20 rounded-lg mb-6 focus:outline-none focus:border-ragnar"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredGlossary.map((item) => (
-          <div key={item.term} className="p-5 bg-hub-elevated border border-ragnar/20 rounded-xl">
+          <div key={item.term} className="p-5 bg-dark-elevated border border-ragnar/20 rounded-xl">
             <div className="font-semibold mb-2">{item.term}</div>
             <div className="text-sm text-warm-secondary leading-relaxed">{item.def}</div>
           </div>
@@ -1331,9 +1331,9 @@ export default function DeepLearnPage() {
 
   return (
     <LearnContext.Provider value={contextValue}>
-      <main className="min-h-screen bg-hub-deep text-warm-primary">
+      <main className="min-h-screen bg-black text-warm-primary">
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-gradient-to-b from-hub-deep to-transparent">
+        <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-gradient-to-b from-black to-transparent">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link
               href="/learn"
@@ -1354,7 +1354,7 @@ export default function DeepLearnPage() {
 
             <div className="max-w-3xl">
               {/* Section Tabs */}
-              <div className="flex gap-2 mb-8 p-2 bg-hub-elevated border border-ragnar/20 rounded-xl overflow-x-auto">
+              <div className="flex gap-2 mb-8 p-2 bg-dark-elevated border border-ragnar/20 rounded-xl overflow-x-auto">
                 {SECTIONS.map((section) => (
                   <button
                     key={section.id}
@@ -1362,7 +1362,7 @@ export default function DeepLearnPage() {
                     className={`px-5 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
                       activeSection === section.id
                         ? 'bg-ragnar/10 text-ragnar'
-                        : 'text-warm-secondary hover:bg-hub-base hover:text-warm-primary'
+                        : 'text-warm-secondary hover:bg-dark-surface hover:text-warm-primary'
                     }`}
                   >
                     {section.name}
