@@ -21,11 +21,32 @@ const YggdrasilScene = dynamic(
   }
 )
 
+// Dynamic import for Journey DEV Track (uses Monaco Editor - client-side only)
+const JourneyDevTrack = dynamic(
+  () => import('@/components/Journey/JourneyDevTrack'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-[#ea4e33] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#666] text-sm">Loading curriculum...</p>
+        </div>
+      </div>
+    ),
+  }
+)
+
 // ============================================
 // TYPES
 // ============================================
 
 type BuildSection = 'yggdrasil' | 'builders' | 'path' | 'journey'
+
+interface Skill {
+  name: string
+  level: number
+}
 
 interface Builder {
   id: string
@@ -33,10 +54,13 @@ interface Builder {
   role: string
   avatar: string
   color: string
-  skills: string[]
+  skills: Skill[]
+  bio: string
   projects: string[]
+  lookingFor: string[]
   github?: string
   status: 'legend' | 'active' | 'rising'
+  badge: { type: 'core' | 'community' | 'infra'; label: string }
 }
 
 // ============================================
@@ -45,15 +69,58 @@ interface Builder {
 
 const BUILDERS: Builder[] = [
   {
+    id: 'zeyxx',
+    name: 'Zeyxx',
+    role: 'Lead Developer',
+    avatar: '⚡',
+    color: '#fbbf24',
+    skills: [
+      { name: 'TypeScript', level: 95 },
+      { name: 'Rust/Solana', level: 90 },
+      { name: 'JavaScript', level: 85 },
+    ],
+    bio: 'Burning in the chaos. Full-stack developer & main architect of the ASDF ecosystem. Building infrastructure for mathematical conviction over narrative.',
+    projects: ['Burn Engine', 'ASDF Validator', 'ASDev (Launcher)', 'Vanity Grinder'],
+    lookingFor: ['Smart Contract Auditor', 'UI/UX Designer'],
+    github: 'zeyxx',
+    status: 'legend',
+    badge: { type: 'core', label: '👑 Core' },
+  },
+  {
+    id: 'sollama',
+    name: 'Sollama',
+    role: 'Full-Stack Developer',
+    avatar: '🦙',
+    color: '#a855f7',
+    skills: [
+      { name: 'Full-Stack', level: 90 },
+      { name: 'Rust', level: 85 },
+      { name: 'JavaScript', level: 85 },
+    ],
+    bio: 'Full-stack developer building core infrastructure for the ASDF ecosystem. Specializing in developer tools, DeFi platforms, and on-chain analytics.',
+    projects: ['Burn Tracker', 'HolDex', 'ASDForecast', 'ASDF Grinder'],
+    lookingFor: ['Lead Developer', 'Product Engineer'],
+    github: 'sollama58',
+    status: 'legend',
+    badge: { type: 'community', label: '🎯 Builder' },
+  },
+  {
     id: 'ragnar',
     name: 'Ragnar',
-    role: 'Core Architect',
-    avatar: 'R',
-    color: '#ea4e33',
-    skills: ['Solana', 'TypeScript', 'React', 'Node.js', 'System Design'],
-    projects: ['Burn Daemon', 'Burn Tracker', 'HolDex', 'Ignition'],
+    role: 'Product Engineer & Security',
+    avatar: '⚔️',
+    color: '#3b82f6',
+    skills: [
+      { name: 'HTML/CSS', level: 90 },
+      { name: 'Security', level: 88 },
+      { name: 'Content/Product', level: 85 },
+    ],
+    bio: 'Product/Content Engineer and Security Analyst. Building educational content and securing the ecosystem.',
+    projects: ['Learn Platform', 'Games Platform', 'Security Audits'],
+    lookingFor: ['Games Developer/Designer', 'Security Researcher'],
     github: 'Ragnar-no-sleep',
     status: 'legend',
+    badge: { type: 'infra', label: '🛡️ Security' },
   },
 ]
 
@@ -102,7 +169,77 @@ function BuildNav({ active, onChange }: { active: BuildSection; onChange: (s: Bu
 
 
 // ============================================
-// BUILDERS - Clean Apple-style Cards
+// VIKING BACKGROUND - SVG Aurora & Yggdrasil
+// ============================================
+
+function VikingBackground() {
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
+      {/* Stars layer */}
+      <div
+        className="absolute inset-0 animate-pulse"
+        style={{
+          backgroundImage: `
+            radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.9), transparent),
+            radial-gradient(2px 2px at 90px 40px, rgba(255, 255, 255, 0.8), transparent),
+            radial-gradient(3px 3px at 200px 50px, rgba(255, 255, 255, 0.85), transparent),
+            radial-gradient(2px 2px at 340px 60px, rgba(255, 255, 255, 0.9), transparent),
+            radial-gradient(2px 2px at 460px 170px, rgba(255, 255, 255, 0.7), transparent),
+            radial-gradient(3px 3px at 580px 80px, rgba(255, 255, 255, 0.8), transparent),
+            radial-gradient(2px 2px at 700px 110px, rgba(255, 255, 255, 0.85), transparent)
+          `,
+          backgroundSize: '820px 220px',
+        }}
+      />
+
+      {/* Aurora layer */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 180% 80% at 10% -20%, rgba(34, 197, 94, 0.35) 0%, transparent 60%),
+            radial-gradient(ellipse 150% 70% at 90% -10%, rgba(74, 222, 128, 0.3) 0%, transparent 55%),
+            radial-gradient(ellipse 140% 60% at 50% -15%, rgba(34, 211, 238, 0.25) 0%, transparent 60%),
+            radial-gradient(ellipse 120% 50% at 20% 10%, rgba(168, 85, 247, 0.3) 0%, transparent 55%),
+            radial-gradient(ellipse 80% 50% at 25% 60%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse 70% 45% at 80% 50%, rgba(168, 85, 247, 0.06) 0%, transparent 45%)
+          `,
+        }}
+      />
+
+      {/* Yggdrasil SVG tree */}
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: 0.15,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 1000'%3E%3Cdefs%3E%3ClinearGradient id='treeGrad' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%2322c55e'/%3E%3Cstop offset='30%25' stop-color='%234ade80'/%3E%3Cstop offset='60%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='3' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23treeGrad)' stroke-linecap='round' filter='url(%23glow)'%3E%3Cpath d='M600 1000 L600 550 Q600 480 570 400 Q540 320 600 240 Q660 160 600 80' stroke-width='8'/%3E%3Cpath d='M600 850 Q480 800 360 860 Q240 920 100 850' stroke-width='5'/%3E%3Cpath d='M600 720 Q460 660 320 720 Q180 780 40 700' stroke-width='4'/%3E%3Cpath d='M600 590 Q440 520 280 590 Q120 660 -40 560' stroke-width='4'/%3E%3Cpath d='M600 850 Q720 800 840 860 Q960 920 1100 850' stroke-width='5'/%3E%3Cpath d='M600 720 Q740 660 880 720 Q1020 780 1160 700' stroke-width='4'/%3E%3Cpath d='M600 590 Q760 520 920 590 Q1080 660 1240 560' stroke-width='4'/%3E%3Cpath d='M600 1000 Q480 960 360 1010 Q240 1060 80 980' stroke-width='6'/%3E%3Cpath d='M600 1000 Q720 960 840 1010 Q960 1060 1120 980' stroke-width='6'/%3E%3Ccircle cx='280' cy='590' r='10' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='920' cy='590' r='10' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='600' cy='80' r='12' fill='%23fbbf24' opacity='1'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center bottom',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+
+      {/* Floating runes */}
+      <div
+        className="absolute top-[15%] left-0 w-[200%] text-2xl tracking-[40px] whitespace-nowrap animate-runes-scroll"
+        style={{ color: 'rgba(74, 222, 128, 0.2)', textShadow: '0 0 20px rgba(74, 222, 128, 0.4)' }}
+      >
+        ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛈ ᛇ ᛉ ᛊ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛞ ᛟ   ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛈ ᛇ ᛉ ᛊ
+      </div>
+
+      {/* Mist at bottom */}
+      <div
+        className="absolute bottom-0 left-0 w-full h-1/2"
+        style={{
+          background: `linear-gradient(to top, rgba(34, 197, 94, 0.08) 0%, rgba(34, 211, 238, 0.05) 20%, transparent 100%)`,
+        }}
+      />
+    </div>
+  )
+}
+
+// ============================================
+// BUILDERS - Viking Marketplace Style
 // ============================================
 
 function BuildersSection() {
@@ -110,132 +247,168 @@ function BuildersSection() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-5xl mx-auto"
+      className="relative max-w-6xl mx-auto"
     >
       {/* Header */}
-      <div className="flex items-end justify-between mb-12">
-        <div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl font-light tracking-tight mb-2"
-          >
-            Builders
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-[#666] text-lg"
-          >
-            The architects of the ecosystem
-          </motion.p>
-        </div>
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-5 py-2.5 bg-[#ea4e33] rounded-full text-sm font-medium text-white hover:bg-[#d94429] transition-colors"
+      <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#ea4e33]/10 border border-[#ea4e33]/30 rounded-full mb-6"
         >
-          Apply to Build
-        </motion.button>
+          <span className="w-2 h-2 bg-[#4ade80] rounded-full animate-pulse" />
+          <span className="text-sm text-[#ea4e33] font-medium">3 Builders Active</span>
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-5xl font-bold tracking-tight mb-4"
+        >
+          <span className="bg-gradient-to-r from-[#4ade80] via-[#22d3ee] to-[#a855f7] bg-clip-text text-transparent">
+            Builders Marketplace
+          </span>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-[#888] text-lg max-w-xl mx-auto"
+        >
+          The architects forging the ASDF ecosystem. Connect, collaborate, build.
+        </motion.p>
       </div>
 
       {/* Builders Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
         {BUILDERS.map((builder, index) => (
           <motion.div
             key={builder.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ y: -4 }}
-            className="group relative p-8 bg-[#0a0a0a] border border-[#1a1a1a] rounded-3xl hover:border-[#2a2a2a] transition-all duration-300"
+            whileHover={{ y: -6, borderColor: '#ea4e33' }}
+            className="group relative p-6 bg-[#0a0808]/90 backdrop-blur-sm border-2 border-[#2a1a15] rounded-2xl hover:shadow-[0_8px_24px_rgba(234,78,51,0.15)] transition-all duration-300"
           >
-            {/* Status Badge */}
-            <div className="absolute top-6 right-6">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                builder.status === 'legend' ? 'bg-gradient-to-r from-[#ea4e33]/20 to-[#f59e0b]/20 text-[#f59e0b]' :
-                builder.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                'bg-[#333] text-[#666]'
-              }`}>
-                {builder.status}
+            {/* Header: Avatar + Identity + Badge */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative">
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl bg-[#111] border border-[#333]"
+                >
+                  {builder.avatar}
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#4ade80] rounded-full border-2 border-[#0a0808] shadow-[0_0_8px_#4ade80]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-[#f5f0e8]">{builder.name}</h3>
+                <p className="text-xs text-[#666]">{builder.role}</p>
+              </div>
+              <span
+                className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border ${
+                  builder.badge.type === 'core'
+                    ? 'bg-[#fbbf24]/10 text-[#fbbf24] border-[#fbbf24]/50'
+                    : builder.badge.type === 'community'
+                    ? 'bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/50'
+                    : 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/50'
+                }`}
+              >
+                {builder.badge.label}
               </span>
             </div>
 
-            {/* Avatar & Info */}
-            <div className="flex items-start gap-5 mb-6">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
-                style={{ backgroundColor: builder.color }}
-              >
-                {builder.avatar}
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-white">{builder.name}</h3>
-                <p className="text-[#666]">{builder.role}</p>
-              </div>
-            </div>
+            {/* Bio */}
+            <p className="text-sm text-[#888] leading-relaxed mb-5 pb-5 border-b border-[#1a1a1a]">
+              {builder.bio}
+            </p>
 
-            {/* Skills */}
-            <div className="mb-6">
-              <p className="text-xs text-[#444] uppercase tracking-wider mb-3">Skills</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Skills with progress bars */}
+            <div className="mb-5">
+              <h4 className="text-[10px] text-[#555] uppercase tracking-wider font-semibold mb-3">Skills</h4>
+              <div className="space-y-2.5">
                 {builder.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1.5 bg-[#111] border border-[#222] rounded-lg text-xs text-[#999]"
-                  >
-                    {skill}
-                  </span>
+                  <div key={skill.name}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-[#999]">{skill.name}</span>
+                      <span className="text-[#555]">{skill.level}%</span>
+                    </div>
+                    <div className="h-1.5 bg-[#111] rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${skill.level}%` }}
+                        transition={{ delay: 0.3 + index * 0.1, duration: 0.8, ease: 'easeOut' }}
+                        className="h-full rounded-full"
+                        style={{
+                          background: `linear-gradient(90deg, ${builder.color}, ${builder.color}88)`,
+                        }}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* Projects */}
-            <div className="mb-6">
-              <p className="text-xs text-[#444] uppercase tracking-wider mb-3">Projects</p>
-              <p className="text-sm text-[#888]">{builder.projects.join(' · ')}</p>
+            <div className="mb-5">
+              <h4 className="text-[10px] text-[#555] uppercase tracking-wider font-semibold mb-3">Projects</h4>
+              <div className="space-y-1.5">
+                {builder.projects.map((project) => (
+                  <div key={project} className="flex items-center gap-2 text-sm">
+                    <span className="w-1.5 h-1.5 bg-[#4ade80] rounded-full" />
+                    <span className="text-[#aaa]">{project}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Looking For */}
+            <div className="mb-5">
+              <h4 className="text-[10px] text-[#555] uppercase tracking-wider font-semibold mb-3">Looking For</h4>
+              <div className="flex flex-wrap gap-2">
+                {builder.lookingFor.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 bg-[#ea4e33]/10 border border-[#ea4e33]/30 rounded-md text-xs text-[#ea4e33]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between pt-6 border-t border-[#1a1a1a]">
-              {builder.github && (
-                <a
-                  href={`https://github.com/${builder.github}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-[#666] hover:text-[#ea4e33] transition-colors"
-                >
-                  @{builder.github}
-                </a>
-              )}
-              <button className="text-sm text-[#ea4e33] opacity-0 group-hover:opacity-100 transition-opacity">
-                View Profile →
-              </button>
-            </div>
+            <a
+              href={`https://github.com/${builder.github}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-[#ea4e33] to-[#d94429] rounded-xl text-sm font-medium text-white hover:from-[#f55a3f] hover:to-[#ea4e33] transition-all"
+            >
+              🤝 Join {builder.name}&apos;s Projects
+            </a>
           </motion.div>
         ))}
-
-        {/* Join Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          whileHover={{ y: -4, borderColor: '#ea4e33' }}
-          className="relative p-8 border-2 border-dashed border-[#1a1a1a] rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[300px]"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-[#111] border border-[#222] flex items-center justify-center mb-4">
-            <span className="text-2xl text-[#444]">+</span>
-          </div>
-          <h3 className="text-lg font-medium text-white mb-2">Become a Builder</h3>
-          <p className="text-sm text-[#666] max-w-[200px]">
-            Complete your journey to unlock your builder profile
-          </p>
-        </motion.div>
       </div>
+
+      {/* Join CTA */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="p-8 bg-gradient-to-br from-[#ea4e33]/5 to-[#ea4e33]/10 border border-[#ea4e33]/20 rounded-2xl text-center"
+      >
+        <div className="text-4xl mb-4">🚀</div>
+        <h3 className="text-xl font-bold text-white mb-2">Want to Join a Builder?</h3>
+        <p className="text-[#888] text-sm mb-6 max-w-md mx-auto">
+          Connect with builders, contribute to projects, and help grow the ecosystem.
+        </p>
+        <a
+          href="https://github.com/Ragnar-no-sleep/ASDF-Builders"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#ea4e33] rounded-xl text-sm font-medium text-white hover:bg-[#d94429] transition-colors"
+        >
+          View All Projects on GitHub →
+        </a>
+      </motion.div>
     </motion.div>
   )
 }
@@ -405,7 +578,24 @@ function FindPathSection({ onComplete }: { onComplete: (track: string) => void }
 
 function JourneySection({ selectedTrack }: { selectedTrack?: string }) {
   const [activeTrack, setActiveTrack] = useState(selectedTrack || 'dev')
+  const [showFullTrack, setShowFullTrack] = useState(false)
   const track = JOURNEY_TRACKS.find(t => t.id === activeTrack)!
+
+  // Show full DEV track experience
+  if (showFullTrack && activeTrack === 'dev') {
+    return (
+      <div className="relative">
+        <button
+          onClick={() => setShowFullTrack(false)}
+          className="absolute top-4 left-4 z-10 px-4 py-2 bg-[#111] border border-[#222] rounded-lg text-sm text-[#888] hover:text-white hover:border-[#333] transition-colors flex items-center gap-2"
+        >
+          <span>←</span>
+          <span>Back to Overview</span>
+        </button>
+        <JourneyDevTrack />
+      </div>
+    )
+  }
 
   return (
     <motion.div
@@ -520,16 +710,20 @@ function JourneySection({ selectedTrack }: { selectedTrack?: string }) {
             <h4 className="text-lg font-medium text-white mb-6">Curriculum</h4>
             <div className="space-y-4">
               {[
-                { name: 'Fundamentals', lessons: 4, locked: false },
-                { name: 'Core Concepts', lessons: 6, locked: true },
-                { name: 'Advanced Patterns', lessons: 5, locked: true },
-                { name: 'Production Ready', lessons: 3, locked: true },
+                { name: 'Foundations', lessons: 6, locked: false },
+                { name: 'Smart Contracts', lessons: 8, locked: true },
+                { name: 'DeFi Patterns', lessons: 6, locked: true },
+                { name: 'Production Ready', lessons: 4, locked: true },
               ].map((module, i) => (
-                <div
+                <button
                   key={module.name}
-                  className={`flex items-center justify-between p-4 rounded-xl border ${
-                    module.locked ? 'border-[#1a1a1a] opacity-50' : 'border-[#1a1a1a] hover:border-[#2a2a2a]'
-                  } transition-colors`}
+                  onClick={() => !module.locked && activeTrack === 'dev' && setShowFullTrack(true)}
+                  disabled={module.locked}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border ${
+                    module.locked
+                      ? 'border-[#1a1a1a] opacity-50 cursor-not-allowed'
+                      : 'border-[#1a1a1a] hover:border-[#ea4e33]/50 hover:bg-[#111] cursor-pointer'
+                  } transition-all`}
                 >
                   <div className="flex items-center gap-4">
                     <div
@@ -541,7 +735,7 @@ function JourneySection({ selectedTrack }: { selectedTrack?: string }) {
                     >
                       {i + 1}
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="font-medium text-white">{module.name}</p>
                       <p className="text-xs text-[#666]">{module.lessons} lessons</p>
                     </div>
@@ -549,9 +743,9 @@ function JourneySection({ selectedTrack }: { selectedTrack?: string }) {
                   {module.locked ? (
                     <span className="text-[#444]">🔒</span>
                   ) : (
-                    <span className="text-[#ea4e33] text-sm">Start →</span>
+                    <span className="text-[#ea4e33] text-sm font-medium">Start →</span>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -585,10 +779,11 @@ function JourneySection({ selectedTrack }: { selectedTrack?: string }) {
               Complete your journey to join Yggdrasil
             </p>
             <button
-              className="w-full py-3 rounded-xl text-sm font-medium text-white transition-colors"
+              onClick={() => activeTrack === 'dev' && setShowFullTrack(true)}
+              className="w-full py-3 rounded-xl text-sm font-medium text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: track.color }}
             >
-              Begin Learning
+              {activeTrack === 'dev' ? 'Start Learning' : 'Coming Soon'}
             </button>
           </div>
         </div>
@@ -610,10 +805,16 @@ export default function BuildPage() {
     setSection('journey')
   }
 
+  // Show Viking background for Builders and Path sections
+  const showVikingBg = section === 'builders' || section === 'path'
+
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-[#020812] text-white relative">
+      {/* Viking Background (Builders + Path only) */}
+      {showVikingBg && <VikingBackground />}
+
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-5">
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-5 bg-gradient-to-b from-[#020812] to-transparent">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link
             href="/"
@@ -625,7 +826,7 @@ export default function BuildPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20">
+      <div className="relative max-w-7xl mx-auto px-6 pt-28 pb-20">
         {/* Navigation */}
         <div className="flex justify-center mb-16">
           <BuildNav active={section} onChange={setSection} />

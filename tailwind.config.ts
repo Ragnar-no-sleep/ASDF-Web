@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
@@ -90,6 +90,7 @@ const config: Config = {
         'orbit-rotate': 'orbitRotate 60s linear infinite',
         'entrance-fade': 'entranceFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'entrance-portal': 'entrancePortal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'runes-scroll': 'runesScroll 60s linear infinite',
       },
       keyframes: {
         floatGlow: {
@@ -100,15 +101,20 @@ const config: Config = {
         },
         centerBreathe: {
           '0%, 100%': {
-            boxShadow: '0 0 60px rgba(250, 240, 220, 0.1), 0 0 120px rgba(234, 179, 8, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.3)',
+            boxShadow:
+              '0 0 60px rgba(250, 240, 220, 0.1), 0 0 120px rgba(234, 179, 8, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.3)',
           },
           '50%': {
-            boxShadow: '0 0 80px rgba(250, 240, 220, 0.15), 0 0 150px rgba(234, 179, 8, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.3)',
+            boxShadow:
+              '0 0 80px rgba(250, 240, 220, 0.15), 0 0 150px rgba(234, 179, 8, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.3)',
           },
         },
         logoFlicker: {
           '0%, 100%': { filter: 'drop-shadow(0 0 20px rgba(234, 179, 8, 0.4))' },
-          '50%': { filter: 'drop-shadow(0 0 30px rgba(234, 179, 8, 0.4)) drop-shadow(0 0 10px rgba(245, 158, 11, 0.3))' },
+          '50%': {
+            filter:
+              'drop-shadow(0 0 30px rgba(234, 179, 8, 0.4)) drop-shadow(0 0 10px rgba(245, 158, 11, 0.3))',
+          },
         },
         orbitRotate: {
           from: { transform: 'rotate(0deg)' },
@@ -121,6 +127,10 @@ const config: Config = {
         entrancePortal: {
           from: { opacity: '0', transform: 'translateY(30px) scale(0.9)' },
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        runesScroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(50%)' },
         },
       },
       // Timing functions
@@ -138,6 +148,6 @@ const config: Config = {
     },
   },
   plugins: [],
-}
+};
 
-export default config
+export default config;
