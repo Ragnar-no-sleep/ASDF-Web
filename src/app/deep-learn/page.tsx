@@ -77,11 +77,11 @@ function Sidebar({
   return (
     <aside className="hidden lg:block sticky top-24 h-fit space-y-4">
       {/* XP Display */}
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-5">
-        <div className="flex items-center gap-3 p-4 bg-warm-gold/10 border border-warm-gold/30 rounded-lg mb-4">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-5">
+        <div className="flex items-center gap-3 p-4 bg-ragnar/10 border border-ragnar/30 rounded-lg mb-4">
           <span className="text-xl">⭐</span>
           <div>
-            <div className="font-mono text-lg font-bold text-warm-gold">{xp} XP</div>
+            <div className="font-mono text-lg font-bold text-ragnar">{xp} XP</div>
             <div className="text-xs text-warm-muted">Total Earned</div>
           </div>
         </div>
@@ -99,12 +99,12 @@ function Sidebar({
                 onClick={() => !isLocked && onSectionChange(section.id)}
                 disabled={isLocked}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
-                  isActive ? 'bg-warm-gold/10' : 'hover:bg-hub-base'
+                  isActive ? 'bg-ragnar/10' : 'hover:bg-hub-base'
                 } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className={`w-6 h-6 flex items-center justify-center rounded-full font-mono text-xs font-bold ${
                   isCompleted ? 'bg-green-500 text-hub-deep' :
-                  isActive ? 'bg-warm-gold text-hub-deep' :
+                  isActive ? 'bg-ragnar text-hub-deep' :
                   'bg-hub-base'
                 }`}>
                   {isCompleted ? '✓' : SECTIONS.findIndex(s => s.id === section.id) + 1}
@@ -123,7 +123,7 @@ function Sidebar({
       </div>
 
       {/* Badges */}
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-5">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-5">
         <div className="font-mono text-xs uppercase tracking-widest text-warm-ghost mb-4">Badges</div>
         <div className="grid grid-cols-3 gap-2">
           {BADGES.map((badge) => {
@@ -133,7 +133,7 @@ function Sidebar({
                 key={badge.id}
                 className={`flex flex-col items-center p-3 rounded-lg text-center transition-all ${
                   isUnlocked
-                    ? 'bg-warm-gold/10 border border-warm-gold/30'
+                    ? 'bg-ragnar/10 border border-ragnar/30'
                     : 'bg-hub-base opacity-30 grayscale'
                 }`}
               >
@@ -168,15 +168,15 @@ function WhatSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">🐕 What is ASDF?</h2>
         <p className="text-warm-secondary mb-4">
           ASDF is a <strong className="text-warm-primary">deflationary token</strong> on Solana.
           Every trade generates fees that automatically buy back and burn tokens - permanently reducing supply.
         </p>
 
-        <div className="p-5 bg-warm-gold/10 border-l-4 border-warm-gold rounded-lg my-5">
-          <strong className="text-warm-gold">The one-sentence pitch:</strong>{' '}
+        <div className="p-5 bg-ragnar/10 border-l-4 border-ragnar rounded-lg my-5">
+          <strong className="text-ragnar">The one-sentence pitch:</strong>{' '}
           <span className="text-warm-secondary">
             Trading fees buy tokens. Bought tokens get burned. Supply goes down. THIS IS FINE.
           </span>
@@ -188,7 +188,7 @@ function WhatSection() {
         </p>
       </div>
 
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-3">🔥 The Burn Mechanism</h3>
         <p className="text-warm-secondary mb-4">
           When you "burn" tokens, you send them to an address with no private key.
@@ -198,12 +198,12 @@ function WhatSection() {
           Think of it like throwing money into a volcano. When supply decreases while demand stays constant,
           each remaining token becomes more scarce.
         </p>
-        <p className="text-warm-gold">
+        <p className="text-ragnar">
           All burns are on-chain and publicly verifiable on Solscan.
         </p>
       </div>
 
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-3">🔧 Live Tools</h3>
         <p className="text-warm-secondary mb-4">
           ASDF is more than a token - it's an ecosystem of tools. Each tool generates fees that fuel the burn.
@@ -255,14 +255,14 @@ function WhySection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">⚡ Why ASDF?</h2>
         <p className="text-warm-secondary mb-4">
           Most deflationary tokens take a percentage from each transfer. ASDF is different.
         </p>
 
-        <div className="p-5 bg-warm-gold/10 border-l-4 border-warm-gold rounded-lg">
-          <strong className="text-warm-gold">External Revenue Source:</strong>{' '}
+        <div className="p-5 bg-ragnar/10 border-l-4 border-ragnar rounded-lg">
+          <strong className="text-ragnar">External Revenue Source:</strong>{' '}
           <span className="text-warm-secondary">
             Burns are funded by creator fees from Pump.fun trading - not from your transfers.
             This means burns happen regardless of ASDF-specific activity.
@@ -271,7 +271,7 @@ function WhySection() {
       </div>
 
       {/* THIS IS FINE - 3 Layers */}
-      <div className="bg-hub-elevated border border-warm-gold rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">🐕🔥 "THIS IS FINE" - Three Layers Deep</h3>
         <p className="text-warm-secondary mb-6">
           Our mascot isn't just a meme. It's a philosophy with three levels of meaning:
@@ -286,16 +286,16 @@ function WhySection() {
             </div>
           </div>
 
-          <div className="p-5 bg-hub-base rounded-lg border-l-4 border-warm-gold">
-            <div className="font-mono text-xs uppercase text-warm-gold mb-2">Milieu</div>
+          <div className="p-5 bg-hub-base rounded-lg border-l-4 border-ragnar">
+            <div className="font-mono text-xs uppercase text-ragnar mb-2">Milieu</div>
             <div className="font-semibold mb-2">Anti-Panic Conviction</div>
             <div className="text-sm text-warm-secondary">
               Diamond hands through volatility. No FOMO, no FUD. The mechanism works regardless of short-term price.
             </div>
           </div>
 
-          <div className="p-5 bg-gradient-to-r from-hub-base to-warm-gold/10 rounded-lg border-l-4 border-warm-gold">
-            <div className="font-mono text-xs uppercase text-warm-gold mb-2">Profond</div>
+          <div className="p-5 bg-gradient-to-r from-hub-base to-ragnar/10 rounded-lg border-l-4 border-ragnar">
+            <div className="font-mono text-xs uppercase text-ragnar mb-2">Profond</div>
             <div className="font-semibold mb-2">Lucid Irony</div>
             <div className="text-sm text-warm-secondary">
               We <em>know</em> everything is on fire. We build anyway. With mathematical rigor. With verifiable code.
@@ -306,23 +306,23 @@ function WhySection() {
       </div>
 
       {/* BUILD > USE > HOLD */}
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">🔨 Conviction Hierarchy: BUILD {'>'} USE {'>'} HOLD</h3>
         <p className="text-warm-secondary mb-6">
           Not all participation is equal. The ecosystem rewards active contribution with φ-weighted multipliers:
         </p>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-warm-gold/20 to-hub-base rounded-lg">
+          <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-ragnar/20 to-hub-base rounded-lg">
             <span className="text-3xl">🔨</span>
             <div className="flex-1">
-              <div className="font-bold text-warm-gold">BUILD</div>
+              <div className="font-bold text-ragnar">BUILD</div>
               <div className="text-sm text-warm-secondary">Create tools, contribute code, generate ecosystem value</div>
             </div>
-            <div className="font-mono text-warm-gold font-bold">φ² = 2.618x</div>
+            <div className="font-mono text-ragnar font-bold">φ² = 2.618x</div>
           </div>
 
-          <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-warm-gold/10 to-hub-base rounded-lg">
+          <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-ragnar/10 to-hub-base rounded-lg">
             <span className="text-3xl">🔧</span>
             <div className="flex-1">
               <div className="font-bold">USE</div>
@@ -331,7 +331,7 @@ function WhySection() {
             <div className="font-mono text-warm-secondary font-bold">φ = 1.618x</div>
           </div>
 
-          <div className="flex items-center gap-4 p-5 bg-hub-base border border-warm-gold/10 rounded-lg">
+          <div className="flex items-center gap-4 p-5 bg-hub-base border border-ragnar/10 rounded-lg">
             <span className="text-3xl">💎</span>
             <div className="flex-1">
               <div className="font-bold">HOLD</div>
@@ -341,8 +341,8 @@ function WhySection() {
           </div>
         </div>
 
-        <div className="p-5 bg-warm-gold/10 border-l-4 border-warm-gold rounded-lg mt-6">
-          <strong className="text-warm-gold">Conviction {'>'} Speculation.</strong>{' '}
+        <div className="p-5 bg-ragnar/10 border-l-4 border-ragnar rounded-lg mt-6">
+          <strong className="text-ragnar">Conviction {'>'} Speculation.</strong>{' '}
           <span className="text-warm-secondary">
             Holding is the minimum. Building is the maximum. The ecosystem aligns incentives so that
             those who create the most value capture the most benefit.
@@ -378,7 +378,7 @@ function ProcessSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">🔄 The Process</h2>
         <p className="text-warm-secondary mb-6">Here's how the flywheel works - visualized.</p>
 
@@ -392,11 +392,11 @@ function ProcessSection() {
             { icon: '📈', label: 'Scarcity' },
           ].map((step, i) => (
             <div key={step.label} className="flex items-center gap-3">
-              <div className="flex flex-col items-center gap-2 p-4 bg-hub-elevated border border-warm-gold/10 rounded-lg min-w-[80px]">
+              <div className="flex flex-col items-center gap-2 p-4 bg-hub-elevated border border-ragnar/10 rounded-lg min-w-[80px]">
                 <span className="text-2xl">{step.icon}</span>
                 <span className="font-mono text-xs font-medium uppercase tracking-wider">{step.label}</span>
               </div>
-              {i < 4 && <span className="text-warm-gold text-xl">→</span>}
+              {i < 4 && <span className="text-ragnar text-xl">→</span>}
             </div>
           ))}
         </div>
@@ -407,18 +407,18 @@ function ProcessSection() {
       </div>
 
       {/* PHI Section */}
-      <div className="bg-gradient-to-br from-hub-elevated to-warm-gold/5 border border-warm-gold rounded-xl p-8">
+      <div className="bg-gradient-to-br from-hub-elevated to-ragnar/5 border border-ragnar rounded-xl p-8">
         <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-          <span className="font-serif text-3xl text-warm-gold">φ</span>
+          <span className="font-serif text-3xl text-ragnar">φ</span>
           The Golden Ratio
         </h3>
         <p className="text-warm-secondary mb-4">
-          Every ratio in the ASDF ecosystem is derived from <strong className="text-warm-gold">φ (phi) = 1.618...</strong> -
+          Every ratio in the ASDF ecosystem is derived from <strong className="text-ragnar">φ (phi) = 1.618...</strong> -
           the golden ratio found in nature, from spiral galaxies to seashells.
         </p>
 
-        <div className="p-5 bg-warm-gold/10 border-l-4 border-warm-gold rounded-lg mb-6">
-          <strong className="text-warm-gold">No magic numbers.</strong>{' '}
+        <div className="p-5 bg-ragnar/10 border-l-4 border-ragnar rounded-lg mb-6">
+          <strong className="text-ragnar">No magic numbers.</strong>{' '}
           <span className="text-warm-secondary">
             When you see 61.8%, it's 1/φ. When you see 38.2%, it's 1/φ².
             Every parameter has mathematical elegance - not arbitrary human decisions.
@@ -432,7 +432,7 @@ function ProcessSection() {
             { formula: '1/φ³', value: '23.6%', label: 'Tertiary ratio' },
           ].map((ratio) => (
             <div key={ratio.formula} className="text-center p-4 bg-hub-base rounded-lg">
-              <div className="font-mono text-xl text-warm-gold">{ratio.formula}</div>
+              <div className="font-mono text-xl text-ragnar">{ratio.formula}</div>
               <div className="text-lg font-bold">{ratio.value}</div>
               <div className="text-xs text-warm-ghost">{ratio.label}</div>
             </div>
@@ -441,14 +441,14 @@ function ProcessSection() {
       </div>
 
       {/* K-Score */}
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h3 className="text-lg font-semibold mb-4">📈 K-Score: Measuring Conviction</h3>
         <p className="text-warm-secondary mb-4">
           The K-Score uses <strong>geometric mean</strong> - if ANY dimension is zero, the entire score is zero. No shortcuts.
         </p>
 
         <div className="text-center p-8 bg-hub-base rounded-xl my-6">
-          <div className="font-mono text-2xl text-warm-gold mb-3">
+          <div className="font-mono text-2xl text-ragnar mb-3">
             K = 100 × ∛(D × O × L)
           </div>
           <div className="text-sm text-warm-secondary">
@@ -470,8 +470,8 @@ function ProcessSection() {
           ))}
         </div>
 
-        <div className="p-5 bg-warm-gold/10 border-l-4 border-warm-gold rounded-lg mt-6">
-          <strong className="text-warm-gold">Critical:</strong>{' '}
+        <div className="p-5 bg-ragnar/10 border-l-4 border-ragnar rounded-lg mt-6">
+          <strong className="text-ragnar">Critical:</strong>{' '}
           <span className="text-warm-secondary">
             If D=0 (no conviction), K=0. If O=0 (all whales), K=0. If L=0 (brand new), K=0.
             This enforces <strong>balanced quality</strong> - you can't fake your way to a high score.
@@ -626,7 +626,7 @@ function QuizSection() {
         className="text-center py-12"
       >
         <div className="text-5xl mb-4">🏆</div>
-        <h2 className="text-2xl font-bold text-warm-gold mb-2">Quiz Complete!</h2>
+        <h2 className="text-2xl font-bold text-ragnar mb-2">Quiz Complete!</h2>
         <p className="text-warm-secondary mb-6">You've mastered the ASDF knowledge.</p>
         <button
           onClick={() => {
@@ -637,7 +637,7 @@ function QuizSection() {
             setShowFeedback(false)
             setLevelComplete(false)
           }}
-          className="px-6 py-3 bg-warm-gold/20 border border-warm-gold/40 rounded-xl text-warm-gold hover:bg-warm-gold/30 transition-colors"
+          className="px-6 py-3 bg-ragnar/20 border border-ragnar/40 rounded-xl text-ragnar hover:bg-ragnar/30 transition-colors"
         >
           Retake Quiz
         </button>
@@ -651,9 +651,9 @@ function QuizSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <div className="flex items-center gap-3 mb-4">
-          <span className="px-3 py-1 bg-warm-gold/20 border border-warm-gold/40 rounded-full text-warm-gold text-sm font-mono">
+          <span className="px-3 py-1 bg-ragnar/20 border border-ragnar/40 rounded-full text-ragnar text-sm font-mono">
             Level {currentLevel}
           </span>
           <span className="text-sm text-warm-ghost">{levelData.title}</span>
@@ -672,13 +672,13 @@ function QuizSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-6"
+            className="bg-hub-elevated border border-ragnar/20 rounded-xl p-6"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="font-mono text-xs uppercase tracking-widest text-warm-ghost">
                 Question {currentQuestion + 1}/{levelData.questions.length}
               </span>
-              <span className="font-mono text-sm text-warm-gold">+25 XP</span>
+              <span className="font-mono text-sm text-ragnar">+25 XP</span>
             </div>
 
             <div className="text-lg font-semibold mb-5">{question.question}</div>
@@ -693,12 +693,12 @@ function QuizSection() {
                   } else if (index === selectedAnswer) {
                     className += 'bg-red-500/20 border-red-500 text-red-400'
                   } else {
-                    className += 'bg-hub-base border-warm-gold/10 opacity-50'
+                    className += 'bg-hub-base border-ragnar/10 opacity-50'
                   }
                 } else if (selectedAnswer === index) {
-                  className += 'bg-warm-gold/10 border-warm-gold'
+                  className += 'bg-ragnar/10 border-ragnar'
                 } else {
-                  className += 'bg-hub-base border-warm-gold/10 hover:border-warm-gold/30 hover:bg-hub-elevated cursor-pointer'
+                  className += 'bg-hub-base border-ragnar/10 hover:border-ragnar/30 hover:bg-hub-elevated cursor-pointer'
                 }
 
                 return (
@@ -734,20 +734,20 @@ function QuizSection() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center p-8 bg-warm-gold/10 border border-warm-gold rounded-xl"
+            className="text-center p-8 bg-ragnar/10 border border-ragnar rounded-xl"
           >
             <div className="text-5xl mb-4">
               {currentLevel === 1 && '🏆'}
               {currentLevel === 2 && '🌟'}
               {currentLevel === 3 && '👑'}
             </div>
-            <h3 className="text-xl font-bold text-warm-gold mb-2">
+            <h3 className="text-xl font-bold text-ragnar mb-2">
               Level {currentLevel} Complete!
             </h3>
             <p className="text-warm-secondary mb-4">+50 XP earned</p>
             <button
               onClick={nextLevel}
-              className="px-6 py-3 bg-warm-gold/20 border border-warm-gold/40 rounded-xl text-warm-gold hover:bg-warm-gold/30 transition-colors"
+              className="px-6 py-3 bg-ragnar/20 border border-ragnar/40 rounded-xl text-ragnar hover:bg-ragnar/30 transition-colors"
             >
               {currentLevel < 3 ? `Continue to Level ${currentLevel + 1} →` : 'Complete Quiz →'}
             </button>
@@ -898,7 +898,7 @@ function PlaySection() {
 
         <div className="max-w-lg mx-auto text-warm-secondary mb-8">
           <p>You're about to enter the chaotic world of crypto. Every choice matters. Every decision shapes your destiny.</p>
-          <p className="text-warm-gold mt-2">Will you become a diamond-handed legend or fall victim to the market's chaos?</p>
+          <p className="text-ragnar mt-2">Will you become a diamond-handed legend or fall victim to the market's chaos?</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
@@ -908,7 +908,7 @@ function PlaySection() {
             { icon: '🤝', name: 'Community', desc: 'Fellow holder standing' },
             { icon: '💰', name: 'Portfolio', desc: 'Your holdings value' },
           ].map((stat) => (
-            <div key={stat.name} className="p-5 bg-hub-elevated border border-warm-gold/20 rounded-xl text-center">
+            <div key={stat.name} className="p-5 bg-hub-elevated border border-ragnar/20 rounded-xl text-center">
               <span className="text-2xl">{stat.icon}</span>
               <div className="font-semibold text-sm mt-2">{stat.name}</div>
               <div className="text-xs text-warm-ghost">{stat.desc}</div>
@@ -918,7 +918,7 @@ function PlaySection() {
 
         <button
           onClick={() => setStarted(true)}
-          className="px-8 py-4 bg-warm-gold/20 border border-warm-gold/40 rounded-xl text-warm-gold text-lg hover:bg-warm-gold/30 transition-colors"
+          className="px-8 py-4 bg-ragnar/20 border border-ragnar/40 rounded-xl text-ragnar text-lg hover:bg-ragnar/30 transition-colors"
         >
           Begin Your Journey →
         </button>
@@ -938,9 +938,9 @@ function PlaySection() {
         <h2 className="text-2xl font-bold mb-2">Journey Complete!</h2>
         <p className="text-warm-secondary mb-6">{archetype.desc}</p>
 
-        <div className="inline-block p-6 bg-warm-gold/10 border border-warm-gold rounded-xl mb-6">
+        <div className="inline-block p-6 bg-ragnar/10 border border-ragnar rounded-xl mb-6">
           <div className="text-sm text-warm-ghost mb-2">Your Archetype</div>
-          <div className="text-xl font-bold text-warm-gold">{archetype.name}</div>
+          <div className="text-xl font-bold text-ragnar">{archetype.name}</div>
         </div>
 
         <div className="grid grid-cols-4 gap-4 max-w-md mx-auto mb-8">
@@ -969,7 +969,7 @@ function PlaySection() {
             setStats({ diamond: 50, knowledge: 20, community: 30, portfolio: 1000 })
             setFinished(false)
           }}
-          className="px-6 py-3 bg-warm-gold/20 border border-warm-gold/40 rounded-xl text-warm-gold hover:bg-warm-gold/30 transition-colors"
+          className="px-6 py-3 bg-ragnar/20 border border-ragnar/40 rounded-xl text-ragnar hover:bg-ragnar/30 transition-colors"
         >
           Play Again
         </button>
@@ -984,25 +984,25 @@ function PlaySection() {
       className="max-w-2xl mx-auto"
     >
       {/* Stats Bar */}
-      <div className="flex justify-around p-4 bg-hub-elevated border border-warm-gold/20 rounded-xl mb-6">
+      <div className="flex justify-around p-4 bg-hub-elevated border border-ragnar/20 rounded-xl mb-6">
         <div className="text-center">
           <div className="text-2xl">💎</div>
-          <div className="font-mono text-warm-gold">{stats.diamond}</div>
+          <div className="font-mono text-ragnar">{stats.diamond}</div>
           <div className="text-[10px] text-warm-ghost">Diamond</div>
         </div>
         <div className="text-center">
           <div className="text-2xl">🧠</div>
-          <div className="font-mono text-warm-gold">{stats.knowledge}</div>
+          <div className="font-mono text-ragnar">{stats.knowledge}</div>
           <div className="text-[10px] text-warm-ghost">Knowledge</div>
         </div>
         <div className="text-center">
           <div className="text-2xl">🤝</div>
-          <div className="font-mono text-warm-gold">{stats.community}</div>
+          <div className="font-mono text-ragnar">{stats.community}</div>
           <div className="text-[10px] text-warm-ghost">Community</div>
         </div>
         <div className="text-center">
           <div className="text-2xl">💰</div>
-          <div className="font-mono text-warm-gold">{stats.portfolio.toLocaleString()}</div>
+          <div className="font-mono text-ragnar">{stats.portfolio.toLocaleString()}</div>
           <div className="text-[10px] text-warm-ghost">ASDF</div>
         </div>
       </div>
@@ -1018,7 +1018,7 @@ function PlaySection() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8 mb-6"
+          className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8 mb-6"
         >
           <div className="text-5xl text-center mb-4">{currentChapter.icon}</div>
           <h3 className="text-xl font-bold text-center mb-4">{currentChapter.title}</h3>
@@ -1034,7 +1034,7 @@ function PlaySection() {
           <button
             key={i}
             onClick={() => handleChoice(i)}
-            className="w-full p-4 text-left bg-hub-base border border-warm-gold/10 rounded-lg hover:border-warm-gold/30 hover:bg-hub-elevated transition-all"
+            className="w-full p-4 text-left bg-hub-base border border-ragnar/10 rounded-lg hover:border-ragnar/30 hover:bg-hub-elevated transition-all"
           >
             {choice.text}
           </button>
@@ -1097,10 +1097,10 @@ function AnalyticsSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">📊 Live Analytics</h2>
         <p className="text-warm-secondary">
-          Real-time burn metrics. Verified on-chain. <strong className="text-warm-gold">Don't trust, verify.</strong>
+          Real-time burn metrics. Verified on-chain. <strong className="text-ragnar">Don't trust, verify.</strong>
         </p>
       </div>
 
@@ -1111,29 +1111,29 @@ function AnalyticsSection() {
           { label: 'Burn Cycles', value: stats.cycles, sub: 'completed' },
           { label: 'Last Burn', value: stats.lastBurn, sub: 'ago' },
         ].map((stat) => (
-          <div key={stat.label} className="p-6 bg-hub-elevated border border-warm-gold/20 rounded-xl text-center">
+          <div key={stat.label} className="p-6 bg-hub-elevated border border-ragnar/20 rounded-xl text-center">
             <div className="text-xs text-warm-ghost uppercase tracking-widest mb-2">{stat.label}</div>
-            <div className="font-mono text-3xl font-bold text-warm-gold">{stat.value}</div>
+            <div className="font-mono text-3xl font-bold text-ragnar">{stat.value}</div>
             <div className="text-sm text-warm-secondary">{stat.sub}</div>
           </div>
         ))}
       </div>
 
-      <div className="bg-warm-gold/10 border border-warm-gold rounded-xl p-8">
-        <h3 className="text-lg font-semibold text-warm-gold mb-4">🔍 Verify Yourself</h3>
+      <div className="bg-ragnar/10 border border-ragnar rounded-xl p-8">
+        <h3 className="text-lg font-semibold text-ragnar mb-4">🔍 Verify Yourself</h3>
         <p className="text-warm-secondary mb-4">True to "Don't Trust, Verify" - check every transaction on-chain:</p>
         <div className="flex gap-4 flex-wrap">
           <a
             href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-hub-base border border-warm-gold/20 rounded-lg hover:bg-hub-elevated transition-colors"
+            className="px-4 py-2 bg-hub-base border border-ragnar/20 rounded-lg hover:bg-hub-elevated transition-colors"
           >
             🔥 Burn Address
           </a>
           <Link
             href="/burns"
-            className="px-4 py-2 bg-warm-gold/20 border border-warm-gold/40 rounded-lg text-warm-gold hover:bg-warm-gold/30 transition-colors"
+            className="px-4 py-2 bg-ragnar/20 border border-ragnar/40 rounded-lg text-ragnar hover:bg-ragnar/30 transition-colors"
           >
             📈 Full Burns Page
           </Link>
@@ -1200,13 +1200,13 @@ function FAQSection() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold">❓ Frequently Asked Questions</h2>
       </div>
 
       <div className="space-y-3">
         {FAQ_DATA.map((faq, i) => (
-          <div key={i} className="bg-hub-elevated border border-warm-gold/20 rounded-xl overflow-hidden">
+          <div key={i} className="bg-hub-elevated border border-ragnar/20 rounded-xl overflow-hidden">
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
               className="w-full flex items-center justify-between p-5 text-left font-medium hover:bg-hub-base transition-colors"
@@ -1233,20 +1233,20 @@ function FAQSection() {
       </div>
 
       {/* Glossary */}
-      <div className="bg-hub-elevated border border-warm-gold/20 rounded-xl p-8">
+      <div className="bg-hub-elevated border border-ragnar/20 rounded-xl p-8">
         <h2 className="text-2xl font-bold mb-4">📖 Glossary</h2>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search terms..."
-          className="w-full p-4 bg-hub-base border border-warm-gold/20 rounded-lg mb-6 focus:outline-none focus:border-warm-gold"
+          className="w-full p-4 bg-hub-base border border-ragnar/20 rounded-lg mb-6 focus:outline-none focus:border-ragnar"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredGlossary.map((item) => (
-          <div key={item.term} className="p-5 bg-hub-elevated border border-warm-gold/20 rounded-xl">
+          <div key={item.term} className="p-5 bg-hub-elevated border border-ragnar/20 rounded-xl">
             <div className="font-semibold mb-2">{item.term}</div>
             <div className="text-sm text-warm-secondary leading-relaxed">{item.def}</div>
           </div>
@@ -1337,13 +1337,13 @@ export default function DeepLearnPage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link
               href="/learn"
-              className="font-mono text-xs tracking-widest uppercase text-warm-muted hover:text-warm-gold transition-colors"
+              className="font-mono text-xs tracking-widest uppercase text-warm-muted hover:text-ragnar transition-colors"
             >
               ← Back to Learn
             </Link>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-warm-gold/10 border border-warm-gold/20 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-ragnar/10 border border-ragnar/20 rounded-full">
               <span>⭐</span>
-              <span className="text-warm-gold text-xs font-mono">{state.xp} XP</span>
+              <span className="text-ragnar text-xs font-mono">{state.xp} XP</span>
             </div>
           </div>
         </header>
@@ -1354,14 +1354,14 @@ export default function DeepLearnPage() {
 
             <div className="max-w-3xl">
               {/* Section Tabs */}
-              <div className="flex gap-2 mb-8 p-2 bg-hub-elevated border border-warm-gold/20 rounded-xl overflow-x-auto">
+              <div className="flex gap-2 mb-8 p-2 bg-hub-elevated border border-ragnar/20 rounded-xl overflow-x-auto">
                 {SECTIONS.map((section) => (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={`px-5 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
                       activeSection === section.id
-                        ? 'bg-warm-gold/10 text-warm-gold'
+                        ? 'bg-ragnar/10 text-ragnar'
                         : 'text-warm-secondary hover:bg-hub-base hover:text-warm-primary'
                     }`}
                   >
@@ -1402,7 +1402,7 @@ export default function DeepLearnPage() {
                         }
                       }
                     }}
-                    className="px-6 py-3 bg-warm-gold/20 border border-warm-gold/40 rounded-xl text-warm-gold hover:bg-warm-gold/30 transition-colors"
+                    className="px-6 py-3 bg-ragnar/20 border border-ragnar/40 rounded-xl text-ragnar hover:bg-ragnar/30 transition-colors"
                   >
                     Continue →
                   </button>

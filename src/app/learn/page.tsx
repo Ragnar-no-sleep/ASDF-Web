@@ -723,7 +723,7 @@ export default function LearnPage() {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                Tu es Croyant maintenant.
+                You're a Believer now.
               </motion.h2>
 
               <motion.p
@@ -732,8 +732,8 @@ export default function LearnPage() {
                 transition={{ delay: 0.4 }}
                 className="text-warm-secondary mb-8"
               >
-                Tu comprends. Tu vérifies. Tu burns.<br />
-                Prêt à construire avec la famille?
+                You understand. You verify. You burn.<br />
+                Ready to go deeper or start building?
               </motion.p>
 
               <motion.div
@@ -743,7 +743,7 @@ export default function LearnPage() {
                 className="space-y-4"
               >
                 <Link
-                  href="/build"
+                  href="/deep-learn"
                   className="inline-block px-8 py-4 rounded-xl font-mono text-sm tracking-wide transition-all hover:scale-105"
                   style={{
                     background: 'linear-gradient(135deg, rgba(234,179,8,0.3), rgba(245,158,11,0.2))',
@@ -751,7 +751,7 @@ export default function LearnPage() {
                     color: '#fcd34d',
                   }}
                 >
-                  Devenir Builder →
+                  Deep Learn →
                 </Link>
 
                 <div className="pt-4">
@@ -759,7 +759,7 @@ export default function LearnPage() {
                     href="/"
                     className="text-warm-muted hover:text-warm-secondary font-mono text-sm transition-colors"
                   >
-                    Retour au Hub
+                    Back to Hub
                   </Link>
                 </div>
               </motion.div>

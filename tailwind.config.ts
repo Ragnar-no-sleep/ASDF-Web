@@ -53,6 +53,18 @@ const config: Config = {
         'warm-secondary': '#c9b89a',
         'warm-muted': '#8a7a65',
         'warm-ghost': '#5a4d40',
+        // Ragnar accent (orange-red)
+        ragnar: {
+          DEFAULT: '#ea4e33',
+          50: 'rgba(234, 78, 51, 0.05)',
+          100: 'rgba(234, 78, 51, 0.1)',
+          200: 'rgba(234, 78, 51, 0.2)',
+          300: 'rgba(234, 78, 51, 0.3)',
+          400: 'rgba(234, 78, 51, 0.4)',
+          500: '#ea4e33',
+          600: '#d94429',
+          700: '#c53a20',
+        },
         // Border colors
         'warm-subtle': 'rgba(201, 184, 154, 0.1)',
         'warm-default': 'rgba(201, 184, 154, 0.2)',
