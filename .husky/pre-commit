@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # ASDF-Web Pre-Commit Hook
 # Philosophy: Don't trust. Verify.
 
