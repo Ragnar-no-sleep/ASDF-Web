@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 // ============================================
-// TYPES
+// TYPES & DATA
 // ============================================
 
 interface TreeNode {
@@ -16,10 +16,6 @@ interface TreeNode {
   position: THREE.Vector3
   link?: string
 }
-
-// ============================================
-// DATA
-// ============================================
 
 const NODES_DATA: Omit<TreeNode, 'position'>[] = [
   { id: 'daemon', name: 'Burn Daemon', description: 'The heart. Automated 24/7 burn mechanism.', status: 'live' },
@@ -42,10 +38,12 @@ export default function YggdrasilScene() {
     camera: THREE.PerspectiveCamera
     renderer: THREE.WebGLRenderer
     controls: OrbitControls
-    nodes: Map<string, THREE.Mesh>
-    fireParticles: THREE.Points
-    snowParticles: THREE.Points
+    nodes: Map<string, THREE.Group>
     animationId: number
+    coreMaterial: THREE.MeshBasicMaterial
+    leafParticles: THREE.Points
+    fireParticles: THREE.Points
+    iceParticles: THREE.Points
   } | null>(null)
 
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null)
@@ -58,21 +56,21 @@ export default function YggdrasilScene() {
     const width = container.clientWidth
     const height = container.clientHeight
 
-    // ========== SCENE SETUP ==========
+    // ========== SCENE ==========
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x000000)
-    scene.fog = new THREE.FogExp2(0x000000, 0.015)
+    scene.background = new THREE.Color(0x030308)
+    scene.fog = new THREE.FogExp2(0x030308, 0.006)
 
     // ========== CAMERA ==========
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000)
-    camera.position.set(0, 5, 20)
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000)
+    camera.position.set(0, 15, 50)
 
     // ========== RENDERER ==========
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(width, height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.2
+    renderer.toneMappingExposure = 1.5
     container.appendChild(renderer.domElement)
 
     // ========== CONTROLS ==========
@@ -80,149 +78,326 @@ export default function YggdrasilScene() {
     controls.enableDamping = true
     controls.dampingFactor = 0.05
     controls.maxPolarAngle = Math.PI * 0.85
-    controls.minDistance = 8
-    controls.maxDistance = 50
-    controls.target.set(0, 3, 0)
+    controls.minDistance = 25
+    controls.maxDistance = 100
+    controls.target.set(0, 12, 0)
 
     // ========== LIGHTING ==========
-    const ambientLight = new THREE.AmbientLight(0x1a1a2e, 0.3)
-    scene.add(ambientLight)
+    const ambient = new THREE.AmbientLight(0x201020, 0.5)
+    scene.add(ambient)
 
-    // Fire light (orange glow from below)
-    const fireLight = new THREE.PointLight(0xea4e33, 2, 30)
-    fireLight.position.set(0, -2, 0)
+    // Golden core light
+    const coreLight = new THREE.PointLight(0xffcc44, 6, 60)
+    coreLight.position.set(0, 12, 0)
+    scene.add(coreLight)
+
+    // Fire uplighting
+    const fireLight = new THREE.PointLight(0xff4400, 4, 50)
+    fireLight.position.set(0, 0, 0)
     scene.add(fireLight)
 
-    // Ice light (blue glow from above)
-    const iceLight = new THREE.PointLight(0x4fc3f7, 1.5, 40)
-    iceLight.position.set(0, 15, 0)
+    // Ice rim light
+    const iceLight = new THREE.PointLight(0x4488ff, 2, 80)
+    iceLight.position.set(0, 30, 0)
     scene.add(iceLight)
 
-    // Accent lights
-    const accentLight1 = new THREE.PointLight(0xf59e0b, 0.8, 20)
-    accentLight1.position.set(-8, 5, 5)
-    scene.add(accentLight1)
+    // ========== YGGDRASIL TREE ==========
+    const treeGroup = new THREE.Group()
 
-    const accentLight2 = new THREE.PointLight(0x8b5cf6, 0.6, 20)
-    accentLight2.position.set(8, 8, -5)
-    scene.add(accentLight2)
-
-    // ========== TREE TRUNK ==========
-    const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.8, 12, 16, 8, true)
-    const trunkMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2d1810,
-      roughness: 0.9,
-      metalness: 0.1,
-      emissive: 0x1a0a05,
-      emissiveIntensity: 0.2,
+    // === GLOWING GOLDEN CORE (Heart) ===
+    const coreMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffdd66,
+      transparent: true,
+      opacity: 0.95,
     })
-    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial)
-    trunk.position.y = 0
-    scene.add(trunk)
+    const coreGeo = new THREE.SphereGeometry(2.5, 32, 32)
+    const core = new THREE.Mesh(coreGeo, coreMaterial)
+    core.position.y = 12
+    treeGroup.add(core)
 
-    // ========== BRANCHES ==========
-    const branchMaterial = new THREE.MeshStandardMaterial({
-      color: 0x3d2517,
-      roughness: 0.85,
-      metalness: 0.1,
-    })
-
-    const createBranch = (startY: number, angle: number, length: number, thickness: number) => {
-      const branchGeometry = new THREE.CylinderGeometry(thickness * 0.3, thickness, length, 8)
-      const branch = new THREE.Mesh(branchGeometry, branchMaterial)
-
-      branch.position.y = startY
-      branch.rotation.z = angle
-      branch.position.x = Math.sin(angle) * length * 0.4
-      branch.position.y = startY + Math.cos(angle) * length * 0.4
-
-      return branch
+    // Core glow layers
+    for (let i = 1; i <= 4; i++) {
+      const glowGeo = new THREE.SphereGeometry(2.5 + i * 1.5, 32, 32)
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: i < 3 ? 0xffaa22 : 0xff6600,
+        transparent: true,
+        opacity: 0.12 / i,
+        side: THREE.BackSide,
+      })
+      const glow = new THREE.Mesh(glowGeo, glowMat)
+      glow.position.y = 12
+      treeGroup.add(glow)
     }
 
-    // Main branches
-    const branches = [
-      createBranch(4, -Math.PI / 4, 4, 0.25),
-      createBranch(4, Math.PI / 4, 3.5, 0.22),
-      createBranch(5.5, -Math.PI / 3, 3, 0.18),
-      createBranch(5.5, Math.PI / 3.5, 3.2, 0.2),
-      createBranch(3, -Math.PI / 5, 2.5, 0.15),
-      createBranch(3, Math.PI / 4.5, 2.8, 0.17),
-    ]
-    branches.forEach(b => scene.add(b))
-
-    // ========== NODES ==========
-    const nodes = new Map<string, THREE.Mesh>()
-    const nodePositions = [
-      new THREE.Vector3(0, 7, 0),      // daemon - top
-      new THREE.Vector3(-4, 5, 2),     // burns
-      new THREE.Vector3(-3, 3.5, -2),  // holdex
-      new THREE.Vector3(3.5, 4.5, 1),  // forecast
-      new THREE.Vector3(4, 3, -1.5),   // ignition
-      new THREE.Vector3(-2, 6, -1),    // sdk
-      new THREE.Vector3(2, 6.5, 1),    // mobile
-    ]
-
-    NODES_DATA.forEach((nodeData, i) => {
-      const position = nodePositions[i]
-      const isLive = nodeData.status === 'live'
-      const isBuilding = nodeData.status === 'building'
-
-      // Node sphere
-      const geometry = new THREE.IcosahedronGeometry(isLive ? 0.5 : 0.4, 1)
-      const material = new THREE.MeshStandardMaterial({
-        color: isLive ? 0xea4e33 : isBuilding ? 0xf59e0b : 0x444444,
-        roughness: 0.3,
-        metalness: 0.7,
-        emissive: isLive ? 0xea4e33 : isBuilding ? 0xf59e0b : 0x222222,
-        emissiveIntensity: isLive ? 0.5 : 0.2,
-      })
-
-      const mesh = new THREE.Mesh(geometry, material)
-      mesh.position.copy(position)
-      mesh.userData = { ...nodeData, position }
-      scene.add(mesh)
-      nodes.set(nodeData.id, mesh)
-
-      // Glow ring for live nodes
-      if (isLive) {
-        const ringGeometry = new THREE.TorusGeometry(0.7, 0.02, 8, 32)
-        const ringMaterial = new THREE.MeshBasicMaterial({
-          color: 0xea4e33,
-          transparent: true,
-          opacity: 0.3,
-        })
-        const ring = new THREE.Mesh(ringGeometry, ringMaterial)
-        ring.position.copy(position)
-        ring.rotation.x = Math.PI / 2
-        scene.add(ring)
-      }
+    // === TRUNK - Massive and organic ===
+    const trunkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1a0805,
+      roughness: 0.85,
+      metalness: 0.1,
+      emissive: 0xff3300,
+      emissiveIntensity: 0.15,
     })
 
-    // ========== FIRE PARTICLES ==========
-    const fireCount = 2000
+    const createTrunk = () => {
+      // Main trunk
+      const trunkGeo = new THREE.CylinderGeometry(2, 4, 20, 24, 15)
+      const pos = trunkGeo.attributes.position
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i)
+        const angle = Math.atan2(pos.getZ(i), pos.getX(i))
+        const twist = Math.sin(y * 0.3 + angle * 2) * 0.4
+        const bulge = Math.sin(y * 0.5) * 0.3
+        pos.setX(i, pos.getX(i) * (1 + bulge) + Math.cos(angle) * twist)
+        pos.setZ(i, pos.getZ(i) * (1 + bulge) + Math.sin(angle) * twist)
+      }
+      trunkGeo.computeVertexNormals()
+      const trunk = new THREE.Mesh(trunkGeo, trunkMaterial)
+      trunk.position.y = 2
+      return trunk
+    }
+    treeGroup.add(createTrunk())
+
+    // === ROOTS - Spreading veins ===
+    const rootMaterial = new THREE.MeshStandardMaterial({
+      color: 0x120503,
+      roughness: 0.9,
+      metalness: 0.05,
+      emissive: 0x661100,
+      emissiveIntensity: 0.2,
+    })
+
+    const createRoot = (angle: number, length: number, thickness: number) => {
+      const segments = 20
+      const points: THREE.Vector3[] = []
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments
+        const spread = Math.pow(t, 0.6)
+        const dip = Math.sin(t * Math.PI) * 2 + t * t * 4
+        const x = Math.cos(angle) * length * spread
+        const y = -dip
+        const z = Math.sin(angle) * length * spread
+        points.push(new THREE.Vector3(x, y, z))
+      }
+      const curve = new THREE.CatmullRomCurve3(points)
+      const geo = new THREE.TubeGeometry(curve, 20, thickness * (1 - 0.5 * 0.6), 8, false)
+      return new THREE.Mesh(geo, rootMaterial)
+    }
+
+    // 10 main roots
+    for (let i = 0; i < 10; i++) {
+      const angle = (i / 10) * Math.PI * 2 + (Math.random() - 0.5) * 0.3
+      const root = createRoot(angle, 15 + Math.random() * 8, 0.8 + Math.random() * 0.4)
+      root.position.y = -8
+      treeGroup.add(root)
+    }
+
+    // === MAIN BRANCHES - Extending outward for nodes ===
+    const branchMaterial = new THREE.MeshStandardMaterial({
+      color: 0x180604,
+      roughness: 0.8,
+      metalness: 0.15,
+      emissive: 0xff4400,
+      emissiveIntensity: 0.2,
+    })
+
+    // Branch positions - these will hold the nodes at their tips
+    const branchEndpoints: THREE.Vector3[] = [
+      new THREE.Vector3(0, 28, 0),        // daemon - top crown
+      new THREE.Vector3(-14, 18, 8),      // burns - left front
+      new THREE.Vector3(-12, 14, -10),    // holdex - left back
+      new THREE.Vector3(14, 17, 6),       // forecast - right front
+      new THREE.Vector3(13, 13, -8),      // ignition - right back
+      new THREE.Vector3(-8, 22, -4),      // sdk - upper left
+      new THREE.Vector3(9, 23, 3),        // mobile - upper right
+    ]
+
+    const createBranch = (endPoint: THREE.Vector3, thickness: number) => {
+      const startY = 10 + Math.random() * 4
+      const midPoint1 = new THREE.Vector3(
+        endPoint.x * 0.25,
+        startY + 3,
+        endPoint.z * 0.25
+      )
+      const midPoint2 = new THREE.Vector3(
+        endPoint.x * 0.6,
+        endPoint.y * 0.7,
+        endPoint.z * 0.6
+      )
+
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, startY, 0),
+        midPoint1,
+        midPoint2,
+        endPoint.clone().multiplyScalar(0.85)
+      ])
+
+      const geo = new THREE.TubeGeometry(curve, 20, thickness, 8, false)
+      return new THREE.Mesh(geo, branchMaterial)
+    }
+
+    // Create branches for each node
+    branchEndpoints.forEach((endpoint, i) => {
+      if (i === 0) return // Skip daemon (at top)
+      const branch = createBranch(endpoint, 0.5 + Math.random() * 0.3)
+      treeGroup.add(branch)
+    })
+
+    // === SECONDARY BRANCHES (visual fill) ===
+    const smallBranchEnds = [
+      new THREE.Vector3(10, 20, 10),
+      new THREE.Vector3(-11, 19, 9),
+      new THREE.Vector3(8, 21, -8),
+      new THREE.Vector3(-9, 20, -7),
+      new THREE.Vector3(6, 24, 2),
+      new THREE.Vector3(-7, 23, -1),
+      new THREE.Vector3(12, 16, 0),
+      new THREE.Vector3(-12, 15, 2),
+    ]
+
+    smallBranchEnds.forEach(endpoint => {
+      const branch = createBranch(endpoint, 0.25 + Math.random() * 0.15)
+      treeGroup.add(branch)
+    })
+
+    scene.add(treeGroup)
+
+    // ========== LEAF PARTICLES (Ember-like foliage) ==========
+    const leafCount = 3000
+    const leafPositions = new Float32Array(leafCount * 3)
+    const leafColors = new Float32Array(leafCount * 3)
+    const leafData: { baseX: number; baseY: number; baseZ: number; phase: number; amplitude: number }[] = []
+
+    for (let i = 0; i < leafCount; i++) {
+      // Distribute around branches and crown area
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.random() * Math.PI * 0.6
+      const radius = 8 + Math.random() * 12
+
+      const x = Math.sin(phi) * Math.cos(theta) * radius
+      const y = 14 + Math.cos(phi) * radius * 0.6 + Math.random() * 6
+      const z = Math.sin(phi) * Math.sin(theta) * radius
+
+      leafPositions[i * 3] = x
+      leafPositions[i * 3 + 1] = y
+      leafPositions[i * 3 + 2] = z
+
+      // Fire colors: from golden to orange to red
+      const t = Math.random()
+      if (t < 0.3) {
+        // Golden
+        leafColors[i * 3] = 1; leafColors[i * 3 + 1] = 0.85; leafColors[i * 3 + 2] = 0.3
+      } else if (t < 0.6) {
+        // Orange
+        leafColors[i * 3] = 1; leafColors[i * 3 + 1] = 0.55; leafColors[i * 3 + 2] = 0.1
+      } else if (t < 0.85) {
+        // Red-orange
+        leafColors[i * 3] = 1; leafColors[i * 3 + 1] = 0.3; leafColors[i * 3 + 2] = 0.05
+      } else {
+        // Deep red
+        leafColors[i * 3] = 0.9; leafColors[i * 3 + 1] = 0.15; leafColors[i * 3 + 2] = 0.05
+      }
+
+      leafData.push({
+        baseX: x,
+        baseY: y,
+        baseZ: z,
+        phase: Math.random() * Math.PI * 2,
+        amplitude: 0.5 + Math.random() * 1
+      })
+    }
+
+    const leafGeo = new THREE.BufferGeometry()
+    leafGeo.setAttribute('position', new THREE.BufferAttribute(leafPositions, 3))
+    leafGeo.setAttribute('color', new THREE.BufferAttribute(leafColors, 3))
+
+    const leafMat = new THREE.PointsMaterial({
+      size: 0.35,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+
+    const leafParticles = new THREE.Points(leafGeo, leafMat)
+    scene.add(leafParticles)
+
+    // ========== FIRE PARTICLES (Rising from below) ==========
+    const fireCount = 1500
     const firePositions = new Float32Array(fireCount * 3)
     const fireColors = new Float32Array(fireCount * 3)
+    const fireData: { speed: number; radius: number; angle: number; startY: number }[] = []
 
     for (let i = 0; i < fireCount; i++) {
       const radius = Math.random() * 6
-      const theta = Math.random() * Math.PI * 2
-      firePositions[i * 3] = Math.cos(theta) * radius
-      firePositions[i * 3 + 1] = Math.random() * 8 - 3
-      firePositions[i * 3 + 2] = Math.sin(theta) * radius
+      const angle = Math.random() * Math.PI * 2
+      const startY = -8 + Math.random() * 8
 
-      // Orange to red gradient
+      firePositions[i * 3] = Math.cos(angle) * radius
+      firePositions[i * 3 + 1] = startY
+      firePositions[i * 3 + 2] = Math.sin(angle) * radius
+
+      // Fire gradient
       const t = Math.random()
-      fireColors[i * 3] = 0.9 + t * 0.1
-      fireColors[i * 3 + 1] = 0.3 + t * 0.3
-      fireColors[i * 3 + 2] = 0.1 + t * 0.1
+      if (t < 0.4) {
+        fireColors[i * 3] = 1; fireColors[i * 3 + 1] = 0.3; fireColors[i * 3 + 2] = 0
+      } else if (t < 0.7) {
+        fireColors[i * 3] = 1; fireColors[i * 3 + 1] = 0.55; fireColors[i * 3 + 2] = 0
+      } else {
+        fireColors[i * 3] = 1; fireColors[i * 3 + 1] = 0.8; fireColors[i * 3 + 2] = 0.2
+      }
+
+      fireData.push({ speed: 0.04 + Math.random() * 0.06, radius, angle, startY })
     }
 
-    const fireGeometry = new THREE.BufferGeometry()
-    fireGeometry.setAttribute('position', new THREE.BufferAttribute(firePositions, 3))
-    fireGeometry.setAttribute('color', new THREE.BufferAttribute(fireColors, 3))
+    const fireGeo = new THREE.BufferGeometry()
+    fireGeo.setAttribute('position', new THREE.BufferAttribute(firePositions, 3))
+    fireGeo.setAttribute('color', new THREE.BufferAttribute(fireColors, 3))
 
-    const fireMaterial = new THREE.PointsMaterial({
-      size: 0.08,
+    const fireMat = new THREE.PointsMaterial({
+      size: 0.25,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+
+    const fireParticles = new THREE.Points(fireGeo, fireMat)
+    scene.add(fireParticles)
+
+    // ========== ICE STORM (Outer ring) ==========
+    const iceCount = 2000
+    const icePositions = new Float32Array(iceCount * 3)
+    const iceColors = new Float32Array(iceCount * 3)
+    const iceData: { radius: number; angle: number; y: number; speed: number; fallSpeed: number }[] = []
+
+    for (let i = 0; i < iceCount; i++) {
+      const radius = 25 + Math.random() * 25
+      const angle = Math.random() * Math.PI * 2
+      const y = Math.random() * 60 - 10
+
+      icePositions[i * 3] = Math.cos(angle) * radius
+      icePositions[i * 3 + 1] = y
+      icePositions[i * 3 + 2] = Math.sin(angle) * radius
+
+      // Ice blue-white
+      const t = Math.random()
+      if (t < 0.6) {
+        iceColors[i * 3] = 0.85; iceColors[i * 3 + 1] = 0.92; iceColors[i * 3 + 2] = 1
+      } else {
+        iceColors[i * 3] = 0.5; iceColors[i * 3 + 1] = 0.75; iceColors[i * 3 + 2] = 1
+      }
+
+      iceData.push({ radius, angle, y, speed: 0.15 + Math.random() * 0.25, fallSpeed: 0.02 + Math.random() * 0.03 })
+    }
+
+    const iceGeo = new THREE.BufferGeometry()
+    iceGeo.setAttribute('position', new THREE.BufferAttribute(icePositions, 3))
+    iceGeo.setAttribute('color', new THREE.BufferAttribute(iceColors, 3))
+
+    const iceMat = new THREE.PointsMaterial({
+      size: 0.15,
       vertexColors: true,
       transparent: true,
       opacity: 0.6,
@@ -230,119 +405,236 @@ export default function YggdrasilScene() {
       depthWrite: false,
     })
 
-    const fireParticles = new THREE.Points(fireGeometry, fireMaterial)
-    scene.add(fireParticles)
+    const iceParticles = new THREE.Points(iceGeo, iceMat)
+    scene.add(iceParticles)
 
-    // ========== SNOW/ICE PARTICLES ==========
-    const snowCount = 1500
-    const snowPositions = new Float32Array(snowCount * 3)
+    // ========== STONE NODES (Prominent with fire+ice fusion) ==========
+    const nodes = new Map<string, THREE.Group>()
 
-    for (let i = 0; i < snowCount; i++) {
-      const radius = Math.random() * 15 + 5
-      const theta = Math.random() * Math.PI * 2
-      const y = Math.random() * 20 - 5
-      snowPositions[i * 3] = Math.cos(theta) * radius
-      snowPositions[i * 3 + 1] = y
-      snowPositions[i * 3 + 2] = Math.sin(theta) * radius
-    }
+    NODES_DATA.forEach((nodeData, i) => {
+      const position = branchEndpoints[i]
+      const isLive = nodeData.status === 'live'
+      const isBuilding = nodeData.status === 'building'
+      const nodeGroup = new THREE.Group()
+      nodeGroup.position.copy(position)
 
-    const snowGeometry = new THREE.BufferGeometry()
-    snowGeometry.setAttribute('position', new THREE.BufferAttribute(snowPositions, 3))
+      // Large stone core
+      const size = isLive ? 2.2 : isBuilding ? 1.8 : 1.5
+      const coreGeo = new THREE.DodecahedronGeometry(size, 1)
 
-    const snowMaterial = new THREE.PointsMaterial({
-      size: 0.05,
-      color: 0x88ccff,
-      transparent: true,
-      opacity: 0.4,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+      // Deform for organic stone look
+      const corePos = coreGeo.attributes.position
+      for (let j = 0; j < corePos.count; j++) {
+        const px = corePos.getX(j)
+        const py = corePos.getY(j)
+        const pz = corePos.getZ(j)
+        const noise = Math.sin(px * 2) * Math.cos(pz * 2) * 0.15
+        corePos.setX(j, px * (1 + noise))
+        corePos.setY(j, py * (1 + noise * 0.5))
+        corePos.setZ(j, pz * (1 + noise))
+      }
+      coreGeo.computeVertexNormals()
+
+      const stoneMat = new THREE.MeshStandardMaterial({
+        color: 0x2a2a2a,
+        roughness: 0.5,
+        metalness: 0.5,
+        emissive: isLive ? 0x883311 : isBuilding ? 0x886622 : 0x224488,
+        emissiveIntensity: 0.5,
+      })
+      const stone = new THREE.Mesh(coreGeo, stoneMat)
+      nodeGroup.add(stone)
+
+      // Inner fire glow
+      const fireGlowGeo = new THREE.SphereGeometry(size * 1.3, 32, 32)
+      const fireGlowMat = new THREE.MeshBasicMaterial({
+        color: isLive ? 0xff4400 : isBuilding ? 0xffaa00 : 0x4466ff,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.BackSide,
+      })
+      nodeGroup.add(new THREE.Mesh(fireGlowGeo, fireGlowMat))
+
+      // Outer ice glow
+      const iceGlowGeo = new THREE.SphereGeometry(size * 1.8, 32, 32)
+      const iceGlowMat = new THREE.MeshBasicMaterial({
+        color: isLive ? 0x6699ff : isBuilding ? 0x88aaff : 0x4488ff,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.BackSide,
+      })
+      nodeGroup.add(new THREE.Mesh(iceGlowGeo, iceGlowMat))
+
+      // Fire ring
+      const fireRingGeo = new THREE.TorusGeometry(size * 1.6, 0.12, 16, 64)
+      const fireRingMat = new THREE.MeshBasicMaterial({
+        color: isLive ? 0xff5500 : isBuilding ? 0xffcc00 : 0x88aaff,
+        transparent: true,
+        opacity: 0.8,
+      })
+      const fireRing = new THREE.Mesh(fireRingGeo, fireRingMat)
+      fireRing.rotation.x = Math.PI / 2
+      fireRing.userData.rotateSpeed = 0.5
+      nodeGroup.add(fireRing)
+
+      // Ice ring (perpendicular)
+      const iceRingGeo = new THREE.TorusGeometry(size * 2, 0.08, 16, 64)
+      const iceRingMat = new THREE.MeshBasicMaterial({
+        color: 0x66aaff,
+        transparent: true,
+        opacity: 0.6,
+      })
+      const iceRing = new THREE.Mesh(iceRingGeo, iceRingMat)
+      iceRing.rotation.y = Math.PI / 2
+      iceRing.userData.rotateSpeed = -0.3
+      nodeGroup.add(iceRing)
+
+      // Point light
+      const light = new THREE.PointLight(
+        isLive ? 0xff7744 : isBuilding ? 0xffcc44 : 0x6699ff,
+        isLive ? 3 : 2,
+        25
+      )
+      nodeGroup.add(light)
+
+      nodeGroup.userData = { ...nodeData, position }
+      nodes.set(nodeData.id, nodeGroup)
+      scene.add(nodeGroup)
     })
 
-    const snowParticles = new THREE.Points(snowGeometry, snowMaterial)
-    scene.add(snowParticles)
+    // ========== VOLCANIC GROUND ==========
+    const groundGeo = new THREE.CircleGeometry(70, 64)
+    const groundMat = new THREE.MeshStandardMaterial({
+      color: 0x050202,
+      roughness: 1,
+      metalness: 0,
+      emissive: 0x220800,
+      emissiveIntensity: 0.15,
+    })
+    const ground = new THREE.Mesh(groundGeo, groundMat)
+    ground.rotation.x = -Math.PI / 2
+    ground.position.y = -14
+    scene.add(ground)
 
-    // ========== RAYCASTER FOR CLICKS ==========
+    // Lava veins
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2
+      const crackGeo = new THREE.PlaneGeometry(0.5, 20 + Math.random() * 15)
+      const crackMat = new THREE.MeshBasicMaterial({
+        color: 0xff3300,
+        transparent: true,
+        opacity: 0.5,
+      })
+      const crack = new THREE.Mesh(crackGeo, crackMat)
+      crack.rotation.x = -Math.PI / 2
+      crack.rotation.z = angle + (Math.random() - 0.5) * 0.4
+      crack.position.set(Math.cos(angle) * 18, -13.9, Math.sin(angle) * 18)
+      scene.add(crack)
+    }
+
+    // ========== RAYCASTER ==========
     const raycaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
 
     const onMouseClick = (event: MouseEvent) => {
       const rect = container.getBoundingClientRect()
-      mouse.x = ((event.clientX - rect.left) / width) * 2 - 1
-      mouse.y = -((event.clientY - rect.top) / height) * 2 + 1
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
       raycaster.setFromCamera(mouse, camera)
-      const meshes = Array.from(nodes.values())
-      const intersects = raycaster.intersectObjects(meshes)
 
-      if (intersects.length > 0) {
-        const nodeData = intersects[0].object.userData as TreeNode
-        setSelectedNode(nodeData)
+      for (const group of nodes.values()) {
+        const intersects = raycaster.intersectObjects(group.children, true)
+        if (intersects.length > 0) {
+          const data = group.userData as TreeNode
+          setSelectedNode(data)
 
-        // Fly to node
-        const targetPos = nodeData.position.clone()
-        const cameraTarget = targetPos.clone().add(new THREE.Vector3(3, 1, 5))
+          const targetPos = data.position.clone()
+          const camTarget = targetPos.clone().add(new THREE.Vector3(10, 5, 12))
+          const startPos = camera.position.clone()
+          const startTarget = controls.target.clone()
+          let progress = 0
 
-        // Animate camera
-        const startPos = camera.position.clone()
-        const startTarget = controls.target.clone()
-        let progress = 0
-
-        const flyTo = () => {
-          progress += 0.02
-          if (progress < 1) {
-            const eased = 1 - Math.pow(1 - progress, 3)
-            camera.position.lerpVectors(startPos, cameraTarget, eased)
-            controls.target.lerpVectors(startTarget, targetPos, eased)
-            requestAnimationFrame(flyTo)
+          const fly = () => {
+            progress += 0.025
+            if (progress < 1) {
+              const e = 1 - Math.pow(1 - progress, 3)
+              camera.position.lerpVectors(startPos, camTarget, e)
+              controls.target.lerpVectors(startTarget, targetPos, e)
+              requestAnimationFrame(fly)
+            }
           }
+          fly()
+          return
         }
-        flyTo()
       }
     }
 
     container.addEventListener('click', onMouseClick)
 
-    // ========== ANIMATION LOOP ==========
+    // ========== ANIMATION ==========
     const clock = new THREE.Clock()
 
     const animate = () => {
-      const elapsed = clock.getElapsedTime()
+      const t = clock.getElapsedTime()
 
-      // Animate fire particles (rise up)
-      const firePos = fireGeometry.attributes.position.array as Float32Array
+      // Leaf particle gentle sway
+      const lPos = leafGeo.attributes.position.array as Float32Array
+      for (let i = 0; i < leafCount; i++) {
+        const d = leafData[i]
+        lPos[i * 3] = d.baseX + Math.sin(t * 0.8 + d.phase) * d.amplitude
+        lPos[i * 3 + 1] = d.baseY + Math.sin(t * 0.5 + d.phase * 2) * d.amplitude * 0.5
+        lPos[i * 3 + 2] = d.baseZ + Math.cos(t * 0.6 + d.phase) * d.amplitude
+      }
+      leafGeo.attributes.position.needsUpdate = true
+
+      // Fire particles rising
+      const fPos = fireGeo.attributes.position.array as Float32Array
       for (let i = 0; i < fireCount; i++) {
-        firePos[i * 3 + 1] += 0.02 + Math.random() * 0.01
-        if (firePos[i * 3 + 1] > 10) {
-          firePos[i * 3 + 1] = -3
+        const d = fireData[i]
+        fPos[i * 3 + 1] += d.speed
+        if (fPos[i * 3 + 1] > 30) {
+          fPos[i * 3 + 1] = d.startY
+          d.angle = Math.random() * Math.PI * 2
+          d.radius = Math.random() * 6
         }
-        // Slight horizontal drift
-        firePos[i * 3] += Math.sin(elapsed + i) * 0.002
-        firePos[i * 3 + 2] += Math.cos(elapsed + i) * 0.002
+        d.angle += 0.005
+        fPos[i * 3] = Math.cos(d.angle) * d.radius
+        fPos[i * 3 + 2] = Math.sin(d.angle) * d.radius
       }
-      fireGeometry.attributes.position.needsUpdate = true
+      fireGeo.attributes.position.needsUpdate = true
 
-      // Animate snow particles (swirl and fall)
-      const snowPos = snowGeometry.attributes.position.array as Float32Array
-      for (let i = 0; i < snowCount; i++) {
-        snowPos[i * 3 + 1] -= 0.02 + Math.random() * 0.01
-        if (snowPos[i * 3 + 1] < -5) {
-          snowPos[i * 3 + 1] = 15
-        }
-        // Swirl effect
-        const angle = elapsed * 0.5 + i * 0.01
-        const radius = Math.sqrt(snowPos[i * 3] ** 2 + snowPos[i * 3 + 2] ** 2)
-        snowPos[i * 3] = Math.cos(angle) * radius
-        snowPos[i * 3 + 2] = Math.sin(angle) * radius
+      // Ice storm swirl
+      const iPos = iceGeo.attributes.position.array as Float32Array
+      for (let i = 0; i < iceCount; i++) {
+        const d = iceData[i]
+        d.y -= d.fallSpeed
+        if (d.y < -10) d.y = 50
+        d.angle += d.speed * 0.008
+        iPos[i * 3] = Math.cos(d.angle) * d.radius
+        iPos[i * 3 + 1] = d.y
+        iPos[i * 3 + 2] = Math.sin(d.angle) * d.radius
       }
-      snowGeometry.attributes.position.needsUpdate = true
+      iceGeo.attributes.position.needsUpdate = true
 
-      // Pulse fire light
-      fireLight.intensity = 2 + Math.sin(elapsed * 3) * 0.5
+      // Core pulse
+      coreMaterial.opacity = 0.9 + Math.sin(t * 2) * 0.08
+      coreLight.intensity = 6 + Math.sin(t * 2.5) * 1.5
 
-      // Rotate nodes slightly
-      nodes.forEach((mesh) => {
-        mesh.rotation.y = elapsed * 0.5
-        mesh.position.y += Math.sin(elapsed * 2 + mesh.position.x) * 0.001
+      // Fire light flicker
+      fireLight.intensity = 4 + Math.sin(t * 3) * 1 + Math.sin(t * 7) * 0.5
+
+      // Node animations
+      nodes.forEach((group) => {
+        const baseY = (group.userData as TreeNode).position.y
+        group.position.y = baseY + Math.sin(t * 1.2 + group.position.x * 0.3) * 0.3
+
+        group.children.forEach((child) => {
+          if (child instanceof THREE.Mesh && child.geometry instanceof THREE.TorusGeometry) {
+            const speed = child.userData.rotateSpeed || 0.3
+            child.rotation.z += speed * 0.02
+          }
+        })
       })
 
       controls.update()
@@ -351,35 +643,24 @@ export default function YggdrasilScene() {
     }
 
     sceneRef.current = {
-      scene,
-      camera,
-      renderer,
-      controls,
-      nodes,
-      fireParticles,
-      snowParticles,
-      animationId: 0,
+      scene, camera, renderer, controls, nodes, animationId: 0,
+      coreMaterial, leafParticles, fireParticles, iceParticles
     }
-
     animate()
 
-    // ========== RESIZE HANDLER ==========
     const handleResize = () => {
-      const newWidth = container.clientWidth
-      const newHeight = container.clientHeight
-      camera.aspect = newWidth / newHeight
+      const w = container.clientWidth
+      const h = container.clientHeight
+      camera.aspect = w / h
       camera.updateProjectionMatrix()
-      renderer.setSize(newWidth, newHeight)
+      renderer.setSize(w, h)
     }
     window.addEventListener('resize', handleResize)
 
-    // ========== CLEANUP ==========
     return () => {
       window.removeEventListener('resize', handleResize)
       container.removeEventListener('click', onMouseClick)
-      if (sceneRef.current) {
-        cancelAnimationFrame(sceneRef.current.animationId)
-      }
+      if (sceneRef.current) cancelAnimationFrame(sceneRef.current.animationId)
       renderer.dispose()
       container.removeChild(renderer.domElement)
     }
@@ -388,141 +669,110 @@ export default function YggdrasilScene() {
   // Guided tour
   useEffect(() => {
     if (!isGuidedTour || !sceneRef.current) return
-
     const { camera, controls, nodes } = sceneRef.current
-    const nodeIds = ['daemon', 'burns', 'holdex', 'ignition', 'sdk']
-    let currentIndex = 0
+    const ids = ['daemon', 'burns', 'holdex', 'ignition', 'forecast']
+    let idx = 0
 
-    const tourInterval = setInterval(() => {
-      const nodeId = nodeIds[currentIndex]
-      const mesh = nodes.get(nodeId)
-      if (mesh) {
-        const targetPos = mesh.position.clone()
-        const cameraTarget = targetPos.clone().add(new THREE.Vector3(4, 2, 6))
-
-        setSelectedNode(mesh.userData as TreeNode)
-
-        // Simple lerp animation
+    const interval = setInterval(() => {
+      const group = nodes.get(ids[idx])
+      if (group) {
+        const pos = (group.userData as TreeNode).position.clone()
+        setSelectedNode(group.userData as TreeNode)
         const startPos = camera.position.clone()
         const startTarget = controls.target.clone()
-        let progress = 0
-
-        const flyTo = () => {
-          progress += 0.015
-          if (progress < 1) {
-            const eased = 1 - Math.pow(1 - progress, 3)
-            camera.position.lerpVectors(startPos, cameraTarget, eased)
-            controls.target.lerpVectors(startTarget, targetPos, eased)
-            requestAnimationFrame(flyTo)
+        const camTarget = pos.clone().add(new THREE.Vector3(12, 6, 14))
+        let p = 0
+        const fly = () => {
+          p += 0.015
+          if (p < 1) {
+            const e = 1 - Math.pow(1 - p, 3)
+            camera.position.lerpVectors(startPos, camTarget, e)
+            controls.target.lerpVectors(startTarget, pos, e)
+            requestAnimationFrame(fly)
           }
         }
-        flyTo()
+        fly()
       }
+      idx = (idx + 1) % ids.length
+      if (idx === 0) setIsGuidedTour(false)
+    }, 5000)
 
-      currentIndex = (currentIndex + 1) % nodeIds.length
-      if (currentIndex === 0) {
-        setIsGuidedTour(false)
-      }
-    }, 4000)
-
-    return () => clearInterval(tourInterval)
+    return () => clearInterval(interval)
   }, [isGuidedTour])
 
   return (
-    <div className="relative w-full h-[700px] bg-black rounded-2xl overflow-hidden">
-      {/* Three.js Canvas Container */}
+    <div className="relative w-full h-[750px] bg-[#030308] rounded-2xl overflow-hidden">
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* UI Overlay */}
       <div className="absolute top-6 left-6 z-10">
-        <h1 className="text-4xl font-light tracking-tight mb-2">
-          <span className="text-[#ea4e33]">Yggdrasil</span>
+        <h1 className="text-5xl font-bold tracking-tight mb-3">
+          <span className="bg-gradient-to-r from-[#ff4400] via-[#ffaa00] to-[#4488ff] bg-clip-text text-transparent">
+            Yggdrasil
+          </span>
         </h1>
-        <p className="text-[#666] text-sm max-w-xs">
-          The living ecosystem. Fire rises, ice swirls. Click nodes to explore.
+        <p className="text-[#8888aa] text-sm max-w-[300px] leading-relaxed">
+          The World Tree burns eternal. Fire and ice converge at each stone realm.
         </p>
       </div>
 
-      {/* Controls */}
       <div className="absolute top-6 right-6 z-10 flex gap-3">
         <button
           onClick={() => setIsGuidedTour(true)}
           disabled={isGuidedTour}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg ${
             isGuidedTour
-              ? 'bg-[#ea4e33]/20 text-[#ea4e33] cursor-not-allowed'
-              : 'bg-[#1a1a1a] text-white hover:bg-[#2a2a2a] border border-[#333]'
+              ? 'bg-[#ff4400]/30 text-[#ff8844] cursor-not-allowed'
+              : 'bg-gradient-to-r from-[#ff4400] to-[#ff6622] text-white hover:from-[#ff5500] hover:to-[#ff7733]'
           }`}
         >
-          {isGuidedTour ? 'Touring...' : 'Guided Tour'}
+          {isGuidedTour ? 'Exploring...' : 'Guided Tour'}
         </button>
         <button
           onClick={() => {
             if (sceneRef.current) {
-              const { camera, controls } = sceneRef.current
-              camera.position.set(0, 5, 20)
-              controls.target.set(0, 3, 0)
+              sceneRef.current.camera.position.set(0, 15, 50)
+              sceneRef.current.controls.target.set(0, 12, 0)
               setSelectedNode(null)
             }
           }}
-          className="px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-lg text-sm text-white hover:bg-[#2a2a2a] transition-colors"
+          className="px-5 py-2.5 bg-[#0a0a15] border border-[#333355] rounded-xl text-sm text-[#aaaacc] hover:bg-[#15152a] transition-all"
         >
           Reset View
         </button>
       </div>
 
-      {/* Selected Node Panel */}
       {selectedNode && (
         <div className="absolute bottom-6 left-6 right-6 z-10">
-          <div className="max-w-md mx-auto p-6 bg-[#0a0a0a]/95 backdrop-blur-sm border border-[#1a1a1a] rounded-2xl">
-            <div className="flex items-start justify-between mb-3">
+          <div className="max-w-lg mx-auto p-6 bg-gradient-to-br from-[#0a0508]/95 to-[#050812]/95 backdrop-blur-md border border-[#ff4400]/20 rounded-2xl">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-xl font-semibold text-white">{selectedNode.name}</h3>
-                <span
-                  className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${
-                    selectedNode.status === 'live'
-                      ? 'bg-green-500/20 text-green-400'
-                      : selectedNode.status === 'building'
-                      ? 'bg-[#f59e0b]/20 text-[#f59e0b]'
-                      : 'bg-[#333] text-[#666]'
-                  }`}
-                >
-                  {selectedNode.status.toUpperCase()}
+                <h3 className="text-2xl font-bold text-white mb-1">{selectedNode.name}</h3>
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                  selectedNode.status === 'live'
+                    ? 'bg-gradient-to-r from-[#ff4400]/30 to-[#4488ff]/30 text-[#ffaa44]'
+                    : selectedNode.status === 'building'
+                    ? 'bg-[#ffaa00]/20 text-[#ffcc44]'
+                    : 'bg-[#4488ff]/20 text-[#66aaff]'
+                }`}>
+                  {selectedNode.status === 'live' ? 'Petrified' : selectedNode.status === 'building' ? 'Forging' : 'Frozen'}
                 </span>
               </div>
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="p-2 text-[#666] hover:text-white transition-colors"
-              >
-                x
-              </button>
+              <button onClick={() => setSelectedNode(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#ffffff10] text-[#666] hover:text-white">×</button>
             </div>
-            <p className="text-[#999] text-sm mb-4">{selectedNode.description}</p>
+            <p className="text-[#9999bb] text-sm mb-5">{selectedNode.description}</p>
             {selectedNode.link && (
-              <a
-                href={selectedNode.link}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#ea4e33]/10 border border-[#ea4e33]/30 rounded-lg text-[#ea4e33] text-sm hover:bg-[#ea4e33]/20 transition-colors"
-              >
-                Open Tool
-                <span>-&gt;</span>
+              <a href={selectedNode.link} className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#ff4400]/20 to-[#4488ff]/20 border border-[#ff4400]/40 rounded-xl text-[#ffaa44] text-sm font-semibold hover:from-[#ff4400]/30 hover:to-[#4488ff]/30 transition-all">
+                Enter Realm <span className="text-lg">→</span>
               </a>
             )}
           </div>
         </div>
       )}
 
-      {/* Legend */}
-      <div className="absolute bottom-6 right-6 z-10 flex gap-4 text-xs">
-        {[
-          { label: 'Live', color: 'bg-green-500' },
-          { label: 'Building', color: 'bg-[#f59e0b]' },
-          { label: 'Planned', color: 'bg-[#444]' },
-        ].map(({ label, color }) => (
-          <div key={label} className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${color}`} />
-            <span className="text-[#666]">{label}</span>
-          </div>
-        ))}
+      <div className="absolute bottom-6 right-6 z-10 flex gap-5 text-xs font-medium">
+        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#ff4400] to-[#4488ff]" /><span className="text-[#6666aa]">Petrified</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#ffaa00]" /><span className="text-[#6666aa]">Forging</span></div>
+        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#4488ff]" /><span className="text-[#6666aa]">Frozen</span></div>
       </div>
     </div>
   )
