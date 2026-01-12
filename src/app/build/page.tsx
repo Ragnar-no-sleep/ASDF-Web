@@ -1,23 +1,31 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+// Dynamic import for Three.js component (client-side only)
+const YggdrasilScene = dynamic(
+  () => import('@/components/Yggdrasil3D/YggdrasilScene'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[700px] bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-[#ea4e33] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#666] text-sm">Loading Yggdrasil...</p>
+        </div>
+      </div>
+    ),
+  }
+)
 
 // ============================================
 // TYPES
 // ============================================
 
 type BuildSection = 'yggdrasil' | 'builders' | 'path' | 'journey'
-
-interface TreeNode {
-  id: string
-  name: string
-  description: string
-  status: 'live' | 'building' | 'planned'
-  category: 'core' | 'analytics' | 'games' | 'community'
-  link?: string
-}
 
 interface Builder {
   id: string
@@ -34,16 +42,6 @@ interface Builder {
 // ============================================
 // DATA
 // ============================================
-
-const TREE_NODES: TreeNode[] = [
-  { id: 'daemon', name: 'Burn Daemon', description: 'The heart. Automated 24/7 burn mechanism.', status: 'live', category: 'core' },
-  { id: 'burns', name: 'Burn Tracker', description: 'Real-time burn monitoring dashboard.', status: 'live', category: 'analytics', link: '/burns' },
-  { id: 'holdex', name: 'HolDex', description: 'Portfolio analytics & position tracking.', status: 'live', category: 'analytics', link: '/holdex' },
-  { id: 'forecast', name: 'ASDForecast', description: 'Community-driven price predictions.', status: 'live', category: 'community', link: '/asdforecast' },
-  { id: 'ignition', name: 'Ignition', description: 'Gamified ecosystem experience.', status: 'live', category: 'games', link: '/ignition' },
-  { id: 'sdk', name: 'ASDF SDK', description: 'Developer toolkit for builders.', status: 'building', category: 'core' },
-  { id: 'mobile', name: 'Mobile App', description: 'iOS & Android companion app.', status: 'planned', category: 'core' },
-]
 
 const BUILDERS: Builder[] = [
   {
@@ -102,269 +100,6 @@ function BuildNav({ active, onChange }: { active: BuildSection; onChange: (s: Bu
   )
 }
 
-// ============================================
-// YGGDRASIL - Proper Tree Visualization
-// ============================================
-
-function YggdrasilSection() {
-  const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null)
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
-
-  const categories = {
-    core: { label: 'Core', x: 50, nodes: TREE_NODES.filter(n => n.category === 'core') },
-    analytics: { label: 'Analytics', x: 25, nodes: TREE_NODES.filter(n => n.category === 'analytics') },
-    games: { label: 'Games', x: 75, nodes: TREE_NODES.filter(n => n.category === 'games') },
-    community: { label: 'Community', x: 62, nodes: TREE_NODES.filter(n => n.category === 'community') },
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="relative"
-    >
-      {/* Tree Container */}
-      <div className="relative max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <h1 className="text-5xl font-light tracking-tight mb-4">
-              <span className="text-[#ea4e33]">Yggdrasil</span>
-            </h1>
-            <p className="text-[#666] text-lg max-w-md mx-auto">
-              The living ecosystem. Every branch feeds the burn.
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Tree SVG Background */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 800 600"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* Main trunk */}
-          <motion.path
-            d="M400 580 L400 300"
-            stroke="url(#trunkGradient)"
-            strokeWidth="3"
-            fill="none"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.5, ease: 'easeOut' }}
-          />
-
-          {/* Branches */}
-          <motion.path
-            d="M400 300 Q300 280 200 200"
-            stroke="url(#branchGradient)"
-            strokeWidth="2"
-            fill="none"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-          />
-          <motion.path
-            d="M400 300 Q500 280 600 200"
-            stroke="url(#branchGradient)"
-            strokeWidth="2"
-            fill="none"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-          />
-          <motion.path
-            d="M400 300 L400 150"
-            stroke="url(#branchGradient)"
-            strokeWidth="2"
-            fill="none"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.7 }}
-          />
-
-          {/* Gradients */}
-          <defs>
-            <linearGradient id="trunkGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="#1a1a1a" />
-              <stop offset="100%" stopColor="#ea4e33" />
-            </linearGradient>
-            <linearGradient id="branchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ea4e33" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#ea4e33" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        {/* Root Node - ASDF Core */}
-        <div className="relative h-[600px]">
-          {/* Center/Root */}
-          <motion.div
-            className="absolute left-1/2 bottom-12 -translate-x-1/2"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3, type: 'spring' }}
-          >
-            <div className="relative">
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    '0 0 0 0 rgba(234, 78, 51, 0)',
-                    '0 0 0 20px rgba(234, 78, 51, 0.1)',
-                    '0 0 0 0 rgba(234, 78, 51, 0)',
-                  ],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#ea4e33] to-[#c53a20] flex items-center justify-center"
-              >
-                <span className="text-white font-bold text-xl">$A</span>
-              </motion.div>
-              <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-[#666] whitespace-nowrap font-mono">
-                asdfasdfa
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Tree Nodes */}
-          {TREE_NODES.map((node, index) => {
-            // Position calculations for tree layout
-            const positions: Record<string, { x: number; y: number }> = {
-              daemon: { x: 50, y: 45 },
-              burns: { x: 25, y: 35 },
-              holdex: { x: 35, y: 25 },
-              forecast: { x: 65, y: 30 },
-              ignition: { x: 75, y: 35 },
-              sdk: { x: 45, y: 20 },
-              mobile: { x: 55, y: 15 },
-            }
-            const pos = positions[node.id] || { x: 50, y: 30 }
-            const isHovered = hoveredNode === node.id
-            const isSelected = selectedNode?.id === node.id
-
-            return (
-              <motion.div
-                key={node.id}
-                className="absolute cursor-pointer"
-                style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.5 + index * 0.1, type: 'spring' }}
-                onHoverStart={() => setHoveredNode(node.id)}
-                onHoverEnd={() => setHoveredNode(null)}
-                onClick={() => setSelectedNode(isSelected ? null : node)}
-              >
-                <motion.div
-                  animate={{
-                    scale: isHovered || isSelected ? 1.1 : 1,
-                    y: isHovered ? -4 : 0,
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className={`relative group ${isSelected ? 'z-20' : 'z-10'}`}
-                >
-                  {/* Node Card */}
-                  <div
-                    className={`px-5 py-3 rounded-xl border backdrop-blur-sm transition-all duration-300 ${
-                      node.status === 'live'
-                        ? 'bg-[#0a0a0a]/90 border-[#ea4e33]/30 hover:border-[#ea4e33]/60'
-                        : node.status === 'building'
-                        ? 'bg-[#0a0a0a]/90 border-[#f59e0b]/30 hover:border-[#f59e0b]/60'
-                        : 'bg-[#0a0a0a]/90 border-[#333]/50 hover:border-[#444]'
-                    } ${isSelected ? 'border-[#ea4e33] shadow-lg shadow-[#ea4e33]/20' : ''}`}
-                  >
-                    {/* Status dot */}
-                    <div
-                      className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ${
-                        node.status === 'live' ? 'bg-green-500' :
-                        node.status === 'building' ? 'bg-[#f59e0b]' : 'bg-[#444]'
-                      }`}
-                    />
-
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
-                        node.status === 'live' ? 'bg-[#ea4e33]/20 text-[#ea4e33]' :
-                        node.status === 'building' ? 'bg-[#f59e0b]/20 text-[#f59e0b]' :
-                        'bg-[#333] text-[#666]'
-                      }`}>
-                        {node.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">{node.name}</p>
-                        <p className="text-[10px] text-[#666] uppercase tracking-wider">
-                          {node.status}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )
-          })}
-        </div>
-
-        {/* Selected Node Detail Panel */}
-        <AnimatePresence>
-          {selectedNode && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md"
-            >
-              <div className="p-6 bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">{selectedNode.name}</h3>
-                    <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${
-                      selectedNode.status === 'live' ? 'bg-green-500/20 text-green-400' :
-                      selectedNode.status === 'building' ? 'bg-[#f59e0b]/20 text-[#f59e0b]' :
-                      'bg-[#333] text-[#666]'
-                    }`}>
-                      {selectedNode.status.toUpperCase()}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSelectedNode(null)}
-                    className="p-2 text-[#666] hover:text-white transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <p className="text-[#999] mb-4">{selectedNode.description}</p>
-                {selectedNode.link && (
-                  <Link
-                    href={selectedNode.link}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#ea4e33]/10 border border-[#ea4e33]/30 rounded-lg text-[#ea4e33] text-sm hover:bg-[#ea4e33]/20 transition-colors"
-                  >
-                    Open Tool
-                    <span>→</span>
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Legend */}
-      <div className="flex justify-center gap-8 mt-8 text-sm">
-        {[
-          { status: 'Live', color: 'bg-green-500' },
-          { status: 'Building', color: 'bg-[#f59e0b]' },
-          { status: 'Planned', color: 'bg-[#444]' },
-        ].map(({ status, color }) => (
-          <div key={status} className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${color}`} />
-            <span className="text-[#666]">{status}</span>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  )
-}
 
 // ============================================
 // BUILDERS - Clean Apple-style Cards
@@ -899,7 +634,7 @@ export default function BuildPage() {
         {/* Content */}
         <AnimatePresence mode="wait">
           <motion.div key={section}>
-            {section === 'yggdrasil' && <YggdrasilSection />}
+            {section === 'yggdrasil' && <YggdrasilScene />}
             {section === 'builders' && <BuildersSection />}
             {section === 'path' && <FindPathSection onComplete={handlePathComplete} />}
             {section === 'journey' && <JourneySection selectedTrack={selectedTrack} />}
