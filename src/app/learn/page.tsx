@@ -27,77 +27,77 @@ interface Phase {
 const phases: Phase[] = [
   {
     id: 'moldu',
-    level: 'Moldu',
-    title: 'Tu arrives ici.',
-    subtitle: 'Bienvenue dans le terrier.',
+    level: 'Outsider',
+    title: 'You arrive here.',
+    subtitle: 'Welcome to the rabbit hole.',
     content: [
-      '$asdfasdfa. Un token sur Solana.',
-      'Créé sur pump.fun. Rien de plus.',
-      'Pas de promesses. Pas de roadmap. Pas d\'allocation équipe.',
-      'Juste du code. Du code qui fait une chose.',
+      '$asdfasdfa. A token on Solana.',
+      'Created on pump.fun. Nothing more.',
+      'No promises. No roadmap. No team allocation.',
+      'Just code. Code that does one thing.',
     ],
     interaction: 'scroll',
-    unlockHint: 'Scroll pour continuer',
+    unlockHint: 'Scroll to continue',
   },
   {
     id: 'mechanism',
-    level: 'Moldu → Initié',
-    title: 'Le Mécanisme',
-    subtitle: 'Comment ça marche vraiment.',
+    level: 'Outsider → Initiate',
+    title: 'The Mechanism',
+    subtitle: 'How it really works.',
     content: [
-      'Quand un créateur gagne des fees sur pump.fun...',
-      'Ces fees déclenchent un burn automatique.',
+      'When a creator earns fees on pump.fun...',
+      'Those fees trigger an automatic burn.',
       'Creator earns → ASDF buys back → Tokens burned forever.',
-      'Simple. Transparent. Vérifiable.',
+      'Simple. Transparent. Verifiable.',
     ],
     interaction: 'drag',
-    unlockHint: 'Glisse pour révéler le flow',
+    unlockHint: 'Drag to reveal the flow',
   },
   {
     id: 'daemon',
-    level: 'Initié',
-    title: 'Le Daemon',
-    subtitle: 'Du code qui tourne. Toujours.',
+    level: 'Initiate',
+    title: 'The Daemon',
+    subtitle: 'Code that runs. Always.',
     content: [
-      'Un programme surveille la blockchain.',
-      'Quand les conditions sont réunies, il agit.',
-      'Pas d\'intervention humaine. Pas de contrôle centralisé.',
-      'Juste du code qui exécute du code.',
-      'Open source. Lisible. Exécutable par tous.',
+      'A program watches the blockchain.',
+      'When conditions are met, it acts.',
+      'No human intervention. No centralized control.',
+      'Just code executing code.',
+      'Open source. Readable. Executable by anyone.',
     ],
     interaction: 'burn',
-    unlockHint: 'Clique pour burn',
+    unlockHint: 'Click to burn',
   },
   {
     id: 'philosophy',
-    level: 'Initié → Croyant',
-    title: 'La Philosophie',
-    subtitle: 'Plus profond dans le terrier.',
+    level: 'Initiate → Believer',
+    title: 'The Philosophy',
+    subtitle: 'Deeper into the rabbit hole.',
     content: [
-      'La plupart des tokens promettent tout.',
-      '$asdfasdfa ne promet rien.',
+      'Most tokens promise everything.',
+      '$asdfasdfa promises nothing.',
       'Don\'t trust. Verify.',
       'Don\'t extract. Burn.',
       'Don\'t panic. Hold.',
     ],
     interaction: 'type',
-    unlockHint: 'Tape "This is fine"',
+    unlockHint: 'Type "This is fine"',
   },
   {
     id: 'ecosystem',
-    level: 'Croyant',
-    title: 'L\'Écosystème',
-    subtitle: 'Construit par des builders. Pour des builders.',
+    level: 'Believer',
+    title: 'The Ecosystem',
+    subtitle: 'Built by builders. For builders.',
     content: [
-      'Des outils créés par la communauté.',
+      'Tools created by the community.',
       'Burn Tracker - Watch burns in real-time.',
       'HolDex - Track your position.',
       'ASDForecast - Community predictions.',
       'Games - Earn while you learn.',
-      'Tout le monde peut build. Le code est open.',
+      'Everyone can build. The code is open.',
     ],
     interaction: 'explore',
-    unlockHint: 'Explore l\'écosystème',
+    unlockHint: 'Explore the ecosystem',
   },
 ]
 
@@ -168,7 +168,7 @@ function DragReveal({
         <div
           className="absolute inset-0 flex items-center justify-end pr-6 text-warm-ghost font-mono text-sm"
         >
-          <span style={{ opacity: 1 - dragProgress / 100 }}>Glisse →</span>
+          <span style={{ opacity: 1 - dragProgress / 100 }}>Drag →</span>
         </div>
 
         {/* Revealed content */}
@@ -281,7 +281,7 @@ function BurnInteraction({
           ) : (
             <>
               <p className="text-warm-muted font-mono text-sm mb-2">
-                Clique pour burn ({burnCount}/{requiredBurns})
+                Click to burn ({burnCount}/{requiredBurns})
               </p>
               <div className="flex gap-1">
                 {Array.from({ length: requiredBurns }).map((_, i) => (
@@ -347,7 +347,7 @@ function TypeInteraction({
           transition={{ delay: 0.3 }}
           className="text-warm-muted text-sm mt-2"
         >
-          🔥 Tu comprends maintenant.
+          🔥 You understand now.
         </motion.p>
       </motion.div>
     )
@@ -364,7 +364,7 @@ function TypeInteraction({
           type="text"
           value={input}
           onChange={handleChange}
-          placeholder="Tape la phrase..."
+          placeholder="Type the phrase..."
           className="w-full px-6 py-4 rounded-xl font-mono text-center bg-transparent text-warm-primary placeholder:text-warm-ghost focus:outline-none"
           style={{
             background: 'rgba(0,0,0,0.3)',
@@ -375,7 +375,7 @@ function TypeInteraction({
         />
       </motion.div>
       <p className="text-center text-warm-ghost text-xs mt-3 font-mono">
-        Indice: {target.split('').map((char, i) => (
+        Hint: {target.split('').map((char, i) => (
           <span
             key={i}
             style={{
@@ -462,7 +462,7 @@ function ExploreInteraction({
           className="mt-6 text-center"
         >
           <p className="text-gold-400 font-mono text-sm">
-            Tu connais l'écosystème. Prêt à build?
+            You know the ecosystem. Ready to build?
           </p>
         </motion.div>
       )}
@@ -606,7 +606,7 @@ function PhaseSection({
             className="flex items-center gap-2 text-warm-ghost font-mono text-sm"
           >
             <span>🔒</span>
-            <span>Section verrouillée</span>
+            <span>Section locked</span>
           </motion.div>
         )}
       </div>
@@ -638,10 +638,10 @@ export default function LearnPage() {
 
   const allCompleted = completedPhases.length === phases.length
   const currentLevel = completedPhases.length === 0
-    ? 'Moldu'
+    ? 'Outsider'
     : completedPhases.length < 3
-      ? 'Initié'
-      : 'Croyant'
+      ? 'Initiate'
+      : 'Believer'
 
   return (
     <main className="bg-hub-deep text-warm-primary">
