@@ -91,6 +91,7 @@ wip-*
 *.sqlite3
 *.db
 data/
+!src/data/
 
 # Backups
 *.bak
