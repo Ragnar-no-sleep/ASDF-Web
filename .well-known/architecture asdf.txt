@@ -1,0 +1,56 @@
+ Stack Technique Validée
+  ┌────────────────┬─────────────────────────────┬────────────────────────────────────────┐
+  │   Composant    │            Choix            │                 Raison                 │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Serveur        │ Express.js                  │ Inchangé, production-ready             │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Bundler        │ Vite                        │ Tree-shaking, HMR, ES modules          │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Animations     │ GSAP core + CSS             │ Puissant où nécessaire, léger ailleurs │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ 3D             │ Three.js                    │ Yggdrasil, inchangé                    │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Games 2D       │ Canvas API natif            │ Performance, contrôle total            │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Code Editor    │ CodeMirror 6                │ Moderne, léger (~200KB), accessible    │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Styles         │ system.css + page tokens    │ Cohérence + flexibilité                │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ Components     │ JS injection bundlé         │ Security by design                     │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ State local    │ localStorage + CustomEvents │ Simple, sync cross-components          │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ State on-chain │ Future session (cynic)      │ Full user profile on Solana            │
+  ├────────────────┼─────────────────────────────┼────────────────────────────────────────┤
+  │ API            │ Séparé (api/)               │ Découplé, scalable indépendamment      │
+  └────────────────┴─────────────────────────────┴────────────────────────────────────────┘
+  Architecture Finale
+
+  ASDF-Web/
+  ├── vite.config.js         # Build config
+  ├── server.js              # Express (prod)
+  │
+  ├── pages/                 # HTML entry points
+  │   ├── index.html         # Hub/Landing
+  │   ├── learn.html
+  │   ├── deep-learn.html
+  │   ├── build.html         # Yggdrasil + Builders + Journey
+  │   ├── games.html         # Games hub
+  │   ├── burns.html
+  │   ├── holdex.html
+  │   └── forecast.html
+  │
+  ├── src/
+  │   ├── js/
+  │   │   ├── components/    # Nav, Footer, Modal, Toast
+  │   │   ├── utils/         # wallet.js, storage.js, api.js
+  │   │   ├── lib/           # GSAP, Three.js, CodeMirror
+  │   │   ├── games/         # Canvas game engines
+  │   │   └── pages/         # Per-page logic
+  │   │
+  │   └── css/
+  │       ├── system.css     # Design system global
+  │       └── pages/         # Per-page overrides
+  │
+  ├── api/                   # Backend séparé
+  └── dist/                  # Production build

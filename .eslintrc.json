@@ -20,7 +20,10 @@
     "escapeHtml": "readonly",
     "DOMPurify": "readonly",
     "Chart": "readonly",
-    "Confetti": "readonly"
+    "Confetti": "readonly",
+    "gsap": "readonly",
+    "THREE": "readonly",
+    "ScrollTrigger": "readonly"
   },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
@@ -43,7 +46,9 @@
     "dist/",
     "coverage/",
     "playwright-report/",
-    "*.min.js"
+    "*.min.js",
+    ".next/",
+    "src-react-backup/"
   ],
   "overrides": [
     {
