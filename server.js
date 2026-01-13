@@ -5,8 +5,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
-// Use port 3001 for Express API (Next.js uses 3000)
-const PORT = process.env.EXPRESS_PORT || process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // HTTPS redirect middleware for production
