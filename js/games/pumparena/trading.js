@@ -212,8 +212,9 @@ function validateTradeItem(item) {
     !Number.isInteger(item.quantity) ||
     item.quantity <= 0 ||
     item.quantity > 9999
-  )
+  ) {
     return false;
+  }
   return true;
 }
 

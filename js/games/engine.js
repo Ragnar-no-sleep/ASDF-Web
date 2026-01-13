@@ -1456,8 +1456,9 @@ function startBurnRunner(gameId) {
   function updateEffects() {
     const now = Date.now();
     if (state.effects.shield && now > state.effects.shieldEnd) state.effects.shield = false;
-    if (state.effects.speedBoost && now > state.effects.speedBoostEnd)
+    if (state.effects.speedBoost && now > state.effects.speedBoostEnd) {
       state.effects.speedBoost = false;
+    }
     if (state.effects.slow && now > state.effects.slowEnd) state.effects.slow = false;
     if (state.effects.freeze && now > state.effects.freezeEnd) state.effects.freeze = false;
   }

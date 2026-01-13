@@ -95,18 +95,21 @@ function validateStateSchema(data) {
   if (typeof data !== 'object' || data === null) return false;
   if (data.wallet !== null && typeof data.wallet !== 'string') return false;
   if (typeof data.isHolder !== 'boolean') return false;
-  if (typeof data.balance !== 'number' || !Number.isFinite(data.balance) || data.balance < 0)
+  if (typeof data.balance !== 'number' || !Number.isFinite(data.balance) || data.balance < 0) {
     return false;
+  }
   if (typeof data.practiceScores !== 'object' || data.practiceScores === null) return false;
   if (typeof data.competitiveScores !== 'object' || data.competitiveScores === null) return false;
 
   for (const [key, value] of Object.entries(data.practiceScores)) {
-    if (!VALID_GAME_IDS.has(key) || typeof value !== 'number' || !Number.isFinite(value))
+    if (!VALID_GAME_IDS.has(key) || typeof value !== 'number' || !Number.isFinite(value)) {
       return false;
+    }
   }
   for (const [key, value] of Object.entries(data.competitiveScores)) {
-    if (!VALID_GAME_IDS.has(key) || typeof value !== 'number' || !Number.isFinite(value))
+    if (!VALID_GAME_IDS.has(key) || typeof value !== 'number' || !Number.isFinite(value)) {
       return false;
+    }
   }
 
   // Validate competitive time tracking fields (optional for backwards compatibility)
@@ -115,8 +118,9 @@ function validateStateSchema(data) {
       typeof data.competitiveTimeUsed !== 'number' ||
       !Number.isFinite(data.competitiveTimeUsed) ||
       data.competitiveTimeUsed < 0
-    )
+    ) {
       return false;
+    }
   }
   if (data.competitiveTimeDate !== undefined && data.competitiveTimeDate !== null) {
     if (typeof data.competitiveTimeDate !== 'string') return false;
@@ -125,8 +129,9 @@ function validateStateSchema(data) {
     if (
       typeof data.competitiveSessionStart !== 'number' ||
       !Number.isFinite(data.competitiveSessionStart)
-    )
+    ) {
       return false;
+    }
   }
 
   // Validate wallet address format if present

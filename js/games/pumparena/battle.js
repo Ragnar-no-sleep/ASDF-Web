@@ -1247,8 +1247,9 @@ function getPositionDistance(pos1, pos2) {
   const p1 = ARENA_POSITIONS[pos1];
   const p2 = ARENA_POSITIONS[pos2];
   if (p1.ring === p2.ring) return 1;
-  if ((p1.ring === 'close' && p2.ring === 'far') || (p1.ring === 'far' && p2.ring === 'close'))
+  if ((p1.ring === 'close' && p2.ring === 'far') || (p1.ring === 'far' && p2.ring === 'close')) {
     return 2;
+  }
   return 1;
 }
 
@@ -2891,12 +2892,17 @@ function renderBattleUI(container) {
 
                         // Get card effect description
                         let effectDesc = '';
-                        if (card.damage) effectDesc = `${card.damage} DMG`;
-                        else if (card.block) effectDesc = `${card.block} Block`;
-                        else if (card.heal) effectDesc = `+${card.heal} HP`;
-                        else if (card.mpRestore) effectDesc = `+${card.mpRestore} MP`;
-                        else if (card.effects?.length > 0)
+                        if (card.damage) {
+                          effectDesc = `${card.damage} DMG`;
+                        } else if (card.block) {
+                          effectDesc = `${card.block} Block`;
+                        } else if (card.heal) {
+                          effectDesc = `+${card.heal} HP`;
+                        } else if (card.mpRestore) {
+                          effectDesc = `+${card.mpRestore} MP`;
+                        } else if (card.effects?.length > 0) {
                           effectDesc = card.effects[0].replace('_', ' ');
+                        }
 
                         return `
                             <div class="card-btn battle-card" data-card-index="${index}" data-card-type="${card.type}" ${disabled ? 'data-disabled="true"' : ''} style="
