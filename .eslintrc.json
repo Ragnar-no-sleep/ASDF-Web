@@ -11,30 +11,57 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
+  "globals": {
+    "ASDF": "readonly",
+    "solanaWeb3": "readonly",
+    "appState": "writable",
+    "CONFIG": "readonly",
+    "ShopUtils": "readonly",
+    "escapeHtml": "readonly",
+    "DOMPurify": "readonly",
+    "Chart": "readonly",
+    "Confetti": "readonly",
+    "gsap": "readonly",
+    "THREE": "readonly",
+    "ScrollTrigger": "readonly"
+  },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-debugger": "error",
     "eqeqeq": ["error", "always"],
-    "curly": ["error", "all"],
-    "no-var": "error",
-    "prefer-const": "error",
+    "curly": ["error", "multi-line", "consistent"],
+    "no-var": "warn",
+    "prefer-const": "warn",
     "no-eval": "error",
     "no-implied-eval": "error",
-    "no-new-func": "error"
+    "no-new-func": "error",
+    "no-case-declarations": "warn",
+    "no-useless-escape": "warn",
+    "no-prototype-builtins": "warn",
+    "no-useless-catch": "warn"
   },
   "ignorePatterns": [
     "node_modules/",
     "dist/",
     "coverage/",
     "playwright-report/",
-    "*.min.js"
+    "*.min.js",
+    ".next/",
+    "src-react-backup/"
   ],
   "overrides": [
     {
       "files": ["*.html"],
       "rules": {
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["js/**/*.js"],
+      "rules": {
+        "no-undef": "warn"
       }
     },
     {

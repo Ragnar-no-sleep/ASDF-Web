@@ -24,10 +24,10 @@ const { logAudit } = require('./leaderboard');
 
 // Request signing config
 const SIGNING_CONFIG = {
-    algorithm: 'sha256',
-    maxTimestampAge: 5 * 60 * 1000,  // 5 minutes max age
-    nonceExpiry: 10 * 60 * 1000,     // 10 minutes nonce validity
-    headerPrefix: 'X-ASDF-'
+  algorithm: 'sha256',
+  maxTimestampAge: 5 * 60 * 1000, // 5 minutes max age
+  nonceExpiry: 10 * 60 * 1000, // 10 minutes nonce validity
+  headerPrefix: 'X-ASDF-',
 };
 
 // Solana address validation regex (base58, 32-44 chars)
@@ -39,16 +39,18 @@ const ADMIN_WALLETS = new Set();
 
 // Validate admin wallet addresses at startup
 rawAdminWallets.forEach((wallet, index) => {
-    const trimmed = wallet.trim();
-    if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
-        console.error(`[Security] WARNING: Invalid admin wallet format at index ${index}: ${trimmed.slice(0, 8)}...`);
-    } else {
-        ADMIN_WALLETS.add(trimmed);
-    }
+  const trimmed = wallet.trim();
+  if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
+    console.error(
+      `[Security] WARNING: Invalid admin wallet format at index ${index}: ${trimmed.slice(0, 8)}...`
+    );
+  } else {
+    ADMIN_WALLETS.add(trimmed);
+  }
 });
 
 if (process.env.NODE_ENV === 'production' && ADMIN_WALLETS.size === 0) {
-    console.warn('[Security] WARNING: No valid admin wallets configured');
+  console.warn('[Security] WARNING: No valid admin wallets configured');
 }
 
 // Used nonces for replay protection
@@ -69,7 +71,7 @@ const CLEANUP_INTERVAL = 5 * 60 * 1000;
  * @returns {string} Random nonce
  */
 function generateNonce() {
-    return crypto.randomBytes(16).toString('hex');
+  return crypto.randomBytes(16).toString('hex');
 }
 
 /**
@@ -79,52 +81,57 @@ function generateNonce() {
  * @returns {{valid: boolean, error?: string}}
  */
 function validateNonce(nonce, wallet) {
-    if (!nonce || typeof nonce !== 'string') {
-        return { valid: false, error: 'Nonce required' };
-    }
+  if (!nonce || typeof nonce !== 'string') {
+    return { valid: false, error: 'Nonce required' };
+  }
 
-    // Check format (32 hex chars)
-    if (!/^[a-f0-9]{32}$/i.test(nonce)) {
-        return { valid: false, error: 'Invalid nonce format' };
-    }
+  // Check format (32 hex chars)
+  if (!/^[a-f0-9]{32}$/i.test(nonce)) {
+    return { valid: false, error: 'Invalid nonce format' };
+  }
 
-    const key = `${wallet}:${nonce}`;
+  const key = `${wallet}:${nonce}`;
 
-    // Check if already used
-    if (usedNonces.has(key)) {
-        logAudit('nonce_reuse_attempt', { wallet: wallet.slice(0, 8) + '...', nonce: nonce.slice(0, 8) });
-        return { valid: false, error: 'Nonce already used' };
-    }
+  // Check if already used
+  if (usedNonces.has(key)) {
+    logAudit('nonce_reuse_attempt', {
+      wallet: wallet.slice(0, 8) + '...',
+      nonce: nonce.slice(0, 8),
+    });
+    return { valid: false, error: 'Nonce already used' };
+  }
 
-    // Mark as used with expiry
-    usedNonces.set(key, Date.now() + SIGNING_CONFIG.nonceExpiry);
+  // Mark as used with expiry
+  usedNonces.set(key, Date.now() + SIGNING_CONFIG.nonceExpiry);
 
-    return { valid: true };
+  return { valid: true };
 }
 
 /**
  * Cleanup expired nonces with mutex to prevent race conditions
  */
 function cleanupNonces() {
-    // Use mutex to prevent concurrent cleanup operations
-    nonceMutex = nonceMutex.then(() => {
-        const now = Date.now();
-        let cleaned = 0;
+  // Use mutex to prevent concurrent cleanup operations
+  nonceMutex = nonceMutex
+    .then(() => {
+      const now = Date.now();
+      let cleaned = 0;
 
-        for (const [key, expiry] of usedNonces.entries()) {
-            if (now > expiry) {
-                usedNonces.delete(key);
-                cleaned++;
-            }
+      for (const [key, expiry] of usedNonces.entries()) {
+        if (now > expiry) {
+          usedNonces.delete(key);
+          cleaned++;
         }
+      }
 
-        if (cleaned > 0 && process.env.NODE_ENV !== 'production') {
-            console.log(`[Security] Cleaned ${cleaned} expired nonces`);
-        }
-    }).catch(() => {
-        // Silently handle cleanup errors
+      if (cleaned > 0 && process.env.NODE_ENV !== 'production') {
+        console.log(`[Security] Cleaned ${cleaned} expired nonces`);
+      }
+    })
+    .catch(() => {
+      // Silently handle cleanup errors
     });
-    return nonceMutex;
+  return nonceMutex;
 }
 
 // Start cleanup interval
@@ -141,10 +148,8 @@ setInterval(cleanupNonces, CLEANUP_INTERVAL);
  * @returns {string} HMAC signature
  */
 function createSignature(data, secret) {
-    const payload = JSON.stringify(sortObject(data));
-    return crypto.createHmac(SIGNING_CONFIG.algorithm, secret)
-        .update(payload)
-        .digest('hex');
+  const payload = JSON.stringify(sortObject(data));
+  return crypto.createHmac(SIGNING_CONFIG.algorithm, secret).update(payload).digest('hex');
 }
 
 /**
@@ -155,33 +160,32 @@ function createSignature(data, secret) {
  * @returns {boolean}
  */
 function verifySignature(data, signature, secret) {
-    const expected = createSignature(data, secret);
+  const expected = createSignature(data, secret);
 
-    try {
-        return crypto.timingSafeEqual(
-            Buffer.from(signature),
-            Buffer.from(expected)
-        );
-    } catch {
-        return false;
-    }
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Sort object keys for consistent signing
  */
 function sortObject(obj) {
-    if (typeof obj !== 'object' || obj === null) {
-        return obj;
-    }
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
 
-    if (Array.isArray(obj)) {
-        return obj.map(sortObject);
-    }
+  if (Array.isArray(obj)) {
+    return obj.map(sortObject);
+  }
 
-    return Object.keys(obj).sort().reduce((sorted, key) => {
-        sorted[key] = sortObject(obj[key]);
-        return sorted;
+  return Object.keys(obj)
+    .sort()
+    .reduce((sorted, key) => {
+      sorted[key] = sortObject(obj[key]);
+      return sorted;
     }, {});
 }
 
@@ -197,90 +201,90 @@ function sortObject(obj) {
  * - X-ASDF-Signature: HMAC of body + timestamp + nonce
  */
 function requireSignedRequest(req, res, next) {
-    const timestamp = req.headers['x-asdf-timestamp'];
-    const nonce = req.headers['x-asdf-nonce'];
-    const signature = req.headers['x-asdf-signature'];
+  const timestamp = req.headers['x-asdf-timestamp'];
+  const nonce = req.headers['x-asdf-nonce'];
+  const signature = req.headers['x-asdf-signature'];
 
-    // Check all headers present
-    if (!timestamp || !nonce || !signature) {
-        return res.status(401).json({
-            error: 'Signed request required',
-            required: ['X-ASDF-Timestamp', 'X-ASDF-Nonce', 'X-ASDF-Signature']
-        });
-    }
+  // Check all headers present
+  if (!timestamp || !nonce || !signature) {
+    return res.status(401).json({
+      error: 'Signed request required',
+      required: ['X-ASDF-Timestamp', 'X-ASDF-Nonce', 'X-ASDF-Signature'],
+    });
+  }
 
-    // Validate timestamp
-    const ts = parseInt(timestamp, 10);
-    const now = Date.now();
+  // Validate timestamp
+  const ts = parseInt(timestamp, 10);
+  const now = Date.now();
 
-    if (isNaN(ts) || Math.abs(now - ts) > SIGNING_CONFIG.maxTimestampAge) {
-        logAudit('signature_timestamp_invalid', {
-            wallet: req.user?.wallet?.slice(0, 8) + '...',
-            drift: now - ts
-        });
-        return res.status(401).json({ error: 'Request timestamp expired or invalid' });
-    }
+  if (isNaN(ts) || Math.abs(now - ts) > SIGNING_CONFIG.maxTimestampAge) {
+    logAudit('signature_timestamp_invalid', {
+      wallet: req.user?.wallet?.slice(0, 8) + '...',
+      drift: now - ts,
+    });
+    return res.status(401).json({ error: 'Request timestamp expired or invalid' });
+  }
 
-    // Validate nonce
-    const wallet = req.user?.wallet;
-    if (!wallet) {
-        return res.status(401).json({ error: 'Authentication required before signed request' });
-    }
+  // Validate nonce
+  const wallet = req.user?.wallet;
+  if (!wallet) {
+    return res.status(401).json({ error: 'Authentication required before signed request' });
+  }
 
-    const nonceResult = validateNonce(nonce, wallet);
-    if (!nonceResult.valid) {
-        return res.status(401).json({ error: nonceResult.error });
-    }
+  const nonceResult = validateNonce(nonce, wallet);
+  if (!nonceResult.valid) {
+    return res.status(401).json({ error: nonceResult.error });
+  }
 
-    // Build signing payload
-    const signingData = {
-        method: req.method,
-        path: req.path,
-        timestamp: ts,
-        nonce: nonce,
-        body: req.body || {}
-    };
+  // Build signing payload
+  const signingData = {
+    method: req.method,
+    path: req.path,
+    timestamp: ts,
+    nonce: nonce,
+    body: req.body || {},
+  };
 
-    // Use wallet address combined with API signing secret
-    // SECURITY: Require explicit API_SIGNING_SECRET - no fallback
-    const apiSigningSecret = process.env.API_SIGNING_SECRET;
-    if (!apiSigningSecret) {
-        console.error('[Security] CRITICAL: API_SIGNING_SECRET not configured');
-        return res.status(500).json({ error: 'Server configuration error' });
-    }
-    const secret = `${wallet}:${apiSigningSecret}`;
+  // Use wallet address combined with API signing secret
+  // SECURITY: Require explicit API_SIGNING_SECRET - no fallback
+  const apiSigningSecret = process.env.API_SIGNING_SECRET;
+  if (!apiSigningSecret) {
+    console.error('[Security] CRITICAL: API_SIGNING_SECRET not configured');
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+  const secret = `${wallet}:${apiSigningSecret}`;
 
-    if (!verifySignature(signingData, signature, secret)) {
-        logAudit('signature_invalid', {
-            wallet: wallet.slice(0, 8) + '...',
-            path: req.path
-        });
-        return res.status(401).json({ error: 'Invalid request signature' });
-    }
+  if (!verifySignature(signingData, signature, secret)) {
+    logAudit('signature_invalid', {
+      wallet: wallet.slice(0, 8) + '...',
+      path: req.path,
+    });
+    return res.status(401).json({ error: 'Invalid request signature' });
+  }
 
-    // Signature valid
-    req.signedRequest = true;
-    next();
+  // Signature valid
+  req.signedRequest = true;
+  next();
 }
 
 /**
  * Middleware: Require admin role
  */
 function requireAdmin(req, res, next) {
-    const wallet = req.user?.wallet;
+  const wallet = req.user?.wallet;
 
-    if (!wallet) {
-        return res.status(401).json({ error: 'Authentication required' });
-    }
+  if (!wallet) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
 
-    if (!ADMIN_WALLETS.has(wallet)) {
-        logAudit('admin_access_denied', { wallet: wallet.slice(0, 8) + '...' });
-        return res.status(403).json({ error: 'Admin access required' });
-    }
+  if (!ADMIN_WALLETS.has(wallet)) {
+    logAudit('admin_access_denied', { wallet: wallet.slice(0, 8) + '...' });
+    return res.status(403).json({ error: 'Admin access required' });
+  }
 
-    req.isAdmin = true;
-    logAudit('admin_access', { wallet: wallet.slice(0, 8) + '...', path: req.path });
-    next();
+  req.isAdmin = true;
+  logAudit('admin_access', { wallet: wallet.slice(0, 8) + '...', path: req.path });
+  next();
 }
 
 /**
@@ -288,15 +292,15 @@ function requireAdmin(req, res, next) {
  * Doesn't fail if not signed, but marks request
  */
 function optionalSignedRequest(req, res, next) {
-    const signature = req.headers['x-asdf-signature'];
+  const signature = req.headers['x-asdf-signature'];
 
-    if (!signature) {
-        req.signedRequest = false;
-        return next();
-    }
+  if (!signature) {
+    req.signedRequest = false;
+    return next();
+  }
 
-    // If signature provided, validate it
-    return requireSignedRequest(req, res, next);
+  // If signature provided, validate it
+  return requireSignedRequest(req, res, next);
 }
 
 // ============================================
@@ -310,23 +314,23 @@ function optionalSignedRequest(req, res, next) {
  * @returns {{valid: boolean, value?: string, error?: string}}
  */
 function validateId(id, options = {}) {
-    const { maxLength = 64, pattern = /^[a-zA-Z0-9_-]+$/ } = options;
+  const { maxLength = 64, pattern = /^[a-zA-Z0-9_-]+$/ } = options;
 
-    if (!id || typeof id !== 'string') {
-        return { valid: false, error: 'ID required' };
-    }
+  if (!id || typeof id !== 'string') {
+    return { valid: false, error: 'ID required' };
+  }
 
-    const trimmed = id.trim();
+  const trimmed = id.trim();
 
-    if (trimmed.length === 0 || trimmed.length > maxLength) {
-        return { valid: false, error: 'Invalid ID length' };
-    }
+  if (trimmed.length === 0 || trimmed.length > maxLength) {
+    return { valid: false, error: 'Invalid ID length' };
+  }
 
-    if (!pattern.test(trimmed)) {
-        return { valid: false, error: 'Invalid ID format' };
-    }
+  if (!pattern.test(trimmed)) {
+    return { valid: false, error: 'Invalid ID format' };
+  }
 
-    return { valid: true, value: trimmed };
+  return { valid: true, value: trimmed };
 }
 
 /**
@@ -335,11 +339,11 @@ function validateId(id, options = {}) {
  * @returns {{valid: boolean, value?: string, error?: string}}
  */
 function validateReferralCodeFormat(code) {
-    // Referral codes are 8-16 alphanumeric chars
-    return validateId(code, {
-        maxLength: 16,
-        pattern: /^[A-Z0-9]{8,16}$/i
-    });
+  // Referral codes are 8-16 alphanumeric chars
+  return validateId(code, {
+    maxLength: 16,
+    pattern: /^[A-Z0-9]{8,16}$/i,
+  });
 }
 
 /**
@@ -348,11 +352,11 @@ function validateReferralCodeFormat(code) {
  * @returns {{valid: boolean, value?: string, error?: string}}
  */
 function validateName(name) {
-    // Names are lowercase alphanumeric with underscores/hyphens
-    return validateId(name, {
-        maxLength: 50,
-        pattern: /^[a-z0-9_-]+$/
-    });
+  // Names are lowercase alphanumeric with underscores/hyphens
+  return validateId(name, {
+    maxLength: 50,
+    pattern: /^[a-z0-9_-]+$/,
+  });
 }
 
 /**
@@ -361,17 +365,17 @@ function validateName(name) {
  * @returns {{valid: boolean, value?: string, error?: string}}
  */
 function validateWalletAddress(address) {
-    if (!address || typeof address !== 'string') {
-        return { valid: false, error: 'Address required' };
-    }
+  if (!address || typeof address !== 'string') {
+    return { valid: false, error: 'Address required' };
+  }
 
-    const trimmed = address.trim();
+  const trimmed = address.trim();
 
-    if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
-        return { valid: false, error: 'Invalid wallet address format' };
-    }
+  if (!SOLANA_ADDRESS_REGEX.test(trimmed)) {
+    return { valid: false, error: 'Invalid wallet address format' };
+  }
 
-    return { valid: true, value: trimmed };
+  return { valid: true, value: trimmed };
 }
 
 /**
@@ -381,9 +385,10 @@ function validateWalletAddress(address) {
  * @returns {string}
  */
 function sanitizeForLog(str, maxLen = 100) {
-    if (typeof str !== 'string') return String(str).slice(0, maxLen);
-    // Remove control characters and limit length
-    return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, maxLen);
+  if (typeof str !== 'string') return String(str).slice(0, maxLen);
+  // Remove control characters and limit length
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, maxLen);
 }
 
 // ============================================
@@ -396,11 +401,8 @@ function sanitizeForLog(str, maxLen = 100) {
  * @returns {string} Truncated hash
  */
 function hashForLog(data) {
-    if (!data) return 'null';
-    return crypto.createHash('sha256')
-        .update(String(data))
-        .digest('hex')
-        .slice(0, 8);
+  if (!data) return 'null';
+  return crypto.createHash('sha256').update(String(data)).digest('hex').slice(0, 8);
 }
 
 /**
@@ -411,7 +413,7 @@ function hashForLog(data) {
 const ipBlocklist = new Set();
 
 function isBlocked(ip) {
-    return ipBlocklist.has(ip);
+  return ipBlocklist.has(ip);
 }
 
 /**
@@ -420,9 +422,9 @@ function isBlocked(ip) {
  * @param {string} reason - Reason for block
  */
 function blockIP(ip, reason) {
-    ipBlocklist.add(ip);
-    logAudit('ip_blocked', { ip: hashForLog(ip), reason });
-    console.warn(`[Security] Blocked IP: ${hashForLog(ip)} - ${reason}`);
+  ipBlocklist.add(ip);
+  logAudit('ip_blocked', { ip: hashForLog(ip), reason });
+  console.warn(`[Security] Blocked IP: ${hashForLog(ip)} - ${reason}`);
 }
 
 /**
@@ -430,15 +432,15 @@ function blockIP(ip, reason) {
  * @returns {Object}
  */
 function getSecurityMetrics() {
-    return {
-        activeNonces: usedNonces.size,
-        blockedIPs: ipBlocklist.size,
-        adminWallets: ADMIN_WALLETS.size,
-        config: {
-            maxTimestampAge: SIGNING_CONFIG.maxTimestampAge,
-            nonceExpiry: SIGNING_CONFIG.nonceExpiry
-        }
-    };
+  return {
+    activeNonces: usedNonces.size,
+    blockedIPs: ipBlocklist.size,
+    adminWallets: ADMIN_WALLETS.size,
+    config: {
+      maxTimestampAge: SIGNING_CONFIG.maxTimestampAge,
+      nonceExpiry: SIGNING_CONFIG.nonceExpiry,
+    },
+  };
 }
 
 /**
@@ -447,37 +449,37 @@ function getSecurityMetrics() {
  * @returns {boolean}
  */
 function isAdmin(wallet) {
-    return ADMIN_WALLETS.has(wallet);
+  return ADMIN_WALLETS.has(wallet);
 }
 
 module.exports = {
-    // Nonce management
-    generateNonce,
-    validateNonce,
+  // Nonce management
+  generateNonce,
+  validateNonce,
 
-    // Request signing
-    createSignature,
-    verifySignature,
+  // Request signing
+  createSignature,
+  verifySignature,
 
-    // Middleware
-    requireSignedRequest,
-    requireAdmin,
-    optionalSignedRequest,
+  // Middleware
+  requireSignedRequest,
+  requireAdmin,
+  optionalSignedRequest,
 
-    // Input validation
-    validateId,
-    validateReferralCodeFormat,
-    validateName,
-    validateWalletAddress,
-    sanitizeForLog,
+  // Input validation
+  validateId,
+  validateReferralCodeFormat,
+  validateName,
+  validateWalletAddress,
+  sanitizeForLog,
 
-    // Utilities
-    hashForLog,
-    isBlocked,
-    blockIP,
-    isAdmin,
-    getSecurityMetrics,
+  // Utilities
+  hashForLog,
+  isBlocked,
+  blockIP,
+  isAdmin,
+  getSecurityMetrics,
 
-    // Config
-    SIGNING_CONFIG
+  // Config
+  SIGNING_CONFIG,
 };

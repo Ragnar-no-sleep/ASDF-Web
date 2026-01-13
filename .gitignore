@@ -68,7 +68,9 @@ internal/
 TODO.md
 NOTES.md
 DECISIONS.md
-ARCHITECTURE_INTERNAL.md
+ARCHITECTURE_INTERNAL.md*
+architecture_asdf.txt
+
 
 # Documentation with sensitive info (architecture, audits, vulnerabilities)
 docs/
@@ -91,6 +93,7 @@ wip-*
 *.sqlite3
 *.db
 data/
+!src/data/
 
 # Backups
 *.bak

@@ -22,33 +22,33 @@ const { logAudit } = require('./leaderboard');
 // ============================================
 
 const VERSIONING_CONFIG = {
-    // Current version
-    currentVersion: 'v1',
+  // Current version
+  currentVersion: 'v1',
 
-    // Supported versions
-    supportedVersions: ['v1'],
+  // Supported versions
+  supportedVersions: ['v1'],
 
-    // Deprecated versions (still work but with warnings)
-    deprecatedVersions: [],
+  // Deprecated versions (still work but with warnings)
+  deprecatedVersions: [],
 
-    // Sunset versions (no longer supported)
-    sunsetVersions: [],
+  // Sunset versions (no longer supported)
+  sunsetVersions: [],
 
-    // Default version for requests without version
-    defaultVersion: 'v1',
+  // Default version for requests without version
+  defaultVersion: 'v1',
 
-    // Version detection methods
-    detection: {
-        header: true,        // X-API-Version header
-        path: true,          // /v1/endpoint
-        query: false         // ?version=v1
-    },
+  // Version detection methods
+  detection: {
+    header: true, // X-API-Version header
+    path: true, // /v1/endpoint
+    query: false, // ?version=v1
+  },
 
-    // Header name for version
-    headerName: 'X-API-Version',
+  // Header name for version
+  headerName: 'X-API-Version',
 
-    // Response header for current version
-    responseHeader: 'X-API-Version-Used'
+  // Response header for current version
+  responseHeader: 'X-API-Version-Used',
 };
 
 // ============================================
@@ -61,19 +61,22 @@ const versionHandlers = new Map();
 // Route transformers per version
 const routeTransformers = new Map();
 
+// Deprecation dates for versions
+const deprecationDates = new Map();
+
 // Response transformers per version
 const responseTransformers = new Map();
 
 // Stats
 const versionStats = {
-    requests: {},
-    deprecationWarnings: 0,
-    versionErrors: 0
+  requests: {},
+  deprecationWarnings: 0,
+  versionErrors: 0,
 };
 
 // Initialize stats for supported versions
 for (const version of VERSIONING_CONFIG.supportedVersions) {
-    versionStats.requests[version] = 0;
+  versionStats.requests[version] = 0;
 }
 
 // ============================================
@@ -86,34 +89,34 @@ for (const version of VERSIONING_CONFIG.supportedVersions) {
  * @returns {string} Detected version
  */
 function detectVersion(req) {
-    let version = null;
+  let version = null;
 
-    // Try header detection
-    if (VERSIONING_CONFIG.detection.header) {
-        version = req.get(VERSIONING_CONFIG.headerName);
-        if (version) {
-            return normalizeVersion(version);
-        }
+  // Try header detection
+  if (VERSIONING_CONFIG.detection.header) {
+    version = req.get(VERSIONING_CONFIG.headerName);
+    if (version) {
+      return normalizeVersion(version);
     }
+  }
 
-    // Try path detection
-    if (VERSIONING_CONFIG.detection.path) {
-        const pathMatch = req.path.match(/^\/(v\d+)\//);
-        if (pathMatch) {
-            return normalizeVersion(pathMatch[1]);
-        }
+  // Try path detection
+  if (VERSIONING_CONFIG.detection.path) {
+    const pathMatch = req.path.match(/^\/(v\d+)\//);
+    if (pathMatch) {
+      return normalizeVersion(pathMatch[1]);
     }
+  }
 
-    // Try query detection
-    if (VERSIONING_CONFIG.detection.query) {
-        version = req.query.version || req.query.v;
-        if (version) {
-            return normalizeVersion(version);
-        }
+  // Try query detection
+  if (VERSIONING_CONFIG.detection.query) {
+    version = req.query.version || req.query.v;
+    if (version) {
+      return normalizeVersion(version);
     }
+  }
 
-    // Return default version
-    return VERSIONING_CONFIG.defaultVersion;
+  // Return default version
+  return VERSIONING_CONFIG.defaultVersion;
 }
 
 /**
@@ -122,13 +125,13 @@ function detectVersion(req) {
  * @returns {string} Normalized version
  */
 function normalizeVersion(version) {
-    if (!version) {
-        return VERSIONING_CONFIG.defaultVersion;
-    }
+  if (!version) {
+    return VERSIONING_CONFIG.defaultVersion;
+  }
 
-    // Remove 'v' prefix if present and add it back
-    const num = version.toString().toLowerCase().replace(/^v/, '');
-    return `v${num}`;
+  // Remove 'v' prefix if present and add it back
+  const num = version.toString().toLowerCase().replace(/^v/, '');
+  return `v${num}`;
 }
 
 // ============================================
@@ -141,44 +144,44 @@ function normalizeVersion(version) {
  * @returns {Object} Validation result
  */
 function validateVersion(version) {
-    const normalized = normalizeVersion(version);
+  const normalized = normalizeVersion(version);
 
-    // Check if supported
-    if (VERSIONING_CONFIG.supportedVersions.includes(normalized)) {
-        return {
-            valid: true,
-            version: normalized,
-            deprecated: VERSIONING_CONFIG.deprecatedVersions.includes(normalized),
-            current: normalized === VERSIONING_CONFIG.currentVersion
-        };
-    }
-
-    // Check if deprecated
-    if (VERSIONING_CONFIG.deprecatedVersions.includes(normalized)) {
-        return {
-            valid: true,
-            version: normalized,
-            deprecated: true,
-            current: false,
-            warning: `API version ${normalized} is deprecated. Please upgrade to ${VERSIONING_CONFIG.currentVersion}`
-        };
-    }
-
-    // Check if sunset
-    if (VERSIONING_CONFIG.sunsetVersions.includes(normalized)) {
-        return {
-            valid: false,
-            version: normalized,
-            error: `API version ${normalized} is no longer supported. Please use ${VERSIONING_CONFIG.currentVersion}`
-        };
-    }
-
-    // Unknown version
+  // Check if supported
+  if (VERSIONING_CONFIG.supportedVersions.includes(normalized)) {
     return {
-        valid: false,
-        version: normalized,
-        error: `Unknown API version: ${normalized}. Supported versions: ${VERSIONING_CONFIG.supportedVersions.join(', ')}`
+      valid: true,
+      version: normalized,
+      deprecated: VERSIONING_CONFIG.deprecatedVersions.includes(normalized),
+      current: normalized === VERSIONING_CONFIG.currentVersion,
     };
+  }
+
+  // Check if deprecated
+  if (VERSIONING_CONFIG.deprecatedVersions.includes(normalized)) {
+    return {
+      valid: true,
+      version: normalized,
+      deprecated: true,
+      current: false,
+      warning: `API version ${normalized} is deprecated. Please upgrade to ${VERSIONING_CONFIG.currentVersion}`,
+    };
+  }
+
+  // Check if sunset
+  if (VERSIONING_CONFIG.sunsetVersions.includes(normalized)) {
+    return {
+      valid: false,
+      version: normalized,
+      error: `API version ${normalized} is no longer supported. Please use ${VERSIONING_CONFIG.currentVersion}`,
+    };
+  }
+
+  // Unknown version
+  return {
+    valid: false,
+    version: normalized,
+    error: `Unknown API version: ${normalized}. Supported versions: ${VERSIONING_CONFIG.supportedVersions.join(', ')}`,
+  };
 }
 
 // ============================================
@@ -191,72 +194,72 @@ function validateVersion(version) {
  * @returns {Function} Express middleware
  */
 function middleware(options = {}) {
-    const {
-        strict = false,           // Reject requests with invalid versions
-        warnDeprecated = true     // Add deprecation warnings
-    } = options;
+  const {
+    strict = false, // Reject requests with invalid versions
+    warnDeprecated = true, // Add deprecation warnings
+  } = options;
 
-    return (req, res, next) => {
-        // Detect version
-        const version = detectVersion(req);
-        const validation = validateVersion(version);
+  return (req, res, next) => {
+    // Detect version
+    const version = detectVersion(req);
+    const validation = validateVersion(version);
 
-        // Store version on request
-        req.apiVersion = validation.version;
+    // Store version on request
+    req.apiVersion = validation.version;
 
-        // Track stats
-        if (versionStats.requests[validation.version] !== undefined) {
-            versionStats.requests[validation.version]++;
-        }
+    // Track stats
+    if (versionStats.requests[validation.version] !== undefined) {
+      versionStats.requests[validation.version]++;
+    }
 
-        // Set response header
-        res.setHeader(VERSIONING_CONFIG.responseHeader, validation.version);
+    // Set response header
+    res.setHeader(VERSIONING_CONFIG.responseHeader, validation.version);
 
-        // Handle invalid versions
-        if (!validation.valid) {
-            versionStats.versionErrors++;
+    // Handle invalid versions
+    if (!validation.valid) {
+      versionStats.versionErrors++;
 
-            if (strict) {
-                return res.status(400).json({
-                    error: 'Invalid API Version',
-                    message: validation.error,
-                    supportedVersions: VERSIONING_CONFIG.supportedVersions,
-                    currentVersion: VERSIONING_CONFIG.currentVersion
-                });
-            }
+      if (strict) {
+        return res.status(400).json({
+          error: 'Invalid API Version',
+          message: validation.error,
+          supportedVersions: VERSIONING_CONFIG.supportedVersions,
+          currentVersion: VERSIONING_CONFIG.currentVersion,
+        });
+      }
 
-            // Fall back to default version
-            req.apiVersion = VERSIONING_CONFIG.defaultVersion;
-        }
+      // Fall back to default version
+      req.apiVersion = VERSIONING_CONFIG.defaultVersion;
+    }
 
-        // Handle deprecated versions
-        if (validation.deprecated && warnDeprecated) {
-            versionStats.deprecationWarnings++;
+    // Handle deprecated versions
+    if (validation.deprecated && warnDeprecated) {
+      versionStats.deprecationWarnings++;
 
-            // Add deprecation header
-            res.setHeader('Deprecation', 'true');
-            res.setHeader('Sunset', getSunsetDate(validation.version));
+      // Add deprecation header
+      res.setHeader('Deprecation', 'true');
+      res.setHeader('Sunset', getSunsetDate(validation.version));
 
-            if (validation.warning) {
-                res.setHeader('X-API-Deprecation-Warning', validation.warning);
-            }
+      if (validation.warning) {
+        res.setHeader('X-API-Deprecation-Warning', validation.warning);
+      }
 
-            logAudit('api_version_deprecated', {
-                version: validation.version,
-                path: req.path
-            });
-        }
+      logAudit('api_version_deprecated', {
+        version: validation.version,
+        path: req.path,
+      });
+    }
 
-        // Apply request transformers
-        transformRequest(req);
+    // Apply request transformers
+    transformRequest(req);
 
-        // Wrap response for transformation
-        if (responseTransformers.has(req.apiVersion)) {
-            wrapResponse(req, res);
-        }
+    // Wrap response for transformation
+    if (responseTransformers.has(req.apiVersion)) {
+      wrapResponse(req, res);
+    }
 
-        next();
-    };
+    next();
+  };
 }
 
 // ============================================
@@ -269,11 +272,11 @@ function middleware(options = {}) {
  * @param {Function} transformer - Transform function
  */
 function registerRequestTransformer(version, transformer) {
-    if (typeof transformer !== 'function') {
-        throw new Error('Transformer must be a function');
-    }
+  if (typeof transformer !== 'function') {
+    throw new Error('Transformer must be a function');
+  }
 
-    routeTransformers.set(normalizeVersion(version), transformer);
+  routeTransformers.set(normalizeVersion(version), transformer);
 }
 
 /**
@@ -282,11 +285,11 @@ function registerRequestTransformer(version, transformer) {
  * @param {Function} transformer - Transform function
  */
 function registerResponseTransformer(version, transformer) {
-    if (typeof transformer !== 'function') {
-        throw new Error('Transformer must be a function');
-    }
+  if (typeof transformer !== 'function') {
+    throw new Error('Transformer must be a function');
+  }
 
-    responseTransformers.set(normalizeVersion(version), transformer);
+  responseTransformers.set(normalizeVersion(version), transformer);
 }
 
 /**
@@ -294,14 +297,14 @@ function registerResponseTransformer(version, transformer) {
  * @param {Object} req - Express request
  */
 function transformRequest(req) {
-    const transformer = routeTransformers.get(req.apiVersion);
-    if (transformer) {
-        try {
-            transformer(req);
-        } catch (error) {
-            console.error(`[Versioning] Request transform error: ${error.message}`);
-        }
+  const transformer = routeTransformers.get(req.apiVersion);
+  if (transformer) {
+    try {
+      transformer(req);
+    } catch (error) {
+      console.error(`[Versioning] Request transform error: ${error.message}`);
     }
+  }
 }
 
 /**
@@ -310,18 +313,18 @@ function transformRequest(req) {
  * @param {Object} res - Express response
  */
 function wrapResponse(req, res) {
-    const originalJson = res.json.bind(res);
-    const transformer = responseTransformers.get(req.apiVersion);
+  const originalJson = res.json.bind(res);
+  const transformer = responseTransformers.get(req.apiVersion);
 
-    res.json = (data) => {
-        try {
-            const transformed = transformer(data, req);
-            return originalJson(transformed);
-        } catch (error) {
-            console.error(`[Versioning] Response transform error: ${error.message}`);
-            return originalJson(data);
-        }
-    };
+  res.json = data => {
+    try {
+      const transformed = transformer(data, req);
+      return originalJson(transformed);
+    } catch (error) {
+      console.error(`[Versioning] Response transform error: ${error.message}`);
+      return originalJson(data);
+    }
+  };
 }
 
 // ============================================
@@ -335,8 +338,8 @@ function wrapResponse(req, res) {
  * @param {Function} handler - Route handler
  */
 function registerHandler(version, route, handler) {
-    const key = `${normalizeVersion(version)}:${route}`;
-    versionHandlers.set(key, handler);
+  const key = `${normalizeVersion(version)}:${route}`;
+  versionHandlers.set(key, handler);
 }
 
 /**
@@ -346,8 +349,8 @@ function registerHandler(version, route, handler) {
  * @returns {Function|null}
  */
 function getHandler(version, route) {
-    const key = `${normalizeVersion(version)}:${route}`;
-    return versionHandlers.get(key) || null;
+  const key = `${normalizeVersion(version)}:${route}`;
+  return versionHandlers.get(key) || null;
 }
 
 /**
@@ -356,22 +359,22 @@ function getHandler(version, route) {
  * @returns {Object} Express router-like object
  */
 function createVersionedRouter(version) {
-    const express = require('express');
-    const router = express.Router();
-    const normalizedVersion = normalizeVersion(version);
+  const express = require('express');
+  const router = express.Router();
+  const normalizedVersion = normalizeVersion(version);
 
-    // Add version check middleware
-    router.use((req, res, next) => {
-        if (req.apiVersion !== normalizedVersion) {
-            return res.status(404).json({
-                error: 'Not Found',
-                message: `Endpoint not available in ${req.apiVersion}`
-            });
-        }
-        next();
-    });
+  // Add version check middleware
+  router.use((req, res, next) => {
+    if (req.apiVersion !== normalizedVersion) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Endpoint not available in ${req.apiVersion}`,
+      });
+    }
+    next();
+  });
 
-    return router;
+  return router;
 }
 
 // ============================================
@@ -384,30 +387,27 @@ function createVersionedRouter(version) {
  * @param {Date} sunsetDate - When version will be removed
  */
 function deprecateVersion(version, sunsetDate) {
-    const normalized = normalizeVersion(version);
+  const normalized = normalizeVersion(version);
 
-    // Move from supported to deprecated
-    const idx = VERSIONING_CONFIG.supportedVersions.indexOf(normalized);
-    if (idx > -1) {
-        VERSIONING_CONFIG.supportedVersions.splice(idx, 1);
-    }
+  // Move from supported to deprecated
+  const idx = VERSIONING_CONFIG.supportedVersions.indexOf(normalized);
+  if (idx > -1) {
+    VERSIONING_CONFIG.supportedVersions.splice(idx, 1);
+  }
 
-    if (!VERSIONING_CONFIG.deprecatedVersions.includes(normalized)) {
-        VERSIONING_CONFIG.deprecatedVersions.push(normalized);
-    }
+  if (!VERSIONING_CONFIG.deprecatedVersions.includes(normalized)) {
+    VERSIONING_CONFIG.deprecatedVersions.push(normalized);
+  }
 
-    // Store sunset date
-    if (!deprecationDates) {
-        global.deprecationDates = new Map();
-    }
-    deprecationDates.set(normalized, sunsetDate);
+  // Store sunset date
+  deprecationDates.set(normalized, sunsetDate);
 
-    logAudit('version_deprecated', {
-        version: normalized,
-        sunsetDate: sunsetDate.toISOString()
-    });
+  logAudit('version_deprecated', {
+    version: normalized,
+    sunsetDate: sunsetDate.toISOString(),
+  });
 
-    console.log(`[Versioning] Version ${normalized} deprecated, sunset: ${sunsetDate.toISOString()}`);
+  console.log(`[Versioning] Version ${normalized} deprecated, sunset: ${sunsetDate.toISOString()}`);
 }
 
 /**
@@ -415,23 +415,23 @@ function deprecateVersion(version, sunsetDate) {
  * @param {string} version - Version to sunset
  */
 function sunsetVersion(version) {
-    const normalized = normalizeVersion(version);
+  const normalized = normalizeVersion(version);
 
-    // Remove from deprecated
-    const idx = VERSIONING_CONFIG.deprecatedVersions.indexOf(normalized);
-    if (idx > -1) {
-        VERSIONING_CONFIG.deprecatedVersions.splice(idx, 1);
-    }
+  // Remove from deprecated
+  const idx = VERSIONING_CONFIG.deprecatedVersions.indexOf(normalized);
+  if (idx > -1) {
+    VERSIONING_CONFIG.deprecatedVersions.splice(idx, 1);
+  }
 
-    if (!VERSIONING_CONFIG.sunsetVersions.includes(normalized)) {
-        VERSIONING_CONFIG.sunsetVersions.push(normalized);
-    }
+  if (!VERSIONING_CONFIG.sunsetVersions.includes(normalized)) {
+    VERSIONING_CONFIG.sunsetVersions.push(normalized);
+  }
 
-    logAudit('version_sunset', {
-        version: normalized
-    });
+  logAudit('version_sunset', {
+    version: normalized,
+  });
 
-    console.log(`[Versioning] Version ${normalized} is now sunset (unsupported)`);
+  console.log(`[Versioning] Version ${normalized} is now sunset (unsupported)`);
 }
 
 /**
@@ -440,14 +440,14 @@ function sunsetVersion(version) {
  * @returns {string} Sunset date header value
  */
 function getSunsetDate(version) {
-    if (global.deprecationDates?.has(version)) {
-        return global.deprecationDates.get(version).toISOString();
-    }
+  if (global.deprecationDates?.has(version)) {
+    return global.deprecationDates.get(version).toISOString();
+  }
 
-    // Default to 90 days from now
-    const date = new Date();
-    date.setDate(date.getDate() + 90);
-    return date.toISOString();
+  // Default to 90 days from now
+  const date = new Date();
+  date.setDate(date.getDate() + 90);
+  return date.toISOString();
 }
 
 // ============================================
@@ -461,13 +461,13 @@ function getSunsetDate(version) {
  * @returns {boolean}
  */
 function hasFeature(version, feature) {
-    // Define features per version
-    const features = {
-        v1: ['basic', 'leaderboard', 'auth', 'webhooks', 'achievements']
-    };
+  // Define features per version
+  const features = {
+    v1: ['basic', 'leaderboard', 'auth', 'webhooks', 'achievements'],
+  };
 
-    const normalized = normalizeVersion(version);
-    return features[normalized]?.includes(feature) ?? false;
+  const normalized = normalizeVersion(version);
+  return features[normalized]?.includes(feature) ?? false;
 }
 
 /**
@@ -476,8 +476,8 @@ function hasFeature(version, feature) {
  * @returns {number}
  */
 function getVersionNumber(version) {
-    const match = version.match(/v(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
+  const match = version.match(/v(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
 }
 
 /**
@@ -487,7 +487,7 @@ function getVersionNumber(version) {
  * @returns {boolean}
  */
 function isVersionAtLeast(version, minVersion) {
-    return getVersionNumber(version) >= getVersionNumber(minVersion);
+  return getVersionNumber(version) >= getVersionNumber(minVersion);
 }
 
 // ============================================
@@ -499,18 +499,18 @@ function isVersionAtLeast(version, minVersion) {
  * @returns {Object}
  */
 function getVersionInfo() {
-    return {
-        currentVersion: VERSIONING_CONFIG.currentVersion,
-        supportedVersions: VERSIONING_CONFIG.supportedVersions,
-        deprecatedVersions: VERSIONING_CONFIG.deprecatedVersions,
-        sunsetVersions: VERSIONING_CONFIG.sunsetVersions,
-        defaultVersion: VERSIONING_CONFIG.defaultVersion,
-        detection: {
-            header: VERSIONING_CONFIG.headerName,
-            path: '/v{n}/...',
-            query: VERSIONING_CONFIG.detection.query ? '?version=v{n}' : null
-        }
-    };
+  return {
+    currentVersion: VERSIONING_CONFIG.currentVersion,
+    supportedVersions: VERSIONING_CONFIG.supportedVersions,
+    deprecatedVersions: VERSIONING_CONFIG.deprecatedVersions,
+    sunsetVersions: VERSIONING_CONFIG.sunsetVersions,
+    defaultVersion: VERSIONING_CONFIG.defaultVersion,
+    detection: {
+      header: VERSIONING_CONFIG.headerName,
+      path: '/v{n}/...',
+      query: VERSIONING_CONFIG.detection.query ? '?version=v{n}' : null,
+    },
+  };
 }
 
 // ============================================
@@ -522,59 +522,55 @@ function getVersionInfo() {
  * @returns {Object}
  */
 function getStats() {
-    const totalRequests = Object.values(versionStats.requests)
-        .reduce((sum, count) => sum + count, 0);
+  const totalRequests = Object.values(versionStats.requests).reduce((sum, count) => sum + count, 0);
 
-    return {
-        ...versionStats,
-        totalRequests,
-        currentVersion: VERSIONING_CONFIG.currentVersion,
-        supportedCount: VERSIONING_CONFIG.supportedVersions.length,
-        deprecatedCount: VERSIONING_CONFIG.deprecatedVersions.length,
-        sunsetCount: VERSIONING_CONFIG.sunsetVersions.length,
-        versionDistribution: Object.entries(versionStats.requests)
-            .map(([version, count]) => ({
-                version,
-                count,
-                percentage: totalRequests > 0
-                    ? ((count / totalRequests) * 100).toFixed(2) + '%'
-                    : '0%'
-            }))
-    };
+  return {
+    ...versionStats,
+    totalRequests,
+    currentVersion: VERSIONING_CONFIG.currentVersion,
+    supportedCount: VERSIONING_CONFIG.supportedVersions.length,
+    deprecatedCount: VERSIONING_CONFIG.deprecatedVersions.length,
+    sunsetCount: VERSIONING_CONFIG.sunsetVersions.length,
+    versionDistribution: Object.entries(versionStats.requests).map(([version, count]) => ({
+      version,
+      count,
+      percentage: totalRequests > 0 ? ((count / totalRequests) * 100).toFixed(2) + '%' : '0%',
+    })),
+  };
 }
 
 module.exports = {
-    // Config
-    VERSIONING_CONFIG,
+  // Config
+  VERSIONING_CONFIG,
 
-    // Detection
-    detectVersion,
-    normalizeVersion,
-    validateVersion,
+  // Detection
+  detectVersion,
+  normalizeVersion,
+  validateVersion,
 
-    // Middleware
-    middleware,
+  // Middleware
+  middleware,
 
-    // Transformers
-    registerRequestTransformer,
-    registerResponseTransformer,
+  // Transformers
+  registerRequestTransformer,
+  registerResponseTransformer,
 
-    // Handlers
-    registerHandler,
-    getHandler,
-    createVersionedRouter,
+  // Handlers
+  registerHandler,
+  getHandler,
+  createVersionedRouter,
 
-    // Deprecation
-    deprecateVersion,
-    sunsetVersion,
+  // Deprecation
+  deprecateVersion,
+  sunsetVersion,
 
-    // Compatibility
-    hasFeature,
-    isVersionAtLeast,
+  // Compatibility
+  hasFeature,
+  isVersionAtLeast,
 
-    // Documentation
-    getVersionInfo,
+  // Documentation
+  getVersionInfo,
 
-    // Stats
-    getStats
+  // Stats
+  getStats,
 };
