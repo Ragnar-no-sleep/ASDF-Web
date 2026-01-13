@@ -540,7 +540,7 @@ function checkAndShowTutorial(tutorialId, onComplete) {
 // GAME STATE
 // ============================================
 
-let gameState = {
+const gameState = {
   initialized: false,
   currentScreen: null,
   currentScene: null,

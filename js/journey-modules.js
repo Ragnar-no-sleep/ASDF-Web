@@ -273,7 +273,7 @@ const JourneyModules = (function () {
       if (!RateLimiter.check('quiz')) return;
 
       let correct = 0;
-      let total = items.length;
+      const total = items.length;
 
       draggables.forEach(item => {
         const itemId = item.dataset.itemId;

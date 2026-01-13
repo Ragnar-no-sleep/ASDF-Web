@@ -173,8 +173,9 @@ const defaultState = {
 // Security: Validate localStorage data schema to prevent tampering
 function validateState(data) {
   if (typeof data !== 'object' || data === null) return false;
-  if (typeof data.currentLevel !== 'number' || data.currentLevel < 1 || data.currentLevel > 5)
+  if (typeof data.currentLevel !== 'number' || data.currentLevel < 1 || data.currentLevel > 5) {
     return false;
+  }
   if (!Array.isArray(data.completedLevels)) return false;
   if (typeof data.totalXP !== 'number' || data.totalXP < 0 || data.totalXP > 100000) return false;
   if (typeof data.wrongAnswers !== 'number' || data.wrongAnswers < 0) return false;
@@ -190,8 +191,9 @@ function validateState(data) {
   if (
     data.completedQuizzes &&
     !data.completedQuizzes.every(q => typeof q === 'number' && q >= 1 && q <= 5)
-  )
+  ) {
     return false;
+  }
   return true;
 }
 
@@ -2733,23 +2735,28 @@ function validateGameState(data, defaultState) {
       typeof data.highScores[key] !== 'number' ||
       data.highScores[key] < 0 ||
       data.highScores[key] > 1e9
-    )
+    ) {
       return false;
+    }
   }
   // Validate numeric fields with reasonable limits
-  if (typeof data.totalClicks !== 'number' || data.totalClicks < 0 || data.totalClicks > 1e12)
+  if (typeof data.totalClicks !== 'number' || data.totalClicks < 0 || data.totalClicks > 1e12) {
     return false;
-  if (typeof data.clickerPower !== 'number' || data.clickerPower < 1 || data.clickerPower > 1000)
+  }
+  if (typeof data.clickerPower !== 'number' || data.clickerPower < 1 || data.clickerPower > 1000) {
     return false;
-  if (typeof data.clickerMulti !== 'number' || data.clickerMulti < 1 || data.clickerMulti > 100)
+  }
+  if (typeof data.clickerMulti !== 'number' || data.clickerMulti < 1 || data.clickerMulti > 100) {
     return false;
+  }
   if (typeof data.hasAuto !== 'boolean') return false;
   if (
     typeof data.dailyXPEarned !== 'number' ||
     data.dailyXPEarned < 0 ||
     data.dailyXPEarned > 10000
-  )
+  ) {
     return false;
+  }
   if (typeof data.streak !== 'number' || data.streak < 0 || data.streak > 1000) return false;
   return true;
 }
@@ -3371,8 +3378,9 @@ function flipCard(index) {
     card.classList.contains('flipped') ||
     card.classList.contains('matched') ||
     flippedCards.length >= 2
-  )
+  ) {
     return;
+  }
 
   card.classList.add('flipped');
   flippedCards.push({ index, pairId: matchCards[index].pairId, element: card });
@@ -3535,10 +3543,12 @@ function updateUpgradeButtons() {
   document.getElementById('upgrade-multi').disabled = clickerCount < 500 || clickerMulti >= 4;
   document.getElementById('upgrade-frenzy').disabled = clickerCount < 1000 || frenzyActive;
 
-  if (hasAutoClicker)
+  if (hasAutoClicker) {
     document.querySelector('#upgrade-auto .up-name').textContent = 'Auto Burner ✓';
-  if (clickerMulti >= 4)
+  }
+  if (clickerMulti >= 4) {
     document.querySelector('#upgrade-multi .up-name').textContent = `${clickerMulti}x MAX`;
+  }
 }
 
 // ============================================
@@ -4441,7 +4451,7 @@ function defenseUpdate() {
     if (!enemy.parentNode) return;
 
     // Check if slowed
-    let slowTimer = parseInt(enemy.dataset.slowTimer) || 0;
+    const slowTimer = parseInt(enemy.dataset.slowTimer) || 0;
     if (slowTimer > 0) {
       enemy.dataset.slowTimer = slowTimer - 1;
       if (slowTimer % 2 === 0) return; // Skip every other update when slowed
@@ -4508,7 +4518,7 @@ function defenseUpdate() {
       setTimeout(() => projectile.remove(), 300);
 
       // Deal damage
-      let hp = parseInt(closestEnemy.el.dataset.hp) - towerData.damage;
+      const hp = parseInt(closestEnemy.el.dataset.hp) - towerData.damage;
       closestEnemy.el.dataset.hp = hp;
 
       // Show damage number
@@ -10993,7 +11003,7 @@ function startQuizChallenge(mod) {
   let timeLeft = exercise.timeLimit || 60;
   let score = 0;
   let currentQ = 0;
-  let userAnswers = [];
+  const userAnswers = [];
   let timerInterval = null;
 
   const updateProgress = () => {
@@ -11252,8 +11262,9 @@ function renderAdvancedInteractiveContent(mod) {
   const productionKeys = productionMapping[mod.id] || [];
   const certificationKeys = certificationMapping[mod.id] || [];
 
-  if (advancedKeys.length === 0 && productionKeys.length === 0 && certificationKeys.length === 0)
+  if (advancedKeys.length === 0 && productionKeys.length === 0 && certificationKeys.length === 0) {
     return;
+  }
 
   // Get the corresponding module data
   const advancedModules = JA
@@ -11270,8 +11281,9 @@ function renderAdvancedInteractiveContent(mod) {
     advancedModules.length === 0 &&
     productionModules.length === 0 &&
     certificationModules.length === 0
-  )
+  ) {
     return;
+  }
 
   // Build interactive content with tabs
   container.innerHTML = `
