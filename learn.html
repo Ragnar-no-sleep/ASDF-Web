@@ -3,1501 +3,808 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn $asdfasdfa — Down the Rabbit Hole</title>
-    <meta name="description" content="Discover $asdfasdfa. Interactive journey from newcomer to believer.">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Learn ASDF - The Rabbit Hole">
-    <meta property="og:description" content="Discover $asdfasdfa. Interactive journey from newcomer to believer.">
-    <meta property="og:image" content="https://alonisthe.dev/og-learn.png">
-
-    <!-- Fonts -->
+    <title>Learn $asdfasdfa — The Rabbit Hole</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* =============================================
-           LEARN PAGE - Rabbit Hole Experience
-           ============================================= */
-
         :root {
-            /* Warm dark palette */
-            --hub-deep: #0d0906;
-            --hub-elevated: #1a1410;
-            --hub-surface: #2a221c;
-
-            /* Warm neutrals */
-            --warm-primary: #faf8f5;
-            --warm-secondary: #c9b89a;
-            --warm-muted: #8a7a65;
-            --warm-ghost: #5a4d40;
-
-            /* Gold accent */
-            --gold-400: #fcd34d;
-            --gold-500: #eab308;
-            --amber-400: #fbbf24;
-            --amber-500: #f59e0b;
-            --orange-500: #f97316;
-
-            /* Typography */
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --bg: #0d0906;
+            --surface: #1a1410;
+            --text: #faf8f5;
+            --text-muted: #c9b89a;
+            --text-ghost: #5a4d40;
+            --accent: #eab308;
+            --accent-soft: rgba(234, 179, 8, 0.15);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            visibility: hidden;
         }
+        body.ready { visibility: visible; }
 
-        html {
+        /* Container - CSS Scroll Snap */
+        .container {
+            height: 100vh;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
         }
-
-        /* Prevent FOUC - hide until loaded */
-        body {
-            font-family: var(--font-sans);
-            background: var(--hub-deep);
-            color: var(--warm-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        body.loaded {
-            opacity: 1;
-        }
-
-        /* Scroll lock when phase not completed */
-        body.scroll-locked {
-            overflow: hidden;
-        }
-
-        /* Progress Bar */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--hub-elevated);
-            z-index: 100;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--gold-500), var(--amber-500));
-            width: 0%;
-            transition: width 0.3s ease;
-        }
+        .container.locked { overflow: hidden; }
 
         /* Header */
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 90;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             padding: 16px 24px;
-            background: linear-gradient(to bottom, rgba(13,9,6,0.95), rgba(13,9,6,0));
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, var(--bg), transparent);
         }
-
-        .back-link {
-            font-family: var(--font-mono);
+        .back { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost); text-decoration: none; }
+        .back:hover { color: var(--accent); }
+        .level {
+            padding: 6px 14px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(234,179,8,0.3);
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--warm-muted);
-            text-decoration: none;
-            transition: color 0.3s ease;
+            color: var(--accent);
         }
 
-        .back-link:hover {
-            color: var(--gold-400);
-        }
+        /* Progress */
+        .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--surface); z-index: 101; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f59e0b); width: 0%; transition: width 0.5s; }
 
-        .level-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            background: rgba(234,179,8,0.1);
-            border: 1px solid rgba(234,179,8,0.2);
-            border-radius: 9999px;
-        }
-
-        .level-badge span {
-            font-family: var(--font-mono);
-            font-size: 12px;
-            color: var(--gold-400);
-        }
-
-        /* Phase Section */
+        /* Phase */
         .phase {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             padding: 80px 24px;
-            opacity: 0.15;
-            transition: opacity 0.5s ease;
-            position: relative;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            transition: opacity 0.3s;
         }
+        .phase.locked { opacity: 0.15; pointer-events: none; }
+        .phase.active { opacity: 1; }
+        .phase-inner { max-width: 480px; width: 100%; }
 
-        .phase.unlocked {
-            opacity: 1;
+        .badge {
+            display: inline-block; padding: 4px 12px; margin-bottom: 16px;
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-ghost);
         }
+        .phase.completed .badge { background: var(--accent-soft); border-color: rgba(234,179,8,0.3); color: var(--accent); }
 
-        .phase.completed {
-            opacity: 1;
+        /* Swipe Title */
+        .swipe-title { position: relative; overflow: hidden; margin-bottom: 8px; }
+        .swipe-title h2 {
+            font-size: clamp(26px, 5vw, 38px); font-weight: 300;
+            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .phase-inner {
-            max-width: 540px;
-            width: 100%;
+        .swipe-mask {
+            position: absolute; inset: 0;
+            background: var(--bg);
+            display: flex; align-items: center; padding-left: 4px;
+            cursor: grab; user-select: none;
+            transition: transform 0.05s linear;
         }
+        .swipe-mask.dragging { cursor: grabbing; }
+        .swipe-mask.done { transform: translateX(100%); pointer-events: none; transition: transform 0.3s ease; }
+        .swipe-hint { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-ghost); }
+        .swipe-arrow { display: inline-block; animation: bounce 1s ease infinite; margin-left: 6px; }
+        @keyframes bounce { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
 
-        /* Level Tag */
-        .phase-level {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            letter-spacing: 0.1em;
-            margin-bottom: 24px;
-            background: rgba(201,184,154,0.1);
-            border: 1px solid rgba(201,184,154,0.2);
-            color: var(--warm-muted);
-            transition: all 0.3s ease;
+        .subtitle { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-ghost); margin-bottom: 24px; }
+        .text p { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+        .phase.locked .text { filter: blur(4px); }
+
+        /* Interaction hint */
+        .hint { margin-top: 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost); }
+
+        /* Drag Slider */
+        .drag-slider {
+            position: relative; height: 56px; margin-top: 24px;
+            background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden;
         }
-
-        .phase.completed .phase-level {
-            background: rgba(234,179,8,0.2);
-            border-color: rgba(234,179,8,0.3);
-            color: var(--gold-400);
+        .drag-slider.done { display: none; }
+        .drag-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, var(--accent-soft), transparent);
+            transform: scaleX(0); transform-origin: left;
         }
-
-        /* Phase Title - Swipe to Reveal */
-        .phase-title-wrapper {
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 8px;
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
+        .drag-hint-text {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: flex-end; padding-right: 16px;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost);
         }
-
-        .phase-title-wrapper:active {
-            cursor: grabbing;
-        }
-
-        .phase-title {
-            font-size: clamp(28px, 5vw, 40px);
-            font-weight: 300;
-            background: linear-gradient(135deg, #faf8f5 0%, #c9b89a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .phase:not(.unlocked) .phase-title {
-            background: linear-gradient(135deg, #5a4d40 0%, #3a3330 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-
-        /* Title overlay that slides away */
-        .title-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--hub-deep);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-ghost);
-            transition: transform 0.1s ease;
-            pointer-events: none;
-        }
-
-        .title-overlay::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 40px;
-            background: linear-gradient(90deg, transparent, var(--hub-deep));
-        }
-
-        .phase.title-revealed .title-overlay {
-            transform: translateX(100%);
-        }
-
-        .swipe-hint {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .swipe-hint-arrow {
-            animation: swipeArrow 1.5s ease infinite;
-        }
-
-        @keyframes swipeArrow {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(5px); opacity: 1; }
-        }
-
-        .phase.title-revealed .swipe-hint {
-            display: none;
-        }
-
-        .phase-subtitle {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-muted);
-            margin-bottom: 32px;
-            opacity: 0.6;
-        }
-
-        /* Content */
-        .phase-content {
-            margin-bottom: 32px;
-        }
-
-        .phase-content p {
-            font-size: 18px;
-            color: var(--warm-secondary);
-            line-height: 1.7;
-            margin-bottom: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .phase:not(.unlocked) .phase-content p {
-            filter: blur(4px);
-            opacity: 0.1;
-        }
-
-        /* Lock Indicator */
-        .lock-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-ghost);
-        }
-
-        .phase.unlocked .lock-indicator {
-            display: none;
-        }
-
-        /* Interaction Boxes */
-        .interaction {
-            margin-top: 24px;
-            display: none;
-        }
-
-        .phase.unlocked .interaction {
-            display: block;
-        }
-
-        /* Drag Interaction */
-        .drag-track {
-            position: relative;
-            height: 64px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(0,0,0,0.3);
-            cursor: default;
-        }
-
-        .drag-hint {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 24px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-ghost);
-            transition: opacity 0.3s ease;
-        }
-
-        .drag-reveal {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(90deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05));
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--gold-400);
-            clip-path: inset(0 100% 0 0);
-            transition: clip-path 0.1s ease;
-        }
-
         .drag-handle {
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, rgba(234,179,8,0.3), rgba(234,179,8,0.1));
-            border: 1px solid rgba(234,179,8,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-            color: var(--gold-400);
-            font-size: 18px;
-            user-select: none;
-            touch-action: none;
-            -webkit-user-drag: none;
+            position: absolute; left: 4px; top: 4px; bottom: 4px; width: 48px;
+            background: linear-gradient(135deg, rgba(234,179,8,0.4), rgba(234,179,8,0.2));
+            border: 1px solid rgba(234,179,8,0.5); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 14px;
+            cursor: grab; user-select: none; touch-action: none;
         }
-
-        .drag-handle:active {
-            cursor: grabbing;
+        .drag-handle.dragging { cursor: grabbing; }
+        .drag-success {
+            display: none; padding: 20px; text-align: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
         }
+        .drag-slider.done + .drag-success { display: block; }
+        .drag-success span { opacity: 0; animation: fadein 0.3s ease forwards; }
+        .drag-success span:nth-child(1) { animation-delay: 0s; }
+        .drag-success span:nth-child(2) { animation-delay: 0.15s; color: var(--accent); }
+        .drag-success span:nth-child(3) { animation-delay: 0.3s; }
+        .drag-success span:nth-child(4) { animation-delay: 0.45s; color: #f59e0b; }
+        .drag-success span:nth-child(5) { animation-delay: 0.6s; }
+        @keyframes fadein { to { opacity: 1; } }
 
-        .drag-complete {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 24px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-        }
-
-        .drag-complete .step {
-            opacity: 0;
-            transform: translateX(-10px);
-            animation: stepIn 0.3s ease forwards;
-        }
-
-        .drag-complete .step:nth-child(2) { animation-delay: 0.2s; }
-        .drag-complete .step:nth-child(3) { animation-delay: 0.4s; }
-        .drag-complete .step:nth-child(4) { animation-delay: 0.6s; }
-
-        @keyframes stepIn {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .drag-complete .arrow {
-            color: var(--gold-400);
-        }
-
-        /* Burn Interaction */
+        /* Burn Clicker */
         .burn-box {
-            position: relative;
-            height: 128px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(201,184,154,0.1);
-            cursor: pointer;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            position: relative; height: 110px; margin-top: 24px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px; cursor: pointer; overflow: hidden;
         }
-
-        .burn-box:hover {
-            transform: scale(1.01);
-        }
-
-        .burn-box.complete {
-            background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(245,158,11,0.1));
-            border-color: rgba(234,179,8,0.3);
-            cursor: default;
-        }
-
+        .burn-box.done { background: var(--accent-soft); border-color: rgba(234,179,8,0.3); cursor: default; }
         .burn-content {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
         }
+        .burn-box.done .burn-content { display: none; }
+        .burn-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-ghost); }
+        .burn-dots { display: flex; gap: 6px; }
+        .burn-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: background 0.2s; }
+        .burn-dot.on { background: var(--accent); }
+        .burn-done { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .burn-box.done .burn-done { display: flex; }
+        .burn-done-icon { font-size: 32px; }
+        .burn-done-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+        .burn-emoji { position: absolute; font-size: 24px; pointer-events: none; animation: floatup 0.8s ease forwards; }
+        @keyframes floatup { 0%{transform:scale(0.5);opacity:1} 100%{transform:scale(1.5) translateY(-30px);opacity:0} }
 
-        .burn-text {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-muted);
-            margin-bottom: 8px;
-        }
-
-        .burn-dots {
-            display: flex;
-            gap: 4px;
-        }
-
-        .burn-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(201,184,154,0.2);
-            transition: background 0.2s ease;
-        }
-
-        .burn-dot.filled {
-            background: var(--gold-500);
-        }
-
-        .burn-complete {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .burn-complete-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-
-        .burn-complete-text {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--gold-400);
-        }
-
-        .burn-emoji {
-            position: absolute;
-            pointer-events: none;
-            font-size: 24px;
-            animation: burnFloat 1s ease forwards;
-        }
-
-        @keyframes burnFloat {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-        /* Type Interaction */
+        /* Type Input */
+        .type-wrap { margin-top: 24px; text-align: center; }
+        .type-wrap.done .type-input, .type-wrap.done .type-hint { display: none; }
         .type-input {
-            width: 100%;
-            padding: 16px 24px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(234,179,8,0.2);
-            font-family: var(--font-mono);
-            font-size: 16px;
-            text-align: center;
-            color: var(--warm-primary);
-            outline: none;
-            transition: all 0.3s ease;
+            width: 100%; max-width: 280px; padding: 12px 16px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(234,179,8,0.2); border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center;
+            color: var(--text); outline: none;
         }
+        .type-input::placeholder { color: var(--text-ghost); }
+        .type-input:focus { border-color: rgba(234,179,8,0.5); }
+        .type-input.shake { animation: shake 0.3s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        .type-hint { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost); }
+        .type-hint span.on { color: var(--accent); }
+        .type-done { display: none; padding: 20px; }
+        .type-wrap.done .type-done { display: block; }
+        .type-done-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--accent); }
+        .type-done-sub { margin-top: 6px; font-size: 14px; color: var(--text-muted); }
 
-        .type-input::placeholder {
-            color: var(--warm-ghost);
-        }
-
-        .type-input:focus {
-            border-color: rgba(234,179,8,0.5);
-        }
-
-        .type-hint {
-            text-align: center;
-            margin-top: 12px;
-            font-family: var(--font-mono);
-            font-size: 12px;
-            color: var(--warm-ghost);
-        }
-
-        .type-hint span {
-            transition: opacity 0.1s ease;
-        }
-
-        .type-hint span.matched {
-            opacity: 1;
-        }
-
-        .type-hint span.unmatched {
-            opacity: 0.3;
-        }
-
-        .type-complete {
-            display: none;
-            text-align: center;
-            padding: 32px;
-        }
-
-        .type-complete-text {
-            font-family: var(--font-mono);
-            font-size: 24px;
-            color: var(--gold-400);
-            letter-spacing: 0.1em;
-            margin-bottom: 8px;
-        }
-
-        .type-complete-sub {
-            font-size: 14px;
-            color: var(--warm-muted);
-        }
-
-        /* Explore Interaction */
-        .explore-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
+        /* Explore Grid */
+        .explore { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .explore-item {
-            padding: 16px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(201,184,154,0.1);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
+            padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
         }
+        .explore-item:hover { border-color: rgba(234,179,8,0.2); }
+        .explore-item.on { background: var(--accent-soft); border-color: rgba(234,179,8,0.3); }
+        .explore-icon { font-size: 18px; margin-bottom: 4px; }
+        .explore-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+        .explore-item.on .explore-name { color: var(--accent); }
+        .explore-check { display: none; margin-left: 4px; }
+        .explore-item.on .explore-check { display: inline; }
+        .explore-done { display: none; margin-top: 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+        .explore.done + .explore-done { display: block; }
 
-        .explore-item:hover {
-            transform: scale(1.02);
+        /* Final */
+        .final {
+            min-height: 100vh; display: none; align-items: center; justify-content: center;
+            padding: 80px 24px; text-align: center; scroll-snap-align: center;
         }
-
-        .explore-item.explored {
-            background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
-            border-color: rgba(234,179,8,0.3);
-        }
-
-        .explore-icon {
-            font-size: 20px;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .explore-name {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-secondary);
-            transition: color 0.2s ease;
-        }
-
-        .explore-item.explored .explore-name {
-            color: var(--gold-400);
-        }
-
-        .explore-check {
-            display: none;
-            margin-left: 8px;
-            color: var(--gold-500);
-        }
-
-        .explore-item.explored .explore-check {
-            display: inline;
-        }
-
-        .explore-complete {
-            display: none;
-            text-align: center;
-            margin-top: 24px;
-        }
-
-        .explore-complete p {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--gold-400);
-        }
-
-        /* Final CTA */
-        .final-section {
-            min-height: 100vh;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 80px 24px;
-            text-align: center;
-        }
-
-        .final-section.show {
-            display: flex;
-        }
-
-        .final-inner {
-            max-width: 540px;
-        }
-
-        .final-icon {
-            font-size: 64px;
-            margin-bottom: 24px;
-            animation: pulse 2s ease infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
+        .final.show { display: flex; }
+        .final-icon { font-size: 48px; margin-bottom: 16px; animation: pulse 2s ease infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
         .final-title {
-            font-size: clamp(28px, 5vw, 40px);
-            font-weight: 300;
-            background: linear-gradient(135deg, #faf8f5 0%, #c9b89a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
+            font-size: clamp(24px, 5vw, 32px); font-weight: 300;
+            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
-
-        .final-subtitle {
-            font-size: 16px;
-            color: var(--warm-secondary);
-            margin-bottom: 32px;
-            line-height: 1.7;
-        }
-
+        .final-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
         .final-cta {
-            display: inline-block;
-            padding: 16px 32px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(234,179,8,0.3), rgba(245,158,11,0.2));
-            border: 1px solid rgba(234,179,8,0.4);
-            font-family: var(--font-mono);
-            font-size: 14px;
-            letter-spacing: 0.05em;
-            color: var(--gold-400);
-            text-decoration: none;
-            transition: all 0.3s ease;
+            display: inline-block; padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(234,179,8,0.3), rgba(234,179,8,0.15));
+            border: 1px solid rgba(234,179,8,0.4); border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            color: var(--accent); text-decoration: none;
         }
+        .final-cta:hover { transform: translateY(-2px); }
+        .final-back { display: block; margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost); text-decoration: none; }
 
-        .final-cta:hover {
-            transform: scale(1.05);
-            background: linear-gradient(135deg, rgba(234,179,8,0.4), rgba(245,158,11,0.3));
-        }
-
-        .final-back {
-            display: block;
-            margin-top: 24px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--warm-muted);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .final-back:hover {
-            color: var(--warm-secondary);
-        }
-
-        /* Shake Animation */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-
-        .shake {
-            animation: shake 0.4s ease;
-        }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            .header {
-                padding: 12px 16px;
-            }
-
-            .phase {
-                padding: 60px 16px;
-            }
-
-            .explore-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 600px) {
+            .header { padding: 12px 16px; }
+            .phase { padding: 60px 16px; }
+            .explore { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Progress Bar -->
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
+    <div class="progress"><div class="progress-fill" id="progress"></div></div>
 
-    <!-- Header -->
     <header class="header">
-        <a href="/" class="back-link">&larr; Hub</a>
-        <div class="level-badge">
-            <span id="levelText">Newcomer</span>
-        </div>
+        <a href="/" class="back">← Hub</a>
+        <span class="level" id="level">Newcomer</span>
     </header>
 
-    <!-- Phase 1: Newcomer -->
-    <section class="phase unlocked" id="phase-1" data-phase="1">
-        <div class="phase-inner">
-            <div class="phase-level">Newcomer</div>
-            <div class="phase-title-wrapper" data-title="1">
-                <h2 class="phase-title">You arrive here.</h2>
-                <div class="title-overlay">
-                    <span class="swipe-hint">
-                        <span>Swipe to reveal</span>
-                        <span class="swipe-hint-arrow">&rarr;</span>
-                    </span>
+    <div class="container" id="container">
+        <!-- Phase 1 -->
+        <section class="phase active" id="phase-1">
+            <div class="phase-inner">
+                <span class="badge">Newcomer</span>
+                <div class="swipe-title">
+                    <h2>You arrive here.</h2>
+                    <div class="swipe-mask" data-phase="1">
+                        <span class="swipe-hint">Swipe to reveal <span class="swipe-arrow">→</span></span>
+                    </div>
+                </div>
+                <p class="subtitle">Welcome to the rabbit hole.</p>
+                <div class="text">
+                    <p>$asdfasdfa. A token on Solana.</p>
+                    <p>Created on pump.fun. Nothing more.</p>
+                    <p>No promises. No roadmap. No team allocation.</p>
+                    <p>Just code. Code that does one thing.</p>
+                </div>
+                <p class="hint">↓ Scroll to continue</p>
+            </div>
+        </section>
+
+        <!-- Phase 2 -->
+        <section class="phase locked" id="phase-2">
+            <div class="phase-inner">
+                <span class="badge">Newcomer → Initiate</span>
+                <div class="swipe-title">
+                    <h2>The Mechanism</h2>
+                    <div class="swipe-mask" data-phase="2">
+                        <span class="swipe-hint">Swipe to reveal <span class="swipe-arrow">→</span></span>
+                    </div>
+                </div>
+                <p class="subtitle">How it really works.</p>
+                <div class="text">
+                    <p>When a creator earns fees on pump.fun...</p>
+                    <p>Those fees trigger an automatic burn.</p>
+                    <p>Creator earns → ASDF buys back → Tokens burned forever.</p>
+                </div>
+                <div class="drag-slider" id="drag-slider">
+                    <div class="drag-bg" id="drag-bg"></div>
+                    <div class="drag-hint-text">Drag →</div>
+                    <div class="drag-handle" id="drag-handle">››</div>
+                </div>
+                <div class="drag-success">
+                    <span>Creator earns</span> <span>→</span> <span>ASDF buys</span> <span>→</span> <span>Burned 🔥</span>
                 </div>
             </div>
-            <p class="phase-subtitle">Welcome to the rabbit hole.</p>
+        </section>
 
-            <div class="phase-content">
-                <p>$asdfasdfa. A token on Solana.</p>
-                <p>Created on pump.fun. Nothing more.</p>
-                <p>No promises. No roadmap. No team allocation.</p>
-                <p>Just code. Code that does one thing.</p>
-            </div>
-
-            <div class="lock-indicator">
-                <span>&#128274;</span>
-                <span>Section locked</span>
-            </div>
-
-            <div class="interaction">
-                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--warm-ghost); text-align: center;">
-                    Scroll to continue &darr;
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Phase 2: Mechanism -->
-    <section class="phase" id="phase-2" data-phase="2">
-        <div class="phase-inner">
-            <div class="phase-level">Newcomer &rarr; Initiate</div>
-            <div class="phase-title-wrapper" data-title="2">
-                <h2 class="phase-title">The Mechanism</h2>
-                <div class="title-overlay">
-                    <span class="swipe-hint">
-                        <span>Swipe to reveal</span>
-                        <span class="swipe-hint-arrow">&rarr;</span>
-                    </span>
+        <!-- Phase 3 -->
+        <section class="phase locked" id="phase-3">
+            <div class="phase-inner">
+                <span class="badge">Initiate</span>
+                <div class="swipe-title">
+                    <h2>The Daemon</h2>
+                    <div class="swipe-mask" data-phase="3">
+                        <span class="swipe-hint">Swipe to reveal <span class="swipe-arrow">→</span></span>
+                    </div>
                 </div>
-            </div>
-            <p class="phase-subtitle">How it really works.</p>
-
-            <div class="phase-content">
-                <p>When a creator earns fees on pump.fun...</p>
-                <p>Those fees trigger an automatic burn.</p>
-                <p>Creator earns &rarr; ASDF buys back &rarr; Tokens burned forever.</p>
-                <p>Simple. Transparent. Verifiable.</p>
-            </div>
-
-            <div class="lock-indicator">
-                <span>&#128274;</span>
-                <span>Section locked</span>
-            </div>
-
-            <div class="interaction" id="drag-interaction">
-                <div class="drag-track" id="dragTrack">
-                    <div class="drag-hint">Drag &rarr;</div>
-                    <div class="drag-reveal" id="dragReveal">Creator &rarr; Buy &rarr; Burn &#128293;</div>
-                    <div class="drag-handle" id="dragHandle">&#10095;&#10095;</div>
+                <p class="subtitle">Code that runs. Always.</p>
+                <div class="text">
+                    <p>A program watches the blockchain.</p>
+                    <p>When conditions are met, it acts.</p>
+                    <p>No human intervention. Just code.</p>
                 </div>
-                <div class="drag-complete" id="dragComplete">
-                    <span class="step" style="opacity: 0.6;">Creator earns</span>
-                    <span class="step arrow">&rarr;</span>
-                    <span class="step" style="color: var(--amber-400);">ASDF buys</span>
-                    <span class="step arrow">&rarr;</span>
-                    <span class="step" style="color: var(--orange-500);">Burned forever</span>
-                    <span class="step">&#128293;</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Phase 3: Daemon -->
-    <section class="phase" id="phase-3" data-phase="3">
-        <div class="phase-inner">
-            <div class="phase-level">Initiate</div>
-            <div class="phase-title-wrapper" data-title="3">
-                <h2 class="phase-title">The Daemon</h2>
-                <div class="title-overlay">
-                    <span class="swipe-hint">
-                        <span>Swipe to reveal</span>
-                        <span class="swipe-hint-arrow">&rarr;</span>
-                    </span>
-                </div>
-            </div>
-            <p class="phase-subtitle">Code that runs. Always.</p>
-
-            <div class="phase-content">
-                <p>A program watches the blockchain.</p>
-                <p>When conditions are met, it acts.</p>
-                <p>No human intervention. No centralized control.</p>
-                <p>Just code executing code.</p>
-                <p>Open source. Readable. Executable by all.</p>
-            </div>
-
-            <div class="lock-indicator">
-                <span>&#128274;</span>
-                <span>Section locked</span>
-            </div>
-
-            <div class="interaction">
-                <div class="burn-box" id="burnBox">
-                    <div class="burn-content" id="burnContent">
-                        <p class="burn-text">Click to burn (<span id="burnCount">0</span>/5)</p>
+                <div class="burn-box" id="burn-box">
+                    <div class="burn-content">
+                        <p class="burn-text">Click to burn (<span id="burn-count">0</span>/5)</p>
                         <div class="burn-dots">
-                            <div class="burn-dot" data-index="0"></div>
-                            <div class="burn-dot" data-index="1"></div>
-                            <div class="burn-dot" data-index="2"></div>
-                            <div class="burn-dot" data-index="3"></div>
-                            <div class="burn-dot" data-index="4"></div>
+                            <div class="burn-dot"></div>
+                            <div class="burn-dot"></div>
+                            <div class="burn-dot"></div>
+                            <div class="burn-dot"></div>
+                            <div class="burn-dot"></div>
                         </div>
                     </div>
-                    <div class="burn-complete" id="burnComplete">
-                        <div class="burn-complete-icon">&#128293;</div>
-                        <p class="burn-complete-text">Burned. Forever.</p>
+                    <div class="burn-done">
+                        <span class="burn-done-icon">🔥</span>
+                        <span class="burn-done-text">Burned. Forever.</span>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Phase 4: Philosophy -->
-    <section class="phase" id="phase-4" data-phase="4">
-        <div class="phase-inner">
-            <div class="phase-level">Initiate &rarr; Believer</div>
-            <div class="phase-title-wrapper" data-title="4">
-                <h2 class="phase-title">The Philosophy</h2>
-                <div class="title-overlay">
-                    <span class="swipe-hint">
-                        <span>Swipe to reveal</span>
-                        <span class="swipe-hint-arrow">&rarr;</span>
-                    </span>
+        <!-- Phase 4 -->
+        <section class="phase locked" id="phase-4">
+            <div class="phase-inner">
+                <span class="badge">Initiate → Believer</span>
+                <div class="swipe-title">
+                    <h2>The Philosophy</h2>
+                    <div class="swipe-mask" data-phase="4">
+                        <span class="swipe-hint">Swipe to reveal <span class="swipe-arrow">→</span></span>
+                    </div>
+                </div>
+                <p class="subtitle">Deeper into the rabbit hole.</p>
+                <div class="text">
+                    <p>Most tokens promise everything.</p>
+                    <p>$asdfasdfa promises nothing.</p>
+                    <p>Don't trust. Verify.</p>
+                    <p>Don't extract. Burn.</p>
+                    <p>Don't panic. Hold.</p>
+                </div>
+                <div class="type-wrap" id="type-wrap">
+                    <input type="text" class="type-input" id="type-input" placeholder="Type the phrase..." autocomplete="off" spellcheck="false">
+                    <p class="type-hint">Hint: <span id="type-hint"></span></p>
+                    <div class="type-done">
+                        <p class="type-done-text">This is fine.</p>
+                        <p class="type-done-sub">🔥 You understand now.</p>
+                    </div>
                 </div>
             </div>
-            <p class="phase-subtitle">Deeper into the rabbit hole.</p>
+        </section>
 
-            <div class="phase-content">
-                <p>Most tokens promise everything.</p>
-                <p>$asdfasdfa promises nothing.</p>
-                <p>Don't trust. Verify.</p>
-                <p>Don't extract. Burn.</p>
-                <p>Don't panic. Hold.</p>
-            </div>
-
-            <div class="lock-indicator">
-                <span>&#128274;</span>
-                <span>Section locked</span>
-            </div>
-
-            <div class="interaction" id="type-interaction">
-                <input
-                    type="text"
-                    class="type-input"
-                    id="typeInput"
-                    placeholder="Type the phrase..."
-                    autocomplete="off"
-                    spellcheck="false"
-                >
-                <div class="type-hint" id="typeHint">
-                    Hint: <span id="hintText"></span>
+        <!-- Phase 5 -->
+        <section class="phase locked" id="phase-5">
+            <div class="phase-inner">
+                <span class="badge">Believer</span>
+                <div class="swipe-title">
+                    <h2>The Ecosystem</h2>
+                    <div class="swipe-mask" data-phase="5">
+                        <span class="swipe-hint">Swipe to reveal <span class="swipe-arrow">→</span></span>
+                    </div>
                 </div>
-                <div class="type-complete" id="typeComplete">
-                    <p class="type-complete-text">This is fine.</p>
-                    <p class="type-complete-sub">&#128293; You understand now.</p>
+                <p class="subtitle">Built by builders. For builders.</p>
+                <div class="text">
+                    <p>Tools created by the community.</p>
+                    <p>Anyone can build. The code is open.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Phase 5: Ecosystem -->
-    <section class="phase" id="phase-5" data-phase="5">
-        <div class="phase-inner">
-            <div class="phase-level">Believer</div>
-            <div class="phase-title-wrapper" data-title="5">
-                <h2 class="phase-title">The Ecosystem</h2>
-                <div class="title-overlay">
-                    <span class="swipe-hint">
-                        <span>Swipe to reveal</span>
-                        <span class="swipe-hint-arrow">&rarr;</span>
-                    </span>
-                </div>
-            </div>
-            <p class="phase-subtitle">Built by builders. For builders.</p>
-
-            <div class="phase-content">
-                <p>Tools created by the community.</p>
-                <p>Burn Tracker - Watch burns in real-time.</p>
-                <p>HolDex - Track your position.</p>
-                <p>ASDForecast - Community predictions.</p>
-                <p>Games - Earn while you learn.</p>
-                <p>Anyone can build. The code is open.</p>
-            </div>
-
-            <div class="lock-indicator">
-                <span>&#128274;</span>
-                <span>Section locked</span>
-            </div>
-
-            <div class="interaction">
-                <div class="explore-grid" id="exploreGrid">
+                <div class="explore" id="explore">
                     <div class="explore-item" data-tool="burns">
-                        <span class="explore-icon">&#128293;</span>
-                        <span class="explore-name">Burn Tracker<span class="explore-check">&#10003;</span></span>
+                        <div class="explore-icon">🔥</div>
+                        <span class="explore-name">Burns<span class="explore-check">✓</span></span>
                     </div>
                     <div class="explore-item" data-tool="holdex">
-                        <span class="explore-icon">&#128200;</span>
-                        <span class="explore-name">HolDex<span class="explore-check">&#10003;</span></span>
+                        <div class="explore-icon">📊</div>
+                        <span class="explore-name">HolDex<span class="explore-check">✓</span></span>
                     </div>
                     <div class="explore-item" data-tool="forecast">
-                        <span class="explore-icon">&#127919;</span>
-                        <span class="explore-name">ASDForecast<span class="explore-check">&#10003;</span></span>
+                        <div class="explore-icon">🎯</div>
+                        <span class="explore-name">Forecast<span class="explore-check">✓</span></span>
                     </div>
                     <div class="explore-item" data-tool="games">
-                        <span class="explore-icon">&#127918;</span>
-                        <span class="explore-name">Games<span class="explore-check">&#10003;</span></span>
+                        <div class="explore-icon">🎮</div>
+                        <span class="explore-name">Games<span class="explore-check">✓</span></span>
                     </div>
                 </div>
-                <div class="explore-complete" id="exploreComplete">
-                    <p>You know the ecosystem. Ready to build?</p>
-                </div>
+                <p class="explore-done">You know the ecosystem. Ready to build?</p>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Final Section -->
-    <section class="final-section" id="finalSection">
-        <div class="final-inner">
-            <div class="final-icon">&#128293;</div>
-            <h2 class="final-title">You're a Believer now.</h2>
-            <p class="final-subtitle">
-                You understand. You verify. You burn.<br>
-                Ready to build with the family?
-            </p>
-            <a href="deep-learn.html" class="final-cta">Become a Builder &rarr;</a>
-            <a href="/" class="final-back">Return to Hub</a>
-        </div>
-    </section>
+        <!-- Final -->
+        <section class="final" id="final">
+            <div>
+                <div class="final-icon">🔥</div>
+                <h2 class="final-title">You're a Believer now.</h2>
+                <p class="final-sub">You understand. You verify. You burn.<br>Ready to build with the family?</p>
+                <a href="deep-learn.html" class="final-cta">Become a Builder →</a>
+                <a href="/" class="final-back">Return to Hub</a>
+            </div>
+        </section>
+    </div>
 
     <script>
-        // ============================================
-        // STATE
-        // ============================================
+    (function() {
+        'use strict';
+
+        // === CONFIG ===
+        const DEBUG = true;
+        const STORAGE_KEY = 'asdf_learn_v2';
+        const PHASES = 5;
+        const TARGET = 'This is fine';
+
+        // === LOGGER ===
+        const log = (...args) => DEBUG && console.log('[Learn]', ...args);
+
+        // === STATE ===
         const state = {
-            completedPhases: [],
-            currentLevel: 'Newcomer'
+            done: new Set(),
+            titles: new Set(),
+            burns: 0,
+            tools: new Set(),
+
+            load() {
+                try {
+                    const s = localStorage.getItem(STORAGE_KEY);
+                    if (s) {
+                        const d = JSON.parse(s);
+                        this.done = new Set(d.done || []);
+                        this.titles = new Set(d.titles || []);
+                    }
+                } catch(e) { log('Load error', e); }
+                log('State loaded', this.done);
+            },
+
+            save() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        done: [...this.done],
+                        titles: [...this.titles]
+                    }));
+                } catch(e) { log('Save error', e); }
+            },
+
+            complete(n) {
+                if (this.done.has(n)) return false;
+                this.done.add(n);
+                this.save();
+                log('Completed phase', n);
+                return true;
+            }
         };
 
-        const levels = {
-            0: 'Newcomer',
-            1: 'Newcomer',
-            2: 'Initiate',
-            3: 'Initiate',
-            4: 'Believer',
-            5: 'Believer'
-        };
+        // === DOM ===
+        const $ = s => document.querySelector(s);
+        const $$ = s => [...document.querySelectorAll(s)];
 
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        function updateLevel() {
-            state.currentLevel = levels[state.completedPhases.length] || 'Believer';
-            document.getElementById('levelText').textContent = state.currentLevel;
-        }
+        // === UI ===
+        function updateUI() {
+            // Progress
+            $('#progress').style.width = (state.done.size / PHASES * 100) + '%';
 
-        function updateProgress() {
-            const progress = (state.completedPhases.length / 5) * 100;
-            document.getElementById('progressFill').style.width = `${progress}%`;
-        }
+            // Level
+            const labels = ['Newcomer','Newcomer','Initiate','Initiate','Believer','Believer'];
+            $('#level').textContent = labels[state.done.size] || 'Believer';
 
-        function unlockPhase(phaseNum) {
-            const phase = document.getElementById(`phase-${phaseNum}`);
-            if (phase) {
-                phase.classList.add('unlocked');
-            }
-        }
-
-        // Scroll to a specific phase
-        function scrollToPhase(phaseNum) {
-            const phase = document.getElementById(`phase-${phaseNum}`);
-            if (phase) {
-                phase.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function completePhase(phaseNum) {
-            if (state.completedPhases.includes(phaseNum)) return;
-
-            state.completedPhases.push(phaseNum);
-            const phase = document.getElementById(`phase-${phaseNum}`);
-            if (phase) {
-                phase.classList.add('completed');
-            }
-
-            updateLevel();
-            updateProgress();
-
-            // Unlock next phase and scroll to it
-            if (phaseNum < 5) {
-                unlockPhase(phaseNum + 1);
-                // Small delay then scroll to next phase
-                setTimeout(() => {
-                    scrollToPhase(phaseNum + 1);
-                }, 500);
-            }
-
-            // Show final section when all complete
-            if (state.completedPhases.length === 5) {
-                document.getElementById('finalSection').classList.add('show');
-                setTimeout(() => {
-                    document.getElementById('finalSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 500);
-            }
-
-            // Save state
-            localStorage.setItem('asdf_learn_state', JSON.stringify(state));
-        }
-
-        // ============================================
-        // SCROLL BLOCKING
-        // ============================================
-        function initScrollBlocking() {
-            // Get the highest unlocked phase that is not yet completed
-            function getCurrentRequiredPhase() {
-                for (let i = 1; i <= 5; i++) {
-                    if (!state.completedPhases.includes(i)) {
-                        return i;
-                    }
+            // Phases
+            $$('.phase').forEach((p, i) => {
+                const n = i + 1;
+                p.classList.remove('locked', 'active', 'completed');
+                if (state.done.has(n)) {
+                    p.classList.add('completed');
+                } else if (n === 1 || state.done.has(n - 1)) {
+                    p.classList.add('active');
+                } else {
+                    p.classList.add('locked');
                 }
-                return null; // All completed
-            }
 
-            // Block wheel scroll if trying to go past incomplete phase
-            window.addEventListener('wheel', (e) => {
-                const requiredPhase = getCurrentRequiredPhase();
-                if (!requiredPhase) return; // All done, allow scroll
-
-                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
-                if (!currentPhaseEl) return;
-
-                const rect = currentPhaseEl.getBoundingClientRect();
-                const isScrollingDown = e.deltaY > 0;
-
-                // If scrolling down and the required phase is visible but not completed
-                if (isScrollingDown && rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
-                    // Check if we're trying to scroll past the phase
-                    const nextPhase = document.getElementById(`phase-${requiredPhase + 1}`) ||
-                                      document.getElementById('finalSection');
-                    if (nextPhase) {
-                        const nextRect = nextPhase.getBoundingClientRect();
-                        // If next section is about to come into view, block
-                        if (nextRect.top < window.innerHeight) {
-                            e.preventDefault();
-                            // Snap back to current required phase
-                            currentPhaseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    }
-                }
-            }, { passive: false });
-
-            // Also block keyboard scrolling
-            window.addEventListener('keydown', (e) => {
-                const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Space', 'End'];
-                if (!scrollKeys.includes(e.key)) return;
-
-                const requiredPhase = getCurrentRequiredPhase();
-                if (!requiredPhase) return;
-
-                const isScrollingDown = ['ArrowDown', 'PageDown', 'Space', 'End'].includes(e.key);
-                if (!isScrollingDown) return; // Allow scrolling up
-
-                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
-                if (!currentPhaseEl) return;
-
-                const rect = currentPhaseEl.getBoundingClientRect();
-                // If phase is visible and not completed, block down scrolling
-                if (rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
-                    e.preventDefault();
+                // Title masks
+                const mask = p.querySelector('.swipe-mask');
+                if (mask && state.titles.has(n)) {
+                    mask.classList.add('done');
                 }
             });
 
-            // Touch scroll blocking
-            let touchStartY = 0;
-            window.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-
-            window.addEventListener('touchmove', (e) => {
-                const requiredPhase = getCurrentRequiredPhase();
-                if (!requiredPhase) return;
-
-                const touchY = e.touches[0].clientY;
-                const isScrollingDown = touchY < touchStartY;
-                if (!isScrollingDown) return;
-
-                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
-                if (!currentPhaseEl) return;
-
-                const rect = currentPhaseEl.getBoundingClientRect();
-                const nextPhase = document.getElementById(`phase-${requiredPhase + 1}`) ||
-                                  document.getElementById('finalSection');
-
-                if (nextPhase && rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
-                    const nextRect = nextPhase.getBoundingClientRect();
-                    if (nextRect.top < window.innerHeight * 1.2) {
-                        e.preventDefault();
-                    }
-                }
-            }, { passive: false });
+            // Final
+            if (state.done.size >= PHASES) {
+                $('#final').classList.add('show');
+            }
         }
 
-        // ============================================
-        // PHASE 1: SCROLL
-        // ============================================
-        let phase1Timer = null;
+        function scrollTo(n) {
+            const el = $(`#phase-${n}`) || $('#final');
+            if (el) {
+                log('Scrolling to', n);
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
 
+        // === TITLE SWIPE ===
+        function initTitles() {
+            $$('.swipe-mask').forEach(mask => {
+                const n = parseInt(mask.dataset.phase);
+                let dragging = false, startX = 0, x = 0;
+
+                const start = e => {
+                    if (state.titles.has(n)) return;
+                    dragging = true;
+                    startX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                    mask.classList.add('dragging');
+                    log('Title', n, 'drag start');
+                    e.preventDefault();
+                };
+
+                const move = e => {
+                    if (!dragging) return;
+                    const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                    x = Math.max(0, cx - startX);
+                    mask.style.transform = `translateX(${x}px)`;
+
+                    const w = mask.parentElement.offsetWidth;
+                    if (x > w * 0.5) {
+                        dragging = false;
+                        state.titles.add(n);
+                        state.save();
+                        mask.classList.remove('dragging');
+                        mask.classList.add('done');
+                        log('Title', n, 'done');
+                    }
+                };
+
+                const end = () => {
+                    if (!dragging) return;
+                    dragging = false;
+                    mask.classList.remove('dragging');
+                    const w = mask.parentElement.offsetWidth;
+                    if (x < w * 0.5) {
+                        mask.style.transition = 'transform 0.2s';
+                        mask.style.transform = 'translateX(0)';
+                        setTimeout(() => mask.style.transition = '', 200);
+                    }
+                    x = 0;
+                };
+
+                mask.addEventListener('mousedown', start);
+                mask.addEventListener('touchstart', start, { passive: false });
+                window.addEventListener('mousemove', move);
+                window.addEventListener('touchmove', move, { passive: false });
+                window.addEventListener('mouseup', end);
+                window.addEventListener('touchend', end);
+            });
+            log('Titles initialized');
+        }
+
+        // === PHASE 1: AUTO ===
         function initPhase1() {
-            const phase1 = document.getElementById('phase-1');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !state.completedPhases.includes(1)) {
-                        // Auto-complete after 2 seconds of viewing
-                        phase1Timer = setTimeout(() => {
-                            completePhase(1);
+            const el = $('#phase-1');
+            let timer;
+
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting && !state.done.has(1)) {
+                        timer = setTimeout(() => {
+                            if (state.complete(1)) {
+                                updateUI();
+                                setTimeout(() => scrollTo(2), 400);
+                            }
                         }, 2000);
                     } else {
-                        clearTimeout(phase1Timer);
+                        clearTimeout(timer);
                     }
                 });
             }, { threshold: 0.5 });
 
-            observer.observe(phase1);
+            obs.observe(el);
+            log('Phase 1 ready');
         }
 
-        // ============================================
-        // TITLE SWIPE INTERACTIONS (Pointer Events)
-        // ============================================
-        function initTitleSwipes() {
-            document.querySelectorAll('.phase-title-wrapper').forEach(wrapper => {
-                const overlay = wrapper.querySelector('.title-overlay');
-                const phase = wrapper.closest('.phase');
-                if (!overlay) return;
-
-                let isDragging = false;
-                let startX = 0;
-                let currentOffset = 0;
-
-                wrapper.addEventListener('pointerdown', (e) => {
-                    if (phase.classList.contains('title-revealed')) return;
-                    isDragging = true;
-                    startX = e.clientX;
-                    wrapper.setPointerCapture(e.pointerId);
-                    wrapper.style.cursor = 'grabbing';
-                    e.preventDefault();
-                });
-
-                wrapper.addEventListener('pointermove', (e) => {
-                    if (!isDragging) return;
-                    e.preventDefault();
-
-                    const diff = e.clientX - startX;
-                    const wrapperWidth = wrapper.offsetWidth;
-                    currentOffset = Math.max(0, Math.min(wrapperWidth, diff));
-
-                    overlay.style.transform = `translateX(${currentOffset}px)`;
-
-                    if (currentOffset >= wrapperWidth * 0.6) {
-                        isDragging = false;
-                        phase.classList.add('title-revealed');
-                        overlay.style.transition = 'transform 0.3s ease';
-                        overlay.style.transform = 'translateX(100%)';
-                    }
-                });
-
-                wrapper.addEventListener('pointerup', (e) => {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    wrapper.style.cursor = 'grab';
-
-                    const wrapperWidth = wrapper.offsetWidth;
-                    if (currentOffset < wrapperWidth * 0.6) {
-                        overlay.style.transition = 'transform 0.3s ease';
-                        overlay.style.transform = 'translateX(0)';
-                        setTimeout(() => {
-                            overlay.style.transition = '';
-                        }, 300);
-                    }
-                    currentOffset = 0;
-                });
-
-                wrapper.addEventListener('pointercancel', () => {
-                    isDragging = false;
-                    wrapper.style.cursor = 'grab';
-                    overlay.style.transform = 'translateX(0)';
-                    currentOffset = 0;
-                });
-            });
-        }
-
-        // ============================================
-        // PHASE 2: DRAG (Pointer Events)
-        // ============================================
+        // === PHASE 2: DRAG ===
         function initPhase2() {
-            const handle = document.getElementById('dragHandle');
-            const reveal = document.getElementById('dragReveal');
-            const track = document.getElementById('dragTrack');
-            const complete = document.getElementById('dragComplete');
+            const slider = $('#drag-slider');
+            const handle = $('#drag-handle');
+            const bg = $('#drag-bg');
+            if (!handle) return log('Phase 2 elements missing');
 
-            if (!handle || !track) {
-                console.error('Phase 2 elements not found');
-                return;
-            }
+            let dragging = false, startX = 0, x = 0;
 
-            const hint = track.querySelector('.drag-hint');
-            let isDragging = false;
-            let startX = 0;
-            let currentX = 0;
-
-            handle.addEventListener('pointerdown', (e) => {
-                if (state.completedPhases.includes(2)) return;
-                isDragging = true;
-                startX = e.clientX;
-                handle.setPointerCapture(e.pointerId);
-                handle.style.cursor = 'grabbing';
+            const start = e => {
+                if (state.done.has(2)) return;
+                dragging = true;
+                startX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                handle.classList.add('dragging');
+                log('Drag start');
                 e.preventDefault();
-            });
+            };
 
-            handle.addEventListener('pointermove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
+            const move = e => {
+                if (!dragging) return;
+                const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                const max = slider.offsetWidth - handle.offsetWidth - 8;
+                x = Math.max(0, Math.min(max, cx - startX));
+                const p = x / max;
 
-                const trackWidth = track.offsetWidth;
-                const maxDrag = trackWidth - 64; // track width - handle width - padding
-                const diff = e.clientX - startX;
+                handle.style.transform = `translateX(${x}px)`;
+                bg.style.transform = `scaleX(${p})`;
 
-                currentX = Math.max(0, Math.min(maxDrag, diff));
-                const progress = currentX / maxDrag;
-
-                handle.style.transform = `translateY(-50%) translateX(${currentX}px)`;
-                reveal.style.clipPath = `inset(0 ${100 - progress * 100}% 0 0)`;
-                if (hint) hint.style.opacity = 1 - progress;
-
-                if (progress >= 0.9) {
-                    isDragging = false;
-                    track.style.display = 'none';
-                    complete.style.display = 'flex';
-                    completePhase(2);
+                if (p >= 0.9) {
+                    dragging = false;
+                    slider.classList.add('done');
+                    handle.classList.remove('dragging');
+                    if (state.complete(2)) {
+                        updateUI();
+                        setTimeout(() => scrollTo(3), 400);
+                    }
                 }
-            });
+            };
 
-            handle.addEventListener('pointerup', (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-                handle.style.cursor = 'grab';
+            const end = () => {
+                if (!dragging) return;
+                dragging = false;
+                handle.classList.remove('dragging');
+                handle.style.transition = 'transform 0.2s';
+                handle.style.transform = 'translateX(0)';
+                bg.style.transition = 'transform 0.2s';
+                bg.style.transform = 'scaleX(0)';
+                setTimeout(() => {
+                    handle.style.transition = '';
+                    bg.style.transition = '';
+                }, 200);
+                x = 0;
+            };
 
-                const trackWidth = track.offsetWidth;
-                const maxDrag = trackWidth - 64;
-                const progress = currentX / maxDrag;
+            handle.addEventListener('mousedown', start);
+            handle.addEventListener('touchstart', start, { passive: false });
+            window.addEventListener('mousemove', move);
+            window.addEventListener('touchmove', move, { passive: false });
+            window.addEventListener('mouseup', end);
+            window.addEventListener('touchend', end);
 
-                if (progress < 0.9) {
-                    handle.style.transition = 'transform 0.3s ease';
-                    reveal.style.transition = 'clip-path 0.3s ease';
-
-                    handle.style.transform = 'translateY(-50%) translateX(0)';
-                    reveal.style.clipPath = 'inset(0 100% 0 0)';
-                    if (hint) hint.style.opacity = 1;
-
-                    setTimeout(() => {
-                        handle.style.transition = '';
-                        reveal.style.transition = '';
-                    }, 300);
-                    currentX = 0;
-                }
-            });
-
-            handle.addEventListener('pointercancel', () => {
-                isDragging = false;
-                handle.style.cursor = 'grab';
-                handle.style.transform = 'translateY(-50%) translateX(0)';
-                reveal.style.clipPath = 'inset(0 100% 0 0)';
-                if (hint) hint.style.opacity = 1;
-                currentX = 0;
-            });
+            log('Phase 2 ready');
         }
 
-        // ============================================
-        // PHASE 3: BURN
-        // ============================================
+        // === PHASE 3: BURN ===
         function initPhase3() {
-            const burnBox = document.getElementById('burnBox');
-            const burnCount = document.getElementById('burnCount');
-            const burnContent = document.getElementById('burnContent');
-            const burnComplete = document.getElementById('burnComplete');
-            const dots = document.querySelectorAll('.burn-dot');
+            const box = $('#burn-box');
+            if (!box) return;
 
-            let count = 0;
-            const required = 5;
+            const dots = $$('.burn-dot', box);
+            const count = $('#burn-count');
 
-            burnBox.addEventListener('click', (e) => {
-                if (state.completedPhases.includes(3)) return;
+            box.addEventListener('click', e => {
+                if (state.done.has(3)) return;
 
-                // Create burn emoji at click position
-                const rect = burnBox.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                state.burns++;
+                log('Burn click', state.burns);
 
-                const emoji = document.createElement('span');
-                emoji.className = 'burn-emoji';
-                emoji.textContent = '🔥';
-                emoji.style.left = `${x - 12}px`;
-                emoji.style.top = `${y - 12}px`;
-                burnBox.appendChild(emoji);
+                if (dots[state.burns - 1]) dots[state.burns - 1].classList.add('on');
+                if (count) count.textContent = state.burns;
 
-                setTimeout(() => emoji.remove(), 1000);
+                // Emoji
+                const em = document.createElement('span');
+                em.className = 'burn-emoji';
+                em.textContent = '🔥';
+                em.style.left = e.offsetX + 'px';
+                em.style.top = e.offsetY + 'px';
+                box.appendChild(em);
+                setTimeout(() => em.remove(), 800);
 
-                // Update count
-                count++;
-                burnCount.textContent = count;
-                dots[count - 1].classList.add('filled');
-
-                if (count >= required) {
-                    setTimeout(() => {
-                        burnContent.style.display = 'none';
-                        burnComplete.style.display = 'flex';
-                        burnBox.classList.add('complete');
-                        completePhase(3);
-                    }, 300);
+                if (state.burns >= 5) {
+                    box.classList.add('done');
+                    if (state.complete(3)) {
+                        updateUI();
+                        setTimeout(() => scrollTo(4), 400);
+                    }
                 }
             });
+
+            log('Phase 3 ready');
         }
 
-        // ============================================
-        // PHASE 4: TYPE
-        // ============================================
+        // === PHASE 4: TYPE ===
         function initPhase4() {
-            const input = document.getElementById('typeInput');
-            const hint = document.getElementById('hintText');
-            const typeInteraction = document.getElementById('type-interaction');
-            const typeComplete = document.getElementById('typeComplete');
-            const target = 'This is fine';
+            const input = $('#type-input');
+            const hint = $('#type-hint');
+            const wrap = $('#type-wrap');
+            if (!input) return;
 
-            // Render hint
-            hint.innerHTML = target.split('').map(char =>
-                `<span class="unmatched">${char}</span>`
-            ).join('');
+            hint.innerHTML = TARGET.split('').map(c => `<span>${c}</span>`).join('');
 
             input.addEventListener('input', () => {
-                const value = input.value;
+                if (state.done.has(4)) return;
 
-                // Update hint
+                const v = input.value;
                 const spans = hint.querySelectorAll('span');
-                spans.forEach((span, i) => {
-                    if (value[i]?.toLowerCase() === target[i].toLowerCase()) {
-                        span.classList.add('matched');
-                        span.classList.remove('unmatched');
-                    } else {
-                        span.classList.remove('matched');
-                        span.classList.add('unmatched');
-                    }
+
+                spans.forEach((s, i) => {
+                    s.classList.toggle('on', v[i]?.toLowerCase() === TARGET[i]?.toLowerCase());
                 });
 
-                // Check completion
-                if (value.toLowerCase() === target.toLowerCase()) {
-                    input.style.display = 'none';
-                    document.getElementById('typeHint').style.display = 'none';
-                    typeComplete.style.display = 'block';
-                    completePhase(4);
-                } else if (value.length >= target.length && value.toLowerCase() !== target.toLowerCase()) {
+                if (v.toLowerCase() === TARGET.toLowerCase()) {
+                    wrap.classList.add('done');
+                    if (state.complete(4)) {
+                        updateUI();
+                        setTimeout(() => scrollTo(5), 400);
+                    }
+                } else if (v.length >= TARGET.length) {
                     input.classList.add('shake');
-                    setTimeout(() => input.classList.remove('shake'), 400);
+                    setTimeout(() => input.classList.remove('shake'), 300);
                 }
             });
+
+            log('Phase 4 ready');
         }
 
-        // ============================================
-        // PHASE 5: EXPLORE
-        // ============================================
+        // === PHASE 5: EXPLORE ===
         function initPhase5() {
-            const grid = document.getElementById('exploreGrid');
-            const complete = document.getElementById('exploreComplete');
-            const items = grid.querySelectorAll('.explore-item');
+            const grid = $('#explore');
+            if (!grid) return;
 
-            const explored = new Set();
+            const items = $$('.explore-item', grid);
 
             items.forEach(item => {
                 item.addEventListener('click', () => {
-                    if (state.completedPhases.includes(5)) return;
+                    if (state.done.has(5)) return;
 
-                    const tool = item.dataset.tool;
-                    if (!explored.has(tool)) {
-                        explored.add(tool);
-                        item.classList.add('explored');
+                    const t = item.dataset.tool;
+                    if (!state.tools.has(t)) {
+                        state.tools.add(t);
+                        item.classList.add('on');
+                        log('Explored', t, state.tools.size);
 
-                        if (explored.size === items.length) {
-                            setTimeout(() => {
-                                complete.style.display = 'block';
-                                completePhase(5);
-                            }, 300);
+                        if (state.tools.size >= items.length) {
+                            grid.classList.add('done');
+                            if (state.complete(5)) {
+                                updateUI();
+                                setTimeout(() => {
+                                    $('#final').classList.add('show');
+                                    $('#final').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 400);
+                            }
                         }
                     }
                 });
             });
+
+            log('Phase 5 ready');
         }
 
-        // ============================================
-        // LOAD STATE
-        // ============================================
-        function loadState() {
-            const saved = localStorage.getItem('asdf_learn_state');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                state.completedPhases = parsed.completedPhases || [];
-                state.currentLevel = parsed.currentLevel || 'Newcomer';
+        // === SCROLL BLOCKING ===
+        function initScrollBlock() {
+            const container = $('#container');
 
-                // Restore UI state
-                state.completedPhases.forEach(phaseNum => {
-                    const phase = document.getElementById(`phase-${phaseNum}`);
-                    if (phase) {
-                        phase.classList.add('unlocked', 'completed');
-                    }
-                    // Unlock next phase
-                    if (phaseNum < 5) {
-                        unlockPhase(phaseNum + 1);
+            container.addEventListener('scroll', () => {
+                const phases = $$('.phase');
+                let visible = 1;
+
+                phases.forEach((p, i) => {
+                    const r = p.getBoundingClientRect();
+                    if (r.top < window.innerHeight / 2 && r.bottom > window.innerHeight / 2) {
+                        visible = i + 1;
                     }
                 });
 
-                updateLevel();
-                updateProgress();
-
-                if (state.completedPhases.length === 5) {
-                    document.getElementById('finalSection').classList.add('show');
+                // Block if previous not done
+                if (visible > 1 && !state.done.has(visible - 1)) {
+                    scrollTo(visible - 1);
                 }
-            }
+            }, { passive: true });
+
+            log('Scroll blocking ready');
         }
 
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState();
-            initTitleSwipes();
-            initScrollBlocking();
+        // === INIT ===
+        function init() {
+            log('Init...');
+
+            state.load();
+            updateUI();
+
+            initTitles();
             initPhase1();
             initPhase2();
             initPhase3();
             initPhase4();
             initPhase5();
-        });
+            initScrollBlock();
 
-        // Prevent FOUC - show page only when fully loaded
-        window.addEventListener('load', () => {
-            document.body.classList.add('loaded');
-        });
+            document.body.classList.add('ready');
+            log('Ready!');
+        }
+
+        // Start
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // Debug
+        window.LearnDebug = { state, scrollTo, updateUI };
+
+    })();
     </script>
 </body>
 </html>

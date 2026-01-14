@@ -91,7 +91,7 @@
 html,
 body {
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 body.hub-majestic {
@@ -192,6 +192,441 @@ body.hub-majestic {
   }
 }
 
+/* ============================================
+   RAGNAR FIRE PARTICLES SYSTEM
+   ============================================ */
+
+.hub-fire-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fire-ember {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Large floating embers */
+.fire-ember--large {
+  width: 6px;
+  height: 6px;
+  background: var(--fire-core);
+  box-shadow:
+    0 0 10px var(--fire-core),
+    0 0 20px var(--fire-mid),
+    0 0 30px var(--fire-outer);
+  animation: ember-rise-large 8s ease-out infinite;
+}
+
+/* Medium embers */
+.fire-ember--medium {
+  width: 4px;
+  height: 4px;
+  background: var(--amber-400);
+  box-shadow:
+    0 0 6px var(--amber-400),
+    0 0 12px var(--fire-mid);
+  animation: ember-rise-medium 6s ease-out infinite;
+}
+
+/* Small sparks */
+.fire-ember--small {
+  width: 2px;
+  height: 2px;
+  background: var(--gold-300);
+  box-shadow: 0 0 4px var(--gold-400);
+  animation: ember-rise-small 4s ease-out infinite;
+}
+
+/* Ember positions and delays */
+.fire-ember:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+}
+.fire-ember:nth-child(2) {
+  left: 20%;
+  animation-delay: 1.2s;
+}
+.fire-ember:nth-child(3) {
+  left: 30%;
+  animation-delay: 0.5s;
+}
+.fire-ember:nth-child(4) {
+  left: 40%;
+  animation-delay: 2.1s;
+}
+.fire-ember:nth-child(5) {
+  left: 50%;
+  animation-delay: 0.8s;
+}
+.fire-ember:nth-child(6) {
+  left: 60%;
+  animation-delay: 1.8s;
+}
+.fire-ember:nth-child(7) {
+  left: 70%;
+  animation-delay: 0.3s;
+}
+.fire-ember:nth-child(8) {
+  left: 80%;
+  animation-delay: 2.5s;
+}
+.fire-ember:nth-child(9) {
+  left: 90%;
+  animation-delay: 1.5s;
+}
+.fire-ember:nth-child(10) {
+  left: 15%;
+  animation-delay: 3.2s;
+}
+.fire-ember:nth-child(11) {
+  left: 35%;
+  animation-delay: 2.8s;
+}
+.fire-ember:nth-child(12) {
+  left: 55%;
+  animation-delay: 3.8s;
+}
+.fire-ember:nth-child(13) {
+  left: 75%;
+  animation-delay: 4.2s;
+}
+.fire-ember:nth-child(14) {
+  left: 85%;
+  animation-delay: 3.5s;
+}
+.fire-ember:nth-child(15) {
+  left: 25%;
+  animation-delay: 4.8s;
+}
+.fire-ember:nth-child(16) {
+  left: 45%;
+  animation-delay: 5.2s;
+}
+.fire-ember:nth-child(17) {
+  left: 65%;
+  animation-delay: 4.5s;
+}
+.fire-ember:nth-child(18) {
+  left: 5%;
+  animation-delay: 5.8s;
+}
+
+@keyframes ember-rise-large {
+  0% {
+    bottom: -20px;
+    opacity: 0;
+    transform: translateX(0) scale(0.5);
+  }
+  10% {
+    opacity: 0.9;
+    transform: translateX(10px) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-15px) scale(0.9);
+  }
+  100% {
+    bottom: 110%;
+    opacity: 0;
+    transform: translateX(20px) scale(0.3);
+  }
+}
+
+@keyframes ember-rise-medium {
+  0% {
+    bottom: -10px;
+    opacity: 0;
+    transform: translateX(0) scale(0.5);
+  }
+  15% {
+    opacity: 0.8;
+    transform: translateX(-8px) scale(1);
+  }
+  60% {
+    opacity: 0.5;
+    transform: translateX(12px) scale(0.8);
+  }
+  100% {
+    bottom: 105%;
+    opacity: 0;
+    transform: translateX(-5px) scale(0.2);
+  }
+}
+
+@keyframes ember-rise-small {
+  0% {
+    bottom: -5px;
+    opacity: 0;
+    transform: translateX(0);
+  }
+  20% {
+    opacity: 0.7;
+    transform: translateX(5px);
+  }
+  70% {
+    opacity: 0.4;
+    transform: translateX(-8px);
+  }
+  100% {
+    bottom: 100%;
+    opacity: 0;
+    transform: translateX(3px);
+  }
+}
+
+/* Bottom fire glow effect */
+.hub-fire-base {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 107, 53, 0.15) 0%,
+    rgba(234, 78, 51, 0.08) 30%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hub-fire-base::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 120px;
+  background: radial-gradient(
+    ellipse 80% 100% at 50% 100%,
+    rgba(255, 107, 53, 0.25) 0%,
+    rgba(196, 30, 58, 0.1) 50%,
+    transparent 100%
+  );
+  animation: fire-base-pulse 3s ease-in-out infinite;
+}
+
+@keyframes fire-base-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.15);
+  }
+}
+
+/* ============================================
+   RAGNAR FLAME RING - Center Fire Effect
+   ============================================ */
+
+.hub-flame-ring {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.flame {
+  position: absolute;
+  width: 12px;
+  height: 40px;
+  background: linear-gradient(
+    to top,
+    var(--fire-outer) 0%,
+    var(--fire-mid) 30%,
+    var(--fire-core) 60%,
+    var(--gold-300) 100%
+  );
+  border-radius: 50% 50% 20% 20%;
+  opacity: 0;
+  transform-origin: bottom center;
+  filter: blur(1px);
+}
+
+.hub-ready .flame {
+  animation: flame-dance 1.5s ease-in-out infinite;
+}
+
+/* Position flames around the ring */
+.flame:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(0deg);
+  animation-delay: 0s;
+}
+.flame:nth-child(2) {
+  top: 3%;
+  left: 70%;
+  transform: rotate(25deg);
+  animation-delay: 0.1s;
+}
+.flame:nth-child(3) {
+  top: 15%;
+  right: 8%;
+  transform: rotate(50deg);
+  animation-delay: 0.2s;
+}
+.flame:nth-child(4) {
+  top: 35%;
+  right: 0;
+  transform: rotate(75deg);
+  animation-delay: 0.3s;
+}
+.flame:nth-child(5) {
+  top: 55%;
+  right: 0;
+  transform: rotate(105deg);
+  animation-delay: 0.4s;
+}
+.flame:nth-child(6) {
+  bottom: 20%;
+  right: 8%;
+  transform: rotate(130deg);
+  animation-delay: 0.5s;
+}
+.flame:nth-child(7) {
+  bottom: 5%;
+  right: 25%;
+  transform: rotate(155deg);
+  animation-delay: 0.6s;
+}
+.flame:nth-child(8) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  animation-delay: 0.7s;
+}
+.flame:nth-child(9) {
+  bottom: 5%;
+  left: 25%;
+  transform: rotate(205deg);
+  animation-delay: 0.8s;
+}
+.flame:nth-child(10) {
+  bottom: 20%;
+  left: 8%;
+  transform: rotate(230deg);
+  animation-delay: 0.9s;
+}
+.flame:nth-child(11) {
+  top: 55%;
+  left: 0;
+  transform: rotate(255deg);
+  animation-delay: 1s;
+}
+.flame:nth-child(12) {
+  top: 35%;
+  left: 0;
+  transform: rotate(285deg);
+  animation-delay: 1.1s;
+}
+.flame:nth-child(13) {
+  top: 15%;
+  left: 8%;
+  transform: rotate(310deg);
+  animation-delay: 1.2s;
+}
+.flame:nth-child(14) {
+  top: 3%;
+  left: 25%;
+  transform: rotate(335deg);
+  animation-delay: 1.3s;
+}
+
+@keyframes flame-dance {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(0.6) scaleX(0.8);
+  }
+  25% {
+    opacity: 0.7;
+    transform: scaleY(1.1) scaleX(1) translateY(-5px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scaleY(0.9) scaleX(0.9) translateY(-2px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scaleY(1.2) scaleX(1.1) translateY(-8px);
+  }
+}
+
+/* Flame inner glow */
+.flame::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(to top, transparent 0%, var(--gold-200) 70%, white 100%);
+  border-radius: inherit;
+  opacity: 0.6;
+}
+
+/* Center flame burst on hover */
+.hub-center:hover ~ .hub-flame-ring .flame {
+  animation-duration: 0.8s;
+}
+
+/* Side fire wisps */
+.hub-fire-wisp {
+  position: fixed;
+  width: 100px;
+  height: 300px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hub-fire-wisp--left {
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, transparent 60%);
+  animation: wisp-sway-left 8s ease-in-out infinite;
+}
+
+.hub-fire-wisp--right {
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(-135deg, rgba(255, 107, 53, 0.2) 0%, transparent 60%);
+  animation: wisp-sway-right 8s ease-in-out infinite;
+}
+
+@keyframes wisp-sway-left {
+  0%,
+  100% {
+    transform: skewX(-5deg) scaleY(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: skewX(5deg) scaleY(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes wisp-sway-right {
+  0%,
+  100% {
+    transform: skewX(5deg) scaleY(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: skewX(-5deg) scaleY(1.1);
+    opacity: 0.8;
+  }
+}
+
 /* Subtle grain texture */
 .hub-grain {
   position: fixed;
@@ -209,12 +644,14 @@ body.hub-majestic {
 .hub-container {
   position: relative;
   z-index: 10;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 20px;
+  overflow: hidden;
 }
 
 /* ============================================
@@ -223,12 +660,12 @@ body.hub-majestic {
 
 .hub-radial {
   position: relative;
-  width: 100%;
-  max-width: 900px;
-  aspect-ratio: 1;
+  width: min(90vw, 70vh, 700px);
+  height: min(90vw, 70vh, 700px);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 /* Center element - GPU optimized */
@@ -945,16 +1382,17 @@ body.hub-majestic {
 
 .hub-footer {
   position: fixed;
-  bottom: 24px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.1em;
   color: var(--text-warm-ghost);
+  z-index: 100;
 }
 
 .hub-footer a {
@@ -978,45 +1416,42 @@ body.hub-majestic {
    ============================================ */
 
 @media (max-width: 1024px) {
-  .hub-radial {
-    max-width: 700px;
-  }
-
   .hub-portal {
-    width: 120px;
-    height: 120px;
-    padding: 16px;
+    width: 110px;
+    height: 110px;
+    padding: 14px;
   }
 
   .hub-portal-icon {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .hub-center {
-    width: 160px;
-    height: 160px;
+    width: 150px;
+    height: 150px;
   }
 }
 
 @media (max-width: 768px) {
   .hub-radial {
-    max-width: 500px;
+    width: min(85vw, 65vh, 450px);
+    height: min(85vw, 65vh, 450px);
   }
 
   .hub-portal {
-    width: 100px;
-    height: 100px;
-    padding: 12px;
-    border-radius: 18px;
+    width: 80px;
+    height: 80px;
+    padding: 10px;
+    border-radius: 16px;
   }
 
   .hub-portal-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
+    font-size: 22px;
+    margin-bottom: 6px;
   }
 
   .hub-portal-title {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .hub-portal-subtitle {
@@ -1024,16 +1459,63 @@ body.hub-majestic {
   }
 
   .hub-center {
-    width: 130px;
-    height: 130px;
+    width: 110px;
+    height: 110px;
   }
 
   .hub-center-logo {
-    font-size: 36px;
+    font-size: 32px;
+  }
+
+  .hub-center-title {
+    font-size: 9px;
   }
 
   .hub-tools-zone {
-    width: 250px;
+    width: 200px;
+    height: 140px;
+  }
+
+  .hub-tools-trigger {
+    width: 120px;
+    height: 80px;
+  }
+
+  .hub-tool-item {
+    width: 55px;
+    height: 55px;
+  }
+}
+
+@media (max-height: 600px) {
+  .hub-radial {
+    width: min(80vw, 55vh, 400px);
+    height: min(80vw, 55vh, 400px);
+  }
+
+  .hub-center {
+    width: 100px;
+    height: 100px;
+  }
+
+  .hub-portal {
+    width: 70px;
+    height: 70px;
+    padding: 8px;
+  }
+
+  .hub-portal-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .hub-portal-title {
+    font-size: 8px;
+  }
+
+  .hub-footer {
+    bottom: 8px;
+    font-size: 8px;
   }
 }
 
