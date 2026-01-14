@@ -1181,25 +1181,25 @@ body.hub-majestic {
   letter-spacing: 0.05em;
 }
 
-/* PHI SPIRAL - Upward arc expansion */
+/* PHI ARC - Sweeping left-to-right, upward curve */
 .hub-tools-item[data-tool='burns'] {
-  --spiral-x: -70px;
-  --spiral-y: -45px;
+  --spiral-x: -95px;
+  --spiral-y: -15px;
 }
 
 .hub-tools-item[data-tool='forecast'] {
-  --spiral-x: -30px;
-  --spiral-y: -85px;
+  --spiral-x: -60px;
+  --spiral-y: -65px;
 }
 
 .hub-tools-item[data-tool='holdex'] {
-  --spiral-x: 35px;
-  --spiral-y: -75px;
+  --spiral-x: 15px;
+  --spiral-y: -80px;
 }
 
 .hub-tools-item[data-tool='gas'] {
   --spiral-x: 75px;
-  --spiral-y: -35px;
+  --spiral-y: -55px;
 }
 
 /* Collapsed state */
@@ -1346,20 +1346,20 @@ body.hub-majestic {
   }
 
   .hub-tools-item[data-tool='burns'] {
-    --spiral-x: -55px;
-    --spiral-y: -35px;
+    --spiral-x: -75px;
+    --spiral-y: -10px;
   }
   .hub-tools-item[data-tool='forecast'] {
-    --spiral-x: -20px;
-    --spiral-y: -65px;
+    --spiral-x: -45px;
+    --spiral-y: -50px;
   }
   .hub-tools-item[data-tool='holdex'] {
-    --spiral-x: 25px;
-    --spiral-y: -55px;
+    --spiral-x: 12px;
+    --spiral-y: -60px;
   }
   .hub-tools-item[data-tool='gas'] {
-    --spiral-x: 55px;
-    --spiral-y: -25px;
+    --spiral-x: 58px;
+    --spiral-y: -40px;
   }
 
   /* Reduce particle visibility on mobile */
