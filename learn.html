@@ -26,14 +26,13 @@
         }
         body.ready { visibility: visible; }
 
-        /* Container - CSS Scroll Snap */
+        /* Container - Smooth scroll */
         .container {
             height: 100vh;
             overflow-y: auto;
-            scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
-        .container.locked { overflow: hidden; }
 
         /* Header */
         .header {
@@ -63,12 +62,15 @@
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
             padding: 80px 24px;
-            scroll-snap-align: center;
-            scroll-snap-stop: always;
-            transition: opacity 0.3s;
+            transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
         }
-        .phase.locked { opacity: 0.15; pointer-events: none; }
-        .phase.active { opacity: 1; }
+        .phase.locked {
+            opacity: 0.08;
+            filter: blur(8px);
+            pointer-events: none;
+            transform: scale(0.98);
+        }
+        .phase.active { opacity: 1; filter: none; transform: none; }
         .phase-inner { max-width: 480px; width: 100%; }
 
         .badge {
@@ -102,7 +104,6 @@
 
         .subtitle { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-ghost); margin-bottom: 24px; }
         .text p { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
-        .phase.locked .text { filter: blur(4px); }
 
         /* Interaction hint */
         .hint { margin-top: 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-ghost); }
@@ -207,7 +208,7 @@
         /* Final */
         .final {
             min-height: 100vh; display: none; align-items: center; justify-content: center;
-            padding: 80px 24px; text-align: center; scroll-snap-align: center;
+            padding: 80px 24px; text-align: center;
         }
         .final.show { display: flex; }
         .final-icon { font-size: 48px; margin-bottom: 16px; animation: pulse 2s ease infinite; }
@@ -756,23 +757,88 @@
         // === SCROLL BLOCKING ===
         function initScrollBlock() {
             const container = $('#container');
+            let currentPhase = 1;
+            let isScrolling = false;
+            let scrollTimeout;
 
-            container.addEventListener('scroll', () => {
+            // Find which phase should be active
+            function getActivePhase() {
+                for (let i = PHASES; i >= 1; i--) {
+                    if (state.done.has(i)) return Math.min(i + 1, PHASES);
+                }
+                return 1;
+            }
+
+            // Smooth scroll to phase
+            function goToPhase(n) {
+                if (isScrolling) return;
+                const el = $(`#phase-${n}`);
+                if (!el) return;
+
+                isScrolling = true;
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                }, 800);
+            }
+
+            // Block scroll if trying to go past incomplete phase
+            container.addEventListener('wheel', e => {
+                const activePhase = getActivePhase();
                 const phases = $$('.phase');
-                let visible = 1;
+                let visiblePhase = 1;
 
                 phases.forEach((p, i) => {
                     const r = p.getBoundingClientRect();
-                    if (r.top < window.innerHeight / 2 && r.bottom > window.innerHeight / 2) {
-                        visible = i + 1;
+                    const center = window.innerHeight / 2;
+                    if (r.top < center && r.bottom > center) {
+                        visiblePhase = i + 1;
                     }
                 });
 
-                // Block if previous not done
-                if (visible > 1 && !state.done.has(visible - 1)) {
-                    scrollTo(visible - 1);
+                // Scrolling down past allowed phase
+                if (e.deltaY > 0 && visiblePhase >= activePhase && !state.done.has(activePhase)) {
+                    e.preventDefault();
+                    log('Scroll blocked - complete phase', activePhase, 'first');
                 }
+            }, { passive: false });
+
+            // Touch handling
+            let touchStartY = 0;
+            container.addEventListener('touchstart', e => {
+                touchStartY = e.touches[0].clientY;
             }, { passive: true });
+
+            container.addEventListener('touchmove', e => {
+                const activePhase = getActivePhase();
+                const touchY = e.touches[0].clientY;
+                const deltaY = touchStartY - touchY;
+
+                const phases = $$('.phase');
+                let visiblePhase = 1;
+                phases.forEach((p, i) => {
+                    const r = p.getBoundingClientRect();
+                    const center = window.innerHeight / 2;
+                    if (r.top < center && r.bottom > center) {
+                        visiblePhase = i + 1;
+                    }
+                });
+
+                // Swiping up (scrolling down) past allowed
+                if (deltaY > 0 && visiblePhase >= activePhase && !state.done.has(activePhase)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // Auto-scroll to current phase on load
+            setTimeout(() => {
+                const activePhase = getActivePhase();
+                if (activePhase > 1) {
+                    goToPhase(activePhase);
+                }
+            }, 100);
 
             log('Scroll blocking ready');
         }
