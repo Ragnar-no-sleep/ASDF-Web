@@ -1,0 +1,576 @@
+/**
+ * ASDF Shop V2 - Animations
+ *
+ * Enhanced animations for shop UI components
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================
+   BASE TRANSITIONS
+   ============================================ */
+
+.shop-item-card,
+.filter-chip,
+.filter-btn,
+.btn-purchase,
+.btn-action {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+/* Fade In */
+@keyframes shopFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In Scale */
+@keyframes shopFadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Slide In Right */
+@keyframes shopSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide In Left */
+@keyframes shopSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pulse Glow */
+@keyframes shopPulseGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 5px var(--tier-color, #22c55e),
+      0 0 10px var(--tier-color, #22c55e);
+  }
+  50% {
+    box-shadow:
+      0 0 15px var(--tier-color, #22c55e),
+      0 0 25px var(--tier-color, #22c55e);
+  }
+}
+
+/* Shimmer (Loading) */
+@keyframes shopShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Float */
+@keyframes shopFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Shake (Error) */
+@keyframes shopShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Bounce */
+@keyframes shopBounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Spin */
+@keyframes shopSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Badge Pulse */
+@keyframes shopBadgePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Particle Float */
+@keyframes shopParticleFloat {
+  0% {
+    transform: translateY(100%) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Sparkle */
+@keyframes shopSparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+/* Rainbow Glow (Legendary) */
+@keyframes shopRainbowGlow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* Progress Fill */
+@keyframes shopProgressFill {
+  from {
+    width: 0%;
+  }
+}
+
+/* Count Up */
+@keyframes shopCountUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   ITEM CARD ANIMATIONS
+   ============================================ */
+
+/* Grid Items Stagger Animation */
+.shop-item-grid .shop-item-card {
+  animation: shopFadeIn 0.3s ease-out backwards;
+}
+
+.shop-item-grid .shop-item-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.shop-item-grid .shop-item-card:nth-child(2) {
+  animation-delay: 50ms;
+}
+.shop-item-grid .shop-item-card:nth-child(3) {
+  animation-delay: 100ms;
+}
+.shop-item-grid .shop-item-card:nth-child(4) {
+  animation-delay: 150ms;
+}
+.shop-item-grid .shop-item-card:nth-child(5) {
+  animation-delay: 200ms;
+}
+.shop-item-grid .shop-item-card:nth-child(6) {
+  animation-delay: 250ms;
+}
+.shop-item-grid .shop-item-card:nth-child(7) {
+  animation-delay: 300ms;
+}
+.shop-item-grid .shop-item-card:nth-child(8) {
+  animation-delay: 350ms;
+}
+.shop-item-grid .shop-item-card:nth-child(n + 9) {
+  animation-delay: 400ms;
+}
+
+/* Card Hover Effects */
+.shop-item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.shop-item-card:hover .card-glow {
+  opacity: 1;
+}
+
+.shop-item-card .card-glow {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Card Selection */
+.shop-item-card.selected {
+  animation: shopPulseGlow 2s ease-in-out infinite;
+}
+
+/* High Tier Particle Effects */
+.shop-item-card.has-particles::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, var(--tier-color, #a855f7) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.shop-item-card.has-particles:hover::before {
+  opacity: 0.15;
+}
+
+/* Tier-specific hover effects */
+.shop-item-card[data-tier='8'],
+.shop-item-card[data-tier='9'] {
+  animation: shopRainbowGlow 5s linear infinite;
+}
+
+.shop-item-card[data-tier='8']:hover,
+.shop-item-card[data-tier='9']:hover {
+  animation: shopRainbowGlow 2s linear infinite;
+}
+
+/* ============================================
+   BADGE ANIMATIONS
+   ============================================ */
+
+.item-badge.new,
+.item-badge.limited {
+  animation: shopBadgePulse 2s ease-in-out infinite;
+}
+
+.item-badge.urgency-high {
+  animation: shopBadgePulse 1s ease-in-out infinite;
+}
+
+.stock-badge.low {
+  animation: shopBadgePulse 0.8s ease-in-out infinite;
+  color: #ef4444;
+}
+
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+
+.shop-item-card.skeleton {
+  pointer-events: none;
+}
+
+.skeleton-thumbnail,
+.skeleton-name,
+.skeleton-tier,
+.skeleton-price {
+  background: linear-gradient(90deg, #2a2a3e 25%, #3a3a4e 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+  animation: shopShimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-thumbnail {
+  width: 100%;
+  padding-bottom: 100%;
+}
+
+.skeleton-name {
+  height: 16px;
+  width: 80%;
+  margin-bottom: 8px;
+}
+
+.skeleton-tier {
+  height: 12px;
+  width: 50%;
+  margin-bottom: 12px;
+}
+
+.skeleton-price {
+  height: 24px;
+  width: 60%;
+}
+
+/* ============================================
+   FILTER ANIMATIONS
+   ============================================ */
+
+.shop-filters {
+  animation: shopSlideInLeft 0.3s ease-out;
+}
+
+.filter-chip:hover,
+.filter-btn:hover {
+  transform: translateY(-2px);
+}
+
+.filter-chip.active,
+.filter-btn.active {
+  animation: shopBounce 0.3s ease-out;
+}
+
+.active-filter-tag {
+  animation: shopFadeInScale 0.2s ease-out;
+}
+
+/* ============================================
+   PREVIEW PANEL ANIMATIONS
+   ============================================ */
+
+.shop-preview-panel {
+  animation: shopSlideInRight 0.3s ease-out;
+}
+
+.preview-canvas-container {
+  animation: shopFadeInScale 0.4s ease-out 0.1s backwards;
+}
+
+.preview-details {
+  animation: shopFadeIn 0.3s ease-out 0.2s backwards;
+}
+
+.preview-actions {
+  animation: shopFadeIn 0.3s ease-out 0.3s backwards;
+}
+
+/* Preview Particles */
+.preview-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.preview-particles::before,
+.preview-particles::after {
+  content: '✨';
+  position: absolute;
+  font-size: 12px;
+  animation: shopParticleFloat 3s ease-in-out infinite;
+}
+
+.preview-particles::before {
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.preview-particles::after {
+  right: 20%;
+  animation-delay: 1.5s;
+}
+
+/* ============================================
+   BUTTON ANIMATIONS
+   ============================================ */
+
+.btn-purchase:hover,
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-purchase:active,
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-purchase.loading {
+  pointer-events: none;
+  position: relative;
+  color: transparent;
+}
+
+.btn-purchase.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: shopSpin 0.8s linear infinite;
+}
+
+.btn-favorite.active {
+  animation: shopBounce 0.3s ease-out;
+}
+
+/* ============================================
+   TOAST ANIMATIONS
+   ============================================ */
+
+.toast {
+  animation: shopSlideInRight 0.3s ease-out;
+}
+
+.toast.removing {
+  animation: shopSlideInRight 0.3s ease-out reverse forwards;
+}
+
+/* ============================================
+   MODAL ANIMATIONS
+   ============================================ */
+
+.shop-modal-overlay {
+  animation: shopFadeIn 0.2s ease-out;
+}
+
+.shop-modal {
+  animation: shopFadeInScale 0.3s ease-out;
+}
+
+.purchase-modal .modal-body {
+  animation: shopFadeIn 0.3s ease-out 0.1s backwards;
+}
+
+/* ============================================
+   COLLECTION ANIMATIONS
+   ============================================ */
+
+.collection-progress .progress-fill {
+  animation: shopProgressFill 0.8s ease-out;
+}
+
+.collection-card.complete {
+  animation: shopPulseGlow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   CURRENCY ANIMATIONS
+   ============================================ */
+
+.currency-update {
+  animation: shopCountUp 0.3s ease-out;
+}
+
+.currency-earned {
+  animation:
+    shopFloat 0.5s ease-out,
+    shopFadeIn 0.3s ease-out;
+}
+
+/* ============================================
+   EMPTY STATE ANIMATIONS
+   ============================================ */
+
+.shop-empty-state {
+  animation: shopFadeIn 0.5s ease-out;
+}
+
+.shop-empty-state .empty-icon {
+  animation: shopFloat 3s ease-in-out infinite;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .shop-item-grid .shop-item-card {
+    animation-delay: 0ms !important;
+  }
+
+  .shop-item-card:hover {
+    transform: none;
+  }
+}
+
+/* Disable shop particles via settings */
+.no-shop-particles .has-particles::before,
+.no-shop-particles .has-particles::after,
+.no-shop-particles .preview-particles {
+  display: none !important;
+}
+
+.no-shop-particles .shop-item-card[data-tier='8'],
+.no-shop-particles .shop-item-card[data-tier='9'] {
+  animation: none;
+}
