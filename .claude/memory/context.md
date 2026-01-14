@@ -1,238 +1,224 @@
 # ASDF-Web Context Memory
 
-> Persistent context for Claude sessions. Migrated from claude-mem.
-> Last updated: 2026-01-13
+> Persistent context for Claude sessions.
+> Last updated: 2026-01-14
 
 ## Project Overview
 
-**ASDF-Web** is the official website for the $asdfasdfa ecosystem - a Solana-based meme token with a unique "This is Fine" philosophy.
+**ASDF-Web** is the official website for the $asdfasdfa ecosystem - a Solana-based token with the "This is Fine" philosophy.
 
 ### Technical Stack
 
-- **Server**: Express.js + Helmet + rate-limiting
-- **Frontend**: HTML/CSS/JS vanilla (no framework)
-- **Deployment**: Render (auto-deploy from main)
-- **Design System**: Helius-inspired dark professional theme
+| Layer      | Technology                         |
+| ---------- | ---------------------------------- |
+| Server     | Express.js + Helmet + CSP          |
+| Frontend   | HTML/CSS/JS vanilla (no framework) |
+| Design     | system.css (Helius/Orb inspired)   |
+| Deployment | Render (auto-deploy from main)     |
 
 ### URLs
 
 - Production: https://asdf-web.onrender.com
-- API: https://asdf-api.onrender.com
-- HolDex: https://holdex.onrender.com
+- Live: https://alonisthe.dev
+
+---
+
+## Current Architecture
+
+```
+ASDF-Web/
+├── server.cjs              # Express server
+├── index.html              # Hub Majestic (fire particles, orbital nodes)
+├── learn.html              # Quick Start - 5-step interactive intro
+├── deep-learn.html         # Complete Guide - K-Score, philosophy
+├── build.html              # Builder's Guide - Yggdrasil, paths
+├── games.html              # Arcade Hub
+├── burns.html              # Hall of Flames
+├── forecast.html           # Predictions
+├── holdex.html             # Token Tracker
+├── css/
+│   ├── system.css          # Design system
+│   └── [page].css          # Per-page styles
+├── js/
+│   ├── hub-majestic.js     # Landing
+│   └── [page].js           # Per-page scripts
+└── docs/                   # Internal documentation
+```
+
+### Routes
+
+| Route                    | File            | Description          |
+| ------------------------ | --------------- | -------------------- |
+| `/`                      | index.html      | Hub Majestic landing |
+| `/story`, `/quick-start` | learn.html      | Quick Start guide    |
+| `/deep-learn`            | deep-learn.html | Complete guide       |
+| `/ignition`              | games.html      | Arcade hub           |
+| `/burns`                 | burns.html      | Burn tracker         |
+| `/asdforecast`           | forecast.html   | Predictions          |
+| `/holdex`                | holdex.html     | Token tracker        |
 
 ---
 
 ## Philosophy $asdfasdfa
 
 ```
-Don't trust. Verify.    → Test everything, assume nothing
-Don't extract. Burn.    → Remove waste, keep only essential
-Don't panic. Hold.      → Stability over speed, quality over quantity
+Don't trust. Verify.    → Test everything, on-chain data
+Don't extract. Burn.    → 0% to platform, 100% to burn
+Don't panic. Hold.      → Quality over speed
 This is fine.           → Confidence through verification
 ```
 
 ### Applied to Development
 
-- **Verify**: All code passes lint, tests, security audit before merge
-- **Burn**: No dead code, no unnecessary dependencies, clean diffs
-- **Hold**: No rushed decisions, breaking changes documented
-- **This is fine**: CI/CD green = safe to deploy
+- **Verify**: All code passes lint, tests, security audit
+- **Burn**: No dead code, no bloat, clean diffs
+- **Hold**: No rushed decisions, stability first
+- **This is fine**: CI green = safe to deploy
 
----
-
-## Design System Evolution
-
-### Timeline
-
-1. **Initial**: Basic HTML pages
-2. **V2**: Apple-inspired clean aesthetics
-3. **V3 (Current)**: Helius-inspired dark professional with void-and-energy philosophy
-
-### Key Design Decisions
-
-- **Colors**: Dark backgrounds (#0a0a0a), cyan accents (#00d4ff), orange highlights (#ff6b35)
-- **Typography**: System fonts, monospace for data
-- **Animations**: Subtle, purposeful transitions
-- **Components**: Cards with glass morphism, gradient borders
-
-### Pages
-
-| Page     | File          | Status                                               |
-| -------- | ------------- | ---------------------------------------------------- |
-| Home     | index.html    | Multiple variants (index-new, index-v3, index-power) |
-| Learn    | learn.html    | V3 with gamification (learn-v3.html)                 |
-| Burns    | burns.html    | "This is Fine" theme                                 |
-| Games    | games.html    | Arcade hub                                           |
-| Forecast | forecast.html | Analytics                                            |
-| HolDex   | holdex.html   | Token tracker integration                            |
-
----
-
-## Key Features
-
-### Burns Tracker
-
-- Real-time burn statistics
-- "This is Fine" dog animation
-- Verification links to Solana explorer
-
-### Learn Page (V3)
-
-- Interactive journey with chapters
-- XP system with localStorage persistence
-- Quiz progression mechanics
-- Golden Ratio philosophy education
-- K-Score explanation
-
-### HolDex Integration
-
-- Token tracker with K-Score analytics
-- Real-time holder data
-- Conviction hierarchy (BUILD > USE > HOLD)
-
----
-
-## Workflow (Git Flow)
+### K-Score Formula
 
 ```
-main ────────────●────────────●──────── (production)
-                ↑            ↑
-develop ──●──●──●──●──●──●──●──●─────── (integration)
-         ↑     ↑        ↑
-feature/ ●─────●        │
-hotfix/  ───────────────●
+K = 100 × ∛(D × O × L)
+
+D = Diamond Hands (conviction)
+O = Organic Growth (distribution)
+L = Longevity (survival)
 ```
 
-### Branch Rules
+### Hierarchy
 
-- `main`: Protected, requires PR with passing CI
-- `develop`: Integration branch, E2E tests run here
-- `feature/*`: New features, branch from develop
-- `hotfix/*`: Critical fixes, branch from main
+```
+BUILD > USE > HOLD
+φ multipliers reward conviction
+```
 
 ---
 
-## Claude Integration
+## Design System
 
-### MCP Servers
+### Colors (css/system.css)
 
-- **Render**: Deploy monitoring, logs, metrics
-- **GitHub**: PR management, issues
-- **context7**: Documentation lookup
+```css
+--asdf-orange: #ea4e33; /* Primary accent */
+--asdf-gold: #f59e0b; /* Secondary */
+--asdf-green: #4ade80; /* Success */
+--asdf-dark: #0a0a0a; /* Background */
+--asdf-elevated: #0a0a0c; /* Cards */
+```
+
+### Typography
+
+- **Body:** Inter
+- **Code/Labels:** JetBrains Mono
+
+### Landing (Hub Majestic)
+
+- Fire particles, embers, dust
+- Orbital rings with nodes
+- Tools expandable menu
+- Dark fire palette (#0d0906)
+
+---
+
+## MCP Integration
+
+### Project-Level Config (.mcp.json)
+
+```json
+{
+  "mcpServers": {
+    "render": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-render@latest"],
+      "env": { "RENDER_API_KEY": "${RENDER_API_KEY}" }
+    }
+  }
+}
+```
+
+### Configured Servers
+
+| Server     | Usage                            | Location            |
+| ---------- | -------------------------------- | ------------------- |
+| Render     | Deploy monitoring, logs, metrics | .mcp.json (project) |
+| context7   | Documentation lookup             | Global config       |
+| claude-mem | Memory backup (when available)   | Global config       |
+
+### Skills Installed
+
+| Skill      | Location                    | Usage                                                               |
+| ---------- | --------------------------- | ------------------------------------------------------------------- |
+| solana-dev | ~/.claude/skills/solana-dev | Solana v2.0 development (framework-kit, Anchor, Pinocchio, testing) |
+
+**solana-dev skill covers:**
+
+- UI/wallet: @solana/client + @solana/react-hooks (framework-kit)
+- SDK: @solana/kit (Address, Signer, codecs)
+- Legacy: @solana/web3-compat boundary adapters
+- Programs: Anchor (default) or Pinocchio (performance)
+- Testing: LiteSVM, Mollusk, Surfpool
 
 ### Agents
 
-- `librarian`: Research docs/code
-- `ui-ux-architect`: Design decisions
-- `helius-architect`: RPC patterns
-- `integrity-auditor`: Security audit
-- `commit-analyzer`: Git history analysis
+| Agent             | Model  | Usage                |
+| ----------------- | ------ | -------------------- |
+| librarian         | sonnet | Research docs/code   |
+| ui-ux-architect   | sonnet | Design decisions     |
+| helius-architect  | opus   | RPC patterns, Solana |
+| integrity-auditor | haiku  | Security audit       |
+| academy-designer  | sonnet | Learning paths       |
 
 ### Commands
 
-- `/deep-research`: Multi-source research
-- `/audit-security`: Security scanning
-- `/analyze-commits`: Git pattern analysis
+- `/deep-research` - Multi-source research
+- `/audit-security` - Security scanning
+- `/analyze-commits` - Git pattern analysis
 
 ---
 
-## Recent Decisions
+## Workflow
 
-### 2026-01-13: Migration Stack - Express + Vite + Vanilla
-
-**Décision**: Migrer de Next.js/React/TS vers Express + Vite + Vanilla JS
-
-**Stack Cible**:
-
-- Serveur: Express.js (inchangé)
-- Bundler: Vite (tree-shaking, HMR)
-- Animations: GSAP core + CSS natif
-- 3D: Three.js (inchangé)
-- Games 2D: Canvas API natif
-- Code Editor: CodeMirror 6 (remplace Monaco)
-- Styles: system.css + page tokens (Tailwind supprimé)
-- Components: JS injection bundlé (security by design)
-- State local: localStorage + CustomEvents
-- State on-chain: Future session (cynic)
-
-**Ordre de Migration**:
-
-1. Setup Vite
-2. Hub/Landing (index.html)
-3. Learn system
-4. Deep Learn
-5. Build (Yggdrasil + Builders + Journey)
-
-**Raisons**:
-
-- Philosophie $asdfasdfa: Qualité > Quantité
-- Alignement avec 10+ pages legacy existantes
-- Performance: Bundle plus léger
-- Simplicité: Pas de framework churn
-
-### 2026-01-13: Architecture Components
-
-**Décision**: Components réutilisables via JS injection
-
-**Structure**:
+### Git Flow
 
 ```
-js/
-├── components/    # Nav, Footer, Modal, Toast
-├── utils/         # wallet.js, storage.js, api.js
-├── lib/           # GSAP, Three.js, CodeMirror
-├── games/         # Canvas game engines
-└── pages/         # Per-page logic
+main ────────●────────●──── (production)
+            ↑        ↑
+develop ──●──●──●──●──●──── (integration)
+         ↑     ↑
+feature/ ●─────●
 ```
 
-**Raisons**:
+### Conventions
 
-- Security by design: Code bundlé, pas de fetch externe
-- CSP friendly: Pas d'inline HTML dynamique
-- Compatible avec Express existant
-
-### 2026-01-13: On-Chain Vision
-
-**Décision**: Tout on-chain pour les données utilisateur (future)
-
-**Scope on-chain**:
-
-- Progression learning (XP, badges, modules)
-- Games stats (scores, achievements, inventory)
-- Wallet activity (burns, transactions, holdings)
-- Full user profile
-
-**Leaderboards**: Hybrid approach
-
-- Real-time via API (affichage)
-- On-chain snapshots (preuves/rewards)
-
-**Timeline**: Session dédiée avec cynic
-
-### 2026-01-07: Codespaces Migration
-
-- Move development to GitHub Codespaces
-- Full MCP integration in devcontainer
-- PR-based workflow with Claude review
-- Memory persistence via GitHub (this file)
-
-### 2026-01-07: Testing Stack
-
-- ESLint + Prettier for code quality
-- Jest for unit tests
-- Playwright for E2E
-- npm audit for security
-- Husky pre-commit hooks
+- 1 JS file per HTML page
+- 1 CSS file per page
+- CSS variables in `:root`
+- Commit: `type(scope): description`
 
 ---
 
-## Notes for Future Sessions
+## Future Plans
 
-1. **Always check this file first** for project context
-2. **Update this file** when making architectural decisions
-3. **Use ADRs** in `.claude/memory/decisions/` for major changes
-4. **claude-mem backup** may be available but unreliable
+### Plugins to Explore
+
+- **Solana/Web3**: Helius RPC, token metadata
+- **Database**: PostgreSQL/Redis for state
+- **Monitoring**: Metrics, logs, alerts
+
+### Mobile (TWA)
+
+- Android app in development
+- assetlinks.json placeholder ready
 
 ---
 
-_This is fine._ 🐕‍🦺🔥
+## Notes for Sessions
+
+1. **Read this file first** for project context
+2. **Update after architectural changes**
+3. **Use ADRs** in `decisions/` for major decisions
+4. **claude-mem** is backup only (Chroma unreliable)
+
+---
+
+_This is fine._

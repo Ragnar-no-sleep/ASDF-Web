@@ -71,6 +71,10 @@ DECISIONS.md
 ARCHITECTURE_INTERNAL.md*
 architecture_asdf.txt
 
+# Claude internal config (contains service IDs, tokens)
+.claude/settings.json
+.claude/settings.local.json
+
 
 # Documentation with sensitive info (architecture, audits, vulnerabilities)
 docs/
