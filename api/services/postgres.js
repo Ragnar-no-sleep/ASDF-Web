@@ -21,26 +21,26 @@ const { getStorage } = require('./storage');
 // ============================================
 
 const DB_CONFIG = {
-    // Connection pool
-    pool: {
-        min: 2,
-        max: 10,
-        idleTimeoutMs: 30000,
-        connectionTimeoutMs: 5000
-    },
+  // Connection pool
+  pool: {
+    min: 2,
+    max: 10,
+    idleTimeoutMs: 30000,
+    connectionTimeoutMs: 5000,
+  },
 
-    // Cache TTLs (Fibonacci-based, in seconds)
-    cacheTTL: {
-        leaderboard: 60,      // 1 minute (frequently updated)
-        userProfile: 300,     // 5 minutes
-        statistics: 180,      // 3 minutes
-        burns: 60,            // 1 minute
-        achievements: 600,    // 10 minutes
-        config: 3600          // 1 hour
-    },
+  // Cache TTLs (Fibonacci-based, in seconds)
+  cacheTTL: {
+    leaderboard: 60, // 1 minute (frequently updated)
+    userProfile: 300, // 5 minutes
+    statistics: 180, // 3 minutes
+    burns: 60, // 1 minute
+    achievements: 600, // 10 minutes
+    config: 3600, // 1 hour
+  },
 
-    // Query logging
-    logQueries: process.env.NODE_ENV !== 'production'
+  // Query logging
+  logQueries: process.env.NODE_ENV !== 'production',
 };
 
 // ============================================
@@ -54,60 +54,59 @@ let isConnected = false;
  * Initialize database connection pool
  */
 async function initialize() {
-    if (pool) return pool;
+  if (pool) return pool;
 
-    const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_URL;
 
-    if (!connectionString) {
-        console.log('[PostgreSQL] DATABASE_URL not set - running in memory-only mode');
-        return null;
-    }
+  if (!connectionString) {
+    console.log('[PostgreSQL] DATABASE_URL not set - running in memory-only mode');
+    return null;
+  }
 
-    try {
-        const { Pool } = require('pg');
+  try {
+    const { Pool } = require('pg');
 
-        pool = new Pool({
-            connectionString,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-            min: DB_CONFIG.pool.min,
-            max: DB_CONFIG.pool.max,
-            idleTimeoutMillis: DB_CONFIG.pool.idleTimeoutMs,
-            connectionTimeoutMillis: DB_CONFIG.pool.connectionTimeoutMs
-        });
+    pool = new Pool({
+      connectionString,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      min: DB_CONFIG.pool.min,
+      max: DB_CONFIG.pool.max,
+      idleTimeoutMillis: DB_CONFIG.pool.idleTimeoutMs,
+      connectionTimeoutMillis: DB_CONFIG.pool.connectionTimeoutMs,
+    });
 
-        // Test connection
-        const client = await pool.connect();
-        await client.query('SELECT NOW()');
-        client.release();
+    // Test connection
+    const client = await pool.connect();
+    await client.query('SELECT NOW()');
+    client.release();
 
-        isConnected = true;
-        console.log('✅ [PostgreSQL] Connected successfully');
+    isConnected = true;
+    console.log('✅ [PostgreSQL] Connected successfully');
 
-        // Run migrations
-        await runMigrations();
+    // Run migrations
+    await runMigrations();
 
-        return pool;
-
-    } catch (error) {
-        console.error('❌ [PostgreSQL] Connection failed:', error.message);
-        pool = null;
-        isConnected = false;
-        return null;
-    }
+    return pool;
+  } catch (error) {
+    console.error('❌ [PostgreSQL] Connection failed:', error.message);
+    pool = null;
+    isConnected = false;
+    return null;
+  }
 }
 
 /**
  * Get database pool
  */
 function getPool() {
-    return pool;
+  return pool;
 }
 
 /**
  * Check if database is available
  */
 function isAvailable() {
-    return isConnected && pool !== null;
+  return isConnected && pool !== null;
 }
 
 // ============================================
@@ -115,10 +114,10 @@ function isAvailable() {
 // ============================================
 
 const MIGRATIONS = [
-    {
-        version: 1,
-        name: 'initial_schema',
-        up: `
+  {
+    version: 1,
+    name: 'initial_schema',
+    up: `
             -- Users table
             CREATE TABLE IF NOT EXISTS users (
                 wallet VARCHAR(50) PRIMARY KEY,
@@ -245,12 +244,12 @@ const MIGRATIONS = [
                 name VARCHAR(100),
                 applied_at TIMESTAMP DEFAULT NOW()
             );
-        `
-    },
-    {
-        version: 2,
-        name: 'add_referrals',
-        up: `
+        `,
+  },
+  {
+    version: 2,
+    name: 'add_referrals',
+    up: `
             CREATE TABLE IF NOT EXISTS referrals (
                 id SERIAL PRIMARY KEY,
                 referrer_wallet VARCHAR(50) NOT NULL,
@@ -261,12 +260,12 @@ const MIGRATIONS = [
             );
             CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_wallet);
             CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(code);
-        `
-    },
-    {
-        version: 3,
-        name: 'add_progression',
-        up: `
+        `,
+  },
+  {
+    version: 3,
+    name: 'add_progression',
+    up: `
             ALTER TABLE users ADD COLUMN IF NOT EXISTS daily_xp INTEGER DEFAULT 0;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_xp INTEGER DEFAULT 0;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS best_streak INTEGER DEFAULT 0;
@@ -281,12 +280,12 @@ const MIGRATIONS = [
             );
             CREATE INDEX IF NOT EXISTS idx_xp_wallet ON xp_history(wallet);
             CREATE INDEX IF NOT EXISTS idx_xp_date ON xp_history(created_at);
-        `
-    },
-    {
-        version: 4,
-        name: 'shop_v2_cosmetics',
-        up: `
+        `,
+  },
+  {
+    version: 4,
+    name: 'shop_v2_cosmetics',
+    up: `
             -- ============================================
             -- SHOP V2: Cosmetic Shop System
             -- ============================================
@@ -424,52 +423,51 @@ const MIGRATIONS = [
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS engage_tier SMALLINT DEFAULT 0;
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS discount_applied INTEGER DEFAULT 0;
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS xp_granted INTEGER DEFAULT 0;
-        `
-    }
+        `,
+  },
 ];
 
 /**
  * Run pending migrations
  */
 async function runMigrations() {
-    if (!pool) return;
+  if (!pool) return;
 
-    const client = await pool.connect();
+  const client = await pool.connect();
 
+  try {
+    // Get current version
+    let currentVersion = 0;
     try {
-        // Get current version
-        let currentVersion = 0;
-        try {
-            const result = await client.query('SELECT MAX(version) as version FROM migrations');
-            currentVersion = result.rows[0]?.version || 0;
-        } catch (e) {
-            // Table doesn't exist yet, will be created
-        }
-
-        // Run pending migrations
-        for (const migration of MIGRATIONS) {
-            if (migration.version > currentVersion) {
-                console.log(`[PostgreSQL] Running migration ${migration.version}: ${migration.name}`);
-
-                await client.query('BEGIN');
-                try {
-                    await client.query(migration.up);
-                    await client.query(
-                        'INSERT INTO migrations (version, name) VALUES ($1, $2) ON CONFLICT (version) DO NOTHING',
-                        [migration.version, migration.name]
-                    );
-                    await client.query('COMMIT');
-                    console.log(`[PostgreSQL] Migration ${migration.version} complete`);
-                } catch (error) {
-                    await client.query('ROLLBACK');
-                    throw error;
-                }
-            }
-        }
-
-    } finally {
-        client.release();
+      const result = await client.query('SELECT MAX(version) as version FROM migrations');
+      currentVersion = result.rows[0]?.version || 0;
+    } catch (e) {
+      // Table doesn't exist yet, will be created
     }
+
+    // Run pending migrations
+    for (const migration of MIGRATIONS) {
+      if (migration.version > currentVersion) {
+        console.log(`[PostgreSQL] Running migration ${migration.version}: ${migration.name}`);
+
+        await client.query('BEGIN');
+        try {
+          await client.query(migration.up);
+          await client.query(
+            'INSERT INTO migrations (version, name) VALUES ($1, $2) ON CONFLICT (version) DO NOTHING',
+            [migration.version, migration.name]
+          );
+          await client.query('COMMIT');
+          console.log(`[PostgreSQL] Migration ${migration.version} complete`);
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        }
+      }
+    }
+  } finally {
+    client.release();
+  }
 }
 
 // ============================================
@@ -483,37 +481,36 @@ async function runMigrations() {
  * @param {number} ttl - Cache TTL in seconds
  */
 async function getWithCache(cacheKey, dbQuery, ttl = 300) {
-    const cache = getStorage();
+  const cache = getStorage();
 
-    // 1. Try cache first
-    try {
-        const cached = await cache.get(cacheKey);
-        if (cached !== null) {
-            return { data: cached, source: 'cache' };
-        }
-    } catch (e) {
-        // Cache miss or error, continue to DB
+  // 1. Try cache first
+  try {
+    const cached = await cache.get(cacheKey);
+    if (cached !== null) {
+      return { data: cached, source: 'cache' };
+    }
+  } catch (e) {
+    // Cache miss or error, continue to DB
+  }
+
+  // 2. Query database
+  if (!isAvailable()) {
+    return { data: null, source: 'unavailable' };
+  }
+
+  try {
+    const data = await dbQuery();
+
+    // 3. Store in cache
+    if (data !== null) {
+      await cache.set(cacheKey, data, { ex: ttl }).catch(() => {});
     }
 
-    // 2. Query database
-    if (!isAvailable()) {
-        return { data: null, source: 'unavailable' };
-    }
-
-    try {
-        const data = await dbQuery();
-
-        // 3. Store in cache
-        if (data !== null) {
-            await cache.set(cacheKey, data, { ex: ttl }).catch(() => {});
-        }
-
-        return { data, source: 'database' };
-
-    } catch (error) {
-        console.error('[PostgreSQL] Query error:', error.message);
-        return { data: null, source: 'error', error: error.message };
-    }
+    return { data, source: 'database' };
+  } catch (error) {
+    console.error('[PostgreSQL] Query error:', error.message);
+    return { data: null, source: 'error', error: error.message };
+  }
 }
 
 /**
@@ -522,27 +519,26 @@ async function getWithCache(cacheKey, dbQuery, ttl = 300) {
  * @param {Function} dbWrite - Function to write to database
  */
 async function writeWithInvalidation(cacheKey, dbWrite) {
-    const cache = getStorage();
+  const cache = getStorage();
 
-    if (!isAvailable()) {
-        throw new Error('Database unavailable');
+  if (!isAvailable()) {
+    throw new Error('Database unavailable');
+  }
+
+  try {
+    // 1. Write to database
+    const result = await dbWrite();
+
+    // 2. Invalidate cache
+    if (cacheKey) {
+      await cache.del(cacheKey).catch(() => {});
     }
 
-    try {
-        // 1. Write to database
-        const result = await dbWrite();
-
-        // 2. Invalidate cache
-        if (cacheKey) {
-            await cache.del(cacheKey).catch(() => {});
-        }
-
-        return result;
-
-    } catch (error) {
-        console.error('[PostgreSQL] Write error:', error.message);
-        throw error;
-    }
+    return result;
+  } catch (error) {
+    console.error('[PostgreSQL] Write error:', error.message);
+    throw error;
+  }
 }
 
 // ============================================
@@ -553,51 +549,48 @@ async function writeWithInvalidation(cacheKey, dbWrite) {
  * Execute a query with logging
  */
 async function query(text, params = []) {
-    if (!pool) {
-        throw new Error('Database not initialized');
+  if (!pool) {
+    throw new Error('Database not initialized');
+  }
+
+  const start = Date.now();
+
+  try {
+    const result = await pool.query(text, params);
+
+    if (DB_CONFIG.logQueries) {
+      const duration = Date.now() - start;
+      console.log(`[PostgreSQL] Query (${duration}ms):`, text.slice(0, 100));
     }
 
-    const start = Date.now();
-
-    try {
-        const result = await pool.query(text, params);
-
-        if (DB_CONFIG.logQueries) {
-            const duration = Date.now() - start;
-            console.log(`[PostgreSQL] Query (${duration}ms):`, text.slice(0, 100));
-        }
-
-        return result;
-
-    } catch (error) {
-        console.error('[PostgreSQL] Query failed:', error.message);
-        throw error;
-    }
+    return result;
+  } catch (error) {
+    console.error('[PostgreSQL] Query failed:', error.message);
+    throw error;
+  }
 }
 
 /**
  * Execute a transaction
  */
 async function transaction(callback) {
-    if (!pool) {
-        throw new Error('Database not initialized');
-    }
+  if (!pool) {
+    throw new Error('Database not initialized');
+  }
 
-    const client = await pool.connect();
+  const client = await pool.connect();
 
-    try {
-        await client.query('BEGIN');
-        const result = await callback(client);
-        await client.query('COMMIT');
-        return result;
-
-    } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-
-    } finally {
-        client.release();
-    }
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 // ============================================
@@ -608,48 +601,61 @@ async function transaction(callback) {
  * Get or create user
  */
 async function getOrCreateUser(wallet) {
-    const cacheKey = `user:${wallet}`;
+  const cacheKey = `user:${wallet}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             INSERT INTO users (wallet, last_seen)
             VALUES ($1, NOW())
             ON CONFLICT (wallet) DO UPDATE SET last_seen = NOW()
             RETURNING *
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        return result.rows[0];
-    }, DB_CONFIG.cacheTTL.userProfile);
+      return result.rows[0];
+    },
+    DB_CONFIG.cacheTTL.userProfile
+  );
 }
 
 /**
  * Update user XP
  */
 async function updateUserXP(wallet, xpAmount, source) {
-    const cacheKey = `user:${wallet}`;
+  const cacheKey = `user:${wallet}`;
 
-    return writeWithInvalidation(cacheKey, async () => {
-        return transaction(async (client) => {
-            // Update user total
-            await client.query(`
+  return writeWithInvalidation(cacheKey, async () => {
+    return transaction(async client => {
+      // Update user total
+      await client.query(
+        `
                 UPDATE users SET
                     total_xp = total_xp + $2,
                     daily_xp = daily_xp + $2,
                     weekly_xp = weekly_xp + $2
                 WHERE wallet = $1
-            `, [wallet, xpAmount]);
+            `,
+        [wallet, xpAmount]
+      );
 
-            // Record history
-            await client.query(`
+      // Record history
+      await client.query(
+        `
                 INSERT INTO xp_history (wallet, amount, source)
                 VALUES ($1, $2, $3)
-            `, [wallet, xpAmount, source]);
+            `,
+        [wallet, xpAmount, source]
+      );
 
-            // Get updated user
-            const result = await client.query('SELECT * FROM users WHERE wallet = $1', [wallet]);
-            return result.rows[0];
-        });
+      // Get updated user
+      const result = await client.query('SELECT * FROM users WHERE wallet = $1', [wallet]);
+      return result.rows[0];
     });
+  });
 }
 
 // ============================================
@@ -660,61 +666,77 @@ async function updateUserXP(wallet, xpAmount, source) {
  * Get leaderboard
  */
 async function getLeaderboard(type = 'burns', limit = 100) {
-    const cacheKey = `leaderboard:${type}:${limit}`;
+  const cacheKey = `leaderboard:${type}:${limit}`;
 
-    return getWithCache(cacheKey, async () => {
-        let result;
+  return getWithCache(
+    cacheKey,
+    async () => {
+      let result;
 
-        if (type === 'burns') {
-            result = await query(`
+      if (type === 'burns') {
+        result = await query(
+          `
                 SELECT wallet, total_burned, burn_count, rank
                 FROM leaderboard
                 ORDER BY total_burned DESC
                 LIMIT $1
-            `, [limit]);
-        } else if (type === 'xp') {
-            result = await query(`
+            `,
+          [limit]
+        );
+      } else if (type === 'xp') {
+        result = await query(
+          `
                 SELECT wallet, total_xp, level, prestige,
                        ROW_NUMBER() OVER (ORDER BY total_xp DESC) as rank
                 FROM users
                 ORDER BY total_xp DESC
                 LIMIT $1
-            `, [limit]);
-        }
+            `,
+          [limit]
+        );
+      }
 
-        return result?.rows || [];
-    }, DB_CONFIG.cacheTTL.leaderboard);
+      return result?.rows || [];
+    },
+    DB_CONFIG.cacheTTL.leaderboard
+  );
 }
 
 /**
  * Record burn and update leaderboard
  */
 async function recordBurn(wallet, amount, signature) {
-    // Invalidate leaderboard cache
-    const cache = getStorage();
-    await cache.del('leaderboard:burns:100').catch(() => {});
+  // Invalidate leaderboard cache
+  const cache = getStorage();
+  await cache.del('leaderboard:burns:100').catch(() => {});
 
-    return writeWithInvalidation(null, async () => {
-        return transaction(async (client) => {
-            // Insert burn record
-            await client.query(`
+  return writeWithInvalidation(null, async () => {
+    return transaction(async client => {
+      // Insert burn record
+      await client.query(
+        `
                 INSERT INTO burns (wallet, amount, signature)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (signature) DO NOTHING
-            `, [wallet, amount, signature]);
+            `,
+        [wallet, amount, signature]
+      );
 
-            // Update leaderboard
-            await client.query(`
+      // Update leaderboard
+      await client.query(
+        `
                 INSERT INTO leaderboard (wallet, total_burned, burn_count, first_burn, last_burn)
                 VALUES ($1, $2, 1, NOW(), NOW())
                 ON CONFLICT (wallet) DO UPDATE SET
                     total_burned = leaderboard.total_burned + $2,
                     burn_count = leaderboard.burn_count + 1,
                     last_burn = NOW()
-            `, [wallet, amount]);
+            `,
+        [wallet, amount]
+      );
 
-            // Update ranks
-            await client.query(`
+      // Update ranks
+      await client.query(`
                 WITH ranked AS (
                     SELECT wallet, ROW_NUMBER() OVER (ORDER BY total_burned DESC) as new_rank
                     FROM leaderboard
@@ -725,9 +747,9 @@ async function recordBurn(wallet, amount, signature) {
                 WHERE l.wallet = r.wallet
             `);
 
-            return { success: true };
-        });
+      return { success: true };
     });
+  });
 }
 
 // ============================================
@@ -738,21 +760,27 @@ async function recordBurn(wallet, amount, signature) {
  * Save game score
  */
 async function saveGameScore(wallet, gameType, score, sessionId, metadata = {}) {
-    return query(`
+  return query(
+    `
         INSERT INTO game_scores (wallet, game_type, score, session_id, metadata)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id
-    `, [wallet, gameType, score, sessionId, JSON.stringify(metadata)]);
+    `,
+    [wallet, gameType, score, sessionId, JSON.stringify(metadata)]
+  );
 }
 
 /**
  * Get game leaderboard
  */
 async function getGameLeaderboard(gameType, limit = 100) {
-    const cacheKey = `game:leaderboard:${gameType}:${limit}`;
+  const cacheKey = `game:leaderboard:${gameType}:${limit}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             SELECT DISTINCT ON (wallet)
                 wallet, score, played_at,
                 ROW_NUMBER() OVER (ORDER BY score DESC) as rank
@@ -760,10 +788,14 @@ async function getGameLeaderboard(gameType, limit = 100) {
             WHERE game_type = $1 AND verified = true
             ORDER BY wallet, score DESC
             LIMIT $2
-        `, [gameType, limit]);
+        `,
+        [gameType, limit]
+      );
 
-        return result.rows;
-    }, DB_CONFIG.cacheTTL.leaderboard);
+      return result.rows;
+    },
+    DB_CONFIG.cacheTTL.leaderboard
+  );
 }
 
 // ============================================
@@ -774,10 +806,12 @@ async function getGameLeaderboard(gameType, limit = 100) {
  * Get global statistics
  */
 async function getStatistics() {
-    const cacheKey = 'stats:global';
+  const cacheKey = 'stats:global';
 
-    return getWithCache(cacheKey, async () => {
-        const stats = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const stats = await query(`
             SELECT
                 (SELECT COUNT(*) FROM users) as total_users,
                 (SELECT COUNT(*) FROM burns) as total_burns,
@@ -786,8 +820,10 @@ async function getStatistics() {
                 (SELECT COUNT(*) FROM purchases) as total_purchases
         `);
 
-        return stats.rows[0];
-    }, DB_CONFIG.cacheTTL.statistics);
+      return stats.rows[0];
+    },
+    DB_CONFIG.cacheTTL.statistics
+  );
 }
 
 // ============================================
@@ -799,13 +835,14 @@ async function getStatistics() {
  * @param {Array} items - Array of item objects
  */
 async function seedShopItems(items) {
-    if (!isAvailable()) {
-        throw new Error('Database unavailable');
-    }
+  if (!isAvailable()) {
+    throw new Error('Database unavailable');
+  }
 
-    return transaction(async (client) => {
-        for (const item of items) {
-            await client.query(`
+  return transaction(async client => {
+    for (const item of items) {
+      await client.query(
+        `
                 INSERT INTO shop_items (
                     id, name, description, layer, tier, rarity,
                     asset_url, base_fib_index, is_default, is_active
@@ -816,20 +853,22 @@ async function seedShopItems(items) {
                     layer = EXCLUDED.layer,
                     tier = EXCLUDED.tier,
                     updated_at = NOW()
-            `, [
-                item.id,
-                item.name,
-                item.description || null,
-                item.layer,
-                item.tier,
-                item.rarity || 'common',
-                item.asset || null,
-                item.tier, // base_fib_index = tier for initial items
-                item.default || false
-            ]);
-        }
-        return { seeded: items.length };
-    });
+            `,
+        [
+          item.id,
+          item.name,
+          item.description || null,
+          item.layer,
+          item.tier,
+          item.rarity || 'common',
+          item.asset || null,
+          item.tier, // base_fib_index = tier for initial items
+          item.default || false,
+        ]
+      );
+    }
+    return { seeded: items.length };
+  });
 }
 
 /**
@@ -837,188 +876,245 @@ async function seedShopItems(items) {
  * @param {Object} filters - { layer, tier, rarity, collection, is_active }
  */
 async function getShopCatalog(filters = {}) {
-    const cacheKey = `shop:catalog:${JSON.stringify(filters)}`;
+  const cacheKey = `shop:catalog:${JSON.stringify(filters)}`;
 
-    return getWithCache(cacheKey, async () => {
-        let whereClause = 'WHERE is_active = true';
-        const params = [];
-        let paramIndex = 1;
+  return getWithCache(
+    cacheKey,
+    async () => {
+      let whereClause = 'WHERE is_active = true';
+      const params = [];
+      let paramIndex = 1;
 
-        if (filters.layer) {
-            whereClause += ` AND layer = $${paramIndex++}`;
-            params.push(filters.layer);
-        }
-        if (filters.tier !== undefined) {
-            whereClause += ` AND tier = $${paramIndex++}`;
-            params.push(filters.tier);
-        }
-        if (filters.rarity) {
-            whereClause += ` AND rarity = $${paramIndex++}`;
-            params.push(filters.rarity);
-        }
-        if (filters.collection_id) {
-            whereClause += ` AND collection_id = $${paramIndex++}`;
-            params.push(filters.collection_id);
-        }
+      if (filters.layer) {
+        whereClause += ` AND layer = $${paramIndex++}`;
+        params.push(filters.layer);
+      }
+      if (filters.tier !== undefined) {
+        whereClause += ` AND tier = $${paramIndex++}`;
+        params.push(filters.tier);
+      }
+      if (filters.rarity) {
+        whereClause += ` AND rarity = $${paramIndex++}`;
+        params.push(filters.rarity);
+      }
+      if (filters.collection_id) {
+        whereClause += ` AND collection_id = $${paramIndex++}`;
+        params.push(filters.collection_id);
+      }
 
-        // Check time availability
-        whereClause += ` AND (available_from IS NULL OR available_from <= NOW())`;
-        whereClause += ` AND (available_until IS NULL OR available_until > NOW())`;
+      // Check time availability
+      whereClause += ` AND (available_from IS NULL OR available_from <= NOW())`;
+      whereClause += ` AND (available_until IS NULL OR available_until > NOW())`;
 
-        const result = await query(`
+      const result = await query(
+        `
             SELECT * FROM shop_items
             ${whereClause}
             ORDER BY sort_order ASC, tier ASC, name ASC
-        `, params);
+        `,
+        params
+      );
 
-        return result.rows;
-    }, 60); // 1 minute cache
+      return result.rows;
+    },
+    60
+  ); // 1 minute cache
 }
 
 /**
  * Get single shop item by ID
  */
 async function getShopItem(itemId) {
-    const cacheKey = `shop:item:${itemId}`;
+  const cacheKey = `shop:item:${itemId}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query('SELECT * FROM shop_items WHERE id = $1', [itemId]);
-        return result.rows[0] || null;
-    }, 300);
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query('SELECT * FROM shop_items WHERE id = $1', [itemId]);
+      return result.rows[0] || null;
+    },
+    300
+  );
 }
 
 /**
  * Get user's shop inventory (owned items)
  */
 async function getUserShopInventory(wallet) {
-    const cacheKey = `shop:inventory:${wallet}`;
+  const cacheKey = `shop:inventory:${wallet}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             SELECT i.*, inv.acquired_at
             FROM inventory inv
             JOIN shop_items i ON i.id = inv.item_id
             WHERE inv.wallet = $1
             ORDER BY inv.acquired_at DESC
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        return result.rows;
-    }, 60);
+      return result.rows;
+    },
+    60
+  );
 }
 
 /**
  * Get user's equipped items
  */
 async function getUserEquipped(wallet) {
-    const cacheKey = `shop:equipped:${wallet}`;
+  const cacheKey = `shop:equipped:${wallet}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             SELECT * FROM user_equipped WHERE wallet = $1
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        if (result.rows[0]) {
-            return result.rows[0];
-        }
+      if (result.rows[0]) {
+        return result.rows[0];
+      }
 
-        // Return default equipped
-        return {
-            wallet,
-            background: null,
-            aura: null,
-            skin: 'skin_default',
-            outfit: null,
-            eyes: null,
-            head: null,
-            held: null
-        };
-    }, 60);
+      // Return default equipped
+      return {
+        wallet,
+        background: null,
+        aura: null,
+        skin: 'skin_default',
+        outfit: null,
+        eyes: null,
+        head: null,
+        held: null,
+      };
+    },
+    60
+  );
 }
 
 /**
  * Set equipped item for a layer
+ * Uses column mapping to prevent SQL injection - never interpolate user input
  */
 async function setEquippedItem(wallet, layer, itemId) {
-    const cacheKey = `shop:equipped:${wallet}`;
-    const validLayers = ['background', 'aura', 'skin', 'outfit', 'eyes', 'head', 'held'];
+  const cacheKey = `shop:equipped:${wallet}`;
 
-    if (!validLayers.includes(layer)) {
-        throw new Error('Invalid layer');
-    }
+  // Column mapping - only these exact column names are allowed
+  // This prevents SQL injection by using a strict whitelist
+  const LAYER_COLUMNS = Object.freeze({
+    background: 'background',
+    aura: 'aura',
+    skin: 'skin',
+    outfit: 'outfit',
+    eyes: 'eyes',
+    head: 'head',
+    held: 'held',
+  });
 
-    return writeWithInvalidation(cacheKey, async () => {
-        await query(`
-            INSERT INTO user_equipped (wallet, ${layer}, updated_at)
+  const columnName = LAYER_COLUMNS[layer];
+  if (!columnName) {
+    throw new Error('Invalid layer');
+  }
+
+  return writeWithInvalidation(cacheKey, async () => {
+    // Use the validated column name from our frozen whitelist
+    await query(
+      `
+            INSERT INTO user_equipped (wallet, ${columnName}, updated_at)
             VALUES ($1, $2, NOW())
             ON CONFLICT (wallet) DO UPDATE SET
-                ${layer} = $2,
+                ${columnName} = $2,
                 updated_at = NOW()
-        `, [wallet, itemId]);
+        `,
+      [wallet, itemId]
+    );
 
-        return { success: true, layer, itemId };
-    });
+    return { success: true, layer, itemId };
+  });
 }
 
 /**
  * Get user's favorites
  */
 async function getUserFavorites(wallet) {
-    const cacheKey = `shop:favorites:${wallet}`;
+  const cacheKey = `shop:favorites:${wallet}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             SELECT i.*, f.created_at as favorited_at
             FROM user_favorites f
             JOIN shop_items i ON i.id = f.item_id
             WHERE f.wallet = $1
             ORDER BY f.created_at DESC
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        return result.rows;
-    }, 60);
+      return result.rows;
+    },
+    60
+  );
 }
 
 /**
  * Add item to favorites
  */
 async function addFavorite(wallet, itemId) {
-    const cacheKey = `shop:favorites:${wallet}`;
+  const cacheKey = `shop:favorites:${wallet}`;
 
-    return writeWithInvalidation(cacheKey, async () => {
-        await query(`
+  return writeWithInvalidation(cacheKey, async () => {
+    await query(
+      `
             INSERT INTO user_favorites (wallet, item_id)
             VALUES ($1, $2)
             ON CONFLICT (wallet, item_id) DO NOTHING
-        `, [wallet, itemId]);
+        `,
+      [wallet, itemId]
+    );
 
-        return { success: true };
-    });
+    return { success: true };
+  });
 }
 
 /**
  * Remove item from favorites
  */
 async function removeFavorite(wallet, itemId) {
-    const cacheKey = `shop:favorites:${wallet}`;
+  const cacheKey = `shop:favorites:${wallet}`;
 
-    return writeWithInvalidation(cacheKey, async () => {
-        await query(`
+  return writeWithInvalidation(cacheKey, async () => {
+    await query(
+      `
             DELETE FROM user_favorites
             WHERE wallet = $1 AND item_id = $2
-        `, [wallet, itemId]);
+        `,
+      [wallet, itemId]
+    );
 
-        return { success: true };
-    });
+    return { success: true };
+  });
 }
 
 /**
  * Get collections with user progress
  */
 async function getCollections(wallet = null) {
-    const cacheKey = wallet ? `shop:collections:${wallet}` : 'shop:collections:all';
+  const cacheKey = wallet ? `shop:collections:${wallet}` : 'shop:collections:all';
 
-    return getWithCache(cacheKey, async () => {
-        const collections = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const collections = await query(`
             SELECT c.*,
                    (SELECT COUNT(*) FROM shop_items WHERE collection_id = c.id) as total_items
             FROM collections c
@@ -1026,31 +1122,38 @@ async function getCollections(wallet = null) {
             ORDER BY c.name ASC
         `);
 
-        if (wallet) {
-            // Add owned count per collection
-            for (const col of collections.rows) {
-                const owned = await query(`
+      if (wallet) {
+        // Add owned count per collection
+        for (const col of collections.rows) {
+          const owned = await query(
+            `
                     SELECT COUNT(*) as count
                     FROM inventory inv
                     JOIN shop_items i ON i.id = inv.item_id
                     WHERE inv.wallet = $1 AND i.collection_id = $2
-                `, [wallet, col.id]);
-                col.owned_count = parseInt(owned.rows[0]?.count || 0);
-            }
+                `,
+            [wallet, col.id]
+          );
+          col.owned_count = parseInt(owned.rows[0]?.count || 0);
         }
+      }
 
-        return collections.rows;
-    }, 120);
+      return collections.rows;
+    },
+    120
+  );
 }
 
 /**
  * Get active shop events
  */
 async function getActiveEvents() {
-    const cacheKey = 'shop:events:active';
+  const cacheKey = 'shop:events:active';
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(`
             SELECT * FROM shop_events
             WHERE is_active = true
               AND starts_at <= NOW()
@@ -1058,45 +1161,58 @@ async function getActiveEvents() {
             ORDER BY ends_at ASC
         `);
 
-        return result.rows;
-    }, 60);
+      return result.rows;
+    },
+    60
+  );
 }
 
 /**
  * Get user currency balance
  */
 async function getUserCurrency(wallet) {
-    const cacheKey = `shop:currency:${wallet}`;
+  const cacheKey = `shop:currency:${wallet}`;
 
-    return getWithCache(cacheKey, async () => {
-        const result = await query(`
+  return getWithCache(
+    cacheKey,
+    async () => {
+      const result = await query(
+        `
             SELECT * FROM user_currency WHERE wallet = $1
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        if (result.rows[0]) {
-            return result.rows[0];
-        }
+      if (result.rows[0]) {
+        return result.rows[0];
+      }
 
-        // Create new entry
-        await query(`
+      // Create new entry
+      await query(
+        `
             INSERT INTO user_currency (wallet) VALUES ($1)
             ON CONFLICT (wallet) DO NOTHING
-        `, [wallet]);
+        `,
+        [wallet]
+      );
 
-        return { wallet, balance: 0, total_earned: 0, total_spent: 0 };
-    }, 30);
+      return { wallet, balance: 0, total_earned: 0, total_spent: 0 };
+    },
+    30
+  );
 }
 
 /**
  * Add in-game currency to user
  */
 async function addUserCurrency(wallet, amount, source, sourceId = null) {
-    const cacheKey = `shop:currency:${wallet}`;
+  const cacheKey = `shop:currency:${wallet}`;
 
-    return writeWithInvalidation(cacheKey, async () => {
-        return transaction(async (client) => {
-            // Update balance
-            const result = await client.query(`
+  return writeWithInvalidation(cacheKey, async () => {
+    return transaction(async client => {
+      // Update balance
+      const result = await client.query(
+        `
                 INSERT INTO user_currency (wallet, balance, total_earned)
                 VALUES ($1, $2, $2)
                 ON CONFLICT (wallet) DO UPDATE SET
@@ -1104,87 +1220,117 @@ async function addUserCurrency(wallet, amount, source, sourceId = null) {
                     total_earned = user_currency.total_earned + $2,
                     last_updated = NOW()
                 RETURNING *
-            `, [wallet, amount]);
+            `,
+        [wallet, amount]
+      );
 
-            // Record transaction
-            await client.query(`
+      // Record transaction
+      await client.query(
+        `
                 INSERT INTO currency_transactions (wallet, amount, balance_after, source, source_id)
                 VALUES ($1, $2, $3, $4, $5)
-            `, [wallet, amount, result.rows[0].balance, source, sourceId]);
+            `,
+        [wallet, amount, result.rows[0].balance, source, sourceId]
+      );
 
-            return result.rows[0];
-        });
+      return result.rows[0];
     });
+  });
 }
 
 /**
  * Spend in-game currency
  */
 async function spendUserCurrency(wallet, amount, source, sourceId = null) {
-    const cacheKey = `shop:currency:${wallet}`;
+  const cacheKey = `shop:currency:${wallet}`;
 
-    return writeWithInvalidation(cacheKey, async () => {
-        return transaction(async (client) => {
-            // Check balance
-            const check = await client.query('SELECT balance FROM user_currency WHERE wallet = $1', [wallet]);
-            const currentBalance = check.rows[0]?.balance || 0;
+  return writeWithInvalidation(cacheKey, async () => {
+    return transaction(async client => {
+      // Check balance
+      const check = await client.query('SELECT balance FROM user_currency WHERE wallet = $1', [
+        wallet,
+      ]);
+      const currentBalance = check.rows[0]?.balance || 0;
 
-            if (currentBalance < amount) {
-                throw new Error('Insufficient balance');
-            }
+      if (currentBalance < amount) {
+        throw new Error('Insufficient balance');
+      }
 
-            // Update balance
-            const result = await client.query(`
+      // Update balance
+      const result = await client.query(
+        `
                 UPDATE user_currency SET
                     balance = balance - $2,
                     total_spent = total_spent + $2,
                     last_updated = NOW()
                 WHERE wallet = $1
                 RETURNING *
-            `, [wallet, amount]);
+            `,
+        [wallet, amount]
+      );
 
-            // Record transaction
-            await client.query(`
+      // Record transaction
+      await client.query(
+        `
                 INSERT INTO currency_transactions (wallet, amount, balance_after, source, source_id)
                 VALUES ($1, $2, $3, $4, $5)
-            `, [wallet, -amount, result.rows[0].balance, source, sourceId]);
+            `,
+        [wallet, -amount, result.rows[0].balance, source, sourceId]
+      );
 
-            return result.rows[0];
-        });
+      return result.rows[0];
     });
+  });
 }
 
 /**
  * Record shop purchase
  */
-async function recordShopPurchase(wallet, itemId, price, currency, signature = null, engageTier = 0, discount = 0) {
-    const inventoryCacheKey = `shop:inventory:${wallet}`;
-    const cache = getStorage();
-    await cache.del(inventoryCacheKey).catch(() => {});
+async function recordShopPurchase(
+  wallet,
+  itemId,
+  price,
+  currency,
+  signature = null,
+  engageTier = 0,
+  discount = 0
+) {
+  const inventoryCacheKey = `shop:inventory:${wallet}`;
+  const cache = getStorage();
+  await cache.del(inventoryCacheKey).catch(() => {});
 
-    return transaction(async (client) => {
-        // Add to purchases
-        await client.query(`
+  return transaction(async client => {
+    // Add to purchases
+    await client.query(
+      `
             INSERT INTO purchases (wallet, item_id, price_asdf, burn_signature, currency, engage_tier, discount_applied, xp_granted)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $3)
-        `, [wallet, itemId, price, signature, currency, engageTier, discount]);
+        `,
+      [wallet, itemId, price, signature, currency, engageTier, discount]
+    );
 
-        // Add to inventory
-        await client.query(`
+    // Add to inventory
+    await client.query(
+      `
             INSERT INTO inventory (wallet, item_id, quantity)
             VALUES ($1, $2, 1)
             ON CONFLICT (wallet, item_id) DO UPDATE SET
                 quantity = inventory.quantity + 1
-        `, [wallet, itemId]);
+        `,
+      [wallet, itemId]
+    );
 
-        // Increment quantity_sold if limited
-        await client.query(`
+    // Increment quantity_sold if limited
+    await client.query(
+      `
             UPDATE shop_items SET quantity_sold = quantity_sold + 1
             WHERE id = $1 AND is_limited = true
-        `, [itemId]);
+        `,
+      [itemId]
+    );
 
-        return { success: true, xpGranted: price };
-    });
+    return { success: true, xpGranted: price };
+  });
 }
 
 // ============================================
@@ -1195,38 +1341,37 @@ async function recordShopPurchase(wallet, itemId, price, currency, signature = n
  * Health check
  */
 async function healthCheck() {
-    if (!pool) {
-        return { healthy: false, error: 'Not initialized' };
-    }
+  if (!pool) {
+    return { healthy: false, error: 'Not initialized' };
+  }
 
-    try {
-        const start = Date.now();
-        await pool.query('SELECT 1');
-        const latency = Date.now() - start;
+  try {
+    const start = Date.now();
+    await pool.query('SELECT 1');
+    const latency = Date.now() - start;
 
-        return {
-            healthy: true,
-            latency,
-            poolSize: pool.totalCount,
-            idleCount: pool.idleCount,
-            waitingCount: pool.waitingCount
-        };
-
-    } catch (error) {
-        return { healthy: false, error: error.message };
-    }
+    return {
+      healthy: true,
+      latency,
+      poolSize: pool.totalCount,
+      idleCount: pool.idleCount,
+      waitingCount: pool.waitingCount,
+    };
+  } catch (error) {
+    return { healthy: false, error: error.message };
+  }
 }
 
 /**
  * Close connections
  */
 async function close() {
-    if (pool) {
-        await pool.end();
-        pool = null;
-        isConnected = false;
-        console.log('[PostgreSQL] Connections closed');
-    }
+  if (pool) {
+    await pool.end();
+    pool = null;
+    isConnected = false;
+    console.log('[PostgreSQL] Connections closed');
+  }
 }
 
 // ============================================
@@ -1234,53 +1379,53 @@ async function close() {
 // ============================================
 
 module.exports = {
-    // Connection
-    initialize,
-    getPool,
-    isAvailable,
-    close,
+  // Connection
+  initialize,
+  getPool,
+  isAvailable,
+  close,
 
-    // Query helpers
-    query,
-    transaction,
+  // Query helpers
+  query,
+  transaction,
 
-    // Cache-aside
-    getWithCache,
-    writeWithInvalidation,
+  // Cache-aside
+  getWithCache,
+  writeWithInvalidation,
 
-    // Users
-    getOrCreateUser,
-    updateUserXP,
+  // Users
+  getOrCreateUser,
+  updateUserXP,
 
-    // Leaderboard
-    getLeaderboard,
-    recordBurn,
+  // Leaderboard
+  getLeaderboard,
+  recordBurn,
 
-    // Games
-    saveGameScore,
-    getGameLeaderboard,
+  // Games
+  saveGameScore,
+  getGameLeaderboard,
 
-    // Stats
-    getStatistics,
-    healthCheck,
+  // Stats
+  getStatistics,
+  healthCheck,
 
-    // Shop V2
-    seedShopItems,
-    getShopCatalog,
-    getShopItem,
-    getUserShopInventory,
-    getUserEquipped,
-    setEquippedItem,
-    getUserFavorites,
-    addFavorite,
-    removeFavorite,
-    getCollections,
-    getActiveEvents,
-    getUserCurrency,
-    addUserCurrency,
-    spendUserCurrency,
-    recordShopPurchase,
+  // Shop V2
+  seedShopItems,
+  getShopCatalog,
+  getShopItem,
+  getUserShopInventory,
+  getUserEquipped,
+  setEquippedItem,
+  getUserFavorites,
+  addFavorite,
+  removeFavorite,
+  getCollections,
+  getActiveEvents,
+  getUserCurrency,
+  addUserCurrency,
+  spendUserCurrency,
+  recordShopPurchase,
 
-    // Config
-    DB_CONFIG
+  // Config
+  DB_CONFIG,
 };
