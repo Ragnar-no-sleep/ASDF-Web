@@ -1,5 +1,5 @@
 /* ============================================
-   ASDF HUB - Phi Harmony Edition
+   ASDF HUB - Phi Harmony + Living Cosmos
    Philosophy: Mathematical beauty. Golden ratio.
    "Don't trust. Verify. This is fine." 🔥
    ============================================ */
@@ -33,6 +33,12 @@
   --fire-deep: #dc2626;
   --ember: #b45309;
 
+  /* Particle colors */
+  --particle-blue: #60a5fa;
+  --particle-cyan: #22d3d8;
+  --particle-purple: #a78bfa;
+  --particle-pink: #f472b6;
+
   --text-primary: #faf8f5;
   --text-secondary: #d6cfc5;
   --text-muted: #8a7a68;
@@ -41,6 +47,8 @@
   --glow-gold: rgba(234, 179, 8, 0.35);
   --glow-fire: rgba(239, 108, 53, 0.3);
   --glow-soft: rgba(252, 211, 77, 0.2);
+  --glow-blue: rgba(96, 165, 250, 0.4);
+  --glow-cyan: rgba(34, 211, 216, 0.35);
 
   /* === MOTION === */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -88,25 +96,178 @@ body.hub-majestic {
       ellipse 50% 50% at var(--phi-lg) var(--phi-md),
       var(--glow-fire) 0%,
       transparent 50%
-    );
-  opacity: 0.8;
+    ),
+    radial-gradient(ellipse 30% 40% at 20% 70%, rgba(96, 165, 250, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 25% 35% at 85% 25%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
+  opacity: 0.85;
   animation: ambient-breathe 12s var(--ease-smooth) infinite;
 }
 
 @keyframes ambient-breathe {
   0%,
   100% {
-    opacity: 0.7;
+    opacity: 0.75;
     transform: scale(1);
   }
   50% {
-    opacity: 0.9;
+    opacity: 0.95;
     transform: scale(1.02);
   }
 }
 
 /* ============================================
-   EMBERS - Sparse, meaningful
+   SPATIAL DUST - Distant twinkling stars
+   ============================================ */
+
+.hub-dust {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hub-dust i {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+/* Phi-distributed star positions */
+.hub-dust i:nth-child(1) {
+  top: 8%;
+  left: 12%;
+  animation: star-twinkle 4s var(--ease-smooth) infinite 0s;
+}
+.hub-dust i:nth-child(2) {
+  top: 15%;
+  left: var(--phi-md);
+  animation: star-twinkle 5s var(--ease-smooth) infinite 0.5s;
+}
+.hub-dust i:nth-child(3) {
+  top: 22%;
+  left: var(--phi-lg);
+  animation: star-twinkle 3.5s var(--ease-smooth) infinite 1s;
+}
+.hub-dust i:nth-child(4) {
+  top: 12%;
+  left: 82%;
+  animation: star-twinkle 4.5s var(--ease-smooth) infinite 1.5s;
+}
+.hub-dust i:nth-child(5) {
+  top: var(--phi-md);
+  left: 8%;
+  animation: star-twinkle 5.5s var(--ease-smooth) infinite 0.3s;
+}
+.hub-dust i:nth-child(6) {
+  top: 45%;
+  left: 18%;
+  animation: star-twinkle 4s var(--ease-smooth) infinite 2s;
+}
+.hub-dust i:nth-child(7) {
+  top: 55%;
+  left: 88%;
+  animation: star-twinkle 3s var(--ease-smooth) infinite 0.8s;
+}
+.hub-dust i:nth-child(8) {
+  top: var(--phi-lg);
+  left: var(--phi-sm);
+  animation: star-twinkle 4.8s var(--ease-smooth) infinite 1.2s;
+}
+.hub-dust i:nth-child(9) {
+  top: 72%;
+  left: 75%;
+  animation: star-twinkle 5.2s var(--ease-smooth) infinite 0.6s;
+}
+.hub-dust i:nth-child(10) {
+  top: 78%;
+  left: 45%;
+  animation: star-twinkle 3.8s var(--ease-smooth) infinite 1.8s;
+}
+.hub-dust i:nth-child(11) {
+  top: 85%;
+  left: 15%;
+  animation: star-twinkle 4.2s var(--ease-smooth) infinite 2.2s;
+}
+.hub-dust i:nth-child(12) {
+  top: 5%;
+  left: 55%;
+  animation: star-twinkle 5s var(--ease-smooth) infinite 0.4s;
+}
+.hub-dust i:nth-child(13) {
+  top: 32%;
+  left: 92%;
+  animation: star-twinkle 3.2s var(--ease-smooth) infinite 1.4s;
+}
+.hub-dust i:nth-child(14) {
+  top: 68%;
+  left: 5%;
+  animation: star-twinkle 4.6s var(--ease-smooth) infinite 0.9s;
+}
+.hub-dust i:nth-child(15) {
+  top: 48%;
+  left: 72%;
+  animation: star-twinkle 5.8s var(--ease-smooth) infinite 1.6s;
+}
+.hub-dust i:nth-child(16) {
+  top: 25%;
+  left: 28%;
+  animation: star-twinkle 3.6s var(--ease-smooth) infinite 2.4s;
+}
+.hub-dust i:nth-child(17) {
+  top: 90%;
+  left: var(--phi-lg);
+  animation: star-twinkle 4.4s var(--ease-smooth) infinite 0.7s;
+}
+.hub-dust i:nth-child(18) {
+  top: 18%;
+  left: 68%;
+  animation: star-twinkle 5.4s var(--ease-smooth) infinite 1.1s;
+}
+.hub-dust i:nth-child(19) {
+  top: var(--phi-lg);
+  left: 95%;
+  animation: star-twinkle 3.4s var(--ease-smooth) infinite 1.9s;
+}
+.hub-dust i:nth-child(20) {
+  top: 82%;
+  left: 85%;
+  animation: star-twinkle 4.9s var(--ease-smooth) infinite 0.2s;
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.5);
+  }
+}
+
+/* Some stars are brighter */
+.hub-dust i:nth-child(3n) {
+  width: 2px;
+  height: 2px;
+  box-shadow: 0 0 3px var(--gold-pale);
+}
+
+.hub-dust i:nth-child(5n) {
+  background: var(--particle-blue);
+  box-shadow: 0 0 4px var(--glow-blue);
+}
+
+.hub-dust i:nth-child(7n) {
+  background: var(--particle-cyan);
+  box-shadow: 0 0 4px var(--glow-cyan);
+}
+
+/* ============================================
+   FLOATING EMBERS - Fire particles
    ============================================ */
 
 .hub-embers {
@@ -128,7 +289,7 @@ body.hub-majestic {
     0 0 8px var(--glow-fire);
 }
 
-/* Phi-distributed positions */
+/* Phi-distributed ember positions */
 .hub-embers i:nth-child(1) {
   left: var(--phi-sm);
   animation: ember-drift 14s var(--ease-smooth) infinite 0s;
@@ -161,15 +322,34 @@ body.hub-majestic {
   left: 45%;
   animation: ember-drift 14s var(--ease-smooth) infinite 6s;
 }
+.hub-embers i:nth-child(9) {
+  left: 15%;
+  animation: ember-drift 19s var(--ease-smooth) infinite 1.5s;
+}
+.hub-embers i:nth-child(10) {
+  left: 85%;
+  animation: ember-drift 11s var(--ease-smooth) infinite 3.5s;
+}
+
+/* Amber variants */
+.hub-embers i:nth-child(odd) {
+  background: var(--amber);
+  box-shadow:
+    0 0 4px var(--amber),
+    0 0 10px var(--glow-gold);
+}
 
 @keyframes ember-drift {
   0% {
     bottom: -2%;
     opacity: 0;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
   10% {
-    opacity: 0.4;
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(15px) scale(0.8);
   }
   90% {
     opacity: 0.15;
@@ -177,8 +357,310 @@ body.hub-majestic {
   100% {
     bottom: 100%;
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(30px) scale(0.5);
   }
+}
+
+/* ============================================
+   MOLECULAR CELLS - Living organisms
+   ============================================ */
+
+.hub-cells {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hub-cells i {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+/* Cell 1 - Large cyan organism */
+.hub-cells i:nth-child(1) {
+  width: 40px;
+  height: 40px;
+  top: 20%;
+  left: 15%;
+  background: radial-gradient(circle at 30% 30%, var(--particle-cyan) 0%, transparent 70%);
+  border: 1px solid rgba(34, 211, 216, 0.2);
+  animation: cell-drift-1 25s var(--ease-smooth) infinite;
+}
+
+/* Cell 2 - Medium blue organism */
+.hub-cells i:nth-child(2) {
+  width: 28px;
+  height: 28px;
+  top: 65%;
+  right: 12%;
+  background: radial-gradient(circle at 40% 40%, var(--particle-blue) 0%, transparent 70%);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  animation: cell-drift-2 20s var(--ease-smooth) infinite 2s;
+}
+
+/* Cell 3 - Small purple organism */
+.hub-cells i:nth-child(3) {
+  width: 18px;
+  height: 18px;
+  top: 40%;
+  left: 80%;
+  background: radial-gradient(circle at 35% 35%, var(--particle-purple) 0%, transparent 70%);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  animation: cell-drift-3 18s var(--ease-smooth) infinite 4s;
+}
+
+/* Cell 4 - Tiny pink organism */
+.hub-cells i:nth-child(4) {
+  width: 12px;
+  height: 12px;
+  top: 75%;
+  left: 25%;
+  background: radial-gradient(circle at 30% 30%, var(--particle-pink) 0%, transparent 70%);
+  border: 1px solid rgba(244, 114, 182, 0.15);
+  animation: cell-drift-4 22s var(--ease-smooth) infinite 1s;
+}
+
+/* Cell 5 - Medium gold organism */
+.hub-cells i:nth-child(5) {
+  width: 24px;
+  height: 24px;
+  top: 30%;
+  right: 25%;
+  background: radial-gradient(circle at 35% 35%, var(--gold-soft) 0%, transparent 70%);
+  border: 1px solid rgba(234, 179, 8, 0.15);
+  animation: cell-drift-5 28s var(--ease-smooth) infinite 3s;
+}
+
+/* Cell 6 - Small cyan organism */
+.hub-cells i:nth-child(6) {
+  width: 15px;
+  height: 15px;
+  bottom: 20%;
+  left: 60%;
+  background: radial-gradient(circle at 40% 40%, var(--particle-cyan) 0%, transparent 70%);
+  border: 1px solid rgba(34, 211, 216, 0.12);
+  animation: cell-drift-6 16s var(--ease-smooth) infinite 5s;
+}
+
+/* Cell drift animations - organic floating paths */
+@keyframes cell-drift-1 {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 0.35;
+    transform: translate(30px, -20px) scale(1.1) rotate(10deg);
+  }
+  50% {
+    opacity: 0.25;
+    transform: translate(50px, 10px) scale(0.95) rotate(-5deg);
+  }
+  75% {
+    opacity: 0.4;
+    transform: translate(20px, 30px) scale(1.05) rotate(15deg);
+  }
+}
+
+@keyframes cell-drift-2 {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    opacity: 0.3;
+    transform: translate(-40px, 20px) scale(1.15);
+  }
+  66% {
+    opacity: 0.2;
+    transform: translate(-20px, -30px) scale(0.9);
+  }
+}
+
+@keyframes cell-drift-3 {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  38.2% {
+    opacity: 0.28;
+    transform: translate(-25px, 15px) scale(1.2) rotate(-20deg);
+  }
+  61.8% {
+    opacity: 0.18;
+    transform: translate(10px, -25px) scale(0.85) rotate(10deg);
+  }
+}
+
+@keyframes cell-drift-4 {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: translate(35px, -15px) scale(1.25);
+  }
+}
+
+@keyframes cell-drift-5 {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  30% {
+    opacity: 0.25;
+    transform: translate(-20px, 25px) scale(1.1) rotate(8deg);
+  }
+  70% {
+    opacity: 0.18;
+    transform: translate(15px, -20px) scale(0.95) rotate(-12deg);
+  }
+}
+
+@keyframes cell-drift-6 {
+  0%,
+  100% {
+    opacity: 0.06;
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    opacity: 0.2;
+    transform: translate(20px, 20px) scale(1.3);
+  }
+  80% {
+    opacity: 0.12;
+    transform: translate(-15px, 10px) scale(0.9);
+  }
+}
+
+/* Cell membrane pulse effect */
+.hub-cells i::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.3;
+  animation: membrane-pulse 3s var(--ease-smooth) infinite;
+}
+
+@keyframes membrane-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.1;
+  }
+}
+
+/* ============================================
+   SYNAPSES - Neural connections
+   ============================================ */
+
+.hub-synapses {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hub-synapses i {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--particle-cyan) 50%, transparent 100%);
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Synapse connections */
+.hub-synapses i:nth-child(1) {
+  width: 120px;
+  top: 35%;
+  left: 20%;
+  transform: rotate(25deg);
+  animation: synapse-fire 8s var(--ease-smooth) infinite 0s;
+}
+
+.hub-synapses i:nth-child(2) {
+  width: 80px;
+  top: 60%;
+  right: 30%;
+  transform: rotate(-15deg);
+  background: linear-gradient(90deg, transparent 0%, var(--particle-purple) 50%, transparent 100%);
+  animation: synapse-fire 10s var(--ease-smooth) infinite 2s;
+}
+
+.hub-synapses i:nth-child(3) {
+  width: 100px;
+  top: 25%;
+  right: 15%;
+  transform: rotate(40deg);
+  background: linear-gradient(90deg, transparent 0%, var(--particle-blue) 50%, transparent 100%);
+  animation: synapse-fire 7s var(--ease-smooth) infinite 4s;
+}
+
+.hub-synapses i:nth-child(4) {
+  width: 60px;
+  bottom: 30%;
+  left: 35%;
+  transform: rotate(-30deg);
+  background: linear-gradient(90deg, transparent 0%, var(--gold-soft) 50%, transparent 100%);
+  animation: synapse-fire 12s var(--ease-smooth) infinite 1s;
+}
+
+@keyframes synapse-fire {
+  0%,
+  85%,
+  100% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  10% {
+    opacity: 0.4;
+    clip-path: inset(0 0 0 0);
+  }
+  20% {
+    opacity: 0.6;
+    clip-path: inset(0 0 0 0);
+  }
+  30% {
+    opacity: 0.3;
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+/* Synapse endpoints - neural nodes */
+.hub-synapses i::before,
+.hub-synapses i::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: inherit;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hub-synapses i::before {
+  left: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.hub-synapses i::after {
+  right: 0;
+  box-shadow: 0 0 6px currentColor;
 }
 
 /* ============================================
@@ -576,12 +1058,12 @@ body.hub-majestic {
 }
 
 /* ============================================
-   TOOLS - Phi Spiral Expansion
+   TOOLS - Phi Spiral Expansion (Moved Up)
    ============================================ */
 
 .hub-tools {
   position: absolute;
-  bottom: var(--phi-xs);
+  bottom: var(--phi-sm); /* Moved up from phi-xs */
   right: var(--phi-sm);
   z-index: 25;
 }
@@ -654,7 +1136,7 @@ body.hub-majestic {
   z-index: 2;
 }
 
-/* === TOOL ITEMS - Phi Spiral Positions === */
+/* === TOOL ITEMS - Phi Spiral (Upward expansion) === */
 .hub-tools-item {
   position: absolute;
   width: 56px;
@@ -699,50 +1181,40 @@ body.hub-majestic {
   letter-spacing: 0.05em;
 }
 
-/* PHI SPIRAL POSITIONS
-   Golden angle ≈ 137.5°
-   Distance ratio = φ (1.618)
-
-   Tool 1: angle 0°,    distance 70px
-   Tool 2: angle 137.5°, distance 70 * φ^0.3 ≈ 82px
-   Tool 3: angle 275°,   distance 70 * φ^0.6 ≈ 97px
-   Tool 4: angle 412.5° (52.5°), distance 70 * φ^0.9 ≈ 114px
-*/
-
+/* PHI SPIRAL - Upward arc expansion */
 .hub-tools-item[data-tool='burns'] {
-  --spiral-angle: -70deg;
-  --spiral-dist: 75px;
+  --spiral-x: -70px;
+  --spiral-y: -45px;
 }
 
 .hub-tools-item[data-tool='forecast'] {
-  --spiral-angle: -152.5deg; /* -70 - 82.5 (golden angle / 1.67) */
-  --spiral-dist: 88px;
+  --spiral-x: -30px;
+  --spiral-y: -85px;
 }
 
 .hub-tools-item[data-tool='holdex'] {
-  --spiral-angle: -220deg;
-  --spiral-dist: 100px;
+  --spiral-x: 35px;
+  --spiral-y: -75px;
 }
 
 .hub-tools-item[data-tool='gas'] {
-  --spiral-angle: -280deg;
-  --spiral-dist: 112px;
+  --spiral-x: 75px;
+  --spiral-y: -35px;
 }
 
 /* Collapsed state */
 .hub-tools-item {
-  transform: rotate(calc(var(--spiral-angle) * 0.2)) translateY(20px) scale(0.3);
+  transform: translate(0, 0) scale(0.3);
 }
 
-/* Expanded state - Phi spiral unfold */
+/* Expanded state - Arc unfold */
 .hub-tools.expanded .hub-tools-item {
   opacity: 1;
   pointer-events: auto;
-  transform: rotate(var(--spiral-angle)) translateY(calc(var(--spiral-dist) * -1))
-    rotate(calc(var(--spiral-angle) * -1));
+  transform: translate(var(--spiral-x), var(--spiral-y)) scale(1);
 }
 
-/* Phi-based stagger timing (each delay = previous * φ) */
+/* Phi-based stagger timing */
 .hub-tools.expanded .hub-tools-item[data-tool='burns'] {
   transition-delay: 0ms;
 }
@@ -750,10 +1222,10 @@ body.hub-majestic {
   transition-delay: 50ms;
 }
 .hub-tools.expanded .hub-tools-item[data-tool='holdex'] {
-  transition-delay: 81ms; /* 50 * φ */
+  transition-delay: 81ms;
 }
 .hub-tools.expanded .hub-tools-item[data-tool='gas'] {
-  transition-delay: 131ms; /* 81 * φ */
+  transition-delay: 131ms;
 }
 
 /* Tool item hover */
@@ -857,8 +1329,8 @@ body.hub-majestic {
   }
 
   .hub-tools {
-    bottom: 8%;
-    right: 12%;
+    bottom: 18%;
+    right: 8%;
   }
   .hub-tools-trigger {
     width: 68px;
@@ -874,16 +1346,32 @@ body.hub-majestic {
   }
 
   .hub-tools-item[data-tool='burns'] {
-    --spiral-dist: 60px;
+    --spiral-x: -55px;
+    --spiral-y: -35px;
   }
   .hub-tools-item[data-tool='forecast'] {
-    --spiral-dist: 72px;
+    --spiral-x: -20px;
+    --spiral-y: -65px;
   }
   .hub-tools-item[data-tool='holdex'] {
-    --spiral-dist: 84px;
+    --spiral-x: 25px;
+    --spiral-y: -55px;
   }
   .hub-tools-item[data-tool='gas'] {
-    --spiral-dist: 96px;
+    --spiral-x: 55px;
+    --spiral-y: -25px;
+  }
+
+  /* Reduce particle visibility on mobile */
+  .hub-cells i {
+    opacity: 0 !important;
+    animation: none !important;
+  }
+  .hub-synapses i {
+    display: none;
+  }
+  .hub-dust i:nth-child(n + 11) {
+    display: none;
   }
 }
 
@@ -917,9 +1405,17 @@ body.hub-majestic {
     bottom: 8%;
   }
 
+  .hub-tools {
+    bottom: 20%;
+  }
   .hub-tools-trigger {
     width: 58px;
     height: 56px;
+  }
+
+  .hub-cells,
+  .hub-synapses {
+    display: none;
   }
 }
 
@@ -933,5 +1429,12 @@ body.hub-majestic {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.2s !important;
+  }
+
+  .hub-cells,
+  .hub-synapses,
+  .hub-dust,
+  .hub-embers {
+    display: none;
   }
 }
