@@ -1018,6 +1018,98 @@ h6 {
 }
 
 /* ============================================
+   SHIMMER / SKELETON LOADING
+   ============================================ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Base skeleton class */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-md);
+}
+
+/* Skeleton variants */
+.skeleton-text {
+  height: 1em;
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-text:last-child {
+  width: 60%;
+}
+
+.skeleton-title {
+  height: 1.5em;
+  width: 40%;
+  margin-bottom: var(--space-3);
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+}
+
+.skeleton-card {
+  height: 200px;
+}
+
+.skeleton-stat {
+  height: 64px;
+  width: 120px;
+}
+
+/* Loading state modifier for any element */
+.is-loading {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+}
+
+.is-loading > * {
+  visibility: hidden;
+}
+
+.is-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: inherit;
+}
+
+/* Disable shimmer for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .is-loading::after {
+    animation: none;
+    background: var(--bg-surface);
+  }
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 
