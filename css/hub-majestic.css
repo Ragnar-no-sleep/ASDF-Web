@@ -133,6 +133,7 @@ body.hub-majestic {
   background: var(--text-muted);
   border-radius: 50%;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 /* Phi-distributed star positions */
@@ -287,6 +288,7 @@ body.hub-majestic {
   box-shadow:
     0 0 4px var(--fire),
     0 0 8px var(--glow-fire);
+  will-change: transform, opacity;
 }
 
 /* Phi-distributed ember positions */
@@ -1369,7 +1371,7 @@ body.hub-majestic {
     --spiral-y: -40px;
   }
 
-  /* Reduce particle visibility on mobile */
+  /* Reduce particle visibility on mobile for performance */
   .hub-cells i {
     opacity: 0 !important;
     animation: none !important;
@@ -1378,6 +1380,23 @@ body.hub-majestic {
     display: none;
   }
   .hub-dust i:nth-child(n + 11) {
+    display: none;
+  }
+  .hub-embers i:nth-child(n + 6) {
+    display: none;
+  }
+}
+
+/* Very small screens - minimal particles */
+@media (max-width: 480px) {
+  .hub-cells,
+  .hub-synapses {
+    display: none;
+  }
+  .hub-dust i:nth-child(n + 6) {
+    display: none;
+  }
+  .hub-embers i:nth-child(n + 4) {
     display: none;
   }
 }
