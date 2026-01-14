@@ -1,6 +1,8 @@
 /**
  * ASDF Hub Majestic - Interactive Controller
- * Handles entrance animations and magnetic tool interactions
+ * Version: 2.0 (Ragnar Edition)
+ * Handles entrance animations, magnetic tool interactions, and fire effects
+ * Performance optimized for 60fps
  */
 
 (function () {
@@ -13,10 +15,38 @@
   const CONFIG = {
     entranceDelay: 100, // ms before starting entrance animation
     magneticRadius: 200, // px - radius of magnetic effect
-    magneticStrength: 0.3, // 0-1 - how strongly tools react to cursor
-    toolsExpandDelay: 150, // ms delay between each tool appearing
+    magneticStrength: 0.25, // 0-1 - how strongly tools react to cursor (reduced for smoothness)
+    toolsExpandDelay: 120, // ms delay between each tool appearing
     toolsCollapseDelay: 300, // ms before tools collapse when leaving zone
+    throttleMs: 16, // ~60fps throttle for mousemove
+    parallaxStrength: 0.015, // Reduced parallax for subtlety
   };
+
+  // ============================================
+  // PERFORMANCE UTILITIES
+  // ============================================
+
+  /**
+   * Throttle function for smooth 60fps animations
+   */
+  function throttle(fn, ms) {
+    let lastCall = 0;
+    let scheduled = false;
+    return function (...args) {
+      const now = performance.now();
+      if (now - lastCall >= ms) {
+        lastCall = now;
+        fn.apply(this, args);
+      } else if (!scheduled) {
+        scheduled = true;
+        requestAnimationFrame(() => {
+          scheduled = false;
+          lastCall = performance.now();
+          fn.apply(this, args);
+        });
+      }
+    };
+  }
 
   // ============================================
   // DOM REFERENCES
@@ -74,8 +104,9 @@
     toolsTrigger.addEventListener('mouseenter', expandTools);
     toolsTrigger.addEventListener('click', toggleTools);
 
-    // Track mouse for magnetic effect
-    toolsZone.addEventListener('mousemove', handleMagneticEffect);
+    // Throttled magnetic effect for smooth 60fps
+    const throttledMagnetic = throttle(handleMagneticEffect, CONFIG.throttleMs);
+    toolsZone.addEventListener('mousemove', throttledMagnetic, { passive: true });
     toolsZone.addEventListener('mouseleave', handleToolsLeave);
 
     // Touch support
@@ -215,27 +246,37 @@
   }
 
   // ============================================
-  // PORTAL INTERACTIONS
+  // PORTAL INTERACTIONS - Throttled for 60fps
   // ============================================
 
   /**
-   * Initialize portal hover effects
+   * Initialize portal hover effects with throttling
    */
   function initPortalInteractions() {
     const portals = document.querySelectorAll('.hub-portal:not(.unavailable)');
 
     portals.forEach(portal => {
-      // Add subtle glow follow effect
-      portal.addEventListener('mousemove', e => {
-        const rect = portal.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
+      // Cache rect on mouseenter for performance
+      let cachedRect = null;
+
+      portal.addEventListener('mouseenter', () => {
+        cachedRect = portal.getBoundingClientRect();
+      });
+
+      // Throttled glow follow effect
+      const handleGlowFollow = throttle(e => {
+        if (!cachedRect) cachedRect = portal.getBoundingClientRect();
+        const x = ((e.clientX - cachedRect.left) / cachedRect.width) * 100;
+        const y = ((e.clientY - cachedRect.top) / cachedRect.height) * 100;
 
         portal.style.setProperty('--glow-x', `${x}%`);
         portal.style.setProperty('--glow-y', `${y}%`);
-      });
+      }, CONFIG.throttleMs);
+
+      portal.addEventListener('mousemove', handleGlowFollow, { passive: true });
 
       portal.addEventListener('mouseleave', () => {
+        cachedRect = null;
         portal.style.removeProperty('--glow-x');
         portal.style.removeProperty('--glow-y');
       });
@@ -243,24 +284,40 @@
   }
 
   // ============================================
-  // AMBIENT EFFECTS
+  // AMBIENT EFFECTS - Throttled for 60fps
   // ============================================
 
   /**
-   * Initialize subtle ambient effects
+   * Initialize subtle ambient effects with performance optimization
    */
   function initAmbientEffects() {
-    // Parallax effect on background glow
-    document.addEventListener('mousemove', e => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    const bg = document.querySelector('.hub-background');
+    if (!bg) return;
 
-      const bg = document.querySelector('.hub-background');
-      if (bg) {
-        bg.style.setProperty('--parallax-x', `${x}px`);
-        bg.style.setProperty('--parallax-y', `${y}px`);
-      }
+    // Cache viewport dimensions
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+
+    // Update viewport on resize (debounced)
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+      }, 150);
     });
+
+    // Throttled parallax effect
+    const handleParallax = throttle(e => {
+      const x = (e.clientX / viewportWidth - 0.5) * 30;
+      const y = (e.clientY / viewportHeight - 0.5) * 30;
+
+      bg.style.setProperty('--parallax-x', `${x}px`);
+      bg.style.setProperty('--parallax-y', `${y}px`);
+    }, CONFIG.throttleMs);
+
+    document.addEventListener('mousemove', handleParallax, { passive: true });
   }
 
   // ============================================

@@ -1,7 +1,8 @@
 /* ============================================
    ASDF HUB MAJESTIC - Landing Page
-   Version: 1.0
-   Style: Warm, Premium, Radial
+   Version: 2.0 (Ragnar Edition)
+   Style: Warm, Premium, Radial + Viking Fire
+   Performance: Optimized for 60fps
    ============================================ */
 
 /* ============================================
@@ -67,6 +68,14 @@
   --ease-majestic: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-float: cubic-bezier(0.45, 0, 0.55, 1);
   --ease-magnetic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-ragnar: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Ragnar Fire Colors */
+  --fire-core: #ff6b35;
+  --fire-mid: #ea4e33;
+  --fire-outer: #c41e3a;
+  --fire-glow: rgba(255, 107, 53, 0.6);
+  --ember-glow: rgba(234, 78, 51, 0.4);
 }
 
 /* ============================================
@@ -99,7 +108,8 @@ body.hub-majestic {
 }
 
 /* ============================================
-   BACKGROUND - Warm Ambient
+   BACKGROUND - Warm Ambient + Ragnar Fire
+   GPU-optimized for 60fps
    ============================================ */
 
 .hub-background {
@@ -112,9 +122,10 @@ body.hub-majestic {
     var(--hub-bg-deep) 100%
   );
   overflow: hidden;
+  contain: strict;
 }
 
-/* Warm glow orbs - with parallax support */
+/* Warm glow orbs - GPU accelerated */
 .hub-background::before {
   content: '';
   position: absolute;
@@ -125,9 +136,10 @@ body.hub-majestic {
   background: radial-gradient(circle, var(--glow-gold) 0%, transparent 70%);
   filter: blur(100px);
   opacity: 0.5;
-  animation: float-glow 20s ease-in-out infinite;
-  transform: translate(var(--parallax-x, 0), var(--parallax-y, 0));
-  transition: transform 0.8s var(--ease-float);
+  will-change: transform, opacity;
+  transform: translate3d(var(--parallax-x, 0), var(--parallax-y, 0), 0);
+  animation: float-glow 20s var(--ease-float) infinite;
+  backface-visibility: hidden;
 }
 
 .hub-background::after {
@@ -140,24 +152,49 @@ body.hub-majestic {
   background: radial-gradient(circle, var(--glow-amber) 0%, transparent 70%);
   filter: blur(120px);
   opacity: 0.4;
-  animation: float-glow 25s ease-in-out infinite reverse;
-  transform: translate(calc(var(--parallax-x, 0) * -0.5), calc(var(--parallax-y, 0) * -0.5));
-  transition: transform 0.8s var(--ease-float);
+  will-change: transform, opacity;
+  transform: translate3d(calc(var(--parallax-x, 0) * -0.5), calc(var(--parallax-y, 0) * -0.5), 0);
+  animation: float-glow 25s var(--ease-float) infinite reverse;
+  backface-visibility: hidden;
+}
+
+/* Fire glow layer - Ragnar */
+.hub-background-fire {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, var(--fire-glow) 0%, var(--ember-glow) 30%, transparent 60%);
+  filter: blur(80px);
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(0.8);
+  will-change: transform, opacity;
+  animation: fire-pulse 4s var(--ease-ragnar) infinite;
+  pointer-events: none;
 }
 
 @keyframes float-glow {
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(30px, -20px) scale(1.05);
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.5;
   }
   50% {
-    transform: translate(-20px, 30px) scale(0.95);
+    transform: translate3d(20px, -15px, 0) scale(1.02);
+    opacity: 0.6;
   }
-  75% {
-    transform: translate(20px, 20px) scale(1.02);
+}
+
+@keyframes fire-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translate3d(-50%, -50%, 0) scale(0.95);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translate3d(-50%, -50%, 0) scale(1.05);
   }
 }
 
@@ -200,7 +237,7 @@ body.hub-majestic {
   justify-content: center;
 }
 
-/* Center element */
+/* Center element - GPU optimized */
 .hub-center {
   position: absolute;
   z-index: 20;
@@ -218,51 +255,118 @@ body.hub-majestic {
     var(--hub-bg-elevated) 100%
   );
   border: 1px solid var(--border-warm-default);
-  box-shadow:
-    0 0 60px var(--glow-soft),
-    0 0 120px rgba(234, 179, 8, 0.1),
-    inset 0 0 40px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
-/* Subtle breathing animation for center */
-.hub-ready .hub-center {
-  animation: center-breathe 6s var(--ease-float) infinite;
+/* Glow layers - animate opacity instead of box-shadow */
+.hub-center::before,
+.hub-center::after {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
 }
 
-@keyframes center-breathe {
+.hub-center::before {
+  background: radial-gradient(circle, var(--glow-soft) 0%, transparent 70%);
+  opacity: 0.6;
+}
+
+.hub-center::after {
+  background: radial-gradient(circle, var(--fire-glow) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(1.2);
+}
+
+/* Subtle breathing - opacity only for 60fps */
+.hub-ready .hub-center::before {
+  animation: center-glow-breathe 6s var(--ease-float) infinite;
+}
+
+.hub-ready .hub-center::after {
+  animation: center-fire-breathe 4s var(--ease-ragnar) infinite;
+}
+
+@keyframes center-glow-breathe {
   0%,
   100% {
-    box-shadow:
-      0 0 60px var(--glow-soft),
-      0 0 120px rgba(234, 179, 8, 0.1),
-      inset 0 0 40px rgba(0, 0, 0, 0.3);
+    opacity: 0.5;
+    transform: scale(1);
   }
   50% {
-    box-shadow:
-      0 0 80px var(--glow-soft),
-      0 0 150px rgba(234, 179, 8, 0.15),
-      inset 0 0 40px rgba(0, 0, 0, 0.3);
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes center-fire-breathe {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.25);
   }
 }
 
 .hub-center-logo {
+  position: relative;
   font-size: 48px;
   margin-bottom: 8px;
-  filter: drop-shadow(0 0 20px var(--glow-gold));
+  z-index: 1;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
-/* Fire logo flicker after entrance */
+/* Fire glow behind logo - optimized */
+.hub-center-logo::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, var(--glow-gold) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.6;
+  z-index: -1;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+/* Fire logo pulse - opacity only */
+.hub-ready .hub-center-logo::before {
+  animation: logo-glow-pulse 3s var(--ease-ragnar) infinite;
+}
+
+/* Subtle logo float */
 .hub-ready .hub-center-logo {
-  animation: logo-flicker 4s ease-in-out infinite;
+  animation: logo-float 6s var(--ease-float) infinite;
 }
 
-@keyframes logo-flicker {
+@keyframes logo-glow-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 20px var(--glow-gold));
+    opacity: 0.5;
+    transform: scale(1);
   }
   50% {
-    filter: drop-shadow(0 0 30px var(--glow-gold)) drop-shadow(0 0 10px var(--glow-amber));
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -3px, 0);
   }
 }
 
@@ -275,7 +379,7 @@ body.hub-majestic {
   color: var(--gold-400);
 }
 
-/* Orbital ring */
+/* Orbital rings - GPU accelerated */
 .hub-orbit {
   position: absolute;
   width: 100%;
@@ -283,6 +387,9 @@ body.hub-majestic {
   border: 1px solid var(--border-warm-subtle);
   border-radius: 50%;
   opacity: 0.5;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 .hub-orbit-inner {
@@ -297,26 +404,107 @@ body.hub-majestic {
   height: 100%;
 }
 
-/* Subtle orbit rotation after entrance */
+/* Orbit rotation - GPU accelerated with reduced frequency */
 .hub-ready .hub-orbit-inner {
-  animation: orbit-rotate 60s linear infinite;
+  animation: orbit-rotate 120s linear infinite;
 }
 
 .hub-ready .hub-orbit-outer {
-  animation: orbit-rotate 90s linear infinite reverse;
+  animation: orbit-rotate 180s linear infinite reverse;
 }
 
 @keyframes orbit-rotate {
   from {
-    transform: rotate(0deg);
+    transform: rotate3d(0, 0, 1, 0deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate3d(0, 0, 1, 360deg);
+  }
+}
+
+/* Fire particles orbit */
+.hub-orbit-particles {
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  top: 7.5%;
+  left: 7.5%;
+  border-radius: 50%;
+  will-change: transform;
+  animation: orbit-rotate 45s linear infinite;
+  pointer-events: none;
+}
+
+.hub-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--fire-core);
+  border-radius: 50%;
+  opacity: 0;
+  will-change: opacity, transform;
+  box-shadow: 0 0 8px var(--fire-glow);
+}
+
+.hub-ready .hub-particle {
+  animation: particle-flicker 2s var(--ease-ragnar) infinite;
+}
+
+.hub-particle:nth-child(1) {
+  top: 0;
+  left: 50%;
+  animation-delay: 0s;
+}
+.hub-particle:nth-child(2) {
+  top: 15%;
+  right: 15%;
+  animation-delay: 0.3s;
+}
+.hub-particle:nth-child(3) {
+  top: 50%;
+  right: 0;
+  animation-delay: 0.6s;
+}
+.hub-particle:nth-child(4) {
+  bottom: 15%;
+  right: 15%;
+  animation-delay: 0.9s;
+}
+.hub-particle:nth-child(5) {
+  bottom: 0;
+  left: 50%;
+  animation-delay: 1.2s;
+}
+.hub-particle:nth-child(6) {
+  bottom: 15%;
+  left: 15%;
+  animation-delay: 1.5s;
+}
+.hub-particle:nth-child(7) {
+  top: 50%;
+  left: 0;
+  animation-delay: 1.8s;
+}
+.hub-particle:nth-child(8) {
+  top: 15%;
+  left: 15%;
+  animation-delay: 2.1s;
+}
+
+@keyframes particle-flicker {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.2);
   }
 }
 
 /* ============================================
-   PORTAL ITEMS (Radial positioned)
+   PORTAL ITEMS - GPU Optimized + Ragnar Fire
    ============================================ */
 
 .hub-portal {
@@ -335,53 +523,71 @@ body.hub-majestic {
   border-radius: 24px;
   padding: 20px;
   cursor: pointer;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
   transition:
-    transform 0.4s var(--ease-majestic),
-    box-shadow 0.4s var(--ease-majestic),
+    transform 0.4s var(--ease-ragnar),
     border-color 0.3s ease;
   transform-origin: center center;
 }
 
+/* Glow layer - separate for GPU optimization */
+.hub-portal::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 30px;
+  background: radial-gradient(circle, var(--fire-glow) 0%, transparent 70%);
+  opacity: 0;
+  z-index: -1;
+  will-change: opacity, transform;
+  transition:
+    opacity 0.4s var(--ease-ragnar),
+    transform 0.4s var(--ease-ragnar);
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.hub-portal:hover::before {
+  opacity: 0.4;
+  transform: scale(1.1);
+}
+
 .hub-portal:hover {
-  transform: scale(1.08) translateY(-4px);
-  border-color: var(--gold-500);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.4),
-    0 0 40px var(--glow-gold);
+  transform: scale(1.08) translate3d(0, -4px, 0);
+  border-color: var(--fire-mid);
 }
 
 /* Cursor-following glow effect */
 .hub-portal::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   border-radius: inherit;
   background: radial-gradient(
     circle at var(--glow-x, 50%) var(--glow-y, 50%),
-    var(--glow-gold) 0%,
+    var(--fire-glow) 0%,
     transparent 60%
   );
   opacity: 0;
-  transition: opacity 0.4s ease;
+  will-change: opacity;
+  transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
 .hub-portal:hover::after {
-  opacity: 0.15;
+  opacity: 0.2;
 }
 
 .hub-portal-icon {
   font-size: 32px;
   margin-bottom: 12px;
-  filter: drop-shadow(0 0 10px var(--glow-soft));
-  transition: transform 0.3s var(--ease-majestic);
+  will-change: transform;
+  transition: transform 0.3s var(--ease-ragnar);
 }
 
 .hub-portal:hover .hub-portal-icon {
-  transform: scale(1.15);
+  transform: scale(1.15) translate3d(0, -2px, 0);
 }
 
 .hub-portal-title {
@@ -404,44 +610,48 @@ body.hub-majestic {
 .hub-portal[data-position='top'] {
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
 }
 
 .hub-portal[data-position='top-right'] {
   top: 15%;
   right: 5%;
+  transform: translate3d(0, 0, 0);
 }
 
 .hub-portal[data-position='bottom-right'] {
   bottom: 15%;
   right: 5%;
+  transform: translate3d(0, 0, 0);
 }
 
 .hub-portal[data-position='bottom-left'] {
   bottom: 15%;
   left: 5%;
+  transform: translate3d(0, 0, 0);
 }
 
 .hub-portal[data-position='top-left'] {
   top: 15%;
   left: 5%;
+  transform: translate3d(0, 0, 0);
 }
 
-/* Hover adjustments for positioned portals */
+/* Hover adjustments - GPU optimized */
 .hub-portal[data-position='top']:hover {
-  transform: translateX(-50%) scale(1.08) translateY(-4px);
+  transform: translate3d(-50%, -4px, 0) scale(1.08);
 }
 .hub-portal[data-position='top-right']:hover {
-  transform: scale(1.08) translate(4px, -4px);
+  transform: translate3d(4px, -4px, 0) scale(1.08);
 }
 .hub-portal[data-position='bottom-right']:hover {
-  transform: scale(1.08) translate(4px, 4px);
+  transform: translate3d(4px, 4px, 0) scale(1.08);
 }
 .hub-portal[data-position='bottom-left']:hover {
-  transform: scale(1.08) translate(-4px, 4px);
+  transform: translate3d(-4px, 4px, 0) scale(1.08);
 }
 .hub-portal[data-position='top-left']:hover {
-  transform: scale(1.08) translate(-4px, -4px);
+  transform: translate3d(-4px, -4px, 0) scale(1.08);
 }
 
 /* ============================================

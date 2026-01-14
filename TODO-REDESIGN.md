@@ -1,6 +1,7 @@
 # ASDF-Web Redesign - Todo List
 
 ## Context
+
 Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-red accent #ea4e33, monospace labels).
 
 **Design System:** `css/system.css`
@@ -11,11 +12,13 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
 ## COMPLETED
 
 ### Design System
+
 - [x] `css/system.css` - Design system complet (Helius/Orb inspired)
   - Colors, typography, spacing, components
   - Buttons, cards, badges, navigation, footer
 
 ### Landing Page
+
 - [x] `index-marketing.html` (route `/m`) - Marketing-first landing
   - "The token that gets rarer every day" hook
   - 5 tools: HolDex, Ignition, Forecast, Burn Engine, Analytics
@@ -23,11 +26,13 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
   - "This is Fine" meme section
 
 ### Burns Page
+
 - [x] `burns-v3.html` - Hall of Flames redesign
   - Uses system.css
   - Mega stat, stats grid, podium leaderboard, live feed
 
 ### Learn Page
+
 - [x] `learn-v3.html` (route `/learn-v3`) - Interactive guide
   - Structure: What is it → Why ASDF → Process → Quiz → Play → Analytics → FAQ
   - φ (golden ratio) explanation in "The Process"
@@ -48,6 +53,7 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
 ## IN PROGRESS
 
 ### Routes Added to server.js
+
 - [x] `/v2` → index-new.html
 - [x] `/power` → index-power.html
 - [x] `/m` → index-marketing.html
@@ -60,24 +66,28 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
 ### Pages to Redesign
 
 #### HolDex (`holdex.html`)
+
 - [ ] Apply system.css design
 - [ ] Clean dashboard layout (remove Pokedex theme)
 - [ ] Keep: search, token table, K-Score widget, filters
 - [ ] Mobile responsive
 
 #### Forecast (`forecast.html`)
+
 - [ ] Apply system.css design
 - [ ] Prediction market UI
 - [ ] Direction betting interface
 - [ ] Countdown/timer styling
 
 #### Games (`games.html`)
+
 - [ ] Apply system.css design
 - [ ] Games hub/arcade layout
 - [ ] Game cards grid
 - [ ] Pump Arena integration
 
 ### Final Steps
+
 - [ ] Replace main `index.html` with `index-marketing.html` content
 - [ ] Replace main `learn.html` with `learn-v3.html` content
 - [ ] Replace main `burns.html` with `burns-v3.html` content
@@ -89,18 +99,23 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
 ## KEY DECISIONS
 
 ### Design Philosophy
+
 - **Style:** Helius/Orb inspired (dark #000, elevated #0a0a0c, accent #ea4e33)
 - **Typography:** Inter (body) + JetBrains Mono (labels, code)
 - **No emojis in design** - Use HTML entities (&#128293; etc.)
 
 ### Information Architecture
+
 **Tools (functional apps):**
+
 - HolDex, Ignition, Forecast, Burn Engine, Analytics
 
 **Explore (content/education):**
+
 - Learn, Build, Games
 
 ### Learn Page Structure
+
 1. What is it - Token déflationniste, burn, tools
 2. Why ASDF - Avantages techniques, différenciation
 3. The Process - Flywheel + φ + K-Score
@@ -110,6 +125,7 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
 7. FAQ/Glossary
 
 ### $asdfasdfa Philosophy (from manifesto)
+
 - "THIS IS FINE" - 3 layers (surface/middle/deep)
 - "Don't Trust, Verify" - everything on-chain
 - φ = 1.618... guides all ratios (no magic numbers)
@@ -138,7 +154,8 @@ ASDF-Web/
 ## NEXT SESSION
 
 Start with:
+
 ```
 Continuing ASDF-Web redesign. Read TODO-REDESIGN.md for context.
-Current priority: [holdex/forecast/games/finalize]
+Current priority: [landing page, learn, deep learn, build]
 ```
