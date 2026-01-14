@@ -110,24 +110,26 @@
 
         <!-- Tools - Interactive expandable -->
         <div class="hub-tools" id="hubTools">
-            <div class="hub-tools-trigger" id="toolsTrigger">
-                <span class="hub-tools-icon">&#128295;</span>
+            <button class="hub-tools-trigger" id="toolsTrigger" aria-expanded="false" aria-controls="toolsMenu" aria-label="Toggle tools menu">
+                <span class="hub-tools-icon" aria-hidden="true">&#128295;</span>
                 <span class="hub-tools-label">Tools</span>
-            </div>
+            </button>
 
             <!-- Expandable tools -->
-            <a href="burns.html" class="hub-tools-item" data-tool="burns">
-                <span>&#128293;</span>
+            <div id="toolsMenu" role="menu" aria-label="Tools menu">
+            <a href="burns.html" class="hub-tools-item" data-tool="burns" role="menuitem">
+                <span aria-hidden="true">&#128293;</span>
                 <span>Burns</span>
             </a>
-            <a href="forecast.html" class="hub-tools-item" data-tool="forecast">
-                <span>&#127919;</span>
+            <a href="forecast.html" class="hub-tools-item" data-tool="forecast" role="menuitem">
+                <span aria-hidden="true">&#127919;</span>
                 <span>Forecast</span>
             </a>
-            <a href="holdex.html" class="hub-tools-item" data-tool="holdex">
-                <span>&#128200;</span>
+            <a href="holdex.html" class="hub-tools-item" data-tool="holdex" role="menuitem">
+                <span aria-hidden="true">&#128200;</span>
                 <span>Holdex</span>
             </a>
+            </div>
         </div>
 
     </main>

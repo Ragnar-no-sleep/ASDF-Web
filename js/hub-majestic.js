@@ -74,6 +74,7 @@
       clearTimeout(closeTimeout);
       if (!isExpanded) {
         tools.classList.add('expanded');
+        trigger.setAttribute('aria-expanded', 'true');
         isExpanded = true;
       }
     };
@@ -81,6 +82,7 @@
     const collapse = () => {
       closeTimeout = setTimeout(() => {
         tools.classList.remove('expanded');
+        trigger.setAttribute('aria-expanded', 'false');
         isExpanded = false;
       }, 300);
     };
@@ -98,6 +100,7 @@
       if (isExpanded) {
         clearTimeout(closeTimeout);
         tools.classList.remove('expanded');
+        trigger.setAttribute('aria-expanded', 'false');
         isExpanded = false;
       } else {
         expand();
