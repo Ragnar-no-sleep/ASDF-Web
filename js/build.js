@@ -1748,8 +1748,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       viewSwitchBtns.forEach(function (b) {
         b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
       });
       this.classList.add('active');
+      this.setAttribute('aria-selected', 'true');
 
       viewSections.forEach(function (section) {
         section.classList.remove('active');

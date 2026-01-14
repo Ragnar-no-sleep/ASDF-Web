@@ -81,21 +81,21 @@
          ============================================ -->
     <div class="view-switcher-container">
         <div class="container">
-            <div class="view-switcher">
-                <button class="view-switch-btn active" data-view="yggdrasil">
-                    <span class="view-switch-icon">🌳</span>
+            <div class="view-switcher" role="tablist" aria-label="Build sections">
+                <button class="view-switch-btn active" data-view="yggdrasil" role="tab" id="tab-yggdrasil" aria-selected="true" aria-controls="view-yggdrasil">
+                    <span class="view-switch-icon" aria-hidden="true">🌳</span>
                     <span class="view-switch-label">Yggdrasil</span>
                 </button>
-                <button class="view-switch-btn" data-view="marketplace">
-                    <span class="view-switch-icon">🏪</span>
+                <button class="view-switch-btn" data-view="marketplace" role="tab" id="tab-marketplace" aria-selected="false" aria-controls="view-marketplace">
+                    <span class="view-switch-icon" aria-hidden="true">🏪</span>
                     <span class="view-switch-label">Marketplace</span>
                 </button>
-                <button class="view-switch-btn" data-view="path">
-                    <span class="view-switch-icon">🧭</span>
+                <button class="view-switch-btn" data-view="path" role="tab" id="tab-path" aria-selected="false" aria-controls="view-path">
+                    <span class="view-switch-icon" aria-hidden="true">🧭</span>
                     <span class="view-switch-label">Find Your Path</span>
                 </button>
-                <button class="view-switch-btn" data-view="journey">
-                    <span class="view-switch-icon">📜</span>
+                <button class="view-switch-btn" data-view="journey" role="tab" id="tab-journey" aria-selected="false" aria-controls="view-journey">
+                    <span class="view-switch-icon" aria-hidden="true">📜</span>
                     <span class="view-switch-label">Your Journey</span>
                 </button>
             </div>
@@ -105,7 +105,7 @@
     <!-- ############################################
          VIEW 1: YGGDRASIL - The World Tree
          ############################################ -->
-    <div class="view-section active" id="view-yggdrasil">
+    <div class="view-section active" id="view-yggdrasil" role="tabpanel" aria-labelledby="tab-yggdrasil">
 
         <!-- Hero -->
         <section class="yggdrasil-hero">
@@ -867,7 +867,7 @@
     <!-- ############################################
          VIEW 2: MARKETPLACE
          ############################################ -->
-    <div class="view-section" id="view-marketplace">
+    <div class="view-section" id="view-marketplace" role="tabpanel" aria-labelledby="tab-marketplace">
 
         <!-- Hero -->
         <section class="marketplace-hero">
@@ -1115,7 +1115,7 @@
     <!-- ############################################
          VIEW 3: FIND YOUR PATH - Career Quiz
          ############################################ -->
-    <div class="view-section" id="view-path">
+    <div class="view-section" id="view-path" role="tabpanel" aria-labelledby="tab-path">
         <section class="path-section">
             <div class="container">
                 <div class="path-container">
@@ -1207,7 +1207,7 @@
     <!-- ############################################
          VIEW 4: YOUR JOURNEY - Learning Dashboard
          ############################################ -->
-    <div class="view-section" id="view-journey">
+    <div class="view-section" id="view-journey" role="tabpanel" aria-labelledby="tab-journey">
         <section class="journey-section">
             <div class="container">
                 <!-- Header -->
