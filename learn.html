@@ -86,8 +86,9 @@
         .swipe-title { position: relative; overflow: hidden; margin-bottom: 8px; }
         .swipe-title h2 {
             font-size: clamp(26px, 5vw, 38px); font-weight: 300;
-            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .swipe-mask {
             position: absolute; inset: 0;
@@ -215,8 +216,9 @@
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
         .final-title {
             font-size: clamp(24px, 5vw, 32px); font-weight: 300;
-            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
         }
         .final-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
