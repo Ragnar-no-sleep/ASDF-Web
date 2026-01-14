@@ -188,31 +188,6 @@ app.get('/holdex', (req, res) => {
   res.sendFile(path.join(__dirname, 'holdex.html'));
 });
 
-// Route /v2 to index-new.html (New Landing Page Preview)
-app.get('/v2', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index-new.html'));
-});
-
-// Route /power to index-power.html (Power-focused Landing)
-app.get('/power', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index-power.html'));
-});
-
-// Route /m to index-marketing.html (Marketing-first Landing)
-app.get('/m', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index-marketing.html'));
-});
-
-// Route /learn-v3 to learn-v3.html (New Learn Page)
-app.get('/learn-v3', (req, res) => {
-  res.sendFile(path.join(__dirname, 'learn-v3.html'));
-});
-
-// Route /hub to hub-majestic.html (New Majestic Hub)
-app.get('/hub', (req, res) => {
-  res.sendFile(path.join(__dirname, 'hub-majestic.html'));
-});
-
 // Route /quick-start to learn.html (5-step Quick Start Guide)
 app.get('/quick-start', (req, res) => {
   res.sendFile(path.join(__dirname, 'learn.html'));
