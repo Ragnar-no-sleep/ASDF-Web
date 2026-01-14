@@ -520,11 +520,12 @@
                 const move = e => {
                     if (!dragging) return;
                     const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-                    x = Math.max(0, cx - startX);
+                    const w = mask.parentElement.offsetWidth;
+                    x = Math.max(0, Math.min(w, cx - startX)); // Clamp to [0, width]
                     mask.style.transform = `translateX(${x}px)`;
 
-                    const w = mask.parentElement.offsetWidth;
-                    if (x > w * 0.5) {
+                    // Complete when dragged 85%+
+                    if (x >= w * 0.85) {
                         dragging = false;
                         state.titles.add(n);
                         state.save();
@@ -539,7 +540,8 @@
                     dragging = false;
                     mask.classList.remove('dragging');
                     const w = mask.parentElement.offsetWidth;
-                    if (x < w * 0.5) {
+                    if (x < w * 0.85) {
+                        // Snap back if not far enough
                         mask.style.transition = 'transform 0.2s';
                         mask.style.transform = 'translateX(0)';
                         setTimeout(() => mask.style.transition = '', 200);
