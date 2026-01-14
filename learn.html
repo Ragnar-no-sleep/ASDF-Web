@@ -55,12 +55,24 @@
             scroll-behavior: smooth;
         }
 
+        /* Prevent FOUC - hide until loaded */
         body {
             font-family: var(--font-sans);
             background: var(--hub-deep);
             color: var(--warm-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* Scroll lock when phase not completed */
+        body.scroll-locked {
+            overflow: hidden;
         }
 
         /* Progress Bar */
@@ -178,6 +190,7 @@
             margin-bottom: 8px;
             cursor: grab;
             user-select: none;
+            touch-action: none;
         }
 
         .phase-title-wrapper:active {
@@ -357,7 +370,7 @@
             font-size: 18px;
             user-select: none;
             touch-action: none;
-            transition: transform 0.1s ease;
+            -webkit-user-drag: none;
         }
 
         .drag-handle:active {
@@ -1009,6 +1022,14 @@
             }
         }
 
+        // Scroll to a specific phase
+        function scrollToPhase(phaseNum) {
+            const phase = document.getElementById(`phase-${phaseNum}`);
+            if (phase) {
+                phase.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         function completePhase(phaseNum) {
             if (state.completedPhases.includes(phaseNum)) return;
 
@@ -1021,18 +1042,118 @@
             updateLevel();
             updateProgress();
 
-            // Unlock next phase
+            // Unlock next phase and scroll to it
             if (phaseNum < 5) {
                 unlockPhase(phaseNum + 1);
+                // Small delay then scroll to next phase
+                setTimeout(() => {
+                    scrollToPhase(phaseNum + 1);
+                }, 500);
             }
 
             // Show final section when all complete
             if (state.completedPhases.length === 5) {
                 document.getElementById('finalSection').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('finalSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
             }
 
             // Save state
             localStorage.setItem('asdf_learn_state', JSON.stringify(state));
+        }
+
+        // ============================================
+        // SCROLL BLOCKING
+        // ============================================
+        function initScrollBlocking() {
+            // Get the highest unlocked phase that is not yet completed
+            function getCurrentRequiredPhase() {
+                for (let i = 1; i <= 5; i++) {
+                    if (!state.completedPhases.includes(i)) {
+                        return i;
+                    }
+                }
+                return null; // All completed
+            }
+
+            // Block wheel scroll if trying to go past incomplete phase
+            window.addEventListener('wheel', (e) => {
+                const requiredPhase = getCurrentRequiredPhase();
+                if (!requiredPhase) return; // All done, allow scroll
+
+                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
+                if (!currentPhaseEl) return;
+
+                const rect = currentPhaseEl.getBoundingClientRect();
+                const isScrollingDown = e.deltaY > 0;
+
+                // If scrolling down and the required phase is visible but not completed
+                if (isScrollingDown && rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
+                    // Check if we're trying to scroll past the phase
+                    const nextPhase = document.getElementById(`phase-${requiredPhase + 1}`) ||
+                                      document.getElementById('finalSection');
+                    if (nextPhase) {
+                        const nextRect = nextPhase.getBoundingClientRect();
+                        // If next section is about to come into view, block
+                        if (nextRect.top < window.innerHeight) {
+                            e.preventDefault();
+                            // Snap back to current required phase
+                            currentPhaseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }
+            }, { passive: false });
+
+            // Also block keyboard scrolling
+            window.addEventListener('keydown', (e) => {
+                const scrollKeys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Space', 'End'];
+                if (!scrollKeys.includes(e.key)) return;
+
+                const requiredPhase = getCurrentRequiredPhase();
+                if (!requiredPhase) return;
+
+                const isScrollingDown = ['ArrowDown', 'PageDown', 'Space', 'End'].includes(e.key);
+                if (!isScrollingDown) return; // Allow scrolling up
+
+                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
+                if (!currentPhaseEl) return;
+
+                const rect = currentPhaseEl.getBoundingClientRect();
+                // If phase is visible and not completed, block down scrolling
+                if (rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
+                    e.preventDefault();
+                }
+            });
+
+            // Touch scroll blocking
+            let touchStartY = 0;
+            window.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                const requiredPhase = getCurrentRequiredPhase();
+                if (!requiredPhase) return;
+
+                const touchY = e.touches[0].clientY;
+                const isScrollingDown = touchY < touchStartY;
+                if (!isScrollingDown) return;
+
+                const currentPhaseEl = document.getElementById(`phase-${requiredPhase}`);
+                if (!currentPhaseEl) return;
+
+                const rect = currentPhaseEl.getBoundingClientRect();
+                const nextPhase = document.getElementById(`phase-${requiredPhase + 1}`) ||
+                                  document.getElementById('finalSection');
+
+                if (nextPhase && rect.top < window.innerHeight * 0.5 && rect.bottom > 0) {
+                    const nextRect = nextPhase.getBoundingClientRect();
+                    if (nextRect.top < window.innerHeight * 1.2) {
+                        e.preventDefault();
+                    }
+                }
+            }, { passive: false });
         }
 
         // ============================================
@@ -1059,170 +1180,154 @@
         }
 
         // ============================================
-        // TITLE SWIPE INTERACTIONS
+        // TITLE SWIPE INTERACTIONS (Pointer Events)
         // ============================================
         function initTitleSwipes() {
             document.querySelectorAll('.phase-title-wrapper').forEach(wrapper => {
                 const overlay = wrapper.querySelector('.title-overlay');
                 const phase = wrapper.closest('.phase');
+                if (!overlay) return;
 
                 let isDragging = false;
                 let startX = 0;
                 let currentOffset = 0;
-                let wrapperWidth = 0;
 
-                function onStart(e) {
+                wrapper.addEventListener('pointerdown', (e) => {
                     if (phase.classList.contains('title-revealed')) return;
                     isDragging = true;
-                    wrapperWidth = wrapper.offsetWidth;
-                    startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                    startX = e.clientX;
+                    wrapper.setPointerCapture(e.pointerId);
                     wrapper.style.cursor = 'grabbing';
-                }
+                    e.preventDefault();
+                });
 
-                function onMove(e) {
+                wrapper.addEventListener('pointermove', (e) => {
                     if (!isDragging) return;
                     e.preventDefault();
 
-                    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-                    const diff = clientX - startX;
-                    // Only move right (positive direction)
+                    const diff = e.clientX - startX;
+                    const wrapperWidth = wrapper.offsetWidth;
                     currentOffset = Math.max(0, Math.min(wrapperWidth, diff));
 
-                    // Direct 1:1 mapping - overlay follows cursor exactly
                     overlay.style.transform = `translateX(${currentOffset}px)`;
 
-                    // Complete when dragged 60% of the width
                     if (currentOffset >= wrapperWidth * 0.6) {
-                        completeTitle();
+                        isDragging = false;
+                        phase.classList.add('title-revealed');
+                        overlay.style.transition = 'transform 0.3s ease';
+                        overlay.style.transform = 'translateX(100%)';
                     }
-                }
+                });
 
-                function onEnd() {
+                wrapper.addEventListener('pointerup', (e) => {
                     if (!isDragging) return;
                     isDragging = false;
                     wrapper.style.cursor = 'grab';
 
+                    const wrapperWidth = wrapper.offsetWidth;
                     if (currentOffset < wrapperWidth * 0.6) {
-                        // Snap back smoothly
                         overlay.style.transition = 'transform 0.3s ease';
                         overlay.style.transform = 'translateX(0)';
                         setTimeout(() => {
-                            overlay.style.transition = 'transform 0.1s ease';
+                            overlay.style.transition = '';
                         }, 300);
-                        currentOffset = 0;
                     }
-                }
+                    currentOffset = 0;
+                });
 
-                function completeTitle() {
+                wrapper.addEventListener('pointercancel', () => {
                     isDragging = false;
-                    phase.classList.add('title-revealed');
-                    overlay.style.transition = 'transform 0.3s ease';
-                    overlay.style.transform = 'translateX(100%)';
-                }
-
-                wrapper.addEventListener('mousedown', onStart);
-                wrapper.addEventListener('touchstart', onStart, { passive: true });
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('touchmove', onMove, { passive: false });
-                document.addEventListener('mouseup', onEnd);
-                document.addEventListener('touchend', onEnd);
+                    wrapper.style.cursor = 'grab';
+                    overlay.style.transform = 'translateX(0)';
+                    currentOffset = 0;
+                });
             });
         }
 
         // ============================================
-        // PHASE 2: DRAG (Mechanism - smoother)
+        // PHASE 2: DRAG (Pointer Events)
         // ============================================
         function initPhase2() {
             const handle = document.getElementById('dragHandle');
             const reveal = document.getElementById('dragReveal');
             const track = document.getElementById('dragTrack');
-            const hint = track.querySelector('.drag-hint');
             const complete = document.getElementById('dragComplete');
 
-            let isDragging = false;
-            let startX = 0;
-            let handleStartX = 0;
-            let currentX = 0;
-            let trackWidth = 0;
-            let maxDrag = 0;
-
-            function onDragStart(e) {
-                if (state.completedPhases.includes(2)) return;
-                isDragging = true;
-
-                // Calculate actual dimensions
-                trackWidth = track.offsetWidth;
-                maxDrag = trackWidth - 56 - 16; // track width - handle width - padding
-
-                startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-                handleStartX = handle.getBoundingClientRect().left - track.getBoundingClientRect().left;
-                handle.style.cursor = 'grabbing';
+            if (!handle || !track) {
+                console.error('Phase 2 elements not found');
+                return;
             }
 
-            function onDragMove(e) {
+            const hint = track.querySelector('.drag-hint');
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+
+            handle.addEventListener('pointerdown', (e) => {
+                if (state.completedPhases.includes(2)) return;
+                isDragging = true;
+                startX = e.clientX;
+                handle.setPointerCapture(e.pointerId);
+                handle.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            handle.addEventListener('pointermove', (e) => {
                 if (!isDragging) return;
                 e.preventDefault();
 
-                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-                const diff = clientX - startX;
+                const trackWidth = track.offsetWidth;
+                const maxDrag = trackWidth - 64; // track width - handle width - padding
+                const diff = e.clientX - startX;
 
-                // Direct 1:1 tracking - handle follows cursor exactly
                 currentX = Math.max(0, Math.min(maxDrag, diff));
-
-                // Calculate progress as percentage of track
                 const progress = currentX / maxDrag;
 
-                // Handle follows cursor directly
                 handle.style.transform = `translateY(-50%) translateX(${currentX}px)`;
-
-                // Reveal follows handle position proportionally
                 reveal.style.clipPath = `inset(0 ${100 - progress * 100}% 0 0)`;
-                hint.style.opacity = 1 - progress;
+                if (hint) hint.style.opacity = 1 - progress;
 
-                if (progress >= 0.95) {
-                    completePhase2();
+                if (progress >= 0.9) {
+                    isDragging = false;
+                    track.style.display = 'none';
+                    complete.style.display = 'flex';
+                    completePhase(2);
                 }
-            }
+            });
 
-            function onDragEnd() {
+            handle.addEventListener('pointerup', (e) => {
                 if (!isDragging) return;
                 isDragging = false;
                 handle.style.cursor = 'grab';
 
+                const trackWidth = track.offsetWidth;
+                const maxDrag = trackWidth - 64;
                 const progress = currentX / maxDrag;
-                if (progress < 0.95) {
-                    // Snap back smoothly
+
+                if (progress < 0.9) {
                     handle.style.transition = 'transform 0.3s ease';
                     reveal.style.transition = 'clip-path 0.3s ease';
-                    hint.style.transition = 'opacity 0.3s ease';
 
                     handle.style.transform = 'translateY(-50%) translateX(0)';
                     reveal.style.clipPath = 'inset(0 100% 0 0)';
-                    hint.style.opacity = 1;
+                    if (hint) hint.style.opacity = 1;
 
                     setTimeout(() => {
                         handle.style.transition = '';
-                        reveal.style.transition = 'clip-path 0.1s ease';
-                        hint.style.transition = 'opacity 0.3s ease';
+                        reveal.style.transition = '';
                     }, 300);
-
                     currentX = 0;
                 }
-            }
+            });
 
-            function completePhase2() {
+            handle.addEventListener('pointercancel', () => {
                 isDragging = false;
-                track.style.display = 'none';
-                complete.style.display = 'flex';
-                completePhase(2);
-            }
-
-            handle.addEventListener('mousedown', onDragStart);
-            handle.addEventListener('touchstart', onDragStart, { passive: true });
-            document.addEventListener('mousemove', onDragMove);
-            document.addEventListener('touchmove', onDragMove, { passive: false });
-            document.addEventListener('mouseup', onDragEnd);
-            document.addEventListener('touchend', onDragEnd);
+                handle.style.cursor = 'grab';
+                handle.style.transform = 'translateY(-50%) translateX(0)';
+                reveal.style.clipPath = 'inset(0 100% 0 0)';
+                if (hint) hint.style.opacity = 1;
+                currentX = 0;
+            });
         }
 
         // ============================================
@@ -1381,11 +1486,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
             initTitleSwipes();
+            initScrollBlocking();
             initPhase1();
             initPhase2();
             initPhase3();
             initPhase4();
             initPhase5();
+        });
+
+        // Prevent FOUC - show page only when fully loaded
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
         });
     </script>
 </body>
