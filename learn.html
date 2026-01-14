@@ -240,14 +240,14 @@
     </style>
 </head>
 <body>
-    <div class="progress"><div class="progress-fill" id="progress"></div></div>
+    <div class="progress" role="progressbar" aria-label="Learning progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill" id="progress"></div></div>
 
     <header class="header">
-        <a href="/" class="back">← Hub</a>
-        <span class="level" id="level">Newcomer</span>
+        <a href="/" class="back" aria-label="Return to Hub">← Hub</a>
+        <span class="level" id="level" role="status" aria-live="polite">Newcomer</span>
     </header>
 
-    <div class="container" id="container">
+    <main class="container" id="container">
         <!-- Phase 1 -->
         <section class="phase active" id="phase-1">
             <div class="phase-inner">
@@ -400,14 +400,14 @@
         <!-- Final -->
         <section class="final" id="final">
             <div>
-                <div class="final-icon">🔥</div>
+                <div class="final-icon" aria-hidden="true">🔥</div>
                 <h2 class="final-title">You're a Believer now.</h2>
                 <p class="final-sub">You understand. You verify. You burn.<br>Ready to build with the family?</p>
                 <a href="deep-learn.html" class="final-cta">Become a Builder →</a>
                 <a href="/" class="final-back">Return to Hub</a>
             </div>
         </section>
-    </div>
+    </main>
 
     <script>
     (function() {
