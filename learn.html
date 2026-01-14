@@ -86,7 +86,7 @@
         .swipe-title { position: relative; overflow: hidden; margin-bottom: 8px; }
         .swipe-title h2 {
             font-size: clamp(26px, 5vw, 38px); font-weight: 300;
-            background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+            background: linear-gradient(135deg, #faf8f5, #e8e4dc);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
@@ -216,7 +216,7 @@
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
         .final-title {
             font-size: clamp(24px, 5vw, 32px); font-weight: 300;
-            background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+            background: linear-gradient(135deg, #faf8f5, #e8e4dc);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 10px;
@@ -573,7 +573,6 @@
                         timer = setTimeout(() => {
                             if (state.complete(1)) {
                                 updateUI();
-                                setTimeout(() => scrollTo(2), 400);
                             }
                         }, 2000);
                     } else {
@@ -620,7 +619,6 @@
                     handle.classList.remove('dragging');
                     if (state.complete(2)) {
                         updateUI();
-                        setTimeout(() => scrollTo(3), 400);
                     }
                 }
             };
@@ -680,7 +678,6 @@
                     box.classList.add('done');
                     if (state.complete(3)) {
                         updateUI();
-                        setTimeout(() => scrollTo(4), 400);
                     }
                 }
             });
@@ -711,7 +708,6 @@
                     wrap.classList.add('done');
                     if (state.complete(4)) {
                         updateUI();
-                        setTimeout(() => scrollTo(5), 400);
                     }
                 } else if (v.length >= TARGET.length) {
                     input.classList.add('shake');
@@ -743,10 +739,7 @@
                             grid.classList.add('done');
                             if (state.complete(5)) {
                                 updateUI();
-                                setTimeout(() => {
-                                    $('#final').classList.add('show');
-                                    $('#final').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }, 400);
+                                $('#final').classList.add('show');
                             }
                         }
                     }
@@ -833,14 +826,6 @@
                     e.preventDefault();
                 }
             }, { passive: false });
-
-            // Auto-scroll to current phase on load
-            setTimeout(() => {
-                const activePhase = getActivePhase();
-                if (activePhase > 1) {
-                    goToPhase(activePhase);
-                }
-            }, 100);
 
             log('Scroll blocking ready');
         }
