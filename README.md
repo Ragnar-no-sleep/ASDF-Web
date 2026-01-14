@@ -1,10 +1,10 @@
 # ASDF Web
 
-Official website for the ASDFASDFA ecosystem - The Optimistic Burn Protocol on Solana.
+Official website for the $asdfasdfa ecosystem - The Optimistic Burn Protocol on Solana.
 
 > **"Don't trust. Verify. Don't extract. Burn. Don't panic. Hold. This is fine."**
 
-**Live:** https://alonisthe.dev/ecosystem
+**Live:** https://alonisthe.dev
 
 ---
 
@@ -12,250 +12,160 @@ Official website for the ASDFASDFA ecosystem - The Optimistic Burn Protocol on S
 
 ```bash
 npm install
-npm start        # Express server (production)
-npm run dev      # Next.js dev (temporary)
+npm start     # Express server on port 3000
+npm run dev   # Dev with hot reload
 ```
-
-Server runs on `http://localhost:3000`
 
 ---
 
-## Current State
+## Stack
 
-| Layer        | Technology                   | Status               |
-| ------------ | ---------------------------- | -------------------- |
-| Server       | Express.js + Helmet + CSP    | Production           |
-| Legacy Pages | HTML/CSS/JS vanilla          | 10+ pages            |
-| New Pages    | Next.js + React + TypeScript | 4 pages (migrating)  |
-| 3D           | Three.js (Yggdrasil)         | Production           |
-| Animations   | Framer Motion                | Migrating to GSAP    |
-| Styles       | Tailwind + system.css        | Migrating to vanilla |
+| Layer      | Technology                | Notes                           |
+| ---------- | ------------------------- | ------------------------------- |
+| Server     | Express.js + Helmet + CSP | Rate limiting, security headers |
+| Frontend   | HTML/CSS/JS vanilla       | No framework, direct serve      |
+| Design     | system.css                | Helius/Orb inspired             |
+| Deployment | Render                    | Auto-deploy from main           |
 
 ---
 
-## Roadmap: Migration to Vanilla Stack
-
-### Phase 1: MVP Validation (Current)
-
-- [x] DEV Track Module 1 - Learning System
-- [x] Yggdrasil 3D visualization
-- [x] Builders Section
-- [ ] Test & validate user experience
-- [ ] Gather feedback
-
-### Phase 2: Architecture Migration
-
-```
-Target Stack:
-├── Express.js      → Server (unchanged)
-├── Vite            → Build + tree-shaking
-├── GSAP            → Animations (replace Framer Motion)
-├── Three.js        → 3D (optimized via Vite)
-├── Ace Editor      → Code sandbox (replace Monaco)
-├── Vanilla CSS     → system.css + per-page CSS
-└── localStorage    → Client state
-```
-
-### Phase 3: Folder Cleanup
-
-**Before (Current):**
+## Project Structure
 
 ```
 ASDF-Web/
-├── src/app/          # Next.js pages (to migrate)
-├── src/components/   # React components (to convert)
-├── index.html        # Legacy landing
-├── learn.html        # Legacy pages...
-├── js/               # Legacy scripts
-├── css/              # Legacy styles
-└── (mixed state)
-```
-
-**After (Target):**
-
-```
-ASDF-Web/
-├── server.js              # Express (unchanged)
-├── vite.config.js         # Build configuration
-├── index.html             # Landing (migrated)
-├── learn.html             # Learn
-├── deep-learn.html        # Deep Learn
-├── build.html             # Build + Yggdrasil + Journey
-├── burns.html             # Burns tracker
-├── holdex.html            # HolDex
-├── forecast.html          # Forecasts
-├── games.html             # Games hub
-├── js/
-│   ├── lib/
-│   │   ├── gsap.min.js
-│   │   ├── three.min.js
-│   │   └── ace/
-│   ├── components/
-│   │   ├── nav.js
-│   │   ├── footer.js
-│   │   └── hub-background.js
-│   ├── index.js
-│   ├── learn.js
-│   ├── build.js           # + Yggdrasil + Journey
-│   └── ...
+├── server.cjs              # Express server (CommonJS)
+├── index.html              # Landing - Hub Majestic (fire particles)
+├── learn.html              # Quick Start - 5-step interactive intro
+├── deep-learn.html         # Complete Guide - K-Score, philosophy
+├── build.html              # Builder's Guide - Yggdrasil, paths
+├── games.html              # Arcade Hub - games collection
+├── burns.html              # Hall of Flames - burn tracker
+├── forecast.html           # Predictions - betting interface
+├── holdex.html             # Token Tracker - HolDex integration
+├── privacy.html            # Privacy Policy
 ├── css/
-│   ├── system.css         # Design system
-│   ├── index.css
-│   └── ...
-└── dist/                  # Production build
+│   ├── system.css          # Design system (colors, typography)
+│   ├── hub-majestic.css    # Landing page styles
+│   ├── build.css           # Build page styles
+│   └── ...                 # Per-page stylesheets
+├── js/
+│   ├── hub-majestic.js     # Landing interactions
+│   ├── build.js            # Build page logic
+│   ├── games/              # Game engines
+│   └── ...                 # Per-page scripts
+├── docs/                   # Architecture & audits
+└── assets/                 # Images, fonts
 ```
-
-### Phase 4: Feature Parity
-
-- [ ] Migrate Yggdrasil 3D to vanilla Three.js
-- [ ] Convert Journey learning system to vanilla JS
-- [ ] Replace Framer Motion animations with GSAP
-- [ ] Implement Ace Editor for code sandbox
-- [ ] Port all React components to vanilla
 
 ---
 
-## Development Workflow
+## Routes
 
-### Claude Code Integration
-
-**MCP Servers:**
-
-```json
-{
-  "context7": "Documentation lookup",
-  "grep": "Codebase search",
-  "claude-mem": "Memory/context persistence"
-}
-```
-
-**Agents disponibles:**
-| Agent | Usage |
-|-------|-------|
-| `librarian` | Research docs, find code examples |
-| `ui-ux-architect` | Design decisions (Apple x Helius) |
-| `helius-architect` | RPC patterns, Solana production |
-| `integrity-auditor` | Security audit |
-| `Explore` | Codebase exploration |
-
-**Commandes utiles:**
-
-```bash
-/compact          # Reduce context
-/rewind           # Go back if wrong direction
-use context7      # Search up-to-date docs
-use librarian     # Deep research with summary
-```
-
-### Git Workflow
-
-```bash
-# Feature branches
-git checkout -b feature/name
-git commit -m "feat(scope): description"
-git push origin feature/name
-
-# Commit convention
-feat:     New feature
-fix:      Bug fix
-refactor: Code restructure
-docs:     Documentation
-style:    Formatting
-```
-
-### Pre-commit Hooks
-
-Husky runs automatically:
-
-- ESLint (JS/TS files)
-- Prettier (all files)
-- Custom ASDF message: "This is fine."
-
----
-
-## Architecture Decisions
-
-### Why Vanilla JS?
-
-1. **Stability** - No framework churn, long-term maintainability
-2. **Performance** - Smaller bundle, faster load times
-3. **Simplicity** - Easier onboarding, less abstraction
-4. **Alignment** - Matches existing 10+ legacy pages
-5. **Philosophy** - "Don't trust. Verify." applies to code too
-
-### Why Vite?
-
-- Tree-shaking for Three.js (reduce ~500KB)
-- Fast dev server with HMR
-- ES modules native support
-- Simple configuration
-- No framework lock-in
-
-### Why GSAP over Framer Motion?
-
-- Works with vanilla JS (no React dependency)
-- Industry standard for web animations
-- Better performance for complex sequences
-- ScrollTrigger for scroll-based animations
-- Smaller footprint when tree-shaken
-
-### Why Ace Editor over Monaco?
-
-- ~300KB vs ~2MB bundle size
-- Native vanilla JS support
-- Battle-tested (Cloud9, CodePen)
-- Easier migration path
-- Sufficient for learning platform needs
-
----
-
-## Pages Reference
-
-| Route         | File            | Description                    |
-| ------------- | --------------- | ------------------------------ |
-| `/`           | index.html      | Landing page                   |
-| `/story`      | learn.html      | Learn about ASDF               |
-| `/deep-learn` | deep-learn.html | Deep dive content              |
-| `/build`      | build.html      | Yggdrasil + Builders + Journey |
-| `/ignition`   | games.html      | Games hub                      |
-| `/burns`      | burns.html      | Burn tracker                   |
-| `/holdex`     | holdex.html     | HolDex integration             |
-| `/forecast`   | forecast.html   | Predictions                    |
+| Route          | File            | Description          |
+| -------------- | --------------- | -------------------- |
+| `/`            | index.html      | Hub Majestic landing |
+| `/story`       | learn.html      | Quick Start guide    |
+| `/quick-start` | learn.html      | Alias for /story     |
+| `/deep-learn`  | deep-learn.html | Complete guide       |
+| `/ignition`    | games.html      | Arcade hub           |
+| `/burns`       | burns.html      | Burn tracker         |
+| `/asdforecast` | forecast.html   | Predictions          |
+| `/holdex`      | holdex.html     | Token tracker        |
+| `/privacy`     | privacy.html    | Privacy policy       |
 
 ---
 
 ## Design System
 
-### Colors (system.css)
+### Colors (`css/system.css`)
 
 ```css
---asdf-orange: #ea4e33;
---asdf-gold: #f59e0b;
---asdf-green: #4ade80;
---asdf-dark: #0a0a0a;
---asdf-gray: #888;
+--asdf-orange: #ea4e33; /* Primary accent */
+--asdf-gold: #f59e0b; /* Secondary */
+--asdf-green: #4ade80; /* Success */
+--asdf-dark: #0a0a0a; /* Background */
+--asdf-elevated: #0a0a0c; /* Cards */
 ```
 
 ### Typography
 
-- Headings: System font stack
-- Code: JetBrains Mono, Consolas, monospace
+- **Body:** Inter
+- **Code/Labels:** JetBrains Mono
 
-### Components
+### Philosophy
 
-- Cards with glass morphism
-- Gradient borders
-- Fire/ice visual theme (Ragnarok)
-- Viking/Norse aesthetic elements
+- Helius/Orb inspired dark theme
+- Fire color palette for landing
+- No emojis in code - use HTML entities
+
+---
+
+## Philosophy
+
+```
+Don't trust. Verify.    → Every formula published, on-chain data
+Don't extract. Burn.    → 0% to platform, 100% to burn
+Don't panic. Hold.      → Quality over speed, no rushed deploys
+
+This is fine.
+```
+
+### K-Score Formula
+
+```
+K = 100 × ∛(D × O × L)
+
+D = Diamond Hands (conviction)
+O = Organic Growth (distribution)
+L = Longevity (survival)
+```
+
+### The Ratio (φ)
+
+```
+φ = 1.618033988749895...
+φ⁻¹ = 61.8%
+φ⁻² = 38.2%
+```
+
+Used for internal thresholds and weights.
 
 ---
 
 ## Security
 
-- Helmet.js for HTTP headers
-- Rate limiting on API routes
-- CSP configured for embedding
-- No inline scripts in production
+- **Helmet.js** - HTTP security headers
+- **Rate limiting** - 100 req/15min per IP
+- **CSP** - Content Security Policy configured
+- **No inline scripts** - External JS files only
+
+See `docs/SECURITY_AUDIT.md` for full audit.
+
+---
+
+## Development
+
+### Conventions
+
+- 1 JS file per HTML page (`burns.html` → `js/burns.js`)
+- 1 CSS file per page (`css/burns.css`)
+- CSS variables in `:root`
+- No build step - code directly served
+
+### Git Workflow
+
+```bash
+git checkout -b feature/name
+git commit -m "feat(scope): description"
+git push origin feature/name
+```
+
+Commit convention: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
+
+### Pre-commit Hooks
+
+- ESLint validation
+- Custom ASDF message: "This is fine."
 
 ---
 
@@ -263,36 +173,32 @@ Husky runs automatically:
 
 Deployed on [Render](https://render.com) - see `render.yaml`
 
-```yaml
-services:
-  - type: web
-    name: asdf-web
-    env: node
-    buildCommand: npm install
-    startCommand: npm start
-```
+- **Auto-deploy:** Merge to main triggers deployment
+- **Health check:** `/health` endpoint
+
+---
+
+## Documentation
+
+| File                           | Content                       |
+| ------------------------------ | ----------------------------- |
+| `README.md`                    | This file - project overview  |
+| `CLAUDE.md`                    | Claude Code instructions (FR) |
+| `docs/SECURITY_AUDIT.md`       | Security review               |
+| `docs/BACKEND_ARCHITECTURE.md` | API architecture              |
+| `docs/HELIUS_AUDIT_REPORT.md`  | Solana integration audit      |
 
 ---
 
 ## Contributing
 
-1. Check `.claude/CLAUDE.md` for project conventions
-2. Use TodoWrite to track tasks
-3. Follow commit conventions
-4. Test before pushing
-5. If stuck after 2 attempts → ask for clarification
+1. Read `CLAUDE.md` for conventions
+2. Follow commit conventions
+3. Test before pushing
+4. If stuck after 2 attempts → ask for clarification
 
 ---
 
-## Philosophy
-
-```
-Don't trust. Verify.
-Don't extract. Burn.
-Don't panic. Hold.
-This is fine. 🐕‍🦺🔥
-```
-
----
+_The fire rises. The supply falls. The holders remain._
 
 **ASDF Team** | MIT License
