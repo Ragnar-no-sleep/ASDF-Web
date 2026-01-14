@@ -36,6 +36,19 @@
            DEEP LEARN PAGE - Styles
            ============================================= */
 
+        /* Accessibility utilities */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         /* Layout */
         .deep-layout {
             display: grid;
@@ -94,6 +107,13 @@
         }
 
         .nav-item {
+            /* Reset button defaults */
+            background: none;
+            border: none;
+            font: inherit;
+            text-align: left;
+            width: 100%;
+            /* Styles */
             display: flex;
             align-items: center;
             gap: var(--space-3);
@@ -673,8 +693,8 @@
                     <a href="learn.html" class="btn btn-secondary" style="font-size: var(--text-sm);">Quick Start</a>
                 </div>
 
-                <button class="nav-toggle" aria-label="Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="deepSidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -687,36 +707,36 @@
     <!-- Main Layout -->
     <div class="deep-layout">
         <!-- Sidebar -->
-        <aside class="deep-sidebar">
+        <aside class="deep-sidebar" id="deepSidebar">
             <!-- Navigation Panel -->
             <div class="sidebar-panel">
                 <div class="sidebar-title">Sections</div>
-                <div class="nav-items">
-                    <div class="nav-item active" data-view="overview">
-                        <span class="nav-icon">&#128293;</span>
+                <nav class="nav-items" role="tablist" aria-label="Content sections">
+                    <button class="nav-item active" data-view="overview" role="tab" aria-selected="true" aria-controls="view-overview">
+                        <span class="nav-icon" aria-hidden="true">&#128293;</span>
                         <span>Overview</span>
-                    </div>
-                    <div class="nav-item" data-view="mechanism">
-                        <span class="nav-icon">&#9881;</span>
+                    </button>
+                    <button class="nav-item" data-view="mechanism" role="tab" aria-selected="false" aria-controls="view-mechanism">
+                        <span class="nav-icon" aria-hidden="true">&#9881;</span>
                         <span>The Mechanism</span>
-                    </div>
-                    <div class="nav-item" data-view="philosophy">
-                        <span class="nav-icon">&#128021;</span>
+                    </button>
+                    <button class="nav-item" data-view="philosophy" role="tab" aria-selected="false" aria-controls="view-philosophy">
+                        <span class="nav-icon" aria-hidden="true">&#128021;</span>
                         <span>Philosophy</span>
-                    </div>
-                    <div class="nav-item" data-view="kscore">
-                        <span class="nav-icon">&#128200;</span>
+                    </button>
+                    <button class="nav-item" data-view="kscore" role="tab" aria-selected="false" aria-controls="view-kscore">
+                        <span class="nav-icon" aria-hidden="true">&#128200;</span>
                         <span>K-Score</span>
-                    </div>
-                    <div class="nav-item" data-view="ecosystem">
-                        <span class="nav-icon">&#127793;</span>
+                    </button>
+                    <button class="nav-item" data-view="ecosystem" role="tab" aria-selected="false" aria-controls="view-ecosystem">
+                        <span class="nav-icon" aria-hidden="true">&#127793;</span>
                         <span>Ecosystem</span>
-                    </div>
-                    <div class="nav-item" data-view="faq">
-                        <span class="nav-icon">&#10067;</span>
+                    </button>
+                    <button class="nav-item" data-view="faq" role="tab" aria-selected="false" aria-controls="view-faq">
+                        <span class="nav-icon" aria-hidden="true">&#10067;</span>
                         <span>FAQ & Glossary</span>
-                    </div>
-                </div>
+                    </button>
+                </nav>
             </div>
 
             <!-- Quick Stats -->
@@ -1275,8 +1295,9 @@
 
                 <!-- Glossary -->
                 <div class="content-block" style="margin-top: var(--space-8);">
-                    <h2>&#128214; Glossary</h2>
-                    <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms...">
+                    <h2 id="glossary-heading">&#128214; Glossary</h2>
+                    <label for="glossary-search" class="visually-hidden">Search glossary terms</label>
+                    <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms..." aria-labelledby="glossary-heading">
                 </div>
 
                 <div class="glossary-grid" id="glossary-grid">
@@ -1371,8 +1392,10 @@
             });
 
             // Update sidebar nav
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.view === viewId);
+            document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+                const isActive = item.dataset.view === viewId;
+                item.classList.toggle('active', isActive);
+                item.setAttribute('aria-selected', isActive ? 'true' : 'false');
             });
 
             // Update view sections
@@ -1425,7 +1448,8 @@
         const navLinks = document.querySelector('.nav-links');
         if (navToggle && navLinks) {
             navToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('open');
+                const isExpanded = navLinks.classList.toggle('open');
+                navToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
             });
         }
 
