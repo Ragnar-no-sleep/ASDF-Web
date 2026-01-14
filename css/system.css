@@ -209,8 +209,30 @@ body {
   background: var(--text-muted);
 }
 
-/* Focus styles */
+/* Focus styles - unified across all elements */
 :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent);
+  color: white;
+  z-index: calc(var(--z-toast) + 1);
+  transition: top var(--duration-normal) var(--ease-default);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus ring utility - apply to custom focus states */
+.focus-ring:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -650,7 +672,7 @@ h6 {
   border-color: var(--border-strong);
 }
 
-.input:focus {
+.input:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
