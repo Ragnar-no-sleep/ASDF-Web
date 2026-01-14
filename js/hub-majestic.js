@@ -1,6 +1,6 @@
 /**
- * ASDF Hub - Minimal Premium Experience
- * Philosophy: Less but better. Consumer-grade polish.
+ * ASDF Hub - Organic Chaos Edition
+ * Philosophy: Controlled chaos. Natural feel. Consumer-grade polish.
  */
 
 (() => {
@@ -61,6 +61,50 @@
     });
   };
 
+  // --- Tools interactive expansion ---
+  const initTools = () => {
+    const tools = document.getElementById('hubTools');
+    const trigger = document.getElementById('toolsTrigger');
+    if (!tools || !trigger) return;
+
+    let isExpanded = false;
+    let closeTimeout = null;
+
+    const expand = () => {
+      clearTimeout(closeTimeout);
+      if (!isExpanded) {
+        tools.classList.add('expanded');
+        isExpanded = true;
+      }
+    };
+
+    const collapse = () => {
+      closeTimeout = setTimeout(() => {
+        tools.classList.remove('expanded');
+        isExpanded = false;
+      }, 300);
+    };
+
+    // Expand on hover
+    trigger.addEventListener('mouseenter', expand);
+    tools.addEventListener('mouseenter', expand);
+
+    // Collapse when leaving the tools area
+    tools.addEventListener('mouseleave', collapse);
+
+    // Also support click toggle for touch devices
+    trigger.addEventListener('click', e => {
+      e.preventDefault();
+      if (isExpanded) {
+        clearTimeout(closeTimeout);
+        tools.classList.remove('expanded');
+        isExpanded = false;
+      } else {
+        expand();
+      }
+    });
+  };
+
   // --- Respect reduced motion ---
   const checkReducedMotion = () => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -73,6 +117,7 @@
     checkReducedMotion();
     initParallax();
     initNodeGlow();
+    initTools();
   };
 
   if (document.readyState === 'loading') {

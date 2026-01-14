@@ -1,9 +1,8 @@
 /* ============================================
-   ASDF HUB - Premium Consumer Experience
-   Philosophy: Less but better. 10x feel.
+   ASDF HUB - Organic Chaos Edition
+   Philosophy: Controlled chaos. Natural feel.
    ============================================ */
 
-/* --- Variables --- */
 :root {
   --bg-deep: #0d0906;
   --bg-warm: #1a120d;
@@ -20,10 +19,11 @@
   --text-ghost: #5a4d40;
 
   --glow-gold: rgba(234, 179, 8, 0.4);
-  --glow-fire: rgba(255, 107, 53, 0.3);
+  --glow-fire: rgba(255, 107, 53, 0.35);
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-soft: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* --- Reset --- */
@@ -49,32 +49,32 @@ body.hub-majestic {
 }
 
 /* ============================================
-   BACKGROUND - Warm ambient glow
+   BACKGROUND
    ============================================ */
 
 .hub-bg {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 50%, var(--bg-warm) 0%, transparent 70%),
-    radial-gradient(circle at 50% 50%, var(--glow-fire) 0%, transparent 50%);
-  animation: bg-breathe 8s var(--ease-soft) infinite;
+    radial-gradient(ellipse 90% 70% at 50% 45%, var(--bg-warm) 0%, transparent 70%),
+    radial-gradient(circle at 50% 50%, var(--glow-fire) 0%, transparent 45%);
+  animation: bg-breathe 10s var(--ease-soft) infinite;
 }
 
 @keyframes bg-breathe {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.7;
     transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.02);
+    opacity: 0.9;
+    transform: scale(1.03);
   }
 }
 
 /* ============================================
-   EMBERS - Subtle, elegant particles
+   EMBERS
    ============================================ */
 
 .hub-embers {
@@ -86,63 +86,71 @@ body.hub-majestic {
 
 .hub-embers i {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   background: var(--fire);
   border-radius: 50%;
   opacity: 0;
   box-shadow:
-    0 0 8px var(--fire),
-    0 0 16px var(--glow-fire);
-  animation: ember-float 10s var(--ease-soft) infinite;
+    0 0 6px var(--fire),
+    0 0 12px var(--glow-fire);
+  animation: ember-rise 12s var(--ease-soft) infinite;
 }
 
 .hub-embers i:nth-child(1) {
-  left: 15%;
+  left: 12%;
   animation-delay: 0s;
 }
 .hub-embers i:nth-child(2) {
-  left: 30%;
-  animation-delay: 2s;
+  left: 25%;
+  animation-delay: 1.5s;
 }
 .hub-embers i:nth-child(3) {
-  left: 50%;
-  animation-delay: 4s;
-}
-.hub-embers i:nth-child(4) {
-  left: 65%;
-  animation-delay: 1s;
-}
-.hub-embers i:nth-child(5) {
-  left: 80%;
+  left: 38%;
   animation-delay: 3s;
 }
+.hub-embers i:nth-child(4) {
+  left: 52%;
+  animation-delay: 0.8s;
+}
+.hub-embers i:nth-child(5) {
+  left: 65%;
+  animation-delay: 2.2s;
+}
 .hub-embers i:nth-child(6) {
+  left: 78%;
+  animation-delay: 4s;
+}
+.hub-embers i:nth-child(7) {
+  left: 88%;
+  animation-delay: 1s;
+}
+.hub-embers i:nth-child(8) {
   left: 45%;
   animation-delay: 5s;
 }
 
-@keyframes ember-float {
+@keyframes ember-rise {
   0% {
-    bottom: -10px;
+    bottom: -5px;
     opacity: 0;
     transform: translateX(0);
   }
-  10% {
-    opacity: 0.6;
+  8% {
+    opacity: 0.5;
   }
-  90% {
-    opacity: 0.3;
+  85% {
+    opacity: 0.2;
   }
   100% {
     bottom: 100%;
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(25px);
   }
 }
 
 /* ============================================
-   HUB - Main container
+   HUB CONTAINER
    ============================================ */
 
 .hub {
@@ -157,181 +165,234 @@ body.hub-majestic {
 }
 
 /* ============================================
-   CORE - Center element ("This is Fine")
+   ORBITAL RINGS - Elliptical, organic
    ============================================ */
 
-.hub-core {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 30% 30%, var(--bg-surface) 0%, var(--bg-warm) 100%);
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  border-radius: 50%;
-  z-index: 20;
-}
-
-.hub-core-glow {
+.hub-orbit {
   position: absolute;
-  inset: -30px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--glow-fire) 0%, transparent 70%);
-  opacity: 0.5;
-  animation: core-pulse 4s var(--ease-soft) infinite;
+  border: 1px solid rgba(234, 179, 8, 0.08);
+  pointer-events: none;
 }
 
-@keyframes core-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
+.hub-orbit--inner {
+  width: 280px;
+  height: 260px;
+  animation: orbit-drift 80s linear infinite;
 }
 
-.hub-core-icon {
-  font-size: 40px;
-  margin-bottom: 6px;
+.hub-orbit--outer {
+  width: 420px;
+  height: 380px;
+  animation: orbit-drift 120s linear infinite reverse;
 }
 
-.hub-core-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
-/* ============================================
-   RING - Orbit around center
-   ============================================ */
-
-.hub-ring {
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border: 1px solid rgba(234, 179, 8, 0.1);
-  border-radius: 50%;
-  animation: ring-rotate 60s linear infinite;
-}
-
-@keyframes ring-rotate {
+@keyframes orbit-drift {
   to {
     transform: rotate(360deg);
   }
 }
 
 /* ============================================
-   NODES - Portal items (N, E, S, W)
+   CENTER CORE
+   ============================================ */
+
+.hub-core {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 35%, var(--bg-surface) 0%, var(--bg-warm) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 50%;
+  z-index: 30;
+  animation: core-float 8s var(--ease-soft) infinite;
+}
+
+@keyframes core-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.hub-core-glow {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-fire) 0%, transparent 65%);
+  opacity: 0.6;
+  animation: glow-pulse 5s var(--ease-soft) infinite;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+.hub-core-icon {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+.hub-core-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ============================================
+   NODES - Organic chaotic positions
    ============================================ */
 
 .hub-node {
   position: absolute;
-  width: 90px;
-  height: 90px;
+  width: 95px;
+  height: 95px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-warm) 100%);
   border: 1px solid rgba(234, 179, 8, 0.15);
-  border-radius: 20px;
+  border-radius: 22px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: all 0.4s var(--ease);
+  transition: all 0.5s var(--ease);
 }
 
 .hub-node::before {
   content: '';
   position: absolute;
-  inset: -4px;
-  border-radius: 24px;
+  inset: -6px;
+  border-radius: 28px;
   background: radial-gradient(circle, var(--glow-gold) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.4s var(--ease);
 }
 
 .hub-node:hover::before {
-  opacity: 0.5;
-}
-
-/* Cursor-following glow */
-.hub-node::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    circle at var(--glow-x, 50%) var(--glow-y, 50%),
-    var(--glow-gold) 0%,
-    transparent 60%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-
-.hub-node:hover::after {
-  opacity: 0.3;
+  opacity: 0.6;
 }
 
 .hub-node:hover {
-  transform: scale(1.08);
   border-color: var(--gold);
 }
 
-/* Cardinal positions - perfect symmetry */
-.hub-node[data-pos='n'] {
-  top: calc(50% - 200px);
+/* CHAOTIC POSITIONS - asymmetric, organic */
+.hub-node[data-pos='learn'] {
+  top: 12%;
   left: 50%;
-  transform: translateX(-50%);
-}
-.hub-node[data-pos='e'] {
-  top: 50%;
-  right: calc(50% - 200px);
-  transform: translateY(-50%);
-}
-.hub-node[data-pos='s'] {
-  bottom: calc(50% - 200px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-.hub-node[data-pos='w'] {
-  top: 50%;
-  left: calc(50% - 200px);
-  transform: translateY(-50%);
+  transform: translateX(-50%) rotate(-2deg);
+  animation: float-learn 7s var(--ease-soft) infinite;
 }
 
-/* Hover overrides for positioned elements */
-.hub-node[data-pos='n']:hover {
-  transform: translateX(-50%) scale(1.08);
+.hub-node[data-pos='build'] {
+  top: 42%;
+  left: 8%;
+  transform: rotate(3deg);
+  animation: float-build 9s var(--ease-soft) infinite;
 }
-.hub-node[data-pos='e']:hover {
-  transform: translateY(-50%) scale(1.08);
+
+.hub-node[data-pos='analytics'] {
+  top: 38%;
+  right: 6%;
+  transform: rotate(-1.5deg);
+  width: 105px;
+  height: 105px;
+  animation: float-analytics 8s var(--ease-soft) infinite;
 }
-.hub-node[data-pos='s']:hover {
-  transform: translateX(-50%) scale(1.08);
+
+.hub-node[data-pos='play'] {
+  bottom: 14%;
+  left: 48%;
+  transform: translateX(-50%) rotate(2deg);
+  animation: float-play 6s var(--ease-soft) infinite;
 }
-.hub-node[data-pos='w']:hover {
-  transform: translateY(-50%) scale(1.08);
+
+/* Organic floating animations - each unique */
+@keyframes float-learn {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-2deg) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) rotate(-1deg) translateY(-10px);
+  }
+}
+
+@keyframes float-build {
+  0%,
+  100% {
+    transform: rotate(3deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(2deg) translate(5px, -8px);
+  }
+}
+
+@keyframes float-analytics {
+  0%,
+  100% {
+    transform: rotate(-1.5deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(-2.5deg) translate(-6px, -12px);
+  }
+}
+
+@keyframes float-play {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(2deg) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) rotate(1deg) translateY(-7px);
+  }
+}
+
+/* Hover states with transforms */
+.hub-node[data-pos='learn']:hover {
+  transform: translateX(-50%) rotate(-2deg) scale(1.1);
+}
+
+.hub-node[data-pos='build']:hover {
+  transform: rotate(3deg) scale(1.1);
+}
+
+.hub-node[data-pos='analytics']:hover {
+  transform: rotate(-1.5deg) scale(1.1);
+}
+
+.hub-node[data-pos='play']:hover {
+  transform: translateX(-50%) rotate(2deg) scale(1.1);
 }
 
 .hub-node-icon {
-  font-size: 28px;
+  font-size: 30px;
   margin-bottom: 8px;
-  transition: transform 0.3s var(--ease);
+  transition: transform 0.4s var(--ease-bounce);
 }
 
 .hub-node:hover .hub-node-icon {
-  transform: scale(1.1);
+  transform: scale(1.15) translateY(-2px);
 }
 
 .hub-node-label {
@@ -344,79 +405,165 @@ body.hub-majestic {
 
 /* Disabled state */
 .hub-node--disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: default;
-  filter: grayscale(0.5);
+  filter: grayscale(0.4);
 }
 
 .hub-node--disabled:hover {
-  transform: translateX(-50%);
   border-color: rgba(234, 179, 8, 0.15);
-}
-
-.hub-node--disabled[data-pos='e']:hover,
-.hub-node--disabled[data-pos='w']:hover {
-  transform: translateY(-50%);
 }
 
 .hub-node--disabled::before {
   display: none;
 }
 
-.hub-node-soon {
+.hub-node-badge {
   position: absolute;
-  bottom: -20px;
+  top: -8px;
+  right: -8px;
+  padding: 3px 8px;
   font-size: 8px;
-  color: var(--text-ghost);
-  letter-spacing: 0.1em;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.hub-node--disabled:hover .hub-node-soon {
-  opacity: 1;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--bg-deep);
+  background: var(--gold);
+  border-radius: 10px;
 }
 
 /* ============================================
-   TOOLS BAR - Bottom navigation
+   TOOLS - Interactive expandable
    ============================================ */
 
 .hub-tools {
-  position: fixed;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-  background: rgba(26, 18, 13, 0.8);
-  border: 1px solid rgba(234, 179, 8, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  z-index: 100;
+  position: absolute;
+  bottom: 8%;
+  right: 10%;
+  z-index: 25;
 }
 
-.hub-tools-item {
+.hub-tools-trigger {
+  width: 90px;
+  height: 90px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-warm) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.15);
+  border-radius: 22px;
+  cursor: pointer;
+  transition: all 0.4s var(--ease);
+  transform: rotate(-3deg);
+  animation: float-tools 7s var(--ease-soft) infinite;
+}
+
+@keyframes float-tools {
+  0%,
+  100% {
+    transform: rotate(-3deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(-2deg) translate(-4px, -6px);
+  }
+}
+
+.hub-tools-trigger:hover {
+  border-color: var(--amber);
+  box-shadow: 0 0 30px var(--glow-gold);
+  transform: rotate(-3deg) scale(1.08);
+}
+
+.hub-tools-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.hub-tools-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Tool items - hidden by default, orbital expansion */
+.hub-tools-item {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(234, 179, 8, 0.1);
+  border-radius: 16px;
   text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.3s var(--ease);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transition: all 0.4s var(--ease-bounce);
+}
+
+.hub-tools-item span:first-child {
+  font-size: 18px;
+}
+
+/* Expanded positions - chaotic orbital */
+.hub-tools-item[data-tool='burns'] {
+  --expand-x: -90px;
+  --expand-y: -60px;
+}
+
+.hub-tools-item[data-tool='forecast'] {
+  --expand-x: -40px;
+  --expand-y: -100px;
+}
+
+.hub-tools-item[data-tool='holdex'] {
+  --expand-x: 30px;
+  --expand-y: -90px;
+}
+
+.hub-tools-item[data-tool='gas'] {
+  --expand-x: 70px;
+  --expand-y: -40px;
+}
+
+/* Expanded state */
+.hub-tools.expanded .hub-tools-item {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(var(--expand-x), var(--expand-y)) scale(1);
+}
+
+.hub-tools.expanded .hub-tools-item:nth-child(2) {
+  transition-delay: 0.05s;
+}
+.hub-tools.expanded .hub-tools-item:nth-child(3) {
+  transition-delay: 0.1s;
+}
+.hub-tools.expanded .hub-tools-item:nth-child(4) {
+  transition-delay: 0.15s;
+}
+.hub-tools.expanded .hub-tools-item:nth-child(5) {
+  transition-delay: 0.2s;
 }
 
 .hub-tools-item:hover {
-  background: rgba(234, 179, 8, 0.1);
+  border-color: var(--gold);
   color: var(--gold);
-}
-
-.hub-tools-item span {
-  font-size: 14px;
+  background: rgba(234, 179, 8, 0.1);
+  transform: translate(var(--expand-x), var(--expand-y)) scale(1.1) !important;
 }
 
 /* ============================================
@@ -425,7 +572,7 @@ body.hub-majestic {
 
 .hub-footer {
   position: fixed;
-  bottom: 16px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -453,90 +600,100 @@ body.hub-majestic {
 
 @media (max-width: 768px) {
   .hub-core {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
   }
 
   .hub-core-icon {
-    font-size: 32px;
+    font-size: 36px;
   }
-
   .hub-core-text {
-    font-size: 8px;
+    font-size: 9px;
   }
 
-  .hub-ring {
-    width: 260px;
-    height: 260px;
+  .hub-orbit--inner {
+    width: 220px;
+    height: 200px;
+  }
+  .hub-orbit--outer {
+    width: 340px;
+    height: 300px;
   }
 
   .hub-node {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
+    width: 75px;
+    height: 75px;
+    border-radius: 18px;
   }
 
-  .hub-node[data-pos='n'] {
-    top: calc(50% - 160px);
+  .hub-node[data-pos='learn'] {
+    top: 8%;
   }
-  .hub-node[data-pos='e'] {
-    right: calc(50% - 160px);
+  .hub-node[data-pos='build'] {
+    left: 5%;
+    top: 40%;
   }
-  .hub-node[data-pos='s'] {
-    bottom: calc(50% - 160px);
+  .hub-node[data-pos='analytics'] {
+    right: 3%;
+    width: 80px;
+    height: 80px;
   }
-  .hub-node[data-pos='w'] {
-    left: calc(50% - 160px);
+  .hub-node[data-pos='play'] {
+    bottom: 10%;
   }
 
   .hub-node-icon {
-    font-size: 22px;
+    font-size: 24px;
     margin-bottom: 4px;
   }
-
   .hub-node-label {
     font-size: 8px;
   }
 
   .hub-tools {
-    bottom: 40px;
-    padding: 6px;
-    gap: 4px;
+    bottom: 5%;
+    right: 5%;
   }
-
+  .hub-tools-trigger {
+    width: 70px;
+    height: 70px;
+  }
+  .hub-tools-icon {
+    font-size: 22px;
+  }
   .hub-tools-item {
-    padding: 8px 12px;
-    font-size: 10px;
+    width: 50px;
+    height: 50px;
   }
 }
 
 @media (max-height: 600px) {
   .hub-core {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
   }
-
-  .hub-ring {
-    width: 200px;
-    height: 200px;
+  .hub-orbit--inner {
+    width: 180px;
+    height: 160px;
+  }
+  .hub-orbit--outer {
+    width: 280px;
+    height: 240px;
   }
 
   .hub-node {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
   }
-
-  .hub-node[data-pos='n'] {
-    top: calc(50% - 130px);
+  .hub-node[data-pos='learn'] {
+    top: 5%;
   }
-  .hub-node[data-pos='e'] {
-    right: calc(50% - 130px);
+  .hub-node[data-pos='analytics'] {
+    width: 70px;
+    height: 70px;
   }
-  .hub-node[data-pos='s'] {
-    bottom: calc(50% - 130px);
-  }
-  .hub-node[data-pos='w'] {
-    left: calc(50% - 130px);
+  .hub-node[data-pos='play'] {
+    bottom: 8%;
   }
 }
 
