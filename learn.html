@@ -1,405 +1,938 @@
-<!doctype html>
-<html lang="en" style="background: #000">
-  <head>
-    <style>
-      html,
-      body {
-        background: #000 !important;
-      }
-    </style>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Learn $asdfasdfa - This is Fine</title>
-    <meta
-      name="description"
-      content="Comprendre $asdfasdfa. La philosophie, le process, le K-Score. De Moldu a Holder."
-    />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn $ASDF — Quick Start</title>
+    <meta name="description" content="Understand $asdfasdfa in 5 minutes. The deflationary token that burns with every trade.">
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alonisthe.dev/learn" />
-    <meta property="og:title" content="Learn $asdfasdfa" />
-    <meta property="og:description" content="Comprendre la philosophie. De Moldu a Holder." />
-    <meta property="og:image" content="https://alonisthe.dev/og-learn.png" />
-
-    <!-- Security -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta property="og:title" content="Learn ASDF - Quick Start">
+    <meta property="og:description" content="Understand $asdfasdfa in 5 minutes. Interactive guide.">
+    <meta property="og:image" content="https://alonisthe.dev/og-learn.png">
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/system.css" />
-    <link rel="stylesheet" href="css/learn.css" />
-  </head>
-  <body>
-    <!-- Progress Bar (fixed top) -->
-    <div class="learn-progress" id="learn-progress">
-      <div class="learn-progress-bar" id="learn-progress-bar"></div>
-      <div class="learn-progress-sections">
-        <span class="progress-dot active" data-section="1"></span>
-        <span class="progress-dot" data-section="2"></span>
-        <span class="progress-dot" data-section="3"></span>
-        <span class="progress-dot" data-section="4"></span>
-        <span class="progress-dot" data-section="5"></span>
-      </div>
+    <link rel="stylesheet" href="css/system.css">
+    <style>
+        /* =============================================
+           LEARN QUICK START - Apple-Inspired Design
+           ============================================= */
+
+        :root {
+            --step-accent: var(--accent);
+        }
+
+        body {
+            background: var(--bg-base);
+        }
+
+        /* Hero Header */
+        .learn-hero {
+            min-height: 50vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: calc(var(--nav-height) + var(--space-12)) var(--space-6) var(--space-16);
+            position: relative;
+        }
+
+        .learn-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(234, 78, 51, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .learn-hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-full);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--accent);
+            margin-bottom: var(--space-6);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: var(--font-bold);
+            letter-spacing: -0.03em;
+            margin-bottom: var(--space-4);
+            line-height: 1.1;
+        }
+
+        .hero-title span {
+            color: var(--accent);
+        }
+
+        .hero-subtitle {
+            font-size: var(--text-xl);
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin-bottom: var(--space-8);
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Progress Indicator */
+        .progress-bar {
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--bg-elevated);
+            z-index: var(--z-sticky);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            width: 0%;
+            transition: width 0.5s var(--ease-default);
+        }
+
+        /* Step Counter */
+        .step-counter {
+            position: fixed;
+            bottom: var(--space-6);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-5);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-full);
+            z-index: var(--z-sticky);
+            backdrop-filter: blur(12px);
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-default);
+            transition: all 0.3s var(--ease-default);
+            cursor: pointer;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .step-dot.completed {
+            background: var(--success);
+        }
+
+        /* Steps Container */
+        .steps-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 var(--space-6) var(--space-24);
+        }
+
+        /* Individual Step */
+        .learn-step {
+            padding: var(--space-16) 0;
+            border-bottom: 1px solid var(--border-subtle);
+            opacity: 0.4;
+            transition: opacity 0.5s var(--ease-default);
+        }
+
+        .learn-step.active,
+        .learn-step.completed {
+            opacity: 1;
+        }
+
+        .learn-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+            border: 2px solid var(--border-default);
+            border-radius: 50%;
+            font-family: var(--font-mono);
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            transition: all 0.3s var(--ease-default);
+        }
+
+        .learn-step.active .step-number {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .learn-step.completed .step-number {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .step-title {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+        }
+
+        .step-content {
+            padding-left: calc(48px + var(--space-4));
+        }
+
+        .step-text {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            line-height: var(--leading-relaxed);
+            margin-bottom: var(--space-6);
+        }
+
+        .step-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Visual Cards */
+        .visual-card {
+            padding: var(--space-8);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-6);
+        }
+
+        .visual-card.highlight {
+            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.08) 100%);
+            border-color: var(--accent);
+        }
+
+        /* Pitch Box */
+        .pitch-box {
+            text-align: center;
+            padding: var(--space-10);
+            background: var(--bg-elevated);
+            border-radius: var(--radius-xl);
+            margin: var(--space-8) 0;
+        }
+
+        .pitch-text {
+            font-size: var(--text-xl);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            line-height: var(--leading-snug);
+        }
+
+        .pitch-text .fire {
+            color: var(--accent);
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            padding: var(--space-6);
+        }
+
+        .flow-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            background: var(--bg-hover);
+            border-radius: var(--radius-lg);
+            min-width: 80px;
+        }
+
+        .flow-item.accent {
+            background: var(--accent-soft);
+            border: 1px solid var(--accent);
+        }
+
+        .flow-icon {
+            font-size: 28px;
+        }
+
+        .flow-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            font-weight: var(--font-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+        }
+
+        .flow-arrow {
+            font-size: var(--text-xl);
+            color: var(--text-muted);
+        }
+
+        /* Principles Grid */
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+        }
+
+        @media (max-width: 600px) {
+            .principles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .principle-item {
+            padding: var(--space-5);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s var(--ease-default);
+        }
+
+        .principle-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .principle-title {
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            font-weight: var(--font-bold);
+            color: var(--accent);
+            margin-bottom: var(--space-2);
+        }
+
+        .principle-desc {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Quiz */
+        .quiz-container {
+            padding: var(--space-6);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl);
+        }
+
+        .quiz-question {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            margin-bottom: var(--space-5);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .quiz-option {
+            padding: var(--space-4);
+            background: var(--bg-hover);
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s var(--ease-default);
+            text-align: left;
+            font-size: var(--text-base);
+        }
+
+        .quiz-option:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-default);
+        }
+
+        .quiz-option.correct {
+            background: var(--success-soft);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .quiz-option.wrong {
+            background: var(--error-soft);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .quiz-feedback {
+            margin-top: var(--space-4);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback.success {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .quiz-feedback.error {
+            background: var(--error-soft);
+            color: var(--error);
+        }
+
+        /* Step Action */
+        .step-action {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+        }
+
+        .step-xp {
+            font-family: var(--font-mono);
+            font-size: var(--text-sm);
+            color: var(--accent);
+        }
+
+        /* Graduation */
+        .graduation-card {
+            text-align: center;
+            padding: var(--space-12);
+            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.1) 100%);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-2xl);
+        }
+
+        .graduation-icon {
+            font-size: 64px;
+            margin-bottom: var(--space-4);
+        }
+
+        .graduation-title {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-2);
+        }
+
+        .graduation-subtitle {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-8);
+        }
+
+        /* Next Steps */
+        .next-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+        }
+
+        @media (max-width: 768px) {
+            .next-steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .next-step-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-6);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s var(--ease-default);
+        }
+
+        .next-step-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .next-step-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-3);
+        }
+
+        .next-step-title {
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-1);
+        }
+
+        .next-step-desc {
+            font-size: var(--text-xs);
+            color: var(--text-tertiary);
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .step-content {
+                padding-left: 0;
+                margin-top: var(--space-4);
+            }
+
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
     </div>
 
     <!-- Navigation -->
-    <nav class="learn-nav">
-      <div class="learn-nav-inner container">
-        <a href="/" class="learn-nav-back">
-          <span>&larr;</span>
-          <span>Hub</span>
-        </a>
-        <span class="learn-nav-title">Learn $asdfasdfa</span>
-        <div class="learn-nav-xp">
-          <span class="xp-icon">&#11088;</span>
-          <span class="xp-value" id="total-xp">0</span>
-          <span class="xp-label">XP</span>
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-inner">
+                <a href="/" class="nav-logo">
+                    <span class="nav-logo-icon">A</span>
+                    <span>ASDF</span>
+                </a>
+
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link">Hub</a></li>
+                    <li><a href="learn.html" class="nav-link active">Learn</a></li>
+                    <li><a href="burns.html" class="nav-link">Burns</a></li>
+                    <li><a href="deep-learn.html" class="nav-link">Deep Dive</a></li>
+                </ul>
+
+                <div class="nav-actions">
+                    <span id="navXp" style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--accent);">0 XP</span>
+                </div>
+            </div>
         </div>
-      </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="learn-main">
-      <!-- ============================================
-             SECTION 1: INTRO - What is $asdfasdfa?
-             ============================================ -->
-      <section class="learn-section" id="section-1" data-section="1">
-        <div class="container container-md">
-          <div class="section-badge">Section 1</div>
-          <h1 class="section-title">What is $asdfasdfa?</h1>
-          <p class="section-subtitle">Le token qui devient plus rare chaque jour.</p>
-
-          <div class="content-block">
-            <div class="meme-reference">
-              <span class="meme-dog">&#128021;</span>
-              <span class="meme-fire">&#128293;</span>
-            </div>
-            <p>
-              Tu connais le meme. Le chien assis dans une piece en feu, cafe a la main:
-              <strong>"This is fine."</strong>
-            </p>
-            <p>C'est pas juste notre mascotte. C'est notre philosophie.</p>
-          </div>
-
-          <div class="content-block highlight">
-            <h3>Le Pitch en Une Phrase</h3>
-            <p class="pitch-text">
-              "Les frais de trading achetent des tokens. Les tokens achetes sont brules. L'offre
-              diminue. <strong>THIS IS FINE.</strong>"
-            </p>
-          </div>
-
-          <div class="section-action">
-            <button class="btn btn-primary btn-lg" onclick="completeSection(1)">
-              J'ai compris <span>&rarr;</span>
-            </button>
-            <span class="xp-reward">+25 XP</span>
-          </div>
+    <!-- Hero -->
+    <header class="learn-hero">
+        <div class="hero-badge">
+            <span>5 min read</span>
         </div>
-      </section>
-
-      <!-- ============================================
-             SECTION 2: PHILOSOPHY - The 4 Principles
-             ============================================ -->
-      <section class="learn-section locked" id="section-2" data-section="2">
-        <div class="container container-md">
-          <div class="section-badge">Section 2</div>
-          <h2 class="section-title">La Philosophie</h2>
-          <p class="section-subtitle">4 principes. Memorise-les.</p>
-
-          <div class="principles-grid">
-            <div class="principle-card" data-principle="verify">
-              <div class="principle-number">1</div>
-              <h4>Don't trust. Verify.</h4>
-              <p>Ne fais confiance a personne. Verifie tout on-chain.</p>
-            </div>
-            <div class="principle-card" data-principle="burn">
-              <div class="principle-number">2</div>
-              <h4>Don't extract. Burn.</h4>
-              <p>Les fees ne vont pas aux devs. Ils sont brules.</p>
-            </div>
-            <div class="principle-card" data-principle="hold">
-              <div class="principle-number">3</div>
-              <h4>Don't panic. Hold.</h4>
-              <p>Le chaos est le filtre. Reste calme. Construis.</p>
-            </div>
-            <div class="principle-card" data-principle="fine">
-              <div class="principle-number">4</div>
-              <h4>This is fine.</h4>
-              <p>Accepte le chaos. Le feu travaille pour toi.</p>
-            </div>
-          </div>
-
-          <!-- Mini Quiz -->
-          <div class="quiz-block" id="quiz-1">
-            <h4 class="quiz-title">&#127919; Quick Quiz</h4>
-            <p class="quiz-question">Que signifie "Don't extract. Burn." ?</p>
-            <div class="quiz-options">
-              <button class="quiz-option" data-correct="false">Les devs gardent les fees</button>
-              <button class="quiz-option" data-correct="true">
-                Les fees sont brules, pas extraits
-              </button>
-              <button class="quiz-option" data-correct="false">
-                On brule les tokens manuellement
-              </button>
-            </div>
-            <div class="quiz-feedback" id="quiz-1-feedback"></div>
-          </div>
-
-          <div class="section-action">
-            <button
-              class="btn btn-primary btn-lg"
-              onclick="completeSection(2)"
-              disabled
-              id="btn-section-2"
-            >
-              Continuer <span>&rarr;</span>
+        <h1 class="hero-title">
+            Understand <span>$asdfasdfa</span>
+        </h1>
+        <p class="hero-subtitle">
+            The deflationary token that gets more scarce with every trade. Learn how it works in 5 simple steps.
+        </p>
+        <div class="hero-cta">
+            <button class="btn btn-primary btn-lg" onclick="scrollToStep(1)">
+                Start Learning
             </button>
-            <span class="xp-reward">+50 XP (quiz inclus)</span>
-          </div>
+            <a href="deep-learn.html" class="btn btn-secondary btn-lg">
+                Deep Dive
+            </a>
         </div>
-      </section>
+    </header>
 
-      <!-- ============================================
-             SECTION 3: HOW IT WORKS - The Burn Flow
-             ============================================ -->
-      <section class="learn-section locked" id="section-3" data-section="3">
-        <div class="container container-md">
-          <div class="section-badge">Section 3</div>
-          <h2 class="section-title">Comment ca Marche</h2>
-          <p class="section-subtitle">Le flow automatique. Zero intervention humaine.</p>
+    <!-- Steps -->
+    <main class="steps-container">
 
-          <!-- Visual Flow -->
-          <div class="burn-flow">
-            <div class="flow-step">
-              <div class="flow-icon">&#128176;</div>
-              <div class="flow-label">Trade</div>
-              <div class="flow-desc">Quelqu'un achete/vend</div>
+        <!-- Step 1: The Pitch -->
+        <section class="learn-step active" id="step-1" data-step="1">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="step-title">The Pitch</h2>
             </div>
-            <div class="flow-arrow">&rarr;</div>
-            <div class="flow-step">
-              <div class="flow-icon">&#128184;</div>
-              <div class="flow-label">Fee (1%)</div>
-              <div class="flow-desc">Preleve sur la tx</div>
+            <div class="step-content">
+                <p class="step-text">
+                    You know the "This is Fine" meme? The dog sitting calmly while the room burns around him. That's our mascot and our philosophy.
+                </p>
+
+                <div class="pitch-box">
+                    <p class="pitch-text">
+                        Trading fees buy tokens.<br>
+                        Bought tokens get burned.<br>
+                        Supply goes down.<br>
+                        <span class="fire">THIS IS FINE.</span>
+                    </p>
+                </div>
+
+                <p class="step-text">
+                    Every trade generates fees. Those fees automatically buy $ASDF tokens and send them to a <strong>burn address</strong> — permanently destroying them.
+                </p>
+
+                <div class="step-action">
+                    <button class="btn btn-primary" onclick="completeStep(1)">
+                        Got it
+                    </button>
+                    <span class="step-xp">+25 XP</span>
+                </div>
             </div>
-            <div class="flow-arrow">&rarr;</div>
-            <div class="flow-step">
-              <div class="flow-icon">&#128722;</div>
-              <div class="flow-label">Buyback</div>
-              <div class="flow-desc">Achat automatique</div>
+        </section>
+
+        <!-- Step 2: How It Works -->
+        <section class="learn-step" id="step-2" data-step="2">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="step-title">How It Works</h2>
             </div>
-            <div class="flow-arrow">&rarr;</div>
-            <div class="flow-step accent">
-              <div class="flow-icon">&#128293;</div>
-              <div class="flow-label">BURN</div>
-              <div class="flow-desc">Tokens detruits</div>
+            <div class="step-content">
+                <p class="step-text">
+                    The burn mechanism runs 24/7 with zero human intervention. It's deterministic code, not promises.
+                </p>
+
+                <div class="visual-card">
+                    <div class="flow-diagram">
+                        <div class="flow-item">
+                            <span class="flow-icon">💱</span>
+                            <span class="flow-label">Trade</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item">
+                            <span class="flow-icon">💰</span>
+                            <span class="flow-label">Fee</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item">
+                            <span class="flow-icon">🛒</span>
+                            <span class="flow-label">Buyback</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item accent">
+                            <span class="flow-icon">🔥</span>
+                            <span class="flow-label">Burn</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-item">
+                            <span class="flow-icon">📈</span>
+                            <span class="flow-label">Scarce</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="step-text">
+                    The "Daemon" is an automated program that collects fees, buys tokens via Jupiter, and sends them to a burn address. All on-chain, all verifiable.
+                </p>
+
+                <div class="step-action">
+                    <button class="btn btn-primary" onclick="completeStep(2)">
+                        Continue
+                    </button>
+                    <span class="step-xp">+25 XP</span>
+                </div>
             </div>
-            <div class="flow-arrow">&rarr;</div>
-            <div class="flow-step success">
-              <div class="flow-icon">&#128200;</div>
-              <div class="flow-label">Supply &#8595;</div>
-              <div class="flow-desc">Plus rare</div>
+        </section>
+
+        <!-- Step 3: The Philosophy -->
+        <section class="learn-step" id="step-3" data-step="3">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="step-title">The Philosophy</h2>
             </div>
-          </div>
+            <div class="step-content">
+                <p class="step-text">
+                    Four principles guide everything we build. Memorize them.
+                </p>
 
-          <div class="content-block">
-            <h4>Pourquoi c'est Different</h4>
-            <ul class="check-list">
-              <li><span>&#10003;</span> Automatique - pas de vote, pas d'attente</li>
-              <li><span>&#10003;</span> Verifiable - chaque burn est on-chain</li>
-              <li><span>&#10003;</span> Deflationnaire - l'offre ne peut que baisser</li>
-              <li><span>&#10003;</span> Aligne - plus tu utilises, plus ca burn</li>
-            </ul>
-          </div>
+                <div class="principles-grid">
+                    <div class="principle-item">
+                        <div class="principle-title">Don't trust. Verify.</div>
+                        <div class="principle-desc">Everything is on-chain. Check it yourself on Solscan.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-title">Don't extract. Burn.</div>
+                        <div class="principle-desc">Fees don't go to devs. They fuel the burn.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-title">Don't panic. Hold.</div>
+                        <div class="principle-desc">Chaos is the filter. Stay calm. Build.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-title">This is fine.</div>
+                        <div class="principle-desc">Accept the fire. It works for you.</div>
+                    </div>
+                </div>
 
-          <div class="verify-block">
-            <span class="verify-icon">&#128269;</span>
-            <span>Verifie les burns en temps reel:</span>
-            <a href="burns.html" class="verify-link">Burns Tracker &rarr;</a>
-          </div>
-
-          <div class="section-action">
-            <button class="btn btn-primary btn-lg" onclick="completeSection(3)">
-              Continuer <span>&rarr;</span>
-            </button>
-            <span class="xp-reward">+25 XP</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================
-             SECTION 4: K-SCORE - The Golden Ratio
-             ============================================ -->
-      <section class="learn-section locked" id="section-4" data-section="4">
-        <div class="container container-md">
-          <div class="section-badge">Section 4</div>
-          <h2 class="section-title">Le K-Score</h2>
-          <p class="section-subtitle">La metrique qui mesure l'equilibre.</p>
-
-          <div class="content-block">
-            <div class="formula-display">
-              <span class="formula">K = &#8731;(D &times; O &times; L)</span>
+                <div class="step-action">
+                    <button class="btn btn-primary" onclick="completeStep(3)">
+                        Continue
+                    </button>
+                    <span class="step-xp">+25 XP</span>
+                </div>
             </div>
-            <p class="formula-explain">
-              <strong>D</strong> = Decentralization &middot; <strong>O</strong> = Organic Growth
-              &middot; <strong>L</strong> = Liquidity Health
-            </p>
-          </div>
+        </section>
 
-          <div class="content-block highlight">
-            <h4>Pourquoi la Racine Cubique?</h4>
-            <p>
-              Si <em>un seul</em> facteur est zero, le K-Score est zero. Pas de shortcuts.
-              L'equilibre est obligatoire.
-            </p>
-            <p class="phi-note">Base sur le nombre d'or (&#966; = 1.618). K-Score parfait = 100.</p>
-          </div>
-
-          <!-- Interactive K-Score Demo -->
-          <div class="kscore-demo" id="kscore-demo">
-            <h4>Simule un K-Score</h4>
-            <div class="kscore-sliders">
-              <div class="slider-group">
-                <label>D (Decentralization)</label>
-                <input type="range" min="0" max="100" value="50" id="slider-d" />
-                <span id="value-d">50</span>
-              </div>
-              <div class="slider-group">
-                <label>O (Organic Growth)</label>
-                <input type="range" min="0" max="100" value="50" id="slider-o" />
-                <span id="value-o">50</span>
-              </div>
-              <div class="slider-group">
-                <label>L (Liquidity)</label>
-                <input type="range" min="0" max="100" value="50" id="slider-l" />
-                <span id="value-l">50</span>
-              </div>
+        <!-- Step 4: Quick Quiz -->
+        <section class="learn-step" id="step-4" data-step="4">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <h2 class="step-title">Quick Quiz</h2>
             </div>
-            <div class="kscore-result">
-              <span class="kscore-label">K-Score:</span>
-              <span class="kscore-value" id="kscore-value">50</span>
+            <div class="step-content">
+                <p class="step-text">
+                    Let's make sure you got it. Answer correctly to continue.
+                </p>
+
+                <div class="quiz-container" id="quiz1">
+                    <p class="quiz-question">What happens to the trading fees?</p>
+                    <div class="quiz-options">
+                        <button class="quiz-option" data-correct="false" onclick="checkAnswer(this, 'quiz1')">
+                            They go to the developers
+                        </button>
+                        <button class="quiz-option" data-correct="true" onclick="checkAnswer(this, 'quiz1')">
+                            They buy and burn tokens
+                        </button>
+                        <button class="quiz-option" data-correct="false" onclick="checkAnswer(this, 'quiz1')">
+                            They're distributed to holders
+                        </button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz1-feedback"></div>
+                </div>
+
+                <div class="step-action">
+                    <button class="btn btn-primary" id="step4-btn" onclick="completeStep(4)" disabled>
+                        Continue
+                    </button>
+                    <span class="step-xp">+50 XP (quiz bonus)</span>
+                </div>
             </div>
-          </div>
+        </section>
 
-          <!-- Mini Quiz -->
-          <div class="quiz-block" id="quiz-2">
-            <h4 class="quiz-title">&#127919; Quick Quiz</h4>
-            <p class="quiz-question">Si D=100, O=100, mais L=0, quel est le K-Score?</p>
-            <div class="quiz-options">
-              <button class="quiz-option" data-correct="true">0 - Un facteur nul = K nul</button>
-              <button class="quiz-option" data-correct="false">66.6 - Moyenne des trois</button>
-              <button class="quiz-option" data-correct="false">
-                100 - Les deux autres compensent
-              </button>
+        <!-- Step 5: Graduation -->
+        <section class="learn-step" id="step-5" data-step="5">
+            <div class="step-header">
+                <div class="step-number">5</div>
+                <h2 class="step-title">You're Ready</h2>
             </div>
-            <div class="quiz-feedback" id="quiz-2-feedback"></div>
-          </div>
+            <div class="step-content">
+                <div class="graduation-card">
+                    <div class="graduation-icon">🎓</div>
+                    <h3 class="graduation-title">Quick Start Complete</h3>
+                    <p class="graduation-subtitle">
+                        You understand the basics. Now choose your path.
+                    </p>
 
-          <div class="section-action">
-            <button
-              class="btn btn-primary btn-lg"
-              onclick="completeSection(4)"
-              disabled
-              id="btn-section-4"
-            >
-              Continuer <span>&rarr;</span>
-            </button>
-            <span class="xp-reward">+50 XP (quiz inclus)</span>
-          </div>
-        </div>
-      </section>
+                    <div class="next-steps-grid">
+                        <a href="deep-learn.html" class="next-step-card">
+                            <span class="next-step-icon">📚</span>
+                            <span class="next-step-title">Deep Dive</span>
+                            <span class="next-step-desc">K-Score, φ, and more</span>
+                        </a>
+                        <a href="burns.html" class="next-step-card">
+                            <span class="next-step-icon">🔥</span>
+                            <span class="next-step-title">Watch Burns</span>
+                            <span class="next-step-desc">Live on-chain data</span>
+                        </a>
+                        <a href="/" class="next-step-card">
+                            <span class="next-step-icon">🏠</span>
+                            <span class="next-step-title">Explore Hub</span>
+                            <span class="next-step-desc">All ecosystem tools</span>
+                        </a>
+                    </div>
+                </div>
 
-      <!-- ============================================
-             SECTION 5: GRADUATION - You're Ready
-             ============================================ -->
-      <section class="learn-section locked" id="section-5" data-section="5">
-        <div class="container container-md">
-          <div class="section-badge final">Section 5</div>
-          <h2 class="section-title">Graduation</h2>
-          <p class="section-subtitle">Tu comprends $asdfasdfa. Maintenant, choisis ton chemin.</p>
-
-          <div class="graduation-badge">
-            <div class="badge-icon">&#127891;</div>
-            <div class="badge-title">Holder Certified</div>
-            <div class="badge-subtitle">Tu as complete le parcours Learn.</div>
-          </div>
-
-          <div class="content-block">
-            <h4>Resume</h4>
-            <ul class="summary-list">
-              <li><strong>Don't trust. Verify.</strong> - Tout est on-chain.</li>
-              <li><strong>Don't extract. Burn.</strong> - Les fees alimentent le burn.</li>
-              <li><strong>Don't panic. Hold.</strong> - Vision long terme.</li>
-              <li><strong>K = &#8731;(D&times;O&times;L)</strong> - Equilibre obligatoire.</li>
-              <li><strong>This is fine.</strong> - Le chaos est le filtre.</li>
-            </ul>
-          </div>
-
-          <div class="next-steps">
-            <h4>Prochaines Etapes</h4>
-            <div class="paths-grid">
-              <a href="build.html" class="path-card">
-                <span class="path-icon">&#127795;</span>
-                <span class="path-title">BUILD</span>
-                <span class="path-desc">Contribuer a l'ecosysteme</span>
-              </a>
-              <a href="games.html" class="path-card">
-                <span class="path-icon">&#127918;</span>
-                <span class="path-title">PLAY</span>
-                <span class="path-desc">Apprendre en jouant</span>
-              </a>
-              <a href="burns.html" class="path-card">
-                <span class="path-icon">&#128293;</span>
-                <span class="path-title">VERIFY</span>
-                <span class="path-desc">Voir les burns live</span>
-              </a>
+                <div class="step-action" style="justify-content: center;">
+                    <button class="btn btn-accent btn-lg" onclick="completeStep(5)">
+                        Complete Journey 🎉
+                    </button>
+                    <span class="step-xp">+75 XP</span>
+                </div>
             </div>
-          </div>
+        </section>
 
-          <div class="section-action final">
-            <button class="btn btn-accent btn-lg" onclick="completeSection(5)">
-              Terminer le Parcours <span>&#127881;</span>
-            </button>
-            <span class="xp-reward">+100 XP (Graduation)</span>
-          </div>
-        </div>
-      </section>
     </main>
 
-    <!-- Completion Overlay -->
-    <div class="completion-overlay" id="completion-overlay">
-      <div class="completion-content">
-        <div class="completion-icon">&#127881;</div>
-        <h2>Felicitations!</h2>
-        <p>Tu as complete le parcours Learn.</p>
-        <div class="completion-stats">
-          <div class="completion-stat">
-            <span class="stat-value" id="final-xp">250</span>
-            <span class="stat-label">XP Total</span>
-          </div>
-          <div class="completion-stat">
-            <span class="stat-value">5/5</span>
-            <span class="stat-label">Sections</span>
-          </div>
-        </div>
-        <div class="completion-actions">
-          <a href="build.html" class="btn btn-primary">Continuer vers BUILD</a>
-          <a href="/" class="btn btn-secondary">Retour au Hub</a>
-        </div>
-      </div>
+    <!-- Step Counter -->
+    <div class="step-counter" id="stepCounter">
+        <div class="step-dot active" data-step="1" onclick="scrollToStep(1)"></div>
+        <div class="step-dot" data-step="2" onclick="scrollToStep(2)"></div>
+        <div class="step-dot" data-step="3" onclick="scrollToStep(3)"></div>
+        <div class="step-dot" data-step="4" onclick="scrollToStep(4)"></div>
+        <div class="step-dot" data-step="5" onclick="scrollToStep(5)"></div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/learn.js"></script>
-  </body>
+    <script>
+        // State
+        const state = {
+            currentStep: 1,
+            completedSteps: [],
+            totalXP: 0,
+            quizPassed: false
+        };
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('asdf_learn_quick');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(state, parsed);
+                updateUI();
+            }
+        }
+
+        // Save state
+        function saveState() {
+            localStorage.setItem('asdf_learn_quick', JSON.stringify(state));
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update XP display
+            document.getElementById('navXp').textContent = `${state.totalXP} XP`;
+
+            // Update progress bar
+            const progress = (state.completedSteps.length / 5) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+
+            // Update step dots
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                const stepNum = parseInt(dot.dataset.step);
+                dot.classList.remove('active', 'completed');
+                if (stepNum === state.currentStep) {
+                    dot.classList.add('active');
+                }
+                if (state.completedSteps.includes(stepNum)) {
+                    dot.classList.add('completed');
+                }
+            });
+
+            // Update step sections
+            document.querySelectorAll('.learn-step').forEach(step => {
+                const stepNum = parseInt(step.dataset.step);
+                step.classList.remove('active', 'completed');
+                if (stepNum === state.currentStep) {
+                    step.classList.add('active');
+                }
+                if (state.completedSteps.includes(stepNum)) {
+                    step.classList.add('completed');
+                }
+            });
+
+            // Update quiz button if passed
+            if (state.quizPassed) {
+                const btn = document.getElementById('step4-btn');
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // Complete step
+        function completeStep(stepNum) {
+            if (!state.completedSteps.includes(stepNum)) {
+                state.completedSteps.push(stepNum);
+
+                // Add XP
+                const xpValues = { 1: 25, 2: 25, 3: 25, 4: 50, 5: 75 };
+                state.totalXP += xpValues[stepNum] || 25;
+            }
+
+            // Move to next step
+            if (stepNum < 5) {
+                state.currentStep = stepNum + 1;
+                scrollToStep(stepNum + 1);
+            }
+
+            saveState();
+            updateUI();
+        }
+
+        // Scroll to step
+        function scrollToStep(stepNum) {
+            const step = document.getElementById(`step-${stepNum}`);
+            if (step) {
+                state.currentStep = stepNum;
+                updateUI();
+                step.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Quiz answer check
+        function checkAnswer(button, quizId) {
+            const container = document.getElementById(quizId);
+            const options = container.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById(`${quizId}-feedback`);
+            const isCorrect = button.dataset.correct === 'true';
+
+            // Disable all options
+            options.forEach(opt => {
+                opt.style.pointerEvents = 'none';
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                } else if (opt === button) {
+                    opt.classList.add('wrong');
+                }
+            });
+
+            // Show feedback
+            feedback.classList.add('show');
+            if (isCorrect) {
+                feedback.classList.add('success');
+                feedback.textContent = '✓ Correct! Fees are used to buy and burn tokens.';
+                state.quizPassed = true;
+                document.getElementById('step4-btn').disabled = false;
+            } else {
+                feedback.classList.add('error');
+                feedback.textContent = '✗ Not quite. The correct answer is highlighted above.';
+            }
+
+            saveState();
+        }
+
+        // Initialize
+        loadState();
+
+        // Intersection Observer for active step
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const stepNum = parseInt(entry.target.dataset.step);
+                    state.currentStep = stepNum;
+                    updateUI();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.learn-step').forEach(step => {
+            observer.observe(step);
+        });
+    </script>
+</body>
 </html>
