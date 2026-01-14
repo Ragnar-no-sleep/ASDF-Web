@@ -171,7 +171,19 @@
             color: var(--gold-400);
         }
 
-        /* Phase Title */
+        /* Phase Title - Swipe to Reveal */
+        .phase-title-wrapper {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 8px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .phase-title-wrapper:active {
+            cursor: grabbing;
+        }
+
         .phase-title {
             font-size: clamp(28px, 5vw, 40px);
             font-weight: 300;
@@ -179,14 +191,65 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .phase:not(.unlocked) .phase-title {
             background: linear-gradient(135deg, #5a4d40 0%, #3a3330 100%);
             -webkit-background-clip: text;
             background-clip: text;
+        }
+
+        /* Title overlay that slides away */
+        .title-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--hub-deep);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--warm-ghost);
+            transition: transform 0.1s ease;
+            pointer-events: none;
+        }
+
+        .title-overlay::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(90deg, transparent, var(--hub-deep));
+        }
+
+        .phase.title-revealed .title-overlay {
+            transform: translateX(100%);
+        }
+
+        .swipe-hint {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .swipe-hint-arrow {
+            animation: swipeArrow 1.5s ease infinite;
+        }
+
+        @keyframes swipeArrow {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 1; }
+        }
+
+        .phase.title-revealed .swipe-hint {
+            display: none;
         }
 
         .phase-subtitle {
@@ -666,7 +729,15 @@
     <section class="phase unlocked" id="phase-1" data-phase="1">
         <div class="phase-inner">
             <div class="phase-level">Newcomer</div>
-            <h2 class="phase-title">You arrive here.</h2>
+            <div class="phase-title-wrapper" data-title="1">
+                <h2 class="phase-title">You arrive here.</h2>
+                <div class="title-overlay">
+                    <span class="swipe-hint">
+                        <span>Swipe to reveal</span>
+                        <span class="swipe-hint-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </div>
             <p class="phase-subtitle">Welcome to the rabbit hole.</p>
 
             <div class="phase-content">
@@ -693,7 +764,15 @@
     <section class="phase" id="phase-2" data-phase="2">
         <div class="phase-inner">
             <div class="phase-level">Newcomer &rarr; Initiate</div>
-            <h2 class="phase-title">The Mechanism</h2>
+            <div class="phase-title-wrapper" data-title="2">
+                <h2 class="phase-title">The Mechanism</h2>
+                <div class="title-overlay">
+                    <span class="swipe-hint">
+                        <span>Swipe to reveal</span>
+                        <span class="swipe-hint-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </div>
             <p class="phase-subtitle">How it really works.</p>
 
             <div class="phase-content">
@@ -730,7 +809,15 @@
     <section class="phase" id="phase-3" data-phase="3">
         <div class="phase-inner">
             <div class="phase-level">Initiate</div>
-            <h2 class="phase-title">The Daemon</h2>
+            <div class="phase-title-wrapper" data-title="3">
+                <h2 class="phase-title">The Daemon</h2>
+                <div class="title-overlay">
+                    <span class="swipe-hint">
+                        <span>Swipe to reveal</span>
+                        <span class="swipe-hint-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </div>
             <p class="phase-subtitle">Code that runs. Always.</p>
 
             <div class="phase-content">
@@ -771,7 +858,15 @@
     <section class="phase" id="phase-4" data-phase="4">
         <div class="phase-inner">
             <div class="phase-level">Initiate &rarr; Believer</div>
-            <h2 class="phase-title">The Philosophy</h2>
+            <div class="phase-title-wrapper" data-title="4">
+                <h2 class="phase-title">The Philosophy</h2>
+                <div class="title-overlay">
+                    <span class="swipe-hint">
+                        <span>Swipe to reveal</span>
+                        <span class="swipe-hint-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </div>
             <p class="phase-subtitle">Deeper into the rabbit hole.</p>
 
             <div class="phase-content">
@@ -811,7 +906,15 @@
     <section class="phase" id="phase-5" data-phase="5">
         <div class="phase-inner">
             <div class="phase-level">Believer</div>
-            <h2 class="phase-title">The Ecosystem</h2>
+            <div class="phase-title-wrapper" data-title="5">
+                <h2 class="phase-title">The Ecosystem</h2>
+                <div class="title-overlay">
+                    <span class="swipe-hint">
+                        <span>Swipe to reveal</span>
+                        <span class="swipe-hint-arrow">&rarr;</span>
+                    </span>
+                </div>
+            </div>
             <p class="phase-subtitle">Built by builders. For builders.</p>
 
             <div class="phase-content">
@@ -956,7 +1059,78 @@
         }
 
         // ============================================
-        // PHASE 2: DRAG
+        // TITLE SWIPE INTERACTIONS
+        // ============================================
+        function initTitleSwipes() {
+            document.querySelectorAll('.phase-title-wrapper').forEach(wrapper => {
+                const overlay = wrapper.querySelector('.title-overlay');
+                const phase = wrapper.closest('.phase');
+
+                let isDragging = false;
+                let startX = 0;
+                let currentOffset = 0;
+                let wrapperWidth = 0;
+
+                function onStart(e) {
+                    if (phase.classList.contains('title-revealed')) return;
+                    isDragging = true;
+                    wrapperWidth = wrapper.offsetWidth;
+                    startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                    wrapper.style.cursor = 'grabbing';
+                }
+
+                function onMove(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+
+                    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                    const diff = clientX - startX;
+                    // Only move right (positive direction)
+                    currentOffset = Math.max(0, Math.min(wrapperWidth, diff));
+
+                    // Direct 1:1 mapping - overlay follows cursor exactly
+                    overlay.style.transform = `translateX(${currentOffset}px)`;
+
+                    // Complete when dragged 60% of the width
+                    if (currentOffset >= wrapperWidth * 0.6) {
+                        completeTitle();
+                    }
+                }
+
+                function onEnd() {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    wrapper.style.cursor = 'grab';
+
+                    if (currentOffset < wrapperWidth * 0.6) {
+                        // Snap back smoothly
+                        overlay.style.transition = 'transform 0.3s ease';
+                        overlay.style.transform = 'translateX(0)';
+                        setTimeout(() => {
+                            overlay.style.transition = 'transform 0.1s ease';
+                        }, 300);
+                        currentOffset = 0;
+                    }
+                }
+
+                function completeTitle() {
+                    isDragging = false;
+                    phase.classList.add('title-revealed');
+                    overlay.style.transition = 'transform 0.3s ease';
+                    overlay.style.transform = 'translateX(100%)';
+                }
+
+                wrapper.addEventListener('mousedown', onStart);
+                wrapper.addEventListener('touchstart', onStart, { passive: true });
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchend', onEnd);
+            });
+        }
+
+        // ============================================
+        // PHASE 2: DRAG (Mechanism - smoother)
         // ============================================
         function initPhase2() {
             const handle = document.getElementById('dragHandle');
@@ -967,13 +1141,21 @@
 
             let isDragging = false;
             let startX = 0;
+            let handleStartX = 0;
             let currentX = 0;
-            const maxDrag = 200;
+            let trackWidth = 0;
+            let maxDrag = 0;
 
             function onDragStart(e) {
                 if (state.completedPhases.includes(2)) return;
                 isDragging = true;
+
+                // Calculate actual dimensions
+                trackWidth = track.offsetWidth;
+                maxDrag = trackWidth - 56 - 16; // track width - handle width - padding
+
                 startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                handleStartX = handle.getBoundingClientRect().left - track.getBoundingClientRect().left;
                 handle.style.cursor = 'grabbing';
             }
 
@@ -983,13 +1165,21 @@
 
                 const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
                 const diff = clientX - startX;
+
+                // Direct 1:1 tracking - handle follows cursor exactly
                 currentX = Math.max(0, Math.min(maxDrag, diff));
 
-                handle.style.transform = `translateY(-50%) translateX(${currentX}px)`;
-                reveal.style.clipPath = `inset(0 ${100 - (currentX / maxDrag) * 100}% 0 0)`;
-                hint.style.opacity = 1 - (currentX / maxDrag);
+                // Calculate progress as percentage of track
+                const progress = currentX / maxDrag;
 
-                if (currentX >= maxDrag * 0.95) {
+                // Handle follows cursor directly
+                handle.style.transform = `translateY(-50%) translateX(${currentX}px)`;
+
+                // Reveal follows handle position proportionally
+                reveal.style.clipPath = `inset(0 ${100 - progress * 100}% 0 0)`;
+                hint.style.opacity = 1 - progress;
+
+                if (progress >= 0.95) {
                     completePhase2();
                 }
             }
@@ -999,23 +1189,36 @@
                 isDragging = false;
                 handle.style.cursor = 'grab';
 
-                if (currentX < maxDrag * 0.95) {
-                    // Reset
+                const progress = currentX / maxDrag;
+                if (progress < 0.95) {
+                    // Snap back smoothly
+                    handle.style.transition = 'transform 0.3s ease';
+                    reveal.style.transition = 'clip-path 0.3s ease';
+                    hint.style.transition = 'opacity 0.3s ease';
+
                     handle.style.transform = 'translateY(-50%) translateX(0)';
                     reveal.style.clipPath = 'inset(0 100% 0 0)';
                     hint.style.opacity = 1;
+
+                    setTimeout(() => {
+                        handle.style.transition = '';
+                        reveal.style.transition = 'clip-path 0.1s ease';
+                        hint.style.transition = 'opacity 0.3s ease';
+                    }, 300);
+
                     currentX = 0;
                 }
             }
 
             function completePhase2() {
+                isDragging = false;
                 track.style.display = 'none';
                 complete.style.display = 'flex';
                 completePhase(2);
             }
 
             handle.addEventListener('mousedown', onDragStart);
-            handle.addEventListener('touchstart', onDragStart);
+            handle.addEventListener('touchstart', onDragStart, { passive: true });
             document.addEventListener('mousemove', onDragMove);
             document.addEventListener('touchmove', onDragMove, { passive: false });
             document.addEventListener('mouseup', onDragEnd);
@@ -1177,6 +1380,7 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
+            initTitleSwipes();
             initPhase1();
             initPhase2();
             initPhase3();
