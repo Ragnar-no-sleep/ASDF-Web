@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDF - Build anything on Solana</title>
+    <meta name="description" content="The optimistic burn protocol. From idea to reality. Build, play, and track with ASDF on Solana.">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alonisthe.dev/">
+    <meta property="og:title" content="ASDF - Build anything on Solana">
+    <meta property="og:description" content="The optimistic burn protocol. From idea to reality. Build, play, and track with ASDF.">
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ASDF - Build anything on Solana">
+    <meta name="twitter:description" content="The optimistic burn protocol. From idea to reality.">
+    <meta name="twitter:image" content="https://alonisthe.dev/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
+        script-src-attr 'unsafe-inline';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com https://asdf-api.onrender.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Prefetch -->
+    <link rel="prefetch" href="learn.html">
+    <link rel="prefetch" href="games.html">
+    <link rel="prefetch" href="holdex.html">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/hub.css">
+
+    <style>
+        /* Inter as SF Pro fallback */
+        :root {
+            --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-text: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="hub-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="/" class="nav-logo">
+                    <span class="nav-logo-icon">A</span>
+                    <span>ASDF</span>
+                </a>
+
+                <ul class="nav-links">
+                    <li><a href="learn.html">Learn</a></li>
+                    <li><a href="#build">Build</a></li>
+                    <li><a href="games.html">Games</a></li>
+                    <li><a href="#tools">Tools</a></li>
+                    <li><a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener">GitHub</a></li>
+                </ul>
+
+                <div class="nav-actions">
+                    <a href="holdex.html" class="btn btn-primary btn-sm">Open HolDex</a>
+                </div>
+
+                <button class="nav-toggle" aria-label="Menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <!-- Badge -->
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    <span>The Optimistic Burn Protocol</span>
+                </div>
+
+                <!-- Title -->
+                <h1 class="hero-title">
+                    Build anything<br>
+                    <span class="hero-title-gradient">on ASDF</span>
+                </h1>
+
+                <!-- Subtitle -->
+                <p class="hero-subtitle">
+                    From idea to reality. The ecosystem that empowers anyone
+                    to create, while every action burns tokens permanently.
+                </p>
+
+                <!-- Actions -->
+                <div class="hero-actions">
+                    <a href="learn.html" class="btn btn-primary btn-lg">Start Building</a>
+                    <a href="#how-it-works" class="btn btn-secondary btn-lg">How it works</a>
+                </div>
+
+                <!-- Burn Counter -->
+                <div class="burn-counter">
+                    <div class="burn-counter-icon">&#128293;</div>
+                    <div class="burn-counter-content">
+                        <div class="burn-counter-value" id="burn-counter">--</div>
+                        <div class="burn-counter-label">$ASDF Burned Forever</div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="stat-supply">--</div>
+                        <div class="hero-stat-label">Supply Left</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="stat-tools">11+</div>
+                        <div class="hero-stat-label">Tools Available</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="stat-builders">--</div>
+                        <div class="hero-stat-label">Builders</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 Pillars -->
+    <section class="pillars" id="pillars">
+        <div class="container">
+            <div class="section-header">
+                <h2>Your gateway to the ecosystem</h2>
+                <p>Everything you need to understand, create, play, and track in the ASDF universe.</p>
+            </div>
+
+            <div class="pillars-grid stagger">
+                <!-- Learn -->
+                <a href="learn.html" class="pillar-card card-interactive" data-pillar="learn">
+                    <div class="pillar-icon">&#128218;</div>
+                    <h3 class="pillar-title">Learn</h3>
+                    <p class="pillar-desc">
+                        Discover the ecosystem, understand how burns work,
+                        and master the philosophy of ASDF.
+                    </p>
+                    <span class="pillar-link">
+                        Start learning
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h10M9 4l4 4-4 4"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <!-- Build -->
+                <a href="#tools" class="pillar-card card-interactive" data-pillar="build" id="build">
+                    <div class="pillar-icon">&#128736;</div>
+                    <h3 class="pillar-title">Build</h3>
+                    <p class="pillar-desc">
+                        Launch tokens, create apps, and contribute to the ecosystem.
+                        Your ideas, powered by ASDF.
+                    </p>
+                    <span class="pillar-link">
+                        Start building
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h10M9 4l4 4-4 4"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <!-- Games -->
+                <a href="games.html" class="pillar-card card-interactive" data-pillar="games">
+                    <div class="pillar-icon">&#127918;</div>
+                    <h3 class="pillar-title">Games</h3>
+                    <p class="pillar-desc">
+                        Play Pump Arena RPG, compete on leaderboards,
+                        and earn while having fun.
+                    </p>
+                    <span class="pillar-link">
+                        Play now
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h10M9 4l4 4-4 4"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <!-- Tools -->
+                <a href="holdex.html" class="pillar-card card-interactive" data-pillar="tools" id="tools">
+                    <div class="pillar-icon">&#128295;</div>
+                    <h3 class="pillar-title">Tools</h3>
+                    <p class="pillar-desc">
+                        HolDex analytics, Forecast predictions, Burns tracker.
+                        Everything to monitor your journey.
+                    </p>
+                    <span class="pillar-link">
+                        Open tools
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h10M9 4l4 4-4 4"/>
+                        </svg>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How the flywheel works</h2>
+                <p>A simple mechanism that benefits everyone in the ecosystem.</p>
+            </div>
+
+            <div class="how-grid">
+                <div class="how-step">
+                    <div class="how-number">1</div>
+                    <h3 class="how-title">Build</h3>
+                    <p class="how-desc">Create an app, launch a token, or contribute to the ecosystem.</p>
+                </div>
+                <div class="how-step">
+                    <div class="how-number">2</div>
+                    <h3 class="how-title">Use</h3>
+                    <p class="how-desc">Apps generate fees through trading and usage activity.</p>
+                </div>
+                <div class="how-step">
+                    <div class="how-number">3</div>
+                    <h3 class="how-title">Burn</h3>
+                    <p class="how-desc">Fees are converted to permanent token burns automatically.</p>
+                </div>
+                <div class="how-step">
+                    <div class="how-number">4</div>
+                    <h3 class="how-title">Value</h3>
+                    <p class="how-desc">Reduced supply increases value for all holders.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Showcase -->
+    <section class="tools-showcase" id="tools-showcase">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful tools at your fingertips</h2>
+                <p>Everything you need to succeed in the ASDF ecosystem.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tools-tabs">
+                <button class="tool-tab active" data-tool="holdex">
+                    HolDex
+                    <span class="badge badge-success">Live</span>
+                </button>
+                <button class="tool-tab" data-tool="forecast">
+                    Forecast
+                    <span class="badge badge-success">Live</span>
+                </button>
+                <button class="tool-tab" data-tool="burns">
+                    Burns
+                    <span class="badge badge-success">Live</span>
+                </button>
+                <button class="tool-tab" data-tool="asdev">
+                    ASDev
+                    <span class="badge badge-success">Live</span>
+                </button>
+                <button class="tool-tab" data-tool="mobile">
+                    Mobile
+                    <span class="badge badge-primary">Soon</span>
+                </button>
+            </div>
+
+            <!-- Preview -->
+            <div class="tool-preview">
+                <!-- HolDex -->
+                <div class="tool-preview-content active" data-tool="holdex">
+                    <div class="tool-info">
+                        <h3>HolDex</h3>
+                        <p class="tool-tagline">Token analytics, reimagined</p>
+                        <p class="tool-description">
+                            Open-source DEX screener built for ASDF holders.
+                            Track any token with K-Score conviction metrics,
+                            real-time charts, and holder analytics.
+                        </p>
+                        <ul class="tool-features">
+                            <li>Real-time price & volume tracking</li>
+                            <li>K-Score holder conviction metric</li>
+                            <li>Advanced filtering & search</li>
+                            <li>Open source & verifiable</li>
+                        </ul>
+                        <div class="tool-actions">
+                            <a href="holdex.html" class="btn btn-primary">Open HolDex</a>
+                            <a href="https://github.com/Sollama58/HolDex" target="_blank" class="btn btn-secondary">View Code</a>
+                        </div>
+                    </div>
+                    <div class="tool-visual">
+                        <span class="tool-visual-icon">&#128200;</span>
+                        <span class="tool-visual-text">Token Analytics Dashboard</span>
+                    </div>
+                </div>
+
+                <!-- Forecast -->
+                <div class="tool-preview-content" data-tool="forecast">
+                    <div class="tool-info">
+                        <h3>Forecast</h3>
+                        <p class="tool-tagline">First prediction market on Pump.fun</p>
+                        <p class="tool-description">
+                            Predict SOL price movements and compete with other traders.
+                            All fees go directly to ASDF burns.
+                        </p>
+                        <ul class="tool-features">
+                            <li>Simple up/down predictions</li>
+                            <li>Real-time leaderboards</li>
+                            <li>100% fees to burns</li>
+                            <li>On-chain verification</li>
+                        </ul>
+                        <div class="tool-actions">
+                            <a href="forecast.html" class="btn btn-primary">Open Forecast</a>
+                            <a href="https://github.com/Sollama58/ASDForecast" target="_blank" class="btn btn-secondary">View Code</a>
+                        </div>
+                    </div>
+                    <div class="tool-visual">
+                        <span class="tool-visual-icon">&#127919;</span>
+                        <span class="tool-visual-text">Prediction Market</span>
+                    </div>
+                </div>
+
+                <!-- Burns -->
+                <div class="tool-preview-content" data-tool="burns">
+                    <div class="tool-info">
+                        <h3>Burns Tracker</h3>
+                        <p class="tool-tagline">Hall of Flames</p>
+                        <p class="tool-description">
+                            Watch tokens disappear forever. Real-time burn analytics,
+                            leaderboards, and cryptographic proof of every burn.
+                        </p>
+                        <ul class="tool-features">
+                            <li>Live burn feed</li>
+                            <li>Top burners leaderboard</li>
+                            <li>Historical analytics</li>
+                            <li>Verifiable on-chain</li>
+                        </ul>
+                        <div class="tool-actions">
+                            <a href="burns.html" class="btn btn-primary">View Burns</a>
+                            <a href="https://github.com/Sollama58/ASDFBurnTracker" target="_blank" class="btn btn-secondary">View Code</a>
+                        </div>
+                    </div>
+                    <div class="tool-visual">
+                        <span class="tool-visual-icon">&#128293;</span>
+                        <span class="tool-visual-text">Burn Analytics</span>
+                    </div>
+                </div>
+
+                <!-- ASDev -->
+                <div class="tool-preview-content" data-tool="asdev">
+                    <div class="tool-info">
+                        <h3>ASDev</h3>
+                        <p class="tool-tagline">Launch tokens that end in ASDF</p>
+                        <p class="tool-description">
+                            Token launcher with vanity address generation.
+                            Create tokens with addresses ending in "ASDF"
+                            and get airdrop rewards.
+                        </p>
+                        <ul class="tool-features">
+                            <li>Vanity address generation</li>
+                            <li>One-click deployment</li>
+                            <li>Automatic ecosystem integration</li>
+                            <li>Airdrop rewards for creators</li>
+                        </ul>
+                        <div class="tool-actions">
+                            <a href="https://alonisthe.dev/ignition" class="btn btn-primary">Launch Token</a>
+                            <a href="https://github.com/Sollama58/ASDev" target="_blank" class="btn btn-secondary">View Code</a>
+                        </div>
+                    </div>
+                    <div class="tool-visual">
+                        <span class="tool-visual-icon">&#128640;</span>
+                        <span class="tool-visual-text">Token Launcher</span>
+                    </div>
+                </div>
+
+                <!-- Mobile -->
+                <div class="tool-preview-content" data-tool="mobile">
+                    <div class="tool-info">
+                        <h3>ASDF Mobile</h3>
+                        <p class="tool-tagline">Coming Soon</p>
+                        <p class="tool-description">
+                            Full ecosystem access from your pocket.
+                            Native wallet integration with Mobile Wallet Adapter 2.x.
+                        </p>
+                        <ul class="tool-features">
+                            <li>Native iOS & Android</li>
+                            <li>Phantom wallet integration</li>
+                            <li>All tools in one app</li>
+                            <li>Push notifications for burns</li>
+                        </ul>
+                        <div class="tool-actions">
+                            <a href="#" class="btn btn-secondary" disabled>Coming Soon</a>
+                            <a href="https://github.com/Ragnar-no-sleep/ASDF-Mobile" target="_blank" class="btn btn-ghost">View Code</a>
+                        </div>
+                    </div>
+                    <div class="tool-visual">
+                        <span class="tool-visual-icon">&#128241;</span>
+                        <span class="tool-visual-text">Mobile App</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <section class="stats-banner">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-burned">--</div>
+                    <div class="stat-label">Tokens Burned</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-holders">--</div>
+                    <div class="stat-label">Holders</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">11+</div>
+                    <div class="stat-label">Tools</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Core Contributors</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box">
+                <h2 class="cta-title">Ready to build?</h2>
+                <p class="cta-desc">
+                    Got an idea? The ASDF ecosystem empowers anyone to create.
+                    Start with our tutorials or jump straight into building.
+                </p>
+                <div class="flex justify-center gap-4">
+                    <a href="learn.html" class="btn btn-primary btn-lg">Start Learning</a>
+                    <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" class="btn btn-secondary btn-lg">View GitHub</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="footer-brand-icon">A</span>
+                    <span>ASDF</span>
+                </div>
+
+                <div class="footer-links">
+                    <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank">GitHub</a>
+                    <a href="https://solscan.io" target="_blank">Solscan</a>
+                    <a href="https://x.com/i/chat/group_join/g2003056813512577366/52RDE5IO0J" target="_blank">Community</a>
+                    <a href="privacy.html">Privacy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                Open source. Verifiable on-chain. This is fine.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Dock -->
+    <nav class="mobile-dock">
+        <div class="dock-items">
+            <a href="holdex.html" class="dock-item">
+                <span class="dock-item-icon">&#128200;</span>
+                <span>HolDex</span>
+            </a>
+            <a href="forecast.html" class="dock-item">
+                <span class="dock-item-icon">&#127919;</span>
+                <span>Forecast</span>
+            </a>
+            <a href="burns.html" class="dock-item">
+                <span class="dock-item-icon">&#128293;</span>
+                <span>Burns</span>
+            </a>
+            <a href="learn.html" class="dock-item">
+                <span class="dock-item-icon">&#128218;</span>
+                <span>Learn</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="js/hub.js"></script>
+</body>
+</html>
