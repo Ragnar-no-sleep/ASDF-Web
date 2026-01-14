@@ -31,9 +31,9 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
   - Uses system.css
   - Mega stat, stats grid, podium leaderboard, live feed
 
-### Learn Page
+### Learn Pages
 
-- [x] `learn-v3.html` (route `/learn-v3`) - Interactive guide
+- [x] `learn-v3.html` (route `/learn-v3`) - Interactive guide (OLD - superseded)
   - Structure: What is it → Why ASDF → Process → Quiz → Play → Analytics → FAQ
   - φ (golden ratio) explanation in "The Process"
   - K-Score formula: K = 100 × ∛(D × O × L)
@@ -43,21 +43,50 @@ Refonte complète du site ASDF-Web avec design Helius/Orb (dark premium, orange-
   - FAQ accordion + Glossary with search
   - Gamification: XP, badges, progress tracking, localStorage
 
+- [x] `learn.html` (route `/quick-start`) - Quick 5-Step Intro
+  - Apple-inspired clean UI/UX
+  - 5 interactive sections: The Pitch, How It Works, The Philosophy, Quick Quiz, Graduation
+  - Progress bar with floating step counter
+  - XP system with localStorage persistence
+  - Quiz validation gates progression
+  - Links to deep-learn.html for more detail
+
+- [x] `deep-learn.html` (route `/deep-learn`) - Complete Guide
+  - Sidebar + tabs layout (from learn-v3.html)
+  - K-Score diagrams and explanations
+  - φ (Golden Ratio) philosophy section
+  - "This is Fine" 3 layers (Surface, Milieu, Profond)
+  - BUILD > USE > HOLD hierarchy with φ multipliers
+  - The Pitch and How It Works sections
+  - FAQ accordion + Glossary with search
+  - All content in English
+
 - [x] `js/learn-v3.js` - All interactivity
   - View switching, quiz logic, FAQ accordion
   - Holder Journey complete game
   - XP/badge system with persistence
 
+### Hub (Landing Page)
+
+- [x] `hub-majestic.html` (route `/hub`) - Ragnar-themed Landing
+  - Fixed animation fluidity issues (GPU acceleration)
+  - Ragnar fire effects (particles, glows, embers)
+  - Performance optimizations (throttle, requestAnimationFrame, will-change)
+  - Fire color palette (--fire-core, --fire-mid, --fire-outer)
+
 ---
 
 ## IN PROGRESS
 
-### Routes Added to server.js
+### Routes Added to server.cjs
 
 - [x] `/v2` → index-new.html
 - [x] `/power` → index-power.html
 - [x] `/m` → index-marketing.html
 - [x] `/learn-v3` → learn-v3.html
+- [x] `/hub` → hub-majestic.html
+- [x] `/quick-start` → learn.html
+- [x] `/deep-learn` → deep-learn.html
 
 ---
 
@@ -157,5 +186,26 @@ Start with:
 
 ```
 Continuing ASDF-Web redesign. Read TODO-REDESIGN.md for context.
-Current priority: [landing page, learn, deep learn, build]
+Current priority: [build page, games page, tool pages]
 ```
+
+### Build Page Priority
+
+- [ ] `build.html` (route `/build`) - Builder's Guide
+  - Sections: Builders, Find Your Path, Your Journey, Yggdrasil
+  - BUILD > USE > HOLD hierarchy prominent
+  - φ multipliers for builder rewards
+  - Integration guides for ecosystem tools
+  - Open source contribution paths
+
+### Games Page Priority
+
+- [ ] `games.html` (route `/ignition`) - Games Hub Redesign
+  - Apply system.css design
+  - Games hub/arcade layout
+  - Game cards grid
+  - Pump Arena integration
+
+### Tool Pages (Lower Priority)
+
+- [ ] HolDex, Forecast redesigns

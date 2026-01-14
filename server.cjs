@@ -213,6 +213,16 @@ app.get('/hub', (req, res) => {
   res.sendFile(path.join(__dirname, 'hub-majestic.html'));
 });
 
+// Route /quick-start to learn.html (5-step Quick Start Guide)
+app.get('/quick-start', (req, res) => {
+  res.sendFile(path.join(__dirname, 'learn.html'));
+});
+
+// Route /deep-learn to deep-learn.html (Complete Guide)
+app.get('/deep-learn', (req, res) => {
+  res.sendFile(path.join(__dirname, 'deep-learn.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
   // If it's a file request that doesn't exist, 404

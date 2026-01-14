@@ -3,522 +3,647 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn $ASDF — Quick Start</title>
-    <meta name="description" content="Understand $asdfasdfa in 5 minutes. The deflationary token that burns with every trade.">
+    <title>Learn $asdfasdfa — Down the Rabbit Hole</title>
+    <meta name="description" content="Discover $asdfasdfa. Interactive journey from newcomer to believer.">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Learn ASDF - Quick Start">
-    <meta property="og:description" content="Understand $asdfasdfa in 5 minutes. Interactive guide.">
+    <meta property="og:title" content="Learn ASDF - The Rabbit Hole">
+    <meta property="og:description" content="Discover $asdfasdfa. Interactive journey from newcomer to believer.">
     <meta property="og:image" content="https://alonisthe.dev/og-learn.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/system.css">
     <style>
         /* =============================================
-           LEARN QUICK START - Apple-Inspired Design
+           LEARN PAGE - Rabbit Hole Experience
            ============================================= */
 
         :root {
-            --step-accent: var(--accent);
+            /* Warm dark palette */
+            --hub-deep: #0d0906;
+            --hub-elevated: #1a1410;
+            --hub-surface: #2a221c;
+
+            /* Warm neutrals */
+            --warm-primary: #faf8f5;
+            --warm-secondary: #c9b89a;
+            --warm-muted: #8a7a65;
+            --warm-ghost: #5a4d40;
+
+            /* Gold accent */
+            --gold-400: #fcd34d;
+            --gold-500: #eab308;
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --orange-500: #f97316;
+
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            background: var(--bg-base);
+            font-family: var(--font-sans);
+            background: var(--hub-deep);
+            color: var(--warm-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* Hero Header */
-        .learn-hero {
-            min-height: 50vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: calc(var(--nav-height) + var(--space-12)) var(--space-6) var(--space-16);
-            position: relative;
-        }
-
-        .learn-hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(234, 78, 51, 0.15) 0%, transparent 70%);
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .learn-hero > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-2) var(--space-4);
-            background: var(--accent-soft);
-            border: 1px solid var(--accent);
-            border-radius: var(--radius-full);
-            font-family: var(--font-mono);
-            font-size: var(--text-xs);
-            font-weight: var(--font-medium);
-            text-transform: uppercase;
-            letter-spacing: var(--tracking-wider);
-            color: var(--accent);
-            margin-bottom: var(--space-6);
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: var(--font-bold);
-            letter-spacing: -0.03em;
-            margin-bottom: var(--space-4);
-            line-height: 1.1;
-        }
-
-        .hero-title span {
-            color: var(--accent);
-        }
-
-        .hero-subtitle {
-            font-size: var(--text-xl);
-            color: var(--text-secondary);
-            max-width: 500px;
-            margin-bottom: var(--space-8);
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: var(--space-4);
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        /* Progress Indicator */
+        /* Progress Bar */
         .progress-bar {
             position: fixed;
-            top: var(--nav-height);
+            top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: var(--bg-elevated);
-            z-index: var(--z-sticky);
+            height: 2px;
+            background: var(--hub-elevated);
+            z-index: 100;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            background: linear-gradient(90deg, var(--gold-500), var(--amber-500));
             width: 0%;
-            transition: width 0.5s var(--ease-default);
+            transition: width 0.3s ease;
         }
 
-        /* Step Counter */
-        .step-counter {
+        /* Header */
+        .header {
             position: fixed;
-            bottom: var(--space-6);
-            left: 50%;
-            transform: translateX(-50%);
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 90;
+            padding: 16px 24px;
+            background: linear-gradient(to bottom, rgba(13,9,6,0.95), rgba(13,9,6,0));
             display: flex;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-5);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-full);
-            z-index: var(--z-sticky);
-            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .step-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--border-default);
-            transition: all 0.3s var(--ease-default);
-            cursor: pointer;
+        .back-link {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--warm-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
         }
 
-        .step-dot.active {
-            background: var(--accent);
-            transform: scale(1.3);
+        .back-link:hover {
+            color: var(--gold-400);
         }
 
-        .step-dot.completed {
-            background: var(--success);
+        .level-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(234,179,8,0.1);
+            border: 1px solid rgba(234,179,8,0.2);
+            border-radius: 9999px;
         }
 
-        /* Steps Container */
-        .steps-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 var(--space-6) var(--space-24);
+        .level-badge span {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--gold-400);
         }
 
-        /* Individual Step */
-        .learn-step {
-            padding: var(--space-16) 0;
-            border-bottom: 1px solid var(--border-subtle);
-            opacity: 0.4;
-            transition: opacity 0.5s var(--ease-default);
+        /* Phase Section */
+        .phase {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+            position: relative;
         }
 
-        .learn-step.active,
-        .learn-step.completed {
+        .phase.unlocked {
             opacity: 1;
         }
 
-        .learn-step:last-child {
-            border-bottom: none;
+        .phase.completed {
+            opacity: 1;
         }
 
-        .step-header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-6);
+        .phase-inner {
+            max-width: 540px;
+            width: 100%;
         }
 
-        .step-number {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-surface);
-            border: 2px solid var(--border-default);
-            border-radius: 50%;
+        /* Level Tag */
+        .phase-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
             font-family: var(--font-mono);
-            font-size: var(--text-lg);
-            font-weight: var(--font-bold);
-            transition: all 0.3s var(--ease-default);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+            background: rgba(201,184,154,0.1);
+            border: 1px solid rgba(201,184,154,0.2);
+            color: var(--warm-muted);
+            transition: all 0.3s ease;
         }
 
-        .learn-step.active .step-number {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
+        .phase.completed .phase-level {
+            background: rgba(234,179,8,0.2);
+            border-color: rgba(234,179,8,0.3);
+            color: var(--gold-400);
         }
 
-        .learn-step.completed .step-number {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
+        /* Phase Title */
+        .phase-title {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 300;
+            background: linear-gradient(135deg, #faf8f5 0%, #c9b89a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
 
-        .step-title {
-            font-size: var(--text-2xl);
-            font-weight: var(--font-bold);
+        .phase:not(.unlocked) .phase-title {
+            background: linear-gradient(135deg, #5a4d40 0%, #3a3330 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
         }
 
-        .step-content {
-            padding-left: calc(48px + var(--space-4));
+        .phase-subtitle {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--warm-muted);
+            margin-bottom: 32px;
+            opacity: 0.6;
         }
 
-        .step-text {
-            font-size: var(--text-lg);
-            color: var(--text-secondary);
-            line-height: var(--leading-relaxed);
-            margin-bottom: var(--space-6);
+        /* Content */
+        .phase-content {
+            margin-bottom: 32px;
         }
 
-        .step-text strong {
-            color: var(--text-primary);
+        .phase-content p {
+            font-size: 18px;
+            color: var(--warm-secondary);
+            line-height: 1.7;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
         }
 
-        /* Visual Cards */
-        .visual-card {
-            padding: var(--space-8);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            margin-bottom: var(--space-6);
+        .phase:not(.unlocked) .phase-content p {
+            filter: blur(4px);
+            opacity: 0.1;
         }
 
-        .visual-card.highlight {
-            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.08) 100%);
-            border-color: var(--accent);
-        }
-
-        /* Pitch Box */
-        .pitch-box {
-            text-align: center;
-            padding: var(--space-10);
-            background: var(--bg-elevated);
-            border-radius: var(--radius-xl);
-            margin: var(--space-8) 0;
-        }
-
-        .pitch-text {
-            font-size: var(--text-xl);
-            font-weight: var(--font-semibold);
-            color: var(--text-primary);
-            line-height: var(--leading-snug);
-        }
-
-        .pitch-text .fire {
-            color: var(--accent);
-        }
-
-        /* Flow Diagram */
-        .flow-diagram {
+        /* Lock Indicator */
+        .lock-indicator {
             display: flex;
             align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: var(--space-3);
-            padding: var(--space-6);
-        }
-
-        .flow-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-4);
-            background: var(--bg-hover);
-            border-radius: var(--radius-lg);
-            min-width: 80px;
-        }
-
-        .flow-item.accent {
-            background: var(--accent-soft);
-            border: 1px solid var(--accent);
-        }
-
-        .flow-icon {
-            font-size: 28px;
-        }
-
-        .flow-label {
+            gap: 8px;
             font-family: var(--font-mono);
-            font-size: var(--text-xs);
-            font-weight: var(--font-semibold);
-            text-transform: uppercase;
-            letter-spacing: var(--tracking-wide);
+            font-size: 13px;
+            color: var(--warm-ghost);
         }
 
-        .flow-arrow {
-            font-size: var(--text-xl);
-            color: var(--text-muted);
-        }
-
-        /* Principles Grid */
-        .principles-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-4);
-        }
-
-        @media (max-width: 600px) {
-            .principles-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .principle-item {
-            padding: var(--space-5);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            transition: all 0.3s var(--ease-default);
-        }
-
-        .principle-item:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        .principle-title {
-            font-family: var(--font-mono);
-            font-size: var(--text-sm);
-            font-weight: var(--font-bold);
-            color: var(--accent);
-            margin-bottom: var(--space-2);
-        }
-
-        .principle-desc {
-            font-size: var(--text-sm);
-            color: var(--text-secondary);
-        }
-
-        /* Interactive Quiz */
-        .quiz-container {
-            padding: var(--space-6);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-xl);
-        }
-
-        .quiz-question {
-            font-size: var(--text-lg);
-            font-weight: var(--font-semibold);
-            margin-bottom: var(--space-5);
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-        }
-
-        .quiz-option {
-            padding: var(--space-4);
-            background: var(--bg-hover);
-            border: 2px solid transparent;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s var(--ease-default);
-            text-align: left;
-            font-size: var(--text-base);
-        }
-
-        .quiz-option:hover {
-            background: var(--bg-elevated);
-            border-color: var(--border-default);
-        }
-
-        .quiz-option.correct {
-            background: var(--success-soft);
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        .quiz-option.wrong {
-            background: var(--error-soft);
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        .quiz-feedback {
-            margin-top: var(--space-4);
-            padding: var(--space-4);
-            border-radius: var(--radius-md);
+        .phase.unlocked .lock-indicator {
             display: none;
         }
 
-        .quiz-feedback.show {
+        /* Interaction Boxes */
+        .interaction {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .phase.unlocked .interaction {
             display: block;
         }
 
-        .quiz-feedback.success {
-            background: var(--success-soft);
-            color: var(--success);
+        /* Drag Interaction */
+        .drag-track {
+            position: relative;
+            height: 64px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            cursor: default;
         }
 
-        .quiz-feedback.error {
-            background: var(--error-soft);
-            color: var(--error);
-        }
-
-        /* Step Action */
-        .step-action {
+        .drag-hint {
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
-            gap: var(--space-4);
-            margin-top: var(--space-8);
-        }
-
-        .step-xp {
+            justify-content: flex-end;
+            padding-right: 24px;
             font-family: var(--font-mono);
-            font-size: var(--text-sm);
-            color: var(--accent);
+            font-size: 13px;
+            color: var(--warm-ghost);
+            transition: opacity 0.3s ease;
         }
 
-        /* Graduation */
-        .graduation-card {
-            text-align: center;
-            padding: var(--space-12);
-            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.1) 100%);
-            border: 2px solid var(--accent);
-            border-radius: var(--radius-2xl);
+        .drag-reveal {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(90deg, rgba(234,179,8,0.1), rgba(245,158,11,0.05));
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--gold-400);
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 0.1s ease;
         }
 
-        .graduation-icon {
-            font-size: 64px;
-            margin-bottom: var(--space-4);
+        .drag-handle {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(234,179,8,0.3), rgba(234,179,8,0.1));
+            border: 1px solid rgba(234,179,8,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            color: var(--gold-400);
+            font-size: 18px;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s ease;
         }
 
-        .graduation-title {
-            font-size: var(--text-3xl);
-            font-weight: var(--font-bold);
-            margin-bottom: var(--space-2);
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
-        .graduation-subtitle {
-            font-size: var(--text-lg);
-            color: var(--text-secondary);
-            margin-bottom: var(--space-8);
+        .drag-complete {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
         }
 
-        /* Next Steps */
-        .next-steps-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-4);
-            margin-top: var(--space-8);
+        .drag-complete .step {
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: stepIn 0.3s ease forwards;
         }
 
-        @media (max-width: 768px) {
-            .next-steps-grid {
-                grid-template-columns: 1fr;
-            }
+        .drag-complete .step:nth-child(2) { animation-delay: 0.2s; }
+        .drag-complete .step:nth-child(3) { animation-delay: 0.4s; }
+        .drag-complete .step:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes stepIn {
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .next-step-card {
+        .drag-complete .arrow {
+            color: var(--gold-400);
+        }
+
+        /* Burn Interaction */
+        .burn-box {
+            position: relative;
+            height: 128px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(201,184,154,0.1);
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .burn-box:hover {
+            transform: scale(1.01);
+        }
+
+        .burn-box.complete {
+            background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(245,158,11,0.1));
+            border-color: rgba(234,179,8,0.3);
+            cursor: default;
+        }
+
+        .burn-content {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: var(--space-6);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s var(--ease-default);
+            justify-content: center;
         }
 
-        .next-step-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        .burn-text {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--warm-muted);
+            margin-bottom: 8px;
         }
 
-        .next-step-icon {
+        .burn-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .burn-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(201,184,154,0.2);
+            transition: background 0.2s ease;
+        }
+
+        .burn-dot.filled {
+            background: var(--gold-500);
+        }
+
+        .burn-complete {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .burn-complete-icon {
             font-size: 32px;
-            margin-bottom: var(--space-3);
+            margin-bottom: 8px;
         }
 
-        .next-step-title {
-            font-weight: var(--font-bold);
-            margin-bottom: var(--space-1);
+        .burn-complete-text {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--gold-400);
         }
 
-        .next-step-desc {
-            font-size: var(--text-xs);
-            color: var(--text-tertiary);
+        .burn-emoji {
+            position: absolute;
+            pointer-events: none;
+            font-size: 24px;
+            animation: burnFloat 1s ease forwards;
+        }
+
+        @keyframes burnFloat {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Type Interaction */
+        .type-input {
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(234,179,8,0.2);
+            font-family: var(--font-mono);
+            font-size: 16px;
+            text-align: center;
+            color: var(--warm-primary);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .type-input::placeholder {
+            color: var(--warm-ghost);
+        }
+
+        .type-input:focus {
+            border-color: rgba(234,179,8,0.5);
+        }
+
+        .type-hint {
+            text-align: center;
+            margin-top: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--warm-ghost);
+        }
+
+        .type-hint span {
+            transition: opacity 0.1s ease;
+        }
+
+        .type-hint span.matched {
+            opacity: 1;
+        }
+
+        .type-hint span.unmatched {
+            opacity: 0.3;
+        }
+
+        .type-complete {
+            display: none;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .type-complete-text {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            color: var(--gold-400);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .type-complete-sub {
+            font-size: 14px;
+            color: var(--warm-muted);
+        }
+
+        /* Explore Interaction */
+        .explore-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .explore-item {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(201,184,154,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .explore-item:hover {
+            transform: scale(1.02);
+        }
+
+        .explore-item.explored {
+            background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
+            border-color: rgba(234,179,8,0.3);
+        }
+
+        .explore-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .explore-name {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--warm-secondary);
+            transition: color 0.2s ease;
+        }
+
+        .explore-item.explored .explore-name {
+            color: var(--gold-400);
+        }
+
+        .explore-check {
+            display: none;
+            margin-left: 8px;
+            color: var(--gold-500);
+        }
+
+        .explore-item.explored .explore-check {
+            display: inline;
+        }
+
+        .explore-complete {
+            display: none;
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .explore-complete p {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--gold-400);
+        }
+
+        /* Final CTA */
+        .final-section {
+            min-height: 100vh;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
             text-align: center;
         }
 
+        .final-section.show {
+            display: flex;
+        }
+
+        .final-inner {
+            max-width: 540px;
+        }
+
+        .final-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .final-title {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 300;
+            background: linear-gradient(135deg, #faf8f5 0%, #c9b89a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .final-subtitle {
+            font-size: 16px;
+            color: var(--warm-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .final-cta {
+            display: inline-block;
+            padding: 16px 32px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(234,179,8,0.3), rgba(245,158,11,0.2));
+            border: 1px solid rgba(234,179,8,0.4);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            color: var(--gold-400);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .final-cta:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(234,179,8,0.4), rgba(245,158,11,0.3));
+        }
+
+        .final-back {
+            display: block;
+            margin-top: 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--warm-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .final-back:hover {
+            color: var(--warm-secondary);
+        }
+
+        /* Shake Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease;
+        }
+
         /* Responsive */
-        @media (max-width: 768px) {
-            .step-content {
-                padding-left: 0;
-                margin-top: var(--space-4);
+        @media (max-width: 640px) {
+            .header {
+                padding: 12px 16px;
             }
 
-            .step-header {
-                flex-direction: column;
-                align-items: flex-start;
+            .phase {
+                padding: 60px 16px;
+            }
+
+            .explore-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -529,409 +654,534 @@
         <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="nav">
-        <div class="container">
-            <div class="nav-inner">
-                <a href="/" class="nav-logo">
-                    <span class="nav-logo-icon">A</span>
-                    <span>ASDF</span>
-                </a>
-
-                <ul class="nav-links">
-                    <li><a href="/" class="nav-link">Hub</a></li>
-                    <li><a href="learn.html" class="nav-link active">Learn</a></li>
-                    <li><a href="burns.html" class="nav-link">Burns</a></li>
-                    <li><a href="deep-learn.html" class="nav-link">Deep Dive</a></li>
-                </ul>
-
-                <div class="nav-actions">
-                    <span id="navXp" style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--accent);">0 XP</span>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero -->
-    <header class="learn-hero">
-        <div class="hero-badge">
-            <span>5 min read</span>
-        </div>
-        <h1 class="hero-title">
-            Understand <span>$asdfasdfa</span>
-        </h1>
-        <p class="hero-subtitle">
-            The deflationary token that gets more scarce with every trade. Learn how it works in 5 simple steps.
-        </p>
-        <div class="hero-cta">
-            <button class="btn btn-primary btn-lg" onclick="scrollToStep(1)">
-                Start Learning
-            </button>
-            <a href="deep-learn.html" class="btn btn-secondary btn-lg">
-                Deep Dive
-            </a>
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="back-link">&larr; Hub</a>
+        <div class="level-badge">
+            <span id="levelText">Newcomer</span>
         </div>
     </header>
 
-    <!-- Steps -->
-    <main class="steps-container">
+    <!-- Phase 1: Newcomer -->
+    <section class="phase unlocked" id="phase-1" data-phase="1">
+        <div class="phase-inner">
+            <div class="phase-level">Newcomer</div>
+            <h2 class="phase-title">You arrive here.</h2>
+            <p class="phase-subtitle">Welcome to the rabbit hole.</p>
 
-        <!-- Step 1: The Pitch -->
-        <section class="learn-step active" id="step-1" data-step="1">
-            <div class="step-header">
-                <div class="step-number">1</div>
-                <h2 class="step-title">The Pitch</h2>
+            <div class="phase-content">
+                <p>$asdfasdfa. A token on Solana.</p>
+                <p>Created on pump.fun. Nothing more.</p>
+                <p>No promises. No roadmap. No team allocation.</p>
+                <p>Just code. Code that does one thing.</p>
             </div>
-            <div class="step-content">
-                <p class="step-text">
-                    You know the "This is Fine" meme? The dog sitting calmly while the room burns around him. That's our mascot and our philosophy.
-                </p>
 
-                <div class="pitch-box">
-                    <p class="pitch-text">
-                        Trading fees buy tokens.<br>
-                        Bought tokens get burned.<br>
-                        Supply goes down.<br>
-                        <span class="fire">THIS IS FINE.</span>
-                    </p>
+            <div class="lock-indicator">
+                <span>&#128274;</span>
+                <span>Section locked</span>
+            </div>
+
+            <div class="interaction">
+                <p style="font-family: var(--font-mono); font-size: 13px; color: var(--warm-ghost); text-align: center;">
+                    Scroll to continue &darr;
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Phase 2: Mechanism -->
+    <section class="phase" id="phase-2" data-phase="2">
+        <div class="phase-inner">
+            <div class="phase-level">Newcomer &rarr; Initiate</div>
+            <h2 class="phase-title">The Mechanism</h2>
+            <p class="phase-subtitle">How it really works.</p>
+
+            <div class="phase-content">
+                <p>When a creator earns fees on pump.fun...</p>
+                <p>Those fees trigger an automatic burn.</p>
+                <p>Creator earns &rarr; ASDF buys back &rarr; Tokens burned forever.</p>
+                <p>Simple. Transparent. Verifiable.</p>
+            </div>
+
+            <div class="lock-indicator">
+                <span>&#128274;</span>
+                <span>Section locked</span>
+            </div>
+
+            <div class="interaction" id="drag-interaction">
+                <div class="drag-track" id="dragTrack">
+                    <div class="drag-hint">Drag &rarr;</div>
+                    <div class="drag-reveal" id="dragReveal">Creator &rarr; Buy &rarr; Burn &#128293;</div>
+                    <div class="drag-handle" id="dragHandle">&#10095;&#10095;</div>
                 </div>
-
-                <p class="step-text">
-                    Every trade generates fees. Those fees automatically buy $ASDF tokens and send them to a <strong>burn address</strong> — permanently destroying them.
-                </p>
-
-                <div class="step-action">
-                    <button class="btn btn-primary" onclick="completeStep(1)">
-                        Got it
-                    </button>
-                    <span class="step-xp">+25 XP</span>
+                <div class="drag-complete" id="dragComplete">
+                    <span class="step" style="opacity: 0.6;">Creator earns</span>
+                    <span class="step arrow">&rarr;</span>
+                    <span class="step" style="color: var(--amber-400);">ASDF buys</span>
+                    <span class="step arrow">&rarr;</span>
+                    <span class="step" style="color: var(--orange-500);">Burned forever</span>
+                    <span class="step">&#128293;</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Step 2: How It Works -->
-        <section class="learn-step" id="step-2" data-step="2">
-            <div class="step-header">
-                <div class="step-number">2</div>
-                <h2 class="step-title">How It Works</h2>
+    <!-- Phase 3: Daemon -->
+    <section class="phase" id="phase-3" data-phase="3">
+        <div class="phase-inner">
+            <div class="phase-level">Initiate</div>
+            <h2 class="phase-title">The Daemon</h2>
+            <p class="phase-subtitle">Code that runs. Always.</p>
+
+            <div class="phase-content">
+                <p>A program watches the blockchain.</p>
+                <p>When conditions are met, it acts.</p>
+                <p>No human intervention. No centralized control.</p>
+                <p>Just code executing code.</p>
+                <p>Open source. Readable. Executable by all.</p>
             </div>
-            <div class="step-content">
-                <p class="step-text">
-                    The burn mechanism runs 24/7 with zero human intervention. It's deterministic code, not promises.
-                </p>
 
-                <div class="visual-card">
-                    <div class="flow-diagram">
-                        <div class="flow-item">
-                            <span class="flow-icon">💱</span>
-                            <span class="flow-label">Trade</span>
+            <div class="lock-indicator">
+                <span>&#128274;</span>
+                <span>Section locked</span>
+            </div>
+
+            <div class="interaction">
+                <div class="burn-box" id="burnBox">
+                    <div class="burn-content" id="burnContent">
+                        <p class="burn-text">Click to burn (<span id="burnCount">0</span>/5)</p>
+                        <div class="burn-dots">
+                            <div class="burn-dot" data-index="0"></div>
+                            <div class="burn-dot" data-index="1"></div>
+                            <div class="burn-dot" data-index="2"></div>
+                            <div class="burn-dot" data-index="3"></div>
+                            <div class="burn-dot" data-index="4"></div>
                         </div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-item">
-                            <span class="flow-icon">💰</span>
-                            <span class="flow-label">Fee</span>
-                        </div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-item">
-                            <span class="flow-icon">🛒</span>
-                            <span class="flow-label">Buyback</span>
-                        </div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-item accent">
-                            <span class="flow-icon">🔥</span>
-                            <span class="flow-label">Burn</span>
-                        </div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-item">
-                            <span class="flow-icon">📈</span>
-                            <span class="flow-label">Scarce</span>
-                        </div>
+                    </div>
+                    <div class="burn-complete" id="burnComplete">
+                        <div class="burn-complete-icon">&#128293;</div>
+                        <p class="burn-complete-text">Burned. Forever.</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <p class="step-text">
-                    The "Daemon" is an automated program that collects fees, buys tokens via Jupiter, and sends them to a burn address. All on-chain, all verifiable.
-                </p>
+    <!-- Phase 4: Philosophy -->
+    <section class="phase" id="phase-4" data-phase="4">
+        <div class="phase-inner">
+            <div class="phase-level">Initiate &rarr; Believer</div>
+            <h2 class="phase-title">The Philosophy</h2>
+            <p class="phase-subtitle">Deeper into the rabbit hole.</p>
 
-                <div class="step-action">
-                    <button class="btn btn-primary" onclick="completeStep(2)">
-                        Continue
-                    </button>
-                    <span class="step-xp">+25 XP</span>
+            <div class="phase-content">
+                <p>Most tokens promise everything.</p>
+                <p>$asdfasdfa promises nothing.</p>
+                <p>Don't trust. Verify.</p>
+                <p>Don't extract. Burn.</p>
+                <p>Don't panic. Hold.</p>
+            </div>
+
+            <div class="lock-indicator">
+                <span>&#128274;</span>
+                <span>Section locked</span>
+            </div>
+
+            <div class="interaction" id="type-interaction">
+                <input
+                    type="text"
+                    class="type-input"
+                    id="typeInput"
+                    placeholder="Type the phrase..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <div class="type-hint" id="typeHint">
+                    Hint: <span id="hintText"></span>
+                </div>
+                <div class="type-complete" id="typeComplete">
+                    <p class="type-complete-text">This is fine.</p>
+                    <p class="type-complete-sub">&#128293; You understand now.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Step 3: The Philosophy -->
-        <section class="learn-step" id="step-3" data-step="3">
-            <div class="step-header">
-                <div class="step-number">3</div>
-                <h2 class="step-title">The Philosophy</h2>
+    <!-- Phase 5: Ecosystem -->
+    <section class="phase" id="phase-5" data-phase="5">
+        <div class="phase-inner">
+            <div class="phase-level">Believer</div>
+            <h2 class="phase-title">The Ecosystem</h2>
+            <p class="phase-subtitle">Built by builders. For builders.</p>
+
+            <div class="phase-content">
+                <p>Tools created by the community.</p>
+                <p>Burn Tracker - Watch burns in real-time.</p>
+                <p>HolDex - Track your position.</p>
+                <p>ASDForecast - Community predictions.</p>
+                <p>Games - Earn while you learn.</p>
+                <p>Anyone can build. The code is open.</p>
             </div>
-            <div class="step-content">
-                <p class="step-text">
-                    Four principles guide everything we build. Memorize them.
-                </p>
 
-                <div class="principles-grid">
-                    <div class="principle-item">
-                        <div class="principle-title">Don't trust. Verify.</div>
-                        <div class="principle-desc">Everything is on-chain. Check it yourself on Solscan.</div>
-                    </div>
-                    <div class="principle-item">
-                        <div class="principle-title">Don't extract. Burn.</div>
-                        <div class="principle-desc">Fees don't go to devs. They fuel the burn.</div>
-                    </div>
-                    <div class="principle-item">
-                        <div class="principle-title">Don't panic. Hold.</div>
-                        <div class="principle-desc">Chaos is the filter. Stay calm. Build.</div>
-                    </div>
-                    <div class="principle-item">
-                        <div class="principle-title">This is fine.</div>
-                        <div class="principle-desc">Accept the fire. It works for you.</div>
-                    </div>
-                </div>
-
-                <div class="step-action">
-                    <button class="btn btn-primary" onclick="completeStep(3)">
-                        Continue
-                    </button>
-                    <span class="step-xp">+25 XP</span>
-                </div>
+            <div class="lock-indicator">
+                <span>&#128274;</span>
+                <span>Section locked</span>
             </div>
-        </section>
 
-        <!-- Step 4: Quick Quiz -->
-        <section class="learn-step" id="step-4" data-step="4">
-            <div class="step-header">
-                <div class="step-number">4</div>
-                <h2 class="step-title">Quick Quiz</h2>
-            </div>
-            <div class="step-content">
-                <p class="step-text">
-                    Let's make sure you got it. Answer correctly to continue.
-                </p>
-
-                <div class="quiz-container" id="quiz1">
-                    <p class="quiz-question">What happens to the trading fees?</p>
-                    <div class="quiz-options">
-                        <button class="quiz-option" data-correct="false" onclick="checkAnswer(this, 'quiz1')">
-                            They go to the developers
-                        </button>
-                        <button class="quiz-option" data-correct="true" onclick="checkAnswer(this, 'quiz1')">
-                            They buy and burn tokens
-                        </button>
-                        <button class="quiz-option" data-correct="false" onclick="checkAnswer(this, 'quiz1')">
-                            They're distributed to holders
-                        </button>
+            <div class="interaction">
+                <div class="explore-grid" id="exploreGrid">
+                    <div class="explore-item" data-tool="burns">
+                        <span class="explore-icon">&#128293;</span>
+                        <span class="explore-name">Burn Tracker<span class="explore-check">&#10003;</span></span>
                     </div>
-                    <div class="quiz-feedback" id="quiz1-feedback"></div>
-                </div>
-
-                <div class="step-action">
-                    <button class="btn btn-primary" id="step4-btn" onclick="completeStep(4)" disabled>
-                        Continue
-                    </button>
-                    <span class="step-xp">+50 XP (quiz bonus)</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 5: Graduation -->
-        <section class="learn-step" id="step-5" data-step="5">
-            <div class="step-header">
-                <div class="step-number">5</div>
-                <h2 class="step-title">You're Ready</h2>
-            </div>
-            <div class="step-content">
-                <div class="graduation-card">
-                    <div class="graduation-icon">🎓</div>
-                    <h3 class="graduation-title">Quick Start Complete</h3>
-                    <p class="graduation-subtitle">
-                        You understand the basics. Now choose your path.
-                    </p>
-
-                    <div class="next-steps-grid">
-                        <a href="deep-learn.html" class="next-step-card">
-                            <span class="next-step-icon">📚</span>
-                            <span class="next-step-title">Deep Dive</span>
-                            <span class="next-step-desc">K-Score, φ, and more</span>
-                        </a>
-                        <a href="burns.html" class="next-step-card">
-                            <span class="next-step-icon">🔥</span>
-                            <span class="next-step-title">Watch Burns</span>
-                            <span class="next-step-desc">Live on-chain data</span>
-                        </a>
-                        <a href="/" class="next-step-card">
-                            <span class="next-step-icon">🏠</span>
-                            <span class="next-step-title">Explore Hub</span>
-                            <span class="next-step-desc">All ecosystem tools</span>
-                        </a>
+                    <div class="explore-item" data-tool="holdex">
+                        <span class="explore-icon">&#128200;</span>
+                        <span class="explore-name">HolDex<span class="explore-check">&#10003;</span></span>
+                    </div>
+                    <div class="explore-item" data-tool="forecast">
+                        <span class="explore-icon">&#127919;</span>
+                        <span class="explore-name">ASDForecast<span class="explore-check">&#10003;</span></span>
+                    </div>
+                    <div class="explore-item" data-tool="games">
+                        <span class="explore-icon">&#127918;</span>
+                        <span class="explore-name">Games<span class="explore-check">&#10003;</span></span>
                     </div>
                 </div>
-
-                <div class="step-action" style="justify-content: center;">
-                    <button class="btn btn-accent btn-lg" onclick="completeStep(5)">
-                        Complete Journey 🎉
-                    </button>
-                    <span class="step-xp">+75 XP</span>
+                <div class="explore-complete" id="exploreComplete">
+                    <p>You know the ecosystem. Ready to build?</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
-
-    <!-- Step Counter -->
-    <div class="step-counter" id="stepCounter">
-        <div class="step-dot active" data-step="1" onclick="scrollToStep(1)"></div>
-        <div class="step-dot" data-step="2" onclick="scrollToStep(2)"></div>
-        <div class="step-dot" data-step="3" onclick="scrollToStep(3)"></div>
-        <div class="step-dot" data-step="4" onclick="scrollToStep(4)"></div>
-        <div class="step-dot" data-step="5" onclick="scrollToStep(5)"></div>
-    </div>
+    <!-- Final Section -->
+    <section class="final-section" id="finalSection">
+        <div class="final-inner">
+            <div class="final-icon">&#128293;</div>
+            <h2 class="final-title">You're a Believer now.</h2>
+            <p class="final-subtitle">
+                You understand. You verify. You burn.<br>
+                Ready to build with the family?
+            </p>
+            <a href="deep-learn.html" class="final-cta">Become a Builder &rarr;</a>
+            <a href="/" class="final-back">Return to Hub</a>
+        </div>
+    </section>
 
     <script>
-        // State
+        // ============================================
+        // STATE
+        // ============================================
         const state = {
-            currentStep: 1,
-            completedSteps: [],
-            totalXP: 0,
-            quizPassed: false
+            completedPhases: [],
+            currentLevel: 'Newcomer'
         };
 
-        // Load saved state
+        const levels = {
+            0: 'Newcomer',
+            1: 'Newcomer',
+            2: 'Initiate',
+            3: 'Initiate',
+            4: 'Believer',
+            5: 'Believer'
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function updateLevel() {
+            state.currentLevel = levels[state.completedPhases.length] || 'Believer';
+            document.getElementById('levelText').textContent = state.currentLevel;
+        }
+
+        function updateProgress() {
+            const progress = (state.completedPhases.length / 5) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function unlockPhase(phaseNum) {
+            const phase = document.getElementById(`phase-${phaseNum}`);
+            if (phase) {
+                phase.classList.add('unlocked');
+            }
+        }
+
+        function completePhase(phaseNum) {
+            if (state.completedPhases.includes(phaseNum)) return;
+
+            state.completedPhases.push(phaseNum);
+            const phase = document.getElementById(`phase-${phaseNum}`);
+            if (phase) {
+                phase.classList.add('completed');
+            }
+
+            updateLevel();
+            updateProgress();
+
+            // Unlock next phase
+            if (phaseNum < 5) {
+                unlockPhase(phaseNum + 1);
+            }
+
+            // Show final section when all complete
+            if (state.completedPhases.length === 5) {
+                document.getElementById('finalSection').classList.add('show');
+            }
+
+            // Save state
+            localStorage.setItem('asdf_learn_state', JSON.stringify(state));
+        }
+
+        // ============================================
+        // PHASE 1: SCROLL
+        // ============================================
+        let phase1Timer = null;
+
+        function initPhase1() {
+            const phase1 = document.getElementById('phase-1');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !state.completedPhases.includes(1)) {
+                        // Auto-complete after 2 seconds of viewing
+                        phase1Timer = setTimeout(() => {
+                            completePhase(1);
+                        }, 2000);
+                    } else {
+                        clearTimeout(phase1Timer);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(phase1);
+        }
+
+        // ============================================
+        // PHASE 2: DRAG
+        // ============================================
+        function initPhase2() {
+            const handle = document.getElementById('dragHandle');
+            const reveal = document.getElementById('dragReveal');
+            const track = document.getElementById('dragTrack');
+            const hint = track.querySelector('.drag-hint');
+            const complete = document.getElementById('dragComplete');
+
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+            const maxDrag = 200;
+
+            function onDragStart(e) {
+                if (state.completedPhases.includes(2)) return;
+                isDragging = true;
+                startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                handle.style.cursor = 'grabbing';
+            }
+
+            function onDragMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const diff = clientX - startX;
+                currentX = Math.max(0, Math.min(maxDrag, diff));
+
+                handle.style.transform = `translateY(-50%) translateX(${currentX}px)`;
+                reveal.style.clipPath = `inset(0 ${100 - (currentX / maxDrag) * 100}% 0 0)`;
+                hint.style.opacity = 1 - (currentX / maxDrag);
+
+                if (currentX >= maxDrag * 0.95) {
+                    completePhase2();
+                }
+            }
+
+            function onDragEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                handle.style.cursor = 'grab';
+
+                if (currentX < maxDrag * 0.95) {
+                    // Reset
+                    handle.style.transform = 'translateY(-50%) translateX(0)';
+                    reveal.style.clipPath = 'inset(0 100% 0 0)';
+                    hint.style.opacity = 1;
+                    currentX = 0;
+                }
+            }
+
+            function completePhase2() {
+                track.style.display = 'none';
+                complete.style.display = 'flex';
+                completePhase(2);
+            }
+
+            handle.addEventListener('mousedown', onDragStart);
+            handle.addEventListener('touchstart', onDragStart);
+            document.addEventListener('mousemove', onDragMove);
+            document.addEventListener('touchmove', onDragMove, { passive: false });
+            document.addEventListener('mouseup', onDragEnd);
+            document.addEventListener('touchend', onDragEnd);
+        }
+
+        // ============================================
+        // PHASE 3: BURN
+        // ============================================
+        function initPhase3() {
+            const burnBox = document.getElementById('burnBox');
+            const burnCount = document.getElementById('burnCount');
+            const burnContent = document.getElementById('burnContent');
+            const burnComplete = document.getElementById('burnComplete');
+            const dots = document.querySelectorAll('.burn-dot');
+
+            let count = 0;
+            const required = 5;
+
+            burnBox.addEventListener('click', (e) => {
+                if (state.completedPhases.includes(3)) return;
+
+                // Create burn emoji at click position
+                const rect = burnBox.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const emoji = document.createElement('span');
+                emoji.className = 'burn-emoji';
+                emoji.textContent = '🔥';
+                emoji.style.left = `${x - 12}px`;
+                emoji.style.top = `${y - 12}px`;
+                burnBox.appendChild(emoji);
+
+                setTimeout(() => emoji.remove(), 1000);
+
+                // Update count
+                count++;
+                burnCount.textContent = count;
+                dots[count - 1].classList.add('filled');
+
+                if (count >= required) {
+                    setTimeout(() => {
+                        burnContent.style.display = 'none';
+                        burnComplete.style.display = 'flex';
+                        burnBox.classList.add('complete');
+                        completePhase(3);
+                    }, 300);
+                }
+            });
+        }
+
+        // ============================================
+        // PHASE 4: TYPE
+        // ============================================
+        function initPhase4() {
+            const input = document.getElementById('typeInput');
+            const hint = document.getElementById('hintText');
+            const typeInteraction = document.getElementById('type-interaction');
+            const typeComplete = document.getElementById('typeComplete');
+            const target = 'This is fine';
+
+            // Render hint
+            hint.innerHTML = target.split('').map(char =>
+                `<span class="unmatched">${char}</span>`
+            ).join('');
+
+            input.addEventListener('input', () => {
+                const value = input.value;
+
+                // Update hint
+                const spans = hint.querySelectorAll('span');
+                spans.forEach((span, i) => {
+                    if (value[i]?.toLowerCase() === target[i].toLowerCase()) {
+                        span.classList.add('matched');
+                        span.classList.remove('unmatched');
+                    } else {
+                        span.classList.remove('matched');
+                        span.classList.add('unmatched');
+                    }
+                });
+
+                // Check completion
+                if (value.toLowerCase() === target.toLowerCase()) {
+                    input.style.display = 'none';
+                    document.getElementById('typeHint').style.display = 'none';
+                    typeComplete.style.display = 'block';
+                    completePhase(4);
+                } else if (value.length >= target.length && value.toLowerCase() !== target.toLowerCase()) {
+                    input.classList.add('shake');
+                    setTimeout(() => input.classList.remove('shake'), 400);
+                }
+            });
+        }
+
+        // ============================================
+        // PHASE 5: EXPLORE
+        // ============================================
+        function initPhase5() {
+            const grid = document.getElementById('exploreGrid');
+            const complete = document.getElementById('exploreComplete');
+            const items = grid.querySelectorAll('.explore-item');
+
+            const explored = new Set();
+
+            items.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (state.completedPhases.includes(5)) return;
+
+                    const tool = item.dataset.tool;
+                    if (!explored.has(tool)) {
+                        explored.add(tool);
+                        item.classList.add('explored');
+
+                        if (explored.size === items.length) {
+                            setTimeout(() => {
+                                complete.style.display = 'block';
+                                completePhase(5);
+                            }, 300);
+                        }
+                    }
+                });
+            });
+        }
+
+        // ============================================
+        // LOAD STATE
+        // ============================================
         function loadState() {
-            const saved = localStorage.getItem('asdf_learn_quick');
+            const saved = localStorage.getItem('asdf_learn_state');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                Object.assign(state, parsed);
-                updateUI();
+                state.completedPhases = parsed.completedPhases || [];
+                state.currentLevel = parsed.currentLevel || 'Newcomer';
+
+                // Restore UI state
+                state.completedPhases.forEach(phaseNum => {
+                    const phase = document.getElementById(`phase-${phaseNum}`);
+                    if (phase) {
+                        phase.classList.add('unlocked', 'completed');
+                    }
+                    // Unlock next phase
+                    if (phaseNum < 5) {
+                        unlockPhase(phaseNum + 1);
+                    }
+                });
+
+                updateLevel();
+                updateProgress();
+
+                if (state.completedPhases.length === 5) {
+                    document.getElementById('finalSection').classList.add('show');
+                }
             }
         }
 
-        // Save state
-        function saveState() {
-            localStorage.setItem('asdf_learn_quick', JSON.stringify(state));
-        }
-
-        // Update UI
-        function updateUI() {
-            // Update XP display
-            document.getElementById('navXp').textContent = `${state.totalXP} XP`;
-
-            // Update progress bar
-            const progress = (state.completedSteps.length / 5) * 100;
-            document.getElementById('progressFill').style.width = `${progress}%`;
-
-            // Update step dots
-            document.querySelectorAll('.step-dot').forEach(dot => {
-                const stepNum = parseInt(dot.dataset.step);
-                dot.classList.remove('active', 'completed');
-                if (stepNum === state.currentStep) {
-                    dot.classList.add('active');
-                }
-                if (state.completedSteps.includes(stepNum)) {
-                    dot.classList.add('completed');
-                }
-            });
-
-            // Update step sections
-            document.querySelectorAll('.learn-step').forEach(step => {
-                const stepNum = parseInt(step.dataset.step);
-                step.classList.remove('active', 'completed');
-                if (stepNum === state.currentStep) {
-                    step.classList.add('active');
-                }
-                if (state.completedSteps.includes(stepNum)) {
-                    step.classList.add('completed');
-                }
-            });
-
-            // Update quiz button if passed
-            if (state.quizPassed) {
-                const btn = document.getElementById('step4-btn');
-                if (btn) btn.disabled = false;
-            }
-        }
-
-        // Complete step
-        function completeStep(stepNum) {
-            if (!state.completedSteps.includes(stepNum)) {
-                state.completedSteps.push(stepNum);
-
-                // Add XP
-                const xpValues = { 1: 25, 2: 25, 3: 25, 4: 50, 5: 75 };
-                state.totalXP += xpValues[stepNum] || 25;
-            }
-
-            // Move to next step
-            if (stepNum < 5) {
-                state.currentStep = stepNum + 1;
-                scrollToStep(stepNum + 1);
-            }
-
-            saveState();
-            updateUI();
-        }
-
-        // Scroll to step
-        function scrollToStep(stepNum) {
-            const step = document.getElementById(`step-${stepNum}`);
-            if (step) {
-                state.currentStep = stepNum;
-                updateUI();
-                step.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        // Quiz answer check
-        function checkAnswer(button, quizId) {
-            const container = document.getElementById(quizId);
-            const options = container.querySelectorAll('.quiz-option');
-            const feedback = document.getElementById(`${quizId}-feedback`);
-            const isCorrect = button.dataset.correct === 'true';
-
-            // Disable all options
-            options.forEach(opt => {
-                opt.style.pointerEvents = 'none';
-                if (opt.dataset.correct === 'true') {
-                    opt.classList.add('correct');
-                } else if (opt === button) {
-                    opt.classList.add('wrong');
-                }
-            });
-
-            // Show feedback
-            feedback.classList.add('show');
-            if (isCorrect) {
-                feedback.classList.add('success');
-                feedback.textContent = '✓ Correct! Fees are used to buy and burn tokens.';
-                state.quizPassed = true;
-                document.getElementById('step4-btn').disabled = false;
-            } else {
-                feedback.classList.add('error');
-                feedback.textContent = '✗ Not quite. The correct answer is highlighted above.';
-            }
-
-            saveState();
-        }
-
-        // Initialize
-        loadState();
-
-        // Intersection Observer for active step
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const stepNum = parseInt(entry.target.dataset.step);
-                    state.currentStep = stepNum;
-                    updateUI();
-                }
-            });
-        }, { threshold: 0.5 });
-
-        document.querySelectorAll('.learn-step').forEach(step => {
-            observer.observe(step);
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            initPhase1();
+            initPhase2();
+            initPhase3();
+            initPhase4();
+            initPhase5();
         });
     </script>
 </body>
