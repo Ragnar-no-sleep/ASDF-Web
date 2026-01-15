@@ -35,15 +35,17 @@ test.describe('Homepage', () => {
   });
 
   test('should have working navigation', async ({ page }) => {
-    // Find navigation links
-    const nav = page.locator('nav, header');
-    await expect(nav).toBeVisible();
+    // Hub Majestic uses .hub-node links for navigation (not traditional nav/header)
+    const hubNodes = page.locator('.hub-node');
+    await expect(hubNodes.first()).toBeVisible();
 
-    // Test navigation links exist
-    // Adjust selectors based on actual structure
-    const links = page.locator('a[href]');
-    const count = await links.count();
+    // Verify navigation nodes exist
+    const count = await hubNodes.count();
     expect(count).toBeGreaterThan(0);
+
+    // Verify core hub element
+    const hubCore = page.locator('.hub-core');
+    await expect(hubCore).toBeVisible();
   });
 
   test('should be responsive', async ({ page }) => {
