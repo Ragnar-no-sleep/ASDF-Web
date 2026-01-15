@@ -43,6 +43,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/build.css">
+    <link rel="stylesheet" href="css/journey.css">
     <link rel="stylesheet" href="css/viking-bg.css">
 </head>
 <body>
@@ -1614,6 +1615,33 @@
     </div>
 
     <!-- ============================================
+         JOURNEY LESSON MODAL
+         ============================================ -->
+    <div class="modal journey-modal" id="journey-lesson-modal">
+        <div class="modal-backdrop" id="journey-modal-backdrop"></div>
+        <div class="modal-content modal-large">
+            <button class="modal-close" id="journey-modal-close">&times;</button>
+
+            <div class="journey-lesson-header">
+                <div class="journey-lesson-meta">
+                    <span class="journey-lesson-progress" id="journey-lesson-progress">1 / 5</span>
+                </div>
+                <h2 class="journey-lesson-title" id="journey-lesson-title">Lesson Title</h2>
+                <p class="journey-lesson-subtitle" id="journey-lesson-subtitle">Lesson subtitle</p>
+            </div>
+
+            <div class="journey-lesson-body" id="journey-lesson-content">
+                <!-- Content rendered here -->
+            </div>
+
+            <div class="journey-lesson-nav">
+                <button class="btn btn-secondary" id="journey-prev-btn" onclick="journeyPrevContent()">&#8592; Previous</button>
+                <button class="btn btn-primary" id="journey-next-btn" onclick="journeyNextContent()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
          FLOATING VIKING SYMBOLS
          ============================================ -->
     <div class="floating-viking-symbols">
@@ -1682,6 +1710,10 @@
             integrity="sha512-5g2Nj3mqLOgClHi20oat1COW7jWvf7SyqnvwWUsMDwhjHeqeTl0C+uzjucLweruQxHbhDwiPLXlm8HBO0011pA=="
             crossorigin="anonymous"
             referrerpolicy="no-referrer"></script>
+    <!-- Journey Learning System -->
+    <script src="js/journey-data.js"></script>
+    <script src="js/journey-progress.js"></script>
+    <script src="js/journey.js"></script>
     <script src="js/build.js"></script>
 </body>
 </html>

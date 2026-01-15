@@ -1,0 +1,504 @@
+/* ============================================
+   JOURNEY LEARNING SYSTEM STYLES
+   Philosophy: Don't trust. Verify. Build.
+   ============================================ */
+
+/* ============================================
+   LESSON MODAL
+   ============================================ */
+
+.journey-modal .modal-content {
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.journey-lesson-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(234, 78, 51, 0.1) 0%, transparent 100%);
+}
+
+.journey-lesson-meta {
+  margin-bottom: 0.5rem;
+}
+
+.journey-lesson-progress {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #71717a);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.journey-lesson-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary, #ffffff);
+}
+
+.journey-lesson-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #a1a1aa);
+  margin: 0;
+}
+
+.journey-lesson-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.journey-lesson-nav {
+  padding: 1rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.journey-lesson-nav button {
+  min-width: 120px;
+}
+
+.journey-lesson-nav button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   THEORY CONTENT
+   ============================================ */
+
+.journey-theory {
+  line-height: 1.7;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.journey-theory h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid var(--accent, #ea4e33);
+  padding-bottom: 0.5rem;
+}
+
+.journey-theory h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 2rem 0 1rem 0;
+}
+
+.journey-theory h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.journey-theory p {
+  margin: 0 0 1rem 0;
+}
+
+.journey-theory strong {
+  color: var(--text-primary, #ffffff);
+  font-weight: 600;
+}
+
+.journey-theory em {
+  color: var(--accent, #ea4e33);
+  font-style: italic;
+}
+
+.journey-theory code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: #e5c07b;
+}
+
+.journey-theory pre {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.journey-theory pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #abb2bf;
+}
+
+.journey-theory blockquote {
+  border-left: 3px solid var(--accent, #ea4e33);
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(234, 78, 51, 0.1);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-primary, #ffffff);
+}
+
+.journey-theory ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.journey-theory li {
+  margin: 0.5rem 0;
+}
+
+.journey-theory table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.journey-theory td {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.journey-theory tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.journey-theory tr:first-child td {
+  font-weight: 600;
+  background: rgba(234, 78, 51, 0.1);
+  color: var(--text-primary, #ffffff);
+}
+
+/* ============================================
+   QUIZ COMPONENT
+   ============================================ */
+
+.journey-quiz {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.journey-quiz-question {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 1.5rem 0;
+}
+
+.journey-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.journey-quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.journey-quiz-option:hover:not([disabled]) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.journey-quiz-option .option-letter {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary, #ffffff);
+  flex-shrink: 0;
+}
+
+.journey-quiz-option .option-text {
+  flex: 1;
+}
+
+.journey-quiz-option.correct {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.journey-quiz-option.correct .option-letter {
+  background: #22c55e;
+  color: #000;
+}
+
+.journey-quiz-option.incorrect {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.journey-quiz-option.incorrect .option-letter {
+  background: #ef4444;
+  color: #fff;
+}
+
+.journey-quiz-option.correct-answer {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.journey-quiz-explanation {
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.journey-quiz-explanation.correct {
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+}
+
+.journey-quiz-explanation.incorrect {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+/* ============================================
+   CODE BLOCK
+   ============================================ */
+
+.journey-code {
+  margin: 1rem 0;
+}
+
+.journey-code pre {
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.journey-code code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #abb2bf;
+}
+
+/* ============================================
+   CHALLENGE BLOCK
+   ============================================ */
+
+.journey-challenge {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(234, 78, 51, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.journey-challenge h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #a78bfa;
+  margin: 0 0 1rem 0;
+}
+
+.journey-challenge p {
+  color: var(--text-secondary, #a1a1aa);
+  margin: 0 0 1rem 0;
+}
+
+.journey-challenge-solution {
+  margin-top: 1rem;
+}
+
+.journey-challenge-solution summary {
+  cursor: pointer;
+  color: var(--accent, #ea4e33);
+  font-weight: 500;
+  padding: 0.5rem 0;
+}
+
+.journey-challenge-solution summary:hover {
+  text-decoration: underline;
+}
+
+.journey-challenge-solution pre {
+  margin-top: 0.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.journey-challenge-solution code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: #abb2bf;
+}
+
+/* ============================================
+   COMPLETION SCREEN
+   ============================================ */
+
+.journey-complete {
+  text-align: center;
+  padding: 2rem;
+}
+
+.journey-complete-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.journey-complete h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 0.5rem 0;
+}
+
+.journey-complete-title {
+  color: var(--text-secondary, #a1a1aa);
+  margin: 0 0 1.5rem 0;
+}
+
+.journey-complete-xp {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #22c55e;
+  margin: 1rem 0;
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.journey-complete-skills {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.journey-complete-skills h4 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary, #71717a);
+  margin: 0 0 1rem 0;
+}
+
+.journey-complete-skills ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.journey-complete-skills li {
+  padding: 0.5rem 0;
+  color: var(--text-secondary, #a1a1aa);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.journey-complete-skills li:last-child {
+  border-bottom: none;
+}
+
+.journey-complete-btn {
+  margin-top: 1.5rem;
+  min-width: 200px;
+}
+
+/* ============================================
+   MODULE LIST ENHANCEMENTS
+   ============================================ */
+
+.journey-module.completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.journey-module.completed:hover {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.journey-module-check {
+  color: #22c55e;
+  font-size: 1.25rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .journey-modal .modal-content {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .journey-lesson-header {
+    padding: 1rem;
+  }
+
+  .journey-lesson-title {
+    font-size: 1.25rem;
+  }
+
+  .journey-lesson-body {
+    padding: 1rem;
+  }
+
+  .journey-lesson-nav {
+    padding: 1rem;
+  }
+
+  .journey-lesson-nav button {
+    min-width: auto;
+    flex: 1;
+  }
+
+  .journey-quiz-option {
+    padding: 0.75rem;
+  }
+
+  .journey-quiz-option .option-letter {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+}
