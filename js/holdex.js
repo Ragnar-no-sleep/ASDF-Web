@@ -7,6 +7,16 @@
 
 const HOLDEX_API = 'https://holdex.onrender.com/api';
 
+/**
+ * Escape HTML entities to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================
 // STATE
 // ============================================
@@ -139,26 +149,26 @@ function renderTokenList(tokens) {
   container.innerHTML = tokens
     .map(
       (token, index) => `
-        <div class="token-row" data-token="${token.address}" onclick="openTokenModal('${token.address}')">
+        <div class="token-row" data-token="${escapeHtml(token.address || '')}" onclick="openTokenModal('${escapeHtml(token.address || '')}')">
             <span class="token-rank">${index + 1}</span>
             <div class="token-info">
-                <div class="token-icon">${token.symbol?.[0] || '?'}</div>
+                <div class="token-icon">${escapeHtml(token.symbol?.[0] || '?')}</div>
                 <div>
-                    <div class="token-name">${token.name || 'Unknown'}</div>
-                    <div class="token-symbol">$${token.symbol || '???'}</div>
+                    <div class="token-name">${escapeHtml(token.name || 'Unknown')}</div>
+                    <div class="token-symbol">$${escapeHtml(token.symbol || '???')}</div>
                 </div>
             </div>
-            <span class="token-price">${formatPrice(token.price || 0)}</span>
+            <span class="token-price">${escapeHtml(formatPrice(token.price || 0))}</span>
             <span class="token-change ${token.change24h >= 0 ? 'positive' : 'negative'}">
-                ${formatPercent(token.change24h || 0)}
+                ${escapeHtml(formatPercent(token.change24h || 0))}
             </span>
-            <span class="token-volume">${formatNumber(token.volume24h || 0)}</span>
-            <span class="token-mcap">${formatNumber(token.marketCap || 0)}</span>
-            <span class="token-holders">${formatHolders(token.holders || 0)}</span>
+            <span class="token-volume">${escapeHtml(formatNumber(token.volume24h || 0))}</span>
+            <span class="token-mcap">${escapeHtml(formatNumber(token.marketCap || 0))}</span>
+            <span class="token-holders">${escapeHtml(formatHolders(token.holders || 0))}</span>
             <div class="token-kscore">
-                <span class="kscore-value">${token.kscore || 0}</span>
+                <span class="kscore-value">${escapeHtml(String(token.kscore || 0))}</span>
                 <div class="kscore-bar">
-                    <div class="kscore-fill" style="width: ${token.kscore || 0}%"></div>
+                    <div class="kscore-fill" style="width: ${Math.min(100, Math.max(0, Number(token.kscore) || 0))}%"></div>
                 </div>
             </div>
         </div>

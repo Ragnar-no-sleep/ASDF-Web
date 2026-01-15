@@ -7,6 +7,16 @@
 
 const API_BASE = 'https://asdf-api.onrender.com/api';
 
+/**
+ * Escape HTML entities to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================
 // DATA FETCHING
 // ============================================
@@ -163,9 +173,9 @@ async function updateLeaderboard(period = 'all') {
     tableBody.innerHTML = leaderboard.slice(3).map((entry, index) => `
         <div class="table-row">
             <span class="col-rank">#${index + 4}</span>
-            <span class="col-wallet">${formatWallet(entry.wallet)}</span>
-            <span class="col-burned">${formatNumber(entry.totalBurned)} ASDF</span>
-            <span class="col-count">${entry.burnCount || '-'}</span>
+            <span class="col-wallet">${escapeHtml(formatWallet(entry.wallet))}</span>
+            <span class="col-burned">${escapeHtml(formatNumber(entry.totalBurned))} ASDF</span>
+            <span class="col-count">${escapeHtml(String(entry.burnCount || '-'))}</span>
         </div>
     `).join('');
 }
@@ -204,12 +214,12 @@ async function updateRecentBurns() {
 
     feedEl.innerHTML = data.burns.map(burn => `
         <div class="feed-item">
-            <div class="feed-icon">🔥</div>
+            <div class="feed-icon">&#128293;</div>
             <div class="feed-content">
-                <div class="feed-wallet">${formatWallet(burn.wallet)}</div>
-                <div class="feed-time">${formatTimeAgo(burn.timestamp)}</div>
+                <div class="feed-wallet">${escapeHtml(formatWallet(burn.wallet))}</div>
+                <div class="feed-time">${escapeHtml(formatTimeAgo(burn.timestamp))}</div>
             </div>
-            <div class="feed-amount">${formatNumber(burn.amount)} ASDF</div>
+            <div class="feed-amount">${escapeHtml(formatNumber(burn.amount))} ASDF</div>
         </div>
     `).join('');
 }
