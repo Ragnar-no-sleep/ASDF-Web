@@ -1,3 +1,9 @@
+---
+name: helius-architect
+description: Architecture backend et patterns RPC production-level Solana/Helius
+model: opus
+---
+
 # Helius Architect Agent
 
 ## Mission

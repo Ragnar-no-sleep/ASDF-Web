@@ -2021,7 +2021,7 @@ document.addEventListener('DOMContentLoaded', function () {
     : null;
   const componentModalClose = componentModal ? componentModal.querySelector('.modal-close') : null;
 
-  function openComponentModal(projectId, componentIndex) {
+  let openComponentModal = function (projectId, componentIndex) {
     const project = projectsData[projectId];
     if (!project || !componentModal) return;
 
@@ -2048,7 +2048,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (futureEl) futureEl.textContent = component.future || 'Future roadmap to be announced.';
 
     componentModal.classList.add('active');
-  }
+  };
 
   function closeComponentModal() {
     if (componentModal) {

@@ -80,6 +80,7 @@ architecture_asdf.txt
 docs/
 !docs/README.md
 *AUDIT*.md
+!.claude/agents/integrity-auditor.md
 *_AUDIT_*.md
 *ARCHITECTURE*.md
 *VULNERABILITY*.md

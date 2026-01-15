@@ -1,3 +1,9 @@
+---
+name: academy-designer
+description: Conception des parcours d'apprentissage et skill trees Academy ASDF
+model: sonnet
+---
+
 # Academy Designer Agent
 
 ## Mission

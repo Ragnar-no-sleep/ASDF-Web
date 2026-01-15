@@ -1,3 +1,9 @@
+---
+name: commit-analyzer
+description: Analyse l'historique git pour comprendre l'évolution du code
+model: sonnet
+---
+
 # Commit Analyzer Agent
 
 ## Mission

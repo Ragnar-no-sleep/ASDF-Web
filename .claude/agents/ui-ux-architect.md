@@ -1,3 +1,9 @@
+---
+name: ui-ux-architect
+description: Design et implementation UI/UX production-level Apple x Helius
+model: sonnet
+---
+
 # UI/UX Architect Agent
 
 ## Mission

@@ -1,3 +1,9 @@
+---
+name: librarian
+description: Recherche approfondie de documentation et code pour ASDF-Web
+model: sonnet
+---
+
 # Librarian Agent
 
 ## Mission
