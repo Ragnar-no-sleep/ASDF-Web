@@ -10,7 +10,20 @@
 
 'use strict';
 
-require('dotenv').config();
+// Load environment-specific .env file
+const path = require('path');
+const envFile = process.env.NODE_ENV === 'production'
+  ? '.env.production'
+  : '.env.development';
+
+require('dotenv').config({
+  path: path.join(__dirname, envFile)
+});
+
+// Fallback to .env if specific file doesn't exist
+if (!process.env.HELIUS_API_KEY) {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+}
 
 const crypto = require('crypto');
 const express = require('express');
