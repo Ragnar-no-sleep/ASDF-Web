@@ -1089,10 +1089,13 @@ body.hub-majestic {
 
 .hub-tools {
   position: absolute;
-  bottom: var(--phi-sm);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hub-tools-trigger {
@@ -1170,7 +1173,7 @@ body.hub-majestic {
   z-index: 2;
 }
 
-/* === TOOL ITEMS - Phi Spiral (Upward expansion) === */
+/* === TOOL ITEMS - Infinity Spiral Orbit === */
 .hub-tools-item {
   position: absolute;
   width: 56px;
@@ -1184,8 +1187,12 @@ body.hub-majestic {
   color: var(--text-muted);
   opacity: 0;
   pointer-events: none;
-  transition: all 0.5s var(--ease-spring);
-  transform-origin: center;
+  transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  /* Center transform origin on parent's center (Tools button) */
+  top: 50%;
+  left: 50%;
+  margin-top: -27px;
+  margin-left: -28px;
 }
 
 .hub-tools-item::before {
@@ -1217,64 +1224,63 @@ body.hub-majestic {
 
 /* GRAVITATIONAL SPIRAL - Infinite orbit around Tools center */
 .hub-tools-item[data-tool='burns'] {
-  --orbit-radius: 85px;
+  --orbit-radius: 90px;
   --orbit-delay: 0s;
-  --orbit-angle: 0deg;
 }
 
 .hub-tools-item[data-tool='forecast'] {
-  --orbit-radius: 85px;
-  --orbit-delay: -5s;
-  --orbit-angle: 120deg;
+  --orbit-radius: 90px;
+  --orbit-delay: -6.67s; /* 20s / 3 = evenly spaced */
 }
 
 .hub-tools-item[data-tool='holdex'] {
-  --orbit-radius: 85px;
-  --orbit-delay: -10s;
-  --orbit-angle: 240deg;
+  --orbit-radius: 90px;
+  --orbit-delay: -13.33s; /* 20s * 2/3 = evenly spaced */
 }
 
-/* Collapsed state */
-.hub-tools-item {
-  transform: translate(0, 0) scale(0.3);
+/* Collapsed state - all items at center */
+.hub-tools:not(.expanded) .hub-tools-item {
+  transform: scale(0.3);
+  opacity: 0;
 }
 
-/* Expanded state - Gravitational spiral orbit */
+/* Expanded state - Gravitational infinity spiral orbit */
 .hub-tools.expanded .hub-tools-item {
   opacity: 1;
   pointer-events: auto;
-  animation: orbit-spiral 15s linear infinite;
+  animation: orbit-infinity 20s linear infinite;
   animation-delay: var(--orbit-delay);
 }
 
-/* Phi-ratio elliptical orbit keyframes */
-@keyframes orbit-spiral {
+/* Infinity symbol orbit - figure-8 gravitational dance */
+@keyframes orbit-infinity {
   0% {
-    transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg) scale(1);
+    transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
+  }
+  12.5% {
+    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   25% {
-    transform: rotate(90deg) translateX(calc(var(--orbit-radius) * 0.85)) rotate(-90deg) scale(0.95);
+    transform: translateX(0) translateY(calc(var(--orbit-radius) * -0.618)) scale(0.9);
+  }
+  37.5% {
+    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   50% {
-    transform: rotate(180deg) translateX(var(--orbit-radius)) rotate(-180deg) scale(1);
+    transform: translateX(calc(var(--orbit-radius) * -1)) translateY(0) scale(1);
+  }
+  62.5% {
+    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   75% {
-    transform: rotate(270deg) translateX(calc(var(--orbit-radius) * 0.85)) rotate(-270deg) scale(0.95);
+    transform: translateX(0) translateY(calc(var(--orbit-radius) * 0.618)) scale(0.9);
+  }
+  87.5% {
+    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   100% {
-    transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg) scale(1);
+    transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
   }
-}
-
-/* Initial positions before orbit starts */
-.hub-tools.expanded .hub-tools-item[data-tool='burns'] {
-  animation-delay: 0s;
-}
-.hub-tools.expanded .hub-tools-item[data-tool='forecast'] {
-  animation-delay: -5s;
-}
-.hub-tools.expanded .hub-tools-item[data-tool='holdex'] {
-  animation-delay: -10s;
 }
 
 /* Tool item hover */
@@ -1378,9 +1384,9 @@ body.hub-majestic {
   }
 
   .hub-tools {
-    bottom: 18%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
   }
   .hub-tools-trigger {
     width: 68px;
@@ -1393,12 +1399,14 @@ body.hub-majestic {
   .hub-tools-item {
     width: 48px;
     height: 46px;
+    margin-top: -23px;
+    margin-left: -24px;
   }
 
   .hub-tools-item[data-tool='burns'],
   .hub-tools-item[data-tool='forecast'],
   .hub-tools-item[data-tool='holdex'] {
-    --orbit-radius: 65px;
+    --orbit-radius: 70px;
   }
 
   /* Reduce particle visibility on mobile for performance */
@@ -1462,13 +1470,20 @@ body.hub-majestic {
   }
 
   .hub-tools {
-    bottom: 20%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
   }
   .hub-tools-trigger {
     width: 58px;
     height: 56px;
+  }
+
+  .hub-tools-item {
+    width: 44px;
+    height: 42px;
+    margin-top: -21px;
+    margin-left: -22px;
   }
 
   .hub-tools-item[data-tool='burns'],
