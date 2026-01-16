@@ -1084,13 +1084,14 @@ body.hub-majestic {
 }
 
 /* ============================================
-   TOOLS - Phi Spiral Expansion (Moved Up)
+   TOOLS - Centered Gravitational Spiral
    ============================================ */
 
 .hub-tools {
   position: absolute;
-  bottom: var(--phi-sm); /* Moved up from phi-xs */
-  right: var(--phi-sm);
+  bottom: var(--phi-sm);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 25;
 }
 
@@ -1214,25 +1215,23 @@ body.hub-majestic {
   letter-spacing: 0.05em;
 }
 
-/* PHI ARC - Sweeping left-to-right, upward curve */
+/* GRAVITATIONAL SPIRAL - Infinite orbit around Tools center */
 .hub-tools-item[data-tool='burns'] {
-  --spiral-x: -95px;
-  --spiral-y: -15px;
+  --orbit-radius: 85px;
+  --orbit-delay: 0s;
+  --orbit-angle: 0deg;
 }
 
 .hub-tools-item[data-tool='forecast'] {
-  --spiral-x: -60px;
-  --spiral-y: -65px;
+  --orbit-radius: 85px;
+  --orbit-delay: -5s;
+  --orbit-angle: 120deg;
 }
 
 .hub-tools-item[data-tool='holdex'] {
-  --spiral-x: 15px;
-  --spiral-y: -80px;
-}
-
-.hub-tools-item[data-tool='gas'] {
-  --spiral-x: 75px;
-  --spiral-y: -55px;
+  --orbit-radius: 85px;
+  --orbit-delay: -10s;
+  --orbit-angle: 240deg;
 }
 
 /* Collapsed state */
@@ -1240,25 +1239,42 @@ body.hub-majestic {
   transform: translate(0, 0) scale(0.3);
 }
 
-/* Expanded state - Arc unfold */
+/* Expanded state - Gravitational spiral orbit */
 .hub-tools.expanded .hub-tools-item {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(var(--spiral-x), var(--spiral-y)) scale(1);
+  animation: orbit-spiral 15s linear infinite;
+  animation-delay: var(--orbit-delay);
 }
 
-/* Phi-based stagger timing */
+/* Phi-ratio elliptical orbit keyframes */
+@keyframes orbit-spiral {
+  0% {
+    transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) translateX(calc(var(--orbit-radius) * 0.85)) rotate(-90deg) scale(0.95);
+  }
+  50% {
+    transform: rotate(180deg) translateX(var(--orbit-radius)) rotate(-180deg) scale(1);
+  }
+  75% {
+    transform: rotate(270deg) translateX(calc(var(--orbit-radius) * 0.85)) rotate(-270deg) scale(0.95);
+  }
+  100% {
+    transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg) scale(1);
+  }
+}
+
+/* Initial positions before orbit starts */
 .hub-tools.expanded .hub-tools-item[data-tool='burns'] {
-  transition-delay: 0ms;
+  animation-delay: 0s;
 }
 .hub-tools.expanded .hub-tools-item[data-tool='forecast'] {
-  transition-delay: 50ms;
+  animation-delay: -5s;
 }
 .hub-tools.expanded .hub-tools-item[data-tool='holdex'] {
-  transition-delay: 81ms;
-}
-.hub-tools.expanded .hub-tools-item[data-tool='gas'] {
-  transition-delay: 131ms;
+  animation-delay: -10s;
 }
 
 /* Tool item hover */
@@ -1363,7 +1379,8 @@ body.hub-majestic {
 
   .hub-tools {
     bottom: 18%;
-    right: 8%;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .hub-tools-trigger {
     width: 68px;
@@ -1378,21 +1395,10 @@ body.hub-majestic {
     height: 46px;
   }
 
-  .hub-tools-item[data-tool='burns'] {
-    --spiral-x: -75px;
-    --spiral-y: -10px;
-  }
-  .hub-tools-item[data-tool='forecast'] {
-    --spiral-x: -45px;
-    --spiral-y: -50px;
-  }
+  .hub-tools-item[data-tool='burns'],
+  .hub-tools-item[data-tool='forecast'],
   .hub-tools-item[data-tool='holdex'] {
-    --spiral-x: 12px;
-    --spiral-y: -60px;
-  }
-  .hub-tools-item[data-tool='gas'] {
-    --spiral-x: 58px;
-    --spiral-y: -40px;
+    --orbit-radius: 65px;
   }
 
   /* Reduce particle visibility on mobile for performance */
@@ -1457,10 +1463,18 @@ body.hub-majestic {
 
   .hub-tools {
     bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .hub-tools-trigger {
     width: 58px;
     height: 56px;
+  }
+
+  .hub-tools-item[data-tool='burns'],
+  .hub-tools-item[data-tool='forecast'],
+  .hub-tools-item[data-tool='holdex'] {
+    --orbit-radius: 55px;
   }
 
   .hub-cells,
