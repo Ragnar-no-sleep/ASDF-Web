@@ -734,62 +734,8 @@ body.hub-majestic {
 }
 
 /* ============================================
-   CENTER CORE - The fire within
+   CENTER CORE - Removed, Tools now at center
    ============================================ */
-
-.hub-core {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 30;
-  animation: core-float 10s var(--ease-smooth) infinite;
-}
-
-/* Organic blob shape */
-.hub-core::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    160deg,
-    var(--bg-elevated) 0%,
-    var(--bg-surface) 50%,
-    var(--bg-warm) 100%
-  );
-  border: 1px solid rgba(234, 179, 8, 0.15);
-  border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%;
-  transition: border-radius 3s var(--ease-smooth);
-}
-
-.hub-core:hover::before {
-  border-radius: 55% 45% 48% 52% / 45% 55% 45% 55%;
-}
-
-@keyframes core-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-6px) rotate(0.5deg);
-  }
-  66% {
-    transform: translateY(-3px) rotate(-0.5deg);
-  }
-}
-
-.hub-core-glow {
-  position: absolute;
-  inset: -50px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--glow-fire) 0%, transparent 60%);
-  opacity: 0.5;
-  animation: glow-breathe 8s var(--ease-smooth) infinite;
-}
 
 @keyframes glow-breathe {
   0%,
@@ -801,24 +747,6 @@ body.hub-majestic {
     opacity: 0.65;
     transform: scale(1.1);
   }
-}
-
-.hub-core-icon {
-  position: relative;
-  font-size: 42px;
-  margin-bottom: 8px;
-  z-index: 2;
-}
-
-.hub-core-text {
-  position: relative;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold);
-  z-index: 2;
 }
 
 /* ============================================
@@ -874,9 +802,9 @@ body.hub-majestic {
 
 /* === PHI POSITIONS & ORGANIC SHAPES === */
 
-/* Learn - Top, centered with phi offset */
+/* Learn - Top, higher to avoid Tools orbit */
 .hub-node[data-pos='learn'] {
-  top: var(--phi-sm);
+  top: 12%;
   left: 52%;
   transform: translateX(-50%);
   width: 92px;
@@ -923,9 +851,9 @@ body.hub-majestic {
   transform: scale(1.08) translateX(-4px);
 }
 
-/* Play - Bottom, phi offset from center */
+/* Play - Bottom, lower to avoid Tools orbit */
 .hub-node[data-pos='play'] {
-  bottom: var(--phi-sm);
+  bottom: 10%;
   left: 47%;
   transform: translateX(-50%);
   width: 90px;
@@ -1084,18 +1012,30 @@ body.hub-majestic {
 }
 
 /* ============================================
-   TOOLS - Centered Gravitational Spiral
+   TOOLS - Central Hub Core with Orbital Items
    ============================================ */
 
 .hub-tools {
   position: absolute;
-  bottom: 18%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 25;
+  transform: translate(-50%, -50%);
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Glow around Tools center */
+.hub-tools::after {
+  content: '';
+  position: absolute;
+  inset: -50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-fire) 0%, transparent 60%);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: glow-breathe 8s var(--ease-smooth) infinite;
 }
 
 .hub-tools-trigger {
@@ -1105,17 +1045,17 @@ body.hub-majestic {
   padding: 0;
   font: inherit;
   color: inherit;
-  /* Positioning */
+  /* Positioning - larger as central hub element */
   position: relative;
-  width: 85px;
-  height: 82px;
+  width: 120px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.5s var(--ease-spring);
-  animation: float-tools 12s var(--ease-smooth) infinite;
+  animation: float-tools 10s var(--ease-smooth) infinite;
 }
 
 .hub-tools-trigger::before {
@@ -1123,66 +1063,67 @@ body.hub-majestic {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    150deg,
+    160deg,
     var(--bg-elevated) 0%,
     var(--bg-surface) 50%,
     var(--bg-warm) 100%
   );
-  border: 1px solid rgba(234, 179, 8, 0.12);
-  border-radius: 50% 50% 45% 55% / 48% 52% 48% 52%;
+  border: 1px solid rgba(234, 179, 8, 0.15);
+  border-radius: 42% 58% 55% 45% / 50% 45% 55% 50%;
   transition: all 0.4s var(--ease-out);
 }
 
 .hub-tools-trigger:hover::before {
   border-color: var(--amber);
-  box-shadow: 0 0 30px var(--glow-gold);
+  box-shadow: 0 0 40px var(--glow-gold);
+  border-radius: 55% 45% 48% 52% / 45% 55% 45% 55%;
 }
 
 .hub-tools-trigger:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 @keyframes float-tools {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
-  38.2% {
-    transform: translate(-3px, -5px);
+  33% {
+    transform: translateY(-6px) rotate(0.5deg);
   }
-  61.8% {
-    transform: translate(-1px, -2px);
+  66% {
+    transform: translateY(-3px) rotate(-0.5deg);
   }
 }
 
 .hub-tools-icon {
   position: relative;
-  font-size: 24px;
-  margin-bottom: 4px;
+  font-size: 36px;
+  margin-bottom: 6px;
   z-index: 2;
 }
 
 .hub-tools-label {
   position: relative;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--gold);
   z-index: 2;
 }
 
 /* === TOOL ITEMS - Infinity Spiral Orbit === */
 .hub-tools-item {
   position: absolute;
-  width: 56px;
-  height: 54px;
+  width: 60px;
+  height: 58px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   text-decoration: none;
   color: var(--text-muted);
   opacity: 0;
@@ -1191,8 +1132,8 @@ body.hub-majestic {
   /* Center transform origin on parent's center (Tools button) */
   top: 50%;
   left: 50%;
-  margin-top: -27px;
-  margin-left: -28px;
+  margin-top: -29px;
+  margin-left: -30px;
 }
 
 .hub-tools-item::before {
@@ -1224,17 +1165,17 @@ body.hub-majestic {
 
 /* GRAVITATIONAL SPIRAL - Infinite orbit around Tools center */
 .hub-tools-item[data-tool='burns'] {
-  --orbit-radius: 90px;
+  --orbit-radius: 115px;
   --orbit-delay: 0s;
 }
 
 .hub-tools-item[data-tool='forecast'] {
-  --orbit-radius: 90px;
+  --orbit-radius: 115px;
   --orbit-delay: -6.67s; /* 20s / 3 = evenly spaced */
 }
 
 .hub-tools-item[data-tool='holdex'] {
-  --orbit-radius: 90px;
+  --orbit-radius: 115px;
   --orbit-delay: -13.33s; /* 20s * 2/3 = evenly spaced */
 }
 
@@ -1331,18 +1272,6 @@ body.hub-majestic {
    ============================================ */
 
 @media (max-width: 768px) {
-  .hub-core {
-    width: 110px;
-    height: 110px;
-  }
-
-  .hub-core-icon {
-    font-size: 34px;
-  }
-  .hub-core-text {
-    font-size: 8px;
-  }
-
   .hub-orbit--inner {
     width: 180px;
     height: calc(180px / var(--phi));
@@ -1363,7 +1292,7 @@ body.hub-majestic {
   }
 
   .hub-node[data-pos='learn'] {
-    top: 12%;
+    top: 8%;
   }
   .hub-node[data-pos='build'] {
     left: 6%;
@@ -1372,7 +1301,7 @@ body.hub-majestic {
     right: 4%;
   }
   .hub-node[data-pos='play'] {
-    bottom: 12%;
+    bottom: 6%;
   }
 
   .hub-node-icon {
@@ -1383,30 +1312,29 @@ body.hub-majestic {
     font-size: 7px;
   }
 
-  .hub-tools {
-    bottom: 18%;
-    left: 50%;
-    transform: translateX(-50%);
-  }
+  /* Tools stays centered */
   .hub-tools-trigger {
-    width: 68px;
-    height: 66px;
+    width: 95px;
+    height: 95px;
   }
   .hub-tools-icon {
-    font-size: 20px;
+    font-size: 28px;
+  }
+  .hub-tools-label {
+    font-size: 8px;
   }
 
   .hub-tools-item {
-    width: 48px;
-    height: 46px;
-    margin-top: -23px;
-    margin-left: -24px;
+    width: 50px;
+    height: 48px;
+    margin-top: -24px;
+    margin-left: -25px;
   }
 
   .hub-tools-item[data-tool='burns'],
   .hub-tools-item[data-tool='forecast'],
   .hub-tools-item[data-tool='holdex'] {
-    --orbit-radius: 70px;
+    --orbit-radius: 85px;
   }
 
   /* Reduce particle visibility on mobile for performance */
@@ -1440,14 +1368,6 @@ body.hub-majestic {
 }
 
 @media (max-height: 600px) {
-  .hub-core {
-    width: 90px;
-    height: 90px;
-  }
-  .hub-core-icon {
-    font-size: 28px;
-  }
-
   .hub-orbit--inner {
     width: 140px;
     height: calc(140px / var(--phi));
@@ -1463,20 +1383,22 @@ body.hub-majestic {
   }
 
   .hub-node[data-pos='learn'] {
-    top: 8%;
+    top: 5%;
   }
   .hub-node[data-pos='play'] {
-    bottom: 8%;
+    bottom: 5%;
   }
 
-  .hub-tools {
-    bottom: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-  }
+  /* Tools stays centered but smaller */
   .hub-tools-trigger {
-    width: 58px;
-    height: 56px;
+    width: 80px;
+    height: 80px;
+  }
+  .hub-tools-icon {
+    font-size: 24px;
+  }
+  .hub-tools-label {
+    font-size: 8px;
   }
 
   .hub-tools-item {
@@ -1489,7 +1411,7 @@ body.hub-majestic {
   .hub-tools-item[data-tool='burns'],
   .hub-tools-item[data-tool='forecast'],
   .hub-tools-item[data-tool='holdex'] {
-    --orbit-radius: 55px;
+    --orbit-radius: 70px;
   }
 
   .hub-cells,
