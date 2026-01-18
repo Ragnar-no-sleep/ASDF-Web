@@ -5687,33 +5687,38 @@ body {
    SECTION BACKGROUNDS - Thematic Designs
    ============================================ */
 
-/* MARKETPLACE - Industrial Forge + Old-School Commerce */
+/* BUILDERS - Old-World Blacksmith Forge */
 #view-marketplace {
   position: relative;
   background:
-    /* Forge ember glow */
-    radial-gradient(ellipse 60% 40% at 50% 80%, rgba(234, 88, 12, 0.15) 0%, transparent 60%),
-    /* Metal texture overlay */
+    /* Central forge fire glow */
+    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(255, 100, 20, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(255, 60, 0, 0.15) 0%, transparent 40%),
+    /* Anvil shadow area */
+    radial-gradient(ellipse 30% 20% at 50% 70%, rgba(0, 0, 0, 0.3) 0%, transparent 50%),
+    /* Stone wall texture */
     repeating-linear-gradient(
       90deg,
-      rgba(45, 24, 16, 0.3) 0px,
-      rgba(45, 24, 16, 0.3) 1px,
-      transparent 1px,
-      transparent 20px
+      rgba(60, 45, 35, 0.15) 0px,
+      transparent 2px,
+      transparent 30px,
+      rgba(60, 45, 35, 0.1) 32px
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(45, 24, 16, 0.2) 0px,
-      rgba(45, 24, 16, 0.2) 1px,
-      transparent 1px,
-      transparent 20px
+      rgba(50, 35, 25, 0.12) 0px,
+      transparent 2px,
+      transparent 25px,
+      rgba(50, 35, 25, 0.08) 27px
     ),
-    /* Warm forge backdrop */
+    /* Warm forge interior */
     linear-gradient(180deg,
       #0a0604 0%,
-      #1a0f08 30%,
-      #2d1810 60%,
-      #1a0808 100%
+      #120a06 15%,
+      #1a0f08 35%,
+      #2a1510 55%,
+      #1f1008 75%,
+      #150a04 100%
     );
 }
 
@@ -5722,17 +5727,34 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* Floating embers */
-    radial-gradient(circle at 20% 70%, rgba(249, 115, 22, 0.08) 0%, transparent 25%),
-    radial-gradient(circle at 80% 60%, rgba(251, 146, 60, 0.06) 0%, transparent 20%),
-    radial-gradient(circle at 50% 90%, rgba(234, 88, 12, 0.1) 0%, transparent 30%);
+    /* Floating embers from forge */
+    radial-gradient(circle at 30% 75%, rgba(255, 120, 40, 0.12) 0%, transparent 15%),
+    radial-gradient(circle at 70% 80%, rgba(255, 80, 20, 0.1) 0%, transparent 12%),
+    radial-gradient(circle at 45% 90%, rgba(255, 150, 50, 0.15) 0%, transparent 20%),
+    radial-gradient(circle at 55% 85%, rgba(255, 60, 10, 0.08) 0%, transparent 10%),
+    /* Smoke wisps */
+    radial-gradient(ellipse 20% 40% at 40% 30%, rgba(80, 70, 60, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 25% 35% at 60% 25%, rgba(70, 60, 50, 0.05) 0%, transparent 50%),
+    /* Sparks */
+    radial-gradient(circle at 35% 65%, rgba(255, 200, 100, 0.08) 0%, transparent 3%),
+    radial-gradient(circle at 65% 70%, rgba(255, 180, 80, 0.06) 0%, transparent 2%);
   pointer-events: none;
-  animation: forgeGlow 8s ease-in-out infinite;
+  animation: forgeGlow 6s ease-in-out infinite;
+}
+
+#view-marketplace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Vignette - dark corners like inside a forge */
+    radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
 }
 
 @keyframes forgeGlow {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.6; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
 }
 
 /* YOUR JOURNEY - Clean, Learning-Focused */
@@ -5768,17 +5790,18 @@ body {
   backdrop-filter: blur(8px);
 }
 
-/* FIND YOUR PATH - Phi-Based Cosmic Harmony */
+/* FIND YOUR PATH - Ancient Treasure Map */
 #view-path {
   position: relative;
   overflow: hidden;
   background:
-    /* Base cosmic void */
+    /* Aged parchment base */
     linear-gradient(180deg,
-      #020408 0%,
-      #050810 30%,
-      #080a14 60%,
-      #0a0812 100%
+      #1a1408 0%,
+      #1f180c 20%,
+      #241c10 50%,
+      #1a1408 80%,
+      #14100a 100%
     );
 }
 
@@ -5787,26 +5810,32 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* Constellation points - phi distributed */
-    radial-gradient(circle at 23.6% 38.2%, rgba(167, 139, 250, 0.15) 0%, transparent 8%),
-    radial-gradient(circle at 61.8% 23.6%, rgba(96, 165, 250, 0.12) 0%, transparent 6%),
-    radial-gradient(circle at 38.2% 76.4%, rgba(251, 191, 36, 0.1) 0%, transparent 10%),
-    radial-gradient(circle at 76.4% 61.8%, rgba(34, 211, 238, 0.08) 0%, transparent 7%),
-    radial-gradient(circle at 14.6% 61.8%, rgba(244, 114, 182, 0.06) 0%, transparent 5%),
-    /* Runic crossroads glow */
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
-    /* Dimensional portal hints */
-    conic-gradient(from 137.5deg at 50% 50%,
-      transparent 0deg,
-      rgba(167, 139, 250, 0.03) 60deg,
-      transparent 120deg,
-      rgba(96, 165, 250, 0.03) 180deg,
-      transparent 240deg,
-      rgba(251, 191, 36, 0.03) 300deg,
-      transparent 360deg
+    /* Compass rose center glow */
+    radial-gradient(ellipse 30% 25% at 50% 50%, rgba(212, 175, 55, 0.12) 0%, transparent 60%),
+    /* Corner decorations - like old map ornaments */
+    radial-gradient(circle at 5% 5%, rgba(139, 90, 43, 0.2) 0%, transparent 15%),
+    radial-gradient(circle at 95% 5%, rgba(139, 90, 43, 0.2) 0%, transparent 15%),
+    radial-gradient(circle at 5% 95%, rgba(139, 90, 43, 0.2) 0%, transparent 15%),
+    radial-gradient(circle at 95% 95%, rgba(139, 90, 43, 0.2) 0%, transparent 15%),
+    /* Aged paper stains */
+    radial-gradient(ellipse 40% 30% at 25% 30%, rgba(101, 67, 33, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 25% at 75% 70%, rgba(101, 67, 33, 0.12) 0%, transparent 50%),
+    /* Subtle path lines */
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(139, 90, 43, 0.03) 40px,
+      rgba(139, 90, 43, 0.03) 41px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      transparent 40px,
+      rgba(139, 90, 43, 0.03) 40px,
+      rgba(139, 90, 43, 0.03) 41px
     );
   pointer-events: none;
-  animation: pathPulse 20s linear infinite;
 }
 
 #view-path::after {
@@ -5814,28 +5843,36 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* Constellation lines - phi angles */
-    linear-gradient(137.5deg, transparent 48%, rgba(167, 139, 250, 0.04) 50%, transparent 52%),
-    linear-gradient(222.5deg, transparent 48%, rgba(96, 165, 250, 0.03) 50%, transparent 52%),
-    linear-gradient(42.5deg, transparent 48%, rgba(251, 191, 36, 0.02) 50%, transparent 52%);
+    /* Burnt edges effect */
+    linear-gradient(to right, rgba(10, 8, 4, 0.4) 0%, transparent 5%, transparent 95%, rgba(10, 8, 4, 0.4) 100%),
+    linear-gradient(to bottom, rgba(10, 8, 4, 0.3) 0%, transparent 8%, transparent 92%, rgba(10, 8, 4, 0.3) 100%),
+    /* Paper texture noise */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
+  opacity: 0.8;
 }
 
-@keyframes pathPulse {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Star particles for path view */
+/* Treasure map style for path options */
 #view-path .path-option {
   position: relative;
-  background: rgba(15, 15, 30, 0.6);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  backdrop-filter: blur(4px);
+  background: rgba(26, 20, 10, 0.8);
+  border: 2px solid rgba(139, 90, 43, 0.4);
+  border-radius: 8px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 #view-path .path-option:hover {
-  border-color: rgba(167, 139, 250, 0.6);
-  background: rgba(124, 58, 237, 0.1);
-  box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+  border-color: rgba(212, 175, 55, 0.7);
+  background: rgba(40, 30, 15, 0.9);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+#view-path .path-option.selected {
+  border-color: rgba(212, 175, 55, 0.9);
+  background: rgba(50, 40, 20, 0.9);
+  box-shadow:
+    inset 0 0 30px rgba(212, 175, 55, 0.1),
+    0 0 20px rgba(212, 175, 55, 0.3);
 }
