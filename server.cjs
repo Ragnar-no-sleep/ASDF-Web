@@ -55,6 +55,7 @@ app.use(
           'https://asdf-web.onrender.com',
           'https://asdf-api.onrender.com',
           'https://cdnjs.cloudflare.com',
+          'https://api.github.com',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
