@@ -13,21 +13,7 @@
 // SECURITY UTILITIES
 // ============================================
 
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    })[m]);
-}
+// escapeHtml provided by utils.js (loaded first)
 
 /**
  * Validate and sanitize a number

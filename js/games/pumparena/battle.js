@@ -3212,13 +3212,7 @@ function checkBattleEnd() {
   return null;
 }
 
-// Security helper
-function escapeHtml(text) {
-  if (typeof text !== 'string') return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+// escapeHtml provided by utils.js (loaded first)
 
 // ============================================
 // RANKING/LADDER SYSTEM
