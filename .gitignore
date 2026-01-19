@@ -45,6 +45,7 @@ Desktop.ini
 # Build
 dist/
 build/
+!js/build/
 .cache/
 *.bundle.js
 *.bundle.js.map
@@ -99,6 +100,7 @@ wip-*
 *.db
 data/
 !src/data/
+!js/build/data/
 
 # Backups
 *.bak
