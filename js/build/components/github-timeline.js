@@ -242,8 +242,8 @@ const GitHubTimeline = {
       const login = sanitizeText(contrib.login);
 
       return `
-        <div class="contributor-card" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
-          <a href="${contrib.url}" target="_blank" rel="noopener" class="contributor-link">
+        <div class="contributor-card" data-login="${login}" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
+          <div class="contributor-link" role="button" tabindex="0">
             <img
               src="${contrib.avatar}"
               alt="${login}"
@@ -255,6 +255,9 @@ const GitHubTimeline = {
               <span class="contributor-name">${login}</span>
               <span class="contributor-commits">${contrib.contributions} commits</span>
             </div>
+          </div>
+          <a href="${contrib.url}" target="_blank" rel="noopener" class="contributor-github-link" title="View on GitHub">
+            &#128279;
           </a>
         </div>
       `;
@@ -264,13 +267,21 @@ const GitHubTimeline = {
 
     // Add click handler for builder profile
     $$('.contributor-card', this.contributorsGrid).forEach(card => {
-      const link = $('a', card);
-      if (link) {
-        on(card, 'click', (e) => {
-          // Allow link to work, but also emit event
-          const login = $('img', card)?.alt;
+      const contributorLink = $('.contributor-link', card);
+      if (contributorLink) {
+        const handler = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const login = card.dataset.login;
           if (login) {
             BuildState.emit('contributor:click', { login });
+          }
+        };
+
+        on(contributorLink, 'click', handler);
+        on(contributorLink, 'keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handler(e);
           }
         });
       }

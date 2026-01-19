@@ -191,7 +191,20 @@
 }
 
 .contributor-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
   animation: contributorFadeIn 0.3s ease backwards;
+  transition: all 0.2s;
+}
+
+.contributor-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes contributorFadeIn {
@@ -205,17 +218,42 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  flex: 1;
+  cursor: pointer;
   text-decoration: none;
   transition: all 0.2s;
 }
 
-.contributor-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+.contributor-link:hover .contributor-name {
+  color: #00d9ff;
+}
+
+.contributor-link:focus {
+  outline: none;
+}
+
+.contributor-link:focus-visible .contributor-avatar {
+  box-shadow: 0 0 0 2px #00d9ff;
+}
+
+.contributor-github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #666;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.contributor-github-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .contributor-avatar {

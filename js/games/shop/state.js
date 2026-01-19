@@ -10,8 +10,8 @@
 'use strict';
 
 // Storage keys (V2 - renamed to avoid conflict with shop.js)
-const SHOP_STORAGE_KEY_V2_V2 = 'asdf_shop_v2';
-const FAVORITES_STORAGE_KEY_V2_V2 = 'asdf_shop_favorites_v2';
+const SHOP_STORAGE_KEY_V2 = 'asdf_shop_v2';
+const FAVORITES_STORAGE_KEY_V2 = 'asdf_shop_favorites_v2';
 
 // ============================================
 // DATA VALIDATION UTILITIES
