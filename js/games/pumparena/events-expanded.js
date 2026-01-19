@@ -1995,29 +1995,6 @@ class EventManager {
 
 const eventManager = new EventManager();
 
-export {
-    EVENT_CONSTANTS,
-    ALL_EVENTS,
-    MARKET_EVENTS,
-    NPC_EVENTS,
-    CATASTROPHE_EVENTS,
-    OPPORTUNITY_EVENTS,
-    SECRET_EVENTS,
-    eventManager
-};
-
-export function getEvent(id) {
-    return eventManager.getEvent(id);
-}
-
-export function getEventsByCategory(category) {
-    return eventManager.getEventsByCategory(category);
-}
-
-export function rollForRandomEvent(gameState) {
-    return eventManager.rollForEvent(gameState);
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================
@@ -2033,15 +2010,9 @@ window.PumpArenaEventsExpanded = {
     eventManager,
     getEvent: (id) => eventManager.getEvent(id),
     getEventsByCategory: (cat) => eventManager.getEventsByCategory(cat),
-    rollForRandomEvent: (gs) => eventManager.rollForEvent(gs)
+    rollForRandomEvent: (gs) => eventManager.rollForEvent(gs),
+    processEventChoice: (e, c, gs) => eventManager.processChoice(e, c, gs),
+    getTotalEventCount: () => eventManager.getTotalEventCount()
 };
-
-export function processEventChoice(event, choiceId, gameState) {
-    return eventManager.processChoice(event, choiceId, gameState);
-}
-
-export function getTotalEventCount() {
-    return eventManager.getTotalEventCount();
-}
 
 console.log(`Events loaded: ${eventManager.getTotalEventCount()} total events`);

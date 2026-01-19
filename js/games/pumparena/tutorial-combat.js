@@ -1033,29 +1033,6 @@ function injectTutorialStyles() {
 
 const tutorialManager = new TutorialManager();
 
-export {
-    TUTORIAL_CONSTANTS,
-    TUTORIAL_STEPS,
-    TutorialManager,
-    TutorialUIRenderer,
-    tutorialManager,
-    injectTutorialStyles
-};
-
-// Convenience functions
-export function startTutorial(callbacks) {
-    injectTutorialStyles();
-    return tutorialManager.start(callbacks);
-}
-
-export function getTutorialState() {
-    return tutorialManager.getState();
-}
-
-export function handleTutorialAction(actionType, data) {
-    return tutorialManager.handleAction(actionType, data);
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================
@@ -1069,17 +1046,8 @@ window.PumpArenaTutorial = {
     injectTutorialStyles,
     startTutorial: (cb) => { injectTutorialStyles(); return tutorialManager.start(cb); },
     getTutorialState: () => tutorialManager.getState(),
-    handleTutorialAction: (t, d) => tutorialManager.handleAction(t, d)
+    handleTutorialAction: (t, d) => tutorialManager.handleAction(t, d),
+    skipTutorial: () => tutorialManager.skip(),
+    isTutorialComplete: () => tutorialManager.isComplete,
+    isTutorialActive: () => tutorialManager.isActive
 };
-
-export function skipTutorial() {
-    return tutorialManager.skip();
-}
-
-export function isTutorialComplete() {
-    return tutorialManager.isComplete;
-}
-
-export function isTutorialActive() {
-    return tutorialManager.isActive;
-}

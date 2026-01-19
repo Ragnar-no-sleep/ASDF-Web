@@ -34,7 +34,7 @@ const PREMIUM_CONFIG = {
 // FIBONACCI CONSTANTS (ASDF Philosophy)
 // ============================================
 
-const FIB = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377];
+const PREMIUM_FIB = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377];
 
 // ============================================
 // INJECT PREMIUM CSS
@@ -788,7 +788,7 @@ class ParticleSystem {
             particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
             // Random size (Fibonacci-based)
-            const size = FIB[Math.floor(Math.random() * 4) + 2];
+            const size = PREMIUM_FIB[Math.floor(Math.random() * 4) + 2];
             particle.style.width = `${size}px`;
             particle.style.height = `${size}px`;
 
