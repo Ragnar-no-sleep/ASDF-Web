@@ -19,6 +19,8 @@ import { TreeComponent } from './components/tree.js';
 import { IntroComponent } from './components/intro.js';
 import { QuizComponent } from './components/quiz.js';
 import { TracksComponent } from './components/tracks.js';
+import { ProjectPanelComponent } from './components/project-panel.js';
+import { FactoryPanelComponent } from './components/factory-panel.js';
 import { EventHandlers } from './handlers.js';
 import {
   escapeHtml,
@@ -54,6 +56,8 @@ const BuildApp = {
     intro: IntroComponent,
     quiz: QuizComponent,
     tracks: TracksComponent,
+    projectPanel: ProjectPanelComponent,
+    factoryPanel: FactoryPanelComponent,
     handlers: EventHandlers
   },
 
@@ -89,18 +93,24 @@ const BuildApp = {
       // 6. Initialize tracks component
       TracksComponent.init('#view-journey');
 
-      // 7. Initialize event handlers
+      // 7. Initialize project panel (slide-left)
+      ProjectPanelComponent.init();
+
+      // 8. Initialize factory panel (slide-right, triggered by quiz)
+      FactoryPanelComponent.init();
+
+      // 9. Initialize event handlers
       EventHandlers.init();
 
-      // 8. Show intro if first visit (or skip if option set)
+      // 10. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
         IntroComponent.init('#intro-container');
       }
 
-      // 9. Set up global listeners
+      // 11. Set up global listeners
       this.setupGlobalListeners();
 
-      // 10. Mark as initialized
+      // 12. Mark as initialized
       this.initialized = true;
 
       // Emit ready event
@@ -158,6 +168,13 @@ const BuildApp = {
     delegate(document, 'click', 'a[target="_blank"]', (e, link) => {
       // Track external link clicks
       BuildState.emit('external:link', { url: link.href });
+    });
+
+    // Project panel open event (from factory panel recommendations)
+    BuildState.subscribe('project:open', (data) => {
+      if (data.projectId) {
+        ProjectPanelComponent.open(data.projectId);
+      }
     });
 
     // Window resize handling
@@ -299,6 +316,8 @@ if (typeof window !== 'undefined') {
     Intro: IntroComponent,
     Quiz: QuizComponent,
     Tracks: TracksComponent,
+    ProjectPanel: ProjectPanelComponent,
+    FactoryPanel: FactoryPanelComponent,
     Handlers: EventHandlers
   };
 }
