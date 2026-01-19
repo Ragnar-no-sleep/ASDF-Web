@@ -22,7 +22,7 @@
     "format:check": "prettier --check .",
     "audit": "npm audit --audit-level=high",
     "validate": "npm run lint && npm run test && npm run audit",
-    "prepare": "husky install"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "compression": "^1.7.4",
