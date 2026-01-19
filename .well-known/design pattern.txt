@@ -1,0 +1,1 @@
+chaine de if else , 1 factory par produit.

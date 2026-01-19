@@ -71,7 +71,7 @@ NOTES.md
 DECISIONS.md
 ARCHITECTURE_INTERNAL.md*
 architecture_asdf.txt
-
+.mcp.json
 # Claude internal config (contains service IDs, tokens)
 .claude/settings.json
 .claude/settings.local.json

@@ -1,0 +1,955 @@
+Prend du recul et analyse la structure, les liens entre les composants et l'utilité de chaque ligne de code en respectant les conventions et bonnes
+  pratiques de développement (modularity, scalability,security,privacy by design,design pattern). Tu connais la philosophoie $asdfasdfa. Qualité >
+  Quantité. 1 factory par produit fini. Organisation par  chaines de if else. Que penses-tu de l'achitecture actuelle, nhésites pas à me poser des
+  questions, jusqu'à avoir une vision clair. 
+
+
+Ready to code?
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Plan de Refactorisation ASDF-Web
+
+ Objectif
+
+ Refactoriser l'architecture pour suivre le pattern "1 factory par produit fini" :
+ 1. Engine.js (8513 lignes) → Modules séparés par jeu + coordinateur
+ 2. API/index.js (3000+ lignes) → Routes séparées par domaine
+
+ Philosophie
+
+ - Qualité > Quantité
+ - If-else explicites (lisibilité)
+ - 1 factory par produit fini
+ - Security by design
+ - Modulaire et scalable
+
+ ---
+ Phase 1 : Extraction du Code Partagé (Engine)
+
+ 1.1 Créer js/games/shared/index.js - Utilitaires communs
+
+ Fichiers à créer :
+ js/games/shared/
+ ├── index.js          # Export centralisé
+ ├── lifecycle.js      # startGame, stopGame, endGame
+ ├── scoring.js        # updateScore, recordGameAction, recordScoreUpdate
+ ├── validation.js     # sanitizeNumber, isValidGameId
+ ├── canvas.js         # CanvasManager (setup, resize)
+ ├── input.js          # InputManager (keyboard, mouse, cleanup)
+ └── intervals.js      # IntervalManager (tracking, cleanup)
+
+ Code à extraire de engine.js :
+ ┌─────────────────────┬─────────┬──────────────────────┐
+ │      Fonction       │ Lignes  │     Destination      │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ sanitizeNumber()    │ 17-21   │ shared/validation.js │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ startGame()         │ 23-62   │ shared/lifecycle.js  │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ stopGame()          │ 121-131 │ shared/lifecycle.js  │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ endGame()           │ 145-290 │ shared/lifecycle.js  │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ updateScore()       │ 133-143 │ shared/scoring.js    │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ recordGameAction()  │ 67-72   │ shared/scoring.js    │
+ ├─────────────────────┼─────────┼──────────────────────┤
+ │ recordScoreUpdate() │ 77-82   │ shared/scoring.js    │
+ └─────────────────────┴─────────┴──────────────────────┘
+ Dépendances externes à injecter :
+ - appState (state.js)
+ - activeGameModes (state.js)
+ - AntiCheat (utils.js)
+ - ApiClient (api.js)
+ - CONFIG (config.js)
+ - saveState() (state.js)
+
+ 1.2 Créer le Coordinateur js/games/engines/index.js
+
+ Pattern à suivre (inspiré de ShopV2) :
+ const GameEngines = {
+     // Module references
+     tokencatcher: null,
+     burnrunner: null,
+     // ... autres jeux
+
+     // Shared modules
+     lifecycle: null,
+     scoring: null,
+
+     config: {
+         debug: false
+     },
+
+     initialized: false,
+
+     async init(options = {}) {
+         if (this.initialized) return;
+
+         // Get references from window
+         this.lifecycle = window.GameLifecycle;
+         this.scoring = window.GameScoring;
+
+         // Validate critical modules
+         if (!this.lifecycle || !this.scoring) {
+             throw new Error('Required shared modules not loaded');
+         }
+
+         this.initialized = true;
+         console.log('[GameEngines] Initialized');
+     },
+
+     // Router (remplace le switch dans initializeGame)
+     start(gameId) {
+         const engine = this[gameId];
+         if (engine && typeof engine.start === 'function') {
+             engine.start(gameId);
+         } else {
+             console.warn(`[GameEngines] Unknown game: ${gameId}`);
+         }
+     },
+
+     stop(gameId) {
+         const engine = this[gameId];
+         if (engine && typeof engine.stop === 'function') {
+             engine.stop(gameId);
+         }
+     }
+ };
+
+ ---
+ Phase 2 : Extraction des Jeux Individuels
+
+ 2.1 Structure de fichier par jeu
+
+ Template pour chaque jeu :
+ // js/games/engines/tokencatcher.js
+ 'use strict';
+
+ const TokenCatcher = {
+     gameId: 'tokencatcher',
+     state: null,
+     canvas: null,
+     ctx: null,
+     intervals: [],
+     listeners: [],
+
+     start(gameId) {
+         // Setup canvas
+         // Initialize game state
+         // Start game loop
+         // Register intervals
+     },
+
+     stop() {
+         // Clear intervals
+         // Remove event listeners
+         // Cleanup state
+     },
+
+     // Game-specific methods
+     spawnToken() { },
+     update() { },
+     draw() { },
+     handleInput(e) { }
+ };
+
+ // Export
+ if (typeof window !== 'undefined') {
+     window.TokenCatcher = TokenCatcher;
+ }
+
+ 2.2 Ordre d'extraction (par taille décroissante)
+ ┌──────────┬───────────────┬────────┬──────────────────┐
+ │ Priorité │      Jeu      │ Lignes │     Fichier      │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 1        │ PumpArena     │ ~2800  │ pumparena.js     │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 2        │ BurnRunner    │ ~1340  │ burnrunner.js    │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 3        │ LiquidityMaze │ ~690   │ liquiditymaze.js │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 4        │ BurnOrHold    │ ~610   │ burnorhold.js    │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 5        │ DexDash       │ ~590   │ dexdash.js       │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 6        │ TokenCatcher  │ ~560   │ tokencatcher.js  │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 7        │ WhaleWatch    │ ~520   │ whalewatch.js    │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 8        │ CryptoHeist   │ ~420   │ cryptoheist.js   │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 9        │ ScamBlaster   │ ~380   │ scamblaster.js   │
+ ├──────────┼───────────────┼────────┼──────────────────┤
+ │ 10       │ StakeStacker  │ ~260   │ stakestacker.js  │
+ └──────────┴───────────────┴────────┴──────────────────┘
+ 2.3 Fichiers finaux
+
+ js/games/
+ ├── main.js              # Entry point (existant, inchangé)
+ ├── state.js             # État global (existant, inchangé)
+ ├── config.js            # Configuration (existant, inchangé)
+ ├── api.js               # Client API (existant)
+ ├── utils.js             # Utilitaires (existant)
+ ├── shared/              # NOUVEAU
+ │   ├── index.js
+ │   ├── lifecycle.js
+ │   ├── scoring.js
+ │   ├── validation.js
+ │   ├── canvas.js
+ │   ├── input.js
+ │   └── intervals.js
+ ├── engines/             # NOUVEAU
+ │   ├── index.js         # Coordinateur
+ │   ├── tokencatcher.js
+ │   ├── burnrunner.js
+ │   ├── scamblaster.js
+ │   ├── cryptoheist.js
+ │   ├── pumparena.js
+ │   ├── whalewatch.js
+ │   ├── stakestacker.js
+ │   ├── dexdash.js
+ │   ├── burnorhold.js
+ │   └── liquiditymaze.js
+ ├── shop/                # (existant, inchangé)
+ └── pumparena/           # (existant, inchangé)
+
+ ---
+ Phase 3 : Refactorisation API Routes
+
+ 3.1 Structure cible
+
+ api/
+ ├── index.js             # Entry point (réduit à ~200 lignes)
+ ├── routes/              # NOUVEAU
+ │   ├── index.js         # Agrégateur de routes
+ │   ├── auth.js          # 6 routes
+ │   ├── shop.js          # 25 routes (v1 + v2)
+ │   ├── games.js         # 7 routes
+ │   ├── leaderboard.js   # 7 routes
+ │   ├── ecosystem.js     # 9 routes
+ │   ├── assets.js        # 12 routes
+ │   ├── transactions.js  # 7 routes
+ │   ├── notifications.js # 12 routes
+ │   ├── webhooks.js      # 4 routes
+ │   ├── referrals.js     # 5 routes
+ │   └── admin/           # 50+ routes
+ │       ├── index.js
+ │       ├── metrics.js
+ │       ├── cache.js
+ │       ├── config.js
+ │       ├── flags.js
+ │       ├── audit.js
+ │       ├── sessions.js
+ │       └── misc.js
+ ├── middleware/          # NOUVEAU
+ │   ├── index.js         # Export centralisé
+ │   ├── auth.js          # authMiddleware, optionalAuth
+ │   ├── rateLimiting.js  # Tous les rate limiters
+ │   ├── validation.js    # Input validation helpers
+ │   └── errorHandler.js  # Centralized error handling
+ └── services/            # (existant, inchangé)
+
+ 3.2 Template fichier route
+
+ // api/routes/auth.js
+ 'use strict';
+
+ const express = require('express');
+ const router = express.Router();
+
+ // Services
+ const auth = require('../services/auth');
+ const helius = require('../services/helius');
+
+ // Middleware
+ const { authMiddleware } = require('../middleware/auth');
+ const { authLimiter } = require('../middleware/rateLimiting');
+
+ // POST /api/auth/challenge
+ router.post('/challenge', authLimiter, async (req, res) => {
+     try {
+         const { wallet } = req.body;
+         if (!wallet) {
+             return res.status(400).json({ error: 'Wallet required' });
+         }
+         const challenge = await auth.generateChallenge(wallet);
+         res.json(challenge);
+     } catch (error) {
+         res.status(500).json({ error: 'Failed to generate challenge' });
+     }
+ });
+
+ // ... autres routes
+
+ module.exports = router;
+
+ 3.3 Agrégateur de routes
+
+ // api/routes/index.js
+ 'use strict';
+
+ const authRoutes = require('./auth');
+ const shopRoutes = require('./shop');
+ const gamesRoutes = require('./games');
+ const leaderboardRoutes = require('./leaderboard');
+ const ecosystemRoutes = require('./ecosystem');
+ const assetsRoutes = require('./assets');
+ const transactionsRoutes = require('./transactions');
+ const notificationsRoutes = require('./notifications');
+ const webhooksRoutes = require('./webhooks');
+ const referralsRoutes = require('./referrals');
+ const adminRoutes = require('./admin');
+
+ module.exports = (app) => {
+     app.use('/api/auth', authRoutes);
+     app.use('/api/shop', shopRoutes);
+     app.use('/api/game', gamesRoutes);
+     app.use('/api/leaderboard', leaderboardRoutes);
+     app.use('/api/ecosystem', ecosystemRoutes);
+     app.use('/api/assets', assetsRoutes);
+     app.use('/api/transactions', transactionsRoutes);
+     app.use('/api/notifications', notificationsRoutes);
+     app.use('/api/webhook', webhooksRoutes);
+     app.use('/api/referrals', referralsRoutes);
+     app.use('/api/admin', adminRoutes);
+ };
+
+ 3.4 Index.js simplifié
+
+ // api/index.js (après refactorisation)
+ 'use strict';
+
+ const express = require('express');
+ const helmet = require('helmet');
+ const cors = require('cors');
+ const cookieParser = require('cookie-parser');
+
+ const app = express();
+
+ // Global middleware
+ app.use(helmet({ /* config */ }));
+ app.use(cors({ /* config */ }));
+ app.use(express.json({ limit: '1mb' }));
+ app.use(cookieParser());
+
+ // Custom middleware
+ const { metricsMiddleware } = require('./middleware');
+ const { generalLimiter } = require('./middleware/rateLimiting');
+ const { errorHandler } = require('./middleware/errorHandler');
+
+ app.use(metricsMiddleware);
+ app.use(generalLimiter);
+
+ // Routes
+ require('./routes')(app);
+
+ // Error handling
+ app.use(errorHandler);
+
+ module.exports = app;
+
+ ---
+ Phase 4 : Migration Incrémentale
+
+ Étape 1 : Préparation (sans casser l'existant)
+
+ 1. Créer js/games/shared/ avec les utilitaires extraits
+ 2. Créer js/games/engines/index.js (coordinateur vide)
+ 3. Tester que tout fonctionne encore
+
+ Étape 2 : Migration d'un jeu pilote
+
+ 1. Extraire TokenCatcher (le plus simple, ~560 lignes)
+ 2. Mettre à jour engine.js pour utiliser le nouveau module
+ 3. Tester exhaustivement
+ 4. Valider le pattern
+
+ Étape 3 : Migration progressive des autres jeux
+
+ 1. Un jeu à la fois
+ 2. Tests après chaque extraction
+ 3. Commit après chaque jeu migré
+
+ Étape 4 : Nettoyage engine.js
+
+ 1. Supprimer le code migré
+ 2. Garder uniquement le switch de routing
+ 3. Ou supprimer complètement si le coordinateur le remplace
+
+ Étape 5 : Migration API
+
+ 1. Créer api/routes/ et api/middleware/
+ 2. Extraire un domaine à la fois (commencer par auth)
+ 3. Tests après chaque extraction
+ 4. Réduire progressivement api/index.js
+
+ ---
+ Ordre d'Exécution Recommandé
+ ┌───────┬──────────────────────────┬────────┬───────────────┐
+ │ Phase │          Action          │ Risque │ Durée estimée │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 1.1   │ Créer shared/            │ Faible │ 2h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 1.2   │ Créer engines/index.js   │ Faible │ 1h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 2.1   │ Extraire TokenCatcher    │ Moyen  │ 2h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 2.2   │ Tester TokenCatcher      │ -      │ 30min         │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 2.3   │ Extraire autres jeux (9) │ Moyen  │ 8h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 3.1   │ Créer middleware/        │ Faible │ 1h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 3.2   │ Créer routes/auth.js     │ Moyen  │ 1h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 3.3   │ Extraire autres routes   │ Moyen  │ 4h            │
+ ├───────┼──────────────────────────┼────────┼───────────────┤
+ │ 4.0   │ Tests finaux             │ -      │ 2h            │
+ └───────┴──────────────────────────┴────────┴───────────────┘
+ Total estimé : ~21h de travail
+
+ ---
+ Fichiers Critiques à Modifier
+
+ Frontend (Engine)
+
+ - js/games/engine.js → Extraction progressive
+ - games.html → Mettre à jour les imports scripts
+
+ Backend (API)
+
+ - api/index.js → Réduction progressive
+ - Aucun changement sur services/ (déjà modulaire)
+
+ ---
+ Vérification
+
+ Tests manuels
+
+ 1. Lancer npm run dev
+ 2. Tester chaque jeu : démarrage, gameplay, scoring, fin de partie
+ 3. Tester le mode compétitif (wallet connecté)
+ 4. Vérifier les leaderboards
+ 5. Tester le shop (achat, équipement)
+
+ Tests API
+
+ # Auth
+ curl -X POST http://localhost:3001/api/auth/challenge -d '{"wallet":"..."}'
+
+ # Shop
+ curl http://localhost:3001/api/shop/catalog
+
+ # Games
+ curl -X POST http://localhost:3001/api/game/start -d '{"gameId":"tokencatcher"}'
+
+ # Ecosystem
+ curl http://localhost:3001/api/ecosystem/stats
+
+ Tests automatisés
+
+ npm test
+
+ ---
+ Rollback Strategy
+
+ Si problème critique :
+ 1. Git revert du dernier commit
+ 2. L'ancien engine.js reste fonctionnel jusqu'à suppression finale
+ 3. Chaque phase est indépendante et réversible
+
+ ---
+ Notes Importantes
+
+ 1. Ne pas modifier state.js - c'est le coeur de la sécurité
+ 2. Ne pas modifier server.cjs - sécurité (demander validation)
+ 3. Garder les if-else explicites - convention du projet
+ 4. Pas de bundler - vanilla JS, chargement séquentiel
+ 5. Tester après chaque extraction - pas de batch
+ 6. Commit fréquents - 1 jeu = 1 commit
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+ Requested permissions:
+   · Bash(prompt: run tests)
+   · Bash(prompt: start dev server)
+   · Bash(prompt: git status and diff)
+   · Bash(prompt: git commit changes)
+
+ Would you like to proceed?
+
+ ❯ 1. Yes, clear context and auto-accept edits (shift+tab)
+   2. Yes, auto-accept edits
+   3. Yes, manually approve edits
+   4. Type here to tell Claude what to change
+
+
+
+
+
+-----------
+
+
+
+❯ Implement the following plan:
+
+  # Plan de Refactorisation ASDF-Web
+
+  ## Objectif
+  Refactoriser l'architecture pour suivre le pattern "1 factory par produit fini" :
+  1. **Engine.js** (8513 lignes) → Modules séparés par jeu + coordinateur
+  2. **API/index.js** (3000+ lignes) → Routes séparées par domaine
+
+  ## Philosophie
+  - Qualité > Quantité
+  - If-else explicites (lisibilité)
+  - 1 factory par produit fini
+  - Security by design
+  - Modulaire et scalable
+
+  ---
+
+  ## Phase 1 : Extraction du Code Partagé (Engine)
+
+  ### 1.1 Créer `js/games/shared/index.js` - Utilitaires communs
+
+  **Fichiers à créer :**
+  ```
+  js/games/shared/
+  ├── index.js          # Export centralisé
+  ├── lifecycle.js      # startGame, stopGame, endGame
+  ├── scoring.js        # updateScore, recordGameAction, recordScoreUpdate
+  ├── validation.js     # sanitizeNumber, isValidGameId
+  ├── canvas.js         # CanvasManager (setup, resize)
+  ├── input.js          # InputManager (keyboard, mouse, cleanup)
+  └── intervals.js      # IntervalManager (tracking, cleanup)
+  ```
+
+  **Code à extraire de engine.js :**
+
+  | Fonction | Lignes | Destination |
+  |----------|--------|-------------|
+  | `sanitizeNumber()` | 17-21 | shared/validation.js |
+  | `startGame()` | 23-62 | shared/lifecycle.js |
+  | `stopGame()` | 121-131 | shared/lifecycle.js |
+  | `endGame()` | 145-290 | shared/lifecycle.js |
+  | `updateScore()` | 133-143 | shared/scoring.js |
+  | `recordGameAction()` | 67-72 | shared/scoring.js |
+  | `recordScoreUpdate()` | 77-82 | shared/scoring.js |
+
+  **Dépendances externes à injecter :**
+  - `appState` (state.js)
+  - `activeGameModes` (state.js)
+  - `AntiCheat` (utils.js)
+  - `ApiClient` (api.js)
+  - `CONFIG` (config.js)
+  - `saveState()` (state.js)
+
+  ### 1.2 Créer le Coordinateur `js/games/engines/index.js`
+
+  **Pattern à suivre (inspiré de ShopV2) :**
+  ```javascript
+  const GameEngines = {
+  // Module references
+  tokencatcher: null,
+  burnrunner: null,
+  // ... autres jeux
+
+  // Shared modules
+  lifecycle: null,
+  scoring: null,
+
+  config: {
+  debug: false
+  },
+
+  initialized: false,
+
+  async init(options = {}) {
+  if (this.initialized) return;
+
+  // Get references from window
+  this.lifecycle = window.GameLifecycle;
+  this.scoring = window.GameScoring;
+
+  // Validate critical modules
+  if (!this.lifecycle || !this.scoring) {
+  throw new Error('Required shared modules not loaded');
+  }
+
+  this.initialized = true;
+  console.log('[GameEngines] Initialized');
+  },
+
+  // Router (remplace le switch dans initializeGame)
+  start(gameId) {
+  const engine = this[gameId];
+  if (engine && typeof engine.start === 'function') {
+  engine.start(gameId);
+  } else {
+  console.warn(`[GameEngines] Unknown game: ${gameId}`);
+  }
+  },
+
+  stop(gameId) {
+  const engine = this[gameId];
+  if (engine && typeof engine.stop === 'function') {
+  engine.stop(gameId);
+  }
+  }
+  };
+  ```
+
+  ---
+
+  ## Phase 2 : Extraction des Jeux Individuels
+
+  ### 2.1 Structure de fichier par jeu
+
+  **Template pour chaque jeu :**
+  ```javascript
+  // js/games/engines/tokencatcher.js
+  'use strict';
+
+  const TokenCatcher = {
+  gameId: 'tokencatcher',
+  state: null,
+  canvas: null,
+  ctx: null,
+  intervals: [],
+  listeners: [],
+
+  start(gameId) {
+  // Setup canvas
+  // Initialize game state
+  // Start game loop
+  // Register intervals
+  },
+
+  stop() {
+  // Clear intervals
+  // Remove event listeners
+  // Cleanup state
+  },
+
+  // Game-specific methods
+  spawnToken() { },
+  update() { },
+  draw() { },
+  handleInput(e) { }
+  };
+
+  // Export
+  if (typeof window !== 'undefined') {
+  window.TokenCatcher = TokenCatcher;
+  }
+  ```
+
+  ### 2.2 Ordre d'extraction (par taille décroissante)
+
+  | Priorité | Jeu | Lignes | Fichier |
+  |----------|-----|--------|---------|
+  | 1 | PumpArena | ~2800 | pumparena.js |
+  | 2 | BurnRunner | ~1340 | burnrunner.js |
+  | 3 | LiquidityMaze | ~690 | liquiditymaze.js |
+  | 4 | BurnOrHold | ~610 | burnorhold.js |
+  | 5 | DexDash | ~590 | dexdash.js |
+  | 6 | TokenCatcher | ~560 | tokencatcher.js |
+  | 7 | WhaleWatch | ~520 | whalewatch.js |
+  | 8 | CryptoHeist | ~420 | cryptoheist.js |
+  | 9 | ScamBlaster | ~380 | scamblaster.js |
+  | 10 | StakeStacker | ~260 | stakestacker.js |
+
+  ### 2.3 Fichiers finaux
+
+  ```
+  js/games/
+  ├── main.js              # Entry point (existant, inchangé)
+  ├── state.js             # État global (existant, inchangé)
+  ├── config.js            # Configuration (existant, inchangé)
+  ├── api.js               # Client API (existant)
+  ├── utils.js             # Utilitaires (existant)
+  ├── shared/              # NOUVEAU
+  │   ├── index.js
+  │   ├── lifecycle.js
+  │   ├── scoring.js
+  │   ├── validation.js
+  │   ├── canvas.js
+  │   ├── input.js
+  │   └── intervals.js
+  ├── engines/             # NOUVEAU
+  │   ├── index.js         # Coordinateur
+  │   ├── tokencatcher.js
+  │   ├── burnrunner.js
+  │   ├── scamblaster.js
+  │   ├── cryptoheist.js
+  │   ├── pumparena.js
+  │   ├── whalewatch.js
+  │   ├── stakestacker.js
+  │   ├── dexdash.js
+  │   ├── burnorhold.js
+  │   └── liquiditymaze.js
+  ├── shop/                # (existant, inchangé)
+  └── pumparena/           # (existant, inchangé)
+  ```
+
+  ---
+
+  ## Phase 3 : Refactorisation API Routes
+
+  ### 3.1 Structure cible
+
+  ```
+  api/
+  ├── index.js             # Entry point (réduit à ~200 lignes)
+  ├── routes/              # NOUVEAU
+  │   ├── index.js         # Agrégateur de routes
+  │   ├── auth.js          # 6 routes
+  │   ├── shop.js          # 25 routes (v1 + v2)
+  │   ├── games.js         # 7 routes
+  │   ├── leaderboard.js   # 7 routes
+  │   ├── ecosystem.js     # 9 routes
+  │   ├── assets.js        # 12 routes
+  │   ├── transactions.js  # 7 routes
+  │   ├── notifications.js # 12 routes
+  │   ├── webhooks.js      # 4 routes
+  │   ├── referrals.js     # 5 routes
+  │   └── admin/           # 50+ routes
+  │       ├── index.js
+  │       ├── metrics.js
+  │       ├── cache.js
+  │       ├── config.js
+  │       ├── flags.js
+  │       ├── audit.js
+  │       ├── sessions.js
+  │       └── misc.js
+  ├── middleware/          # NOUVEAU
+  │   ├── index.js         # Export centralisé
+  │   ├── auth.js          # authMiddleware, optionalAuth
+  │   ├── rateLimiting.js  # Tous les rate limiters
+  │   ├── validation.js    # Input validation helpers
+  │   └── errorHandler.js  # Centralized error handling
+  └── services/            # (existant, inchangé)
+  ```
+
+  ### 3.2 Template fichier route
+
+  ```javascript
+  // api/routes/auth.js
+  'use strict';
+
+  const express = require('express');
+  const router = express.Router();
+
+  // Services
+  const auth = require('../services/auth');
+  const helius = require('../services/helius');
+
+  // Middleware
+  const { authMiddleware } = require('../middleware/auth');
+  const { authLimiter } = require('../middleware/rateLimiting');
+
+  // POST /api/auth/challenge
+  router.post('/challenge', authLimiter, async (req, res) => {
+  try {
+  const { wallet } = req.body;
+  if (!wallet) {
+  return res.status(400).json({ error: 'Wallet required' });
+  }
+  const challenge = await auth.generateChallenge(wallet);
+  res.json(challenge);
+  } catch (error) {
+  res.status(500).json({ error: 'Failed to generate challenge' });
+  }
+  });
+
+  // ... autres routes
+
+  module.exports = router;
+  ```
+
+  ### 3.3 Agrégateur de routes
+
+  ```javascript
+  // api/routes/index.js
+  'use strict';
+
+  const authRoutes = require('./auth');
+  const shopRoutes = require('./shop');
+  const gamesRoutes = require('./games');
+  const leaderboardRoutes = require('./leaderboard');
+  const ecosystemRoutes = require('./ecosystem');
+  const assetsRoutes = require('./assets');
+  const transactionsRoutes = require('./transactions');
+  const notificationsRoutes = require('./notifications');
+  const webhooksRoutes = require('./webhooks');
+  const referralsRoutes = require('./referrals');
+  const adminRoutes = require('./admin');
+
+  module.exports = (app) => {
+  app.use('/api/auth', authRoutes);
+  app.use('/api/shop', shopRoutes);
+  app.use('/api/game', gamesRoutes);
+  app.use('/api/leaderboard', leaderboardRoutes);
+  app.use('/api/ecosystem', ecosystemRoutes);
+  app.use('/api/assets', assetsRoutes);
+  app.use('/api/transactions', transactionsRoutes);
+  app.use('/api/notifications', notificationsRoutes);
+  app.use('/api/webhook', webhooksRoutes);
+  app.use('/api/referrals', referralsRoutes);
+  app.use('/api/admin', adminRoutes);
+  };
+  ```
+
+  ### 3.4 Index.js simplifié
+
+  ```javascript
+  // api/index.js (après refactorisation)
+  'use strict';
+
+  const express = require('express');
+  const helmet = require('helmet');
+  const cors = require('cors');
+  const cookieParser = require('cookie-parser');
+
+  const app = express();
+
+  // Global middleware
+  app.use(helmet({ /* config */ }));
+  app.use(cors({ /* config */ }));
+  app.use(express.json({ limit: '1mb' }));
+  app.use(cookieParser());
+
+  // Custom middleware
+  const { metricsMiddleware } = require('./middleware');
+  const { generalLimiter } = require('./middleware/rateLimiting');
+  const { errorHandler } = require('./middleware/errorHandler');
+
+  app.use(metricsMiddleware);
+  app.use(generalLimiter);
+
+  // Routes
+  require('./routes')(app);
+
+  // Error handling
+  app.use(errorHandler);
+
+  module.exports = app;
+  ```
+
+  ---
+
+  ## Phase 4 : Migration Incrémentale
+
+  ### Étape 1 : Préparation (sans casser l'existant)
+  1. Créer `js/games/shared/` avec les utilitaires extraits
+  2. Créer `js/games/engines/index.js` (coordinateur vide)
+  3. Tester que tout fonctionne encore
+
+  ### Étape 2 : Migration d'un jeu pilote
+  1. Extraire `TokenCatcher` (le plus simple, ~560 lignes)
+  2. Mettre à jour `engine.js` pour utiliser le nouveau module
+  3. Tester exhaustivement
+  4. Valider le pattern
+
+  ### Étape 3 : Migration progressive des autres jeux
+  1. Un jeu à la fois
+  2. Tests après chaque extraction
+  3. Commit après chaque jeu migré
+
+  ### Étape 4 : Nettoyage engine.js
+  1. Supprimer le code migré
+  2. Garder uniquement le switch de routing
+  3. Ou supprimer complètement si le coordinateur le remplace
+
+  ### Étape 5 : Migration API
+  1. Créer `api/routes/` et `api/middleware/`
+  2. Extraire un domaine à la fois (commencer par `auth`)
+  3. Tests après chaque extraction
+  4. Réduire progressivement `api/index.js`
+
+  ---
+
+  ## Ordre d'Exécution Recommandé
+
+  | Phase | Action | Risque | Durée estimée |
+  |-------|--------|--------|---------------|
+  | 1.1 | Créer shared/ | Faible | 2h |
+  | 1.2 | Créer engines/index.js | Faible | 1h |
+  | 2.1 | Extraire TokenCatcher | Moyen | 2h |
+  | 2.2 | Tester TokenCatcher | - | 30min |
+  | 2.3 | Extraire autres jeux (9) | Moyen | 8h |
+  | 3.1 | Créer middleware/ | Faible | 1h |
+  | 3.2 | Créer routes/auth.js | Moyen | 1h |
+  | 3.3 | Extraire autres routes | Moyen | 4h |
+  | 4.0 | Tests finaux | - | 2h |
+
+  **Total estimé : ~21h de travail**
+
+  ---
+
+  ## Fichiers Critiques à Modifier
+
+  ### Frontend (Engine)
+  - `js/games/engine.js` → Extraction progressive
+  - `games.html` → Mettre à jour les imports scripts
+
+  ### Backend (API)
+  - `api/index.js` → Réduction progressive
+  - Aucun changement sur `services/` (déjà modulaire)
+
+  ---
+
+  ## Vérification
+
+  ### Tests manuels
+  1. Lancer `npm run dev`
+  2. Tester chaque jeu : démarrage, gameplay, scoring, fin de partie
+  3. Tester le mode compétitif (wallet connecté)
+  4. Vérifier les leaderboards
+  5. Tester le shop (achat, équipement)
+
+  ### Tests API
+  ```bash
+  # Auth
+  curl -X POST http://localhost:3001/api/auth/challenge -d '{"wallet":"..."}'
+
+  # Shop
+  curl http://localhost:3001/api/shop/catalog
+
+  # Games
+  curl -X POST http://localhost:3001/api/game/start -d '{"gameId":"tokencatcher"}'
+
+  # Ecosystem
+  curl http://localhost:3001/api/ecosystem/stats
+  ```
+
+  ### Tests automatisés
+  ```bash
+  npm test
+  ```
+
+  ---
+
+  ## Rollback Strategy
+
+  Si problème critique :
+  1. Git revert du dernier commit
+  2. L'ancien `engine.js` reste fonctionnel jusqu'à suppression finale
+  3. Chaque phase est indépendante et réversible
+
+  ---
+
+  ## Notes Importantes
+
+  1. **Ne pas modifier `state.js`** - c'est le coeur de la sécurité
+  2. **Ne pas modifier `server.cjs`** - sécurité (demander validation)
+  3. **Garder les if-else explicites** - convention du projet
+  4. **Pas de bundler** - vanilla JS, chargement séquentiel
+  5. **Tester après chaque extraction** - pas de batch
+  6. **Commit fréquents** - 1 jeu = 1 commit
+
+
+  If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full
+  transcript at: C:\Users\lafouille\.claude\projects\C--Users-lafouille-Documents-Projet-ASDF-ASDF-Web\d7b9676b-58d1-4e5f-aaa9-cde1d399e6ae.jsonl

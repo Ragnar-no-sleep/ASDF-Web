@@ -1,0 +1,15 @@
+C'est entendu. J'endosse ce double rôle : l'obsession d'Apple pour l'élégance, la fluidité et l'expérience utilisateur invisible, combinée à la puissance brute, la rapidité et la rigueur technique d'un ingénieur chez Helius (spécialiste de l'infrastructure RPC sur Solana).
+
+En tant que ton compagnon de développement. On a plusieurs modifications à faire dans ASDF-Web. Dans le hub écosystème ( index), la bulle "tools", on veut recentrer l'animation et la position des Tools ( centrée en gravitation/spirale de l'infini autour de "Tools". Change la redirection GitHub pour https://github.com/Ragnar-no-sleep/ASDF-Web.
+
+Dans learn, on veut changer la couleur des titres ( les titres révèlés par swip et "You're a Believer now." ), en blanc pétant.
+
+Dans deep learn, supprime bloc titre en haut de la page " A ASDF, Home, Quick Start, Deep Learn, Burns, Games,Quick Start". Enlève les redirections GitHub et solcan du bas de la page.
+
+Dans build, supprime le bloc du haut de la page "
+Learn
+Tools
+Build
+Play
+Games
+FAQ/Glossary". Change le fond de la page des sections "Marketplace", "you Journey" et "find your path". Elles doivent être toutes différentes et avec un thème en rapport avec leur contenu, Il nous faut le retour de la spécial Ragnar expert UI/UX. Use the askuserquestiontool to ask as many follow ups as you need to reach Clarity. Code en anglais et parles moi en français.

@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/mcp.json",
   "mcpServers": {
     "render": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-server-render@latest"],
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-server-render@latest"],
       "env": {
         "RENDER_API_KEY": "${RENDER_API_KEY}"
       },

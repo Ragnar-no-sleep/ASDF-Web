@@ -1,0 +1,46 @@
+How to Undo git add and git Commit Before Push
+Undo Changes in Git
+Sometimes, you may find yourself in a situation where you've added and committed changes in Git, but you realise you need to undo those actions before pushing them to the remote repository. This guide walks you through the steps to unstage files and undo commits in Git.
+
+Here's how you can undo these actions:
+
+1. Undo git add (Unstage files)
+If you’ve added files using git add but haven’t committed yet, you can unstage them:
+
+To unstage all files:
+
+git reset
+
+To unstage specific files:
+
+git reset <file>
+
+2. Undo git commit (Uncommit changes)
+If you’ve already committed the changes but haven’t pushed, you can undo the commit. The changes will remain in your working directory, so you can modify them or add more changes.
+
+To undo the last commit but keep the changes in your working directory:
+
+git reset --soft HEAD~1
+
+If you want to undo the commit and also unstage the changes:
+
+git reset HEAD~1
+
+3. Undo commit and discard changes
+If you want to undo the commit and discard the changes completely:
+
+git reset --hard HEAD~
+
+Note: This will delete the changes, so use it carefully.
+
+Git status
+
+Ça me montre quels fichiers sont en attente, que j'ai peut-être oublié de commiter, ce qui me permet de commenter ensuite.
+
+Git log —oneline
+
+Ça me donne la liste actuelle des références SHA1 pour que je puisse simplement faire défiler.
+
+Git reset —hard HEAD~
+
+Vous pouvez ajouter un nombre après le tilde, ou simplement remplacer HEAD~ par le SHA auquel vous voulez revenir. À ce stade, vous pouvez pousser juste ce SHA vers GitHub. Et puis, comme vous ne voulez pas perdre votre travail, allez au bon Sha ou, mieux encore, créez une nouvelle branche et corrigez tout (peut-être même un rebase squash) et faites une PR.
