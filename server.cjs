@@ -45,7 +45,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
-        // API connections
+        // API connections + CDN for source maps
         connectSrc: [
           "'self'",
           'https://*.solana.com',
@@ -54,6 +54,7 @@ app.use(
           'https://api.asdf-games.com',
           'https://asdf-web.onrender.com',
           'https://asdf-api.onrender.com',
+          'https://cdnjs.cloudflare.com',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],

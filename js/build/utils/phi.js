@@ -43,6 +43,11 @@ export const GOLDEN_ANGLE = 2.399963229728653; // ~137.5°
  * @returns {Array} Array of {x, y, item, angle, radius}
  */
 export function calculatePhiPositions(items, centerX, centerY, baseRadius = 40, radiusStep = 8) {
+  // Defensive: ensure items is an array
+  if (!Array.isArray(items)) {
+    console.warn('[Phi] calculatePhiPositions: items is not an array, converting:', typeof items);
+    items = items ? Object.values(items) : [];
+  }
   return items.map((item, index) => {
     const angle = index * GOLDEN_ANGLE;
     const radius = baseRadius + (index * radiusStep);
@@ -69,6 +74,11 @@ export function calculatePhiPositions(items, centerX, centerY, baseRadius = 40, 
  * @returns {Array} Array of {x, y, item, angle, radius}
  */
 export function calculateFermatSpiral(items, centerX, centerY, scale = 10) {
+  // Defensive: ensure items is an array
+  if (!Array.isArray(items)) {
+    console.warn('[Phi] calculateFermatSpiral: items is not an array, converting:', typeof items);
+    items = items ? Object.values(items) : [];
+  }
   return items.map((item, index) => {
     const n = index + 1; // Start from 1 to avoid center collision
     const angle = n * GOLDEN_ANGLE;
