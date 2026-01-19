@@ -347,7 +347,8 @@ const ThreeRenderer = {
     scene.add(snowGroup);
 
     // Load projects and create islands
-    const projects = await DataAdapter.getProjects();
+    const projectsData = await DataAdapter.getProjects();
+    const projects = Object.values(projectsData);
     await this.createProjectIslands(projects);
 
     console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
