@@ -1043,30 +1043,6 @@ class StoryGateManager {
 
 const storyGateManager = new StoryGateManager();
 
-// Public API
-export {
-    STORY_GATES,
-    STORY_GATE_CONSTANTS,
-    storyGateManager
-};
-
-// Convenience functions
-export function checkForStoryGates(gameState) {
-    return storyGateManager.checkForTriggeredGates(gameState);
-}
-
-export function startStoryGate(gate, gameState) {
-    return storyGateManager.startGate(gate, gameState);
-}
-
-export function processStoryGateChoice(choiceId, gameState) {
-    return storyGateManager.processChoice(choiceId, gameState);
-}
-
-export function getActiveStoryGate() {
-    return storyGateManager.activeGate;
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================
@@ -1078,26 +1054,10 @@ window.PumpArenaStoryGates = {
     checkForStoryGates: (gs) => storyGateManager.checkForTriggeredGates(gs),
     startStoryGate: (g, gs) => storyGateManager.startGate(g, gs),
     processStoryGateChoice: (c, gs) => storyGateManager.processChoice(c, gs),
-    getActiveStoryGate: () => storyGateManager.activeGate
+    getActiveStoryGate: () => storyGateManager.activeGate,
+    canPlayerLeaveFaction: (gs) => storyGateManager.canLeaveFaction(gs),
+    getRecruitmentOrder: (gs) => storyGateManager.getRecruitmentOrder(gs),
+    getAvailableRecruitmentGates: (gs) => storyGateManager.getAvailableRecruitmentGates(gs),
+    getStoryGate: (id) => STORY_GATES[id] || null,
+    getGatesForFaction: (fid) => Object.values(STORY_GATES).filter(g => g.factionId === fid)
 };
-
-export function canPlayerLeaveFaction(gameState) {
-    return storyGateManager.canLeaveFaction(gameState);
-}
-
-export function getRecruitmentOrder(gameState) {
-    return storyGateManager.getRecruitmentOrder(gameState);
-}
-
-export function getAvailableRecruitmentGates(gameState) {
-    return storyGateManager.getAvailableRecruitmentGates(gameState);
-}
-
-// Gate lookup
-export function getStoryGate(gateId) {
-    return STORY_GATES[gateId] || null;
-}
-
-export function getGatesForFaction(factionId) {
-    return Object.values(STORY_GATES).filter(g => g.factionId === factionId);
-}
