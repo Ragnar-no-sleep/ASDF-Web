@@ -9,7 +9,7 @@
 'use strict';
 
 // Fibonacci sequence for particle parameters
-const FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+const PARTICLES_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
 
 // ============================================
 // PARTICLE EFFECT DEFINITIONS
@@ -19,11 +19,11 @@ const PARTICLE_EFFECTS = {
     // Ember effect - floating fire particles
     EMBER: {
         id: 'ember',
-        count: FIB[7],           // 13 particles
-        speed: FIB[8] / 10,      // 2.1
+        count: PARTICLES_FIB[7],           // 13 particles
+        speed: PARTICLES_FIB[8] / 10,      // 2.1
         size: [3, 8],
         colors: ['#f97316', '#ea580c', '#fb923c', '#fdba74'],
-        lifetime: FIB[9] * 100,  // 3400ms
+        lifetime: PARTICLES_FIB[9] * 100,  // 3400ms
         spawn: 'bottom',
         direction: 'up',
         spread: 0.3,
@@ -34,11 +34,11 @@ const PARTICLE_EFFECTS = {
     // Sparkle effect - random twinkling
     SPARKLE: {
         id: 'sparkle',
-        count: FIB[8],           // 21 particles
-        speed: FIB[7] / 10,      // 1.3
+        count: PARTICLES_FIB[8],           // 21 particles
+        speed: PARTICLES_FIB[7] / 10,      // 1.3
         size: [2, 5],
         colors: ['#fbbf24', '#ffffff', '#fde68a', '#fef3c7'],
-        lifetime: FIB[8] * 100,  // 2100ms
+        lifetime: PARTICLES_FIB[8] * 100,  // 2100ms
         spawn: 'random',
         direction: 'random',
         spread: 1.0,
@@ -49,11 +49,11 @@ const PARTICLE_EFFECTS = {
     // Aura glow - radial glow effect
     AURA_GLOW: {
         id: 'aura_glow',
-        count: FIB[6],           // 8 particles
+        count: PARTICLES_FIB[6],           // 8 particles
         speed: 0.5,
         size: [20, 40],
         colors: ['#a855f7', '#8b5cf6', '#c084fc'],
-        lifetime: FIB[10] * 100, // 5500ms
+        lifetime: PARTICLES_FIB[10] * 100, // 5500ms
         spawn: 'center',
         direction: 'radial',
         opacity: 0.3,
@@ -64,11 +64,11 @@ const PARTICLE_EFFECTS = {
     // Cosmic effect - orbiting particles
     COSMIC: {
         id: 'cosmic',
-        count: FIB[9],           // 34 particles
+        count: PARTICLES_FIB[9],           // 34 particles
         speed: 0.8,
         size: [1, 3],
         colors: ['#60a5fa', '#818cf8', '#c084fc', '#ffffff', '#f472b6'],
-        lifetime: FIB[11] * 100, // 8900ms
+        lifetime: PARTICLES_FIB[11] * 100, // 8900ms
         spawn: 'orbit',
         direction: 'orbit',
         trail: true,
@@ -78,11 +78,11 @@ const PARTICLE_EFFECTS = {
     // Fire effect - intense flames
     FIRE: {
         id: 'fire',
-        count: FIB[8],           // 21 particles
-        speed: FIB[7] / 8,       // ~1.6
+        count: PARTICLES_FIB[8],           // 21 particles
+        speed: PARTICLES_FIB[7] / 8,       // ~1.6
         size: [4, 12],
         colors: ['#ef4444', '#f97316', '#fbbf24', '#fef3c7'],
-        lifetime: FIB[7] * 100,  // 1300ms
+        lifetime: PARTICLES_FIB[7] * 100,  // 1300ms
         spawn: 'bottom',
         direction: 'up',
         spread: 0.4,
@@ -94,11 +94,11 @@ const PARTICLE_EFFECTS = {
     // Electric effect - lightning sparks
     ELECTRIC: {
         id: 'electric',
-        count: FIB[6],           // 8 particles
-        speed: FIB[9] / 10,      // 3.4
+        count: PARTICLES_FIB[6],           // 8 particles
+        speed: PARTICLES_FIB[9] / 10,      // 3.4
         size: [1, 3],
         colors: ['#38bdf8', '#22d3ee', '#ffffff', '#a5f3fc'],
-        lifetime: FIB[5] * 100,  // 500ms
+        lifetime: PARTICLES_FIB[5] * 100,  // 500ms
         spawn: 'random',
         direction: 'random',
         spread: 2.0,
@@ -109,11 +109,11 @@ const PARTICLE_EFFECTS = {
     // Divine effect - ascending light
     DIVINE: {
         id: 'divine',
-        count: FIB[7],           // 13 particles
-        speed: FIB[6] / 10,      // 0.8
+        count: PARTICLES_FIB[7],           // 13 particles
+        speed: PARTICLES_FIB[6] / 10,      // 0.8
         size: [5, 15],
         colors: ['#fef9c3', '#fef08a', '#ffffff', '#fde68a'],
-        lifetime: FIB[10] * 100, // 5500ms
+        lifetime: PARTICLES_FIB[10] * 100, // 5500ms
         spawn: 'bottom',
         direction: 'up',
         spread: 0.2,

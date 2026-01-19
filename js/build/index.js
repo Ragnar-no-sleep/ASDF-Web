@@ -21,6 +21,8 @@ import { QuizComponent } from './components/quiz.js';
 import { TracksComponent } from './components/tracks.js';
 import { ProjectPanelComponent } from './components/project-panel.js';
 import { FactoryPanelComponent } from './components/factory-panel.js';
+import { RendererFactory } from './renderer/index.js';
+import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
 import {
   escapeHtml,
@@ -58,6 +60,8 @@ const BuildApp = {
     tracks: TracksComponent,
     projectPanel: ProjectPanelComponent,
     factoryPanel: FactoryPanelComponent,
+    renderer: RendererFactory,
+    animations: Animations,
     handlers: EventHandlers
   },
 
@@ -86,6 +90,17 @@ const BuildApp = {
 
       // 4. Initialize tree component
       TreeComponent.init('.tree-container');
+
+      // 4b. Initialize animations module
+      await Animations.init();
+
+      // 4c. Initialize renderer (progressive enhancement)
+      const treeContainer = $('.tree-container');
+      if (treeContainer && options.enableRenderer !== false) {
+        await RendererFactory.init(treeContainer, {
+          mobileThree: options.mobileThree || false
+        });
+      }
 
       // 5. Initialize quiz component
       QuizComponent.init('#view-path');
@@ -318,6 +333,8 @@ if (typeof window !== 'undefined') {
     Tracks: TracksComponent,
     ProjectPanel: ProjectPanelComponent,
     FactoryPanel: FactoryPanelComponent,
+    Renderer: RendererFactory,
+    Animations: Animations,
     Handlers: EventHandlers
   };
 }
