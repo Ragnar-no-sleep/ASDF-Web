@@ -88,9 +88,8 @@ function setupSwipeMasks() {
       mask.classList.remove('dragging');
 
       if (currentX > width * 0.4) {
+        // Swipe reveals content only - does NOT trigger phase progression
         mask.classList.add('done');
-        const phaseNum = parseInt(mask.dataset.phase);
-        completePhaseInteraction(phaseNum, 'swipe');
       } else {
         mask.style.transform = 'translateX(0)';
       }
@@ -371,6 +370,11 @@ function setupScrollObserver() {
       if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
         const phaseId = entry.target.id;
         const phaseNum = parseInt(phaseId.replace('phase-', ''));
+
+        // Phase 1 completion: scroll to phase 2 unlocks it (no other interaction in phase 1)
+        if (phaseNum === 2 && state.currentPhase === 1 && !state.completedPhases.includes(1)) {
+          completePhaseInteraction(1, 'scroll');
+        }
 
         // Only auto-activate if it's already unlocked
         if (!entry.target.classList.contains('locked') && phaseNum !== state.currentPhase) {
