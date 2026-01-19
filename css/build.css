@@ -5968,3 +5968,278 @@ body {
     inset 0 0 30px rgba(212, 175, 55, 0.1),
     0 0 20px rgba(212, 175, 55, 0.3);
 }
+
+/* ============================================
+   INTRO POSITIONED TOOLTIPS
+   3-step guided tour pointing to real elements
+   ============================================ */
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.intro-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.intro-overlay.closing {
+  opacity: 0;
+}
+
+/* Semi-transparent backdrop */
+.intro-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+/* Spotlight cutout over target element */
+.intro-spotlight {
+  position: fixed;
+  background: transparent;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(251, 146, 60, 0.4);
+  border: 2px solid var(--accent-fire);
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+
+/* Tooltip container */
+.intro-tooltip {
+  position: fixed;
+  z-index: 2;
+  background: linear-gradient(
+    135deg,
+    rgba(26, 15, 5, 0.98) 0%,
+    rgba(45, 24, 16, 0.98) 100%
+  );
+  border: 2px solid var(--border-rust);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(234, 88, 12, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Tooltip arrow */
+.intro-tooltip-arrow {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border: 2px solid var(--border-rust);
+  transform: rotate(45deg);
+}
+
+/* Arrow positions based on tooltip position */
+.intro-tooltip[data-position="bottom"] .intro-tooltip-arrow {
+  top: -9px;
+  left: 50%;
+  margin-left: -8px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.intro-tooltip[data-position="top"] .intro-tooltip-arrow {
+  bottom: -9px;
+  left: 50%;
+  margin-left: -8px;
+  border-left: none;
+  border-top: none;
+}
+
+.intro-tooltip[data-position="left"] .intro-tooltip-arrow {
+  right: -9px;
+  top: 50%;
+  margin-top: -8px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.intro-tooltip[data-position="right"] .intro-tooltip-arrow {
+  left: -9px;
+  top: 50%;
+  margin-top: -8px;
+  border-right: none;
+  border-top: none;
+}
+
+/* Skip button */
+.intro-tooltip .intro-skip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.intro-tooltip .intro-skip:hover {
+  color: var(--text-cream);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Content */
+.intro-tooltip-content {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.intro-tooltip-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.5));
+}
+
+.intro-tooltip-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-cream);
+  margin-bottom: 8px;
+}
+
+.intro-tooltip-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* Footer with dots and CTA */
+.intro-tooltip-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(124, 45, 18, 0.3);
+}
+
+.intro-tooltip .intro-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.intro-tooltip .intro-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-rust);
+  transition: all 0.3s ease;
+}
+
+.intro-tooltip .intro-dot.active {
+  background: var(--accent-fire);
+  transform: scale(1.2);
+}
+
+.intro-tooltip .intro-dot.done {
+  background: var(--green);
+}
+
+.intro-tooltip .intro-cta {
+  background: linear-gradient(135deg, var(--accent-fire) 0%, var(--border-orange) 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.intro-tooltip .intro-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+}
+
+/* Slide animations */
+.intro-tooltip.slide-out-left {
+  transform: translateX(-100px);
+  opacity: 0;
+}
+
+.intro-tooltip.slide-out-right {
+  transform: translateX(100px);
+  opacity: 0;
+}
+
+.intro-tooltip.slide-in-left {
+  transform: translateX(-50px);
+  opacity: 0;
+}
+
+.intro-tooltip.slide-in-right {
+  transform: translateX(50px);
+  opacity: 0;
+}
+
+/* Highlighted target element */
+.intro-highlighted {
+  position: relative;
+  z-index: 10000 !important;
+  animation: introHighlightPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes introHighlightPulse {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 10px rgba(251, 146, 60, 0.5));
+  }
+  50% {
+    filter: brightness(1.15) drop-shadow(0 0 20px rgba(251, 146, 60, 0.8));
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .intro-tooltip {
+    max-width: 90vw !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .intro-tooltip[data-position="left"],
+  .intro-tooltip[data-position="right"] {
+    /* Force bottom position on mobile */
+    top: auto !important;
+    bottom: 20px !important;
+  }
+
+  .intro-tooltip-arrow {
+    display: none;
+  }
+
+  .intro-spotlight {
+    /* Simplified spotlight on mobile */
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay,
+  .intro-tooltip,
+  .intro-spotlight,
+  .intro-highlighted {
+    transition: none;
+    animation: none;
+  }
+}
