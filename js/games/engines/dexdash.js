@@ -15,6 +15,7 @@ const DexDash = {
     state: null,
     canvas: null,
     ctx: null,
+    timing: null,
     roadWidth: 380,
 
     dexLogos: ['🦄', '🦞', '🍣', '☀️', '🌊', '💎'],
@@ -57,6 +58,7 @@ const DexDash = {
         this.createArena(arena);
         this.canvas = document.getElementById('dd-canvas');
         this.ctx = this.canvas.getContext('2d');
+        this.timing = GameTiming.create();
         this.resizeCanvas();
         this.setupInput();
 
@@ -174,8 +176,9 @@ const DexDash = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps (1.0 = 16.67ms)
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
 
         const self = this;
@@ -185,27 +188,27 @@ const DexDash = {
         this.state.maxSpeed = this.state.baseMaxSpeed + Math.floor(this.state.distance / 500) * 0.5;
         this.state.maxSpeed = Math.min(12, this.state.maxSpeed);
 
-        // Gradual speed increase
+        // Gradual speed increase (frame-independent)
         const dynamicAccel = this.state.acceleration * (1 + this.state.distance / 3000);
-        this.state.player.speed = Math.min(this.state.maxSpeed, this.state.player.speed + dynamicAccel);
-        this.state.distance += this.state.player.speed * 0.3;
-        this.state.roadOffset = (this.state.roadOffset + this.state.player.speed * 2) % 40;
+        this.state.player.speed = Math.min(this.state.maxSpeed, this.state.player.speed + dynamicAccel * dt);
+        this.state.distance += this.state.player.speed * 0.3 * dt;
+        this.state.roadOffset = (this.state.roadOffset + this.state.player.speed * 2 * dt) % 40;
 
-        // Smooth movement
+        // Smooth movement (frame-independent)
         const moveSpeed = 7;
         const friction = 0.9;
 
-        if (this.state.keys.left) this.state.player.vx -= moveSpeed * 0.2;
-        if (this.state.keys.right) this.state.player.vx += moveSpeed * 0.2;
-        this.state.player.vx *= friction;
+        if (this.state.keys.left) this.state.player.vx -= moveSpeed * 0.2 * dt;
+        if (this.state.keys.right) this.state.player.vx += moveSpeed * 0.2 * dt;
+        this.state.player.vx *= Math.pow(friction, dt);
         this.state.player.vx = Math.max(-moveSpeed, Math.min(moveSpeed, this.state.player.vx));
-        this.state.player.x += this.state.player.vx;
+        this.state.player.x += this.state.player.vx * dt;
 
-        if (this.state.keys.up) this.state.player.vy -= moveSpeed * 0.15;
-        if (this.state.keys.down) this.state.player.vy += moveSpeed * 0.15;
-        this.state.player.vy *= friction;
+        if (this.state.keys.up) this.state.player.vy -= moveSpeed * 0.15 * dt;
+        if (this.state.keys.down) this.state.player.vy += moveSpeed * 0.15 * dt;
+        this.state.player.vy *= Math.pow(friction, dt);
         this.state.player.vy = Math.max(-moveSpeed * 0.7, Math.min(moveSpeed * 0.7, this.state.player.vy));
-        this.state.player.y += this.state.player.vy;
+        this.state.player.y += this.state.player.vy * dt;
 
         // Boundary collision
         const playerHalfWidth = 20;
@@ -230,9 +233,9 @@ const DexDash = {
         if (Math.random() < 0.004 * spawnMod) this.spawnBoost();
         if (this.state.distance > 250 && Math.random() < 0.003 * spawnMod) this.spawnDeathTrap();
 
-        // Update obstacles
+        // Update obstacles (frame-independent)
         this.state.obstacles = this.state.obstacles.filter(obs => {
-            obs.y += self.state.player.speed + obs.fallSpeed * self.state.difficultyMultiplier;
+            obs.y += (self.state.player.speed + obs.fallSpeed * self.state.difficultyMultiplier) * dt;
 
             const dx = obs.x - self.state.player.x;
             const dy = obs.y - self.state.player.y;
@@ -248,9 +251,9 @@ const DexDash = {
             return obs.y < self.canvas.height + 50;
         });
 
-        // Update boosts
+        // Update boosts (frame-independent)
         this.state.boosts = this.state.boosts.filter(boost => {
-            boost.y += self.state.player.speed + boost.fallSpeed * self.state.difficultyMultiplier;
+            boost.y += (self.state.player.speed + boost.fallSpeed * self.state.difficultyMultiplier) * dt;
 
             const dx = boost.x - self.state.player.x;
             const dy = boost.y - self.state.player.y;
@@ -279,10 +282,10 @@ const DexDash = {
             return boost.y < self.canvas.height + 50;
         });
 
-        // Update death traps
+        // Update death traps (frame-independent)
         this.state.deathTraps = this.state.deathTraps.filter(trap => {
-            trap.y += self.state.player.speed * 0.7 + trap.fallSpeed * self.state.difficultyMultiplier;
-            trap.pulse = (trap.pulse + 0.15) % (Math.PI * 2);
+            trap.y += (self.state.player.speed * 0.7 + trap.fallSpeed * self.state.difficultyMultiplier) * dt;
+            trap.pulse = (trap.pulse + 0.15 * dt) % (Math.PI * 2);
 
             const dx = trap.x - self.state.player.x;
             const dy = trap.y - self.state.player.y;
@@ -298,10 +301,10 @@ const DexDash = {
             return trap.y < self.canvas.height + 50;
         });
 
-        // Update effects
+        // Update effects (frame-independent)
         this.state.effects = this.state.effects.filter(e => {
-            e.y += e.vy;
-            e.life--;
+            e.y += e.vy * dt;
+            e.life -= dt;
             return e.life > 0;
         });
 
@@ -334,31 +337,31 @@ const DexDash = {
             });
         }
 
-        // Update particles
+        // Update particles (frame-independent)
         this.state.speedParticles = this.state.speedParticles.filter(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life--;
-            p.size *= 0.95;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.life -= dt;
+            p.size *= Math.pow(0.95, dt);
             return p.life > 0 && p.size > 0.5;
         });
 
         this.state.windParticles = this.state.windParticles.filter(p => {
-            p.y += this.state.player.speed * 3;
-            p.life--;
+            p.y += this.state.player.speed * 3 * dt;
+            p.life -= dt;
             return p.life > 0 && p.y < this.canvas.height + 50;
         });
 
-        // Screen shake
+        // Screen shake (frame-independent)
         if (this.state.player.speed > 5) {
             this.state.screenShake = (this.state.player.speed - 5) * 2;
         } else {
-            this.state.screenShake *= 0.9;
+            this.state.screenShake *= Math.pow(0.9, dt);
         }
 
-        // Turbo flash
+        // Turbo flash (frame-independent)
         if (this.state.turboFlash > 0) {
-            this.state.turboFlash -= 0.05;
+            this.state.turboFlash -= 0.05 * dt;
         }
 
         // Update UI
@@ -561,17 +564,18 @@ const DexDash = {
     },
 
     /**
-     * Game loop
+     * Game loop with frame-independent timing
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**
@@ -645,6 +649,7 @@ const DexDash = {
         this.canvas = null;
         this.ctx = null;
         this.state = null;
+        this.timing = null;
     }
 };
 

@@ -15,6 +15,7 @@ const BurnOrHold = {
     canvas: null,
     ctx: null,
     state: null,
+    timing: null,
     startTime: null,
 
     OWNER: { NEUTRAL: 0, PLAYER: 1, ENEMY: 2 },
@@ -59,6 +60,9 @@ const BurnOrHold = {
         this.canvas = document.getElementById('cc-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.startTime = Date.now();
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
 
         this.resizeCanvas();
         this.setupInput();
@@ -460,23 +464,24 @@ const BurnOrHold = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         const now = Date.now();
 
         // Update particles
         this.state.particles = this.state.particles.filter(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.2;
-            p.life--;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += 0.2 * dt;
+            p.life -= dt;
             return p.life > 0;
         });
 
         // Update effects
         this.state.effects = this.state.effects.filter(e => {
-            e.y += e.vy;
-            e.life--;
+            e.y += e.vy * dt;
+            e.life -= dt;
             return e.life > 0;
         });
 
@@ -492,15 +497,15 @@ const BurnOrHold = {
             const dy = atk.targetY - atk.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < atk.speed) {
+            if (dist < atk.speed * dt) {
                 self.resolveAttack(atk);
                 return false;
             }
 
-            atk.x += (dx / dist) * atk.speed;
-            atk.y += (dy / dist) * atk.speed;
+            atk.x += (dx / dist) * atk.speed * dt;
+            atk.y += (dy / dist) * atk.speed * dt;
 
-            if (Math.random() < 0.3) {
+            if (Math.random() < 0.3 * dt) {
                 self.addParticles(atk.x, atk.y, atk.isPlayer ? '#22c55e' : '#ef4444', 1);
             }
             return true;
@@ -641,15 +646,16 @@ const BurnOrHold = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             if (!self.state.waveTransitioning) {
                 requestAnimationFrame(loop);
             }
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**

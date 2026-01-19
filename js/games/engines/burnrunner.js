@@ -14,6 +14,7 @@ const BurnRunner = {
     state: null,
     canvas: null,
     ctx: null,
+    timing: null,
 
     // Deadly obstacles
     obstacleTypes: [
@@ -164,6 +165,7 @@ const BurnRunner = {
         this.createArena(arena);
         this.canvas = document.getElementById('br-canvas');
         this.ctx = this.canvas.getContext('2d');
+        this.timing = GameTiming.create();
         this.resizeCanvas();
         this.setupInput();
         this.gameLoop();
@@ -584,8 +586,9 @@ const BurnRunner = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps (1.0 = 16.67ms)
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
 
         if (this.state.effects.freeze) {
@@ -594,7 +597,7 @@ const BurnRunner = {
             return;
         }
 
-        this.state.frameCount++;
+        this.state.frameCount += dt;
         this.updateEffects();
         this.updateAbilities();
         this.updateAbilityCooldowns();
@@ -607,11 +610,11 @@ const BurnRunner = {
         if (this.state.dash.active) effectiveSpeed = this.state.dash.speed;
         this.state.speed = effectiveSpeed;
 
-        this.state.distance += this.state.speed * 0.1;
+        this.state.distance += this.state.speed * 0.1 * dt;
 
-        // Player physics
-        this.state.player.vy += this.state.gravity;
-        this.state.player.y += this.state.player.vy;
+        // Player physics (frame-independent)
+        this.state.player.vy += this.state.gravity * dt;
+        this.state.player.y += this.state.player.vy * dt;
 
         if (this.state.player.y >= this.state.ground - this.state.player.height) {
             this.state.player.y = this.state.ground - this.state.player.height;
@@ -621,9 +624,9 @@ const BurnRunner = {
             this.updateJumpsDisplay();
         }
 
-        // Update clouds
+        // Update clouds (frame-independent)
         this.state.clouds.forEach(cloud => {
-            cloud.x -= cloud.speed;
+            cloud.x -= cloud.speed * dt;
             if (cloud.x < -cloud.size) {
                 cloud.x = this.canvas.width + cloud.size;
                 cloud.y = 20 + Math.random() * 60;
@@ -656,12 +659,12 @@ const BurnRunner = {
 
         const self = this;
 
-        // Update platforms
+        // Update platforms (frame-independent)
         this.state.platforms = this.state.platforms.filter(plat => {
-            plat.x -= self.state.speed;
+            plat.x -= self.state.speed * dt;
 
             if (plat.floating && plat.bobOffset !== undefined) {
-                plat.bobOffset += 0.05;
+                plat.bobOffset += 0.05 * dt;
                 plat.renderY = plat.y + Math.sin(plat.bobOffset) * 8;
             } else {
                 plat.renderY = plat.y;
@@ -697,9 +700,9 @@ const BurnRunner = {
             return plat.x > -60;
         });
 
-        // Update obstacles
+        // Update obstacles (frame-independent)
         this.state.obstacles = this.state.obstacles.filter(obs => {
-            obs.x -= self.state.speed;
+            obs.x -= self.state.speed * dt;
 
             if (self.checkCollision(self.state.player, obs)) {
                 if (self.state.effects.shield || self.state.abilityShield.active) {
@@ -719,9 +722,9 @@ const BurnRunner = {
             return obs.x > -50;
         });
 
-        // Update collectibles
+        // Update collectibles (frame-independent)
         this.state.collectibles = this.state.collectibles.filter(col => {
-            col.x -= self.state.speed;
+            col.x -= self.state.speed * dt;
 
             if (self.checkCollision(self.state.player, col)) {
                 self.state.tokens++;
@@ -732,12 +735,12 @@ const BurnRunner = {
             return col.x > -50;
         });
 
-        // Update particles
+        // Update particles (frame-independent)
         this.state.particles = this.state.particles.filter(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.15;
-            p.life--;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vy += 0.15 * dt;
+            p.life -= dt;
             return p.life > 0;
         });
 
@@ -922,17 +925,18 @@ const BurnRunner = {
     },
 
     /**
-     * Game loop
+     * Game loop with frame-independent timing
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**
@@ -951,6 +955,7 @@ const BurnRunner = {
         this.canvas = null;
         this.ctx = null;
         this.state = null;
+        this.timing = null;
     }
 };
 

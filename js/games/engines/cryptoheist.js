@@ -14,6 +14,7 @@ const CryptoHeist = {
     state: null,
     canvas: null,
     ctx: null,
+    timing: null,
 
     /**
      * Start the game
@@ -47,6 +48,10 @@ const CryptoHeist = {
         this.canvas = document.getElementById('ch-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.resizeCanvas();
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
+
         this.setupInput();
 
         // Spawn initial enemies
@@ -220,8 +225,9 @@ const CryptoHeist = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
 
         // Player movement
@@ -233,8 +239,8 @@ const CryptoHeist = {
 
         if (dx || dy) {
             const len = Math.sqrt(dx * dx + dy * dy);
-            this.state.player.x += (dx / len) * this.state.player.speed;
-            this.state.player.y += (dy / len) * this.state.player.speed;
+            this.state.player.x += (dx / len) * this.state.player.speed * dt;
+            this.state.player.y += (dy / len) * this.state.player.speed * dt;
         }
 
         const bottomMargin = 50;
@@ -244,7 +250,7 @@ const CryptoHeist = {
         this.state.player.angle = Math.atan2(this.state.mouseY - this.state.player.y, this.state.mouseX - this.state.player.x);
 
         // Spawn enemies
-        this.state.spawnTimer++;
+        this.state.spawnTimer += dt;
         if (this.state.spawnTimer >= this.state.spawnRate) {
             this.state.spawnTimer = 0;
             this.spawnEnemy();
@@ -259,8 +265,8 @@ const CryptoHeist = {
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist > 0) {
-                enemy.x += (dx / dist) * enemy.speed;
-                enemy.y += (dy / dist) * enemy.speed;
+                enemy.x += (dx / dist) * enemy.speed * dt;
+                enemy.y += (dy / dist) * enemy.speed * dt;
             }
 
             if (dist < self.state.player.size + enemy.size) {
@@ -272,8 +278,8 @@ const CryptoHeist = {
 
         // Update bullets
         this.state.bullets = this.state.bullets.filter(bullet => {
-            bullet.x += bullet.vx;
-            bullet.y += bullet.vy;
+            bullet.x += bullet.vx * dt;
+            bullet.y += bullet.vy * dt;
 
             for (let i = self.state.enemies.length - 1; i >= 0; i--) {
                 const enemy = self.state.enemies[i];
@@ -312,7 +318,7 @@ const CryptoHeist = {
 
         // Update tokens
         this.state.tokens = this.state.tokens.filter(token => {
-            token.life--;
+            token.life -= dt;
             const dx = token.x - self.state.player.x;
             const dy = token.y - self.state.player.y;
             if (Math.sqrt(dx * dx + dy * dy) < self.state.player.size + token.size) {
@@ -327,8 +333,8 @@ const CryptoHeist = {
 
         // Update effects
         this.state.effects = this.state.effects.filter(e => {
-            e.y += e.vy;
-            e.life--;
+            e.y += e.vy * dt;
+            e.life -= dt;
             return e.life > 0;
         });
 
@@ -423,13 +429,14 @@ const CryptoHeist = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**

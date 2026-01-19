@@ -15,6 +15,7 @@ const StakeStacker = {
     state: null,
     canvas: null,
     ctx: null,
+    timing: null,
 
     /**
      * Start the game
@@ -42,6 +43,9 @@ const StakeStacker = {
         this.canvas = document.getElementById('ss-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.resizeCanvas();
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
 
         this.setupInput();
 
@@ -208,11 +212,12 @@ const StakeStacker = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver || !this.state.currentBlock) return;
 
-        this.state.currentBlock.x += this.state.speed * this.state.direction;
+        this.state.currentBlock.x += this.state.speed * this.state.direction * dt;
 
         if (this.state.currentBlock.x + this.state.currentBlock.width > this.canvas.width) {
             this.state.direction = -1;
@@ -294,13 +299,14 @@ const StakeStacker = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**

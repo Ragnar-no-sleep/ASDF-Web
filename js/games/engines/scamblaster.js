@@ -14,6 +14,7 @@ const ScamBlaster = {
     state: null,
     canvas: null,
     ctx: null,
+    timing: null,
 
     enemyTypes: [
         { icon: '🪙', name: 'SCAM COIN', points: 10, speed: 1, size: 40 },
@@ -53,6 +54,10 @@ const ScamBlaster = {
         this.canvas = document.getElementById('sb-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.resizeCanvas();
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
+
         this.setupModeSelection();
         this.setupInput();
         this.gameLoop();
@@ -228,19 +233,20 @@ const ScamBlaster = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
         if (this.state.phase === 'select') return;
 
         if (this.state.phase === 'countdown') {
-            this.state.frameCount++;
-            if (this.state.frameCount % 60 === 0) {
+            this.state.frameCount += dt;
+            if (this.state.frameCount >= 60) {
                 this.state.countdown--;
+                this.state.frameCount = 0;
                 if (this.state.countdown <= 0) {
                     this.state.phase = 'playing';
                     document.getElementById('sb-countdown').style.display = 'none';
-                    this.state.frameCount = 0;
                 } else {
                     document.getElementById('sb-countdown').textContent = this.state.countdown;
                 }
@@ -248,7 +254,7 @@ const ScamBlaster = {
             return;
         }
 
-        this.state.frameCount++;
+        this.state.frameCount += dt;
 
         const timeBonus = this.state.frameCount * 0.00003;
         this.state.enemySpeed = this.state.baseSpeed + this.state.wave * 0.4 + timeBonus;
@@ -256,7 +262,7 @@ const ScamBlaster = {
         const speedEl = document.getElementById('sb-speed');
         if (speedEl) speedEl.textContent = this.state.enemySpeed.toFixed(1) + 'x';
 
-        this.state.spawnTimer++;
+        this.state.spawnTimer += dt;
         const dynamicSpawnRate = Math.max(25, this.state.spawnRate - this.state.wave * 8 - this.state.frameCount * 0.01);
         if (this.state.spawnTimer >= dynamicSpawnRate) {
             this.spawnEnemy();
@@ -270,7 +276,7 @@ const ScamBlaster = {
 
         this.state.enemies = this.state.enemies.filter(enemy => {
             if (self.state.gameMode === 'fall') {
-                enemy.y += enemy.vy * self.state.enemySpeed;
+                enemy.y += enemy.vy * self.state.enemySpeed * dt;
 
                 if (enemy.y > self.walletZone.y) {
                     self.state.lives--;
@@ -284,7 +290,7 @@ const ScamBlaster = {
                     return false;
                 }
             } else {
-                enemy.lifespan -= self.state.enemySpeed * 0.5;
+                enemy.lifespan -= self.state.enemySpeed * 0.5 * dt;
                 if (enemy.lifespan <= 0) {
                     self.state.lives--;
                     self.state.explosions.push({ x: enemy.x, y: enemy.y, life: 25, icon: '💔' });
@@ -307,7 +313,7 @@ const ScamBlaster = {
         }
 
         this.state.explosions = this.state.explosions.filter(exp => {
-            exp.life--;
+            exp.life -= dt;
             return exp.life > 0;
         });
 
@@ -402,13 +408,14 @@ const ScamBlaster = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**

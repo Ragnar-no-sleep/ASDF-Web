@@ -15,6 +15,7 @@ const LiquidityMaze = {
     canvas: null,
     ctx: null,
     state: null,
+    timing: null,
     moveTimeout: null,
 
     /**
@@ -52,6 +53,9 @@ const LiquidityMaze = {
         this.createArena(arena);
         this.canvas = document.getElementById('lm-canvas');
         this.ctx = this.canvas.getContext('2d');
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
 
         this.setupInput();
         this.generateMaze();
@@ -400,8 +404,9 @@ const LiquidityMaze = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
 
         const timeEl = document.getElementById('lm-time');
@@ -446,7 +451,7 @@ const LiquidityMaze = {
         // Update enemies
         const self = this;
         this.state.enemies.forEach(enemy => {
-            enemy.moveTimer += enemy.speed;
+            enemy.moveTimer += enemy.speed * dt;
             if (enemy.moveTimer >= 1) {
                 enemy.moveTimer = 0;
                 const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
@@ -488,8 +493,8 @@ const LiquidityMaze = {
 
         // Update effects
         this.state.effects = this.state.effects.filter(e => {
-            e.y += e.vy;
-            e.life--;
+            e.y += e.vy * dt;
+            e.life -= dt;
             return e.life > 0;
         });
     },
@@ -608,13 +613,14 @@ const LiquidityMaze = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**

@@ -16,6 +16,7 @@ const TokenCatcher = {
     ctx: null,
     intervals: null,
     input: null,
+    timing: null,
 
     // Game constants
     goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
@@ -73,6 +74,9 @@ const TokenCatcher = {
         this.canvas = document.getElementById('tc-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.resizeCanvas();
+
+        // Initialize timing for frame-independent movement
+        this.timing = GameTiming.create();
 
         // Initialize basket position
         this.state.basketPos = this.canvas.width / 2;
@@ -338,11 +342,12 @@ const TokenCatcher = {
 
     /**
      * Move the basket
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    moveBasket() {
+    moveBasket(dt) {
         if (this.state.keys.left || this.state.keys.right) {
-            this.state.moveAccel = Math.min(this.state.moveAccel + 0.6, this.state.maxAccel);
-            const step = this.state.moveSpeed + this.state.moveAccel;
+            this.state.moveAccel = Math.min(this.state.moveAccel + 0.6 * dt, this.state.maxAccel);
+            const step = (this.state.moveSpeed + this.state.moveAccel) * dt;
             if (this.state.keys.left) this.state.basketPos -= step;
             if (this.state.keys.right) this.state.basketPos += step;
             this.state.basketPos = Math.max(
@@ -350,7 +355,7 @@ const TokenCatcher = {
                 Math.min(this.canvas.width - this.state.basketWidth / 2, this.state.basketPos)
             );
         } else {
-            this.state.moveAccel = 0;
+            this.state.moveAccel = Math.max(0, this.state.moveAccel - 1.5 * dt);
         }
     },
 
@@ -363,11 +368,12 @@ const TokenCatcher = {
 
     /**
      * Update game state
+     * @param {number} dt - Delta time normalized to 60fps
      */
-    update() {
+    update(dt) {
         if (this.state.gameOver) return;
 
-        this.moveBasket();
+        this.moveBasket(dt);
 
         const basketX = this.state.basketPos;
         const basketY = this.state.lanePositions[this.state.basketLane];
@@ -375,8 +381,8 @@ const TokenCatcher = {
 
         // Update projectiles
         this.state.projectiles = this.state.projectiles.filter(proj => {
-            proj.x += proj.vx;
-            proj.y += proj.vy;
+            proj.x += proj.vx * dt;
+            proj.y += proj.vy * dt;
 
             // Check collision with scam tokens
             for (let i = self.state.tokens.length - 1; i >= 0; i--) {
@@ -422,7 +428,7 @@ const TokenCatcher = {
 
         // Update tokens
         this.state.tokens = this.state.tokens.filter(token => {
-            token.y += token.speed;
+            token.y += token.speed * dt;
 
             // Check collision with basket
             if (
@@ -457,7 +463,7 @@ const TokenCatcher = {
 
         // Update enemies
         this.state.enemies = this.state.enemies.filter(enemy => {
-            enemy.y += enemy.speed;
+            enemy.y += enemy.speed * dt;
 
             if (
                 enemy.y + 20 >= basketY - self.state.basketHeight / 2 &&
@@ -477,8 +483,8 @@ const TokenCatcher = {
 
         // Update effects
         this.state.effects = this.state.effects.filter(e => {
-            e.y += e.vy;
-            e.life--;
+            e.y += e.vy * dt;
+            e.life -= dt;
             return e.life > 0;
         });
     },
@@ -607,13 +613,14 @@ const TokenCatcher = {
      */
     gameLoop() {
         const self = this;
-        function loop() {
+        function loop(timestamp) {
             if (self.state.gameOver) return;
-            self.update();
+            const dt = self.timing.tick(timestamp);
+            self.update(dt);
             self.draw();
             requestAnimationFrame(loop);
         }
-        loop();
+        requestAnimationFrame(loop);
     },
 
     /**
