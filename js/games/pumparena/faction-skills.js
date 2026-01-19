@@ -17,11 +17,7 @@ const FACTION_SKILL_TYPES = {
     SIGNATURE: 'signature' // Faction-exclusive ultimate
 };
 
-// Fibonacci for stat scaling
-const getFactionFib = (n) => {
-    const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
-    return fib[Math.min(n, fib.length - 1)];
-};
+// getFactionFib is defined in factions.js (loaded before this file)
 
 // ============================================
 // FACTION SKILL TREES
