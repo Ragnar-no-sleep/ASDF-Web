@@ -38,17 +38,18 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Scripts: self + CDNs for Solana and DOMPurify (with SRI validation)
-        scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com'],
+        // Scripts: self + CDNs for Solana Kit (esm.sh) and DOMPurify (with SRI validation)
+        scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com', 'https://esm.sh'],
         // Allow inline event handlers (onclick etc) for games.html
         scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
-        // API connections + CDN for source maps
+        // API connections + CDN for source maps + Solana RPC + esm.sh
         connectSrc: [
           "'self'",
           'https://*.solana.com',
+          'https://*.helius-rpc.com',
           'https://asdforecast.onrender.com',
           'https://burns.onrender.com',
           'https://api.asdf-games.com',
@@ -56,6 +57,7 @@ app.use(
           'https://asdf-api.onrender.com',
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
+          'https://esm.sh',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
