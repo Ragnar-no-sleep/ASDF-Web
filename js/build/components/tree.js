@@ -14,6 +14,7 @@ import { ModalFactory } from './modal.js';
 import { BurnApiService } from '../services/burn-api.js';
 import { calculatePhiPositions, phiDelays, PHI } from '../utils/phi.js';
 import { isValidProjectId } from '../utils/security.js';
+import { RendererFactory } from '../renderer/index.js';
 import {
   $,
   $$,
@@ -215,6 +216,9 @@ const TreeComponent = {
       }
     });
 
+    // Sync with renderer
+    this.syncRenderer({ filter: status });
+
     // Emit filter event
     BuildState.emit(EVENTS.TREE_FILTER, { status });
   },
@@ -235,6 +239,9 @@ const TreeComponent = {
 
       // Highlight connected branches
       this.highlightBranch(projectId);
+
+      // Sync with renderer
+      this.syncRenderer({ selectedProject: projectId });
     }
   },
 
@@ -466,6 +473,9 @@ const TreeComponent = {
 
       // Update visual
       this.applyBurnPulse();
+
+      // Sync with renderer if active
+      this.syncRenderer({ burnIntensity: currentBurnIntensity });
     } catch (error) {
       console.warn('[TreeComponent] Burn data fetch failed:', error);
     }
@@ -550,6 +560,49 @@ const TreeComponent = {
    */
   getBurnIntensity() {
     return currentBurnIntensity;
+  },
+
+  // ============================================
+  // RENDERER SYNC
+  // ============================================
+
+  /**
+   * Sync state with the active renderer
+   * @param {Object} data - Data to sync (burnIntensity, filter, selectedProject)
+   */
+  syncRenderer(data) {
+    const renderer = RendererFactory.getRenderer();
+    if (renderer && renderer.update) {
+      renderer.update(data);
+    }
+  },
+
+  /**
+   * Focus renderer camera on a project node
+   * @param {string} projectId
+   * @param {Object} options
+   */
+  focusOnProject(projectId, options = {}) {
+    const renderer = RendererFactory.getRenderer();
+    if (renderer && renderer.focusOnNode) {
+      renderer.focusOnNode(projectId, options);
+    } else {
+      // Fallback to scroll
+      this.animateToNode(projectId);
+    }
+  },
+
+  /**
+   * Get project node screen position from renderer
+   * @param {string} projectId
+   * @returns {Object|null}
+   */
+  getRendererNodePosition(projectId) {
+    const renderer = RendererFactory.getRenderer();
+    if (renderer && renderer.getNodePosition) {
+      return renderer.getNodePosition(projectId);
+    }
+    return null;
   }
 };
 
