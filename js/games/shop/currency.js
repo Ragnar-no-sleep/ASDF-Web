@@ -12,18 +12,18 @@
 // FIBONACCI PRICING
 // ============================================
 
-const FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
+const CURRENCY_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
 
 /**
  * Get Fibonacci number at index
  */
 function getFib(n) {
     if (n < 0) return 0;
-    if (n < FIB.length) return FIB[n];
+    if (n < CURRENCY_FIB.length) return CURRENCY_FIB[n];
     // Calculate for larger indices
-    let a = FIB[FIB.length - 2];
-    let b = FIB[FIB.length - 1];
-    for (let i = FIB.length; i <= n; i++) {
+    let a = CURRENCY_FIB[CURRENCY_FIB.length - 2];
+    let b = CURRENCY_FIB[CURRENCY_FIB.length - 1];
+    for (let i = CURRENCY_FIB.length; i <= n; i++) {
         const temp = a + b;
         a = b;
         b = temp;

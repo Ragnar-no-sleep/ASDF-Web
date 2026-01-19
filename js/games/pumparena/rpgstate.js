@@ -172,7 +172,7 @@ const ActionRateLimiter = {
 // ============================================
 
 // Local Fibonacci cache (fallback if ASDF not loaded)
-const FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025];
+const RPG_FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025];
 
 /**
  * Get Fibonacci number - uses ASDF if available
@@ -184,11 +184,11 @@ function getFib(n) {
         return ASDF.getFib(n);
     }
     if (n < 0) return 0;
-    if (n < FIB.length) return FIB[n];
+    if (n < RPG_FIB.length) return RPG_FIB[n];
     // Calculate beyond cache
-    let a = FIB[FIB.length - 2];
-    let b = FIB[FIB.length - 1];
-    for (let i = FIB.length; i <= n; i++) {
+    let a = RPG_FIB[RPG_FIB.length - 2];
+    let b = RPG_FIB[RPG_FIB.length - 1];
+    for (let i = RPG_FIB.length; i <= n; i++) {
         const temp = a + b;
         a = b;
         b = temp;
