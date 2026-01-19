@@ -1691,42 +1691,6 @@ deepFreeze(STARTER_DECKS);
 
 const deckBuilder = new DeckBuilder();
 
-export {
-    DECK_CONSTANTS,
-    CARD_TYPES,
-    CARD_RARITIES,
-    CARDS,
-    STARTER_DECKS,
-    DeckBuilder,
-    BattleHand,
-    deckBuilder
-};
-
-// Convenience exports
-export function getCard(id) {
-    return CARDS[id];
-}
-
-export function getCardsByType(type) {
-    return Object.values(CARDS).filter(c => c.type === type);
-}
-
-export function getCardsByRarity(rarity) {
-    return Object.values(CARDS).filter(c => c.rarity === rarity);
-}
-
-export function getCardsByFaction(factionId) {
-    return Object.values(CARDS).filter(c => c.factionExclusive === factionId);
-}
-
-export function createBattleHand(deck) {
-    return new BattleHand(deck);
-}
-
-export function getStarterDeck(deckId) {
-    return STARTER_DECKS[deckId];
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================

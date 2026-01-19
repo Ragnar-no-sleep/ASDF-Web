@@ -1800,29 +1800,6 @@ class QuestManager {
 
 const questManager = new QuestManager();
 
-export {
-    QUEST_CONSTANTS,
-    ALL_QUESTS,
-    ASDF_CAMPAIGN,
-    SAFEYIELD_CAMPAIGN,
-    PIXEL_RAIDERS_CAMPAIGN,
-    BASED_COLLECTIVE_CAMPAIGN,
-    NODEFORGE_CAMPAIGN,
-    PUMP_LORDS_CAMPAIGN,
-    BEAR_CLAN_CAMPAIGN,
-    BUILDERS_GUILD_CAMPAIGN,
-    SIDE_QUESTS,
-    questManager
-};
-
-export function getQuest(id) {
-    return questManager.getQuest(id);
-}
-
-export function getAvailableQuests(gameState) {
-    return questManager.getAvailableQuests(gameState);
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================
@@ -1841,15 +1818,9 @@ window.PumpArenaQuestsExpanded = {
     SIDE_QUESTS,
     questManager,
     getQuest: (id) => questManager.getQuest(id),
-    getAvailableQuests: (gs) => questManager.getAvailableQuests(gs)
+    getAvailableQuests: (gs) => questManager.getAvailableQuests(gs),
+    getFactionQuests: (fid) => questManager.getQuestsForFaction(fid),
+    getTotalQuestCount: () => questManager.getTotalQuestCount()
 };
-
-export function getFactionQuests(factionId) {
-    return questManager.getQuestsForFaction(factionId);
-}
-
-export function getTotalQuestCount() {
-    return questManager.getTotalQuestCount();
-}
 
 console.log(`Quests loaded: ${questManager.getTotalQuestCount()} total quests`);

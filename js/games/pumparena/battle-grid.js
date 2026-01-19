@@ -1387,23 +1387,14 @@ class BattleGridRenderer {
 }
 
 // ============================================================
-// EXPORTS
+// FACTORY FUNCTIONS
 // ============================================================
 
-export {
-    GRID_CONSTANTS,
-    GridCell,
-    BattleUnit,
-    BattleGrid,
-    BattleGridRenderer
-};
-
-// Factory function
-export function createBattleGrid() {
+function createBattleGrid() {
     return new BattleGrid();
 }
 
-export function createBattleGridRenderer(containerId) {
+function createBattleGridRenderer(containerId) {
     return new BattleGridRenderer(containerId);
 }
 

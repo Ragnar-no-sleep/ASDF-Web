@@ -1754,46 +1754,6 @@ class SummonManager {
 
 const summonManager = new SummonManager();
 
-export {
-    SUMMON_CONSTANTS,
-    ELEMENTS,
-    TYPE_CHART,
-    CREATURES,
-    CREATURE_ABILITIES,
-    ALLIES,
-    ALLY_ABILITIES,
-    summonManager
-};
-
-// Convenience exports
-export function getCreature(id) {
-    return CREATURES[id];
-}
-
-export function getAlly(id) {
-    return ALLIES[id];
-}
-
-export function getAbility(id) {
-    return CREATURE_ABILITIES[id] || ALLY_ABILITIES[id];
-}
-
-export function getElement(id) {
-    return ELEMENTS[id];
-}
-
-export function calculateTypeEffectiveness(attacker, defender) {
-    return summonManager.getTypeEffectiveness(attacker, defender);
-}
-
-export function createBattleCreature(creatureId) {
-    return summonManager.createBattleCreature(creatureId);
-}
-
-export function createBattleAlly(allyId, gameState) {
-    return summonManager.createBattleAlly(allyId, gameState);
-}
-
 // ============================================================
 // GLOBAL EXPORTS (legacy compatibility)
 // ============================================================
