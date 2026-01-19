@@ -9,6 +9,9 @@
 
 import { safeInnerHTML, safeTextContent, sanitizeHtml } from './security.js';
 
+// Re-export security functions for convenience
+export { safeInnerHTML, safeTextContent, sanitizeHtml };
+
 // ============================================
 // ELEMENT SELECTION
 // ============================================
