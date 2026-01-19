@@ -1,0 +1,336 @@
+/**
+ * GitHub Timeline Styles
+ * Commit history and contributor activity display
+ */
+
+/* ============================================
+   TIMELINE CONTAINER
+   ============================================ */
+
+.github-timeline {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.timeline-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.timeline-icon {
+  font-size: 1.1rem;
+}
+
+.timeline-refresh {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: #666;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timeline-refresh:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ============================================
+   LOADING & ERROR
+   ============================================ */
+
+.timeline-loading,
+.timeline-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-icon {
+  font-size: 1.5rem;
+  color: #ef4444;
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+
+.timeline-content {
+  padding: 16px 20px;
+}
+
+.timeline-section {
+  margin-bottom: 20px;
+}
+
+.timeline-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px;
+}
+
+/* ============================================
+   COMMITS LIST
+   ============================================ */
+
+.commits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.commit-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  animation: commitSlideIn 0.3s ease backwards;
+}
+
+@keyframes commitSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.commit-item:last-child {
+  border-bottom: none;
+}
+
+.commit-sha {
+  margin-bottom: 4px;
+}
+
+.commit-sha a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #00d9ff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.commit-sha a:hover {
+  color: #fff;
+}
+
+.commit-message {
+  font-size: 0.85rem;
+  color: #fff;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commit-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.commit-author {
+  color: #888;
+}
+
+/* ============================================
+   CONTRIBUTORS GRID
+   ============================================ */
+
+.contributors-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.contributor-card {
+  animation: contributorFadeIn 0.3s ease backwards;
+}
+
+@keyframes contributorFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.contributor-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.contributor-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.contributor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.contributor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contributor-name {
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.contributor-commits {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+/* ============================================
+   REPO STATS
+   ============================================ */
+
+.repo-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.stat-item.completion {
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.completion-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.completion-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00d9ff);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.completion-label {
+  font-size: 0.75rem;
+  color: #888;
+  text-align: center;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+  .contributors-grid {
+    flex-direction: column;
+  }
+
+  .contributor-link {
+    width: 100%;
+  }
+
+  .repo-stats {
+    flex-direction: column;
+  }
+
+  .stat-item {
+    width: 100%;
+    justify-content: center;
+  }
+}

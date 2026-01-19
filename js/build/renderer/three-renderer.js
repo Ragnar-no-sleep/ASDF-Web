@@ -1,15 +1,23 @@
 /**
  * Build V2 - Three.js Renderer
- * 3D Yggdrasil visualization with WebGL
+ * Immersive 3D Yggdrasil visualization with WebGL
  *
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 'use strict';
 
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
-import { PHI, GOLDEN_ANGLE, calculatePhiPositions } from '../utils/phi.js';
+import { PHI, GOLDEN_ANGLE, calculatePhiPositions, calculateFermatSpiral } from '../utils/phi.js';
+
+// Import 3D components
+import { FireParticles } from './effects/fire-particles.js';
+import { SnowParticles } from './effects/snow-particles.js';
+import { YggdrasilTree } from './objects/yggdrasil-tree.js';
+import { StoneIsland, StoneIslandFactory } from './objects/stone-island.js';
+import { BurnCore } from './objects/burn-core.js';
+import { CameraController } from './camera/camera-controller.js';
 
 // ============================================
 // CONFIGURATION
@@ -20,34 +28,31 @@ const THREE_CONFIG = {
   camera: {
     fov: 60,
     near: 0.1,
-    far: 1000,
-    position: { x: 0, y: 0, z: 50 }
+    far: 500,
+    position: { x: 0, y: 15, z: 70 }
   },
   // Scene settings
   scene: {
-    backgroundColor: 0x0a0a0f,
-    fogColor: 0x0a0a0f,
-    fogNear: 30,
-    fogFar: 100
+    backgroundColor: 0x020812,
+    fogColor: 0x020812,
+    fogNear: 50,
+    fogFar: 200
   },
   // Lighting
   lights: {
-    ambient: { color: 0x404060, intensity: 0.4 },
-    center: { color: 0xff6b35, intensity: 2, distance: 50 },
-    accent: { color: 0x00d9ff, intensity: 0.5, distance: 30 }
+    ambient: { color: 0x1a1a2e, intensity: 0.3 },
+    moon: { color: 0x8888ff, intensity: 0.4, position: { x: 50, y: 80, z: -30 } },
+    fill: { color: 0x00d9ff, intensity: 0.2, position: { x: -30, y: 20, z: 40 } }
   },
-  // Node geometries
-  nodes: {
-    radius: 2,
-    segments: 8,
-    orbitRadius: 20,
-    levelSpacing: 8
+  // Island distribution
+  islands: {
+    baseRadius: 25,
+    radiusStep: 3,
+    verticalSpread: 15
   },
   // Animation
   animation: {
-    rotationSpeed: 0.0005,
-    pulseSpeed: 0.002,
-    hoverScale: 1.2
+    globalRotationSpeed: 0.0002
   },
   // Performance
   performance: {
@@ -61,7 +66,7 @@ const THREE_CONFIG = {
 const STATUS_COLORS = {
   live: 0x00ff88,
   building: 0xffaa00,
-  planned: 0x666688,
+  planned: 0x8855cc,
   default: 0x444466
 };
 
@@ -78,17 +83,24 @@ let mouse = null;
 let animationFrameId = null;
 let isInitialized = false;
 let isPaused = false;
+let clock = null;
 
-// Scene objects
-let centerLight = null;
-let projectNodes = new Map();
-let skillParticles = [];
-let hoveredNode = null;
-let selectedNode = null;
+// 3D Objects
+let yggdrasilTree = null;
+let burnCore = null;
+let fireParticles = null;
+let snowParticles = null;
+let cameraController = null;
+let islands = new Map();
+
+// Interaction state
+let hoveredIsland = null;
+let selectedIsland = null;
+let raycastTargets = [];
 
 // Animation state
 let time = 0;
-let burnIntensity = 0.5;
+let burnIntensity = 0.7;
 
 // ============================================
 // THREE.JS RENDERER
@@ -121,6 +133,7 @@ const ThreeRenderer = {
     // Dynamically import Three.js
     try {
       this.THREE = await this.loadThreeJS();
+      clock = new this.THREE.Clock();
     } catch (error) {
       console.error('[ThreeRenderer] Failed to load Three.js:', error);
       throw error;
@@ -133,8 +146,16 @@ const ThreeRenderer = {
     this.setupLights();
     this.setupRaycaster();
 
-    // Create Yggdrasil
-    await this.createYggdrasil();
+    // Create 3D world
+    await this.createWorld();
+
+    // Setup camera controller
+    cameraController = new CameraController(
+      this.THREE,
+      camera,
+      renderer.domElement,
+      { orbit: { autoRotate: true, autoRotateSpeed: 0.15 } }
+    );
 
     // Bind events
     this.bindEvents();
@@ -143,7 +164,7 @@ const ThreeRenderer = {
     this.startLoop();
 
     isInitialized = true;
-    console.log('[ThreeRenderer] Initialized');
+    console.log('[ThreeRenderer] Initialized with immersive 3D');
 
     return this;
   },
@@ -153,12 +174,10 @@ const ThreeRenderer = {
    * @returns {Promise<Object>}
    */
   async loadThreeJS() {
-    // Try to use existing global THREE
     if (window.THREE) {
       return window.THREE;
     }
 
-    // Dynamic import from CDN
     const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
     return THREE;
   },
@@ -172,11 +191,7 @@ const ThreeRenderer = {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(sceneConfig.backgroundColor);
-    scene.fog = new THREE.Fog(
-      sceneConfig.fogColor,
-      sceneConfig.fogNear,
-      sceneConfig.fogFar
-    );
+    scene.fog = new THREE.FogExp2(sceneConfig.fogColor, 0.008);
   },
 
   /**
@@ -198,7 +213,7 @@ const ThreeRenderer = {
       camConfig.position.y,
       camConfig.position.z
     );
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, 5, 0);
   },
 
   /**
@@ -210,11 +225,14 @@ const ThreeRenderer = {
 
     renderer = new THREE.WebGLRenderer({
       antialias: perfConfig.antialias,
-      alpha: true
+      alpha: true,
+      powerPreference: 'high-performance'
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(perfConfig.pixelRatio);
     renderer.shadowMap.enabled = perfConfig.shadowMapEnabled;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
 
     // Clear container and add canvas
     container.innerHTML = '';
@@ -233,30 +251,37 @@ const ThreeRenderer = {
     const { THREE } = this;
     const { lights } = THREE_CONFIG;
 
-    // Ambient light
+    // Ambient light (very dim)
     const ambient = new THREE.AmbientLight(
       lights.ambient.color,
       lights.ambient.intensity
     );
     scene.add(ambient);
 
-    // Center point light (burn engine)
-    centerLight = new THREE.PointLight(
-      lights.center.color,
-      lights.center.intensity,
-      lights.center.distance
+    // Moonlight (directional)
+    const moonLight = new THREE.DirectionalLight(
+      lights.moon.color,
+      lights.moon.intensity
     );
-    centerLight.position.set(0, 0, 0);
-    scene.add(centerLight);
+    moonLight.position.set(
+      lights.moon.position.x,
+      lights.moon.position.y,
+      lights.moon.position.z
+    );
+    scene.add(moonLight);
 
-    // Accent light
-    const accent = new THREE.PointLight(
-      lights.accent.color,
-      lights.accent.intensity,
-      lights.accent.distance
+    // Fill light (subtle cyan)
+    const fillLight = new THREE.PointLight(
+      lights.fill.color,
+      lights.fill.intensity,
+      100
     );
-    accent.position.set(15, 10, 10);
-    scene.add(accent);
+    fillLight.position.set(
+      lights.fill.position.x,
+      lights.fill.position.y,
+      lights.fill.position.z
+    );
+    scene.add(fillLight);
   },
 
   /**
@@ -270,158 +295,84 @@ const ThreeRenderer = {
   },
 
   /**
-   * Create Yggdrasil tree structure
+   * Create the 3D world
    */
-  async createYggdrasil() {
+  async createWorld() {
     const { THREE } = this;
 
-    // Create center (burn engine)
-    this.createBurnCenter();
+    // Create Yggdrasil Tree
+    yggdrasilTree = new YggdrasilTree(THREE);
+    const treeGroup = yggdrasilTree.init();
+    scene.add(treeGroup);
 
-    // Load project data
+    // Create Burn Core at center
+    burnCore = new BurnCore(THREE);
+    const coreGroup = burnCore.init(new THREE.Vector3(0, 5, 0));
+    scene.add(coreGroup);
+    raycastTargets.push(burnCore.getRaycastTarget());
+
+    // Create Fire Particles around core
+    fireParticles = new FireParticles(THREE);
+    const fireGroup = fireParticles.init(new THREE.Vector3(0, 2, 0));
+    scene.add(fireGroup);
+
+    // Create Snow Particles (environment)
+    snowParticles = new SnowParticles(THREE);
+    const snowGroup = snowParticles.init();
+    scene.add(snowGroup);
+
+    // Load projects and create islands
     const projects = await DataAdapter.getProjects();
+    await this.createProjectIslands(projects);
 
-    // Position projects in phi spiral
-    const positions = calculatePhiPositions(
+    console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
+  },
+
+  /**
+   * Create floating islands for projects
+   * @param {Array} projects
+   */
+  async createProjectIslands(projects) {
+    const { THREE } = this;
+    const { islands: islandConfig } = THREE_CONFIG;
+
+    // Calculate positions using Fermat spiral
+    const positions = calculateFermatSpiral(
       projects,
       0, 0,
-      THREE_CONFIG.nodes.orbitRadius,
-      THREE_CONFIG.nodes.levelSpacing
+      islandConfig.baseRadius / 5
     );
 
-    // Create project nodes
-    positions.forEach(({ x, y, item: project }) => {
-      this.createProjectNode(project, x, y);
-    });
+    // Create islands at calculated positions
+    projects.forEach((project, index) => {
+      const posData = positions[index];
 
-    console.log(`[ThreeRenderer] Created ${projects.length} project nodes`);
-  },
+      // Add vertical variation based on status
+      let yOffset = 0;
+      if (project.status === 'live') yOffset = 8;
+      else if (project.status === 'building') yOffset = 3;
+      else yOffset = -2;
 
-  /**
-   * Create center burn engine visualization
-   */
-  createBurnCenter() {
-    const { THREE } = this;
+      // Add some randomness
+      yOffset += (Math.random() - 0.5) * 5;
 
-    // Core sphere
-    const geometry = new THREE.IcosahedronGeometry(3, 1);
-    const material = new THREE.MeshPhongMaterial({
-      color: 0xff6b35,
-      emissive: 0xff4400,
-      emissiveIntensity: 0.5,
-      transparent: true,
-      opacity: 0.9
-    });
-    const core = new THREE.Mesh(geometry, material);
-    core.userData = { type: 'center', id: 'burn-engine' };
-    scene.add(core);
-
-    // Outer glow ring
-    const ringGeometry = new THREE.TorusGeometry(4, 0.3, 8, 32);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff8844,
-      transparent: true,
-      opacity: 0.3
-    });
-    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-    ring.rotation.x = Math.PI / 2;
-    scene.add(ring);
-
-    // Store reference
-    projectNodes.set('burn-engine', { mesh: core, ring, type: 'center' });
-  },
-
-  /**
-   * Create a project node
-   * @param {Object} project
-   * @param {number} x
-   * @param {number} y
-   */
-  createProjectNode(project, x, y) {
-    const { THREE } = this;
-
-    // Get color based on status
-    const color = STATUS_COLORS[project.status] || STATUS_COLORS.default;
-
-    // Create dodecahedron for stone island effect
-    const geometry = new THREE.DodecahedronGeometry(
-      THREE_CONFIG.nodes.radius,
-      0
-    );
-
-    const material = new THREE.MeshPhongMaterial({
-      color: color,
-      emissive: color,
-      emissiveIntensity: 0.1,
-      flatShading: true
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, 0);
-
-    // Random rotation for natural look
-    mesh.rotation.x = Math.random() * Math.PI;
-    mesh.rotation.y = Math.random() * Math.PI;
-
-    // Store project data
-    mesh.userData = {
-      type: 'project',
-      id: project.id,
-      project: project,
-      originalColor: color,
-      baseY: y
-    };
-
-    scene.add(mesh);
-    projectNodes.set(project.id, { mesh, project });
-
-    // Create skill orbiters if project has skills
-    if (project.skills && project.skills.length > 0) {
-      this.createSkillOrbiters(mesh, project.skills);
-    }
-  },
-
-  /**
-   * Create orbiting skill particles around a node
-   * @param {THREE.Mesh} parentMesh
-   * @param {Array} skills
-   */
-  createSkillOrbiters(parentMesh, skills) {
-    const { THREE } = this;
-
-    const group = new THREE.Group();
-    const orbitRadius = THREE_CONFIG.nodes.radius * 1.8;
-
-    skills.slice(0, 5).forEach((skill, index) => {
-      const angle = index * GOLDEN_ANGLE;
-      const geometry = new THREE.SphereGeometry(0.2, 8, 8);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x00d9ff,
-        transparent: true,
-        opacity: 0.7
-      });
-
-      const particle = new THREE.Mesh(geometry, material);
-      particle.position.set(
-        Math.cos(angle) * orbitRadius,
-        Math.sin(angle) * orbitRadius,
-        0
+      const position = new THREE.Vector3(
+        posData.x,
+        yOffset,
+        posData.y // Use y from 2D calculation as z
       );
 
-      particle.userData = {
-        type: 'skill',
-        skill: skill,
-        angle: angle,
-        orbitRadius: orbitRadius,
-        speed: 0.5 + Math.random() * 0.5
-      };
+      // Create island
+      const island = new StoneIsland(THREE, project);
+      island.init(position);
 
-      group.add(particle);
-      skillParticles.push(particle);
+      // Add to scene and tracking
+      scene.add(island.getGroup());
+      islands.set(project.id, island);
+
+      // Add to raycast targets
+      raycastTargets.push(island.getRaycastTarget());
     });
-
-    group.position.copy(parentMesh.position);
-    scene.add(group);
   },
 
   /**
@@ -464,67 +415,54 @@ const ThreeRenderer = {
 
     // Raycast
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(
-      Array.from(projectNodes.values()).map(n => n.mesh)
-    );
+    const intersects = raycaster.intersectObjects(raycastTargets, true);
 
     if (intersects.length > 0) {
-      const node = intersects[0].object;
-      if (node !== hoveredNode) {
-        this.onNodeHover(node);
+      const intersected = intersects[0].object;
+      const projectId = intersected.userData?.projectId;
+
+      if (projectId && projectId !== hoveredIsland?.getProjectId()) {
+        this.onIslandHover(projectId);
       }
-    } else if (hoveredNode) {
-      this.onNodeUnhover();
+    } else if (hoveredIsland) {
+      this.onIslandUnhover();
     }
   },
 
   /**
-   * Handle node hover
-   * @param {THREE.Mesh} node
+   * Handle island hover
+   * @param {string} projectId
    */
-  onNodeHover(node) {
-    // Reset previous
-    if (hoveredNode) {
-      this.onNodeUnhover();
+  onIslandHover(projectId) {
+    // Unhover previous
+    if (hoveredIsland) {
+      hoveredIsland.setHovered(false);
     }
 
-    hoveredNode = node;
-    renderer.domElement.style.cursor = 'pointer';
+    // Hover new
+    const island = islands.get(projectId);
+    if (island) {
+      hoveredIsland = island;
+      hoveredIsland.setHovered(true);
+      renderer.domElement.style.cursor = 'pointer';
 
-    // Scale up
-    node.scale.setScalar(THREE_CONFIG.animation.hoverScale);
-
-    // Brighten emissive
-    if (node.material.emissiveIntensity !== undefined) {
-      node.material.emissiveIntensity = 0.5;
-    }
-
-    // Emit event
-    if (node.userData.id) {
+      // Emit event
       BuildState.emit('renderer:nodeHover', {
-        projectId: node.userData.id,
-        position: this.getNodeScreenPosition(node)
+        projectId,
+        position: this.getScreenPosition(island.getPosition())
       });
     }
   },
 
   /**
-   * Handle node unhover
+   * Handle island unhover
    */
-  onNodeUnhover() {
-    if (!hoveredNode) return;
+  onIslandUnhover() {
+    if (!hoveredIsland) return;
 
+    hoveredIsland.setHovered(false);
+    hoveredIsland = null;
     renderer.domElement.style.cursor = 'default';
-
-    // Reset scale
-    hoveredNode.scale.setScalar(1);
-
-    // Reset emissive
-    if (hoveredNode.material.emissiveIntensity !== undefined) {
-      hoveredNode.material.emissiveIntensity = 0.1;
-    }
-
-    hoveredNode = null;
 
     BuildState.emit('renderer:nodeUnhover', {});
   },
@@ -534,26 +472,47 @@ const ThreeRenderer = {
    * @param {MouseEvent} e
    */
   onClick(e) {
-    if (hoveredNode && hoveredNode.userData.id) {
-      this.selectProject(hoveredNode.userData.id);
+    if (hoveredIsland) {
+      const projectId = hoveredIsland.getProjectId();
+      this.selectProject(projectId);
 
       BuildState.emit('renderer:nodeClick', {
-        projectId: hoveredNode.userData.id,
-        project: hoveredNode.userData.project
+        projectId,
+        project: hoveredIsland.project
       });
+
+      // Zoom to island
+      cameraController.zoomToNode(hoveredIsland.getPosition(), {
+        distance: 20,
+        duration: 1200
+      });
+    } else if (burnCore) {
+      // Check if clicking burn core
+      raycaster.setFromCamera(mouse, camera);
+      const coreIntersect = raycaster.intersectObject(burnCore.getRaycastTarget());
+
+      if (coreIntersect.length > 0) {
+        BuildState.emit('renderer:nodeClick', {
+          projectId: 'burn-engine',
+          project: { id: 'burn-engine', name: 'Burn Engine' }
+        });
+
+        cameraController.zoomToNode(burnCore.getGroup().position, {
+          distance: 25,
+          duration: 1000
+        });
+      }
     }
   },
 
   /**
-   * Get node position in screen coordinates
-   * @param {THREE.Mesh} node
+   * Get screen position from 3D position
+   * @param {THREE.Vector3} position
    * @returns {Object}
    */
-  getNodeScreenPosition(node) {
+  getScreenPosition(position) {
     const { THREE } = this;
-    const vector = new THREE.Vector3();
-
-    node.getWorldPosition(vector);
+    const vector = position.clone();
     vector.project(camera);
 
     const rect = renderer.domElement.getBoundingClientRect();
@@ -589,23 +548,16 @@ const ThreeRenderer = {
    * @param {string} projectId
    */
   selectProject(projectId) {
-    const { THREE } = this;
-
-    // Reset previous selection
-    if (selectedNode) {
-      const data = projectNodes.get(selectedNode.userData.id);
-      if (data) {
-        selectedNode.material.emissive.setHex(data.mesh.userData.originalColor);
-        selectedNode.material.emissiveIntensity = 0.1;
-      }
+    // Deselect previous
+    if (selectedIsland) {
+      selectedIsland.setSelected(false);
     }
 
     // Select new
-    const nodeData = projectNodes.get(projectId);
-    if (nodeData) {
-      selectedNode = nodeData.mesh;
-      selectedNode.material.emissive.setHex(0xffffff);
-      selectedNode.material.emissiveIntensity = 0.3;
+    const island = islands.get(projectId);
+    if (island) {
+      selectedIsland = island;
+      selectedIsland.setSelected(true);
     }
 
     BuildState.emit('renderer:nodeSelected', { projectId });
@@ -618,15 +570,8 @@ const ThreeRenderer = {
   updateBurnIntensity(intensity) {
     burnIntensity = intensity;
 
-    if (centerLight) {
-      // Map intensity to light strength
-      centerLight.intensity = 1 + intensity * 3;
-
-      // Update color temperature (more orange when intense)
-      const r = 1;
-      const g = 0.4 + (1 - intensity) * 0.2;
-      const b = 0.2 + (1 - intensity) * 0.15;
-      centerLight.color.setRGB(r, g, b);
+    if (burnCore) {
+      burnCore.setIntensity(intensity);
     }
   },
 
@@ -635,14 +580,11 @@ const ThreeRenderer = {
    * @param {string} status
    */
   applyFilter(status) {
-    projectNodes.forEach((data, id) => {
-      if (id === 'burn-engine') return;
-
-      const { mesh, project } = data;
+    islands.forEach((island, id) => {
+      const project = island.project;
       const visible = status === 'all' || project?.status === status;
 
-      mesh.visible = visible;
-      mesh.material.opacity = visible ? 1 : 0.2;
+      island.getGroup().visible = visible;
     });
   },
 
@@ -652,38 +594,30 @@ const ThreeRenderer = {
    * @param {Object} options
    */
   focusOnNode(projectId, options = {}) {
-    const nodeData = projectNodes.get(projectId);
-    if (!nodeData) return;
+    const island = islands.get(projectId);
+    if (!island) return;
 
-    const targetPos = nodeData.mesh.position.clone();
-
-    // Animate camera (simple lerp for now)
-    const duration = options.instant ? 0 : 1000;
-    const startPos = camera.position.clone();
-    const endPos = targetPos.clone();
-    endPos.z += 20; // Pull back a bit
-
-    if (duration > 0) {
-      const startTime = Date.now();
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        const eased = t * (2 - t); // ease-out
-
-        camera.position.lerpVectors(startPos, endPos, eased);
-        camera.lookAt(targetPos);
-
-        if (t < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      animate();
-    } else {
-      camera.position.copy(endPos);
-      camera.lookAt(targetPos);
-    }
+    cameraController.zoomToNode(island.getPosition(), {
+      distance: options.distance || 20,
+      duration: options.duration || 1000
+    });
 
     this.selectProject(projectId);
+  },
+
+  /**
+   * Reset camera to default view
+   */
+  resetView() {
+    if (cameraController) {
+      cameraController.resetView({ duration: 1500 });
+    }
+
+    // Deselect
+    if (selectedIsland) {
+      selectedIsland.setSelected(false);
+      selectedIsland = null;
+    }
   },
 
   /**
@@ -692,10 +626,10 @@ const ThreeRenderer = {
    * @returns {Object|null}
    */
   getNodePosition(projectId) {
-    const nodeData = projectNodes.get(projectId);
-    if (!nodeData) return null;
+    const island = islands.get(projectId);
+    if (!island) return null;
 
-    return this.getNodeScreenPosition(nodeData.mesh);
+    return this.getScreenPosition(island.getPosition());
   },
 
   /**
@@ -709,33 +643,41 @@ const ThreeRenderer = {
 
       if (isPaused) return;
 
-      time += 0.016; // ~60fps
+      const deltaTime = clock.getDelta();
+      time += deltaTime;
 
-      // Rotate scene slightly
-      scene.rotation.y += THREE_CONFIG.animation.rotationSpeed;
-
-      // Animate center pulse
-      const centerData = projectNodes.get('burn-engine');
-      if (centerData) {
-        const pulseScale = 1 + Math.sin(time * THREE_CONFIG.animation.pulseSpeed * 1000 * burnIntensity) * 0.1;
-        centerData.mesh.scale.setScalar(pulseScale);
+      // Update camera controller
+      if (cameraController) {
+        cameraController.update(deltaTime);
       }
 
-      // Animate skill particles
-      skillParticles.forEach(particle => {
-        const { angle, orbitRadius, speed } = particle.userData;
-        const newAngle = angle + time * speed;
-        particle.position.x = Math.cos(newAngle) * orbitRadius;
-        particle.position.y = Math.sin(newAngle) * orbitRadius;
+      // Update burn core
+      if (burnCore) {
+        burnCore.update(deltaTime);
+      }
+
+      // Update fire particles
+      if (fireParticles) {
+        fireParticles.update(deltaTime, burnIntensity);
+      }
+
+      // Update snow particles
+      if (snowParticles) {
+        snowParticles.update(deltaTime);
+      }
+
+      // Update tree animation
+      if (yggdrasilTree) {
+        yggdrasilTree.animate(time, 0.15);
+      }
+
+      // Update islands
+      islands.forEach(island => {
+        island.update(deltaTime);
       });
 
-      // Gentle float on nodes
-      projectNodes.forEach((data, id) => {
-        if (id === 'burn-engine') return;
-        if (data.mesh && data.mesh.userData.baseY !== undefined) {
-          data.mesh.position.y = data.mesh.userData.baseY + Math.sin(time + data.mesh.position.x) * 0.3;
-        }
-      });
+      // Slow scene rotation (disabled when camera controller has auto-rotate)
+      // scene.rotation.y += THREE_CONFIG.animation.globalRotationSpeed;
 
       renderer.render(scene, camera);
     };
@@ -767,6 +709,7 @@ const ThreeRenderer = {
    */
   resume() {
     isPaused = false;
+    clock.getDelta(); // Reset delta
     console.log('[ThreeRenderer] Resumed');
   },
 
@@ -802,8 +745,9 @@ const ThreeRenderer = {
     return {
       type: 'three',
       initialized: isInitialized,
-      nodeCount: projectNodes.size,
-      particleCount: skillParticles.length
+      islandCount: islands.size,
+      hasTree: !!yggdrasilTree,
+      hasParticles: !!(fireParticles && snowParticles)
     };
   },
 
@@ -813,28 +757,44 @@ const ThreeRenderer = {
   dispose() {
     this.stopLoop();
 
-    // Dispose geometries and materials
-    projectNodes.forEach(data => {
-      if (data.mesh) {
-        data.mesh.geometry?.dispose();
-        data.mesh.material?.dispose();
-      }
-    });
+    // Dispose 3D objects
+    if (yggdrasilTree) {
+      yggdrasilTree.dispose();
+      yggdrasilTree = null;
+    }
 
-    skillParticles.forEach(p => {
-      p.geometry?.dispose();
-      p.material?.dispose();
-    });
+    if (burnCore) {
+      burnCore.dispose();
+      burnCore = null;
+    }
 
-    // Clear collections
-    projectNodes.clear();
-    skillParticles = [];
+    if (fireParticles) {
+      fireParticles.dispose();
+      fireParticles = null;
+    }
+
+    if (snowParticles) {
+      snowParticles.dispose();
+      snowParticles = null;
+    }
+
+    islands.forEach(island => island.dispose());
+    islands.clear();
+
+    // Dispose camera controller
+    if (cameraController) {
+      cameraController.dispose();
+      cameraController = null;
+    }
 
     // Dispose renderer
     if (renderer) {
       renderer.dispose();
       renderer.domElement.remove();
     }
+
+    // Clear arrays
+    raycastTargets = [];
 
     // Reset state
     scene = null;
@@ -843,6 +803,8 @@ const ThreeRenderer = {
     container = null;
     isInitialized = false;
     isPaused = false;
+    hoveredIsland = null;
+    selectedIsland = null;
 
     console.log('[ThreeRenderer] Disposed');
   }

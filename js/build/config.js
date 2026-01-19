@@ -160,6 +160,8 @@ export const EVENTS = {
   // Project events
   PROJECT_SELECT: 'project:select',
   PROJECT_DESELECT: 'project:deselect',
+  PROJECT_FOCUS: 'project:focus',
+  PROJECT_BLUR: 'project:blur',
 
   // Track events
   TRACK_SELECT: 'track:select',
@@ -176,7 +178,38 @@ export const EVENTS = {
 
   // Data events
   DATA_LOADED: 'data:loaded',
-  DATA_ERROR: 'data:error'
+  DATA_ERROR: 'data:error',
+
+  // 3D Renderer events
+  RENDERER_READY: 'renderer:ready',
+  RENDERER_ERROR: 'renderer:error',
+  CAMERA_ZOOM_START: 'camera:zoom:start',
+  CAMERA_ZOOM_END: 'camera:zoom:end',
+  CAMERA_RESET: 'camera:reset',
+
+  // Skill Tree events
+  SKILL_TREE_SHOW: 'skillTree:show',
+  SKILL_TREE_HIDE: 'skillTree:hide',
+  SKILL_NODE_CLICK: 'skillTree:node:click',
+  SKILL_NODE_HOVER: 'skillTree:node:hover',
+
+  // Formation Panel events
+  FORMATION_OPEN: 'formation:open',
+  FORMATION_CLOSE: 'formation:close',
+  FORMATION_TRACK_SELECT: 'formation:track:select',
+  FORMATION_MODULE_START: 'formation:module:start',
+  FORMATION_MODULE_COMPLETE: 'formation:module:complete',
+
+  // Builder Profile events
+  BUILDER_VIEW: 'builder:view',
+  BUILDER_OPENED: 'builder:opened',
+  BUILDER_CLOSED: 'builder:closed',
+
+  // GitHub Timeline events
+  TIMELINE_LOAD: 'timeline:load',
+  TIMELINE_LOADED: 'timeline:loaded',
+  TIMELINE_ERROR: 'timeline:error',
+  CONTRIBUTOR_CLICK: 'contributor:click'
 };
 
 // ============================================
@@ -211,7 +244,32 @@ export const SELECTORS = {
   SKILL_PILL: '.skill-pill',
 
   // Journey
-  JOURNEY_TRACK: '.journey-track'
+  JOURNEY_TRACK: '.journey-track',
+
+  // 3D Renderer
+  RENDERER_CONTAINER: '#yggdrasil-canvas',
+
+  // Formation Panel
+  FORMATION_PANEL_ROOT: '#formation-panel-root',
+  FORMATION_PANEL: '.formation-panel',
+  FORMATION_BACKDROP: '.formation-backdrop',
+  TRACK_CARD: '.track-card',
+  MODULE_CARD: '.module-card',
+
+  // Skill Tree
+  SKILL_TREE_CONTAINER: '.skill-tree-container',
+  SKILL_NODE: '.skill-node',
+  SKILL_TOOLTIP: '.skill-tooltip',
+
+  // Builder Profile
+  BUILDER_PROFILE_ROOT: '#builder-profile-root',
+  BUILDER_PROFILE_MODAL: '.builder-profile-modal',
+  BUILDER_PROFILE_BACKDROP: '.builder-profile-backdrop',
+
+  // GitHub Timeline
+  GITHUB_TIMELINE: '.github-timeline',
+  COMMIT_ITEM: '.commit-item',
+  CONTRIBUTOR_CARD: '.contributor-card'
 };
 
 // ============================================

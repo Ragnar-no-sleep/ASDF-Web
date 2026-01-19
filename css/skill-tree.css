@@ -1,0 +1,317 @@
+/**
+ * Skill Tree Styles
+ * Phi spiral skill tree visualization
+ */
+
+/* ============================================
+   SKILL TREE CONTAINER
+   ============================================ */
+
+.skill-tree-container {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.skill-tree-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   SKILL LINES
+   ============================================ */
+
+.skill-lines {
+  pointer-events: none;
+}
+
+.skill-line {
+  stroke-linecap: round;
+  transition: stroke-opacity 0.3s;
+}
+
+@keyframes skill-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ============================================
+   SKILL NODES
+   ============================================ */
+
+.skill-node {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.skill-node:hover {
+  filter: brightness(1.2);
+}
+
+.skill-node.primary circle:first-child {
+  animation: skill-pulse 2s ease-in-out infinite;
+}
+
+@keyframes skill-pulse {
+  0%, 100% {
+    fill-opacity: 0.2;
+  }
+  50% {
+    fill-opacity: 0.4;
+  }
+}
+
+.skill-node.teaches {
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+}
+
+.skill-label {
+  font-family: 'JetBrains Mono', monospace;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.skill-node:hover .skill-label {
+  fill: #fff;
+}
+
+/* ============================================
+   SKILL TOOLTIP
+   ============================================ */
+
+.skill-tooltip {
+  position: fixed;
+  z-index: 1000;
+  padding: 12px 16px;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  pointer-events: none;
+  max-width: 280px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skill-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.skill-tooltip-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.skill-tooltip-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.skill-tooltip-level {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #888;
+  margin-left: auto;
+}
+
+.skill-tooltip-desc {
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.skill-tooltip-category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.skill-tooltip-category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.skill-tooltip-prereqs {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skill-tooltip-prereqs-title {
+  font-size: 0.7rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.skill-tooltip-prereqs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.skill-tooltip-prereq {
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+/* ============================================
+   SKILL LEGEND
+   ============================================ */
+
+.skill-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.skill-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.skill-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.skill-legend-dot.primary {
+  background: #00ff88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.skill-legend-dot.secondary {
+  background: #666;
+}
+
+.skill-legend-dot.teaches {
+  background: #fbbf24;
+}
+
+/* ============================================
+   SKILL TREE HEADER
+   ============================================ */
+
+.skill-tree-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.skill-tree-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-tree-title-icon {
+  color: #00ff88;
+}
+
+.skill-tree-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.skill-tree-filter {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.skill-tree-filter:hover,
+.skill-tree-filter.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.skill-tree-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+  padding: 40px;
+}
+
+.skill-tree-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.skill-tree-empty-text {
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .skill-tree-container {
+    height: 300px;
+  }
+
+  .skill-legend {
+    justify-content: center;
+  }
+}

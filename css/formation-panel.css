@@ -1,0 +1,462 @@
+/**
+ * Formation Panel Styles
+ * Left slide panel for learning tracks
+ */
+
+/* ============================================
+   BACKDROP
+   ============================================ */
+
+.formation-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.formation-panel.open ~ .formation-backdrop,
+.formation-backdrop:has(+ .formation-panel.open) {
+  opacity: 1;
+}
+
+/* ============================================
+   PANEL
+   ============================================ */
+
+.formation-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 420px;
+  max-width: 90vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.formation-panel.open {
+  transform: translateX(0);
+}
+
+.formation-panel-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.formation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.formation-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.formation-icon {
+  font-size: 1.5rem;
+}
+
+.formation-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formation-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* ============================================
+   TRACKS LIST
+   ============================================ */
+
+.formation-tracks {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.track-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.track-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--track-color, #666);
+  transform: translateY(-2px);
+}
+
+.track-card-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.track-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  font-size: 1.5rem;
+  color: var(--track-color, #666);
+  flex-shrink: 0;
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.track-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.track-desc {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.track-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.track-difficulty {
+  text-transform: capitalize;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.track-progress {
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.track-start-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.track-start-btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+/* ============================================
+   TRACK DETAIL
+   ============================================ */
+
+.formation-detail {
+  padding: 20px;
+}
+
+.formation-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.formation-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.track-detail-header {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.track-icon-large {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 2rem;
+  color: var(--track-color);
+  flex-shrink: 0;
+}
+
+.track-name-large {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.track-desc-detail {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.track-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.difficulty-badge {
+  padding: 2px 8px;
+  background: var(--track-color);
+  border-radius: 4px;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+/* ============================================
+   MODULES LIST
+   ============================================ */
+
+.modules-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #888;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.module-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: moduleSlideIn 0.4s ease backwards;
+}
+
+@keyframes moduleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+.module-card:hover:not(.locked) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--track-color, #666);
+}
+
+.module-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.module-card.completed {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.module-card.next {
+  border-color: var(--track-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.module-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.module-card.completed .module-number {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.module-card.next .module-number {
+  background: var(--track-color);
+  color: #fff;
+}
+
+.module-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.module-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.module-desc {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.module-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.module-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+}
+
+.status-icon.completed {
+  color: #4ade80;
+}
+
+.status-icon.locked {
+  color: #666;
+}
+
+.status-badge.next {
+  padding: 4px 8px;
+  background: var(--track-color);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+  .formation-panel {
+    width: 100%;
+  }
+
+  .track-card-header {
+    flex-direction: column;
+  }
+
+  .track-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .track-detail-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .track-icon-large {
+    margin: 0 auto;
+  }
+}
