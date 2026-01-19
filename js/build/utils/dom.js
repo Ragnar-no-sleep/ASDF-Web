@@ -271,6 +271,18 @@ export function once(el, event, handler) {
 }
 
 /**
+ * Remove event listener
+ * @param {Element} el - Target element
+ * @param {string} event - Event name
+ * @param {Function} handler - Event handler
+ * @param {Object} [options] - Event options
+ */
+export function off(el, event, handler, options = {}) {
+  if (!el || !event || typeof handler !== 'function') return;
+  el.removeEventListener(event, handler, options);
+}
+
+/**
  * Delegate event handling
  * @param {Element} container - Container element
  * @param {string} event - Event name
