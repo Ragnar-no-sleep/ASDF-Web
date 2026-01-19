@@ -40,6 +40,8 @@ app.use(
         defaultSrc: ["'self'"],
         // Scripts: self + CDNs for Solana and DOMPurify (with SRI validation)
         scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com'],
+        // Allow inline event handlers (onclick etc) for games.html
+        scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
@@ -56,8 +58,7 @@ app.use(
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
-        // Block all plugins
-        pluginTypes: [],
+        // pluginTypes removed - deprecated in CSP spec
         // Allow embedding in Squarespace (alonisthe.dev)
         frameAncestors: [
           "'self'",

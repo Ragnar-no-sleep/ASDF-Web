@@ -24,36 +24,9 @@ const getBattleConstants = () => window.PumpArenaBattle?.CONSTANTS || {
 // ============================================================
 
 // ============================================================
-// SECURITY UTILITIES
+// SECURITY UTILITIES - use global from utils.js
 // ============================================================
-
-/**
- * Deep freeze an object and all nested objects
- */
-function deepFreeze(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    Object.keys(obj).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            deepFreeze(obj[key]);
-        }
-    });
-    return Object.freeze(obj);
-}
-
-/**
- * Escape HTML to prevent XSS attacks
- */
-function escapeHtml(text) {
-    if (typeof text !== 'string') return String(text);
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, char => map[char]);
-}
+// deepFreeze and escapeHtml are defined in js/games/utils.js
 
 const GRID_CONSTANTS = deepFreeze({
     // Grid dimensions

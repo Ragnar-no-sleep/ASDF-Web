@@ -549,16 +549,8 @@ const STORY_GATES = {
     }
 };
 
-// Deep freeze helper for nested objects
-function deepFreeze(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    Object.keys(obj).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            deepFreeze(obj[key]);
-        }
-    });
-    return Object.freeze(obj);
-}
+// Deep freeze helper - use global from utils.js
+// deepFreeze is defined in js/games/utils.js
 
 // Freeze all story gates
 deepFreeze(STORY_GATES);

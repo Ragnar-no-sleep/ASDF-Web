@@ -38,27 +38,15 @@ const addCreatureExp = (id, exp) => {
     window.PumpArenaState?.save?.();
 };
 
-// Battle Grid constants (local copy for initialization, syncs after battle-grid.js loads)
-const GRID_CONSTANTS = {
+// Battle Grid constants - use global from battle-grid.js if available
+const _SUMMONS_GRID_CONSTANTS = window.PumpArenaBattleGrid?.GRID_CONSTANTS || {
     ATTACK_RANGE: { MELEE: 1, SHORT: 2, MID: 3, LONG: 5, RANGED: 8 }
 };
 
 // ============================================================
-// SECURITY UTILITIES
+// SECURITY UTILITIES - use global from utils.js
 // ============================================================
-
-/**
- * Deep freeze an object and all nested objects
- */
-function deepFreeze(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    Object.keys(obj).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            deepFreeze(obj[key]);
-        }
-    });
-    return Object.freeze(obj);
-}
+// deepFreeze and escapeHtml are defined in js/games/utils.js
 
 // ============================================================
 // SUMMON CONSTANTS - Fibonacci based
@@ -146,7 +134,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.SHORT,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.SHORT,
         movementRange: 3,
 
         abilities: [
@@ -179,7 +167,7 @@ const CREATURES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MID,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MID,
         movementRange: 3,
 
         abilities: [
@@ -213,7 +201,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MELEE,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MELEE,
         movementRange: 4,
 
         abilities: [
@@ -246,7 +234,7 @@ const CREATURES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.LONG,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.LONG,
         movementRange: 2,
 
         abilities: [
@@ -279,7 +267,7 @@ const CREATURES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.LONG,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.LONG,
         movementRange: 5,
 
         abilities: [
@@ -312,7 +300,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.SHORT,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.SHORT,
         movementRange: 5,
 
         abilities: [
@@ -345,7 +333,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MELEE,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MELEE,
         movementRange: 1,
 
         abilities: [
@@ -378,7 +366,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MELEE,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MELEE,
         movementRange: 2,
 
         abilities: [
@@ -411,7 +399,7 @@ const CREATURES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.SHORT,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.SHORT,
         movementRange: 4,
 
         abilities: [
@@ -444,7 +432,7 @@ const CREATURES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MID,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MID,
         movementRange: 5,
 
         abilities: [
@@ -477,7 +465,7 @@ const CREATURES = {
         },
 
         attackType: 'magic',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.LONG,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.LONG,
         movementRange: 4,
 
         abilities: [
@@ -511,7 +499,7 @@ const CREATURES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MID,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MID,
         movementRange: 3,
 
         abilities: [
@@ -545,7 +533,7 @@ const CREATURES = {
         },
 
         attackType: 'magic',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.RANGED,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.RANGED,
         movementRange: 6,
 
         abilities: [
@@ -1071,7 +1059,7 @@ const ALLIES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MELEE,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MELEE,
         movementRange: 2,
 
         abilities: [
@@ -1099,7 +1087,7 @@ const ALLIES = {
         },
 
         attackType: 'ranged',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.LONG,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.LONG,
         movementRange: 3,
 
         abilities: [
@@ -1127,7 +1115,7 @@ const ALLIES = {
         },
 
         attackType: 'magic',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MID,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MID,
         movementRange: 4,
 
         abilities: [
@@ -1156,7 +1144,7 @@ const ALLIES = {
         },
 
         attackType: 'magic',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.MID,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.MID,
         movementRange: 3,
 
         abilities: [
@@ -1184,7 +1172,7 @@ const ALLIES = {
         },
 
         attackType: 'melee',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.SHORT,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.SHORT,
         movementRange: 5,
 
         abilities: [
@@ -1212,7 +1200,7 @@ const ALLIES = {
         },
 
         attackType: 'magic',
-        attackRange: GRID_CONSTANTS.ATTACK_RANGE.LONG,
+        attackRange: _SUMMONS_GRID_CONSTANTS.ATTACK_RANGE.LONG,
         movementRange: 2,
 
         abilities: [

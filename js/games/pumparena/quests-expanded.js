@@ -31,21 +31,9 @@ const _setQuestsMajorChoice = (choiceId, value) => {
 const _getQuestsFactions = () => window.PumpArenaFactions?.FACTIONS || {};
 
 // ============================================================
-// SECURITY UTILITIES
+// SECURITY UTILITIES - use global from utils.js
 // ============================================================
-
-/**
- * Deep freeze an object and all nested objects
- */
-function deepFreeze(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    Object.keys(obj).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            deepFreeze(obj[key]);
-        }
-    });
-    return Object.freeze(obj);
-}
+// deepFreeze and escapeHtml are defined in js/games/utils.js
 
 // ============================================================
 // QUEST CONSTANTS

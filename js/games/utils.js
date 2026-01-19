@@ -11,18 +11,41 @@
 
 /**
  * Escape HTML entities for safe display
+ * Defined once here, used by all modules
  */
-function escapeHtml(text) {
-    if (typeof text !== 'string') return text;
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
+if (typeof window.escapeHtml !== 'function') {
+    window.escapeHtml = function escapeHtml(text) {
+        if (typeof text !== 'string') return String(text);
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
 }
+// Local reference for modules using function name directly
+const escapeHtml = window.escapeHtml;
+
+/**
+ * Deep freeze an object and all nested objects
+ * Defined once here, used by all modules
+ */
+if (typeof window.deepFreeze !== 'function') {
+    window.deepFreeze = function deepFreeze(obj) {
+        if (obj === null || typeof obj !== 'object') return obj;
+        Object.keys(obj).forEach(key => {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                window.deepFreeze(obj[key]);
+            }
+        });
+        return Object.freeze(obj);
+    };
+}
+// Local reference for modules using function name directly
+const deepFreeze = window.deepFreeze;
 
 // ============================================
 // INPUT VALIDATION UTILITIES
