@@ -27,35 +27,46 @@ import {
 } from '../utils/dom.js';
 
 // ============================================
-// INTRO SLIDES
+// INTRO SLIDES - Positioned Tooltips
 // ============================================
 
 const INTRO_SLIDES = [
   {
-    id: 'welcome',
-    icon: '\uD83C\uDF33', // 🌳
-    title: 'Welcome to Yggdrasil',
-    subtitle: 'The World Tree of ASDF',
-    description: 'Every project in our ecosystem is connected, supporting and strengthening each other.',
-    cta: 'Continue'
+    id: 'burn-center',
+    target: '.tree-heart, .nordic-sun',
+    position: 'bottom', // Tooltip appears below target
+    icon: '&#128293;', // 🔥 as HTML entity
+    title: 'The Burn Engine',
+    description: 'Live burns power the ecosystem. Watch the pulse - faster means more activity.',
+    cta: 'Next'
   },
   {
-    id: 'explore',
-    icon: '\uD83D\uDD25', // 🔥
-    title: 'Explore the Ecosystem',
-    subtitle: 'Click any realm to learn more',
-    description: 'From the Burn Engine at the heart to the growing branches of new projects.',
-    cta: 'Got it'
+    id: 'projects',
+    target: '.tree-node[data-project="burn-tracker"], .tree-node[data-status="live"]',
+    position: 'right',
+    icon: '&#127793;', // 🌱 as HTML entity
+    title: 'Explore Projects',
+    description: 'Click any stone island to see skills, builders, and progress.',
+    cta: 'Next'
   },
   {
-    id: 'build',
-    icon: '\uD83D\uDEE0\uFE0F', // 🛠️
-    title: 'Ready to Build?',
-    subtitle: 'Find your path',
-    description: 'Take our quiz to discover which track fits your skills and interests.',
+    id: 'find-path',
+    target: '[data-view="path"]',
+    position: 'bottom',
+    icon: '&#129517;', // 🧭 as HTML entity
+    title: 'Find Your Path',
+    description: 'Take the quiz to discover your builder track and start your journey.',
     cta: 'Start Exploring'
   }
 ];
+
+// Tooltip positioning config
+const TOOLTIP_CONFIG = {
+  offset: 16,        // Distance from target
+  arrowSize: 12,     // Arrow/pointer size
+  maxWidth: 320,     // Maximum tooltip width
+  padding: 20        // Screen edge padding
+};
 
 // ============================================
 // INTRO STATE
@@ -64,6 +75,8 @@ const INTRO_SLIDES = [
 let introContainer = null;
 let currentSlide = 0;
 let isAnimating = false;
+let highlightOverlay = null;
+let currentTargetElement = null;
 
 // ============================================
 // INTRO COMPONENT
@@ -110,11 +123,14 @@ const IntroComponent = {
   },
 
   /**
-   * Render intro content
+   * Render intro tooltip
    */
   render() {
     const slide = INTRO_SLIDES[currentSlide];
     if (!slide) return;
+
+    // Find target element
+    currentTargetElement = $(slide.target);
 
     // Generate dots
     const dots = INTRO_SLIDES.map((_, i) => {
@@ -123,17 +139,19 @@ const IntroComponent = {
       return `<span class="intro-dot ${activeClass} ${doneClass}" data-slide="${i}"></span>`;
     }).join('');
 
+    // Create tooltip HTML (icon uses innerHTML for HTML entities)
     const html = `
       <div class="intro-backdrop"></div>
-      <div class="intro-card">
+      <div class="intro-spotlight"></div>
+      <div class="intro-tooltip" data-position="${slide.position}">
+        <div class="intro-tooltip-arrow"></div>
         <button class="intro-skip" aria-label="Skip intro">Skip</button>
-        <div class="intro-content">
-          <div class="intro-icon">${sanitizeText(slide.icon)}</div>
-          <h1 class="intro-title">${sanitizeText(slide.title)}</h1>
-          <p class="intro-subtitle">${sanitizeText(slide.subtitle)}</p>
-          <p class="intro-description">${sanitizeText(slide.description)}</p>
+        <div class="intro-tooltip-content">
+          <div class="intro-tooltip-icon">${slide.icon}</div>
+          <h3 class="intro-tooltip-title">${sanitizeText(slide.title)}</h3>
+          <p class="intro-tooltip-desc">${sanitizeText(slide.description)}</p>
         </div>
-        <div class="intro-footer">
+        <div class="intro-tooltip-footer">
           <div class="intro-dots">${dots}</div>
           <button class="intro-cta">${sanitizeText(slide.cta)}</button>
         </div>
@@ -142,10 +160,147 @@ const IntroComponent = {
 
     introContainer.innerHTML = html;
 
+    // Position tooltip relative to target
+    this.positionTooltip(slide);
+
+    // Highlight target element
+    this.highlightTarget();
+
     // Animate in
     requestAnimationFrame(() => {
       addClass(introContainer, 'active');
     });
+  },
+
+  /**
+   * Position tooltip relative to target element
+   * @param {Object} slide - Current slide config
+   */
+  positionTooltip(slide) {
+    const tooltip = $('.intro-tooltip', introContainer);
+    const spotlight = $('.intro-spotlight', introContainer);
+
+    if (!tooltip) return;
+
+    // If no target found, center the tooltip
+    if (!currentTargetElement) {
+      setStyles(tooltip, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)'
+      });
+      if (spotlight) hide(spotlight);
+      return;
+    }
+
+    const targetRect = currentTargetElement.getBoundingClientRect();
+    const { offset, padding, maxWidth } = TOOLTIP_CONFIG;
+
+    // Calculate position based on slide.position
+    let top, left;
+    const position = slide.position || 'bottom';
+
+    switch (position) {
+      case 'top':
+        top = targetRect.top - offset;
+        left = targetRect.left + targetRect.width / 2;
+        break;
+      case 'bottom':
+        top = targetRect.bottom + offset;
+        left = targetRect.left + targetRect.width / 2;
+        break;
+      case 'left':
+        top = targetRect.top + targetRect.height / 2;
+        left = targetRect.left - offset;
+        break;
+      case 'right':
+        top = targetRect.top + targetRect.height / 2;
+        left = targetRect.right + offset;
+        break;
+      default:
+        top = targetRect.bottom + offset;
+        left = targetRect.left + targetRect.width / 2;
+    }
+
+    // Apply transform based on position
+    let transform = '';
+    if (position === 'top') {
+      transform = 'translate(-50%, -100%)';
+    } else if (position === 'bottom') {
+      transform = 'translate(-50%, 0)';
+    } else if (position === 'left') {
+      transform = 'translate(-100%, -50%)';
+    } else if (position === 'right') {
+      transform = 'translate(0, -50%)';
+    }
+
+    // Keep within viewport
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Clamp horizontal position
+    if (left < padding + maxWidth / 2) left = padding + maxWidth / 2;
+    if (left > viewportWidth - padding - maxWidth / 2) left = viewportWidth - padding - maxWidth / 2;
+
+    // Clamp vertical position
+    if (top < padding) top = padding;
+    if (top > viewportHeight - padding - 200) top = viewportHeight - padding - 200;
+
+    setStyles(tooltip, {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      transform: transform,
+      maxWidth: `${maxWidth}px`
+    });
+
+    // Position spotlight over target
+    if (spotlight) {
+      const spotlightPadding = 8;
+      setStyles(spotlight, {
+        position: 'fixed',
+        top: `${targetRect.top - spotlightPadding}px`,
+        left: `${targetRect.left - spotlightPadding}px`,
+        width: `${targetRect.width + spotlightPadding * 2}px`,
+        height: `${targetRect.height + spotlightPadding * 2}px`,
+        borderRadius: '12px'
+      });
+      show(spotlight);
+    }
+  },
+
+  /**
+   * Highlight target element
+   */
+  highlightTarget() {
+    // Remove previous highlight
+    if (highlightOverlay) {
+      removeClass(highlightOverlay, 'intro-highlighted');
+    }
+
+    if (currentTargetElement) {
+      addClass(currentTargetElement, 'intro-highlighted');
+      highlightOverlay = currentTargetElement;
+
+      // Scroll target into view if needed
+      currentTargetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      });
+    }
+  },
+
+  /**
+   * Clear target highlight
+   */
+  clearHighlight() {
+    if (highlightOverlay) {
+      removeClass(highlightOverlay, 'intro-highlighted');
+      highlightOverlay = null;
+    }
+    currentTargetElement = null;
   },
 
   /**
@@ -248,10 +403,14 @@ const IntroComponent = {
    */
   async animateSlideOut(direction) {
     isAnimating = true;
-    const card = $('.intro-card', introContainer);
-    if (card) {
-      addClass(card, `slide-out-${direction}`);
-      await waitForTransition(card);
+
+    // Clear current highlight before transition
+    this.clearHighlight();
+
+    const tooltip = $('.intro-tooltip', introContainer);
+    if (tooltip) {
+      addClass(tooltip, `slide-out-${direction}`);
+      await waitForTransition(tooltip);
     }
   },
 
@@ -260,11 +419,11 @@ const IntroComponent = {
    * @param {string} direction - 'left' or 'right'
    */
   async animateSlideIn(direction) {
-    const card = $('.intro-card', introContainer);
-    if (card) {
-      addClass(card, `slide-in-${direction}`);
+    const tooltip = $('.intro-tooltip', introContainer);
+    if (tooltip) {
+      addClass(tooltip, `slide-in-${direction}`);
       await nextFrame();
-      removeClass(card, `slide-in-${direction}`, 'slide-out-left', 'slide-out-right');
+      removeClass(tooltip, `slide-in-${direction}`, 'slide-out-left', 'slide-out-right');
     }
     isAnimating = false;
   },
@@ -277,6 +436,9 @@ const IntroComponent = {
 
     // Mark as completed
     BuildState.completeIntro();
+
+    // Clear any highlights
+    this.clearHighlight();
 
     // Animate out
     removeClass(introContainer, 'active');
