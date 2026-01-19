@@ -59,10 +59,10 @@ const RARITY_WEIGHTS = {
 };
 
 // ============================================
-// CATALOG MANAGER
+// CATALOG MANAGER (V2 - renamed to avoid conflict with shop.js)
 // ============================================
 
-const ShopCatalog = {
+const ShopCatalogV2 = {
     // Cached enriched items
     _cache: new Map(),
 

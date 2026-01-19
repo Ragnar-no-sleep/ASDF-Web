@@ -16,22 +16,25 @@
 // ============================================================
 
 // Factions module accessors
-const FACTIONS = {};  // Populated on init
-const getFactionRelation = (a, b) => window.PumpArenaFactions?.getFactionRelation?.(a, b) || 0;
-const canJoinFaction = (id, state) => window.PumpArenaFactions?.canJoinFaction?.(id, state) || { canJoin: false };
+const _storyGatesFACTIONS = {};  // Populated on init
+const _getFactionRelation = (a, b) => window.PumpArenaFactions?.getFactionRelation?.(a, b) || 0;
+const _canJoinFaction = (id, state) => window.PumpArenaFactions?.canJoinFaction?.(id, state) || { canJoin: false };
 
-// RPG State accessors
-const getRPGState = () => window.PumpArenaState?.get?.() || {};
-const getFactionState = () => getRPGState().faction || {};
-const getCurrentFaction = () => getFactionState().current || null;
-const setCurrentFaction = (id) => {
-    const state = getRPGState();
+// RPG State accessors - use global functions if available
+const _getStoryGatesRPGState = () => {
+    if (typeof getRPGState === 'function') return getRPGState();
+    return window.PumpArenaState?.get?.() || {};
+};
+const _getStoryGatesFactionState = () => _getStoryGatesRPGState().faction || {};
+const _getCurrentFaction = () => _getStoryGatesFactionState().current || null;
+const _setStoryGateCurrentFaction = (id) => {
+    const state = _getStoryGatesRPGState();
     if (state.faction) state.faction.current = id;
     window.PumpArenaState?.save?.();
 };
-const getFactionStanding = (id) => getFactionState().standing?.[id] || 0;
-const modifyFactionStanding = (id, amount) => {
-    const state = getRPGState();
+const _getStoryGateFactionStanding = (id) => _getStoryGatesFactionState().standing?.[id] || 0;
+const _modifyStoryGateFactionStanding = (id, amount) => {
+    const state = _getStoryGatesRPGState();
     if (!state.faction?.standing) return 0;
     state.faction.standing[id] = Math.max(-100, Math.min(100, (state.faction.standing[id] || 0) + amount));
     window.PumpArenaState?.save?.();

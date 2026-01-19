@@ -817,7 +817,7 @@
 
                 <div class="level-nav">
                     <div></div>
-                    <button class="btn btn-primary" onclick="switchView('mechanism')">Learn the Mechanism &#8594;</button>
+                    <button class="btn btn-primary" data-nav-view="mechanism">Learn the Mechanism &#8594;</button>
                 </div>
             </div>
 
@@ -860,8 +860,8 @@
                 </div>
 
                 <div class="level-nav">
-                    <button class="btn btn-secondary" onclick="switchView('overview')">&#8592; Back</button>
-                    <button class="btn btn-primary" onclick="switchView('philosophy')">The Philosophy &#8594;</button>
+                    <button class="btn btn-secondary" data-nav-view="overview">&#8592; Back</button>
+                    <button class="btn btn-primary" data-nav-view="philosophy">The Philosophy &#8594;</button>
                 </div>
             </div>
 
@@ -977,8 +977,8 @@
                 </div>
 
                 <div class="level-nav">
-                    <button class="btn btn-secondary" onclick="switchView('mechanism')">&#8592; Back</button>
-                    <button class="btn btn-primary" onclick="switchView('kscore')">K-Score Explained &#8594;</button>
+                    <button class="btn btn-secondary" data-nav-view="mechanism">&#8592; Back</button>
+                    <button class="btn btn-primary" data-nav-view="kscore">K-Score Explained &#8594;</button>
                 </div>
             </div>
 
@@ -1055,8 +1055,8 @@
                 </div>
 
                 <div class="level-nav">
-                    <button class="btn btn-secondary" onclick="switchView('philosophy')">&#8592; Back</button>
-                    <button class="btn btn-primary" onclick="switchView('ecosystem')">Explore Ecosystem &#8594;</button>
+                    <button class="btn btn-secondary" data-nav-view="philosophy">&#8592; Back</button>
+                    <button class="btn btn-primary" data-nav-view="ecosystem">Explore Ecosystem &#8594;</button>
                 </div>
             </div>
 
@@ -1137,8 +1137,8 @@
                 </div>
 
                 <div class="level-nav">
-                    <button class="btn btn-secondary" onclick="switchView('kscore')">&#8592; Back</button>
-                    <button class="btn btn-primary" onclick="switchView('faq')">FAQ & Glossary &#8594;</button>
+                    <button class="btn btn-secondary" data-nav-view="kscore">&#8592; Back</button>
+                    <button class="btn btn-primary" data-nav-view="faq">FAQ & Glossary &#8594;</button>
                 </div>
             </div>
 
@@ -1307,7 +1307,7 @@
                 </div>
 
                 <div class="level-nav" style="margin-top: var(--space-8);">
-                    <button class="btn btn-secondary" onclick="switchView('ecosystem')">&#8592; Back</button>
+                    <button class="btn btn-secondary" data-nav-view="ecosystem">&#8592; Back</button>
                     <a href="burns.html" class="btn btn-primary">View Live Burns &#8594;</a>
                 </div>
             </div>
@@ -1324,118 +1324,6 @@
         </div>
     </footer>
 
-    <script>
-        // =============================================
-        // DEEP LEARN - Interactive JavaScript
-        // =============================================
-
-        // State
-        let currentView = 'overview';
-
-        // View Switching
-        function switchView(viewId) {
-            // Update current view
-            currentView = viewId;
-
-            // Update tabs
-            document.querySelectorAll('.section-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.view === viewId);
-            });
-
-            // Update sidebar nav
-            document.querySelectorAll('.nav-item[data-view]').forEach(item => {
-                const isActive = item.dataset.view === viewId;
-                item.classList.toggle('active', isActive);
-                item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            });
-
-            // Update view sections
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.toggle('active', section.id === `view-${viewId}`);
-            });
-
-            // Scroll to top of content
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Tab click handlers
-        document.querySelectorAll('.section-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                switchView(tab.dataset.view);
-            });
-        });
-
-        // Sidebar nav click handlers
-        document.querySelectorAll('.nav-item[data-view]').forEach(item => {
-            item.addEventListener('click', () => {
-                switchView(item.dataset.view);
-            });
-        });
-
-        // FAQ Accordion
-        document.querySelectorAll('.faq-question').forEach(question => {
-            question.addEventListener('click', () => {
-                const item = question.parentElement;
-                item.classList.toggle('open');
-            });
-        });
-
-        // Glossary Search
-        const glossarySearch = document.getElementById('glossary-search');
-        if (glossarySearch) {
-            glossarySearch.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                document.querySelectorAll('.glossary-item').forEach(item => {
-                    const term = item.querySelector('.glossary-term').textContent.toLowerCase();
-                    const def = item.querySelector('.glossary-def').textContent.toLowerCase();
-                    const matches = term.includes(query) || def.includes(query);
-                    item.style.display = matches ? 'block' : 'none';
-                });
-            });
-        }
-
-        // Mobile Navigation Toggle
-        const navToggle = document.querySelector('.nav-toggle');
-        const navLinks = document.querySelector('.nav-links');
-        if (navToggle && navLinks) {
-            navToggle.addEventListener('click', () => {
-                const isExpanded = navLinks.classList.toggle('open');
-                navToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-            });
-        }
-
-        // Load stats from API (optional)
-        async function loadStats() {
-            try {
-                const response = await fetch('/api/burns/stats');
-                if (response.ok) {
-                    const data = await response.json();
-                    const sidebarBurned = document.getElementById('sidebar-burned');
-                    const sidebarCycles = document.getElementById('sidebar-cycles');
-
-                    if (sidebarBurned && data.burnPercentage) {
-                        sidebarBurned.textContent = data.burnPercentage.toFixed(1) + '%';
-                    }
-                    if (sidebarCycles && data.totalCycles) {
-                        sidebarCycles.textContent = data.totalCycles;
-                    }
-                }
-            } catch (err) {
-                // Silently fail - stats will show defaults
-                console.log('Stats API not available');
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
-
-            // Check URL hash for direct section navigation
-            const hash = window.location.hash.slice(1);
-            if (hash && document.getElementById(`view-${hash}`)) {
-                switchView(hash);
-            }
-        });
-    </script>
+    <script src="js/deep-learn.js"></script>
 </body>
 </html>

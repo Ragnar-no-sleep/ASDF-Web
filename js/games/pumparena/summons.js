@@ -11,9 +11,12 @@
 // GLOBAL MODULE ACCESSORS (legacy compatibility)
 // ============================================================
 
-// RPG State accessors
-const getSummonsState = () => window.PumpArenaState?.get?.()?.summons || { creatures: {}, allies: {}, activeParty: { creatures: [], allies: [] } };
-const getActiveParty = () => getSummonsState().activeParty || { creatures: [], allies: [] };
+// RPG State accessors - use global getSummonsState from rpgstate.js if available
+const _getSummonsStateLocal = () => {
+    if (typeof getSummonsState === 'function') return getSummonsState();
+    return window.PumpArenaState?.get?.()?.summons || { creatures: {}, allies: {}, activeParty: { creatures: [], allies: [] } };
+};
+const getActiveParty = () => _getSummonsStateLocal().activeParty || { creatures: [], allies: [] };
 const unlockCreature = (id) => {
     const state = window.PumpArenaState?.get?.();
     if (!state?.summons) return;

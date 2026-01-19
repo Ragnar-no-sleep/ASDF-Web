@@ -13,8 +13,8 @@
 // GLOBAL MODULE ACCESSORS (legacy compatibility)
 // ============================================================
 
-// Battle module accessor
-const BATTLE_CONSTANTS = () => window.PumpArenaBattle?.CONSTANTS || {
+// Battle module accessor (renamed to avoid conflict with battle.js)
+const getBattleConstants = () => window.PumpArenaBattle?.CONSTANTS || {
     ENERGY_PER_TURN: 3,
     MAX_CARDS_IN_HAND: 8
 };
