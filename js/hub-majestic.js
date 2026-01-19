@@ -72,7 +72,7 @@
 
     const expand = () => {
       clearTimeout(closeTimeout);
-      if (!isExpanded) {
+      if (!isExpanded && tools && trigger) {
         tools.classList.add('expanded');
         trigger.setAttribute('aria-expanded', 'true');
         isExpanded = true;
@@ -81,9 +81,11 @@
 
     const collapse = () => {
       closeTimeout = setTimeout(() => {
-        tools.classList.remove('expanded');
-        trigger.setAttribute('aria-expanded', 'false');
-        isExpanded = false;
+        if (tools && trigger) {
+          tools.classList.remove('expanded');
+          trigger.setAttribute('aria-expanded', 'false');
+          isExpanded = false;
+        }
       }, 300);
     };
 
@@ -97,7 +99,7 @@
     // Also support click toggle for touch devices
     trigger.addEventListener('click', e => {
       e.preventDefault();
-      if (isExpanded) {
+      if (isExpanded && tools && trigger) {
         clearTimeout(closeTimeout);
         tools.classList.remove('expanded');
         trigger.setAttribute('aria-expanded', 'false');
