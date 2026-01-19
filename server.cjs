@@ -51,6 +51,7 @@ app.use(
           'https://burns.onrender.com',
           'https://api.asdf-games.com',
           'https://asdf-web.onrender.com',
+          'https://asdf-api.onrender.com',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
