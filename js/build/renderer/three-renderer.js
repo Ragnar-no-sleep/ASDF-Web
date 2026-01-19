@@ -18,6 +18,8 @@ import { YggdrasilTree } from './objects/yggdrasil-tree.js';
 import { StoneIsland, StoneIslandFactory } from './objects/stone-island.js';
 import { BurnCore } from './objects/burn-core.js';
 import { CameraController } from './camera/camera-controller.js';
+import { PostProcessing } from './effects/post-processing.js';
+import { PerformanceManager } from './performance.js';
 
 // ============================================
 // CONFIGURATION
@@ -93,6 +95,10 @@ let snowParticles = null;
 let cameraController = null;
 let islands = new Map();
 
+// Post-processing and performance
+let postProcessing = null;
+let performanceSettings = null;
+
 // Interaction state
 let hoveredIsland = null;
 let selectedIsland = null;
@@ -156,6 +162,25 @@ const ThreeRenderer = {
       renderer.domElement,
       { orbit: { autoRotate: true, autoRotateSpeed: 0.15 } }
     );
+
+    // Initialize performance manager
+    performanceSettings = PerformanceManager.init({
+      onQualityChange: (data) => this.onQualityChange(data)
+    });
+
+    // Initialize post-processing (if enabled)
+    if (performanceSettings.postProcessing) {
+      try {
+        postProcessing = new PostProcessing(this.THREE, renderer, scene, camera, {
+          bloom: { strength: performanceSettings.bloom || 0.8 }
+        });
+        await postProcessing.init();
+        console.log('[ThreeRenderer] Post-processing enabled');
+      } catch (error) {
+        console.warn('[ThreeRenderer] Post-processing failed:', error);
+        postProcessing = null;
+      }
+    }
 
     // Bind events
     this.bindEvents();
@@ -638,10 +663,13 @@ const ThreeRenderer = {
   startLoop() {
     if (animationFrameId) return;
 
-    const animate = () => {
+    const animate = (timestamp) => {
       animationFrameId = requestAnimationFrame(animate);
 
       if (isPaused) return;
+
+      // Update performance tracking
+      PerformanceManager.tick(timestamp);
 
       const deltaTime = clock.getDelta();
       time += deltaTime;
@@ -676,14 +704,42 @@ const ThreeRenderer = {
         island.update(deltaTime);
       });
 
-      // Slow scene rotation (disabled when camera controller has auto-rotate)
-      // scene.rotation.y += THREE_CONFIG.animation.globalRotationSpeed;
-
-      renderer.render(scene, camera);
+      // Render with or without post-processing
+      if (postProcessing && postProcessing.enabled) {
+        postProcessing.render(deltaTime);
+      } else {
+        renderer.render(scene, camera);
+      }
     };
 
-    animate();
+    animate(performance.now());
     console.log('[ThreeRenderer] Render loop started');
+  },
+
+  /**
+   * Handle quality change from performance manager
+   * @param {Object} data
+   */
+  onQualityChange(data) {
+    const { newPreset, settings } = data;
+    console.log(`[ThreeRenderer] Quality changed to: ${newPreset}`);
+
+    // Update post-processing
+    if (postProcessing) {
+      if (settings.postProcessing) {
+        postProcessing.setEnabled(true);
+        postProcessing.setBloomStrength(settings.bloom || 0.5);
+      } else {
+        postProcessing.setEnabled(false);
+      }
+    }
+
+    // Update particle counts (would require recreating particles)
+    // For now, just log the change
+    BuildState.emit('renderer:qualityChange', {
+      preset: newPreset,
+      settings
+    });
   },
 
   /**
@@ -785,6 +841,12 @@ const ThreeRenderer = {
     if (cameraController) {
       cameraController.dispose();
       cameraController = null;
+    }
+
+    // Dispose post-processing
+    if (postProcessing) {
+      postProcessing.dispose();
+      postProcessing = null;
     }
 
     // Dispose renderer

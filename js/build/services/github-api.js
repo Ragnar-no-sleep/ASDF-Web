@@ -321,6 +321,243 @@ const GitHubApiService = {
   },
 
   // ============================================
+  // BUILDER PROFILE METHODS
+  // ============================================
+
+  /**
+   * Get detailed user profile
+   * @param {string} username
+   * @returns {Promise<Object|null>}
+   */
+  async getUserProfile(username) {
+    if (!username) return null;
+
+    const cacheKey = `user:${username}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await this.fetchWithTimeout(
+        `${GITHUB_API}/users/${username}`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.warn(`[GitHubApiService] User not found: ${username}`);
+          return null;
+        }
+        if (response.status === 403) {
+          console.warn('[GitHubApiService] Rate limited for user profile');
+          return this.getFallbackUserProfile(username);
+        }
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = {
+        login: data.login,
+        name: data.name || data.login,
+        avatar: data.avatar_url,
+        bio: data.bio,
+        company: data.company,
+        location: data.location,
+        blog: data.blog,
+        twitter: data.twitter_username,
+        publicRepos: data.public_repos,
+        followers: data.followers,
+        following: data.following,
+        createdAt: data.created_at,
+        url: data.html_url
+      };
+
+      this.setCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.warn('[GitHubApiService] Failed to fetch user profile:', error.message);
+      return this.getFallbackUserProfile(username);
+    }
+  },
+
+  /**
+   * Get user's recent public activity
+   * @param {string} username
+   * @param {number} limit
+   * @returns {Promise<Array>}
+   */
+  async getUserActivity(username, limit = 10) {
+    if (!username) return [];
+
+    const cacheKey = `activity:${username}:${limit}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await this.fetchWithTimeout(
+        `${GITHUB_API}/users/${username}/events/public?per_page=${limit}`
+      );
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = await response.json();
+      const activity = data.map(event => ({
+        id: event.id,
+        type: event.type,
+        repo: event.repo?.name,
+        createdAt: event.created_at,
+        payload: this.summarizeEventPayload(event)
+      }));
+
+      this.setCache(cacheKey, activity);
+      return activity;
+    } catch (error) {
+      console.warn('[GitHubApiService] Failed to fetch user activity:', error.message);
+      return [];
+    }
+  },
+
+  /**
+   * Summarize event payload for display
+   * @param {Object} event
+   * @returns {string}
+   */
+  summarizeEventPayload(event) {
+    switch (event.type) {
+      case 'PushEvent':
+        const commits = event.payload?.commits?.length || 0;
+        return `Pushed ${commits} commit${commits !== 1 ? 's' : ''}`;
+      case 'PullRequestEvent':
+        return `${event.payload?.action} PR #${event.payload?.pull_request?.number}`;
+      case 'IssuesEvent':
+        return `${event.payload?.action} issue #${event.payload?.issue?.number}`;
+      case 'CreateEvent':
+        return `Created ${event.payload?.ref_type} ${event.payload?.ref || ''}`;
+      case 'DeleteEvent':
+        return `Deleted ${event.payload?.ref_type} ${event.payload?.ref || ''}`;
+      case 'WatchEvent':
+        return 'Starred repository';
+      case 'ForkEvent':
+        return 'Forked repository';
+      case 'IssueCommentEvent':
+        return `Commented on #${event.payload?.issue?.number}`;
+      default:
+        return event.type.replace('Event', '');
+    }
+  },
+
+  /**
+   * Get user's public repositories
+   * @param {string} username
+   * @param {number} limit
+   * @returns {Promise<Array>}
+   */
+  async getUserRepos(username, limit = 6) {
+    if (!username) return [];
+
+    const cacheKey = `repos:${username}:${limit}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const response = await this.fetchWithTimeout(
+        `${GITHUB_API}/users/${username}/repos?sort=updated&per_page=${limit}`
+      );
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = await response.json();
+      const repos = data.map(repo => ({
+        name: repo.name,
+        description: repo.description,
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+        language: repo.language,
+        updatedAt: repo.updated_at,
+        url: repo.html_url
+      }));
+
+      this.setCache(cacheKey, repos);
+      return repos;
+    } catch (error) {
+      console.warn('[GitHubApiService] Failed to fetch user repos:', error.message);
+      return [];
+    }
+  },
+
+  /**
+   * Get full builder profile with activity and repos
+   * @param {string} username
+   * @returns {Promise<Object>}
+   */
+  async getBuilderProfile(username) {
+    const cacheKey = `builder:${username}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    // Fetch all data in parallel
+    const [profile, activity, repos] = await Promise.all([
+      this.getUserProfile(username),
+      this.getUserActivity(username, 10),
+      this.getUserRepos(username, 6)
+    ]);
+
+    if (!profile) {
+      return null;
+    }
+
+    const result = {
+      ...profile,
+      activity,
+      repos,
+      fetchedAt: Date.now()
+    };
+
+    this.setCache(cacheKey, result);
+    return result;
+  },
+
+  /**
+   * Check if user has contributed to ASDF projects
+   * @param {string} username
+   * @returns {Promise<Array>}
+   */
+  async getUserAsdfContributions(username) {
+    if (!username) return [];
+
+    const cacheKey = `asdf-contrib:${username}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
+    const contributions = [];
+
+    // Check each ASDF project for this contributor
+    for (const [projectId, repoConfig] of Object.entries(PROJECT_REPOS)) {
+      try {
+        const contributors = await this.getContributors(projectId, 100);
+        const found = contributors.find(c =>
+          c.login.toLowerCase() === username.toLowerCase()
+        );
+
+        if (found) {
+          contributions.push({
+            projectId,
+            repo: repoConfig.repo,
+            contributions: found.contributions
+          });
+        }
+      } catch (error) {
+        // Skip this project on error
+      }
+    }
+
+    this.setCache(cacheKey, contributions);
+    return contributions;
+  },
+
+  // ============================================
   // FALLBACK DATA
   // ============================================
 
@@ -371,6 +608,29 @@ const GitHubApiService = {
         url: 'https://github.com/Ragnar-no-sleep'
       }
     ];
+  },
+
+  /**
+   * Fallback user profile
+   * @param {string} username
+   * @returns {Object}
+   */
+  getFallbackUserProfile(username) {
+    return {
+      login: username,
+      name: username,
+      avatar: '/assets/default-avatar.png',
+      bio: null,
+      company: null,
+      location: null,
+      blog: null,
+      twitter: null,
+      publicRepos: 0,
+      followers: 0,
+      following: 0,
+      createdAt: null,
+      url: `https://github.com/${username}`
+    };
   },
 
   /**
