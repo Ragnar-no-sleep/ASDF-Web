@@ -9,9 +9,9 @@
 
 'use strict';
 
-// Storage keys
-const SHOP_STORAGE_KEY = 'asdf_shop_v2';
-const FAVORITES_STORAGE_KEY = 'asdf_shop_favorites_v2';
+// Storage keys (V2 - renamed to avoid conflict with shop.js)
+const SHOP_STORAGE_KEY_V2_V2 = 'asdf_shop_v2';
+const FAVORITES_STORAGE_KEY_V2_V2 = 'asdf_shop_favorites_v2';
 
 // ============================================
 // DATA VALIDATION UTILITIES
@@ -540,7 +540,7 @@ const ShopStateV2 = {
                 favorites: this.favorites,
                 lastSync: this.lastSync
             };
-            localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(SHOP_STORAGE_KEY_V2, JSON.stringify(data));
         } catch (e) {
             console.warn('[ShopState] Failed to save to localStorage:', e);
         }
@@ -551,7 +551,7 @@ const ShopStateV2 = {
      */
     saveFavoritesToLocal() {
         try {
-            localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(this.favorites));
+            localStorage.setItem(FAVORITES_STORAGE_KEY_V2, JSON.stringify(this.favorites));
         } catch (e) {
             console.warn('[ShopState] Failed to save favorites:', e);
         }
@@ -563,14 +563,14 @@ const ShopStateV2 = {
     loadFromLocal() {
         try {
             // Load main state
-            const saved = localStorage.getItem(SHOP_STORAGE_KEY);
+            const saved = localStorage.getItem(SHOP_STORAGE_KEY_V2);
             if (saved) {
                 let data;
                 try {
                     data = JSON.parse(saved);
                 } catch (parseError) {
                     console.warn('[ShopState] Corrupted localStorage data, resetting');
-                    localStorage.removeItem(SHOP_STORAGE_KEY);
+                    localStorage.removeItem(SHOP_STORAGE_KEY_V2);
                     return;
                 }
 
@@ -587,14 +587,14 @@ const ShopStateV2 = {
             }
 
             // Load favorites with validation
-            const savedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
+            const savedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY_V2);
             if (savedFavorites) {
                 let favoritesData;
                 try {
                     favoritesData = JSON.parse(savedFavorites);
                 } catch (parseError) {
                     console.warn('[ShopState] Corrupted favorites data, resetting');
-                    localStorage.removeItem(FAVORITES_STORAGE_KEY);
+                    localStorage.removeItem(FAVORITES_STORAGE_KEY_V2);
                     return;
                 }
 
@@ -611,8 +611,8 @@ const ShopStateV2 = {
      * Clear local storage
      */
     clearLocal() {
-        localStorage.removeItem(SHOP_STORAGE_KEY);
-        localStorage.removeItem(FAVORITES_STORAGE_KEY);
+        localStorage.removeItem(SHOP_STORAGE_KEY_V2);
+        localStorage.removeItem(FAVORITES_STORAGE_KEY_V2);
     },
 
     // ============================================

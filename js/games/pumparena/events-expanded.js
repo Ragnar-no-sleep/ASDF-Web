@@ -15,10 +15,13 @@
 // GLOBAL MODULE ACCESSORS (legacy compatibility)
 // ============================================================
 
-// RPG State accessors
-const getRPGState = () => window.PumpArenaState?.get?.() || {};
-const getMajorChoice = (choiceId) => getRPGState().storyFlags?.majorChoices?.[choiceId] || null;
-const setMajorChoice = (choiceId, value) => {
+// RPG State accessors - use global functions if available, otherwise define local versions
+const _getEventsRPGState = () => {
+    if (typeof getRPGState === 'function') return getRPGState();
+    return window.PumpArenaState?.get?.() || {};
+};
+const _getEventsMajorChoice = (choiceId) => _getEventsRPGState().storyFlags?.majorChoices?.[choiceId] || null;
+const _setEventsMajorChoice = (choiceId, value) => {
     const state = window.PumpArenaState?.get?.();
     if (!state) return;
     state.storyFlags = state.storyFlags || {};

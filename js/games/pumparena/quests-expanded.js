@@ -12,10 +12,13 @@
 // GLOBAL MODULE ACCESSORS (legacy compatibility)
 // ============================================================
 
-// RPG State accessors
-const getRPGState = () => window.PumpArenaState?.get?.() || {};
-const getMajorChoice = (choiceId) => getRPGState().storyFlags?.majorChoices?.[choiceId] || null;
-const setMajorChoice = (choiceId, value) => {
+// RPG State accessors - use global functions if available, otherwise define local versions
+const _getQuestsRPGState = () => {
+    if (typeof getRPGState === 'function') return getRPGState();
+    return window.PumpArenaState?.get?.() || {};
+};
+const _getQuestsMajorChoice = (choiceId) => _getQuestsRPGState().storyFlags?.majorChoices?.[choiceId] || null;
+const _setQuestsMajorChoice = (choiceId, value) => {
     const state = window.PumpArenaState?.get?.();
     if (!state) return;
     state.storyFlags = state.storyFlags || {};
@@ -25,7 +28,7 @@ const setMajorChoice = (choiceId, value) => {
 };
 
 // Factions accessor
-const FACTIONS = () => window.PumpArenaFactions?.FACTIONS || {};
+const _getQuestsFactions = () => window.PumpArenaFactions?.FACTIONS || {};
 
 // ============================================================
 // SECURITY UTILITIES

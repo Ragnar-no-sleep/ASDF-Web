@@ -15,9 +15,12 @@
 // GLOBAL MODULE ACCESSORS (legacy compatibility)
 // ============================================================
 
-// RPG State accessors
-const getDeckState = () => window.PumpArenaState?.get?.()?.deckbuilding || { collection: [], activeDeck: [], presets: {} };
-const getActiveDeck = () => getDeckState().activeDeck || [];
+// RPG State accessors - use global function if available
+const _getDeckBuilderState = () => {
+    if (typeof getDeckState === 'function') return getDeckState();
+    return window.PumpArenaState?.get?.()?.deckbuilding || { collection: [], activeDeck: [], presets: {} };
+};
+const getActiveDeck = () => _getDeckBuilderState().activeDeck || [];
 const addCardToCollection = (cardId) => {
     const state = window.PumpArenaState?.get?.();
     if (!state?.deckbuilding) return;
