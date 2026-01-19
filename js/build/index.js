@@ -192,6 +192,25 @@ const BuildApp = {
       }
     });
 
+    // Renderer node click event (Three.js raycaster clicks)
+    BuildState.subscribe('renderer:nodeClick', (data) => {
+      if (data.projectId) {
+        // Open project panel for renderer clicks
+        ProjectPanelComponent.open(data.projectId);
+      }
+    });
+
+    // Renderer ready event - sync initial state
+    BuildState.subscribe('renderer:ready', (data) => {
+      console.log(`[BuildApp] Renderer ready: ${data.type}`);
+      // Sync current filter if any
+      if (TreeComponent.getCurrentFilter() !== 'all') {
+        RendererFactory.getRenderer()?.update({
+          filter: TreeComponent.getCurrentFilter()
+        });
+      }
+    });
+
     // Window resize handling
     let resizeTimeout;
     on(window, 'resize', () => {
@@ -212,6 +231,61 @@ const BuildApp = {
         BuildState.emit('app:hidden', {});
       }
     });
+
+    // Keyboard shortcuts
+    on(document, 'keydown', (e) => {
+      // Ctrl/Cmd + Shift + R = Switch renderer
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        this.toggleRenderer();
+      }
+      // Ctrl/Cmd + Shift + D = Toggle debug info
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        this.toggleDebugOverlay();
+      }
+    });
+  },
+
+  /**
+   * Toggle between renderers
+   */
+  async toggleRenderer() {
+    const currentType = RendererFactory.getType();
+    const newType = currentType === 'three' ? 'svg' : 'three';
+
+    const container = $('.tree-container');
+    if (!container) return;
+
+    console.log(`[BuildApp] Switching renderer: ${currentType} -> ${newType}`);
+
+    try {
+      await RendererFactory.switchRenderer(newType, container);
+    } catch (error) {
+      console.warn('[BuildApp] Renderer switch failed:', error);
+    }
+  },
+
+  /**
+   * Toggle debug overlay showing renderer info
+   */
+  toggleDebugOverlay() {
+    const container = $('.tree-container');
+    if (!container) return;
+
+    let overlay = $('.renderer-info', container);
+
+    if (overlay) {
+      overlay.remove();
+    } else {
+      overlay = document.createElement('div');
+      overlay.className = `renderer-info ${RendererFactory.getType() || 'svg'}`;
+      overlay.textContent = `${RendererFactory.getType()?.toUpperCase() || 'SVG'} | ${
+        RendererFactory.getCapabilities()?.webgl ? 'WebGL' : 'No WebGL'
+      }`;
+      container.style.position = 'relative';
+      container.appendChild(overlay);
+    }
   },
 
   /**
