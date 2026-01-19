@@ -108,6 +108,14 @@ let raycastTargets = [];
 let time = 0;
 let burnIntensity = 0.7;
 
+// Event handler references (for cleanup)
+let boundHandlers = {
+  onMouseMove: null,
+  onClick: null,
+  onResize: null,
+  onVisibilityChange: null
+};
+
 // ============================================
 // THREE.JS RENDERER
 // ============================================
@@ -325,33 +333,56 @@ const ThreeRenderer = {
   async createWorld() {
     const { THREE } = this;
 
-    // Create Yggdrasil Tree
-    yggdrasilTree = new YggdrasilTree(THREE);
-    const treeGroup = yggdrasilTree.init();
-    scene.add(treeGroup);
+    try {
+      // Create Yggdrasil Tree
+      yggdrasilTree = new YggdrasilTree(THREE);
+      const treeGroup = yggdrasilTree.init();
+      scene.add(treeGroup);
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to create tree:', error.message);
+    }
 
-    // Create Burn Core at center
-    burnCore = new BurnCore(THREE);
-    const coreGroup = burnCore.init(new THREE.Vector3(0, 5, 0));
-    scene.add(coreGroup);
-    raycastTargets.push(burnCore.getRaycastTarget());
+    try {
+      // Create Burn Core at center
+      burnCore = new BurnCore(THREE);
+      const coreGroup = burnCore.init(new THREE.Vector3(0, 5, 0));
+      scene.add(coreGroup);
+      raycastTargets.push(burnCore.getRaycastTarget());
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to create burn core:', error.message);
+    }
 
-    // Create Fire Particles around core
-    fireParticles = new FireParticles(THREE);
-    const fireGroup = fireParticles.init(new THREE.Vector3(0, 2, 0));
-    scene.add(fireGroup);
+    try {
+      // Create Fire Particles around core
+      fireParticles = new FireParticles(THREE);
+      const fireGroup = fireParticles.init(new THREE.Vector3(0, 2, 0));
+      scene.add(fireGroup);
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to create fire particles:', error.message);
+    }
 
-    // Create Snow Particles (environment)
-    snowParticles = new SnowParticles(THREE);
-    const snowGroup = snowParticles.init();
-    scene.add(snowGroup);
+    try {
+      // Create Snow Particles (environment)
+      snowParticles = new SnowParticles(THREE);
+      const snowGroup = snowParticles.init();
+      scene.add(snowGroup);
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to create snow particles:', error.message);
+    }
 
     // Load projects and create islands
-    const projectsData = await DataAdapter.getProjects();
-    const projects = Object.values(projectsData);
-    await this.createProjectIslands(projects);
-
-    console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
+    try {
+      const projectsData = await DataAdapter.getProjects();
+      const projects = projectsData ? Object.values(projectsData) : [];
+      if (projects.length > 0) {
+        await this.createProjectIslands(projects);
+        console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
+      } else {
+        console.warn('[ThreeRenderer] No projects to display');
+      }
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to load projects:', error.message);
+    }
   },
 
   /**
@@ -405,29 +436,49 @@ const ThreeRenderer = {
    * Bind event listeners
    */
   bindEvents() {
-    // Mouse move for raycasting
-    renderer.domElement.addEventListener('mousemove', (e) => {
-      this.onMouseMove(e);
-    });
-
-    // Click for selection
-    renderer.domElement.addEventListener('click', (e) => {
-      this.onClick(e);
-    });
-
-    // Resize handler
-    window.addEventListener('resize', () => {
-      this.resize();
-    });
-
-    // Visibility change
-    document.addEventListener('visibilitychange', () => {
+    // Store handler references for cleanup
+    boundHandlers.onMouseMove = (e) => this.onMouseMove(e);
+    boundHandlers.onClick = (e) => this.onClick(e);
+    boundHandlers.onResize = () => this.resize();
+    boundHandlers.onVisibilityChange = () => {
       if (document.hidden) {
         this.pause();
       } else {
         this.resume();
       }
-    });
+    };
+
+    // Mouse move for raycasting
+    renderer.domElement.addEventListener('mousemove', boundHandlers.onMouseMove);
+
+    // Click for selection
+    renderer.domElement.addEventListener('click', boundHandlers.onClick);
+
+    // Resize handler
+    window.addEventListener('resize', boundHandlers.onResize);
+
+    // Visibility change
+    document.addEventListener('visibilitychange', boundHandlers.onVisibilityChange);
+  },
+
+  /**
+   * Unbind event listeners (cleanup)
+   */
+  unbindEvents() {
+    if (renderer && renderer.domElement) {
+      renderer.domElement.removeEventListener('mousemove', boundHandlers.onMouseMove);
+      renderer.domElement.removeEventListener('click', boundHandlers.onClick);
+    }
+    window.removeEventListener('resize', boundHandlers.onResize);
+    document.removeEventListener('visibilitychange', boundHandlers.onVisibilityChange);
+
+    // Clear references
+    boundHandlers = {
+      onMouseMove: null,
+      onClick: null,
+      onResize: null,
+      onVisibilityChange: null
+    };
   },
 
   /**
@@ -813,6 +864,7 @@ const ThreeRenderer = {
    */
   dispose() {
     this.stopLoop();
+    this.unbindEvents();
 
     // Dispose 3D objects
     if (yggdrasilTree) {
