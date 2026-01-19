@@ -43,9 +43,9 @@ test.describe('Homepage', () => {
     const count = await hubNodes.count();
     expect(count).toBeGreaterThan(0);
 
-    // Verify core hub element
-    const hubCore = page.locator('.hub-core');
-    await expect(hubCore).toBeVisible();
+    // Verify main hub element
+    const hubMain = page.locator('.hub');
+    await expect(hubMain).toBeVisible();
   });
 
   test('should be responsive', async ({ page }) => {
