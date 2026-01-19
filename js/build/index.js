@@ -21,6 +21,10 @@ import { QuizComponent } from './components/quiz.js';
 import { TracksComponent } from './components/tracks.js';
 import { ProjectPanelComponent } from './components/project-panel.js';
 import { FactoryPanelComponent } from './components/factory-panel.js';
+import { FormationPanel } from './components/formation-panel.js';
+import { BuilderProfile } from './components/builder-profile.js';
+import { SkillTreeView } from './components/skill-tree-view.js';
+import { GitHubTimeline } from './components/github-timeline.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
@@ -60,6 +64,10 @@ const BuildApp = {
     tracks: TracksComponent,
     projectPanel: ProjectPanelComponent,
     factoryPanel: FactoryPanelComponent,
+    formationPanel: FormationPanel,
+    builderProfile: BuilderProfile,
+    skillTreeView: SkillTreeView,
+    githubTimeline: GitHubTimeline,
     renderer: RendererFactory,
     animations: Animations,
     handlers: EventHandlers
@@ -114,18 +122,23 @@ const BuildApp = {
       // 8. Initialize factory panel (slide-right, triggered by quiz)
       FactoryPanelComponent.init();
 
-      // 9. Initialize event handlers
+      // 9. Initialize Yggdrasil 3D components
+      FormationPanel.init(SELECTORS.FORMATION_PANEL_ROOT);
+      BuilderProfile.init(SELECTORS.BUILDER_PROFILE_ROOT);
+      console.log('[BuildApp] Formation panel and builder profile initialized');
+
+      // 10. Initialize event handlers
       EventHandlers.init();
 
-      // 10. Show intro if first visit (or skip if option set)
+      // 11. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
         IntroComponent.init('#intro-container');
       }
 
-      // 11. Set up global listeners
+      // 12. Set up global listeners
       this.setupGlobalListeners();
 
-      // 12. Mark as initialized
+      // 13. Mark as initialized
       this.initialized = true;
 
       // Emit ready event
@@ -208,6 +221,32 @@ const BuildApp = {
         RendererFactory.getRenderer()?.update({
           filter: TreeComponent.getCurrentFilter()
         });
+      }
+    });
+
+    // Project focus event - show skill tree and timeline
+    BuildState.subscribe(EVENTS.PROJECT_FOCUS, (data) => {
+      if (data.projectId) {
+        SkillTreeView.showForProject(data.projectId);
+        GitHubTimeline.loadForProject(data.projectId);
+      }
+    });
+
+    // Project blur event - hide skill tree
+    BuildState.subscribe(EVENTS.PROJECT_BLUR, () => {
+      SkillTreeView.clear();
+    });
+
+    // Formation panel open trigger
+    delegate(document, 'click', '[data-action="open-formation"]', (e, btn) => {
+      const trackId = btn.dataset.track;
+      FormationPanel.open(trackId);
+    });
+
+    // Quiz complete - recommend formation track
+    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, (data) => {
+      if (data.recommendedTrack) {
+        FormationPanel.open(data.recommendedTrack);
       }
     });
 
@@ -407,6 +446,10 @@ if (typeof window !== 'undefined') {
     Tracks: TracksComponent,
     ProjectPanel: ProjectPanelComponent,
     FactoryPanel: FactoryPanelComponent,
+    FormationPanel: FormationPanel,
+    BuilderProfile: BuilderProfile,
+    SkillTreeView: SkillTreeView,
+    GitHubTimeline: GitHubTimeline,
     Renderer: RendererFactory,
     Animations: Animations,
     Handlers: EventHandlers
