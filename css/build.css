@@ -3955,6 +3955,98 @@ body {
   }
 }
 
+/* ============================================
+   BURN PULSE SYSTEM - Live Activity Animation
+   Intensity driven by API burn data
+   ============================================ */
+
+.burn-pulsing {
+  --burn-pulse-duration: 1500ms;
+  --burn-glow-opacity: 0.6;
+  --burn-intensity: 0.5;
+}
+
+/* Heart glow effect */
+.tree-heart.burn-pulsing {
+  animation: burnPulseHeart var(--burn-pulse-duration) ease-in-out infinite;
+  --heart-glow-size: 30px;
+}
+
+.tree-heart.burn-pulsing::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(251, 146, 60, calc(var(--burn-glow-opacity) * 0.4)) 0%,
+    rgba(234, 88, 12, calc(var(--burn-glow-opacity) * 0.2)) 40%,
+    transparent 70%
+  );
+  animation: burnGlowPulse var(--burn-pulse-duration) ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* SVG Nordic Sun pulse */
+.nordic-sun.burn-pulsing,
+.heart-layer.burn-pulsing {
+  animation: burnPulseSvg var(--burn-pulse-duration) ease-in-out infinite;
+  transform-origin: 400px 300px;
+}
+
+.sun-aura {
+  transition: opacity 0.5s ease;
+  opacity: var(--burn-glow-opacity, 0.7);
+}
+
+/* Keyframes */
+@keyframes burnPulseHeart {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes burnPulseSvg {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 10px rgba(251, 146, 60, 0.3));
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.1) drop-shadow(0 0 20px rgba(251, 146, 60, calc(var(--burn-glow-opacity, 0.6))));
+  }
+}
+
+@keyframes burnGlowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: var(--burn-glow-opacity, 0.8);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .burn-pulsing,
+  .tree-heart.burn-pulsing,
+  .nordic-sun.burn-pulsing,
+  .heart-layer.burn-pulsing {
+    animation: none;
+  }
+  .tree-heart.burn-pulsing::before {
+    animation: none;
+  }
+}
+
 /* Branch phrases along paths */
 .branch-phrases text {
   font-size: 8px;

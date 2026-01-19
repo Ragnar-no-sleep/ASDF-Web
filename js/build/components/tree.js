@@ -11,6 +11,8 @@ import { STATUS, EVENTS, SELECTORS } from '../config.js';
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
 import { ModalFactory } from './modal.js';
+import { BurnApiService } from '../services/burn-api.js';
+import { calculatePhiPositions, phiDelays, PHI } from '../utils/phi.js';
 import { isValidProjectId } from '../utils/security.js';
 import {
   $,
@@ -21,7 +23,8 @@ import {
   on,
   delegate,
   getData,
-  setStyles
+  setStyles,
+  createElement
 } from '../utils/dom.js';
 
 // ============================================
@@ -59,6 +62,18 @@ const BRANCH_CATEGORIES = {
 };
 
 // ============================================
+// BURN PULSE CONFIGURATION
+// ============================================
+
+const BURN_PULSE_CONFIG = {
+  updateInterval: 30000,  // Update burn data every 30s
+  pulseMinDuration: 2000, // Minimum pulse animation duration (ms)
+  pulseMaxDuration: 800,  // Maximum pulse animation duration (ms) - faster = more intense
+  glowMinOpacity: 0.4,
+  glowMaxOpacity: 1.0
+};
+
+// ============================================
 // TREE STATE
 // ============================================
 
@@ -67,6 +82,11 @@ let treeSvg = null;
 let currentFilter = 'all';
 let hoveredNode = null;
 let selectedNode = null;
+
+// Burn pulse state
+let burnPulseInterval = null;
+let currentBurnIntensity = 0.5;
+let burnStats = null;
 
 // ============================================
 // TREE COMPONENT
@@ -97,6 +117,9 @@ const TreeComponent = {
     BuildState.subscribe(EVENTS.PROJECT_DESELECT, () => {
       this.clearHighlight();
     });
+
+    // Initialize burn pulse system
+    this.initBurnPulse();
 
     console.log('[TreeComponent] Initialized');
   },
@@ -393,6 +416,140 @@ const TreeComponent = {
 
     // Re-apply current filter
     this.filter(currentFilter);
+  },
+
+  // ============================================
+  // BURN PULSE SYSTEM
+  // ============================================
+
+  /**
+   * Initialize burn pulse animation system
+   * Fetches burn data and animates the center based on activity
+   */
+  async initBurnPulse() {
+    // Initial fetch
+    await this.updateBurnData();
+
+    // Apply initial pulse
+    this.applyBurnPulse();
+
+    // Set up periodic updates
+    burnPulseInterval = setInterval(() => {
+      this.updateBurnData();
+    }, BURN_PULSE_CONFIG.updateInterval);
+
+    // Clean up on page hide
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.pauseBurnPulse();
+      } else {
+        this.resumeBurnPulse();
+      }
+    });
+
+    console.log('[TreeComponent] Burn pulse initialized');
+  },
+
+  /**
+   * Fetch latest burn data and update intensity
+   */
+  async updateBurnData() {
+    try {
+      burnStats = await BurnApiService.getStats();
+      currentBurnIntensity = await BurnApiService.getBurnIntensity();
+
+      // Emit event for other components
+      BuildState.emit('burn:update', {
+        stats: burnStats,
+        intensity: currentBurnIntensity
+      });
+
+      // Update visual
+      this.applyBurnPulse();
+    } catch (error) {
+      console.warn('[TreeComponent] Burn data fetch failed:', error);
+    }
+  },
+
+  /**
+   * Apply burn pulse animation to the center (nordic-sun)
+   */
+  applyBurnPulse() {
+    const nordicSun = $('.nordic-sun, .heart-layer', treeContainer);
+    const sunAura = $('.sun-aura', treeContainer);
+    const treeHeart = $('.tree-heart', treeContainer);
+
+    if (!nordicSun && !treeHeart) return;
+
+    // Calculate pulse duration based on intensity (higher = faster pulse)
+    const { pulseMinDuration, pulseMaxDuration, glowMinOpacity, glowMaxOpacity } = BURN_PULSE_CONFIG;
+    const pulseDuration = pulseMinDuration - ((pulseMinDuration - pulseMaxDuration) * currentBurnIntensity);
+    const glowOpacity = glowMinOpacity + ((glowMaxOpacity - glowMinOpacity) * currentBurnIntensity);
+
+    // Apply CSS custom properties for animation
+    const pulseTarget = nordicSun || treeHeart;
+    pulseTarget.style.setProperty('--burn-pulse-duration', `${pulseDuration}ms`);
+    pulseTarget.style.setProperty('--burn-glow-opacity', glowOpacity);
+    pulseTarget.style.setProperty('--burn-intensity', currentBurnIntensity);
+
+    // Add pulsing class if not already present
+    addClass(pulseTarget, 'burn-pulsing');
+
+    // Update aura if present
+    if (sunAura) {
+      sunAura.style.setProperty('--burn-glow-opacity', glowOpacity);
+    }
+
+    // Update heart glow
+    if (treeHeart) {
+      const glowSize = 20 + (currentBurnIntensity * 30); // 20-50px glow
+      treeHeart.style.setProperty('--heart-glow-size', `${glowSize}px`);
+    }
+  },
+
+  /**
+   * Pause burn pulse (when tab hidden)
+   */
+  pauseBurnPulse() {
+    if (burnPulseInterval) {
+      clearInterval(burnPulseInterval);
+      burnPulseInterval = null;
+    }
+
+    const pulseTarget = $('.nordic-sun, .heart-layer, .tree-heart', treeContainer);
+    if (pulseTarget) {
+      removeClass(pulseTarget, 'burn-pulsing');
+    }
+  },
+
+  /**
+   * Resume burn pulse (when tab visible)
+   */
+  resumeBurnPulse() {
+    if (!burnPulseInterval) {
+      this.updateBurnData();
+      burnPulseInterval = setInterval(() => {
+        this.updateBurnData();
+      }, BURN_PULSE_CONFIG.updateInterval);
+    }
+
+    this.applyBurnPulse();
+  },
+
+  /**
+   * Get current burn stats
+   * @returns {Object|null}
+   */
+  getBurnStats() {
+    return burnStats;
+  },
+
+  /**
+   * Get current burn intensity
+   * @returns {number} 0-1
+   */
+  getBurnIntensity() {
+    return currentBurnIntensity;
   }
 };
 
