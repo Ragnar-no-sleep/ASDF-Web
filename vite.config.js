@@ -13,11 +13,18 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
 
-    // For now, just copy files - progressive migration
+    // Multi-page app configuration
     rollupOptions: {
       input: {
-        // Start with hub-majestic as the new landing
-        hub: resolve(__dirname, 'hub-majestic.html'),
+        main: resolve(__dirname, 'index.html'),
+        learn: resolve(__dirname, 'learn.html'),
+        deepLearn: resolve(__dirname, 'deep-learn.html'),
+        build: resolve(__dirname, 'build.html'),
+        games: resolve(__dirname, 'games.html'),
+        burns: resolve(__dirname, 'burns.html'),
+        holdex: resolve(__dirname, 'holdex.html'),
+        forecast: resolve(__dirname, 'forecast.html'),
+        privacy: resolve(__dirname, 'privacy.html'),
       },
       output: {
         chunkFileNames: 'js/[name]-[hash].js',
@@ -36,7 +43,7 @@ export default defineConfig({
   // Dev server
   server: {
     port: 5173,
-    open: '/hub-majestic.html',
+    open: '/',
     cors: true,
   },
 
