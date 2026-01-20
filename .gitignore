@@ -50,6 +50,9 @@ build/
 *.bundle.js
 *.bundle.js.map
 
+# Ecosystem repos (cloned in Codespace)
+ecosystem/
+
 # Render
 .render/
 
