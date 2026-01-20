@@ -18,10 +18,10 @@ import { phiDelays } from '../utils/phi.js';
 // ============================================
 
 const PANEL_CONFIG = {
-  // Animation
+  // Animation (Fibonacci-based)
   animation: {
-    slideDuration: 400,
-    stagger: 40
+    slideDuration: 500,  // fib(5) * 100
+    stagger: 50          // fib(5) * 10
   },
   // Storage key for progress
   storageKey: 'asdf_formation_progress'

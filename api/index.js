@@ -143,16 +143,16 @@ const {
 } = require('./services/referrals');
 const {
   EVENTS,
-  subscribe: subscribeEvent,
+  subscribe: _subscribeEvent,
   publish: publishEvent,
-  emitBurnConfirmed,
-  emitAchievementUnlocked,
-  emitPurchaseCompleted,
+  emitBurnConfirmed: _emitBurnConfirmed,
+  emitAchievementUnlocked: _emitAchievementUnlocked,
+  emitPurchaseCompleted: _emitPurchaseCompleted,
   getEventBusMetrics,
 } = require('./services/eventBus');
 const {
-  get: cacheGet,
-  set: cacheSet,
+  get: _cacheGet,
+  set: _cacheSet,
   del: cacheDel,
   wrap: cacheWrap,
   invalidateTag,
@@ -5329,6 +5329,23 @@ app.get('/api/admin/notifications/connections', authMiddleware, requireAdmin, (r
   }
 });
 
+/**
+ * Get WebSocket broadcast manager stats (admin)
+ * GET /api/admin/broadcast/stats
+ */
+app.get('/api/admin/broadcast/stats', authMiddleware, requireAdmin, (req, res) => {
+  try {
+    const wsBroadcast = require('./services/wsBroadcast');
+    const stats = wsBroadcast.getStats();
+    res.json({
+      ...stats,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'broadcast-stats') });
+  }
+});
+
 // ============================================
 // MONITORING ROUTES
 // ============================================
@@ -5450,6 +5467,26 @@ const server = app.listen(PORT, async () => {
   // Register server with shutdown service
   registerServer(server);
   console.log('   Graceful shutdown: enabled');
+
+  // Initialize WebSocket notification server
+  try {
+    const notifications = getRealtimeNotifications();
+    notifications.initialize(server);
+    console.log('   WebSocket: notifications initialized');
+  } catch (error) {
+    console.warn('   WebSocket: notifications init failed -', error.message);
+  }
+
+  // Initialize WebSocket broadcast manager (bridges eventBus -> WebSocket)
+  try {
+    const wsBroadcast = require('./services/wsBroadcast');
+    wsBroadcast.initialize();
+    // Register cleanup handler
+    registerCleanup('wsBroadcast', () => wsBroadcast.shutdown(), { priority: 80 });
+    console.log('   WebSocket: broadcast manager initialized');
+  } catch (error) {
+    console.warn('   WebSocket: broadcast init failed -', error.message);
+  }
 
   // Sync leaderboard from blockchain on startup
   try {

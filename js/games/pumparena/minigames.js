@@ -1316,11 +1316,7 @@ function shuffleArray(array) {
     return arr;
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// escapeHtml provided by utils.js (loaded first)
 
 // ============================================
 // MINI-GAMES PANEL

@@ -71,19 +71,7 @@ const STAT_INFO = {
 // SECURITY UTILITIES (Security by Design)
 // ============================================
 
-/**
- * Escape HTML to prevent XSS attacks
- * @param {*} str - Input to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (typeof str !== 'string') {
-    str = String(str ?? '');
-  }
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
+// escapeHtml provided by utils.js (loaded first)
 
 /**
  * Validate and sanitize CSS color value

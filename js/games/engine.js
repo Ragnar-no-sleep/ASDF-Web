@@ -889,7 +889,7 @@ function startBurnRunner(gameId) {
       active: false,
       endTime: 0,
       lastUsed: 0,
-      cooldown: 3500, // 3.5 seconds
+      cooldown: GAME_TIMING.EFFECT.EXTENDED, // 3.4s (phi)
       duration: 300, // 0.3 seconds dash
       speed: 15, // Dash speed boost
     },
@@ -898,7 +898,7 @@ function startBurnRunner(gameId) {
       endTime: 0,
       lastUsed: 0,
       cooldown: 10000, // 10 seconds
-      duration: 1500, // 1.5 seconds
+      duration: GAME_TIMING.EFFECT.SLOW, // 1.3s (phi)
     },
     // Active effects
     effects: {
@@ -1073,9 +1073,9 @@ function startBurnRunner(gameId) {
 
   // Malus items (run through = negative effect)
   const malusTypes = [
-    { icon: '🐌', name: 'SLOW', width: 30, height: 25, effect: 'slow', duration: 2000 },
+    { icon: '🐌', name: 'SLOW', width: 30, height: 25, effect: 'slow', duration: GAME_TIMING.EFFECT.VERY_SLOW },
     { icon: '❄️', name: 'FREEZE', width: 28, height: 28, effect: 'freeze', duration: 500 },
-    { icon: '🌀', name: 'DIZZY', width: 26, height: 26, effect: 'dizzy', duration: 1500 },
+    { icon: '🌀', name: 'DIZZY', width: 26, height: 26, effect: 'dizzy', duration: GAME_TIMING.EFFECT.SLOW },
     { icon: '💨', name: 'WIND', width: 30, height: 25, effect: 'pushback', duration: 0 },
   ];
 
@@ -5722,7 +5722,7 @@ function startPumpArena(gameId) {
 
         setTimeout(() => {
           showPhase('partnership');
-        }, 2000);
+        }, GAME_TIMING.EFFECT.VERY_SLOW);
       });
 
       btn.addEventListener('mouseenter', () => {
@@ -6216,7 +6216,7 @@ function startWhaleWatch(gameId) {
         memStatusEl.textContent = "⏰ Time's up! Game Over";
         memStatusEl.style.color = '#ef4444';
         state.gameOver = true;
-        setTimeout(() => endGame(gameId, state.score), 1500);
+        setTimeout(() => endGame(gameId, state.score), GAME_TIMING.EFFECT.SLOW);
       }
     }, 100);
   }
@@ -6252,7 +6252,7 @@ function startWhaleWatch(gameId) {
       memStatusEl.textContent = '❌ Wrong! Game Over';
       memStatusEl.style.color = '#ef4444';
       state.gameOver = true;
-      setTimeout(() => endGame(gameId, state.score), 1500);
+      setTimeout(() => endGame(gameId, state.score), GAME_TIMING.EFFECT.SLOW);
       return;
     }
 
@@ -6283,7 +6283,7 @@ function startWhaleWatch(gameId) {
       memStatusEl.textContent = '✅ Perfect! Next round...';
       memStatusEl.style.color = '#22c55e';
 
-      setTimeout(startMemoryRound, 1500);
+      setTimeout(startMemoryRound, GAME_TIMING.EFFECT.SLOW);
     }
 
     updateScore(gameId, state.score);
@@ -7359,7 +7359,7 @@ function startBurnOrHold(gameId) {
     document.getElementById('cc-banner-text').textContent = text;
     document.getElementById('cc-banner-hint').textContent = hint;
     banner.style.opacity = '1';
-    setTimeout(() => (banner.style.opacity = '0'), 1500);
+    setTimeout(() => (banner.style.opacity = '0'), GAME_TIMING.EFFECT.SLOW);
   }
 
   function addEffect(x, y, text, color, life = 40) {
@@ -7527,7 +7527,7 @@ function startBurnOrHold(gameId) {
       state.gameOver = true;
       showBanner('GAME OVER', 'All nodes lost!');
       addEffect(canvas.width / 2, canvas.height / 2, 'GAME OVER', '#ef4444', 120);
-      setTimeout(() => endGame(gameId, state.score), 2000);
+      setTimeout(() => endGame(gameId, state.score), GAME_TIMING.EFFECT.VERY_SLOW);
     }
   }
 

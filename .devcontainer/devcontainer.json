@@ -1,5 +1,5 @@
 {
-  "name": "ASDF-Web Development",
+  "name": "ASDF-Web + CYNIC",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
@@ -18,6 +18,7 @@
       "settings": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
         },
@@ -32,16 +33,36 @@
         "eamodio.gitlens",
         "usernamehw.errorlens",
         "formulahendry.auto-rename-tag",
-        "christian-kohler.path-intellisense"
+        "christian-kohler.path-intellisense",
+        "bradlc.vscode-tailwindcss",
+        "ritwickdey.LiveServer"
+      ]
+    },
+    "codespaces": {
+      "openFiles": [
+        "CLAUDE.md",
+        "README.md"
       ]
     }
   },
 
-  "forwardPorts": [3000],
+  "forwardPorts": [3000, 5173, 37777, 8080],
   "portsAttributes": {
     "3000": {
       "label": "ASDF-Web Server",
       "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Vite Dev",
+      "onAutoForward": "notify"
+    },
+    "37777": {
+      "label": "Claude-Mem API",
+      "onAutoForward": "silent"
+    },
+    "8080": {
+      "label": "CYNIC Node",
+      "onAutoForward": "silent"
     }
   },
 
@@ -51,12 +72,22 @@
 
   "containerEnv": {
     "NODE_ENV": "development",
-    "ASDF_ENV": "codespace"
+    "ASDF_ENV": "codespace",
+    "CYNIC_ENV": "development"
   },
 
   "secrets": {
+    "ANTHROPIC_API_KEY": {
+      "description": "API key for Claude (required for Claude Code)"
+    },
     "RENDER_API_KEY": {
       "description": "API key for Render MCP integration (optional)"
     }
+  },
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
   }
 }

@@ -8,20 +8,24 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { PHI } from '../utils/phi.js';
+import { PHI, PHI_INVERSE, phiDelays } from '../utils/phi.js';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 const ANIM_CONFIG = {
-  // Duration presets (in seconds)
+  // Duration presets (Fibonacci-based, in seconds)
+  // fib sequence: 1,1,2,3,5,8,13,21 * 0.1
   durations: {
     instant: 0,
-    fast: 0.2,
-    normal: 0.4,
-    slow: 0.8,
-    verySlow: 1.2
+    veryFast: 0.1,  // fib(1)
+    fast: 0.2,      // fib(2)
+    quick: 0.3,     // fib(3)
+    normal: 0.5,    // fib(5)
+    medium: 0.8,    // fib(8)
+    slow: 1.3,      // fib(13)
+    verySlow: 2.1   // fib(21)
   },
   // Easing presets
   easings: {
@@ -33,15 +37,18 @@ const ANIM_CONFIG = {
     // Bounce/elastic
     bounce: 'bounce.out',
     elastic: 'elastic.out(1, 0.3)',
-    // Custom phi-based
-    phi: 'power1.618.out'
+    // Phi-based (golden ratio curve)
+    phiOut: `power${PHI}.out`,
+    phiIn: `power${PHI}.in`,
+    phiInOut: `power${PHI}.inOut`
   },
-  // Stagger presets
+  // Stagger presets (phi-based)
   stagger: {
-    fast: 0.03,
-    normal: 0.05,
-    slow: 0.1,
-    phi: 0.0618 // 1/PHI * 0.1
+    fast: 0.03,           // ~fib(3) * 0.01
+    normal: 0.05,         // fib(5) * 0.01
+    phi: PHI_INVERSE / 10, // 0.0618 (golden)
+    slow: 0.08,           // fib(8) * 0.01
+    verySlow: 0.13        // fib(13) * 0.01
   }
 };
 
@@ -437,6 +444,47 @@ const Animations = {
       stagger: options.stagger || ANIM_CONFIG.stagger.phi,
       ease: options.ease || ANIM_CONFIG.easings.easeOut
     });
+  },
+
+  /**
+   * Phi-based staggered reveal (golden ratio delays)
+   * Creates natural-feeling animation with decreasing intervals
+   * @param {NodeList|Array} elements
+   * @param {Object} options
+   */
+  async phiStaggerReveal(elements, options = {}) {
+    if (!elements || elements.length === 0) return;
+
+    const elemArray = Array.from(elements);
+    const delays = phiDelays(elemArray.length, options.baseDelay || 100);
+
+    const fromProps = {
+      opacity: 0,
+      y: options.direction === 'up' ? 20 : -20,
+      scale: options.scale ? 0.9 : 1,
+      ...options.from
+    };
+
+    const toProps = {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      ...options.to
+    };
+
+    // Set initial state
+    elemArray.forEach(el => this.set(el, fromProps));
+
+    // Animate each with phi-based delay
+    const promises = elemArray.map((el, i) => {
+      return this.to(el, toProps, {
+        duration: options.duration || ANIM_CONFIG.durations.normal,
+        delay: delays[i] / 1000, // Convert ms to seconds
+        ease: options.ease || ANIM_CONFIG.easings.phiOut
+      });
+    });
+
+    await Promise.all(promises);
   },
 
   /**
