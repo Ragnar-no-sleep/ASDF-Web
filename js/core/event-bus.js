@@ -234,7 +234,25 @@ export const EVENTS = {
   // System events
   APP_READY: 'app:ready',
   APP_ERROR: 'app:error',
-  NETWORK_CHANGE: 'network:change'
+  NETWORK_CHANGE: 'network:change',
+
+  // WebSocket events
+  WS_CONNECTING: 'ws:connecting',
+  WS_CONNECTED: 'ws:connected',
+  WS_DISCONNECTED: 'ws:disconnected',
+  WS_READY: 'ws:ready',
+  WS_ERROR: 'ws:error',
+  WS_FAILED: 'ws:failed',
+  WS_NOTIFICATION: 'ws:notification',
+
+  // Realtime notification events
+  ACHIEVEMENT_UNLOCKED: 'realtime:achievement',
+  LEVEL_UP: 'realtime:levelup',
+  BURN_CONFIRMED: 'realtime:burn',
+  WHALE_BURN: 'realtime:whale',
+  LEADERBOARD_UPDATE: 'realtime:leaderboard',
+  RANK_CHANGED: 'realtime:rank',
+  ANNOUNCEMENT: 'realtime:announcement'
 };
 
 // Global access for non-module scripts
