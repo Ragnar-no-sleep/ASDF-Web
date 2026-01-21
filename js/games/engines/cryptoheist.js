@@ -771,22 +771,14 @@ const CryptoHeist = {
             ctx.globalAlpha = 1;
         });
 
-        // Tokens with rarity system
+        // Tokens with rarity system (no shadowBlur for performance)
         ctx.font = '20px Arial';
         this.state.tokens.forEach(token => {
             ctx.globalAlpha = token.life > 60 ? 1 : token.life / 60;
 
-            // Glow effect for rare+ items
-            if (token.glow) {
-                ctx.shadowColor = token.color;
-                ctx.shadowBlur = 15 + Math.sin(token.bobOffset + this.state.frameCount * 0.1) * 5;
-            }
-
             // Bob animation
             const bob = Math.sin(token.bobOffset + this.state.frameCount * 0.08) * 3;
             ctx.fillText(token.icon, token.x, token.y + bob);
-
-            ctx.shadowBlur = 0;
         });
         ctx.globalAlpha = 1;
 

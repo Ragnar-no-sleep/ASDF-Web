@@ -969,31 +969,19 @@ const TokenCatcher = {
             ctx.globalAlpha = 1;
         });
 
-        // Draw power-up tokens (with pulsing glow)
+        // Draw power-up tokens (no shadowBlur for performance)
         ctx.font = '28px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const pulsePhase = Date.now() / 200;
         this.state.powerUpTokens.forEach(pu => {
-            ctx.shadowColor = pu.color;
-            ctx.shadowBlur = 15 + Math.sin(pulsePhase) * 5;
             ctx.fillText(pu.icon, pu.x, pu.y);
-            ctx.shadowBlur = 0;
         });
 
-        // Draw falling tokens
+        // Draw falling tokens (no shadowBlur for performance)
         ctx.fillStyle = '#ffffff';
         ctx.font = '30px Arial';
         this.state.tokens.forEach(token => {
-            if (token.isSkull) {
-                ctx.shadowColor = '#ef4444';
-                ctx.shadowBlur = 15;
-            } else if (token.isScam) {
-                ctx.shadowColor = '#f59e0b';
-                ctx.shadowBlur = 10;
-            }
             ctx.fillText(token.icon, token.x, token.y);
-            ctx.shadowBlur = 0;
         });
 
         // Draw active power-up indicators

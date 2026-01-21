@@ -1008,23 +1008,15 @@ const BurnRunner = {
         });
         ctx.globalAlpha = 1;
 
-        // Platforms
+        // Platforms (no shadowBlur for performance)
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         this.state.platforms.forEach(plat => {
             const platY = plat.renderY || plat.y;
-            if (plat.floating) {
-                ctx.shadowColor = '#a78bfa';
-                ctx.shadowBlur = 15;
-                ctx.font = '38px Arial';
-            } else {
-                ctx.shadowBlur = 0;
-                ctx.font = '36px Arial';
-            }
+            ctx.font = plat.floating ? '38px Arial' : '36px Arial';
             ctx.fillStyle = '#ffffff';
             ctx.fillText(plat.icon, plat.x + plat.width / 2, platY + plat.height / 2);
         });
-        ctx.shadowBlur = 0;
 
         // Player
         const playerCenterX = this.state.player.x + this.state.player.width / 2;
@@ -1061,29 +1053,23 @@ const BurnRunner = {
         }
         ctx.globalAlpha = 1;
 
-        // Dash effect
+        // Dash effect (no shadowBlur for performance)
         if (this.state.dash.active) {
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 3;
-            ctx.shadowColor = '#3b82f6';
-            ctx.shadowBlur = 20;
             ctx.beginPath();
             ctx.arc(playerCenterX, playerCenterY, 30, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.shadowBlur = 0;
         }
 
-        // Shield effect
+        // Shield effect (no shadowBlur for performance)
         if (this.state.abilityShield.active) {
             const shieldPulse = Math.sin(Date.now() * 0.01) * 0.15 + 0.85;
             ctx.strokeStyle = '#a855f7';
             ctx.lineWidth = 4;
-            ctx.shadowColor = '#a855f7';
-            ctx.shadowBlur = 25;
             ctx.beginPath();
             ctx.arc(playerCenterX, playerCenterY, 35 * shieldPulse, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.shadowBlur = 0;
         }
 
         // Obstacles
@@ -1093,14 +1079,11 @@ const BurnRunner = {
             ctx.fillText(obs.icon, obs.x + obs.width / 2, obs.y + obs.height / 2);
         });
 
-        // Collectibles
+        // Collectibles (no shadowBlur for performance)
+        ctx.font = '24px Arial';
         this.state.collectibles.forEach(col => {
             const float = Math.sin(Date.now() * 0.005 + col.x) * 4;
-            ctx.shadowColor = '#fbbf24';
-            ctx.shadowBlur = 15;
-            ctx.font = '24px Arial';
             ctx.fillText(col.icon, col.x + col.width / 2, col.y + col.height / 2 + float);
-            ctx.shadowBlur = 0;
         });
 
         // Particles

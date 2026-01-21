@@ -562,12 +562,20 @@ const LiquidityMaze = {
             return;
         }
 
-        // Update fog of war - reduce fog around player
+        // Update fog of war - OPTIMIZED: only check cells near player
         const px = this.state.player.x;
         const py = this.state.player.y;
-        for (let fy = 0; fy < this.state.rows; fy++) {
-            for (let fx = 0; fx < this.state.cols; fx++) {
-                const dist = Math.sqrt((fx - px) ** 2 + (fy - py) ** 2);
+        const checkRadius = this.state.viewRadius + 3;
+        const minY = Math.max(0, py - checkRadius);
+        const maxY = Math.min(this.state.rows - 1, py + checkRadius);
+        const minX = Math.max(0, px - checkRadius);
+        const maxX = Math.min(this.state.cols - 1, px + checkRadius);
+
+        for (let fy = minY; fy <= maxY; fy++) {
+            for (let fx = minX; fx <= maxX; fx++) {
+                const dx = fx - px;
+                const dy = fy - py;
+                const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist <= this.state.viewRadius) {
                     // Fully visible
                     this.state.fogOpacity[fy][fx] = Math.max(0, this.state.fogOpacity[fy][fx] - 0.1 * dt);
@@ -788,15 +796,12 @@ const LiquidityMaze = {
             return fogLevel < 0.7;
         };
 
-        // Draw treasures
+        // Draw treasures (no shadowBlur for performance)
         this.state.treasures.filter(isVisible).forEach(treasure => {
             const px = offsetX + treasure.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + treasure.y * this.state.cellSize + this.state.cellSize / 2;
             const float = Math.sin(this.state.frameCount * 0.1 + treasure.x) * 3;
-            ctx.shadowColor = '#fbbf24';
-            ctx.shadowBlur = 10;
             ctx.fillText(treasure.icon, px, py + float);
-            ctx.shadowBlur = 0;
         });
 
         // Draw items
@@ -873,30 +878,23 @@ const LiquidityMaze = {
             ctx.fillText(this.state.goal.locked ? '🔒' : '🏁', gx, gy);
         }
 
-        // Draw player
+        // Draw player (no shadowBlur for performance)
         const ppx = offsetX + this.state.player.x * this.state.cellSize + this.state.cellSize / 2;
         const ppy = offsetY + this.state.player.y * this.state.cellSize + this.state.cellSize / 2;
         ctx.globalAlpha = this.state.player.frozen ? 0.5 : 1;
-        // Player glow
-        ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 8;
         ctx.fillText('🧑‍💻', ppx, ppy);
-        ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
 
-        // Draw effects
+        // Draw effects (no shadowBlur for performance)
         ctx.font = 'bold 14px Arial';
         this.state.effects.forEach(e => {
             const ex = offsetX + e.x * this.state.cellSize + this.state.cellSize / 2;
             const ey = offsetY + e.y * this.state.cellSize + e.vy * (40 - e.life);
             ctx.globalAlpha = e.life / 40;
             ctx.fillStyle = e.color;
-            ctx.shadowColor = e.color;
-            ctx.shadowBlur = 5;
             ctx.fillText(e.text, ex, ey);
         });
         ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
 
         // Draw mini-map (top-left corner)
         if (this.state.showMiniMap) {

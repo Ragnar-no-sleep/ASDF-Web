@@ -434,17 +434,11 @@ const StakeStacker = {
     },
 
     /**
-     * Draw a block with pattern
+     * Draw a block with pattern (no shadowBlur for performance)
      */
     drawBlock(block, index) {
         const ctx = this.ctx;
         const { x, y, width, height, color, pattern, perfect } = block;
-
-        // Glow effect for perfect blocks
-        if (perfect || pattern === 'glow') {
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 15;
-        }
 
         // Draw based on pattern
         switch (pattern) {
@@ -462,7 +456,6 @@ const StakeStacker = {
                 for (let sx = 0; sx < width; sx += 8) {
                     ctx.fillRect(x + sx, y, 4, height);
                 }
-                ctx.shadowBlur = 0;
                 ctx.strokeStyle = 'rgba(255,255,255,0.3)';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(x, y, width, height);
@@ -483,7 +476,6 @@ const StakeStacker = {
         }
 
         ctx.fillRect(x, y, width, height);
-        ctx.shadowBlur = 0;
 
         // Border
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
@@ -544,17 +536,10 @@ const StakeStacker = {
         if (this.state.currentBlock) {
             const curr = this.state.currentBlock;
 
-            // Pulsing glow when streak active
-            if (this.state.perfectGlow > 0) {
-                ctx.shadowColor = '#fbbf24';
-                ctx.shadowBlur = 10 + Math.sin(this.state.frameCount * 0.2) * 5;
-            }
-
             ctx.fillStyle = curr.color;
             ctx.globalAlpha = 0.85;
             ctx.fillRect(curr.x, curr.y, curr.width, curr.height);
             ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
 
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 3;

@@ -719,16 +719,13 @@ const ScamBlaster = {
                 ctx.stroke();
             }
 
-            // Shield glow for shielded enemies
+            // Shield indicator for shielded enemies (no shadowBlur for performance)
             if (enemy.shield || enemy.hp > 1) {
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 3;
-                ctx.shadowColor = '#3b82f6';
-                ctx.shadowBlur = 15;
                 ctx.beginPath();
                 ctx.arc(enemy.x, enemy.y, enemy.size * 0.7, 0, Math.PI * 2);
                 ctx.stroke();
-                ctx.shadowBlur = 0;
 
                 // HP indicator
                 if (enemy.maxHp > 1) {
@@ -750,33 +747,26 @@ const ScamBlaster = {
             ctx.fillText(enemy.icon, enemy.x, enemy.y);
         });
 
-        // Draw boss
+        // Draw boss (no shadowBlur for performance)
         if (this.state.boss) {
             const boss = this.state.boss;
 
-            // Boss glow
-            ctx.shadowColor = '#ef4444';
-            ctx.shadowBlur = 30;
             ctx.strokeStyle = '#ef4444';
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.arc(boss.x, boss.y, boss.size * 0.8, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
             // Boss icon
             ctx.font = `${boss.size}px Arial`;
             ctx.fillText(boss.icon, boss.x, boss.y);
         }
 
-        // Draw power-ups
+        // Draw power-ups (no shadowBlur for performance)
         this.state.powerUps.forEach(powerUp => {
             const pulse = Math.sin(this.state.frameCount * 0.1) * 0.2 + 1;
-            ctx.shadowColor = '#fbbf24';
-            ctx.shadowBlur = 15;
             ctx.font = `${24 * pulse}px Arial`;
             ctx.fillText(powerUp.icon, powerUp.x, powerUp.y);
-            ctx.shadowBlur = 0;
         });
 
         this.state.explosions.forEach(exp => {

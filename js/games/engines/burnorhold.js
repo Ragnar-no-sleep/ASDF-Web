@@ -821,14 +821,11 @@ const BurnOrHold = {
                     const isAllied = node.owner === other.owner && node.owner !== this.OWNER.NEUTRAL;
 
                     if (isAllied) {
-                        // Glowing connection for allied nodes
+                        // Allied connection (no shadowBlur for performance)
                         const color = this.CHAIN_COLORS[node.owner].border;
-                        ctx.shadowColor = color;
-                        ctx.shadowBlur = 8 * pulseIntensity;
                         ctx.strokeStyle = color + Math.floor(pulseIntensity * 200).toString(16).padStart(2, '0');
                         ctx.lineWidth = 3;
                     } else {
-                        ctx.shadowBlur = 0;
                         ctx.strokeStyle = '#33335580';
                         ctx.lineWidth = 2;
                     }
@@ -839,18 +836,14 @@ const BurnOrHold = {
                 }
             }
         }
-        ctx.shadowBlur = 0;
 
-        // Draw data flow packets
+        // Draw data flow packets (no shadowBlur for performance)
         for (const flow of this.state.dataFlows) {
             ctx.beginPath();
             ctx.arc(flow.x, flow.y, 4, 0, Math.PI * 2);
             ctx.fillStyle = flow.color;
-            ctx.shadowColor = flow.color;
-            ctx.shadowBlur = 10;
             ctx.fill();
         }
-        ctx.shadowBlur = 0;
 
         // Draw capture animations (expanding rings)
         for (const anim of this.state.captureAnimations) {
@@ -863,16 +856,12 @@ const BurnOrHold = {
         }
         ctx.globalAlpha = 1;
 
-        // Draw power-ups
+        // Draw power-ups (no shadowBlur for performance)
         for (const powerUp of this.state.powerUps) {
             const pulse = 0.8 + Math.sin(powerUp.pulse) * 0.2;
             ctx.save();
             ctx.translate(powerUp.x, powerUp.y);
             ctx.scale(pulse, pulse);
-
-            // Glow
-            ctx.shadowColor = powerUp.color;
-            ctx.shadowBlur = 15;
 
             // Background circle
             ctx.beginPath();
@@ -892,18 +881,11 @@ const BurnOrHold = {
 
             ctx.restore();
         }
-        ctx.shadowBlur = 0;
 
-        // Draw nodes
+        // Draw nodes (no shadowBlur for performance)
         for (const node of this.state.nodes) {
             const colors = this.CHAIN_COLORS[node.owner];
             const isSelected = this.state.selectedNode === node;
-
-            // Node glow for owned nodes
-            if (node.owner !== this.OWNER.NEUTRAL) {
-                ctx.shadowColor = colors.border;
-                ctx.shadowBlur = 10;
-            }
 
             ctx.beginPath();
             ctx.arc(node.x, node.y, this.state.nodeRadius, 0, Math.PI * 2);
@@ -912,7 +894,6 @@ const BurnOrHold = {
             ctx.strokeStyle = isSelected ? '#fff' : colors.border;
             ctx.lineWidth = isSelected ? 4 : 2;
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
             if (isSelected) {
                 ctx.beginPath();
@@ -959,17 +940,14 @@ const BurnOrHold = {
             ctx.lineTo(atk.x, atk.y);
             ctx.stroke();
 
-            // Main projectile
+            // Main projectile (no shadowBlur for performance)
             ctx.beginPath();
             ctx.arc(atk.x, atk.y, 8 + atk.power / 3, 0, Math.PI * 2);
             ctx.fillStyle = atk.isPlayer ? '#22c55e' : '#ef4444';
-            ctx.shadowColor = atk.isPlayer ? '#22c55e' : '#ef4444';
-            ctx.shadowBlur = 15;
             ctx.fill();
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
             ctx.font = 'bold 10px Arial';
             ctx.fillStyle = '#fff';
@@ -1004,18 +982,15 @@ const BurnOrHold = {
         }
         ctx.globalAlpha = 1;
 
-        // Text effects
+        // Text effects (no shadowBlur for performance)
         ctx.font = 'bold 18px Arial';
         ctx.textAlign = 'center';
         for (const e of this.state.effects) {
             ctx.globalAlpha = e.life / e.maxLife;
             ctx.fillStyle = e.color;
-            ctx.shadowColor = e.color;
-            ctx.shadowBlur = 5;
             ctx.fillText(e.text, e.x, e.y);
         }
         ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
 
         // Active power-ups HUD (bottom right)
         if (this.state.activePowerUps.length > 0) {

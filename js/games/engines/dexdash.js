@@ -614,10 +614,7 @@ const DexDash = {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Road edges with glow
-        const edgeGlow = 10 + this.state.player.speed * 3;
-        ctx.shadowColor = this.state.player.speed > 5 ? '#fbbf24' : '#8b5cf6';
-        ctx.shadowBlur = edgeGlow;
+        // Road edges (no shadowBlur for performance)
         ctx.strokeStyle = this.state.player.speed > 5 ? '#fbbf24' : '#8b5cf6';
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -628,7 +625,6 @@ const DexDash = {
         ctx.moveTo(rRight, 0);
         ctx.lineTo(rRight, this.canvas.height);
         ctx.stroke();
-        ctx.shadowBlur = 0;
 
         // Draw persistent speed lines (under everything)
         this.state.speedLines.forEach(line => {
@@ -644,14 +640,10 @@ const DexDash = {
             ctx.stroke();
         });
 
-        // Draw boost pads
+        // Draw boost pads (no shadowBlur for performance)
         this.state.boostPads.forEach(pad => {
             const glow = 0.5 + Math.sin(pad.pulse) * 0.3;
             ctx.save();
-
-            // Pad glow
-            ctx.shadowColor = pad.color;
-            ctx.shadowBlur = 20 + Math.sin(pad.pulse) * 10;
 
             // Pad shape (chevron pattern)
             ctx.fillStyle = pad.color;
@@ -679,7 +671,6 @@ const DexDash = {
 
             // Label
             ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
             ctx.fillStyle = 'white';
             ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
@@ -688,14 +679,10 @@ const DexDash = {
             ctx.restore();
         });
 
-        // Draw hazards
+        // Draw hazards (no shadowBlur for performance)
         this.state.hazards.forEach(hazard => {
             ctx.save();
             ctx.translate(hazard.x, hazard.y);
-
-            // Danger glow
-            ctx.shadowColor = hazard.effect === 'oil' ? '#ef4444' : '#60a5fa';
-            ctx.shadowBlur = 15;
 
             // Puddle effect for oil/ice
             ctx.fillStyle = hazard.effect === 'oil' ? 'rgba(0,0,0,0.6)' : 'rgba(96,165,250,0.4)';
@@ -727,19 +714,16 @@ const DexDash = {
             ctx.fillText(boost.icon, boost.x, boost.y + float);
         });
 
-        // Draw death traps
+        // Draw death traps (no shadowBlur for performance)
         this.state.deathTraps.forEach(trap => {
             const scale = 1 + Math.sin(trap.pulse) * 0.15;
             ctx.save();
             ctx.translate(trap.x, trap.y);
             ctx.scale(scale, scale);
-            ctx.shadowColor = '#ef4444';
-            ctx.shadowBlur = 15 + Math.sin(trap.pulse) * 10;
             ctx.font = `${trap.size}px Arial`;
             ctx.fillText(trap.icon, 0, 0);
             ctx.restore();
         });
-        ctx.shadowBlur = 0;
 
         // Draw speed particles
         this.state.speedParticles.forEach(p => {
@@ -756,24 +740,18 @@ const DexDash = {
         ctx.translate(this.state.player.x, this.state.player.y);
         ctx.rotate(this.state.player.vx * 0.05);
 
-        // Turbo mode pulsing effect
+        // Turbo mode pulsing effect (no shadowBlur for performance)
         if (this.state.turboMode) {
             const pulse = 0.5 + Math.sin(this.state.frameCount * 0.3) * 0.5;
-            ctx.shadowColor = this.state.activeBoost ? this.state.activeBoost.color : '#f59e0b';
-            ctx.shadowBlur = 20 + pulse * 15;
             // Fire trail behind car
             ctx.fillStyle = `rgba(249, 115, 22, ${0.3 + pulse * 0.3})`;
             ctx.beginPath();
             ctx.ellipse(0, 25, 15 + pulse * 5, 30 + pulse * 10, 0, 0, Math.PI * 2);
             ctx.fill();
-        } else if (this.state.player.speed > 4) {
-            ctx.shadowColor = this.state.player.speed > 5 ? '#fbbf24' : '#8b5cf6';
-            ctx.shadowBlur = 10 + (this.state.player.speed - 4) * 5;
         }
 
         ctx.font = '40px Arial';
         ctx.fillText('🏎️', 0, 0);
-        ctx.shadowBlur = 0;
         ctx.restore();
 
         // Speed lines
@@ -806,17 +784,14 @@ const DexDash = {
             }
         }
 
-        // Draw effects
+        // Draw effects (no shadowBlur for performance)
         ctx.font = 'bold 16px Arial';
         this.state.effects.forEach(e => {
             ctx.globalAlpha = e.life / 40;
             ctx.fillStyle = e.color;
-            ctx.shadowColor = e.color;
-            ctx.shadowBlur = 10;
             ctx.fillText(e.text, e.x, e.y);
         });
         ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
 
         ctx.restore();
 
