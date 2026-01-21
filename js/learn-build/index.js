@@ -33,6 +33,10 @@ import { sync } from '../persistence/index.js';
 import { eventBus, EVENTS } from '../core/event-bus.js';
 import { createLogger } from '../core/debug.js';
 
+// Sample data
+import { ALL_QUESTS, QUEST_TYPES } from './quests.js';
+import { ALL_MODULES } from './modules.js';
+
 const log = createLogger('LearnBuild');
 
 // ============================================
@@ -418,6 +422,11 @@ export {
   BADGE_CATEGORIES,
   LEVEL_THRESHOLDS,
   BADGE_DEFINITIONS,
+  QUEST_TYPES,
+
+  // Sample data
+  ALL_QUESTS,
+  ALL_MODULES,
 
   // Components
   ModulePlayer,
