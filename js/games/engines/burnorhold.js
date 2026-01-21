@@ -11,11 +11,13 @@
 'use strict';
 
 const BurnOrHold = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'burnorhold',
     canvas: null,
     ctx: null,
     state: null,
     timing: null,
+    juice: null,
     startTime: null,
 
     OWNER: { NEUTRAL: 0, PLAYER: 1, ENEMY: 2 },
@@ -46,13 +48,13 @@ const BurnOrHold = {
             attacks: [],
             effects: [],
             particles: [],
-            nodeRadius: 35,
+            nodeRadius: 34,       // fib[8]
             lastAIAttack: 0,
-            aiAttackInterval: 1200,
+            aiAttackInterval: 1300, // fib[6] * 100
             lastRegen: 0,
             regenInterval: 1000,
             playerCooldown: 0,
-            attackCooldown: 150,
+            attackCooldown: 144,    // fib[11] (approx)
             regenAmount: 2,
         };
 

@@ -11,11 +11,13 @@
 'use strict';
 
 const LiquidityMaze = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'liquiditymaze',
     canvas: null,
     ctx: null,
     state: null,
     timing: null,
+    juice: null,
     moveTimeout: null,
 
     /**
@@ -33,7 +35,7 @@ const LiquidityMaze = {
             player: { x: 0, y: 0, speed: 1, hasKey: false, frozen: false },
             goal: { x: 0, y: 0, locked: true },
             maze: [],
-            cellSize: 30,
+            cellSize: 34,         // fib[8]
             cols: 0,
             rows: 0,
             liquidityPools: [],
@@ -45,7 +47,7 @@ const LiquidityMaze = {
             visited: new Set(),
             revealed: new Set(),
             startTime: 0,
-            timeLimit: 90,
+            timeLimit: 89,        // fib[10]
             moveKeys: { up: false, down: false, left: false, right: false },
             effects: [],
         };

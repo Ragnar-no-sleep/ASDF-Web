@@ -11,11 +11,13 @@
 'use strict';
 
 const StakeStacker = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'stakestacker',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
+    juice: null,
 
     /**
      * Start the game
@@ -31,12 +33,14 @@ const StakeStacker = {
             gameOver: false,
             blocks: [],
             currentBlock: null,
-            baseWidth: 220,
-            blockHeight: 35,
+            baseWidth: 233,       // fib[11]
+            blockHeight: 34,      // fib[8]
             direction: 1,
-            speed: 5,
+            speed: 5,             // fib[4]
             perfectStreak: 0,
             cameraOffset: 0,
+            // Perfect streak bonus: Fibonacci scaling
+            streakMultiplier: 1,
         };
 
         this.createArena(arena);

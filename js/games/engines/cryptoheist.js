@@ -10,11 +10,13 @@
 'use strict';
 
 const CryptoHeist = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'cryptoheist',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
+    juice: null,
 
     /**
      * Start the game
@@ -29,7 +31,7 @@ const CryptoHeist = {
             wave: 1,
             kills: 0,
             gameOver: false,
-            player: { x: 0, y: 0, size: 20, speed: 5, angle: 0 },
+            player: { x: 0, y: 0, size: 21, speed: 5, angle: 0 }, // fib[7], fib[4]
             enemies: [],
             bullets: [],
             tokens: [],
@@ -38,10 +40,10 @@ const CryptoHeist = {
             mouseX: 0,
             mouseY: 0,
             lastShot: 0,
-            shootCooldown: 150,
+            shootCooldown: 144,   // fib[11]
             spawnTimer: 0,
-            spawnRate: 70,
-            enemySpeed: 1.8
+            spawnRate: 89,        // fib[10]
+            enemySpeed: 1.618     // PHI
         };
 
         this.createArena(arena);

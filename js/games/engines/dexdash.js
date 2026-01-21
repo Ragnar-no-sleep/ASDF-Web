@@ -11,12 +11,14 @@
 'use strict';
 
 const DexDash = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'dexdash',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
-    roadWidth: 380,
+    juice: null,
+    roadWidth: 377,   // fib[13]
 
     dexLogos: ['🦄', '🦞', '🍣', '☀️', '🌊', '💎'],
     obstacleTypes: [
@@ -41,9 +43,9 @@ const DexDash = {
             boosts: [],
             deathTraps: [],
             distance: 0,
-            baseMaxSpeed: 6,
-            maxSpeed: 6,
-            acceleration: 0.025,
+            baseMaxSpeed: 8,      // fib[5]
+            maxSpeed: 8,
+            acceleration: 0.021,  // ~fib[7] / 1000
             roadOffset: 0,
             keys: { left: false, right: false, up: false, down: false },
             effects: [],

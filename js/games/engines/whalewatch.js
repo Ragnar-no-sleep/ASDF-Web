@@ -11,6 +11,7 @@
 'use strict';
 
 const WhaleWatch = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'whalewatch',
     state: null,
     timerInterval: null,
@@ -46,9 +47,9 @@ const WhaleWatch = {
                 targetIndex: 0,
                 foundCount: 0,
                 totalTargets: 0,
-                timer: 45,
-                cols: 5,
-                rows: 5,
+                timer: 55,        // fib[9]
+                cols: 5,          // fib[4]
+                rows: 5,          // fib[4]
                 completed: false,
                 mistakes: 0,
                 maxMistakes: 3,
@@ -61,7 +62,7 @@ const WhaleWatch = {
                 currentShowIndex: 0,
                 waitingForInput: false,
                 inputTimer: 0,
-                inputTimeLimit: 10,
+                inputTimeLimit: 13,  // fib[6]
                 buttons: [],
                 round: 1,
                 completed: false,
