@@ -64,6 +64,20 @@ const ALLOWED_METHODS = [
 ];
 
 // ============================================
+// DEV MODE DETECTION
+// ============================================
+
+/**
+ * Detect if running in development mode (localhost/127.0.0.1)
+ * In dev mode, skip Redis and use localStorage only
+ */
+const isDevMode = () => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+};
+
+// ============================================
 // REDIS CLIENT CLASS
 // ============================================
 
@@ -74,6 +88,11 @@ class RedisClient {
     this.cache = new Map();
     this.pendingQueue = [];
     this.retryCount = 0;
+    this.devMode = isDevMode();
+
+    if (this.devMode) {
+      console.log('[Redis] Dev mode detected - using localStorage only');
+    }
   }
 
   // ============================================
@@ -87,6 +106,11 @@ class RedisClient {
    * @returns {Promise<any>} Redis response
    */
   async request(method, params = []) {
+    // Skip Redis in dev mode - let sync layer use localStorage
+    if (this.devMode) {
+      throw createError('REDIS_DEV_MODE', { method, params });
+    }
+
     const upperMethod = method.toUpperCase();
 
     // Validate method

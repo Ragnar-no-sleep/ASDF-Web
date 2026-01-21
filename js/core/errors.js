@@ -415,6 +415,13 @@ export const errors = {
     action: 'retry',
     severity: 'warning'
   },
+  REDIS_DEV_MODE: {
+    code: 'REDIS_DEV_MODE',
+    name: 'Dev Mode',
+    message: 'Redis skipped in development - using localStorage.',
+    action: 'none',
+    severity: 'debug'
+  },
 
   // ============================================
   // GENERIC ERRORS
