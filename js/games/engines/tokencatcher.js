@@ -10,7 +10,7 @@
 'use strict';
 
 const TokenCatcher = {
-    version: '1.2.0', // Combo system + Fibonacci difficulty curve
+    version: '1.3.0', // Power-ups added
     gameId: 'tokencatcher',
     state: null,
     canvas: null,
@@ -24,6 +24,14 @@ const TokenCatcher = {
     goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
     scamTokens: ['🚨', '❌', '🦠'],
     skullToken: '💀',
+
+    // Power-up definitions (Fibonacci durations in frames @ 60fps)
+    powerUps: {
+        magnet: { icon: '🧲', duration: 233, color: '#3b82f6', name: 'MAGNET' },      // ~3.9s
+        slowmo: { icon: '⏱️', duration: 144, color: '#a855f7', name: 'SLOW-MO' },     // ~2.4s
+        double: { icon: '✨', duration: 377, color: '#fbbf24', name: '2X SCORE' },    // ~6.3s
+        shield: { icon: '🛡️', duration: 233, color: '#22c55e', name: 'SHIELD' }      // ~3.9s
+    },
 
     enemyTypes: [
         { icon: '👾', name: 'INVADER', hp: 3, points: 50, speed: 1.5 },
@@ -77,7 +85,15 @@ const TokenCatcher = {
             difficultyLevel: 0,
             spawnRate: 500,    // Base spawn rate (ms)
             tokenSpeedBase: 3,
-            tokenSpeedVariance: 2
+            tokenSpeedVariance: 2,
+            // Power-ups state
+            activePowerUps: {
+                magnet: 0,    // Remaining frames
+                slowmo: 0,
+                double: 0,
+                shield: 0
+            },
+            powerUpTokens: []  // Falling power-up tokens
         };
 
         // Create arena HTML
@@ -265,7 +281,10 @@ const TokenCatcher = {
 
         // Token spawn interval
         this.spawnInterval = setInterval(() => {
-            if (!self.state.gameOver) self.spawnToken();
+            if (!self.state.gameOver) {
+                self.spawnToken();
+                self.spawnPowerUp(); // Chance to spawn power-up
+            }
         }, 500);
 
         // Timer countdown with difficulty progression
@@ -345,6 +364,75 @@ const TokenCatcher = {
             currentHp: type.hp,
             speed: type.speed + Math.random() * 0.5
         });
+    },
+
+    /**
+     * Spawn a power-up token (rare, ~5% chance per spawn cycle)
+     */
+    spawnPowerUp() {
+        if (this.state.gameOver) return;
+        if (Math.random() > 0.05) return; // 5% chance
+
+        const types = Object.keys(this.powerUps);
+        const type = types[Math.floor(Math.random() * types.length)];
+        const powerUp = this.powerUps[type];
+
+        this.state.powerUpTokens.push({
+            x: 50 + Math.random() * (this.canvas.width - 100),
+            y: -30,
+            type: type,
+            icon: powerUp.icon,
+            color: powerUp.color,
+            speed: 2 + Math.random() // Slower than regular tokens
+        });
+    },
+
+    /**
+     * Activate a power-up
+     */
+    activatePowerUp(type) {
+        const powerUp = this.powerUps[type];
+        this.state.activePowerUps[type] = powerUp.duration;
+
+        // Visual feedback
+        this.addEffect(this.state.basketPos, this.state.lanePositions[this.state.basketLane] - 50,
+            powerUp.name, powerUp.color, { size: 20 });
+
+        if (this.juice) {
+            this.juice.triggerFlash(powerUp.color, 200);
+            this.juice.burst(this.state.basketPos, this.state.lanePositions[this.state.basketLane], {
+                icon: powerUp.icon,
+                count: 8,
+                spread: 5,
+                lifetime: 40
+            });
+        }
+
+        // Play sound if available
+        if (typeof GameJuice !== 'undefined' && GameJuice.playSound) {
+            GameJuice.playSound('powerup');
+        }
+    },
+
+    /**
+     * Check if a power-up is active
+     */
+    isPowerUpActive(type) {
+        return this.state.activePowerUps[type] > 0;
+    },
+
+    /**
+     * Update power-up timers
+     */
+    updatePowerUps(dt) {
+        for (const type in this.state.activePowerUps) {
+            if (this.state.activePowerUps[type] > 0) {
+                this.state.activePowerUps[type] -= dt;
+                if (this.state.activePowerUps[type] <= 0) {
+                    this.state.activePowerUps[type] = 0;
+                }
+            }
+        }
     },
 
     /**
@@ -545,11 +633,35 @@ const TokenCatcher = {
             }
         }
 
+        // Update power-up timers
+        this.updatePowerUps(dt);
+
+        // Calculate speed modifier from slow-mo
+        const speedMod = this.isPowerUpActive('slowmo') ? 0.4 : 1.0;
+
         this.moveBasket(dt);
 
         const basketX = this.state.basketPos;
         const basketY = this.state.lanePositions[this.state.basketLane];
         const self = this;
+
+        // Update power-up tokens
+        this.state.powerUpTokens = this.state.powerUpTokens.filter(pu => {
+            pu.y += pu.speed * dt * speedMod;
+
+            // Check collision with basket
+            if (
+                pu.y + 15 >= basketY - self.state.basketHeight / 2 &&
+                pu.y - 15 <= basketY + self.state.basketHeight / 2 &&
+                pu.x >= basketX - self.state.basketWidth / 2 &&
+                pu.x <= basketX + self.state.basketWidth / 2
+            ) {
+                self.activatePowerUp(pu.type);
+                return false;
+            }
+
+            return pu.y < self.canvas.height + 30;
+        });
 
         // Update projectiles
         this.state.projectiles = this.state.projectiles.filter(proj => {
@@ -656,7 +768,20 @@ const TokenCatcher = {
 
         // Update tokens
         this.state.tokens = this.state.tokens.filter(token => {
-            token.y += token.speed * dt;
+            // Apply slow-mo effect
+            token.y += token.speed * dt * speedMod;
+
+            // Magnet effect: attract good tokens toward basket
+            if (self.isPowerUpActive('magnet') && !token.isSkull && !token.isScam) {
+                const dx = basketX - token.x;
+                const dy = basketY - token.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 200 && dist > 0) {
+                    const magnetStrength = 3 * dt;
+                    token.x += (dx / dist) * magnetStrength;
+                    token.y += (dy / dist) * magnetStrength * 0.5;
+                }
+            }
 
             // Check collision with basket
             if (
@@ -666,35 +791,52 @@ const TokenCatcher = {
                 token.x <= basketX + self.state.basketWidth / 2
             ) {
                 if (token.isSkull) {
-                    self.addEffect(token.x, token.y, 'GAME OVER!', '#ef4444');
-                    self.triggerImpact(token.x, token.y, 'death');
-                    self.resetCombo();
-                    recordGameAction(self.gameId, 'catch_skull', { score: self.state.score });
-                    self.state.gameOver = true;
-                    setTimeout(() => endGame(self.gameId, self.state.score), 500);
+                    // Shield blocks skull death
+                    if (self.isPowerUpActive('shield')) {
+                        self.state.activePowerUps.shield = 0; // Consume shield
+                        self.addEffect(token.x, token.y, 'BLOCKED!', '#22c55e');
+                        self.triggerImpact(token.x, token.y, 'catch');
+                        recordGameAction(self.gameId, 'shield_block', { blocked: 'skull' });
+                    } else {
+                        self.addEffect(token.x, token.y, 'GAME OVER!', '#ef4444');
+                        self.triggerImpact(token.x, token.y, 'death');
+                        self.resetCombo();
+                        recordGameAction(self.gameId, 'catch_skull', { score: self.state.score });
+                        self.state.gameOver = true;
+                        setTimeout(() => endGame(self.gameId, self.state.score), 500);
+                    }
                     return false;
                 } else if (token.isScam) {
-                    // Scam breaks combo and deals damage
-                    const penalty = 21; // fib[7]
-                    self.state.score = Math.max(0, self.state.score - penalty);
-                    self.addEffect(token.x, token.y, `-${penalty}`, '#ef4444');
-                    self.triggerImpact(token.x, token.y, 'damage');
-                    self.resetCombo();
-                    recordGameAction(self.gameId, 'catch_scam', { score: self.state.score, comboLost: true });
+                    // Shield blocks scam damage
+                    if (self.isPowerUpActive('shield')) {
+                        self.addEffect(token.x, token.y, 'BLOCKED!', '#22c55e');
+                        self.triggerImpact(token.x, token.y, 'catch');
+                    } else {
+                        // Scam breaks combo and deals damage
+                        const penalty = 21; // fib[7]
+                        self.state.score = Math.max(0, self.state.score - penalty);
+                        self.addEffect(token.x, token.y, `-${penalty}`, '#ef4444');
+                        self.triggerImpact(token.x, token.y, 'damage');
+                        self.resetCombo();
+                        recordGameAction(self.gameId, 'catch_scam', { score: self.state.score, comboLost: true });
+                    }
                 } else {
                     // Good token - apply combo multiplier!
                     const multiplier = self.incrementCombo();
                     const basePoints = 13; // fib[6]
-                    const points = basePoints * multiplier;
+                    // Double score power-up
+                    const doubleBonus = self.isPowerUpActive('double') ? 2 : 1;
+                    const points = basePoints * multiplier * doubleBonus;
                     self.state.score += points;
 
                     // Show combo feedback
-                    if (multiplier > 1) {
-                        self.addEffect(token.x, token.y - 20, `x${multiplier}`, '#a855f7', { size: 16 });
+                    if (multiplier > 1 || doubleBonus > 1) {
+                        const bonusText = doubleBonus > 1 ? `x${multiplier * 2}` : `x${multiplier}`;
+                        self.addEffect(token.x, token.y - 20, bonusText, '#a855f7', { size: 16 });
                     }
                     self.addEffect(token.x, token.y, `+${points}`, '#22c55e');
                     self.triggerImpact(token.x, token.y, multiplier >= 3 ? 'enemy_kill' : 'catch');
-                    recordGameAction(self.gameId, 'catch_token', { score: self.state.score, combo: self.state.combo, multiplier });
+                    recordGameAction(self.gameId, 'catch_token', { score: self.state.score, combo: self.state.combo, multiplier, doubleBonus });
                 }
                 recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -21 : 13);
                 document.getElementById('tc-score').textContent = self.state.score;
@@ -742,6 +884,55 @@ const TokenCatcher = {
     },
 
     /**
+     * Draw active power-up indicators on the right side
+     */
+    drawPowerUpIndicators(ctx) {
+        const activeList = [];
+        for (const type in this.state.activePowerUps) {
+            if (this.state.activePowerUps[type] > 0) {
+                const pu = this.powerUps[type];
+                const duration = pu.duration;
+                const remaining = this.state.activePowerUps[type];
+                activeList.push({
+                    type,
+                    icon: pu.icon,
+                    color: pu.color,
+                    name: pu.name,
+                    percent: remaining / duration
+                });
+            }
+        }
+
+        if (activeList.length === 0) return;
+
+        const startY = 100;
+        const spacing = 50;
+
+        activeList.forEach((pu, i) => {
+            const x = this.canvas.width - 60;
+            const y = startY + i * spacing;
+
+            // Background
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.beginPath();
+            ctx.roundRect(x - 35, y - 18, 70, 36, 8);
+            ctx.fill();
+
+            // Icon
+            ctx.font = '22px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pu.icon, x - 15, y);
+
+            // Timer bar
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillRect(x + 5, y - 4, 25, 8);
+            ctx.fillStyle = pu.color;
+            ctx.fillRect(x + 5, y - 4, 25 * pu.percent, 8);
+        });
+    },
+
+    /**
      * Draw game state
      */
     draw() {
@@ -778,11 +969,21 @@ const TokenCatcher = {
             ctx.globalAlpha = 1;
         });
 
+        // Draw power-up tokens (with pulsing glow)
+        ctx.font = '28px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const pulsePhase = Date.now() / 200;
+        this.state.powerUpTokens.forEach(pu => {
+            ctx.shadowColor = pu.color;
+            ctx.shadowBlur = 15 + Math.sin(pulsePhase) * 5;
+            ctx.fillText(pu.icon, pu.x, pu.y);
+            ctx.shadowBlur = 0;
+        });
+
         // Draw falling tokens
         ctx.fillStyle = '#ffffff';
         ctx.font = '30px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         this.state.tokens.forEach(token => {
             if (token.isSkull) {
                 ctx.shadowColor = '#ef4444';
@@ -794,6 +995,9 @@ const TokenCatcher = {
             ctx.fillText(token.icon, token.x, token.y);
             ctx.shadowBlur = 0;
         });
+
+        // Draw active power-up indicators
+        this.drawPowerUpIndicators(ctx);
 
         // Draw enemies with HP indicator
         ctx.font = '35px Arial';
