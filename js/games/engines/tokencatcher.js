@@ -10,6 +10,7 @@
 'use strict';
 
 const TokenCatcher = {
+    version: '1.1.0', // All tokens shootable + swept collision
     gameId: 'tokencatcher',
     state: null,
     canvas: null,
@@ -35,6 +36,7 @@ const TokenCatcher = {
      * @param {string} gameId - The game ID
      */
     start(gameId) {
+        console.log(`[TokenCatcher v${this.version}] Starting - ALL tokens shootable`);
         this.gameId = gameId;
         const arena = document.getElementById(`arena-${gameId}`);
         if (!arena) {
@@ -338,7 +340,7 @@ const TokenCatcher = {
         const dy = targetY - startY;
         const dist = Math.hypot(dx, dy);
 
-        const speed = 14;
+        const speed = 20; // Increased from 14 for snappier feel
         const vx = dist > 0 ? (dx / dist) * speed : 0;
         const vy = dist > 0 ? (dy / dist) * speed : -speed;
 
