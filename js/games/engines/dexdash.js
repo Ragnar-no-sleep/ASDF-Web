@@ -11,7 +11,7 @@
 'use strict';
 
 const DexDash = {
-    version: '1.1.0', // Fibonacci timing
+    version: '1.2.0', // Boost pads + enhanced speed lines + lane hazards
     gameId: 'dexdash',
     state: null,
     canvas: null,
@@ -25,6 +25,19 @@ const DexDash = {
         { icon: '🚧', slowdown: 2 },
         { icon: '⛔', slowdown: 3 },
         { icon: '🐌', slowdown: 1.5 },
+    ],
+
+    // Boost pad types (Fibonacci speed bonuses)
+    boostPadTypes: [
+        { color: '#22c55e', boost: 1.5, duration: 60, name: 'SPEED' },
+        { color: '#3b82f6', boost: 2.0, duration: 90, name: 'TURBO' },
+        { color: '#f59e0b', boost: 3.0, duration: 45, name: 'NITRO' },
+    ],
+
+    // Lane hazards
+    hazardTypes: [
+        { icon: '🛢️', effect: 'oil', duration: 120, slowdown: 0.3 },
+        { icon: '🧊', effect: 'ice', duration: 90, slip: 2.5 },
     ],
 
     /**
@@ -42,6 +55,8 @@ const DexDash = {
             obstacles: [],
             boosts: [],
             deathTraps: [],
+            boostPads: [],      // Track boost pads
+            hazards: [],        // Lane hazards
             distance: 0,
             baseMaxSpeed: 8,      // fib[5]
             maxSpeed: 8,
@@ -51,10 +66,19 @@ const DexDash = {
             effects: [],
             speedParticles: [],
             windParticles: [],
+            speedLines: [],       // Persistent speed lines
             screenShake: 0,
             turboFlash: 0,
             lastTrailTime: 0,
             difficultyMultiplier: 1,
+            // Active effects
+            activeBoost: null,    // Current boost pad effect
+            activeHazard: null,   // Current hazard effect
+            boostTimer: 0,
+            hazardTimer: 0,
+            // Visual enhancements
+            frameCount: 0,
+            turboMode: false,     // Max speed reached
         };
 
         this.createArena(arena);
@@ -95,6 +119,7 @@ const DexDash = {
                         <div style="color:var(--purple);font-size:16px;font-weight:bold;" id="dd-speed">0</div>
                     </div>
                 </div>
+                <div id="dd-boost-status" style="position:absolute;top:70px;left:50%;transform:translateX(-50%);display:none;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:bold;text-shadow:0 0 10px currentColor;"></div>
                 <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:10px;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:8px;">
                     WASD or Arrows = Move | &#129412; Boost | &#128679; Slow | &#128128; Game Over
                 </div>
@@ -170,6 +195,55 @@ const DexDash = {
     },
 
     /**
+     * Spawn boost pad
+     */
+    spawnBoostPad() {
+        const padType = this.boostPadTypes[Math.floor(Math.random() * this.boostPadTypes.length)];
+        const laneWidth = this.roadWidth / 3;
+        const lane = Math.floor(Math.random() * 3);
+        const x = this.roadLeft() + lane * laneWidth + laneWidth / 2;
+
+        this.state.boostPads.push({
+            x,
+            y: -60,
+            width: laneWidth - 20,
+            height: 80,
+            ...padType,
+            pulse: Math.random() * Math.PI * 2,
+        });
+    },
+
+    /**
+     * Spawn lane hazard
+     */
+    spawnHazard() {
+        const hazardType = this.hazardTypes[Math.floor(Math.random() * this.hazardTypes.length)];
+        const x = this.roadLeft() + 60 + Math.random() * (this.roadWidth - 120);
+
+        this.state.hazards.push({
+            x,
+            y: -50,
+            size: 45,
+            fallSpeed: 0.6 + Math.random() * 0.3,
+            ...hazardType,
+        });
+    },
+
+    /**
+     * Spawn speed line
+     */
+    spawnSpeedLine() {
+        const rLeft = this.roadLeft();
+        this.state.speedLines.push({
+            x: rLeft + Math.random() * this.roadWidth,
+            y: -20,
+            length: 60 + this.state.player.speed * 20,
+            alpha: 0.3 + Math.random() * 0.4,
+            speed: 8 + this.state.player.speed * 2,
+        });
+    },
+
+    /**
      * Add effect
      */
     addEffect(x, y, text, color) {
@@ -229,11 +303,20 @@ const DexDash = {
         const maxY = this.canvas.height - 50;
         this.state.player.y = Math.max(minY, Math.min(maxY, this.state.player.y));
 
+        // Frame counter
+        this.state.frameCount += dt;
+
         // Spawn objects
         const spawnMod = Math.min(2.5, 1 + this.state.distance * 0.0004);
         if (Math.random() < 0.008 * spawnMod) this.spawnObstacle();
         if (Math.random() < 0.004 * spawnMod) this.spawnBoost();
         if (this.state.distance > 250 && Math.random() < 0.003 * spawnMod) this.spawnDeathTrap();
+        // Boost pads appear after 150m
+        if (this.state.distance > 150 && Math.random() < 0.002 * spawnMod) this.spawnBoostPad();
+        // Hazards appear after 300m
+        if (this.state.distance > 300 && Math.random() < 0.002 * spawnMod) this.spawnHazard();
+        // Speed lines when going fast
+        if (this.state.player.speed > 4 && Math.random() < 0.3) this.spawnSpeedLine();
 
         // Update obstacles (frame-independent)
         this.state.obstacles = this.state.obstacles.filter(obs => {
@@ -301,6 +384,105 @@ const DexDash = {
             }
 
             return trap.y < self.canvas.height + 50;
+        });
+
+        // Update boost pads
+        this.state.boostPads = this.state.boostPads.filter(pad => {
+            pad.y += self.state.player.speed * dt;
+            pad.pulse = (pad.pulse + 0.1 * dt) % (Math.PI * 2);
+
+            // Check collision (rectangular)
+            const px = self.state.player.x;
+            const py = self.state.player.y;
+            if (px > pad.x - pad.width / 2 && px < pad.x + pad.width / 2 &&
+                py > pad.y - pad.height / 2 && py < pad.y + pad.height / 2) {
+                // Activate boost
+                self.state.activeBoost = { boost: pad.boost, color: pad.color, name: pad.name };
+                self.state.boostTimer = pad.duration;
+                self.addEffect(pad.x, pad.y, pad.name + '!', pad.color);
+                self.state.turboFlash = 1;
+                // Particles burst
+                for (let i = 0; i < 15; i++) {
+                    self.state.speedParticles.push({
+                        x: px + (Math.random() - 0.5) * 40,
+                        y: py + (Math.random() - 0.5) * 40,
+                        size: 5 + Math.random() * 8,
+                        life: 40,
+                        color: pad.color,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: (Math.random() - 0.5) * 8,
+                    });
+                }
+                return false;
+            }
+
+            return pad.y < self.canvas.height + 100;
+        });
+
+        // Update hazards
+        this.state.hazards = this.state.hazards.filter(hazard => {
+            hazard.y += (self.state.player.speed * 0.8 + hazard.fallSpeed * self.state.difficultyMultiplier) * dt;
+
+            const dx = hazard.x - self.state.player.x;
+            const dy = hazard.y - self.state.player.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < hazard.size / 2 + 20) {
+                // Apply hazard effect
+                self.state.activeHazard = { effect: hazard.effect, slip: hazard.slip, slowdown: hazard.slowdown };
+                self.state.hazardTimer = hazard.duration;
+                if (hazard.effect === 'oil') {
+                    self.state.player.speed *= (1 - hazard.slowdown);
+                    self.addEffect(hazard.x, hazard.y, 'OIL!', '#ef4444');
+                } else if (hazard.effect === 'ice') {
+                    self.addEffect(hazard.x, hazard.y, 'ICE!', '#60a5fa');
+                }
+                self.state.screenShake = 10;
+                return false;
+            }
+
+            return hazard.y < self.canvas.height + 50;
+        });
+
+        // Apply active boost
+        if (this.state.boostTimer > 0) {
+            this.state.boostTimer -= dt;
+            const boost = this.state.activeBoost;
+            this.state.player.speed = Math.min(this.state.maxSpeed * 1.5, this.state.player.speed + boost.boost * 0.1 * dt);
+            // Boost status UI
+            const statusEl = document.getElementById('dd-boost-status');
+            if (statusEl) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = boost.color;
+                statusEl.style.color = 'white';
+                statusEl.textContent = `${boost.name} ${Math.ceil(this.state.boostTimer / 60)}s`;
+            }
+        } else {
+            this.state.activeBoost = null;
+            const statusEl = document.getElementById('dd-boost-status');
+            if (statusEl) statusEl.style.display = 'none';
+        }
+
+        // Apply active hazard effects
+        if (this.state.hazardTimer > 0) {
+            this.state.hazardTimer -= dt;
+            const hazard = this.state.activeHazard;
+            if (hazard && hazard.effect === 'ice') {
+                // Ice makes steering slippery
+                this.state.player.vx += (Math.random() - 0.5) * hazard.slip * 0.1 * dt;
+            }
+        } else {
+            this.state.activeHazard = null;
+        }
+
+        // Turbo mode check
+        this.state.turboMode = this.state.player.speed >= this.state.maxSpeed * 0.9;
+
+        // Update speed lines
+        this.state.speedLines = this.state.speedLines.filter(line => {
+            line.y += line.speed * dt;
+            line.alpha *= 0.98;
+            return line.y < self.canvas.height + 50 && line.alpha > 0.05;
         });
 
         // Update effects (frame-independent)
@@ -448,6 +630,87 @@ const DexDash = {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
+        // Draw persistent speed lines (under everything)
+        this.state.speedLines.forEach(line => {
+            const gradient = ctx.createLinearGradient(line.x, line.y, line.x, line.y + line.length);
+            gradient.addColorStop(0, `rgba(251, 191, 36, 0)`);
+            gradient.addColorStop(0.5, `rgba(251, 191, 36, ${line.alpha})`);
+            gradient.addColorStop(1, `rgba(251, 191, 36, 0)`);
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(line.x, line.y);
+            ctx.lineTo(line.x, line.y + line.length);
+            ctx.stroke();
+        });
+
+        // Draw boost pads
+        this.state.boostPads.forEach(pad => {
+            const glow = 0.5 + Math.sin(pad.pulse) * 0.3;
+            ctx.save();
+
+            // Pad glow
+            ctx.shadowColor = pad.color;
+            ctx.shadowBlur = 20 + Math.sin(pad.pulse) * 10;
+
+            // Pad shape (chevron pattern)
+            ctx.fillStyle = pad.color;
+            ctx.globalAlpha = glow * 0.6;
+
+            const x = pad.x - pad.width / 2;
+            const y = pad.y - pad.height / 2;
+
+            // Draw chevron arrows
+            ctx.beginPath();
+            for (let i = 0; i < 3; i++) {
+                const chevY = y + i * 25;
+                ctx.moveTo(x, chevY + 15);
+                ctx.lineTo(x + pad.width / 2, chevY);
+                ctx.lineTo(x + pad.width, chevY + 15);
+            }
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = pad.color;
+            ctx.stroke();
+
+            // Border
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, pad.width, pad.height);
+
+            // Label
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(pad.name, pad.x, pad.y + pad.height / 2 + 5);
+
+            ctx.restore();
+        });
+
+        // Draw hazards
+        this.state.hazards.forEach(hazard => {
+            ctx.save();
+            ctx.translate(hazard.x, hazard.y);
+
+            // Danger glow
+            ctx.shadowColor = hazard.effect === 'oil' ? '#ef4444' : '#60a5fa';
+            ctx.shadowBlur = 15;
+
+            // Puddle effect for oil/ice
+            ctx.fillStyle = hazard.effect === 'oil' ? 'rgba(0,0,0,0.6)' : 'rgba(96,165,250,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 30, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = `${hazard.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(hazard.icon, 0, 0);
+
+            ctx.restore();
+        });
+
         ctx.fillStyle = '#ffffff';
         ctx.font = '35px Arial';
         ctx.textAlign = 'center';
@@ -493,7 +756,17 @@ const DexDash = {
         ctx.translate(this.state.player.x, this.state.player.y);
         ctx.rotate(this.state.player.vx * 0.05);
 
-        if (this.state.player.speed > 4) {
+        // Turbo mode pulsing effect
+        if (this.state.turboMode) {
+            const pulse = 0.5 + Math.sin(this.state.frameCount * 0.3) * 0.5;
+            ctx.shadowColor = this.state.activeBoost ? this.state.activeBoost.color : '#f59e0b';
+            ctx.shadowBlur = 20 + pulse * 15;
+            // Fire trail behind car
+            ctx.fillStyle = `rgba(249, 115, 22, ${0.3 + pulse * 0.3})`;
+            ctx.beginPath();
+            ctx.ellipse(0, 25, 15 + pulse * 5, 30 + pulse * 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (this.state.player.speed > 4) {
             ctx.shadowColor = this.state.player.speed > 5 ? '#fbbf24' : '#8b5cf6';
             ctx.shadowBlur = 10 + (this.state.player.speed - 4) * 5;
         }
