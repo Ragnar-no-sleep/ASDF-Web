@@ -17,7 +17,7 @@
 
 // Battle Grid accessors
 const getGridConstants = () => window.PumpArenaBattleGrid?.GRID_CONSTANTS || {};
-const createBattleGrid = () => window.PumpArenaBattleGrid?.createBattleGrid?.() || null;
+const _createBattleGridTutorial = () => window.PumpArenaBattleGrid?.createBattleGrid?.() || null;
 const BattleUnit = window.PumpArenaBattleGrid?.BattleUnit || class BattleUnit { constructor(c) { Object.assign(this, c); } };
 
 // Deck Builder accessors
@@ -403,7 +403,7 @@ class TutorialManager {
      * Setup the tutorial battle grid
      */
     setupTutorialBattle() {
-        this.tutorialGrid = createBattleGrid();
+        this.tutorialGrid = _createBattleGridTutorial();
 
         // Create player
         const player = new BattleUnit({

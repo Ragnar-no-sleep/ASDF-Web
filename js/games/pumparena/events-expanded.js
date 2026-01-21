@@ -31,7 +31,7 @@ const _setEventsMajorChoice = (choiceId, value) => {
 };
 
 // Faction state accessors
-const getFactionStanding = (id) => getRPGState().faction?.standing?.[id] || 0;
+const _getFactionStandingEvents = (id) => getRPGState().faction?.standing?.[id] || 0;
 const modifyFactionStanding = (id, amount) => {
     const state = window.PumpArenaState?.get?.();
     if (!state?.faction?.standing) return 0;

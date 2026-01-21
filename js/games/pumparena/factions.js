@@ -792,7 +792,7 @@ function modifyFactionStanding(factionId, amount, playerState) {
 /**
  * Get player's standing with a faction
  */
-function getFactionStanding(factionId, playerState) {
+function _getFactionStandingFactions(factionId, playerState) {
     return playerState?.faction?.standing?.[factionId] || 0;
 }
 
@@ -825,7 +825,7 @@ if (typeof window !== 'undefined') {
         joinFaction,
         leaveFaction,
         modifyFactionStanding,
-        getFactionStanding,
+        getFactionStanding: _getFactionStandingFactions,
         applyFactionBonus,
 
         // Helpers

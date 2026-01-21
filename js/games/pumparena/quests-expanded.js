@@ -1580,10 +1580,10 @@ const BUILDERS_GUILD_CAMPAIGN = {
 };
 
 // ============================================================
-// SIDE QUESTS (20 universal quests)
+// SIDE QUESTS EXPANDED (20 universal quests)
 // ============================================================
 
-const SIDE_QUESTS = {
+const SIDE_QUESTS_EXPANDED = {
     sq_tutorial_combat: createQuest({
         id: 'sq_tutorial_combat', name: 'Combat Tutorial', type: 'side',
         description: 'Learn the basics of tactical grid combat.',
@@ -1777,7 +1777,7 @@ class QuestManager {
     }
 
     getSideQuests() {
-        return Object.values(SIDE_QUESTS);
+        return Object.values(SIDE_QUESTS_EXPANDED);
     }
 
     getTotalQuestCount() {
@@ -1806,7 +1806,7 @@ window.PumpArenaQuestsExpanded = {
     PUMP_LORDS_CAMPAIGN,
     BEAR_CLAN_CAMPAIGN,
     BUILDERS_GUILD_CAMPAIGN,
-    SIDE_QUESTS,
+    SIDE_QUESTS_EXPANDED,
     questManager,
     getQuest: (id) => questManager.getQuest(id),
     getAvailableQuests: (gs) => questManager.getAvailableQuests(gs),

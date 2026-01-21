@@ -16,7 +16,7 @@
  * Fibonacci sequence for pricing tiers
  * Index maps to tier (0-9)
  */
-const FIBONACCI = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55];
+const SHOP_FIBONACCI = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55];
 
 /**
  * Base prices by layer type (in ASDF tokens)
@@ -79,7 +79,7 @@ const ShopCatalogV2 = {
      */
     calculatePrice(layer, tier, options = {}) {
         const basePrice = LAYER_BASE_PRICES[layer] || 100;
-        const fibMultiplier = FIBONACCI[tier] || 1;
+        const fibMultiplier = SHOP_FIBONACCI[tier] || 1;
 
         let price = basePrice * fibMultiplier;
 
@@ -468,14 +468,14 @@ const ShopCatalogV2 = {
 };
 
 // Export constants for external use
-ShopCatalog.FIBONACCI = FIBONACCI;
+ShopCatalog.FIBONACCI = SHOP_FIBONACCI;
 ShopCatalog.LAYER_BASE_PRICES = LAYER_BASE_PRICES;
 ShopCatalog.TIER_CONFIG = TIER_CONFIG;
 ShopCatalog.RARITY_WEIGHTS = RARITY_WEIGHTS;
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ShopCatalog, FIBONACCI, LAYER_BASE_PRICES, TIER_CONFIG };
+    module.exports = { ShopCatalog, SHOP_FIBONACCI, LAYER_BASE_PRICES, TIER_CONFIG };
 }
 
 // Global export for browser

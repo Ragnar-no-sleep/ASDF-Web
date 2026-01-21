@@ -40,7 +40,7 @@ const _modifyStoryGateFactionStanding = (id, amount) => {
     window.PumpArenaState?.save?.();
     return state.faction.standing[id];
 };
-const recordStoryGateDecline = (gateId) => {
+const _recordStoryGateDeclineLocal = (gateId) => {
     const state = getRPGState();
     if (!state.faction) return;
     state.faction.storyGatesDeclined = state.faction.storyGatesDeclined || {};
