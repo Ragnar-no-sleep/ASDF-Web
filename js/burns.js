@@ -5,7 +5,9 @@
 
 'use strict';
 
-const API_BASE = 'https://asdf-api.onrender.com/api';
+// Use relative URL in dev (proxied by Vite), full URL in production
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
 
 /**
  * Escape HTML entities to prevent XSS

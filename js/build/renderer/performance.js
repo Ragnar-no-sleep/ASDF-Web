@@ -64,9 +64,10 @@ const PERF_CONFIG = {
   // Adaptation settings
   adaptation: {
     sampleSize: 60,       // FPS samples to average
-    checkInterval: 1000,  // How often to check (ms)
-    downgradeThreshold: 0.8, // Downgrade if FPS below target * this
-    upgradeThreshold: 0.95   // Upgrade if FPS above target * this
+    checkInterval: 2000,  // How often to check (ms) - increased from 1000
+    downgradeThreshold: 0.75, // Downgrade if FPS below target * this (45 FPS)
+    upgradeThreshold: 0.95,   // Upgrade if FPS above target * this
+    cooldownAfterChange: 5000 // Wait 5s after quality change before adapting again
   }
 };
 
@@ -95,6 +96,7 @@ const PerformanceManager = {
   adaptation: {
     enabled: true,
     lastCheck: 0,
+    lastChange: 0,  // Timestamp of last quality change
     stableCount: 0,
     qualityLocked: false
   },
@@ -143,23 +145,25 @@ const PerformanceManager = {
       return 'low';
     }
 
+    // Start conservatively to avoid initial downgrade cascade
+    // System will upgrade if FPS is stable
     // Check device memory (if available)
     if (navigator.deviceMemory) {
-      if (navigator.deviceMemory >= 8) return 'ultra';
-      if (navigator.deviceMemory >= 4) return 'high';
-      if (navigator.deviceMemory >= 2) return 'medium';
+      if (navigator.deviceMemory >= 8) return 'high';  // Was ultra, start at high
+      if (navigator.deviceMemory >= 4) return 'medium'; // Was high, start at medium
+      if (navigator.deviceMemory >= 2) return 'low';
       return 'low';
     }
 
     // Check hardware concurrency (cores)
     if (navigator.hardwareConcurrency) {
-      if (navigator.hardwareConcurrency >= 8) return 'high';
-      if (navigator.hardwareConcurrency >= 4) return 'medium';
+      if (navigator.hardwareConcurrency >= 8) return 'medium'; // Was high
+      if (navigator.hardwareConcurrency >= 4) return 'low';
       return 'low';
     }
 
-    // Default to medium
-    return 'medium';
+    // Default to low - system will upgrade if capable
+    return 'low';
   },
 
   /**
@@ -200,6 +204,14 @@ const PerformanceManager = {
   checkAdaptation() {
     if (this.adaptation.qualityLocked) return;
 
+    const now = performance.now();
+    const { cooldownAfterChange } = PERF_CONFIG.adaptation;
+
+    // Respect cooldown after quality change to prevent thrashing
+    if (now - this.adaptation.lastChange < cooldownAfterChange) {
+      return;
+    }
+
     const { targetFps } = PERF_CONFIG;
     const { downgradeThreshold, upgradeThreshold } = PERF_CONFIG.adaptation;
     const presetOrder = ['minimal', 'low', 'medium', 'high', 'ultra'];
@@ -213,18 +225,20 @@ const PerformanceManager = {
         const newPreset = presetOrder[currentIndex - 1];
         console.log(`[Performance] Downgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`);
         this.setPreset(newPreset);
+        this.adaptation.lastChange = now;
       }
     }
     // Check for upgrade
     else if (this.fps.current > targetFps * upgradeThreshold) {
       this.adaptation.stableCount++;
 
-      // Wait for stable FPS before upgrading
-      if (this.adaptation.stableCount >= 5 && currentIndex < presetOrder.length - 1) {
+      // Wait for stable FPS before upgrading (10 checks = 20 seconds at 2s interval)
+      if (this.adaptation.stableCount >= 10 && currentIndex < presetOrder.length - 1) {
         const newPreset = presetOrder[currentIndex + 1];
         console.log(`[Performance] Upgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`);
         this.setPreset(newPreset);
         this.adaptation.stableCount = 0;
+        this.adaptation.lastChange = now;
       }
     }
   },

@@ -11,7 +11,10 @@
 // CONFIGURATION
 // ============================================
 
-const API_BASE = 'https://asdf-api.onrender.com/api';
+// Use relative URL in dev (proxied by Vite), full URL in production
+const API_BASE = import.meta.env.DEV
+  ? '/api'
+  : 'https://asdf-api.onrender.com/api';
 const CACHE_TTL = 30000; // 30 seconds
 const FETCH_TIMEOUT = 5000; // 5 seconds
 

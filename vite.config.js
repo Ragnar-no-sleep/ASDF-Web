@@ -45,6 +45,14 @@ export default defineConfig({
     port: 5173,
     open: '/',
     cors: true,
+    proxy: {
+      // Proxy API calls to avoid CORS in development
+      '/api': {
+        target: 'https://asdf-api.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
 
   // Resolve aliases

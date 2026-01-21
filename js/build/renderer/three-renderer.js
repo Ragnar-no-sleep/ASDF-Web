@@ -942,6 +942,8 @@ const ThreeRenderer = {
       if (postProcessing && postProcessing.enabled) {
         postProcessing.render(deltaTime);
       } else {
+        // CRITICAL: Reset render target to screen when post-processing disabled
+        renderer.setRenderTarget(null);
         renderer.render(scene, camera);
       }
     };
