@@ -98,6 +98,7 @@ const CryptoHeist = {
             this.spawnEnemy();
         }
 
+        this.preloadSprites();
         this.gameLoop();
 
         if (typeof activeGames !== 'undefined') {
@@ -105,6 +106,31 @@ const CryptoHeist = {
                 cleanup: () => this.stop()
             };
         }
+    },
+
+    /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Player
+            { emoji: '🤠', size: 30 },
+            // Loot rarities
+            { emoji: '🪙', size: 20 },
+            { emoji: '💎', size: 20 },
+            { emoji: '💠', size: 20 },
+            { emoji: '🔮', size: 20 },
+            { emoji: '👑', size: 20 },
+            // Enemies
+            { emoji: '👮', size: 30 },
+            { emoji: '🤖', size: 30 },
+            { emoji: '👹', size: 30 },
+            // Traps
+            { emoji: '⚡', size: 20 },
+            { emoji: '🔥', size: 20 },
+            { emoji: '🕸️', size: 20 },
+        ];
+        SpriteCache.preload(sprites);
     },
 
     /**
@@ -765,22 +791,21 @@ const CryptoHeist = {
 
             // Trap icon
             const pulse = trap.triggered ? 1.3 : 1 + Math.sin(this.state.frameCount * 0.1) * 0.1;
-            ctx.font = `${20 * pulse}px Arial`;
-            ctx.globalAlpha = trap.cooldown > 0 ? 0.3 : 0.8;
-            ctx.fillText(trap.icon, trap.x, trap.y);
-            ctx.globalAlpha = 1;
+            const trapAlpha = trap.cooldown > 0 ? 0.3 : 0.8;
+            SpriteCache.drawTransformed(ctx, trap.icon, trap.x, trap.y, 20, {
+                scaleX: pulse,
+                scaleY: pulse,
+                alpha: trapAlpha
+            });
         });
 
-        // Tokens with rarity system (no shadowBlur for performance)
-        ctx.font = '20px Arial';
+        // Tokens with rarity system (cached sprites)
         this.state.tokens.forEach(token => {
-            ctx.globalAlpha = token.life > 60 ? 1 : token.life / 60;
-
+            const tokenAlpha = token.life > 60 ? 1 : token.life / 60;
             // Bob animation
             const bob = Math.sin(token.bobOffset + this.state.frameCount * 0.08) * 3;
-            ctx.fillText(token.icon, token.x, token.y + bob);
+            SpriteCache.drawTransformed(ctx, token.icon, token.x, token.y + bob, 20, { alpha: tokenAlpha });
         });
-        ctx.globalAlpha = 1;
 
         // Bullets
         ctx.fillStyle = '#fbbf24';
@@ -794,19 +819,21 @@ const CryptoHeist = {
         this.state.enemies.forEach(enemy => {
             // Visibility based on flashlight
             const inLight = this.isInFlashlight(enemy.x, enemy.y);
-            ctx.globalAlpha = inLight ? 1 : 0.4;
+            const enemyAlpha = inLight ? 1 : 0.4;
 
             // Alert indicator above enemy
             if (enemy.alertLevel > 0) {
                 const alertHeight = 15 + enemy.alertLevel / 10;
                 if (enemy.state === 'chase') {
-                    ctx.fillStyle = '#ef4444';
-                    ctx.font = '14px Arial';
-                    ctx.fillText('!', enemy.x, enemy.y - enemy.size - alertHeight);
+                    SpriteCache.drawTransformed(ctx, '!', enemy.x, enemy.y - enemy.size - alertHeight, 14, {
+                        alpha: enemyAlpha,
+                        color: '#ef4444'
+                    });
                 } else if (enemy.state === 'search') {
-                    ctx.fillStyle = '#fbbf24';
-                    ctx.font = '14px Arial';
-                    ctx.fillText('?', enemy.x, enemy.y - enemy.size - alertHeight);
+                    SpriteCache.drawTransformed(ctx, '?', enemy.x, enemy.y - enemy.size - alertHeight, 14, {
+                        alpha: enemyAlpha,
+                        color: '#fbbf24'
+                    });
                 }
 
                 // Alert meter
@@ -825,8 +852,7 @@ const CryptoHeist = {
                 ctx.stroke();
             }
 
-            ctx.font = `${enemy.size * 1.5}px Arial`;
-            ctx.fillText(enemy.icon, enemy.x, enemy.y);
+            SpriteCache.drawTransformed(ctx, enemy.icon, enemy.x, enemy.y, enemy.size * 1.5, { alpha: enemyAlpha });
 
             if (enemy.health < enemy.maxHealth) {
                 const barWidth = enemy.size * 1.5;
@@ -836,8 +862,6 @@ const CryptoHeist = {
                 ctx.fillStyle = enemy.health > 1 ? '#22c55e' : '#ef4444';
                 ctx.fillRect(enemy.x - barWidth / 2, enemy.y - enemy.size - 10, barWidth * (enemy.health / enemy.maxHealth), barHeight);
             }
-
-            ctx.globalAlpha = 1;
         });
 
         // Player
@@ -854,10 +878,9 @@ const CryptoHeist = {
 
         ctx.restore();
 
-        ctx.font = '28px Arial';
-        ctx.fillText('🧙', this.state.player.x, this.state.player.y);
+        SpriteCache.draw(ctx, '🧙', this.state.player.x, this.state.player.y, 28);
 
-        // Effects
+        // Effects (text-based, keep as is for dynamic text)
         ctx.font = 'bold 18px Arial';
         this.state.effects.forEach(e => {
             ctx.globalAlpha = e.life / 30;

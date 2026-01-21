@@ -88,6 +88,9 @@ const DexDash = {
         this.resizeCanvas();
         this.setupInput();
 
+        // Preload sprites for performance
+        this.preloadSprites();
+
         this.state.player.speed = 1.5;
         this.gameLoop();
 
@@ -125,6 +128,34 @@ const DexDash = {
                 </div>
             </div>
         `;
+    },
+
+    /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Player
+            { emoji: '🏎️', size: 40 },
+            // Obstacles
+            { emoji: '🚧', size: 35 },
+            { emoji: '⛔', size: 35 },
+            { emoji: '🐌', size: 35 },
+            // Boosts (dex logos)
+            { emoji: '🦄', size: 30 },
+            { emoji: '🦞', size: 30 },
+            { emoji: '🍣', size: 30 },
+            { emoji: '☀️', size: 30 },
+            { emoji: '🌊', size: 30 },
+            { emoji: '💎', size: 30 },
+            // Death traps
+            { emoji: '💀', size: 40 },
+            { emoji: '☠️', size: 40 },
+            // Hazards
+            { emoji: '🛢️', size: 35 },
+            { emoji: '🧊', size: 35 },
+        ];
+        SpriteCache.preload(sprites);
     },
 
     /**
@@ -679,50 +710,31 @@ const DexDash = {
             ctx.restore();
         });
 
-        // Draw hazards (no shadowBlur for performance)
+        // Draw hazards (using SpriteCache)
         this.state.hazards.forEach(hazard => {
-            ctx.save();
-            ctx.translate(hazard.x, hazard.y);
-
             // Puddle effect for oil/ice
             ctx.fillStyle = hazard.effect === 'oil' ? 'rgba(0,0,0,0.6)' : 'rgba(96,165,250,0.4)';
             ctx.beginPath();
-            ctx.ellipse(0, 10, 30, 15, 0, 0, Math.PI * 2);
+            ctx.ellipse(hazard.x, hazard.y + 10, 30, 15, 0, 0, Math.PI * 2);
             ctx.fill();
-
-            ctx.font = `${hazard.size}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(hazard.icon, 0, 0);
-
-            ctx.restore();
+            SpriteCache.draw(ctx, hazard.icon, hazard.x, hazard.y, hazard.size);
         });
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '35px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        // Draw obstacles
+        // Draw obstacles (using SpriteCache)
         this.state.obstacles.forEach(obs => {
-            ctx.fillText(obs.icon, obs.x, obs.y);
+            SpriteCache.draw(ctx, obs.icon, obs.x, obs.y, 35);
         });
 
-        // Draw boosts
+        // Draw boosts (using SpriteCache)
         this.state.boosts.forEach(boost => {
             const float = Math.sin(Date.now() * 0.005 + boost.y * 0.1) * 4;
-            ctx.fillText(boost.icon, boost.x, boost.y + float);
+            SpriteCache.draw(ctx, boost.icon, boost.x, boost.y + float, 30);
         });
 
-        // Draw death traps (no shadowBlur for performance)
+        // Draw death traps (using SpriteCache)
         this.state.deathTraps.forEach(trap => {
             const scale = 1 + Math.sin(trap.pulse) * 0.15;
-            ctx.save();
-            ctx.translate(trap.x, trap.y);
-            ctx.scale(scale, scale);
-            ctx.font = `${trap.size}px Arial`;
-            ctx.fillText(trap.icon, 0, 0);
-            ctx.restore();
+            SpriteCache.drawTransformed(ctx, trap.icon, trap.x, trap.y, trap.size, { scaleX: scale, scaleY: scale });
         });
 
         // Draw speed particles
@@ -735,24 +747,19 @@ const DexDash = {
         });
         ctx.globalAlpha = 1;
 
-        // Draw player
-        ctx.save();
-        ctx.translate(this.state.player.x, this.state.player.y);
-        ctx.rotate(this.state.player.vx * 0.05);
-
-        // Turbo mode pulsing effect (no shadowBlur for performance)
+        // Draw player (using SpriteCache)
+        // Turbo mode pulsing effect
         if (this.state.turboMode) {
             const pulse = 0.5 + Math.sin(this.state.frameCount * 0.3) * 0.5;
             // Fire trail behind car
             ctx.fillStyle = `rgba(249, 115, 22, ${0.3 + pulse * 0.3})`;
             ctx.beginPath();
-            ctx.ellipse(0, 25, 15 + pulse * 5, 30 + pulse * 10, 0, 0, Math.PI * 2);
+            ctx.ellipse(this.state.player.x, this.state.player.y + 25, 15 + pulse * 5, 30 + pulse * 10, 0, 0, Math.PI * 2);
             ctx.fill();
         }
-
-        ctx.font = '40px Arial';
-        ctx.fillText('🏎️', 0, 0);
-        ctx.restore();
+        SpriteCache.drawTransformed(ctx, '🏎️', this.state.player.x, this.state.player.y, 40, {
+            rotation: this.state.player.vx * 0.05
+        });
 
         // Speed lines
         if (this.state.player.speed > 3) {

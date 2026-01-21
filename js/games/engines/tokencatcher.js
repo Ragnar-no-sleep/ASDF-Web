@@ -121,6 +121,9 @@ const TokenCatcher = {
         // Setup intervals
         this.setupIntervals();
 
+        // Preload sprites for performance
+        this.preloadSprites();
+
         // Start game loop
         this.gameLoop();
 
@@ -160,6 +163,27 @@ const TokenCatcher = {
                 </div>
             </div>
         `;
+    },
+
+    /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Basket
+            { emoji: '🧺', size: 60 },
+            // Good tokens
+            ...this.goodTokens.map(t => ({ emoji: t, size: 30 })),
+            // Scam tokens
+            ...this.scamTokens.map(t => ({ emoji: t, size: 30 })),
+            // Skull
+            { emoji: this.skullToken, size: 30 },
+            // Power-ups
+            ...Object.values(this.powerUps).map(p => ({ emoji: p.icon, size: 28 })),
+            // Enemies
+            ...this.enemyTypes.map(e => ({ emoji: e.icon, size: 35 })),
+        ];
+        SpriteCache.preload(sprites);
     },
 
     /**
@@ -969,28 +993,22 @@ const TokenCatcher = {
             ctx.globalAlpha = 1;
         });
 
-        // Draw power-up tokens (no shadowBlur for performance)
-        ctx.font = '28px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        // Draw power-up tokens (using SpriteCache)
         this.state.powerUpTokens.forEach(pu => {
-            ctx.fillText(pu.icon, pu.x, pu.y);
+            SpriteCache.draw(ctx, pu.icon, pu.x, pu.y, 28);
         });
 
-        // Draw falling tokens (no shadowBlur for performance)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '30px Arial';
+        // Draw falling tokens (using SpriteCache)
         this.state.tokens.forEach(token => {
-            ctx.fillText(token.icon, token.x, token.y);
+            SpriteCache.draw(ctx, token.icon, token.x, token.y, 30);
         });
 
         // Draw active power-up indicators
         this.drawPowerUpIndicators(ctx);
 
-        // Draw enemies with HP indicator
-        ctx.font = '35px Arial';
+        // Draw enemies with HP indicator (using SpriteCache)
         this.state.enemies.forEach(enemy => {
-            ctx.fillText(enemy.icon, enemy.x, enemy.y);
+            SpriteCache.draw(ctx, enemy.icon, enemy.x, enemy.y, 35);
             const barWidth = 30;
             const barHeight = 4;
             const hpRatio = enemy.currentHp / enemy.hp;
@@ -999,20 +1017,15 @@ const TokenCatcher = {
             ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : hpRatio > 0.25 ? '#f59e0b' : '#ef4444';
             ctx.fillRect(enemy.x - barWidth / 2, enemy.y + 22, barWidth * hpRatio, barHeight);
             ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
             ctx.fillStyle = '#fff';
             ctx.fillText(`${enemy.currentHp}/${enemy.hp}`, enemy.x, enemy.y + 35);
-            ctx.font = '35px Arial';
         });
 
-        // Draw basket
+        // Draw basket (using SpriteCache)
         const basketX = this.state.basketPos;
         const basketY = this.state.lanePositions[this.state.basketLane];
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '60px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🧺', basketX, basketY);
+        SpriteCache.draw(ctx, '🧺', basketX, basketY, 60);
 
         // Draw lane highlight
         ctx.fillStyle = 'rgba(251,191,36,0.15)';

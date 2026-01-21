@@ -36,6 +36,37 @@ const LiquidityMaze = {
     ],
 
     /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const cellSize = 34; // fib[8] - base cell size
+        const spriteSize = Math.floor(cellSize * 0.7);
+        const sprites = [
+            // Treasures
+            { emoji: '💎', size: spriteSize },
+            { emoji: '🏆', size: spriteSize },
+            { emoji: '👑', size: spriteSize },
+            { emoji: '🌟', size: spriteSize },
+            // Items
+            { emoji: '🌊', size: spriteSize },
+            { emoji: '⚠️', size: spriteSize },
+            { emoji: '🔑', size: spriteSize },
+            { emoji: '⚡', size: spriteSize },
+            { emoji: '👁️', size: spriteSize },
+            // Enemies & indicators
+            { emoji: '👾', size: spriteSize },
+            { emoji: '😡', size: 12 },
+            { emoji: '❓', size: 12 },
+            // Goal
+            { emoji: '🔒', size: spriteSize },
+            { emoji: '🏁', size: spriteSize },
+            // Player
+            { emoji: '🧑‍💻', size: spriteSize },
+        ];
+        SpriteCache.preload(sprites);
+    },
+
+    /**
      * Start the game
      */
     start(gameId) {
@@ -84,6 +115,7 @@ const LiquidityMaze = {
         // Initialize timing for frame-independent movement
         this.timing = GameTiming.create();
 
+        this.preloadSprites();
         this.setupInput();
         this.generateMaze();
         this.gameLoop();
@@ -787,52 +819,50 @@ const LiquidityMaze = {
             }
         });
 
-        ctx.font = `${this.state.cellSize * 0.7}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        const spriteSize = Math.floor(this.state.cellSize * 0.7);
 
         const isVisible = item => {
             const fogLevel = this.state.fogOpacity[item.y]?.[item.x] ?? 1;
             return fogLevel < 0.7;
         };
 
-        // Draw treasures (no shadowBlur for performance)
+        // Draw treasures (cached sprites)
         this.state.treasures.filter(isVisible).forEach(treasure => {
             const px = offsetX + treasure.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + treasure.y * this.state.cellSize + this.state.cellSize / 2;
             const float = Math.sin(this.state.frameCount * 0.1 + treasure.x) * 3;
-            ctx.fillText(treasure.icon, px, py + float);
+            SpriteCache.draw(ctx, treasure.icon, px, py + float, spriteSize);
         });
 
-        // Draw items
+        // Draw items (cached sprites)
         this.state.liquidityPools.filter(isVisible).forEach(pool => {
             const px = offsetX + pool.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + pool.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText('🌊', px, py);
+            SpriteCache.draw(ctx, '🌊', px, py, spriteSize);
         });
 
         this.state.feeTraps.filter(isVisible).forEach(trap => {
             const px = offsetX + trap.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + trap.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText('⚠️', px, py);
+            SpriteCache.draw(ctx, '⚠️', px, py, spriteSize);
         });
 
         this.state.keys.filter(isVisible).forEach(key => {
             const px = offsetX + key.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + key.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText('🔑', px, py);
+            SpriteCache.draw(ctx, '🔑', px, py, spriteSize);
         });
 
         this.state.speedBoosts.filter(isVisible).forEach(boost => {
             const px = offsetX + boost.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + boost.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText('⚡', px, py);
+            SpriteCache.draw(ctx, '⚡', px, py, spriteSize);
         });
 
         this.state.reveals.filter(isVisible).forEach(reveal => {
             const px = offsetX + reveal.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + reveal.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText('👁️', px, py);
+            SpriteCache.draw(ctx, '👁️', px, py, spriteSize);
         });
 
         // Draw enemies with state indicators
@@ -858,32 +888,29 @@ const LiquidityMaze = {
                 ctx.fill();
             }
 
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText('👾', px, py);
+            SpriteCache.draw(ctx, '👾', px, py, spriteSize);
 
             // State indicator above enemy
             if (enemy.state !== this.AI_STATE.PATROL) {
-                ctx.font = '12px Arial';
-                ctx.fillStyle = enemy.state === this.AI_STATE.CHASE ? '#ef4444' : '#fbbf24';
-                ctx.fillText(enemy.state === this.AI_STATE.CHASE ? '😡' : '❓', px, py - this.state.cellSize * 0.6);
-                ctx.font = `${this.state.cellSize * 0.7}px Arial`;
+                const indicator = enemy.state === this.AI_STATE.CHASE ? '😡' : '❓';
+                SpriteCache.draw(ctx, indicator, px, py - this.state.cellSize * 0.6, 12);
             }
         });
 
-        // Draw goal
+        // Draw goal (cached sprite)
         const goalFog = this.state.fogOpacity[this.state.goal.y]?.[this.state.goal.x] ?? 1;
         if (goalFog < 0.7) {
             const gx = offsetX + this.state.goal.x * this.state.cellSize + this.state.cellSize / 2;
             const gy = offsetY + this.state.goal.y * this.state.cellSize + this.state.cellSize / 2;
-            ctx.fillText(this.state.goal.locked ? '🔒' : '🏁', gx, gy);
+            SpriteCache.draw(ctx, this.state.goal.locked ? '🔒' : '🏁', gx, gy, spriteSize);
         }
 
-        // Draw player (no shadowBlur for performance)
+        // Draw player (cached sprite)
         const ppx = offsetX + this.state.player.x * this.state.cellSize + this.state.cellSize / 2;
         const ppy = offsetY + this.state.player.y * this.state.cellSize + this.state.cellSize / 2;
-        ctx.globalAlpha = this.state.player.frozen ? 0.5 : 1;
-        ctx.fillText('🧑‍💻', ppx, ppy);
-        ctx.globalAlpha = 1;
+        SpriteCache.drawTransformed(ctx, '🧑‍💻', ppx, ppy, spriteSize, {
+            alpha: this.state.player.frozen ? 0.5 : 1
+        });
 
         // Draw effects (no shadowBlur for performance)
         ctx.font = 'bold 14px Arial';

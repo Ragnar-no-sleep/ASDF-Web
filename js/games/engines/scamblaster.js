@@ -111,6 +111,7 @@ const ScamBlaster = {
 
         this.setupModeSelection();
         this.setupInput();
+        this.preloadSprites();
         this.gameLoop();
 
         if (typeof activeGames !== 'undefined') {
@@ -178,6 +179,23 @@ const ScamBlaster = {
                 <div id="sb-countdown" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;font-weight:bold;color:#fff;text-shadow:0 0 30px rgba(251,191,36,0.8);display:none;"></div>
             </div>
         `;
+    },
+
+    /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Enemies
+            ...this.enemyTypes.map(e => ({ emoji: e.icon, size: e.size || 40 })),
+            // Bosses
+            ...this.bossTypes.map(b => ({ emoji: b.icon, size: b.size || 80 })),
+            // Power-ups
+            ...this.powerUpTypes.map(p => ({ emoji: p.icon, size: 24 })),
+            // Explosion
+            { emoji: '💥', size: 35 },
+        ];
+        SpriteCache.preload(sprites);
     },
 
     /**
@@ -743,11 +761,10 @@ const ScamBlaster = {
                 ctx.fill();
             }
 
-            ctx.font = `${enemy.size}px Arial`;
-            ctx.fillText(enemy.icon, enemy.x, enemy.y);
+            SpriteCache.draw(ctx, enemy.icon, enemy.x, enemy.y, enemy.size);
         });
 
-        // Draw boss (no shadowBlur for performance)
+        // Draw boss (using SpriteCache)
         if (this.state.boss) {
             const boss = this.state.boss;
 
@@ -758,24 +775,20 @@ const ScamBlaster = {
             ctx.stroke();
 
             // Boss icon
-            ctx.font = `${boss.size}px Arial`;
-            ctx.fillText(boss.icon, boss.x, boss.y);
+            SpriteCache.draw(ctx, boss.icon, boss.x, boss.y, boss.size);
         }
 
-        // Draw power-ups (no shadowBlur for performance)
+        // Draw power-ups (using SpriteCache)
         this.state.powerUps.forEach(powerUp => {
             const pulse = Math.sin(this.state.frameCount * 0.1) * 0.2 + 1;
-            ctx.font = `${24 * pulse}px Arial`;
-            ctx.fillText(powerUp.icon, powerUp.x, powerUp.y);
+            SpriteCache.drawTransformed(ctx, powerUp.icon, powerUp.x, powerUp.y, 24, { scaleX: pulse, scaleY: pulse });
         });
 
+        // Explosions (using SpriteCache)
         this.state.explosions.forEach(exp => {
-            ctx.globalAlpha = exp.life / 25;
             const scale = 1 + (25 - exp.life) * 0.06;
-            ctx.font = `${35 * scale}px Arial`;
-            ctx.fillText(exp.icon, exp.x, exp.y);
+            SpriteCache.drawTransformed(ctx, exp.icon, exp.x, exp.y, 35, { scaleX: scale, scaleY: scale, alpha: exp.life / 25 });
         });
-        ctx.globalAlpha = 1;
 
         ctx.strokeStyle = '#ef4444';
         ctx.lineWidth = 2;

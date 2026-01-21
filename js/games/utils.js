@@ -6,6 +6,119 @@
 'use strict';
 
 // ============================================
+// SPRITE CACHE - Performance optimization
+// Pre-renders emojis/text to offscreen canvas
+// drawImage() is 10-100x faster than fillText()
+// ============================================
+
+const SpriteCache = {
+    cache: new Map(),
+
+    /**
+     * Get or create a cached sprite for an emoji/text
+     * @param {string} emoji - The emoji or text to render
+     * @param {number} size - Font size in pixels
+     * @param {string} color - Optional fill color (default: white)
+     * @returns {HTMLCanvasElement} Offscreen canvas with rendered sprite
+     */
+    get(emoji, size, color = '#ffffff') {
+        const key = `${emoji}_${size}_${color}`;
+
+        if (this.cache.has(key)) {
+            return this.cache.get(key);
+        }
+
+        // Create offscreen canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Size with padding for emoji overflow
+        const padding = Math.ceil(size * 0.3);
+        canvas.width = size + padding * 2;
+        canvas.height = size + padding * 2;
+
+        // Render emoji
+        ctx.font = `${size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = color;
+        ctx.fillText(emoji, canvas.width / 2, canvas.height / 2);
+
+        // Cache and return
+        this.cache.set(key, canvas);
+        return canvas;
+    },
+
+    /**
+     * Draw a cached sprite to a canvas context
+     * @param {CanvasRenderingContext2D} ctx - Target canvas context
+     * @param {string} emoji - The emoji to draw
+     * @param {number} x - Center X position
+     * @param {number} y - Center Y position
+     * @param {number} size - Font size
+     * @param {string} color - Optional color
+     */
+    draw(ctx, emoji, x, y, size, color = '#ffffff') {
+        const sprite = this.get(emoji, size, color);
+        ctx.drawImage(
+            sprite,
+            x - sprite.width / 2,
+            y - sprite.height / 2
+        );
+    },
+
+    /**
+     * Draw with rotation and/or scale
+     * @param {CanvasRenderingContext2D} ctx - Target canvas context
+     * @param {string} emoji - The emoji to draw
+     * @param {number} x - Center X position
+     * @param {number} y - Center Y position
+     * @param {number} size - Font size
+     * @param {Object} opts - Options: { rotation, scaleX, scaleY, alpha, color }
+     */
+    drawTransformed(ctx, emoji, x, y, size, opts = {}) {
+        const sprite = this.get(emoji, size, opts.color || '#ffffff');
+        const { rotation = 0, scaleX = 1, scaleY = 1, alpha = 1 } = opts;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        if (rotation) ctx.rotate(rotation);
+        if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+        ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+        ctx.restore();
+    },
+
+    /**
+     * Pre-warm the cache with commonly used sprites
+     * Call this at game start for smoother first frames
+     * @param {Array} sprites - Array of { emoji, size, color? }
+     */
+    preload(sprites) {
+        sprites.forEach(({ emoji, size, color }) => {
+            this.get(emoji, size, color || '#ffffff');
+        });
+    },
+
+    /**
+     * Clear the cache (e.g., on game end to free memory)
+     */
+    clear() {
+        this.cache.clear();
+    },
+
+    /**
+     * Get cache statistics
+     */
+    stats() {
+        return {
+            entries: this.cache.size,
+            keys: Array.from(this.cache.keys())
+        };
+    }
+};
+
+// ============================================
 // SECURITY UTILITIES
 // ============================================
 

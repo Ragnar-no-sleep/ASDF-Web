@@ -187,6 +187,7 @@ const BurnRunner = {
 
         this.resizeCanvas();
         this.setupInput();
+        this.preloadSprites();
         this.gameLoop();
         console.log(`[BurnRunner v${this.version}] Started - Phi-based difficulty`);
 
@@ -239,6 +240,32 @@ const BurnRunner = {
                 </div>
             </div>
         `;
+    },
+
+    /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Player
+            { emoji: '🐕', size: 38 },
+            // Obstacles (from obstacleTypes)
+            ...this.obstacleTypes.map(t => ({ emoji: t.icon, size: 32 })),
+            // Platforms (from platformTypes)
+            ...this.platformTypes.map(t => ({ emoji: t.icon, size: 36 })),
+            // Aerial platforms
+            ...this.aerialPlatformTypes.map(t => ({ emoji: t.icon, size: 38 })),
+            // Bonus items
+            ...this.bonusTypes.map(t => ({ emoji: t.icon, size: 24 })),
+            // Malus items
+            ...this.malusTypes.map(t => ({ emoji: t.icon, size: 24 })),
+            // Brick types
+            ...this.brickTypes.map(t => ({ emoji: t.icon, size: 36 })),
+            // Particle emojis
+            { emoji: '✨', size: 16 },
+            { emoji: '💨', size: 16 },
+        ];
+        SpriteCache.preload(sprites);
     },
 
     /**
@@ -1008,14 +1035,11 @@ const BurnRunner = {
         });
         ctx.globalAlpha = 1;
 
-        // Platforms (no shadowBlur for performance)
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        // Platforms (using SpriteCache)
         this.state.platforms.forEach(plat => {
             const platY = plat.renderY || plat.y;
-            ctx.font = plat.floating ? '38px Arial' : '36px Arial';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(plat.icon, plat.x + plat.width / 2, platY + plat.height / 2);
+            const size = plat.floating ? 38 : 36;
+            SpriteCache.draw(ctx, plat.icon, plat.x + plat.width / 2, platY + plat.height / 2, size);
         });
 
         // Player
@@ -1029,29 +1053,21 @@ const BurnRunner = {
         ctx.ellipse(playerCenterX, this.state.ground + 5, 18 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw player
-        ctx.fillStyle = '#ffffff';
-        ctx.save();
+        // Draw player (using SpriteCache)
         const bounce = this.state.isJumping ? 0 : Math.sin(this.state.distance * 0.4) * 2;
         const tilt = this.state.isJumping ? this.state.player.vy * 0.02 : Math.sin(this.state.distance * 0.4) * 0.1;
-        ctx.translate(playerCenterX, playerCenterY + bounce);
-        ctx.rotate(tilt);
-        ctx.scale(-1, 1);
-        ctx.font = '38px Arial';
-        ctx.fillText('🐕', 0, 0);
-        ctx.restore();
+        SpriteCache.drawTransformed(ctx, '🐕', playerCenterX, playerCenterY + bounce, 38, {
+            rotation: tilt,
+            scaleX: -1
+        });
 
         // Trail effect
         if (this.state.speed > 7 || this.state.dash.active) {
-            ctx.save();
-            ctx.globalAlpha = this.state.dash.active ? 0.4 : 0.25;
-            ctx.translate(playerCenterX - 18, playerCenterY + bounce);
-            ctx.scale(-1, 1);
-            ctx.font = '38px Arial';
-            ctx.fillText('🐕', 0, 0);
-            ctx.restore();
+            SpriteCache.drawTransformed(ctx, '🐕', playerCenterX - 18, playerCenterY + bounce, 38, {
+                scaleX: -1,
+                alpha: this.state.dash.active ? 0.4 : 0.25
+            });
         }
-        ctx.globalAlpha = 1;
 
         // Dash effect (no shadowBlur for performance)
         if (this.state.dash.active) {
@@ -1072,27 +1088,21 @@ const BurnRunner = {
             ctx.stroke();
         }
 
-        // Obstacles
-        ctx.font = '32px Arial';
+        // Obstacles (using SpriteCache)
         this.state.obstacles.forEach(obs => {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(obs.icon, obs.x + obs.width / 2, obs.y + obs.height / 2);
+            SpriteCache.draw(ctx, obs.icon, obs.x + obs.width / 2, obs.y + obs.height / 2, 32);
         });
 
-        // Collectibles (no shadowBlur for performance)
-        ctx.font = '24px Arial';
+        // Collectibles (using SpriteCache)
         this.state.collectibles.forEach(col => {
             const float = Math.sin(Date.now() * 0.005 + col.x) * 4;
-            ctx.fillText(col.icon, col.x + col.width / 2, col.y + col.height / 2 + float);
+            SpriteCache.draw(ctx, col.icon, col.x + col.width / 2, col.y + col.height / 2 + float, 24);
         });
 
-        // Particles
+        // Particles (using SpriteCache)
         this.state.particles.forEach(p => {
-            ctx.globalAlpha = p.life / 30;
-            ctx.font = `${p.size || 16}px Arial`;
-            ctx.fillText(p.icon, p.x, p.y);
+            SpriteCache.drawTransformed(ctx, p.icon, p.x, p.y, p.size || 16, { alpha: p.life / 30 });
         });
-        ctx.globalAlpha = 1;
     },
 
     /**

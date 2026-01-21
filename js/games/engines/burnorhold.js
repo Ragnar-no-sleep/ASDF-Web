@@ -40,6 +40,23 @@ const BurnOrHold = {
     },
 
     /**
+     * Preload sprites for performance
+     */
+    preloadSprites() {
+        const sprites = [
+            // Power-ups
+            { emoji: '🛡️', size: 20 },
+            { emoji: '⚡', size: 20 },
+            { emoji: '🔥', size: 20 },
+            { emoji: '🌐', size: 20 },
+            // Node indicators
+            { emoji: '👤', size: 14 },
+            { emoji: '👹', size: 14 },
+        ];
+        SpriteCache.preload(sprites);
+    },
+
+    /**
      * Start the game
      */
     start(gameId) {
@@ -97,6 +114,7 @@ const BurnOrHold = {
         this.timing = GameTiming.create();
 
         this.resizeCanvas();
+        this.preloadSprites();
         this.setupInput();
         this.generateNodes();
         this.updateUI();
@@ -872,12 +890,8 @@ const BurnOrHold = {
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Icon
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#fff';
-            ctx.fillText(powerUp.icon, 0, 0);
+            // Icon (cached sprite)
+            SpriteCache.draw(ctx, powerUp.icon, 0, 0, 20);
 
             ctx.restore();
         }
@@ -913,11 +927,9 @@ const BurnOrHold = {
             ctx.fillText(node.validators, node.x, node.y + 10);
 
             if (node.owner === this.OWNER.PLAYER) {
-                ctx.font = '14px Arial';
-                ctx.fillText('👤', node.x, node.y - 25);
+                SpriteCache.draw(ctx, '👤', node.x, node.y - 25, 14);
             } else if (node.owner === this.OWNER.ENEMY) {
-                ctx.font = '14px Arial';
-                ctx.fillText('👹', node.x, node.y - 25);
+                SpriteCache.draw(ctx, '👹', node.x, node.y - 25, 14);
             }
         }
 
