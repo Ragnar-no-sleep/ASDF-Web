@@ -48,9 +48,11 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
-        // API connections + CDN for source maps + Solana RPC + esm.sh
+        // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
         connectSrc: [
           "'self'",
+          'http://localhost:3000',
+          'http://localhost:3001',
           'https://*.solana.com',
           'https://*.helius-rpc.com',
           'https://asdforecast.onrender.com',

@@ -49,7 +49,7 @@ const _recordStoryGateDeclineLocal = (gateId) => {
     state.faction.storyGatesCooldowns[gateId] = Date.now() + 86400000;
     window.PumpArenaState?.save?.();
 };
-const getStoryGateDeclineCount = (gateId) => getFactionState().storyGatesDeclined?.[gateId] || 0;
+const _getStoryGateDeclineCountLocal = (gateId) => getFactionState().storyGatesDeclined?.[gateId] || 0;
 const isStoryGateOnCooldown = (gateId) => {
     const cooldown = getFactionState().storyGatesCooldowns?.[gateId] || 0;
     return Date.now() < cooldown;

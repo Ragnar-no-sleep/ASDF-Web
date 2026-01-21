@@ -18,7 +18,7 @@
 // Battle Grid accessors
 const getGridConstants = () => window.PumpArenaBattleGrid?.GRID_CONSTANTS || {};
 const _createBattleGridTutorial = () => window.PumpArenaBattleGrid?.createBattleGrid?.() || null;
-const BattleUnit = window.PumpArenaBattleGrid?.BattleUnit || class BattleUnit { constructor(c) { Object.assign(this, c); } };
+const _BattleUnitTutorial = window.PumpArenaBattleGrid?.BattleUnit || class _BattleUnitTutorial { constructor(c) { Object.assign(this, c); } };
 
 // Deck Builder accessors
 const getDeckConstants = () => window.PumpArenaDeckBuilder?.DECK_CONSTANTS || {};
@@ -406,7 +406,7 @@ class TutorialManager {
         this.tutorialGrid = _createBattleGridTutorial();
 
         // Create player
-        const player = new BattleUnit({
+        const player = new _BattleUnitTutorial({
             id: 'player',
             name: 'You',
             type: 'player',
@@ -432,7 +432,7 @@ class TutorialManager {
             attackRange: 1,
             movementRange: 2
         };
-        const creature = new BattleUnit({
+        const creature = new _BattleUnitTutorial({
             ...stoneTurtleData,
             id: 'creature_0',
             type: 'creature',
@@ -440,12 +440,12 @@ class TutorialManager {
         });
 
         // Create tutorial enemy
-        const enemy = new BattleUnit({
+        const enemy = new _BattleUnitTutorial({
             ...TUTORIAL_CONSTANTS.TUTORIAL_ENEMY
         });
 
         // Create minions
-        const minions = TUTORIAL_CONSTANTS.TUTORIAL_MINIONS.map((m, i) => new BattleUnit({
+        const minions = TUTORIAL_CONSTANTS.TUTORIAL_MINIONS.map((m, i) => new _BattleUnitTutorial({
             ...m,
             id: `minion_${i}`,
             type: 'minion',

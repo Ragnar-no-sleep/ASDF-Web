@@ -17,7 +17,7 @@ const _getSummonsStateLocal = () => {
     return window.PumpArenaState?.get?.()?.summons || { creatures: {}, allies: {}, activeParty: { creatures: [], allies: [] } };
 };
 const _getActivePartySummons = () => _getSummonsStateLocal().activeParty || { creatures: [], allies: [] };
-const unlockCreature = (id) => {
+const _unlockCreatureSummons = (id) => {
     const state = window.PumpArenaState?.get?.();
     if (!state?.summons) return;
     state.summons.creatures = state.summons.creatures || {};

@@ -778,7 +778,7 @@ function leaveFaction(playerState, reason = 'story_gate') {
 /**
  * Modify faction standing
  */
-function modifyFactionStanding(factionId, amount, playerState) {
+function _modifyFactionStandingFactions(factionId, amount, playerState) {
     if (!playerState.faction.standing) {
         playerState.faction.standing = {};
     }
@@ -824,7 +824,7 @@ if (typeof window !== 'undefined') {
         // Actions
         joinFaction,
         leaveFaction,
-        modifyFactionStanding,
+        modifyFactionStanding: _modifyFactionStandingFactions,
         getFactionStanding: _getFactionStandingFactions,
         applyFactionBonus,
 
