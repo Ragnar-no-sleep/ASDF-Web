@@ -17,6 +17,7 @@ const TokenCatcher = {
     intervals: null,
     input: null,
     timing: null,
+    juice: null,
 
     // Game constants
     goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
@@ -77,6 +78,11 @@ const TokenCatcher = {
 
         // Initialize timing for frame-independent movement
         this.timing = GameTiming.create();
+
+        // Initialize juice system for visual feedback
+        if (typeof GameJuice !== 'undefined') {
+            this.juice = GameJuice.create(this.canvas, this.ctx);
+        }
 
         // Initialize basket position
         this.state.basketPos = this.canvas.width / 2;
@@ -360,10 +366,54 @@ const TokenCatcher = {
     },
 
     /**
-     * Add a visual effect
+     * Add a visual effect (uses juice system if available)
      */
-    addEffect(x, y, text, color) {
-        this.state.effects.push({ x, y, text, color, life: 30, vy: -2 });
+    addEffect(x, y, text, color, options = {}) {
+        // Use juice system if available
+        if (this.juice) {
+            this.juice.textPop(x, y, text, { color, ...options });
+
+            // Add particle burst for positive effects
+            if (text.startsWith('+')) {
+                this.juice.burst(x, y, {
+                    icon: '✨',
+                    count: 4,
+                    spread: 2,
+                    lifetime: 20,
+                    gravity: 0.05
+                });
+            }
+        } else {
+            // Legacy fallback
+            this.state.effects.push({ x, y, text, color, life: 30, vy: -2 });
+        }
+    },
+
+    /**
+     * Trigger impact feedback (shake + flash + particles)
+     */
+    triggerImpact(x, y, type = 'light') {
+        if (!this.juice) return;
+
+        switch (type) {
+            case 'catch':
+                this.juice.burst(x, y, { preset: 'COLLECT' });
+                break;
+            case 'damage':
+                this.juice.triggerShake(4, 150);
+                this.juice.triggerFlash('#ef4444', 80);
+                this.juice.burst(x, y, { preset: 'DAMAGE' });
+                break;
+            case 'death':
+                this.juice.triggerShake(12, 400);
+                this.juice.triggerFlash('#ef4444', 150);
+                this.juice.burst(x, y, { preset: 'DEATH' });
+                break;
+            case 'enemy_kill':
+                this.juice.triggerShake(3, 100);
+                this.juice.burst(x, y, { preset: 'EXPLOSION' });
+                break;
+        }
     },
 
     /**
@@ -416,6 +466,7 @@ const TokenCatcher = {
                         self.state.enemies.splice(i, 1);
                         self.state.score += enemy.points;
                         self.addEffect(enemy.x, enemy.y - 20, `+${enemy.points}`, '#22c55e');
+                        self.triggerImpact(enemy.x, enemy.y, 'enemy_kill');
                         document.getElementById('tc-score').textContent = self.state.score;
                         updateScore(self.gameId, self.state.score);
                     }
@@ -439,6 +490,7 @@ const TokenCatcher = {
             ) {
                 if (token.isSkull) {
                     self.addEffect(token.x, token.y, 'GAME OVER!', '#ef4444');
+                    self.triggerImpact(token.x, token.y, 'death');
                     recordGameAction(self.gameId, 'catch_skull', { score: self.state.score });
                     self.state.gameOver = true;
                     setTimeout(() => endGame(self.gameId, self.state.score), 500);
@@ -446,10 +498,12 @@ const TokenCatcher = {
                 } else if (token.isScam) {
                     self.state.score = Math.max(0, self.state.score - 20);
                     self.addEffect(token.x, token.y, '-20', '#ef4444');
+                    self.triggerImpact(token.x, token.y, 'damage');
                     recordGameAction(self.gameId, 'catch_scam', { score: self.state.score });
                 } else {
                     self.state.score += 10;
                     self.addEffect(token.x, token.y, '+10', '#22c55e');
+                    self.triggerImpact(token.x, token.y, 'catch');
                     recordGameAction(self.gameId, 'catch_token', { score: self.state.score });
                 }
                 recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -20 : 10);
@@ -473,6 +527,7 @@ const TokenCatcher = {
             ) {
                 self.state.score = Math.max(0, self.state.score - 30);
                 self.addEffect(enemy.x, enemy.y, '-30', '#ef4444');
+                self.triggerImpact(enemy.x, enemy.y, 'damage');
                 document.getElementById('tc-score').textContent = self.state.score;
                 updateScore(self.gameId, self.state.score);
                 return false;
@@ -481,12 +536,17 @@ const TokenCatcher = {
             return enemy.y < self.canvas.height + 40;
         });
 
-        // Update effects
+        // Update effects (legacy fallback)
         this.state.effects = this.state.effects.filter(e => {
             e.y += e.vy * dt;
             e.life -= dt;
             return e.life > 0;
         });
+
+        // Update juice system
+        if (this.juice) {
+            this.juice.update(dt, dt * 16.67);
+        }
     },
 
     /**
@@ -495,6 +555,11 @@ const TokenCatcher = {
     draw() {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Apply screen shake if juice is active
+        if (this.juice) {
+            this.juice.renderPre();
+        }
 
         // Draw lane indicators
         ctx.strokeStyle = 'rgba(255,255,255,0.1)';
@@ -598,14 +663,21 @@ const TokenCatcher = {
             ctx.stroke();
         }
 
-        // Draw effects
-        ctx.font = 'bold 18px Arial';
-        this.state.effects.forEach(e => {
-            ctx.globalAlpha = e.life / 30;
-            ctx.fillStyle = e.color;
-            ctx.fillText(e.text, e.x, e.y);
-        });
-        ctx.globalAlpha = 1;
+        // Draw legacy effects (fallback when juice not available)
+        if (!this.juice) {
+            ctx.font = 'bold 18px Arial';
+            this.state.effects.forEach(e => {
+                ctx.globalAlpha = e.life / 30;
+                ctx.fillStyle = e.color;
+                ctx.fillText(e.text, e.x, e.y);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // Render juice effects (particles, flash, etc.)
+        if (this.juice) {
+            this.juice.renderPost();
+        }
     },
 
     /**
@@ -642,6 +714,12 @@ const TokenCatcher = {
             this.canvas.removeEventListener('touchmove', this.handleTouch);
             this.canvas.removeEventListener('touchstart', this.handleTouch);
             this.canvas.removeEventListener('click', this.handleClick);
+        }
+
+        // Cleanup juice system
+        if (this.juice) {
+            this.juice.cleanup();
+            this.juice = null;
         }
 
         // Clear references
