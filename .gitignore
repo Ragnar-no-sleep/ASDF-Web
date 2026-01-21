@@ -75,6 +75,12 @@ DECISIONS.md
 ARCHITECTURE_INTERNAL.md*
 architecture_asdf.txt
 .mcp.json
+VISION-*.md
+CLEANUP_*.md
+
+# Archive folder (archived internal docs)
+_archive/
+
 # Claude internal config (contains service IDs, tokens)
 .claude/settings.json
 .claude/settings.local.json
