@@ -2,7 +2,8 @@
  * Build V2 - Three.js Renderer
  * Immersive 3D Yggdrasil visualization with WebGL
  *
- * @version 2.0.0
+ * @version 2.1.0
+ * @updated 2026-01-21
  */
 
 'use strict';
@@ -17,9 +18,10 @@ import { SnowParticles } from './effects/snow-particles.js';
 import { YggdrasilTree } from './objects/yggdrasil-tree.js';
 import { StoneIsland, StoneIslandFactory } from './objects/stone-island.js';
 import { BurnCore } from './objects/burn-core.js';
-import { CameraController } from './camera/camera-controller.js';
+import { CameraController, CAMERA_STATES } from './camera/camera-controller.js';
 import { PostProcessing } from './effects/post-processing.js';
 import { PerformanceManager } from './performance.js';
+import { ProjectTreeScene } from './scenes/project-tree.js';
 
 // ============================================
 // CONFIGURATION
@@ -95,6 +97,10 @@ let snowParticles = null;
 let cameraController = null;
 let islands = new Map();
 
+// Scene management
+let projectTreeScene = null;
+let currentViewLevel = 'COSMOS';  // COSMOS | PROJECT_TREE | SKILL_FOCUS
+
 // Post-processing and performance
 let postProcessing = null;
 let performanceSettings = null;
@@ -112,6 +118,7 @@ let burnIntensity = 0.7;
 let boundHandlers = {
   onMouseMove: null,
   onClick: null,
+  onKeyDown: null,
   onResize: null,
   onVisibilityChange: null
 };
@@ -383,6 +390,14 @@ const ThreeRenderer = {
     } catch (error) {
       console.warn('[ThreeRenderer] Failed to load projects:', error.message);
     }
+
+    // Initialize Project Tree Scene (L1 view)
+    try {
+      projectTreeScene = new ProjectTreeScene(THREE, scene);
+      console.log('[ThreeRenderer] ProjectTreeScene initialized');
+    } catch (error) {
+      console.warn('[ThreeRenderer] Failed to create ProjectTreeScene:', error.message);
+    }
   },
 
   /**
@@ -454,6 +469,10 @@ const ThreeRenderer = {
     // Click for selection
     renderer.domElement.addEventListener('click', boundHandlers.onClick);
 
+    // Keyboard for navigation (Escape to go back)
+    boundHandlers.onKeyDown = (e) => this.onKeyDown(e);
+    document.addEventListener('keydown', boundHandlers.onKeyDown);
+
     // Resize handler
     window.addEventListener('resize', boundHandlers.onResize);
 
@@ -469,6 +488,7 @@ const ThreeRenderer = {
       renderer.domElement.removeEventListener('mousemove', boundHandlers.onMouseMove);
       renderer.domElement.removeEventListener('click', boundHandlers.onClick);
     }
+    document.removeEventListener('keydown', boundHandlers.onKeyDown);
     window.removeEventListener('resize', boundHandlers.onResize);
     document.removeEventListener('visibilitychange', boundHandlers.onVisibilityChange);
 
@@ -476,9 +496,22 @@ const ThreeRenderer = {
     boundHandlers = {
       onMouseMove: null,
       onClick: null,
+      onKeyDown: null,
       onResize: null,
       onVisibilityChange: null
     };
+  },
+
+  /**
+   * Handle keyboard events
+   * @param {KeyboardEvent} e
+   */
+  onKeyDown(e) {
+    // Escape key: go back to previous view
+    if (e.key === 'Escape' && this.canGoBack()) {
+      e.preventDefault();
+      this.goBackToCosmos();
+    }
   },
 
   /**
@@ -492,6 +525,24 @@ const ThreeRenderer = {
 
     // Raycast
     raycaster.setFromCamera(mouse, camera);
+
+    // Handle based on current view level
+    if (currentViewLevel === 'PROJECT_TREE' && projectTreeScene) {
+      // In PROJECT_TREE, handle skill node hover
+      const hoveredNode = projectTreeScene.handleMouseMove(raycaster);
+      renderer.domElement.style.cursor = hoveredNode ? 'pointer' : 'default';
+
+      if (hoveredNode) {
+        BuildState.emit('renderer:skillHover', {
+          skillId: hoveredNode.getSkillId(),
+          skill: hoveredNode.skill,
+          position: this.getScreenPosition(hoveredNode.getPosition())
+        });
+      }
+      return;
+    }
+
+    // COSMOS view - handle island hover
     const intersects = raycaster.intersectObjects(raycastTargets, true);
 
     if (intersects.length > 0) {
@@ -549,20 +600,35 @@ const ThreeRenderer = {
    * @param {MouseEvent} e
    */
   onClick(e) {
+    // Handle clicks based on current view level
+    if (currentViewLevel === 'PROJECT_TREE' && projectTreeScene) {
+      // In PROJECT_TREE view, handle skill node clicks
+      raycaster.setFromCamera(mouse, camera);
+      const clickedNode = projectTreeScene.handleClick(raycaster);
+
+      if (clickedNode) {
+        BuildState.emit('renderer:skillClick', {
+          skillId: clickedNode.getSkillId(),
+          skill: clickedNode.skill
+        });
+      }
+      return;
+    }
+
+    // COSMOS view - handle island clicks
     if (hoveredIsland) {
       const projectId = hoveredIsland.getProjectId();
+      const project = hoveredIsland.project;
+
       this.selectProject(projectId);
 
       BuildState.emit('renderer:nodeClick', {
         projectId,
-        project: hoveredIsland.project
+        project
       });
 
-      // Zoom to island
-      cameraController.zoomToNode(hoveredIsland.getPosition(), {
-        distance: 20,
-        duration: 1200
-      });
+      // Transition to PROJECT_TREE view
+      this.enterProjectTreeView(projectId, project);
     } else if (burnCore) {
       // Check if clicking burn core
       raycaster.setFromCamera(mouse, camera);
@@ -574,12 +640,123 @@ const ThreeRenderer = {
           project: { id: 'burn-engine', name: 'Burn Engine' }
         });
 
+        // Zoom to burn core (special case, not a project tree)
         cameraController.zoomToNode(burnCore.getGroup().position, {
           distance: 25,
           duration: 1000
         });
       }
     }
+  },
+
+  /**
+   * Enter Project Tree view (L1)
+   * @param {string} projectId
+   * @param {Object} project
+   */
+  async enterProjectTreeView(projectId, project) {
+    if (!projectTreeScene) {
+      console.warn('[ThreeRenderer] ProjectTreeScene not initialized');
+      return;
+    }
+
+    currentViewLevel = 'PROJECT_TREE';
+
+    // Get island position for camera target
+    const island = islands.get(projectId);
+    const targetPosition = island
+      ? island.getPosition()
+      : new this.THREE.Vector3(0, 0, 0);
+
+    // Transition camera to PROJECT_TREE state
+    cameraController.transitionToState('PROJECT_TREE', targetPosition, {
+      duration: 1200
+    });
+
+    // Load project into scene (after camera starts moving)
+    setTimeout(async () => {
+      await projectTreeScene.loadProject(projectId, project);
+      projectTreeScene.show();
+
+      // Hide cosmos elements
+      this.setCosmosPiecesVisible(false);
+
+      BuildState.emit('renderer:viewChanged', {
+        level: 'PROJECT_TREE',
+        projectId
+      });
+    }, 400);
+  },
+
+  /**
+   * Go back to Cosmos view (L0)
+   */
+  goBackToCosmos() {
+    if (currentViewLevel === 'COSMOS') return;
+
+    currentViewLevel = 'COSMOS';
+
+    // Hide project tree
+    if (projectTreeScene) {
+      projectTreeScene.hide();
+      projectTreeScene.clear();
+    }
+
+    // Show cosmos elements
+    this.setCosmosPiecesVisible(true);
+
+    // Transition camera back
+    cameraController.goBack({ duration: 1000 });
+
+    BuildState.emit('renderer:viewChanged', {
+      level: 'COSMOS',
+      projectId: null
+    });
+  },
+
+  /**
+   * Set visibility of cosmos-level objects
+   * @param {boolean} visible
+   */
+  setCosmosPiecesVisible(visible) {
+    // Islands
+    islands.forEach(island => {
+      island.getGroup().visible = visible;
+    });
+
+    // Tree
+    if (yggdrasilTree && yggdrasilTree.getGroup) {
+      yggdrasilTree.getGroup().visible = visible;
+    }
+
+    // Particles
+    if (fireParticles && fireParticles.getGroup) {
+      fireParticles.getGroup().visible = visible;
+    }
+    if (snowParticles && snowParticles.getGroup) {
+      snowParticles.getGroup().visible = visible;
+    }
+
+    // Burn core
+    if (burnCore && burnCore.getGroup) {
+      burnCore.getGroup().visible = visible;
+    }
+  },
+
+  /**
+   * Get current view level
+   * @returns {string}
+   */
+  getCurrentViewLevel() {
+    return currentViewLevel;
+  },
+
+  /**
+   * Check if can go back from current view
+   * @returns {boolean}
+   */
+  canGoBack() {
+    return currentViewLevel !== 'COSMOS';
   },
 
   /**
@@ -755,6 +932,11 @@ const ThreeRenderer = {
       islands.forEach(island => {
         island.update(deltaTime);
       });
+
+      // Update project tree scene (L1 view)
+      if (projectTreeScene) {
+        projectTreeScene.update(deltaTime);
+      }
 
       // Render with or without post-processing
       if (postProcessing && postProcessing.enabled) {
