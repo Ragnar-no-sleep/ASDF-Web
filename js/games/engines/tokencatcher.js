@@ -431,14 +431,33 @@ const TokenCatcher = {
 
         // Update projectiles
         this.state.projectiles = this.state.projectiles.filter(proj => {
+            const prevX = proj.x;
+            const prevY = proj.y;
             proj.x += proj.vx * dt;
             proj.y += proj.vy * dt;
 
-            // Check collision with all tokens
+            // Check collision with all tokens (swept collision to prevent tunneling)
+            const hitRadius = 30; // Token collision radius
             for (let i = self.state.tokens.length - 1; i >= 0; i--) {
                 const token = self.state.tokens[i];
-                const dist = Math.hypot(proj.x - token.x, proj.y - token.y);
-                if (dist < 25) {
+
+                // Check both previous and current position, plus midpoint for fast projectiles
+                const checkPoints = [
+                    { x: prevX, y: prevY },
+                    { x: (prevX + proj.x) / 2, y: (prevY + proj.y) / 2 },
+                    { x: proj.x, y: proj.y }
+                ];
+
+                let hit = false;
+                for (const pt of checkPoints) {
+                    const dist = Math.hypot(pt.x - token.x, pt.y - token.y);
+                    if (dist < hitRadius) {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (hit) {
                     self.state.tokens.splice(i, 1);
 
                     // Different rewards based on token type
@@ -470,11 +489,27 @@ const TokenCatcher = {
                 }
             }
 
-            // Check collision with enemies
+            // Check collision with enemies (swept collision)
+            const enemyHitRadius = 35;
             for (let i = self.state.enemies.length - 1; i >= 0; i--) {
                 const enemy = self.state.enemies[i];
-                const dist = Math.hypot(proj.x - enemy.x, proj.y - enemy.y);
-                if (dist < 30) {
+
+                // Check trajectory points
+                let hit = false;
+                const checkPoints = [
+                    { x: prevX, y: prevY },
+                    { x: (prevX + proj.x) / 2, y: (prevY + proj.y) / 2 },
+                    { x: proj.x, y: proj.y }
+                ];
+                for (const pt of checkPoints) {
+                    const dist = Math.hypot(pt.x - enemy.x, pt.y - enemy.y);
+                    if (dist < enemyHitRadius) {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (hit) {
                     enemy.currentHp--;
                     self.addEffect(
                         enemy.x,
