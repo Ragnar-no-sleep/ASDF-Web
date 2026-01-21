@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yggdrasil Builder's Cosmos | ASDF</title>
+
+  <!-- Three.js ES Module Import Map -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #020812;
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    #cosmos {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Loading */
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #020812;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-tree {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .loading-tree::before {
+      content: '🔥';
+      font-size: 48px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #666;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .loading-bar {
+      width: 200px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .loading-bar-inner {
+      width: 30%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff4444, #ff6644);
+      border-radius: 1px;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(2, 8, 18, 0.95), transparent);
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .header > * {
+      pointer-events: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ff4444, #ff6644);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #fff, #aaa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #ccc;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      background: rgba(255, 100, 50, 0.15);
+      border-color: rgba(255, 100, 50, 0.3);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff4444, #ff6644);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #ff5555, #ff7755);
+      box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    }
+
+    /* View indicator */
+    .view-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(10, 15, 30, 0.9);
+      border: 1px solid rgba(255, 100, 50, 0.3);
+      border-radius: 25px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #ff6644;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+
+    .view-cosmos { color: #00d9ff; border-color: rgba(0, 217, 255, 0.3); }
+    .view-project { color: #ff6644; border-color: rgba(255, 100, 50, 0.3); }
+    .view-skill { color: #00ff88; border-color: rgba(0, 255, 136, 0.3); }
+
+    /* Help */
+    .help {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 11px;
+      color: #444;
+      z-index: 50;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .help-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help kbd {
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 10px;
+      color: #666;
+    }
+
+    /* Quote */
+    .quote {
+      position: fixed;
+      bottom: 60px;
+      left: 20px;
+      font-size: 11px;
+      color: #333;
+      font-style: italic;
+      max-width: 300px;
+      line-height: 1.5;
+      z-index: 50;
+    }
+
+    /* Error state */
+    .error {
+      color: #ff4444;
+      text-align: center;
+    }
+
+    .error-message {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="loading-tree"></div>
+    <div class="loading-text">Entering the Cosmos</div>
+    <div class="loading-bar">
+      <div class="loading-bar-inner"></div>
+    </div>
+  </div>
+
+  <!-- Cosmos container -->
+  <div id="cosmos"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🔥</div>
+      <div>
+        <div class="logo-text">Yggdrasil</div>
+        <div class="logo-subtitle">Builder's Cosmos</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" onclick="dashboard.goHome()" title="Home (Home key)">⌂ Cosmos</button>
+      <button class="btn btn-primary" onclick="window.location.href='/burns.html'">🔥 Burns</button>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote">
+    "This is Fine. The fire is transformation. The ice is purity. You are the builder."
+  </div>
+
+  <!-- Help -->
+  <div class="help">
+    <div class="help-item"><kbd>Drag</kbd> Rotate</div>
+    <div class="help-item"><kbd>Scroll</kbd> Zoom</div>
+    <div class="help-item"><kbd>Click</kbd> Select</div>
+    <div class="help-item"><kbd>Esc</kbd> Back</div>
+    <div class="help-item"><kbd>Home</kbd> Reset</div>
+  </div>
+
+  <!-- View indicator -->
+  <div class="view-indicator view-cosmos" id="viewIndicator">cosmos</div>
+
+  <script type="module">
+    import Dashboard from './js/dashboard/index.js';
+
+    let dashboard;
+
+    async function init() {
+      const loading = document.getElementById('loading');
+
+      try {
+        dashboard = await Dashboard.init('#cosmos');
+        window.dashboard = dashboard;
+        window.YggdrasilDashboard = dashboard;
+
+        // Update view indicator periodically
+        setInterval(() => {
+          const view = dashboard.cosmos?.getCurrentView() || 'cosmos';
+          const indicator = document.getElementById('viewIndicator');
+          indicator.textContent = view;
+          indicator.className = `view-indicator view-${view}`;
+        }, 200);
+
+        // Fade out loading
+        loading.classList.add('fade-out');
+        setTimeout(() => loading.style.display = 'none', 500);
+
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        loading.innerHTML = `
+          <div class="error">
+            <div class="loading-tree" style="animation: none;">💀</div>
+            <div>Failed to enter the Cosmos</div>
+            <div class="error-message">${error.message}</div>
+          </div>
+        `;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
