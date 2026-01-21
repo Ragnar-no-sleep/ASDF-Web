@@ -10,13 +10,29 @@
 'use strict';
 
 const CryptoHeist = {
-    version: '1.1.0', // Fibonacci timing
+    version: '1.2.0', // Lighting + stealth + loot rarity
     gameId: 'cryptoheist',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
     juice: null,
+
+    // Loot rarity system (Fibonacci-based values)
+    lootRarities: {
+        common:    { icon: '🪙', color: '#9ca3af', chance: 0.50, value: 5,  glow: false },
+        uncommon:  { icon: '💎', color: '#22c55e', chance: 0.25, value: 13, glow: false },
+        rare:      { icon: '💠', color: '#3b82f6', chance: 0.15, value: 34, glow: true },
+        epic:      { icon: '🔮', color: '#a855f7', chance: 0.08, value: 89, glow: true },
+        legendary: { icon: '👑', color: '#fbbf24', chance: 0.02, value: 233, glow: true }
+    },
+
+    // Trap types
+    trapTypes: [
+        { icon: '⚡', name: 'SHOCK', damage: 'stun', radius: 30, duration: 60 },
+        { icon: '🔥', name: 'FIRE', damage: 'dot', radius: 40, duration: 120 },
+        { icon: '🕸️', name: 'WEB', damage: 'slow', radius: 35, duration: 90 }
+    ],
 
     /**
      * Start the game
@@ -36,6 +52,7 @@ const CryptoHeist = {
             bullets: [],
             tokens: [],
             effects: [],
+            traps: [],
             keys: { up: false, down: false, left: false, right: false },
             mouseX: 0,
             mouseY: 0,
@@ -43,7 +60,27 @@ const CryptoHeist = {
             shootCooldown: 144,   // fib[11]
             spawnTimer: 0,
             spawnRate: 89,        // fib[10]
-            enemySpeed: 1.618     // PHI
+            enemySpeed: 1.618,    // PHI
+            // Lighting system
+            flashlightAngle: Math.PI / 4, // 45 degree cone
+            flashlightRange: 200,
+            ambientLight: 0.15,    // Base visibility
+            // Stealth system
+            stealth: {
+                visibility: 0,     // 0 = hidden, 1 = fully visible
+                lastSeen: 0,       // Frame when last spotted
+                alertLevel: 0      // 0 = none, 1 = suspicious, 2 = alert
+            },
+            // Player status effects
+            statusEffects: {
+                stunned: false,
+                stunEnd: 0,
+                slowed: false,
+                slowEnd: 0,
+                burning: false,
+                burnEnd: 0,
+                burnDamage: 0
+            }
         };
 
         this.createArena(arena);
@@ -77,16 +114,23 @@ const CryptoHeist = {
         arena.innerHTML = `
             <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a0a1a 0%,#1a0a2e 100%);cursor:crosshair;">
                 <canvas id="ch-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:15px;display:flex;gap:20px;">
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--gold);font-size:14px;">&#128176; SCORE: <span id="ch-score">0</span></span>
+                <div style="position:absolute;top:15px;left:15px;display:flex;gap:12px;">
+                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
+                        <span style="color:var(--gold);font-size:13px;">&#128176; <span id="ch-score">0</span></span>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--red);font-size:14px;">&#128128; KILLS: <span id="ch-kills">0</span></span>
+                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
+                        <span style="color:var(--red);font-size:13px;">&#128128; <span id="ch-kills">0</span></span>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--purple);font-size:14px;">&#127754; WAVE <span id="ch-wave">1</span></span>
+                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
+                        <span style="color:var(--purple);font-size:13px;">&#127754; <span id="ch-wave">1</span></span>
                     </div>
+                </div>
+                <div style="position:absolute;top:15px;right:15px;background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
+                    <div style="font-size:10px;color:#a78bfa;margin-bottom:4px;">STEALTH</div>
+                    <div style="width:80px;height:8px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden;">
+                        <div id="ch-stealth-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);transition:width 0.2s;"></div>
+                    </div>
+                    <div id="ch-alert" style="font-size:10px;color:#22c55e;margin-top:2px;text-align:center;">HIDDEN</div>
                 </div>
                 <div style="position:absolute;bottom:15px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:11px;text-align:center;">
                     WASD to move | AIM with mouse | CLICK to shoot | Survive the enemy waves!
@@ -157,7 +201,7 @@ const CryptoHeist = {
     },
 
     /**
-     * Spawn enemy
+     * Spawn enemy with patrol behavior
      */
     spawnEnemy() {
         const side = Math.floor(Math.random() * 4);
@@ -170,33 +214,105 @@ const CryptoHeist = {
         }
 
         const types = [
-            { icon: '👾', health: 1, speed: this.state.enemySpeed, value: 10, size: 18 },
-            { icon: '👹', health: 2, speed: this.state.enemySpeed * 0.8, value: 20, size: 22 },
-            { icon: '🤖', health: 3, speed: this.state.enemySpeed * 0.6, value: 30, size: 25 }
+            { icon: '👾', health: 1, speed: this.state.enemySpeed, value: 13, size: 18, visionRange: 120 },
+            { icon: '👹', health: 2, speed: this.state.enemySpeed * 0.8, value: 21, size: 22, visionRange: 150 },
+            { icon: '🤖', health: 3, speed: this.state.enemySpeed * 0.6, value: 34, size: 25, visionRange: 180 },
+            { icon: '🕵️', health: 1, speed: this.state.enemySpeed * 1.2, value: 21, size: 20, visionRange: 200, stealth: true }
         ];
 
-        const typeIndex = Math.min(Math.floor(Math.random() * Math.min(this.state.wave, 3)), types.length - 1);
+        const maxType = Math.min(this.state.wave, types.length);
+        const typeIndex = Math.floor(Math.random() * maxType);
         const type = types[typeIndex];
+
+        // Patrol patterns
+        const patterns = ['chase', 'patrol', 'ambush'];
+        const pattern = this.state.wave >= 3 ? patterns[Math.floor(Math.random() * patterns.length)] : 'chase';
+
+        // Generate patrol points for patrol behavior
+        const patrolPoints = [];
+        if (pattern === 'patrol') {
+            const centerX = 100 + Math.random() * (this.canvas.width - 200);
+            const centerY = 100 + Math.random() * (this.canvas.height - 200);
+            const radius = 50 + Math.random() * 50;
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2;
+                patrolPoints.push({
+                    x: centerX + Math.cos(angle) * radius,
+                    y: centerY + Math.sin(angle) * radius
+                });
+            }
+        }
 
         this.state.enemies.push({
             x, y,
             ...type,
-            maxHealth: type.health
+            maxHealth: type.health,
+            // AI state
+            behavior: pattern,
+            state: 'idle',           // idle, patrol, chase, search
+            patrolPoints: patrolPoints,
+            patrolIndex: 0,
+            lastSeenPlayer: null,    // Last known player position
+            searchTimer: 0,
+            alertLevel: 0            // 0-100
         });
     },
 
     /**
-     * Spawn token
+     * Spawn token with rarity system
      */
     spawnToken(x, y) {
-        if (Math.random() < 0.3) {
-            this.state.tokens.push({
-                x, y,
-                size: 12,
-                value: 5 + this.state.wave * 2,
-                life: 300
-            });
+        if (Math.random() > 0.4) return; // 40% chance to drop
+
+        // Roll for rarity (weighted random)
+        const roll = Math.random();
+        let cumulative = 0;
+        let selectedRarity = 'common';
+
+        for (const [rarity, data] of Object.entries(this.lootRarities)) {
+            cumulative += data.chance;
+            if (roll <= cumulative) {
+                selectedRarity = rarity;
+                break;
+            }
         }
+
+        const rarityData = this.lootRarities[selectedRarity];
+        const waveBonus = Math.floor(this.state.wave * 1.618); // PHI scaling
+
+        this.state.tokens.push({
+            x, y,
+            size: 14,
+            value: rarityData.value + waveBonus,
+            rarity: selectedRarity,
+            icon: rarityData.icon,
+            color: rarityData.color,
+            glow: rarityData.glow,
+            life: 300,
+            bobOffset: Math.random() * Math.PI * 2
+        });
+
+        // Announce rare+ drops
+        if (selectedRarity !== 'common' && selectedRarity !== 'uncommon') {
+            this.addEffect(x, y - 20, selectedRarity.toUpperCase() + '!', rarityData.color);
+        }
+    },
+
+    /**
+     * Spawn environmental trap
+     */
+    spawnTrap() {
+        const type = this.trapTypes[Math.floor(Math.random() * this.trapTypes.length)];
+        const margin = 80;
+
+        this.state.traps.push({
+            x: margin + Math.random() * (this.canvas.width - margin * 2),
+            y: margin + Math.random() * (this.canvas.height - margin * 2),
+            ...type,
+            active: true,
+            triggered: false,
+            cooldown: 0
+        });
     },
 
     /**
@@ -226,23 +342,227 @@ const CryptoHeist = {
     },
 
     /**
+     * Check if point is in player's flashlight cone
+     */
+    isInFlashlight(x, y) {
+        const dx = x - this.state.player.x;
+        const dy = y - this.state.player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > this.state.flashlightRange) return false;
+
+        const angleToPoint = Math.atan2(dy, dx);
+        let angleDiff = Math.abs(angleToPoint - this.state.player.angle);
+        if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+
+        return angleDiff < this.state.flashlightAngle / 2;
+    },
+
+    /**
+     * Calculate visibility of player from enemy perspective
+     */
+    calculateVisibility(enemy) {
+        const dx = this.state.player.x - enemy.x;
+        const dy = this.state.player.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Base visibility decreases with distance
+        let visibility = Math.max(0, 1 - dist / enemy.visionRange);
+
+        // Player is more visible when shooting (muzzle flash)
+        const timeSinceShot = Date.now() - this.state.lastShot;
+        if (timeSinceShot < 200) {
+            visibility = Math.min(1, visibility + 0.5);
+        }
+
+        // Player is more visible when moving
+        if (this.state.keys.up || this.state.keys.down || this.state.keys.left || this.state.keys.right) {
+            visibility = Math.min(1, visibility + 0.2);
+        }
+
+        return visibility;
+    },
+
+    /**
+     * Update enemy AI state
+     */
+    updateEnemyAI(enemy, dt) {
+        const visibility = this.calculateVisibility(enemy);
+        const canSeePlayer = visibility > 0.3;
+
+        // Update enemy alert level
+        if (canSeePlayer) {
+            enemy.alertLevel = Math.min(100, enemy.alertLevel + visibility * 3 * dt);
+            enemy.lastSeenPlayer = { x: this.state.player.x, y: this.state.player.y };
+            enemy.searchTimer = 180; // 3 seconds to search
+        } else {
+            enemy.alertLevel = Math.max(0, enemy.alertLevel - 1 * dt);
+            if (enemy.searchTimer > 0) enemy.searchTimer -= dt;
+        }
+
+        // Determine behavior state
+        if (enemy.alertLevel > 80) {
+            enemy.state = 'chase';
+        } else if (enemy.alertLevel > 30 || enemy.searchTimer > 0) {
+            enemy.state = 'search';
+        } else if (enemy.behavior === 'patrol' && enemy.patrolPoints.length > 0) {
+            enemy.state = 'patrol';
+        } else {
+            enemy.state = 'idle';
+        }
+
+        // Get target position based on state
+        let targetX, targetY;
+        switch (enemy.state) {
+            case 'chase':
+                targetX = this.state.player.x;
+                targetY = this.state.player.y;
+                break;
+            case 'search':
+                if (enemy.lastSeenPlayer) {
+                    targetX = enemy.lastSeenPlayer.x + (Math.random() - 0.5) * 50;
+                    targetY = enemy.lastSeenPlayer.y + (Math.random() - 0.5) * 50;
+                }
+                break;
+            case 'patrol':
+                const point = enemy.patrolPoints[enemy.patrolIndex];
+                targetX = point.x;
+                targetY = point.y;
+                // Check if reached patrol point
+                const distToPoint = Math.sqrt(Math.pow(enemy.x - point.x, 2) + Math.pow(enemy.y - point.y, 2));
+                if (distToPoint < 10) {
+                    enemy.patrolIndex = (enemy.patrolIndex + 1) % enemy.patrolPoints.length;
+                }
+                break;
+            default:
+                // Idle - wander slightly
+                targetX = enemy.x + (Math.random() - 0.5) * 20;
+                targetY = enemy.y + (Math.random() - 0.5) * 20;
+        }
+
+        // Move toward target
+        if (targetX !== undefined && targetY !== undefined) {
+            const dx = targetX - enemy.x;
+            const dy = targetY - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 5) {
+                const speedMod = enemy.state === 'chase' ? 1.2 : (enemy.state === 'search' ? 0.8 : 0.5);
+                enemy.x += (dx / dist) * enemy.speed * speedMod * dt;
+                enemy.y += (dy / dist) * enemy.speed * speedMod * dt;
+            }
+        }
+
+        return canSeePlayer;
+    },
+
+    /**
+     * Update player status effects
+     */
+    updateStatusEffects(dt, frameCount) {
+        const effects = this.state.statusEffects;
+
+        // Stun effect
+        if (effects.stunned && frameCount > effects.stunEnd) {
+            effects.stunned = false;
+        }
+
+        // Slow effect
+        if (effects.slowed && frameCount > effects.slowEnd) {
+            effects.slowed = false;
+        }
+
+        // Burn damage over time
+        if (effects.burning) {
+            if (frameCount > effects.burnEnd) {
+                effects.burning = false;
+            } else {
+                // Apply periodic damage (every 30 frames)
+                if (frameCount % 30 === 0) {
+                    this.addEffect(this.state.player.x, this.state.player.y - 20, '-1', '#ef4444');
+                }
+            }
+        }
+    },
+
+    /**
+     * Check and apply trap effects
+     */
+    checkTraps(dt, frameCount) {
+        const player = this.state.player;
+
+        this.state.traps.forEach(trap => {
+            if (!trap.active || trap.cooldown > 0) {
+                trap.cooldown -= dt;
+                return;
+            }
+
+            const dx = player.x - trap.x;
+            const dy = player.y - trap.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < trap.radius) {
+                trap.triggered = true;
+                trap.cooldown = 180; // 3 second cooldown
+
+                switch (trap.damage) {
+                    case 'stun':
+                        this.state.statusEffects.stunned = true;
+                        this.state.statusEffects.stunEnd = frameCount + trap.duration;
+                        this.addEffect(player.x, player.y, 'STUNNED!', '#fbbf24');
+                        break;
+                    case 'slow':
+                        this.state.statusEffects.slowed = true;
+                        this.state.statusEffects.slowEnd = frameCount + trap.duration;
+                        this.addEffect(player.x, player.y, 'SLOWED!', '#3b82f6');
+                        break;
+                    case 'dot':
+                        this.state.statusEffects.burning = true;
+                        this.state.statusEffects.burnEnd = frameCount + trap.duration;
+                        this.addEffect(player.x, player.y, 'BURNING!', '#ef4444');
+                        break;
+                }
+            } else {
+                trap.triggered = false;
+            }
+        });
+    },
+
+    /**
      * Update game state
      * @param {number} dt - Delta time normalized to 60fps
      */
     update(dt) {
         if (this.state.gameOver) return;
 
-        // Player movement
-        let dx = 0, dy = 0;
-        if (this.state.keys.up) dy -= 1;
-        if (this.state.keys.down) dy += 1;
-        if (this.state.keys.left) dx -= 1;
-        if (this.state.keys.right) dx += 1;
+        // Track frame count for status effects
+        if (!this.state.frameCount) this.state.frameCount = 0;
+        this.state.frameCount += dt;
 
-        if (dx || dy) {
-            const len = Math.sqrt(dx * dx + dy * dy);
-            this.state.player.x += (dx / len) * this.state.player.speed * dt;
-            this.state.player.y += (dy / len) * this.state.player.speed * dt;
+        // Update status effects
+        this.updateStatusEffects(dt, this.state.frameCount);
+
+        // Check traps
+        this.checkTraps(dt, this.state.frameCount);
+
+        // Skip movement if stunned
+        if (this.state.statusEffects.stunned) {
+            // Still update enemies and other systems
+        } else {
+            // Player movement
+            let dx = 0, dy = 0;
+            if (this.state.keys.up) dy -= 1;
+            if (this.state.keys.down) dy += 1;
+            if (this.state.keys.left) dx -= 1;
+            if (this.state.keys.right) dx += 1;
+
+            if (dx || dy) {
+                const len = Math.sqrt(dx * dx + dy * dy);
+                let speed = this.state.player.speed;
+                if (this.state.statusEffects.slowed) speed *= 0.5;
+                this.state.player.x += (dx / len) * speed * dt;
+                this.state.player.y += (dy / len) * speed * dt;
+            }
         }
 
         const bottomMargin = 50;
@@ -258,18 +578,30 @@ const CryptoHeist = {
             this.spawnEnemy();
         }
 
+        // Spawn traps every new wave
+        if (this.state.kills > 0 && this.state.kills % 10 === 0 && this.state.traps.length < this.state.wave + 2) {
+            this.spawnTrap();
+        }
+
         const self = this;
 
-        // Update enemies
+        // Update stealth system
+        let maxVisibility = 0;
+        let anyChasing = false;
+
+        // Update enemies with AI
         this.state.enemies.forEach(enemy => {
+            const canSee = self.updateEnemyAI(enemy, dt);
+            if (canSee) {
+                const vis = self.calculateVisibility(enemy);
+                maxVisibility = Math.max(maxVisibility, vis);
+            }
+            if (enemy.state === 'chase') anyChasing = true;
+
+            // Collision with player
             const dx = self.state.player.x - enemy.x;
             const dy = self.state.player.y - enemy.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist > 0) {
-                enemy.x += (dx / dist) * enemy.speed * dt;
-                enemy.y += (dy / dist) * enemy.speed * dt;
-            }
 
             if (dist < self.state.player.size + enemy.size) {
                 self.state.gameOver = true;
@@ -277,6 +609,24 @@ const CryptoHeist = {
                 setTimeout(() => endGame(self.gameId, self.state.score), 500);
             }
         });
+
+        // Update stealth UI
+        this.state.stealth.visibility = maxVisibility;
+        const stealthBar = document.getElementById('ch-stealth-bar');
+        const alertText = document.getElementById('ch-alert');
+        if (stealthBar) stealthBar.style.width = `${maxVisibility * 100}%`;
+        if (alertText) {
+            if (anyChasing) {
+                alertText.textContent = 'ALERT!';
+                alertText.style.color = '#ef4444';
+            } else if (maxVisibility > 0.3) {
+                alertText.textContent = 'SPOTTED';
+                alertText.style.color = '#fbbf24';
+            } else {
+                alertText.textContent = 'HIDDEN';
+                alertText.style.color = '#22c55e';
+            }
+        }
 
         // Update bullets
         this.state.bullets = this.state.bullets.filter(bullet => {
@@ -350,8 +700,12 @@ const CryptoHeist = {
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Grid
-        ctx.strokeStyle = '#1a1a3e';
+        // Dark background (affected by lighting)
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Grid (dim)
+        ctx.strokeStyle = 'rgba(26, 26, 62, 0.5)';
         ctx.lineWidth = 1;
         for (let x = 0; x < this.canvas.width; x += 50) {
             ctx.beginPath();
@@ -366,13 +720,73 @@ const CryptoHeist = {
             ctx.stroke();
         }
 
-        // Tokens
-        ctx.font = '20px Arial';
+        // Draw flashlight cone (illuminated area)
+        ctx.save();
+        ctx.translate(this.state.player.x, this.state.player.y);
+        ctx.rotate(this.state.player.angle);
+
+        // Flashlight gradient
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.state.flashlightRange);
+        gradient.addColorStop(0, 'rgba(251, 191, 36, 0.3)');
+        gradient.addColorStop(0.5, 'rgba(251, 191, 36, 0.15)');
+        gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, this.state.flashlightRange, -this.state.flashlightAngle / 2, this.state.flashlightAngle / 2);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.restore();
+
+        // Ambient light around player
+        const ambientGrad = ctx.createRadialGradient(
+            this.state.player.x, this.state.player.y, 0,
+            this.state.player.x, this.state.player.y, 80
+        );
+        ambientGrad.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+        ambientGrad.addColorStop(1, 'rgba(139, 92, 246, 0)');
+        ctx.fillStyle = ambientGrad;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw traps
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        this.state.traps.forEach(trap => {
+            // Trap warning zone
+            if (trap.triggered) {
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+            } else {
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.1)';
+            }
+            ctx.beginPath();
+            ctx.arc(trap.x, trap.y, trap.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Trap icon
+            const pulse = trap.triggered ? 1.3 : 1 + Math.sin(this.state.frameCount * 0.1) * 0.1;
+            ctx.font = `${20 * pulse}px Arial`;
+            ctx.globalAlpha = trap.cooldown > 0 ? 0.3 : 0.8;
+            ctx.fillText(trap.icon, trap.x, trap.y);
+            ctx.globalAlpha = 1;
+        });
+
+        // Tokens with rarity system
+        ctx.font = '20px Arial';
         this.state.tokens.forEach(token => {
             ctx.globalAlpha = token.life > 60 ? 1 : token.life / 60;
-            ctx.fillText('🪙', token.x, token.y);
+
+            // Glow effect for rare+ items
+            if (token.glow) {
+                ctx.shadowColor = token.color;
+                ctx.shadowBlur = 15 + Math.sin(token.bobOffset + this.state.frameCount * 0.1) * 5;
+            }
+
+            // Bob animation
+            const bob = Math.sin(token.bobOffset + this.state.frameCount * 0.08) * 3;
+            ctx.fillText(token.icon, token.x, token.y + bob);
+
+            ctx.shadowBlur = 0;
         });
         ctx.globalAlpha = 1;
 
@@ -384,8 +798,41 @@ const CryptoHeist = {
             ctx.fill();
         });
 
-        // Enemies
+        // Enemies with alert indicators
         this.state.enemies.forEach(enemy => {
+            // Visibility based on flashlight
+            const inLight = this.isInFlashlight(enemy.x, enemy.y);
+            ctx.globalAlpha = inLight ? 1 : 0.4;
+
+            // Alert indicator above enemy
+            if (enemy.alertLevel > 0) {
+                const alertHeight = 15 + enemy.alertLevel / 10;
+                if (enemy.state === 'chase') {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = '14px Arial';
+                    ctx.fillText('!', enemy.x, enemy.y - enemy.size - alertHeight);
+                } else if (enemy.state === 'search') {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '14px Arial';
+                    ctx.fillText('?', enemy.x, enemy.y - enemy.size - alertHeight);
+                }
+
+                // Alert meter
+                const meterWidth = 20;
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(enemy.x - meterWidth / 2, enemy.y - enemy.size - 8, meterWidth, 3);
+                ctx.fillStyle = enemy.alertLevel > 80 ? '#ef4444' : enemy.alertLevel > 30 ? '#fbbf24' : '#22c55e';
+                ctx.fillRect(enemy.x - meterWidth / 2, enemy.y - enemy.size - 8, meterWidth * (enemy.alertLevel / 100), 3);
+            }
+
+            // Vision cone indicator (when in search/patrol)
+            if (enemy.state !== 'chase' && enemy.visionRange) {
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.1)';
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.visionRange, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
             ctx.font = `${enemy.size * 1.5}px Arial`;
             ctx.fillText(enemy.icon, enemy.x, enemy.y);
 
@@ -397,6 +844,8 @@ const CryptoHeist = {
                 ctx.fillStyle = enemy.health > 1 ? '#22c55e' : '#ef4444';
                 ctx.fillRect(enemy.x - barWidth / 2, enemy.y - enemy.size - 10, barWidth * (enemy.health / enemy.maxHealth), barHeight);
             }
+
+            ctx.globalAlpha = 1;
         });
 
         // Player
