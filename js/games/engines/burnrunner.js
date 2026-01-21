@@ -10,7 +10,7 @@
 'use strict';
 
 const BurnRunner = {
-    version: '1.1.0', // Fibonacci timing + phi-based difficulty
+    version: '1.2.0', // Parallax backgrounds + dust particles
     gameId: 'burnrunner',
     state: null,
     canvas: null,
@@ -128,8 +128,15 @@ const BurnRunner = {
             bonusItems: [],
             malusItems: [],
             particles: [],
+            dustParticles: [], // Landing dust effects
             clouds: [],
             buildings: [],
+            // Parallax layers (far, mid, near) with phi-based speeds
+            parallax: {
+                far: [],      // 0.2x speed - distant mountains
+                mid: [],      // 0.5x speed - buildings
+                near: []      // 0.8x speed - foreground elements
+            },
             lastObstacle: 0,
             lastPlatform: 0,
             lastAerialPlatform: 0,
@@ -247,9 +254,12 @@ const BurnRunner = {
     },
 
     /**
-     * Initialize background elements
+     * Initialize background elements with 3-layer parallax
      */
     initBackground() {
+        const PHI = 1.618033988749895;
+
+        // Clouds (very slow, atmospheric)
         this.state.clouds = [];
         for (let i = 0; i < 5; i++) {
             this.state.clouds.push({
@@ -259,13 +269,46 @@ const BurnRunner = {
                 speed: 0.2 + Math.random() * 0.3
             });
         }
-        this.state.buildings = [];
+
+        // FAR LAYER: Distant mountains (0.2x parallax speed)
+        this.state.parallax.far = [];
+        const mountainCount = 5;
+        for (let i = 0; i < mountainCount; i++) {
+            const baseWidth = 150 + Math.random() * 100;
+            this.state.parallax.far.push({
+                x: i * (this.canvas.width / 3),
+                width: baseWidth,
+                height: 80 + Math.random() * 60,
+                color: `hsl(${265 + Math.random() * 15}, 30%, ${12 + Math.random() * 6}%)`,
+                speed: 0.2 // PHI^-3 ≈ 0.236
+            });
+        }
+
+        // MID LAYER: Buildings (0.5x parallax speed)
+        this.state.parallax.mid = [];
         for (let i = 0; i < 8; i++) {
-            this.state.buildings.push({
+            this.state.parallax.mid.push({
                 x: i * (this.canvas.width / 6),
                 width: 40 + Math.random() * 60,
                 height: 60 + Math.random() * 80,
-                color: `hsl(${260 + Math.random() * 20}, 40%, ${15 + Math.random() * 10}%)`
+                color: `hsl(${260 + Math.random() * 20}, 40%, ${15 + Math.random() * 10}%)`,
+                windows: Math.random() > 0.3,
+                speed: 0.5 // PHI^-1 ≈ 0.618
+            });
+        }
+        // Keep buildings reference for compatibility
+        this.state.buildings = this.state.parallax.mid;
+
+        // NEAR LAYER: Foreground elements (0.8x parallax speed)
+        this.state.parallax.near = [];
+        const nearElements = ['🌲', '🌵', '🪨', '🌿', '🏮'];
+        for (let i = 0; i < 6; i++) {
+            this.state.parallax.near.push({
+                x: i * (this.canvas.width / 4) + Math.random() * 50,
+                icon: nearElements[Math.floor(Math.random() * nearElements.length)],
+                size: 24 + Math.random() * 12,
+                opacity: 0.4 + Math.random() * 0.3,
+                speed: 0.8 // Close to 1 for parallax effect
             });
         }
     },
@@ -431,6 +474,46 @@ const BurnRunner = {
                 size: 16
             });
         }
+    },
+
+    /**
+     * Add dust particles on landing (Fibonacci-based count)
+     */
+    addDustParticles(x, y, intensity = 1) {
+        const count = Math.floor(5 * intensity); // fib[4] base
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.random() - 0.5) * Math.PI; // Spread upward
+            const speed = 1.5 + Math.random() * 2.5;
+            this.state.dustParticles.push({
+                x: x + (Math.random() - 0.5) * 20,
+                y: y,
+                vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
+                vy: -Math.random() * 2 - 0.5, // Slight upward
+                life: 21 + Math.random() * 13, // fib[7] + fib[6]
+                size: 3 + Math.random() * 4,
+                alpha: 0.6 + Math.random() * 0.3
+            });
+        }
+    },
+
+    /**
+     * Add speed trail particles
+     */
+    addTrailParticle() {
+        if (this.state.speed < 7 && !this.state.dash.active) return;
+
+        const intensity = this.state.dash.active ? 1 : (this.state.speed - 7) / 6;
+        if (Math.random() > 0.3 * intensity) return;
+
+        this.state.particles.push({
+            x: this.state.player.x - 5,
+            y: this.state.player.y + this.state.player.height / 2 + (Math.random() - 0.5) * 20,
+            vx: -2 - Math.random() * 2,
+            vy: (Math.random() - 0.5) * 1,
+            life: 15 + Math.random() * 10,
+            icon: this.state.dash.active ? '💨' : '✦',
+            size: this.state.dash.active ? 16 : 10
+        });
     },
 
     /**
@@ -639,12 +722,24 @@ const BurnRunner = {
         this.state.player.y += this.state.player.vy * dt;
 
         if (this.state.player.y >= this.state.ground - this.state.player.height) {
+            // Spawn dust on landing (intensity based on fall velocity)
+            if (this.state.isJumping && this.state.player.vy > 2) {
+                const intensity = Math.min(2, this.state.player.vy / 5);
+                this.addDustParticles(
+                    this.state.player.x + this.state.player.width / 2,
+                    this.state.ground,
+                    intensity
+                );
+            }
             this.state.player.y = this.state.ground - this.state.player.height;
             this.state.player.vy = 0;
             this.state.isJumping = false;
             this.state.jumpsLeft = this.state.maxJumps;
             this.updateJumpsDisplay();
         }
+
+        // Spawn trail particles when moving fast
+        this.addTrailParticle();
 
         // Update clouds (frame-independent)
         this.state.clouds.forEach(cloud => {
@@ -706,6 +801,14 @@ const BurnRunner = {
                 self.state.player.vy >= 0;
 
             if (onTopOf) {
+                // Spawn dust on platform landing
+                if (self.state.isJumping) {
+                    self.addDustParticles(
+                        self.state.player.x + self.state.player.width / 2,
+                        platY,
+                        0.8
+                    );
+                }
                 self.state.player.y = platY - self.state.player.height;
                 self.state.player.vy = 0;
                 self.state.isJumping = false;
@@ -767,6 +870,17 @@ const BurnRunner = {
             return p.life > 0;
         });
 
+        // Update dust particles (frame-independent)
+        this.state.dustParticles = this.state.dustParticles.filter(p => {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vx *= 0.96; // Friction
+            p.vy += 0.08 * dt; // Light gravity
+            p.life -= dt;
+            p.alpha *= 0.97; // Fade out
+            return p.life > 0 && p.alpha > 0.05;
+        });
+
         // Update UI
         const distanceEl = document.getElementById('br-distance');
         const tokensEl = document.getElementById('br-tokens');
@@ -802,6 +916,30 @@ const BurnRunner = {
         }
         ctx.globalAlpha = 1;
 
+        // FAR LAYER: Distant mountains (slowest parallax - 0.2x)
+        this.state.parallax.far.forEach(m => {
+            const mx = (m.x - this.state.distance * m.speed) % (this.canvas.width + m.width);
+            const adjustedX = mx < -m.width ? mx + this.canvas.width + m.width : mx;
+
+            // Draw mountain silhouette
+            ctx.fillStyle = m.color;
+            ctx.beginPath();
+            ctx.moveTo(adjustedX, this.state.ground);
+            ctx.lineTo(adjustedX + m.width / 2, this.state.ground - m.height);
+            ctx.lineTo(adjustedX + m.width, this.state.ground);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mountain highlight
+            ctx.fillStyle = 'rgba(139, 92, 246, 0.1)';
+            ctx.beginPath();
+            ctx.moveTo(adjustedX + m.width / 2, this.state.ground - m.height);
+            ctx.lineTo(adjustedX + m.width / 2 + 20, this.state.ground - m.height + 30);
+            ctx.lineTo(adjustedX + m.width / 2, this.state.ground - m.height + 30);
+            ctx.closePath();
+            ctx.fill();
+        });
+
         // Clouds
         ctx.fillStyle = 'rgba(100, 80, 140, 0.3)';
         this.state.clouds.forEach(cloud => {
@@ -812,15 +950,20 @@ const BurnRunner = {
             ctx.fill();
         });
 
-        // Buildings
-        this.state.buildings.forEach(b => {
-            const bx = (b.x - this.state.distance * 0.5) % (this.canvas.width + 100);
+        // MID LAYER: Buildings (medium parallax - 0.5x)
+        this.state.parallax.mid.forEach(b => {
+            const bx = (b.x - this.state.distance * b.speed) % (this.canvas.width + b.width);
+            const adjustedX = bx < -b.width ? bx + this.canvas.width + b.width : bx;
             ctx.fillStyle = b.color;
-            ctx.fillRect(bx, this.state.ground - b.height, b.width, b.height);
-            ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
-            for (let wy = this.state.ground - b.height + 10; wy < this.state.ground - 20; wy += 20) {
-                for (let wx = bx + 8; wx < bx + b.width - 8; wx += 15) {
-                    if (Math.random() > 0.3) ctx.fillRect(wx, wy, 6, 8);
+            ctx.fillRect(adjustedX, this.state.ground - b.height, b.width, b.height);
+
+            // Windows (only render some for performance)
+            if (b.windows) {
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+                for (let wy = this.state.ground - b.height + 10; wy < this.state.ground - 20; wy += 20) {
+                    for (let wx = adjustedX + 8; wx < adjustedX + b.width - 8; wx += 15) {
+                        if (Math.random() > 0.4) ctx.fillRect(wx, wy, 6, 8);
+                    }
                 }
             }
         });
@@ -842,6 +985,28 @@ const BurnRunner = {
             ctx.lineTo(x + 30, this.state.ground + 50);
             ctx.stroke();
         }
+
+        // NEAR LAYER: Foreground elements (fastest parallax - 0.8x)
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        this.state.parallax.near.forEach(e => {
+            const ex = (e.x - this.state.distance * e.speed) % (this.canvas.width + 100);
+            const adjustedX = ex < -50 ? ex + this.canvas.width + 100 : ex;
+            ctx.globalAlpha = e.opacity * 0.5; // Semi-transparent foreground
+            ctx.font = `${e.size}px Arial`;
+            ctx.fillText(e.icon, adjustedX, this.state.ground - 5);
+        });
+        ctx.globalAlpha = 1;
+
+        // Dust particles (ground level)
+        this.state.dustParticles.forEach(p => {
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = '#a78bfa'; // Purple dust
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
 
         // Platforms
         ctx.textAlign = 'center';
