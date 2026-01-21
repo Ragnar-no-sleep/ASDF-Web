@@ -10,11 +10,13 @@
 'use strict';
 
 const BurnRunner = {
+    version: '1.1.0', // Fibonacci timing + phi-based difficulty
     gameId: 'burnrunner',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
+    juice: null, // GameJuice integration
 
     // Deadly obstacles
     obstacleTypes: [
@@ -104,20 +106,21 @@ const BurnRunner = {
         const arena = document.getElementById(`arena-${gameId}`);
         if (!arena) return;
 
-        // Initialize state
+        // Initialize state with Fibonacci-based values
         this.state = {
             score: 0,
             distance: 0,
             tokens: 0,
-            speed: 4,
-            baseSpeed: 4,
-            gravity: 0.4,
-            jumpForce: -9,
+            speed: 5,           // fib[4]
+            baseSpeed: 5,       // fib[4]
+            maxSpeed: 13,       // fib[6]
+            gravity: 0.382,     // PHI_INVERSE * 0.618
+            jumpForce: -8,      // fib[5]
             jumpsLeft: 2,
             maxJumps: 2,
             isJumping: false,
             gameOver: false,
-            player: { x: 80, y: 0, vy: 0, width: 40, height: 50 },
+            player: { x: 89, y: 0, vy: 0, width: 34, height: 55 }, // fib[10], fib[8], fib[9]
             ground: 0,
             obstacles: [],
             platforms: [],
@@ -135,20 +138,23 @@ const BurnRunner = {
             lastBonus: 0,
             lastMalus: 0,
             frameCount: 0,
+            // Phi-based difficulty
+            difficultyLevel: 0,
+            PHI: 1.618033988749895,
             dash: {
                 active: false,
                 endTime: 0,
                 lastUsed: 0,
-                cooldown: 3500,
-                duration: 300,
-                speed: 15
+                cooldown: 3400,   // fib[8] * 100
+                duration: 300,    // fib[3] * 100
+                speed: 13         // fib[6]
             },
             abilityShield: {
                 active: false,
                 endTime: 0,
                 lastUsed: 0,
-                cooldown: 10000,
-                duration: 1500
+                cooldown: 8900,   // fib[10] * 100 (approx)
+                duration: 1300    // fib[6] * 100
             },
             effects: {
                 shield: false,
@@ -166,9 +172,16 @@ const BurnRunner = {
         this.canvas = document.getElementById('br-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.timing = GameTiming.create();
+
+        // Initialize GameJuice for visual feedback
+        if (typeof GameJuice !== 'undefined') {
+            this.juice = GameJuice.create(this.canvas, this.ctx);
+        }
+
         this.resizeCanvas();
         this.setupInput();
         this.gameLoop();
+        console.log(`[BurnRunner v${this.version}] Started - Phi-based difficulty`);
 
         if (typeof activeGames !== 'undefined') {
             activeGames[gameId] = {
@@ -602,11 +615,20 @@ const BurnRunner = {
         this.updateAbilities();
         this.updateAbilityCooldowns();
 
-        // Calculate effective speed
-        let effectiveSpeed = this.state.baseSpeed + this.state.distance * 0.0015;
-        effectiveSpeed = Math.min(12, effectiveSpeed);
-        if (this.state.effects.slow) effectiveSpeed *= 0.5;
-        if (this.state.effects.speedBoost) effectiveSpeed *= 1.5;
+        // Calculate effective speed using phi-based difficulty curve
+        // Speed increases using inverse phi for smooth ramp: base + (maxSpeed - base) * (1 - e^(-distance/500))
+        const PHI_INV = 0.618;
+        const distanceFactor = 1 - Math.pow(PHI_INV, this.state.distance / 500);
+        let effectiveSpeed = this.state.baseSpeed + (this.state.maxSpeed - this.state.baseSpeed) * distanceFactor;
+
+        // Update difficulty level at Fibonacci milestones: 89m, 144m, 233m, 377m
+        if (this.state.distance >= 377) this.state.difficultyLevel = 4;
+        else if (this.state.distance >= 233) this.state.difficultyLevel = 3;
+        else if (this.state.distance >= 144) this.state.difficultyLevel = 2;
+        else if (this.state.distance >= 89) this.state.difficultyLevel = 1;
+
+        if (this.state.effects.slow) effectiveSpeed *= PHI_INV;
+        if (this.state.effects.speedBoost) effectiveSpeed *= this.state.PHI;
         if (this.state.dash.active) effectiveSpeed = this.state.dash.speed;
         this.state.speed = effectiveSpeed;
 
@@ -633,26 +655,27 @@ const BurnRunner = {
             }
         });
 
-        // Spawn obstacles
-        if (this.state.distance - this.state.lastObstacle > 80 + Math.random() * 60) {
+        // Spawn obstacles (Fibonacci intervals, density increases with difficulty)
+        const obstacleDensity = 89 - this.state.difficultyLevel * 13; // fib[10] - level * fib[6]
+        if (this.state.distance - this.state.lastObstacle > obstacleDensity + Math.random() * 55) {
             this.spawnObstacle();
             this.state.lastObstacle = this.state.distance;
         }
 
-        // Spawn platforms
-        if (this.state.distance - this.state.lastPlatform > 70 + Math.random() * 50) {
+        // Spawn platforms (fib[9] base interval)
+        if (this.state.distance - this.state.lastPlatform > 55 + Math.random() * 34) {
             this.spawnPlatform();
             this.state.lastPlatform = this.state.distance;
         }
 
-        // Spawn aerial platforms
-        if (this.state.distance - this.state.lastAerialPlatform > 90 + Math.random() * 70) {
+        // Spawn aerial platforms (fib[10] base interval)
+        if (this.state.distance - this.state.lastAerialPlatform > 89 + Math.random() * 55) {
             this.spawnAerialPlatform();
             this.state.lastAerialPlatform = this.state.distance;
         }
 
-        // Spawn collectibles
-        if (this.state.distance - this.state.lastCollectible > 40 + Math.random() * 30) {
+        // Spawn collectibles (fib[8] base interval)
+        if (this.state.distance - this.state.lastCollectible > 34 + Math.random() * 21) {
             this.spawnCollectible();
             this.state.lastCollectible = this.state.distance;
         }

@@ -10,18 +10,21 @@
 'use strict';
 
 const ScamBlaster = {
+    version: '1.1.0', // Fibonacci timing
     gameId: 'scamblaster',
     state: null,
     canvas: null,
     ctx: null,
     timing: null,
+    juice: null,
 
+    // Enemy types with Fibonacci-based points: 8, 13, 21, 34, 55
     enemyTypes: [
-        { icon: '🪙', name: 'SCAM COIN', points: 10, speed: 1, size: 40 },
-        { icon: '🔴', name: 'RUG TOKEN', points: 25, speed: 1.2, size: 45 },
-        { icon: '💀', name: 'HONEYPOT', points: 50, speed: 1.4, size: 50 },
-        { icon: '🦠', name: 'MALWARE', points: 75, speed: 1.6, size: 40 },
-        { icon: '👤', name: 'FAKE DEV', points: 100, speed: 1.3, size: 55 }
+        { icon: '🪙', name: 'SCAM COIN', points: 8, speed: 1, size: 34 },      // fib[5], fib[8]
+        { icon: '🔴', name: 'RUG TOKEN', points: 13, speed: 1.2, size: 40 },   // fib[6]
+        { icon: '💀', name: 'HONEYPOT', points: 21, speed: 1.4, size: 45 },    // fib[7]
+        { icon: '🦠', name: 'MALWARE', points: 34, speed: 1.6, size: 34 },     // fib[8]
+        { icon: '👤', name: 'FAKE DEV', points: 55, speed: 1.3, size: 55 }     // fib[9]
     ],
 
     /**
@@ -44,10 +47,12 @@ const ScamBlaster = {
             enemies: [],
             explosions: [],
             spawnTimer: 0,
-            spawnRate: 80,
-            baseSpeed: 1.5,
-            enemySpeed: 1.5,
-            frameCount: 0
+            spawnRate: 89,         // fib[10]
+            baseSpeed: 1.618,      // PHI
+            enemySpeed: 1.618,
+            frameCount: 0,
+            // Wave difficulty scaling
+            difficultyLevel: 0
         };
 
         this.createArena(arena);

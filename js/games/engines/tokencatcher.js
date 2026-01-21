@@ -10,7 +10,7 @@
 'use strict';
 
 const TokenCatcher = {
-    version: '1.1.0', // All tokens shootable + swept collision
+    version: '1.2.0', // Combo system + Fibonacci difficulty curve
     gameId: 'tokencatcher',
     state: null,
     canvas: null,
@@ -44,30 +44,40 @@ const TokenCatcher = {
             return;
         }
 
-        // Initialize game state
+        // Initialize game state with Fibonacci-based values
         this.state = {
             score: 0,
-            timeLeft: 30,
+            timeLeft: 34, // fib[8] seconds
             gameOver: false,
             basketPos: 50,
             basketLane: 1,
             moveDirection: 0,
-            moveSpeed: 5,
+            moveSpeed: 5,    // fib[4]
             moveAccel: 0,
-            maxAccel: 12,
+            maxAccel: 13,    // fib[6]
             tokens: [],
             projectiles: [],
             enemies: [],
             effects: [],
             keys: { left: false, right: false, up: false, down: false },
             lastShot: 0,
-            shootCooldown: 250,
+            shootCooldown: 233, // fib[11] ms
             mouseX: 0,
             mouseY: 0,
-            basketWidth: 80,
-            basketHeight: 40,
+            basketWidth: 89,   // fib[10]
+            basketHeight: 55,  // fib[9]
             laneHeight: 0,
-            lanePositions: []
+            lanePositions: [],
+            // Combo system
+            combo: 0,
+            comboTimer: 0,
+            comboTimeout: 1300, // fib[6] * 100 ms - time to lose combo
+            maxCombo: 0,
+            // Speed ramping (Fibonacci-based difficulty curve)
+            difficultyLevel: 0,
+            spawnRate: 500,    // Base spawn rate (ms)
+            tokenSpeedBase: 3,
+            tokenSpeedVariance: 2
         };
 
         // Create arena HTML
@@ -122,7 +132,11 @@ const TokenCatcher = {
                     </div>
                     <div style="background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;">
                         <span style="color:var(--text-muted);font-size:12px;">TIME</span>
-                        <div style="color:var(--accent-fire);font-size:20px;font-weight:bold;" id="tc-time">30</div>
+                        <div style="color:var(--accent-fire);font-size:20px;font-weight:bold;" id="tc-time">34</div>
+                    </div>
+                    <div style="background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;" id="tc-combo-container">
+                        <span style="color:var(--text-muted);font-size:12px;">COMBO</span>
+                        <div style="color:#a855f7;font-size:20px;font-weight:bold;" id="tc-combo">0<span style="font-size:12px;color:var(--text-muted);">x</span></div>
                     </div>
                 </div>
                 <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:10px;text-align:center;background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:4px;">
@@ -254,12 +268,16 @@ const TokenCatcher = {
             if (!self.state.gameOver) self.spawnToken();
         }, 500);
 
-        // Timer countdown
+        // Timer countdown with difficulty progression
         this.timerInterval = setInterval(() => {
             if (self.state.gameOver) return;
             self.state.timeLeft--;
             const timeEl = document.getElementById('tc-time');
             if (timeEl) timeEl.textContent = self.state.timeLeft;
+
+            // Update difficulty curve
+            self.updateDifficulty();
+
             if (self.state.timeLeft <= 0) {
                 self.state.gameOver = true;
                 endGame(self.gameId, self.state.score);
@@ -278,33 +296,38 @@ const TokenCatcher = {
     spawnToken() {
         if (this.state.gameOver) return;
         const roll = Math.random();
+        const baseSpeed = this.state.tokenSpeedBase;
+        const variance = this.state.tokenSpeedVariance;
 
         if (roll < 0.1) {
+            // Skull tokens - deadly, moderate speed
             this.state.tokens.push({
                 x: 30 + Math.random() * (this.canvas.width - 60),
                 y: -30,
                 icon: this.skullToken,
                 isSkull: true,
                 isScam: false,
-                speed: 3 + Math.random() * 2
+                speed: baseSpeed + Math.random() * variance
             });
         } else if (roll < 0.25) {
+            // Scam tokens - faster, penalty on catch
             this.state.tokens.push({
                 x: 30 + Math.random() * (this.canvas.width - 60),
                 y: -30,
                 icon: this.scamTokens[Math.floor(Math.random() * this.scamTokens.length)],
                 isSkull: false,
                 isScam: true,
-                speed: 3.5 + Math.random() * 2.5
+                speed: baseSpeed * 1.2 + Math.random() * variance
             });
         } else {
+            // Good tokens - reward on catch
             this.state.tokens.push({
                 x: 30 + Math.random() * (this.canvas.width - 60),
                 y: -30,
                 icon: this.goodTokens[Math.floor(Math.random() * this.goodTokens.length)],
                 isSkull: false,
                 isScam: false,
-                speed: 3 + Math.random() * 2.5
+                speed: baseSpeed + Math.random() * variance
             });
         }
     },
@@ -368,6 +391,95 @@ const TokenCatcher = {
     },
 
     /**
+     * Increment combo and get multiplier
+     * Fibonacci-based multiplier: 1x, 1x, 2x, 3x, 5x, 8x...
+     */
+    incrementCombo() {
+        this.state.combo++;
+        this.state.comboTimer = this.state.comboTimeout;
+        if (this.state.combo > this.state.maxCombo) {
+            this.state.maxCombo = this.state.combo;
+        }
+        this.updateComboDisplay();
+        return this.getComboMultiplier();
+    },
+
+    /**
+     * Get current combo multiplier (Fibonacci-based)
+     */
+    getComboMultiplier() {
+        // Fibonacci multiplier: combo 0-2 = 1x, 3-4 = 2x, 5-7 = 3x, 8-12 = 5x, 13+ = 8x
+        const combo = this.state.combo;
+        if (combo < 3) return 1;
+        if (combo < 5) return 2;
+        if (combo < 8) return 3;
+        if (combo < 13) return 5;
+        return 8;
+    },
+
+    /**
+     * Reset combo on damage
+     */
+    resetCombo() {
+        this.state.combo = 0;
+        this.state.comboTimer = 0;
+        this.updateComboDisplay();
+    },
+
+    /**
+     * Update combo display
+     */
+    updateComboDisplay() {
+        const comboEl = document.getElementById('tc-combo');
+        const containerEl = document.getElementById('tc-combo-container');
+        if (comboEl) {
+            const multiplier = this.getComboMultiplier();
+            comboEl.innerHTML = `${this.state.combo}<span style="font-size:12px;color:${multiplier > 1 ? '#fbbf24' : 'var(--text-muted)'};">x${multiplier}</span>`;
+
+            // Visual feedback for high combos
+            if (containerEl) {
+                if (multiplier >= 5) {
+                    containerEl.style.background = 'rgba(168,85,247,0.4)';
+                    containerEl.style.boxShadow = '0 0 20px rgba(168,85,247,0.5)';
+                } else if (multiplier >= 3) {
+                    containerEl.style.background = 'rgba(251,191,36,0.3)';
+                    containerEl.style.boxShadow = '0 0 10px rgba(251,191,36,0.3)';
+                } else {
+                    containerEl.style.background = 'rgba(0,0,0,0.5)';
+                    containerEl.style.boxShadow = 'none';
+                }
+            }
+        }
+    },
+
+    /**
+     * Update difficulty (Fibonacci-based progression)
+     * Called each second, increases spawn rate and token speed
+     */
+    updateDifficulty() {
+        const elapsed = 34 - this.state.timeLeft;
+        // Difficulty increases at fib intervals: 5s, 8s, 13s, 21s
+        if (elapsed >= 21) {
+            this.state.difficultyLevel = 4;
+        } else if (elapsed >= 13) {
+            this.state.difficultyLevel = 3;
+        } else if (elapsed >= 8) {
+            this.state.difficultyLevel = 2;
+        } else if (elapsed >= 5) {
+            this.state.difficultyLevel = 1;
+        }
+
+        // Adjust spawn rate: faster spawns at higher difficulty
+        // Base 500ms, decreases by phi factor per level
+        const PHI_INV = 0.618;
+        this.state.spawnRate = Math.max(200, Math.floor(500 * Math.pow(PHI_INV, this.state.difficultyLevel * 0.5)));
+
+        // Adjust token speed: base 3, increases with difficulty
+        this.state.tokenSpeedBase = 3 + this.state.difficultyLevel;
+        this.state.tokenSpeedVariance = 2 + this.state.difficultyLevel * 0.5;
+    },
+
+    /**
      * Add a visual effect (uses juice system if available)
      */
     addEffect(x, y, text, color, options = {}) {
@@ -424,6 +536,14 @@ const TokenCatcher = {
      */
     update(dt) {
         if (this.state.gameOver) return;
+
+        // Update combo timer (decay)
+        if (this.state.comboTimer > 0) {
+            this.state.comboTimer -= dt * 16.67; // Convert to ms
+            if (this.state.comboTimer <= 0) {
+                this.resetCombo();
+            }
+        }
 
         this.moveBasket(dt);
 
@@ -548,22 +668,35 @@ const TokenCatcher = {
                 if (token.isSkull) {
                     self.addEffect(token.x, token.y, 'GAME OVER!', '#ef4444');
                     self.triggerImpact(token.x, token.y, 'death');
+                    self.resetCombo();
                     recordGameAction(self.gameId, 'catch_skull', { score: self.state.score });
                     self.state.gameOver = true;
                     setTimeout(() => endGame(self.gameId, self.state.score), 500);
                     return false;
                 } else if (token.isScam) {
-                    self.state.score = Math.max(0, self.state.score - 20);
-                    self.addEffect(token.x, token.y, '-20', '#ef4444');
+                    // Scam breaks combo and deals damage
+                    const penalty = 21; // fib[7]
+                    self.state.score = Math.max(0, self.state.score - penalty);
+                    self.addEffect(token.x, token.y, `-${penalty}`, '#ef4444');
                     self.triggerImpact(token.x, token.y, 'damage');
-                    recordGameAction(self.gameId, 'catch_scam', { score: self.state.score });
+                    self.resetCombo();
+                    recordGameAction(self.gameId, 'catch_scam', { score: self.state.score, comboLost: true });
                 } else {
-                    self.state.score += 10;
-                    self.addEffect(token.x, token.y, '+10', '#22c55e');
-                    self.triggerImpact(token.x, token.y, 'catch');
-                    recordGameAction(self.gameId, 'catch_token', { score: self.state.score });
+                    // Good token - apply combo multiplier!
+                    const multiplier = self.incrementCombo();
+                    const basePoints = 13; // fib[6]
+                    const points = basePoints * multiplier;
+                    self.state.score += points;
+
+                    // Show combo feedback
+                    if (multiplier > 1) {
+                        self.addEffect(token.x, token.y - 20, `x${multiplier}`, '#a855f7', { size: 16 });
+                    }
+                    self.addEffect(token.x, token.y, `+${points}`, '#22c55e');
+                    self.triggerImpact(token.x, token.y, multiplier >= 3 ? 'enemy_kill' : 'catch');
+                    recordGameAction(self.gameId, 'catch_token', { score: self.state.score, combo: self.state.combo, multiplier });
                 }
-                recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -20 : 10);
+                recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -21 : 13);
                 document.getElementById('tc-score').textContent = self.state.score;
                 updateScore(self.gameId, self.state.score);
                 return false;
@@ -582,9 +715,11 @@ const TokenCatcher = {
                 enemy.x >= basketX - self.state.basketWidth / 2 &&
                 enemy.x <= basketX + self.state.basketWidth / 2
             ) {
-                self.state.score = Math.max(0, self.state.score - 30);
-                self.addEffect(enemy.x, enemy.y, '-30', '#ef4444');
+                const penalty = 34; // fib[8]
+                self.state.score = Math.max(0, self.state.score - penalty);
+                self.addEffect(enemy.x, enemy.y, `-${penalty}`, '#ef4444');
                 self.triggerImpact(enemy.x, enemy.y, 'damage');
+                self.resetCombo(); // Enemy hit resets combo
                 document.getElementById('tc-score').textContent = self.state.score;
                 updateScore(self.gameId, self.state.score);
                 return false;

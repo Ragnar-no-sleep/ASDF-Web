@@ -2,20 +2,58 @@
  * Build V2 - Camera Controller
  * Smooth camera controls with zoom-to-node and orbit functionality
  *
- * @version 1.0.0
+ * @version 2.0.0
+ * @updated 2026-01-21
  */
 
 'use strict';
+
+// ============================================
+// CAMERA STATES (Level-based views)
+// ============================================
+
+const CAMERA_STATES = {
+  // L0: Cosmos view - full Yggdrasil tree with islands
+  COSMOS: {
+    position: { x: 0, y: 15, z: 70 },
+    target: { x: 0, y: 10, z: 0 },
+    fov: 60,
+    orbitEnabled: true,
+    autoRotate: true,
+    minDistance: 40,
+    maxDistance: 120
+  },
+  // L1: Project Tree view - zoomed on single project with skill nodes
+  PROJECT_TREE: {
+    position: { x: 0, y: 0, z: 25 },
+    target: { x: 0, y: 0, z: 0 },
+    fov: 50,
+    orbitEnabled: true,
+    autoRotate: false,
+    minDistance: 15,
+    maxDistance: 50
+  },
+  // L2: Skill focus view - zoomed on single skill node
+  SKILL_FOCUS: {
+    position: { x: 0, y: 0, z: 12 },
+    target: { x: 0, y: 0, z: 0 },
+    fov: 45,
+    orbitEnabled: false,
+    autoRotate: false,
+    minDistance: 8,
+    maxDistance: 20
+  }
+};
 
 // ============================================
 // CAMERA CONTROLLER CONFIGURATION
 // ============================================
 
 const CAMERA_CONFIG = {
-  // Default positions
+  // Default positions (COSMOS view)
   defaults: {
-    position: { x: 0, y: 10, z: 60 },
-    target: { x: 0, y: 0, z: 0 },
+    position: { x: 0, y: 15, z: 70 },
+    target: { x: 0, y: 10, z: 0 },
     fov: 60
   },
   // Orbit controls
@@ -101,6 +139,10 @@ class CameraController {
 
     // Auto-rotate
     this.autoRotateAngle = 0;
+
+    // Camera state
+    this.currentState = 'COSMOS';
+    this.stateHistory = [];
 
     // Initialize
     this.init();
@@ -328,8 +370,118 @@ class CameraController {
 
     this.startAnimation(endPos, endTarget, duration, easing);
 
-    // Re-enable auto-rotate
+    // Re-enable auto-rotate and update state
     this.options.orbit.autoRotate = true;
+    this.currentState = 'COSMOS';
+    this.stateHistory = [];
+  }
+
+  /**
+   * Transition to a camera state
+   * @param {string} stateName - State name (COSMOS, PROJECT_TREE, SKILL_FOCUS)
+   * @param {THREE.Vector3} targetPosition - Position to center the view on
+   * @param {Object} options - Animation options
+   */
+  transitionToState(stateName, targetPosition = null, options = {}) {
+    const state = CAMERA_STATES[stateName];
+    if (!state) {
+      console.warn(`[CameraController] Unknown state: ${stateName}`);
+      return;
+    }
+
+    const duration = options.duration || 1200;
+    const easing = options.easing || 'easeInOutCubic';
+
+    // Calculate end position relative to target
+    const endTarget = targetPosition
+      ? targetPosition.clone()
+      : new this.THREE.Vector3(state.target.x, state.target.y, state.target.z);
+
+    const offset = new this.THREE.Vector3(
+      state.position.x - state.target.x,
+      state.position.y - state.target.y,
+      state.position.z - state.target.z
+    );
+    const endPos = endTarget.clone().add(offset);
+
+    // Push current state to history for back navigation
+    if (this.currentState !== stateName) {
+      this.stateHistory.push({
+        state: this.currentState,
+        position: this.camera.position.clone(),
+        target: this.target.clone()
+      });
+    }
+
+    // Update orbit constraints
+    this.options.orbit.enabled = state.orbitEnabled;
+    this.options.orbit.autoRotate = state.autoRotate;
+    this.options.orbit.minDistance = state.minDistance;
+    this.options.orbit.maxDistance = state.maxDistance;
+
+    // Update FOV if perspective camera
+    if (this.camera.isPerspectiveCamera && state.fov !== this.camera.fov) {
+      this.camera.fov = state.fov;
+      this.camera.updateProjectionMatrix();
+    }
+
+    // Start animation
+    this.startAnimation(endPos, endTarget, duration, easing);
+    this.currentState = stateName;
+
+    return { state: stateName, target: endTarget };
+  }
+
+  /**
+   * Go back to previous camera state
+   * @param {Object} options - Animation options
+   * @returns {boolean} - True if went back, false if no history
+   */
+  goBack(options = {}) {
+    if (this.stateHistory.length === 0) {
+      // No history, go to COSMOS
+      this.transitionToState('COSMOS', null, options);
+      return false;
+    }
+
+    const previous = this.stateHistory.pop();
+    const duration = options.duration || 1000;
+    const easing = options.easing || 'easeOutCubic';
+
+    // Restore previous state settings
+    const state = CAMERA_STATES[previous.state];
+    if (state) {
+      this.options.orbit.enabled = state.orbitEnabled;
+      this.options.orbit.autoRotate = state.autoRotate;
+      this.options.orbit.minDistance = state.minDistance;
+      this.options.orbit.maxDistance = state.maxDistance;
+
+      if (this.camera.isPerspectiveCamera) {
+        this.camera.fov = state.fov;
+        this.camera.updateProjectionMatrix();
+      }
+    }
+
+    this.startAnimation(previous.position, previous.target, duration, easing);
+    this.currentState = previous.state;
+
+    return true;
+  }
+
+  /**
+   * Get current camera state
+   * @returns {string}
+   */
+  getCurrentState() {
+    return this.currentState;
+  }
+
+  /**
+   * Check if can go back
+   * @returns {boolean}
+   */
+  canGoBack() {
+    return this.stateHistory.length > 0 || this.currentState !== 'COSMOS';
   }
 
   /**
@@ -460,5 +612,5 @@ class CameraController {
 // EXPORTS
 // ============================================
 
-export { CameraController, CAMERA_CONFIG, Easing };
+export { CameraController, CAMERA_CONFIG, CAMERA_STATES, Easing };
 export default CameraController;
