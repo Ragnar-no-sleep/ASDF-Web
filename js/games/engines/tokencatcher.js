@@ -434,19 +434,39 @@ const TokenCatcher = {
             proj.x += proj.vx * dt;
             proj.y += proj.vy * dt;
 
-            // Check collision with scam tokens
+            // Check collision with all tokens
             for (let i = self.state.tokens.length - 1; i >= 0; i--) {
                 const token = self.state.tokens[i];
-                if (token.isScam && !token.isSkull) {
-                    const dist = Math.hypot(proj.x - token.x, proj.y - token.y);
-                    if (dist < 25) {
-                        self.state.tokens.splice(i, 1);
-                        self.state.score += 15;
-                        self.addEffect(token.x, token.y, '+15', '#a855f7');
-                        document.getElementById('tc-score').textContent = self.state.score;
-                        updateScore(self.gameId, self.state.score);
-                        return false;
+                const dist = Math.hypot(proj.x - token.x, proj.y - token.y);
+                if (dist < 25) {
+                    self.state.tokens.splice(i, 1);
+
+                    // Different rewards based on token type
+                    let points, color, effectType;
+                    if (token.isSkull) {
+                        points = 25;
+                        color = '#ef4444';
+                        effectType = 'enemy_kill';
+                    } else if (token.isScam) {
+                        points = 15;
+                        color = '#a855f7';
+                        effectType = 'catch';
+                    } else {
+                        points = 5;
+                        color = '#22c55e';
+                        effectType = 'catch';
                     }
+
+                    self.state.score += points;
+                    self.addEffect(token.x, token.y, `+${points}`, color);
+                    self.triggerImpact(token.x, token.y, effectType);
+                    document.getElementById('tc-score').textContent = self.state.score;
+                    updateScore(self.gameId, self.state.score);
+                    recordGameAction(self.gameId, 'shoot_token', {
+                        type: token.isSkull ? 'skull' : token.isScam ? 'scam' : 'good',
+                        points: points
+                    });
+                    return false;
                 }
             }
 
