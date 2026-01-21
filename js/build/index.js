@@ -224,6 +224,24 @@ const BuildApp = {
       }
     });
 
+    // Renderer view changed event - manage back button
+    BuildState.subscribe('renderer:viewChanged', (data) => {
+      const { level, projectId } = data;
+      this.updateBackButton(level !== 'COSMOS');
+
+      if (level === 'PROJECT_TREE' && projectId) {
+        // Optionally open project panel
+        ProjectPanelComponent.open(projectId);
+      }
+    });
+
+    // Renderer skill click event - open formation for skill
+    BuildState.subscribe('renderer:skillClick', (data) => {
+      const { skillId, skill } = data;
+      console.log(`[BuildApp] Skill clicked: ${skillId}`, skill);
+      // TODO: Open formation panel for skill
+    });
+
     // Project focus event - show skill tree and timeline
     BuildState.subscribe(EVENTS.PROJECT_FOCUS, (data) => {
       if (data.projectId) {
@@ -395,6 +413,73 @@ const BuildApp = {
     IntroComponent.reset();
     QuizComponent.reset();
     console.log('[BuildApp] State reset');
+  },
+
+  /**
+   * Back button reference
+   */
+  _backButton: null,
+
+  /**
+   * Update back button visibility
+   * @param {boolean} show - Whether to show the back button
+   */
+  updateBackButton(show) {
+    // Create back button if doesn't exist
+    if (!this._backButton) {
+      this._backButton = document.createElement('button');
+      this._backButton.className = 'cosmos-back-btn';
+      this._backButton.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Back to Cosmos</span>
+      `;
+      this._backButton.setAttribute('aria-label', 'Back to Cosmos view');
+
+      // Style the button
+      Object.assign(this._backButton.style, {
+        position: 'fixed',
+        top: '100px',
+        left: '20px',
+        zIndex: '1000',
+        padding: '10px 16px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: '8px',
+        color: '#fff',
+        fontSize: '14px',
+        cursor: 'pointer',
+        display: 'none',
+        alignItems: 'center',
+        gap: '8px',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease'
+      });
+
+      // Hover effect
+      this._backButton.addEventListener('mouseenter', () => {
+        this._backButton.style.background = 'rgba(0, 217, 255, 0.3)';
+        this._backButton.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+      });
+      this._backButton.addEventListener('mouseleave', () => {
+        this._backButton.style.background = 'rgba(0, 0, 0, 0.7)';
+        this._backButton.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      });
+
+      // Click handler
+      this._backButton.addEventListener('click', () => {
+        const renderer = RendererFactory.getRenderer();
+        if (renderer && renderer.goBackToCosmos) {
+          renderer.goBackToCosmos();
+        }
+      });
+
+      document.body.appendChild(this._backButton);
+    }
+
+    // Show/hide button
+    this._backButton.style.display = show ? 'flex' : 'none';
   },
 
   /**
