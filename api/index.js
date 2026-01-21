@@ -114,6 +114,12 @@ const {
   getAchievementMetrics,
 } = require('./services/achievements');
 const {
+  getActiveChallenges,
+  updateProgress: updateChallengeProgress,
+  claimReward: claimChallengeReward,
+  getChallengeStats,
+} = require('./services/challenges');
+const {
   NOTIFICATION_TYPES,
   createNotification,
   getNotifications,
@@ -1842,6 +1848,148 @@ app.post('/api/game/submit', authMiddleware, walletRateLimiter, async (req, res)
 });
 
 /**
+ * Submit score (simplified endpoint for frontend)
+ * POST /api/scores/submit
+ *
+ * Accepts client-side anti-cheat data and validates scores
+ * Returns achievements unlocked by this score
+ */
+app.post('/api/scores/submit', authMiddleware, walletRateLimiter, async (req, res) => {
+  try {
+    const { gameId, score, isCompetitive = false, sessionData } = req.body;
+    const wallet = req.user.wallet;
+
+    // Validate required fields
+    if (!gameId || typeof score !== 'number') {
+      return res.status(400).json({ error: 'gameId and score required' });
+    }
+
+    // Sanitize score
+    const safeScore = Math.max(0, Math.min(999999999, Math.floor(score)));
+
+    // Validate client-side anti-cheat data if provided
+    let validationFlags = [];
+    if (sessionData) {
+      // Check for suspicious flags from client anti-cheat
+      if (sessionData.flags && sessionData.flags.length > 0) {
+        validationFlags = sessionData.flags;
+        logAudit('client_anticheat_flags', {
+          wallet: wallet.slice(0, 8) + '...',
+          gameId,
+          flags: validationFlags,
+        });
+      }
+
+      // Validate score plausibility based on duration
+      if (sessionData.duration && sessionData.duration > 0) {
+        const scoreRate = safeScore / (sessionData.duration / 1000);
+        // More than 20 points per second is suspicious for most games
+        if (scoreRate > 20) {
+          validationFlags.push('HIGH_SCORE_RATE');
+        }
+      }
+    }
+
+    // Record game for achievements (updates stats and checks unlocks)
+    const newAchievements = recordGameForAchievements(wallet, safeScore);
+
+    // Track best scores per game in a simple in-memory store
+    // In production, this would use a database
+    const bestScoreKey = `${wallet}:${gameId}:best`;
+    const currentBest = global.bestScores?.get(bestScoreKey) || 0;
+    const isNewBest = safeScore > currentBest;
+
+    if (isNewBest) {
+      if (!global.bestScores) global.bestScores = new Map();
+      global.bestScores.set(bestScoreKey, safeScore);
+    }
+
+    // Update daily challenge progress
+    const completedChallenges = updateChallengeProgress(wallet, {
+      gameId,
+      score: safeScore,
+      isHighScore: isNewBest,
+      isPerfect: sessionData?.isPerfect || false,
+    });
+
+    // Log the submission
+    logAudit('score_submitted', {
+      wallet: wallet.slice(0, 8) + '...',
+      gameId,
+      score: safeScore,
+      isCompetitive,
+      isNewBest,
+      achievementsUnlocked: newAchievements.length,
+    });
+
+    res.json({
+      success: true,
+      score: safeScore,
+      isNewBest,
+      bestScore: isNewBest ? safeScore : currentBest,
+      validationFlags,
+      newAchievements: newAchievements.map(a => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        rarity: a.rarity,
+        xpReward: a.xpReward,
+        icon: a.icon,
+      })),
+      completedChallenges,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-submit') });
+  }
+});
+
+/**
+ * Get best score for a game
+ * GET /api/scores/best/:gameId
+ */
+app.get('/api/scores/best/:gameId', authMiddleware, async (req, res) => {
+  try {
+    const { gameId } = req.params;
+    const wallet = req.user.wallet;
+
+    const bestScoreKey = `${wallet}:${gameId}:best`;
+    const bestScore = global.bestScores?.get(bestScoreKey) || 0;
+
+    res.json({
+      gameId,
+      bestScore,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-best') });
+  }
+});
+
+/**
+ * Get all best scores for user
+ * GET /api/scores/all
+ */
+app.get('/api/scores/all', authMiddleware, async (req, res) => {
+  try {
+    const wallet = req.user.wallet;
+    const scores = {};
+
+    // Iterate through best scores map for this wallet
+    if (global.bestScores) {
+      for (const [key, value] of global.bestScores.entries()) {
+        if (key.startsWith(wallet)) {
+          const gameId = key.split(':')[1];
+          scores[gameId] = value;
+        }
+      }
+    }
+
+    res.json({ scores });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-all') });
+  }
+});
+
+/**
  * Get player's game statistics
  * GET /api/game/stats
  */
@@ -2134,6 +2282,67 @@ app.get('/api/achievements/leaderboard', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'achievement-leaderboard') });
+  }
+});
+
+// ============================================
+// DAILY CHALLENGES ROUTES
+// ============================================
+
+/**
+ * Get active daily challenges with progress
+ * GET /api/games/challenges
+ */
+app.get('/api/games/challenges', authMiddleware, async (req, res) => {
+  try {
+    const challenges = getActiveChallenges(req.user.wallet);
+
+    res.json({
+      challenges,
+      count: challenges.length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'get-challenges') });
+  }
+});
+
+/**
+ * Claim challenge reward
+ * POST /api/games/challenges/:id/claim
+ */
+app.post('/api/games/challenges/:id/claim', authMiddleware, async (req, res) => {
+  try {
+    const challengeId = req.params.id;
+    const result = claimChallengeReward(req.user.wallet, challengeId);
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    // TODO: Award XP via progression system when implemented
+    // For now, XP is returned to client for display
+
+    res.json({
+      success: true,
+      xpAwarded: result.xpAwarded,
+      coinsAwarded: result.coinsAwarded,
+      challenge: result.challenge,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'claim-challenge') });
+  }
+});
+
+/**
+ * Get challenge statistics (admin)
+ * GET /api/games/challenges/stats
+ */
+app.get('/api/games/challenges/stats', authMiddleware, async (req, res) => {
+  try {
+    const stats = getChallengeStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'challenge-stats') });
   }
 });
 
