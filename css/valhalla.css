@@ -208,6 +208,8 @@
 .main {
   padding-top: 80px; /* Account for fixed nav */
   min-height: 100vh;
+  position: relative;
+  z-index: 2; /* Above fixed backgrounds */
 }
 
 /* ============================================

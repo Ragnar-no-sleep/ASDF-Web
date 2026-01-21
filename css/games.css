@@ -201,6 +201,7 @@
             text-align: center;
             padding: 40px 0 60px;
             position: relative;
+            z-index: 5; /* Above fixed backgrounds */
         }
 
         .hero::before {
@@ -394,6 +395,7 @@
         .games-section {
             padding: 40px 20px 60px;
             position: relative;
+            z-index: 5; /* Above fixed backgrounds */
         }
 
         .section-header {

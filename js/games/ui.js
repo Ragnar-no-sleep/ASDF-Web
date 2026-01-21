@@ -64,7 +64,7 @@ function renderGamesGrid() {
         const highScore = appState.practiceScores[game.id] || 0;
 
         return `
-            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}">
+            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}" data-action="open-game" style="cursor: pointer;">
                 <div class="game-icon">${game.icon}</div>
                 <h3 class="game-name">${escapeHtml(game.name)}</h3>
                 <p class="game-type">${escapeHtml(game.type)}</p>
@@ -343,14 +343,7 @@ function openGame(gameId) {
     const game = GAMES.find(g => g.id === gameId);
     if (!game) return;
 
-    const currentGame = getCurrentGame();
-    const isFeatured = game.id === currentGame.id;
-
-    if (!testMode && !isFeatured && !appState.isHolder) {
-        alert('This game is locked. Connect your wallet and hold 1M+ $asdfasdfa to unlock all games!');
-        return;
-    }
-
+    // All games accessible - no holder restriction
     document.getElementById(`modal-${gameId}`).classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -423,17 +416,9 @@ function toggleCompetitive(gameId) {
     const wantCompetitive = !competitiveBtn.classList.contains('active');
 
     if (wantCompetitive) {
-        // Check if user can play competitive
+        // Check if user can play competitive (only time limit check now)
         if (!canPlayCompetitive(gameId)) {
-            const remaining = getCompetitiveTimeRemaining();
-            if (remaining <= 0) {
-                alert('Temps compétitif épuisé pour aujourd\'hui! Revenez demain.');
-            } else if (!appState.wallet && !testMode) {
-                alert('Connectez votre wallet pour jouer en mode compétitif.');
-            } else {
-                const currentGame = getCurrentGame();
-                alert(`Ce jeu n'est pas disponible en mode compétitif. Seuls les holders 1M+ peuvent jouer à tous les jeux. Le jeu de la semaine est "${currentGame.name}".`);
-            }
+            alert('Temps compétitif épuisé pour aujourd\'hui! Revenez demain.');
             return;
         }
 
