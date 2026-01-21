@@ -11,7 +11,7 @@
 'use strict';
 
 const LiquidityMaze = {
-    version: '1.1.0', // Fibonacci timing
+    version: '1.2.0', // Fog of war + mini-map + secret rooms + improved AI
     gameId: 'liquiditymaze',
     canvas: null,
     ctx: null,
@@ -19,6 +19,21 @@ const LiquidityMaze = {
     timing: null,
     juice: null,
     moveTimeout: null,
+
+    // Enemy AI states
+    AI_STATE: {
+        PATROL: 'patrol',
+        ALERT: 'alert',
+        CHASE: 'chase',
+    },
+
+    // Secret room treasures
+    TREASURES: [
+        { icon: '💎', name: 'GEM', value: 100, rarity: 0.4 },
+        { icon: '🏆', name: 'TROPHY', value: 200, rarity: 0.3 },
+        { icon: '👑', name: 'CROWN', value: 500, rarity: 0.2 },
+        { icon: '🌟', name: 'STAR', value: 1000, rarity: 0.1 },
+    ],
 
     /**
      * Start the game
@@ -50,6 +65,16 @@ const LiquidityMaze = {
             timeLimit: 89,        // fib[10]
             moveKeys: { up: false, down: false, left: false, right: false },
             effects: [],
+            // Fog of war
+            fogOpacity: [],       // 2D array for fog density
+            viewRadius: 3,        // Player view radius
+            // Secret rooms
+            secretWalls: [],      // Breakable walls
+            treasures: [],        // Hidden treasures
+            // Frame counter
+            frameCount: 0,
+            // Mini-map
+            showMiniMap: true,
         };
 
         this.createArena(arena);
@@ -104,8 +129,10 @@ const LiquidityMaze = {
                         &#9889; Speed<br>
                         &#128065; Reveal<br>
                         &#128126; Enemy<br>
-                        &#127937; Exit
+                        &#127937; Exit<br>
+                        &#129717; Secret
                     </div>
+                    <button id="lm-minimap-toggle" style="margin-top:10px;background:#333;border:1px solid #555;color:#aaa;padding:4px 8px;border-radius:4px;font-size:9px;cursor:pointer;">MAP: ON</button>
                 </div>
             </div>
         `;
@@ -257,12 +284,100 @@ const LiquidityMaze = {
                     moveTimer: 0,
                     patrolDir: 1,
                     patrolSteps: 0,
+                    // Enhanced AI
+                    state: this.AI_STATE.PATROL,
+                    alertTimer: 0,
+                    lastSeenPlayer: null,
+                    chaseSpeed: 0.02 + this.state.level * 0.003,
                 });
+            }
+        }
+
+        // Initialize fog opacity
+        this.state.fogOpacity = [];
+        for (let y = 0; y < this.state.rows; y++) {
+            this.state.fogOpacity[y] = [];
+            for (let x = 0; x < this.state.cols; x++) {
+                this.state.fogOpacity[y][x] = 1.0; // Full fog
+            }
+        }
+
+        // Create secret rooms (level 2+)
+        this.state.secretWalls = [];
+        this.state.treasures = [];
+        if (this.state.level >= 2) {
+            const secretCount = Math.min(3, Math.floor(this.state.level / 2));
+            for (let i = 0; i < secretCount; i++) {
+                this.createSecretRoom();
             }
         }
 
         this.state.startTime = Date.now();
         this.state.timeLimit = Math.max(45, 90 - this.state.level * 5);
+    },
+
+    /**
+     * Create a secret room
+     */
+    createSecretRoom() {
+        // Find a suitable wall to make breakable
+        for (let tries = 0; tries < 50; tries++) {
+            const x = 3 + Math.floor(Math.random() * (this.state.cols - 6));
+            const y = 3 + Math.floor(Math.random() * (this.state.rows - 6));
+
+            // Must be a wall adjacent to a path
+            if (this.state.maze[y][x] !== 1) continue;
+
+            const adjacentPaths = [
+                this.state.maze[y - 1]?.[x] === 0,
+                this.state.maze[y + 1]?.[x] === 0,
+                this.state.maze[y]?.[x - 1] === 0,
+                this.state.maze[y]?.[x + 1] === 0,
+            ].filter(Boolean).length;
+
+            if (adjacentPaths !== 1) continue;
+
+            // Find which direction has the wall
+            const directions = [
+                { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+                { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+            ];
+
+            for (const dir of directions) {
+                const behindX = x + dir.dx;
+                const behindY = y + dir.dy;
+                const farX = x + dir.dx * 2;
+                const farY = y + dir.dy * 2;
+
+                if (farX > 1 && farX < this.state.cols - 2 &&
+                    farY > 1 && farY < this.state.rows - 2 &&
+                    this.state.maze[behindY][behindX] === 1 &&
+                    this.state.maze[farY][farX] === 1) {
+
+                    // Create secret wall
+                    this.state.secretWalls.push({ x, y, revealed: false });
+
+                    // Carve out secret room
+                    this.state.maze[behindY][behindX] = 0;
+
+                    // Place treasure
+                    const rand = Math.random();
+                    let cumulative = 0;
+                    for (const treasure of this.TREASURES) {
+                        cumulative += treasure.rarity;
+                        if (rand <= cumulative) {
+                            this.state.treasures.push({
+                                x: behindX,
+                                y: behindY,
+                                ...treasure,
+                            });
+                            break;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
     },
 
     /**
@@ -376,9 +491,25 @@ const LiquidityMaze = {
             for (let dy = -reveal.radius; dy <= reveal.radius; dy++) {
                 for (let dx = -reveal.radius; dx <= reveal.radius; dx++) {
                     this.state.revealed.add(`${x + dx},${y + dy}`);
+                    // Also reduce fog
+                    const ry = y + dy;
+                    const rx = x + dx;
+                    if (ry >= 0 && ry < this.state.rows && rx >= 0 && rx < this.state.cols) {
+                        this.state.fogOpacity[ry][rx] = 0;
+                    }
                 }
             }
             this.addEffect(x, y, 'REVEALED!', '#a855f7');
+        }
+
+        // Treasures
+        const treasureIdx = this.state.treasures.findIndex(t => t.x === x && t.y === y);
+        if (treasureIdx !== -1) {
+            const treasure = this.state.treasures.splice(treasureIdx, 1)[0];
+            this.state.score += treasure.value;
+            scoreEl.textContent = this.state.score;
+            this.addEffect(x, y, `${treasure.icon} +${treasure.value}`, '#fbbf24');
+            recordScoreUpdate(this.gameId, this.state.score, treasure.value);
         }
 
         // Goal
@@ -411,6 +542,8 @@ const LiquidityMaze = {
     update(dt) {
         if (this.state.gameOver) return;
 
+        this.state.frameCount += dt;
+
         const timeEl = document.getElementById('lm-time');
         const scoreEl = document.getElementById('lm-score');
 
@@ -429,6 +562,27 @@ const LiquidityMaze = {
             return;
         }
 
+        // Update fog of war - reduce fog around player
+        const px = this.state.player.x;
+        const py = this.state.player.y;
+        for (let fy = 0; fy < this.state.rows; fy++) {
+            for (let fx = 0; fx < this.state.cols; fx++) {
+                const dist = Math.sqrt((fx - px) ** 2 + (fy - py) ** 2);
+                if (dist <= this.state.viewRadius) {
+                    // Fully visible
+                    this.state.fogOpacity[fy][fx] = Math.max(0, this.state.fogOpacity[fy][fx] - 0.1 * dt);
+                } else if (dist <= this.state.viewRadius + 2) {
+                    // Partial visibility (edge of sight)
+                    const targetFog = (dist - this.state.viewRadius) / 2;
+                    this.state.fogOpacity[fy][fx] = Math.max(targetFog, this.state.fogOpacity[fy][fx] - 0.05 * dt);
+                }
+                // Visited cells stay revealed
+                if (this.state.visited.has(`${fx},${fy}`)) {
+                    this.state.fogOpacity[fy][fx] = Math.min(0.5, this.state.fogOpacity[fy][fx]);
+                }
+            }
+        }
+
         // Movement
         if (!this.state.player.frozen) {
             let dx = 0, dy = 0;
@@ -441,6 +595,18 @@ const LiquidityMaze = {
                 const newX = this.state.player.x + dx;
                 const newY = this.state.player.y + dy;
 
+                // Check for secret wall
+                const secretWallIdx = this.state.secretWalls.findIndex(w => w.x === newX && w.y === newY && !w.revealed);
+                if (secretWallIdx !== -1) {
+                    // Break secret wall!
+                    const wall = this.state.secretWalls[secretWallIdx];
+                    wall.revealed = true;
+                    this.state.maze[newY][newX] = 0;
+                    this.addEffect(newX, newY, '🔓 SECRET!', '#a855f7');
+                    this.state.score += 25;
+                    scoreEl.textContent = this.state.score;
+                }
+
                 if (newX >= 0 && newX < this.state.cols && newY >= 0 && newY < this.state.rows && this.state.maze[newY][newX] === 0) {
                     this.state.player.x = newX;
                     this.state.player.y = newY;
@@ -450,42 +616,107 @@ const LiquidityMaze = {
             }
         }
 
-        // Update enemies
+        // Update enemies with improved AI
         const self = this;
         this.state.enemies.forEach(enemy => {
-            enemy.moveTimer += enemy.speed * dt;
+            const distToPlayer = Math.abs(Math.floor(enemy.x) - self.state.player.x) + Math.abs(Math.floor(enemy.y) - self.state.player.y);
+            const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
+            // AI State transitions
+            if (distToPlayer <= 4 && !self.state.player.frozen) {
+                // Player spotted!
+                if (enemy.state === self.AI_STATE.PATROL) {
+                    enemy.state = self.AI_STATE.ALERT;
+                    enemy.alertTimer = 60; // 1 second alert
+                    self.addEffect(Math.floor(enemy.x), Math.floor(enemy.y), '❗', '#fbbf24');
+                } else if (enemy.state === self.AI_STATE.ALERT) {
+                    enemy.alertTimer -= dt;
+                    if (enemy.alertTimer <= 0) {
+                        enemy.state = self.AI_STATE.CHASE;
+                    }
+                }
+                enemy.lastSeenPlayer = { x: self.state.player.x, y: self.state.player.y };
+            } else if (enemy.state === self.AI_STATE.CHASE && distToPlayer > 6) {
+                // Lost the player
+                enemy.state = self.AI_STATE.PATROL;
+                enemy.alertTimer = 0;
+            }
+
+            // Movement speed based on state
+            const currentSpeed = enemy.state === self.AI_STATE.CHASE ? enemy.chaseSpeed : enemy.speed;
+            enemy.moveTimer += currentSpeed * dt;
+
             if (enemy.moveTimer >= 1) {
                 enemy.moveTimer = 0;
-                const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-                const [edx, edy] = dirs[enemy.dir];
-                const nx = Math.floor(enemy.x) + edx;
-                const ny = Math.floor(enemy.y) + edy;
 
-                if (nx > 0 && nx < self.state.cols - 1 && ny > 0 && ny < self.state.rows - 1 && self.state.maze[ny][nx] === 0) {
-                    enemy.x = nx;
-                    enemy.y = ny;
-                    enemy.patrolSteps++;
-                    if (enemy.patrolSteps >= 3 + Math.floor(Math.random() * 3)) {
-                        enemy.patrolSteps = 0;
-                        const turnDir = enemy.patrolDir > 0 ? (enemy.dir + 1) % 4 : (enemy.dir + 3) % 4;
-                        const [tdx, tdy] = dirs[turnDir];
-                        const tnx = Math.floor(enemy.x) + tdx;
-                        const tny = Math.floor(enemy.y) + tdy;
-                        if (tnx > 0 && tnx < self.state.cols - 1 && tny > 0 && tny < self.state.rows - 1 && self.state.maze[tny][tnx] === 0) {
-                            enemy.dir = turnDir;
+                if (enemy.state === self.AI_STATE.CHASE && enemy.lastSeenPlayer) {
+                    // Chase: Move towards player
+                    const pdx = self.state.player.x - Math.floor(enemy.x);
+                    const pdy = self.state.player.y - Math.floor(enemy.y);
+
+                    // Try to move in the direction of player
+                    const preferredDirs = [];
+                    if (Math.abs(pdx) > Math.abs(pdy)) {
+                        preferredDirs.push(pdx > 0 ? 1 : 3); // Right or Left
+                        preferredDirs.push(pdy > 0 ? 2 : 0); // Down or Up
+                    } else {
+                        preferredDirs.push(pdy > 0 ? 2 : 0); // Down or Up
+                        preferredDirs.push(pdx > 0 ? 1 : 3); // Right or Left
+                    }
+
+                    let moved = false;
+                    for (const dir of preferredDirs) {
+                        const [edx, edy] = dirs[dir];
+                        const nx = Math.floor(enemy.x) + edx;
+                        const ny = Math.floor(enemy.y) + edy;
+                        if (nx > 0 && nx < self.state.cols - 1 && ny > 0 && ny < self.state.rows - 1 && self.state.maze[ny][nx] === 0) {
+                            enemy.x = nx;
+                            enemy.y = ny;
+                            enemy.dir = dir;
+                            moved = true;
+                            break;
                         }
                     }
+
+                    if (!moved) {
+                        // Fallback to patrol behavior
+                        enemy.state = self.AI_STATE.PATROL;
+                    }
                 } else {
-                    enemy.dir = (enemy.dir + 2) % 4;
-                    enemy.patrolDir *= -1;
-                    enemy.patrolSteps = 0;
+                    // Patrol or Alert: Normal patrol behavior
+                    const [edx, edy] = dirs[enemy.dir];
+                    const nx = Math.floor(enemy.x) + edx;
+                    const ny = Math.floor(enemy.y) + edy;
+
+                    if (nx > 0 && nx < self.state.cols - 1 && ny > 0 && ny < self.state.rows - 1 && self.state.maze[ny][nx] === 0) {
+                        enemy.x = nx;
+                        enemy.y = ny;
+                        enemy.patrolSteps++;
+                        if (enemy.patrolSteps >= 3 + Math.floor(Math.random() * 3)) {
+                            enemy.patrolSteps = 0;
+                            const turnDir = enemy.patrolDir > 0 ? (enemy.dir + 1) % 4 : (enemy.dir + 3) % 4;
+                            const [tdx, tdy] = dirs[turnDir];
+                            const tnx = Math.floor(enemy.x) + tdx;
+                            const tny = Math.floor(enemy.y) + tdy;
+                            if (tnx > 0 && tnx < self.state.cols - 1 && tny > 0 && tny < self.state.rows - 1 && self.state.maze[tny][tnx] === 0) {
+                                enemy.dir = turnDir;
+                            }
+                        }
+                    } else {
+                        enemy.dir = (enemy.dir + 2) % 4;
+                        enemy.patrolDir *= -1;
+                        enemy.patrolSteps = 0;
+                    }
                 }
 
+                // Collision with player
                 if (Math.floor(enemy.x) === self.state.player.x && Math.floor(enemy.y) === self.state.player.y) {
-                    self.state.score = Math.max(0, self.state.score - 30);
+                    const damage = enemy.state === self.AI_STATE.CHASE ? 50 : 30;
+                    self.state.score = Math.max(0, self.state.score - damage);
                     scoreEl.textContent = self.state.score;
-                    self.addEffect(self.state.player.x, self.state.player.y, '-30', '#ef4444');
+                    self.addEffect(self.state.player.x, self.state.player.y, `-${damage}`, '#ef4444');
                     self.state.player.frozen = true;
+                    enemy.state = self.AI_STATE.PATROL; // Reset to patrol after catch
                     setTimeout(() => {
                         self.state.player.frozen = false;
                     }, 800);
@@ -511,31 +742,62 @@ const LiquidityMaze = {
         const offsetX = (this.canvas.width - this.state.cols * this.state.cellSize) / 2;
         const offsetY = (this.canvas.height - this.state.rows * this.state.cellSize) / 2;
 
-        // Draw maze
+        // Draw maze with fog of war
         for (let y = 0; y < this.state.rows; y++) {
             for (let x = 0; x < this.state.cols; x++) {
                 const px = offsetX + x * this.state.cellSize;
                 const py = offsetY + y * this.state.cellSize;
-                const key = `${x},${y}`;
-                const isVisible = this.state.visited.has(key) || this.state.revealed.has(key) || (Math.abs(x - this.state.player.x) <= 3 && Math.abs(y - this.state.player.y) <= 3);
+                const fogLevel = this.state.fogOpacity[y]?.[x] ?? 1;
 
                 if (this.state.maze[y][x] === 1) {
-                    ctx.fillStyle = isVisible ? '#1a1a4e' : '#0a0a1e';
+                    // Wall
+                    const wallBrightness = Math.floor(26 + (1 - fogLevel) * 50);
+                    ctx.fillStyle = `rgb(${wallBrightness}, ${wallBrightness}, ${Math.floor(wallBrightness * 1.5)})`;
                     ctx.fillRect(px, py, this.state.cellSize, this.state.cellSize);
                 } else {
-                    ctx.fillStyle = this.state.visited.has(key) ? 'rgba(59,130,246,0.15)' : isVisible ? 'rgba(30,30,60,0.8)' : 'rgba(10,10,30,0.9)';
+                    // Path
+                    const pathAlpha = 1 - fogLevel * 0.7;
+                    if (this.state.visited.has(`${x},${y}`)) {
+                        ctx.fillStyle = `rgba(59,130,246,${0.15 * pathAlpha})`;
+                    } else {
+                        ctx.fillStyle = `rgba(30,30,60,${pathAlpha})`;
+                    }
                     ctx.fillRect(px, py, this.state.cellSize, this.state.cellSize);
                 }
             }
         }
+
+        // Draw secret walls (subtle hint - slightly different color)
+        this.state.secretWalls.filter(w => !w.revealed).forEach(wall => {
+            const dist = Math.sqrt((wall.x - this.state.player.x) ** 2 + (wall.y - this.state.player.y) ** 2);
+            if (dist <= 2) {
+                const px = offsetX + wall.x * this.state.cellSize;
+                const py = offsetY + wall.y * this.state.cellSize;
+                const pulse = 0.3 + Math.sin(this.state.frameCount * 0.1) * 0.15;
+                ctx.fillStyle = `rgba(168, 85, 247, ${pulse})`;
+                ctx.fillRect(px, py, this.state.cellSize, this.state.cellSize);
+            }
+        });
 
         ctx.font = `${this.state.cellSize * 0.7}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         const isVisible = item => {
-            return this.state.visited.has(`${item.x},${item.y}`) || this.state.revealed.has(`${item.x},${item.y}`) || (Math.abs(item.x - this.state.player.x) <= 3 && Math.abs(item.y - this.state.player.y) <= 3);
+            const fogLevel = this.state.fogOpacity[item.y]?.[item.x] ?? 1;
+            return fogLevel < 0.7;
         };
+
+        // Draw treasures
+        this.state.treasures.filter(isVisible).forEach(treasure => {
+            const px = offsetX + treasure.x * this.state.cellSize + this.state.cellSize / 2;
+            const py = offsetY + treasure.y * this.state.cellSize + this.state.cellSize / 2;
+            const float = Math.sin(this.state.frameCount * 0.1 + treasure.x) * 3;
+            ctx.shadowColor = '#fbbf24';
+            ctx.shadowBlur = 10;
+            ctx.fillText(treasure.icon, px, py + float);
+            ctx.shadowBlur = 0;
+        });
 
         // Draw items
         this.state.liquidityPools.filter(isVisible).forEach(pool => {
@@ -568,34 +830,58 @@ const LiquidityMaze = {
             ctx.fillText('👁️', px, py);
         });
 
-        // Draw enemies
+        // Draw enemies with state indicators
         this.state.enemies.forEach(enemy => {
             const px = offsetX + enemy.x * this.state.cellSize + this.state.cellSize / 2;
             const py = offsetY + enemy.y * this.state.cellSize + this.state.cellSize / 2;
-            const distToPlayer = Math.abs(Math.floor(enemy.x) - this.state.player.x) + Math.abs(Math.floor(enemy.y) - this.state.player.y);
+            const fogLevel = this.state.fogOpacity[Math.floor(enemy.y)]?.[Math.floor(enemy.x)] ?? 1;
 
-            if (distToPlayer <= 3) {
-                const pulse = 0.3 + Math.sin(Date.now() / 150) * 0.2;
+            if (fogLevel > 0.7) return; // Hidden in fog
+
+            // State-based glow
+            if (enemy.state === this.AI_STATE.CHASE) {
+                const pulse = 0.5 + Math.sin(this.state.frameCount * 0.3) * 0.3;
                 ctx.beginPath();
-                ctx.arc(px, py, this.state.cellSize * 0.8, 0, Math.PI * 2);
+                ctx.arc(px, py, this.state.cellSize * 0.9, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(239, 68, 68, ${pulse})`;
+                ctx.fill();
+            } else if (enemy.state === this.AI_STATE.ALERT) {
+                const pulse = 0.3 + Math.sin(this.state.frameCount * 0.2) * 0.2;
+                ctx.beginPath();
+                ctx.arc(px, py, this.state.cellSize * 0.7, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(251, 191, 36, ${pulse})`;
                 ctx.fill();
             }
 
             ctx.fillStyle = '#ffffff';
             ctx.fillText('👾', px, py);
+
+            // State indicator above enemy
+            if (enemy.state !== this.AI_STATE.PATROL) {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = enemy.state === this.AI_STATE.CHASE ? '#ef4444' : '#fbbf24';
+                ctx.fillText(enemy.state === this.AI_STATE.CHASE ? '😡' : '❓', px, py - this.state.cellSize * 0.6);
+                ctx.font = `${this.state.cellSize * 0.7}px Arial`;
+            }
         });
 
         // Draw goal
-        const gx = offsetX + this.state.goal.x * this.state.cellSize + this.state.cellSize / 2;
-        const gy = offsetY + this.state.goal.y * this.state.cellSize + this.state.cellSize / 2;
-        ctx.fillText(this.state.goal.locked ? '🔒' : '🏁', gx, gy);
+        const goalFog = this.state.fogOpacity[this.state.goal.y]?.[this.state.goal.x] ?? 1;
+        if (goalFog < 0.7) {
+            const gx = offsetX + this.state.goal.x * this.state.cellSize + this.state.cellSize / 2;
+            const gy = offsetY + this.state.goal.y * this.state.cellSize + this.state.cellSize / 2;
+            ctx.fillText(this.state.goal.locked ? '🔒' : '🏁', gx, gy);
+        }
 
         // Draw player
         const ppx = offsetX + this.state.player.x * this.state.cellSize + this.state.cellSize / 2;
         const ppy = offsetY + this.state.player.y * this.state.cellSize + this.state.cellSize / 2;
         ctx.globalAlpha = this.state.player.frozen ? 0.5 : 1;
+        // Player glow
+        ctx.shadowColor = '#22c55e';
+        ctx.shadowBlur = 8;
         ctx.fillText('🧑‍💻', ppx, ppy);
+        ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
 
         // Draw effects
@@ -605,9 +891,67 @@ const LiquidityMaze = {
             const ey = offsetY + e.y * this.state.cellSize + e.vy * (40 - e.life);
             ctx.globalAlpha = e.life / 40;
             ctx.fillStyle = e.color;
+            ctx.shadowColor = e.color;
+            ctx.shadowBlur = 5;
             ctx.fillText(e.text, ex, ey);
         });
         ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+
+        // Draw mini-map (top-left corner)
+        if (this.state.showMiniMap) {
+            const mapSize = 80;
+            const mapPadding = 10;
+            const cellSize = Math.floor(mapSize / Math.max(this.state.cols, this.state.rows));
+            const mapWidth = cellSize * this.state.cols;
+            const mapHeight = cellSize * this.state.rows;
+
+            // Background
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(mapPadding - 2, mapPadding - 2, mapWidth + 4, mapHeight + 4);
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(mapPadding - 2, mapPadding - 2, mapWidth + 4, mapHeight + 4);
+
+            // Draw maze on mini-map
+            for (let y = 0; y < this.state.rows; y++) {
+                for (let x = 0; x < this.state.cols; x++) {
+                    const mx = mapPadding + x * cellSize;
+                    const my = mapPadding + y * cellSize;
+                    const visited = this.state.visited.has(`${x},${y}`);
+                    const fogLevel = this.state.fogOpacity[y]?.[x] ?? 1;
+
+                    if (fogLevel < 0.8 || visited) {
+                        if (this.state.maze[y][x] === 1) {
+                            ctx.fillStyle = '#333';
+                        } else if (visited) {
+                            ctx.fillStyle = '#3b82f6';
+                        } else {
+                            ctx.fillStyle = '#1a1a2e';
+                        }
+                        ctx.fillRect(mx, my, cellSize, cellSize);
+                    }
+                }
+            }
+
+            // Player on mini-map
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(
+                mapPadding + this.state.player.x * cellSize,
+                mapPadding + this.state.player.y * cellSize,
+                cellSize, cellSize
+            );
+
+            // Goal on mini-map (if visible)
+            if (this.state.fogOpacity[this.state.goal.y]?.[this.state.goal.x] < 0.7) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(
+                    mapPadding + this.state.goal.x * cellSize,
+                    mapPadding + this.state.goal.y * cellSize,
+                    cellSize, cellSize
+                );
+            }
+        }
     },
 
     /**
@@ -692,6 +1036,15 @@ const LiquidityMaze = {
         document.addEventListener('keyup', this.handleKeyUp);
         this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: true });
         this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+
+        // Mini-map toggle
+        const minimapToggle = document.getElementById('lm-minimap-toggle');
+        if (minimapToggle) {
+            minimapToggle.addEventListener('click', () => {
+                self.state.showMiniMap = !self.state.showMiniMap;
+                minimapToggle.textContent = self.state.showMiniMap ? 'MAP: ON' : 'MAP: OFF';
+            });
+        }
     },
 
     /**
