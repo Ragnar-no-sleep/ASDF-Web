@@ -400,28 +400,28 @@ class BadgeManager {
    */
   _subscribeToEvents() {
     // Quest completed
-    eventBus.subscribe(EVENTS.QUEST_COMPLETED, async (data) => {
+    eventBus.on(EVENTS.QUEST_COMPLETED, async (data) => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ questCompleted: data.questId });
       }
     });
 
     // Module completed
-    eventBus.subscribe(EVENTS.MODULE_COMPLETED, async (data) => {
+    eventBus.on(EVENTS.MODULE_COMPLETED, async (data) => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ moduleCompleted: data.moduleId });
       }
     });
 
     // Level up
-    eventBus.subscribe(EVENTS.XP_LEVEL_UP, async (data) => {
+    eventBus.on(EVENTS.XP_LEVEL_UP, async (data) => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ level: data.newLevel });
       }
     });
 
     // Streak update
-    eventBus.subscribe(EVENTS.XP_STREAK, async (data) => {
+    eventBus.on(EVENTS.XP_STREAK, async (data) => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ streak: data.streak });
       }

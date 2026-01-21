@@ -24,35 +24,51 @@ import { createLogger } from '../core/debug.js';
 const log = createLogger('XPManager');
 
 // ============================================
-// FIBONACCI LEVEL THRESHOLDS
+// PHI CONSTANTS
+// ============================================
+
+const PHI = 1.618033988749895;
+const PHI_INVERSE = 0.618033988749895;
+
+// ============================================
+// TRUE FIBONACCI LEVEL THRESHOLDS
 // ============================================
 
 /**
- * Generate Fibonacci-based XP thresholds for levels
- * Level 1: 0 XP, Level 2: 100 XP, Level 3: 200 XP, etc.
- * Uses Fibonacci scaling: 100, 200, 300, 500, 800, 1300, 2100...
+ * Generate TRUE Fibonacci XP thresholds for levels
+ * Uses actual Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144...
+ * Cumulative for level thresholds (scaled by 100 for practical XP values)
+ *
+ * Level 1: 0 XP
+ * Level 2: 100 XP (Fib(1) * 100)
+ * Level 3: 200 XP (cumulative)
+ * Level 4: 400 XP (1+1+2 * 100)
+ * Level 5: 700 XP (1+1+2+3 * 100)
+ * ...
  */
-const generateLevelThresholds = (maxLevel = 50) => {
+const generateTrueFibonacciThresholds = (maxLevel = 50) => {
   const thresholds = [0]; // Level 1 starts at 0
   const baseXP = 100;
 
-  let fib1 = 1;
-  let fib2 = 1;
+  // Generate Fibonacci sequence
+  const fib = [1, 1];
+  for (let i = 2; i < maxLevel; i++) {
+    fib.push(fib[i - 1] + fib[i - 2]);
+  }
+
+  // Create cumulative thresholds
   let cumulative = 0;
-
-  for (let i = 1; i < maxLevel; i++) {
-    cumulative += baseXP * fib1;
+  for (let i = 0; i < maxLevel - 1; i++) {
+    cumulative += fib[i] * baseXP;
     thresholds.push(cumulative);
-
-    const next = fib1 + fib2;
-    fib1 = fib2;
-    fib2 = next;
   }
 
   return thresholds;
 };
 
-const LEVEL_THRESHOLDS = generateLevelThresholds(50);
+// True Fibonacci thresholds:
+// L1:0, L2:100, L3:200, L4:400, L5:700, L6:1200, L7:2000, L8:3300, L9:5400...
+const LEVEL_THRESHOLDS = generateTrueFibonacciThresholds(50);
 
 // ============================================
 // CONFIGURATION
@@ -60,9 +76,10 @@ const LEVEL_THRESHOLDS = generateLevelThresholds(50);
 
 const XP_CONFIG = {
   storageKey: 'xp:profile',
-  // Streak configuration
-  streakBonusMultiplier: 0.1, // 10% per streak day
-  maxStreakBonus: 1.0, // Max 100% bonus (2x)
+  // φ-based Streak configuration
+  // Formula: bonus = φ^(streak/7) - 1, capped at PHI_INVERSE (61.8%)
+  // 7 days = ~61.8% bonus, 14 days = ~161.8% (capped to 61.8%)
+  maxStreakBonus: PHI_INVERSE, // Max 61.8% bonus (φ⁻¹)
   streakTimeout: 48 * 60 * 60 * 1000, // 48 hours to maintain streak
   // Daily limits
   dailyXPLimit: 5000,
@@ -90,7 +107,7 @@ class XPManager {
     this.initialized = false;
 
     // Listen for XP events
-    eventBus.subscribe(EVENTS.XP_EARNED, (data) => {
+    eventBus.on(EVENTS.XP_GAINED, (data) => {
       if (data.userId === this.userId) {
         this.addXP(data.amount, data.source, data.questId || data.moduleId);
       }
@@ -364,13 +381,22 @@ class XPManager {
   }
 
   /**
-   * Get streak bonus multiplier
+   * Get φ-based streak bonus multiplier
+   * Formula: bonus = φ^(streak/7) - 1, capped at PHI_INVERSE (61.8%)
+   *
+   * Streak milestones:
+   *   1 day  = 0% bonus
+   *   3 days = ~22% bonus
+   *   7 days = ~62% bonus (capped to 61.8%)
+   *   21 days = 61.8% (capped)
+   *
    * @private
    */
   _getStreakBonus() {
-    if (!this.profile) return 0;
+    if (!this.profile || this.profile.streak <= 1) return 0;
 
-    const bonus = (this.profile.streak - 1) * this.config.streakBonusMultiplier;
+    // φ^(streak/7) - 1 gives natural golden ratio growth
+    const bonus = Math.pow(PHI, this.profile.streak / 7) - 1;
     return Math.min(bonus, this.config.maxStreakBonus);
   }
 

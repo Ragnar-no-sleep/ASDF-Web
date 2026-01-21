@@ -395,41 +395,41 @@ class LearnBuildUIController {
    */
   _subscribeToEvents() {
     // XP gained
-    eventBus.subscribe(EVENTS.XP_GAINED, (data) => {
+    eventBus.on(EVENTS.XP_GAINED, (data) => {
       this.renderXPDisplay();
       this.showToast(`+${data.amount} XP`, 'success');
     });
 
     // Level up
-    eventBus.subscribe(EVENTS.XP_LEVEL_UP, (data) => {
+    eventBus.on(EVENTS.XP_LEVEL_UP, (data) => {
       this.renderXPDisplay();
       this.showToast(`Level Up! You're now Level ${data.newLevel}`, 'success');
       this._playLevelUpAnimation();
     });
 
     // Badge earned
-    eventBus.subscribe(EVENTS.BADGE_EARNED, (data) => {
+    eventBus.on(EVENTS.BADGE_EARNED, (data) => {
       this.renderBadgeShowcase();
       this.showToast(`Badge Earned: ${data.badge.name}`, 'success');
       this._showBadgeModal(data.badge);
     });
 
     // Quest completed
-    eventBus.subscribe(EVENTS.QUEST_COMPLETED, (data) => {
+    eventBus.on(EVENTS.QUEST_COMPLETED, (data) => {
       this.renderActiveQuests();
       this.renderProgressCard();
       this.renderMilestones();
     });
 
     // Module completed
-    eventBus.subscribe(EVENTS.MODULE_COMPLETED, (data) => {
+    eventBus.on(EVENTS.MODULE_COMPLETED, (data) => {
       this.renderProgressCard();
       this.renderTrackProgress();
       this.showToast(`Module Completed! +${data.xp} XP`, 'success');
     });
 
     // Streak update
-    eventBus.subscribe(EVENTS.XP_STREAK, (data) => {
+    eventBus.on(EVENTS.XP_STREAK, (data) => {
       this.renderXPDisplay();
       if (data.streak > 1) {
         this.showToast(`${data.streak}-day streak! ${Math.round(data.bonus * 100)}% XP bonus`, 'info');
