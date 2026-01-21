@@ -14,7 +14,8 @@ export const STORAGE_KEY = 'asdf_build_v2';
 export const STORAGE_VERSION = 1;
 
 // ============================================
-// TRACKS - Builder Paths
+// TRACKS - Builder Paths (3 tracks: dev, games, content)
+// Note: Growth track merged into Content as of 2026-01-21
 // ============================================
 export const TRACKS = {
   dev: {
@@ -24,14 +25,6 @@ export const TRACKS = {
     desc: 'Master Solana, Rust, TypeScript',
     color: '#ea4e33',
     modules: 12
-  },
-  growth: {
-    id: 'growth',
-    icon: '\u2197',  // ↗
-    name: 'Growth',
-    desc: 'Distribution, hooks, viral loops',
-    color: '#f59e0b',
-    modules: 10
   },
   gaming: {
     id: 'gaming',
@@ -45,9 +38,9 @@ export const TRACKS = {
     id: 'content',
     icon: '\u2726',  // ✦
     name: 'Creator',
-    desc: 'Narrative, video, community',
+    desc: 'Narrative, video, community, growth',
     color: '#06b6d4',
-    modules: 9
+    modules: 12  // Increased: 9 original + growth modules merged
   }
 };
 
@@ -98,7 +91,7 @@ export const TRANSITIONS = {
 };
 
 // ============================================
-// QUIZ QUESTIONS
+// QUIZ QUESTIONS (3 tracks: dev, gaming, content)
 // ============================================
 export const QUIZ_QUESTIONS = [
   {
@@ -106,9 +99,8 @@ export const QUIZ_QUESTIONS = [
     text: 'What excites you most?',
     options: [
       { track: 'dev', text: 'Building systems that scale', icon: '\u{1F527}' },
-      { track: 'growth', text: 'Watching metrics go up', icon: '\u{1F4C8}' },
       { track: 'gaming', text: 'Creating immersive experiences', icon: '\u{1F3AE}' },
-      { track: 'content', text: 'Telling compelling stories', icon: '\u{1F3AC}' }
+      { track: 'content', text: 'Growing communities & telling stories', icon: '\u{1F4C8}' }
     ]
   },
   {
@@ -116,9 +108,8 @@ export const QUIZ_QUESTIONS = [
     text: 'Your ideal Friday night?',
     options: [
       { track: 'dev', text: 'Debugging a tricky issue', icon: '\u{1F41B}' },
-      { track: 'growth', text: 'Analyzing conversion funnels', icon: '\u{1F4CA}' },
       { track: 'gaming', text: 'Playtesting new mechanics', icon: '\u{1F3B2}' },
-      { track: 'content', text: 'Editing a video', icon: '\u{1F3A5}' }
+      { track: 'content', text: 'Editing content & analyzing metrics', icon: '\u{1F3A5}' }
     ]
   },
   {
@@ -126,9 +117,8 @@ export const QUIZ_QUESTIONS = [
     text: 'Pick your superpower',
     options: [
       { track: 'dev', text: 'Read any codebase instantly', icon: '\u26A1' },
-      { track: 'growth', text: 'Predict viral content', icon: '\u{1F52E}' },
       { track: 'gaming', text: 'Design perfect game loops', icon: '\u{1F504}' },
-      { track: 'content', text: 'Captivate any audience', icon: '\u2728' }
+      { track: 'content', text: 'Predict viral content & captivate audiences', icon: '\u{1F52E}' }
     ]
   }
 ];

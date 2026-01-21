@@ -11,6 +11,7 @@
 // FORMATION TRACKS
 // ============================================
 
+// Note: Growth track merged into Content as of 2026-01-21
 export const TRACKS = {
   dev: {
     id: 'dev',
@@ -27,22 +28,6 @@ export const TRACKS = {
       'dev-anchor-deep',
       'dev-helius-integration',
       'dev-security-audit'
-    ]
-  },
-  growth: {
-    id: 'growth',
-    name: 'Growth Hacker',
-    icon: '\u2197',
-    color: '#f59e0b',
-    description: 'Learn distribution, viral mechanics, and community building',
-    duration: '8 weeks',
-    difficulty: 'beginner',
-    modules: [
-      'growth-fundamentals',
-      'growth-analytics',
-      'growth-viral-loops',
-      'growth-community',
-      'growth-tokenomics'
     ]
   },
   gaming: {
@@ -63,17 +48,24 @@ export const TRACKS = {
   },
   content: {
     id: 'content',
-    name: 'Content Creator',
+    name: 'Creator',
     icon: '\u2726',
     color: '#06b6d4',
-    description: 'Create compelling content and build your audience',
-    duration: '6 weeks',
+    description: 'Create content, build communities, and drive growth',
+    duration: '12 weeks',
     difficulty: 'beginner',
     modules: [
+      // Original content modules
       'content-fundamentals',
       'content-storytelling',
       'content-video',
-      'content-community'
+      'content-community',
+      // Growth modules (merged)
+      'growth-fundamentals',
+      'growth-analytics',
+      'growth-viral-loops',
+      'growth-community',
+      'growth-tokenomics'
     ]
   }
 };
@@ -181,17 +173,17 @@ export const MODULES = {
     ]
   },
 
-  // Growth Track
+  // Growth Modules (merged into Content track as of 2026-01-21)
   'growth-fundamentals': {
     id: 'growth-fundamentals',
-    track: 'growth',
+    track: 'content',
     name: 'Growth Fundamentals',
     description: 'Core concepts of product growth and user acquisition',
     duration: '1 week',
     lessons: 5,
     projects: 1,
-    skills: [],
-    prerequisites: [],
+    skills: ['growth-strategy'],
+    prerequisites: ['content-fundamentals'],
     resources: [
       { type: 'video', title: 'Growth Mindset', duration: '1h' },
       { type: 'article', title: 'Metrics That Matter', duration: '30min' }
@@ -199,7 +191,7 @@ export const MODULES = {
   },
   'growth-analytics': {
     id: 'growth-analytics',
-    track: 'growth',
+    track: 'content',
     name: 'Analytics & Metrics',
     description: 'Track, measure, and analyze user behavior',
     duration: '2 weeks',
@@ -214,13 +206,13 @@ export const MODULES = {
   },
   'growth-viral-loops': {
     id: 'growth-viral-loops',
-    track: 'growth',
+    track: 'content',
     name: 'Viral Mechanics',
     description: 'Design referral systems and viral loops',
     duration: '2 weeks',
     lessons: 6,
     projects: 1,
-    skills: [],
+    skills: ['viral-marketing'],
     prerequisites: ['growth-analytics'],
     resources: [
       { type: 'video', title: 'Viral Loop Design', duration: '2h' },
@@ -229,13 +221,13 @@ export const MODULES = {
   },
   'growth-community': {
     id: 'growth-community',
-    track: 'growth',
+    track: 'content',
     name: 'Community Building',
     description: 'Build and engage crypto communities',
     duration: '2 weeks',
     lessons: 5,
     projects: 1,
-    skills: [],
+    skills: ['community-management'],
     prerequisites: ['growth-fundamentals'],
     resources: [
       { type: 'video', title: 'Discord & Twitter Strategy', duration: '2h' },
@@ -244,7 +236,7 @@ export const MODULES = {
   },
   'growth-tokenomics': {
     id: 'growth-tokenomics',
-    track: 'growth',
+    track: 'content',
     name: 'Growth Tokenomics',
     description: 'Use tokens to drive growth and retention',
     duration: '1 week',
