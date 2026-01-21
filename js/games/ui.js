@@ -59,19 +59,20 @@ function renderGamesGrid() {
 
     grid.innerHTML = GAMES.map(game => {
         const isFeatured = game.id === currentGame.id;
-        const isLocked = !testMode && !isFeatured && !appState.isHolder;
+        // All games accessible - no holder restriction
+        const isLocked = false;
         const highScore = appState.practiceScores[game.id] || 0;
 
         return `
-            <div class="game-card ${isFeatured ? 'featured' : ''} ${isLocked ? 'locked' : ''}" data-game="${game.id}">
+            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}">
                 <div class="game-icon">${game.icon}</div>
                 <h3 class="game-name">${escapeHtml(game.name)}</h3>
                 <p class="game-type">${escapeHtml(game.type)}</p>
                 <div class="game-highscore">
                     Best: ${highScore}
                 </div>
-                <button class="btn game-play-btn" data-action="open-game" data-game="${game.id}" ${isLocked ? 'disabled' : ''}>
-                    ${isLocked ? 'Locked' : 'Play'}
+                <button class="btn game-play-btn" data-action="open-game" data-game="${game.id}">
+                    Play
                 </button>
             </div>
         `;
