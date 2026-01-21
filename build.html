@@ -50,6 +50,8 @@
     <link rel="stylesheet" href="css/skill-tree.css">
     <link rel="stylesheet" href="css/builder-profile.css">
     <link rel="stylesheet" href="css/github-timeline.css">
+    <!-- Learn & Build Dashboard -->
+    <link rel="stylesheet" href="css/learn-build.css">
 </head>
 <body>
     <!-- Yggdrasil Viking Background -->
@@ -68,6 +70,10 @@
     <div class="view-switcher-container">
         <div class="container">
             <div class="view-switcher" role="tablist" aria-label="Build sections">
+                <button class="view-switch-btn" data-view="dashboard" role="tab" id="tab-dashboard" aria-selected="false" aria-controls="view-dashboard">
+                    <span class="view-switch-icon" aria-hidden="true">⚡</span>
+                    <span class="view-switch-label">Dashboard</span>
+                </button>
                 <button class="view-switch-btn active" data-view="yggdrasil" role="tab" id="tab-yggdrasil" aria-selected="true" aria-controls="view-yggdrasil">
                     <span class="view-switch-icon" aria-hidden="true">🌳</span>
                     <span class="view-switch-label">Yggdrasil</span>
@@ -86,6 +92,59 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- ############################################
+         VIEW 0: DASHBOARD - Learn & Build Progress
+         ############################################ -->
+    <div class="view-section" id="view-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+        <section class="lb-dashboard-section">
+            <div class="container">
+                <!-- Dashboard Header -->
+                <div class="lb-dashboard-header">
+                    <div class="lb-dashboard-hero">
+                        <h1 class="lb-dashboard-title">Builder Dashboard</h1>
+                        <p class="lb-dashboard-subtitle">Track your progress across all learning tracks</p>
+                    </div>
+                    <div class="lb-wallet-status" id="lb-wallet-status">
+                        <span class="lb-wallet-icon">🔗</span>
+                        <span class="lb-wallet-text">Connect wallet to sync progress</span>
+                    </div>
+                </div>
+
+                <!-- Dashboard Container (rendered by LearnBuildUI) -->
+                <div id="learn-build-dashboard">
+                    <!-- Loading state -->
+                    <div class="lb-loading">
+                        <div class="lb-spinner"></div>
+                        <p>Loading your progress...</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="lb-quick-actions">
+                    <h3 class="lb-section-title">Quick Actions</h3>
+                    <div class="lb-actions-grid">
+                        <button class="lb-action-btn" data-action="browse-quests">
+                            <span class="lb-action-icon">🎯</span>
+                            <span class="lb-action-label">Browse Quests</span>
+                        </button>
+                        <button class="lb-action-btn" data-action="continue-learning">
+                            <span class="lb-action-icon">📚</span>
+                            <span class="lb-action-label">Continue Learning</span>
+                        </button>
+                        <button class="lb-action-btn" data-action="view-badges">
+                            <span class="lb-action-icon">🏆</span>
+                            <span class="lb-action-label">View Badges</span>
+                        </button>
+                        <button class="lb-action-btn" data-action="leaderboard">
+                            <span class="lb-action-icon">📊</span>
+                            <span class="lb-action-label">Leaderboard</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- ############################################
@@ -1696,6 +1755,62 @@
 
     <!-- Build V2 - Modular Architecture -->
     <script type="module" src="js/build/index.js"></script>
+
+    <!-- Learn & Build Dashboard System -->
+    <script type="module">
+        import { learnBuildUI } from './js/learn-build/ui-controller.js';
+        import { DashboardComponent } from './js/learn-build/components/dashboard.js';
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for wallet connection (mock for now, will integrate with real wallet)
+            const userId = localStorage.getItem('asdf_wallet') || 'demo-user';
+
+            // Initialize Learn & Build UI
+            await learnBuildUI.init(userId);
+
+            // Create dashboard component
+            const dashboardContainer = document.getElementById('learn-build-dashboard');
+            if (dashboardContainer) {
+                const dashboard = new DashboardComponent(dashboardContainer);
+                dashboard.render();
+
+                // Re-render on data changes
+                window.addEventListener('learnbuild:data:updated', () => {
+                    dashboard.render();
+                });
+            }
+
+            // Quick action handlers
+            document.querySelectorAll('.lb-action-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = e.currentTarget.dataset.action;
+                    handleQuickAction(action);
+                });
+            });
+        });
+
+        function handleQuickAction(action) {
+            switch (action) {
+                case 'browse-quests':
+                    // Switch to Factory view
+                    document.querySelector('[data-view="journey"]')?.click();
+                    break;
+                case 'continue-learning':
+                    // Find active quest and continue
+                    window.dispatchEvent(new CustomEvent('learnbuild:quest:browse'));
+                    break;
+                case 'view-badges':
+                    // Show badges modal (TODO: implement modal)
+                    console.log('[LearnBuild] View badges');
+                    break;
+                case 'leaderboard':
+                    // Show leaderboard (TODO: implement)
+                    console.log('[LearnBuild] Leaderboard');
+                    break;
+            }
+        }
+    </script>
 
     <!-- Legacy Build (kept for backwards compatibility, will be removed) -->
     <script src="js/build.js"></script>

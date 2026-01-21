@@ -993,3 +993,148 @@
     padding: 10px 12px;
   }
 }
+
+/* ============================================
+   DASHBOARD SECTION (build.html integration)
+   ============================================ */
+
+.lb-dashboard-section {
+  padding: 40px 0;
+  min-height: calc(100vh - 200px);
+}
+
+.lb-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--border-rust);
+}
+
+.lb-dashboard-hero {
+  flex: 1;
+}
+
+.lb-dashboard-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-cream);
+  text-shadow: 3px 3px 0 var(--accent-fire);
+  margin-bottom: 8px;
+}
+
+.lb-dashboard-subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.lb-wallet-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--bg-charred);
+  border: 2px solid var(--border-rust);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.lb-wallet-status.connected {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.lb-wallet-icon {
+  font-size: 18px;
+}
+
+/* ============================================
+   QUICK ACTIONS
+   ============================================ */
+
+.lb-quick-actions {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--bg-charred);
+  border: 2px solid var(--border-rust);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--border-rust);
+}
+
+.lb-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .lb-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .lb-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lb-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: var(--bg-burnt);
+  border: 2px solid var(--border-rust);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-mono);
+}
+
+.lb-action-btn:hover {
+  background: var(--accent-fire);
+  border-color: var(--accent-fire);
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--border-rust);
+}
+
+.lb-action-btn:hover .lb-action-label {
+  color: white;
+}
+
+.lb-action-icon {
+  font-size: 28px;
+}
+
+.lb-action-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-cream);
+  transition: color 0.2s;
+}
+
+/* ============================================
+   RESPONSIVE DASHBOARD HEADER
+   ============================================ */
+
+@media (max-width: 768px) {
+  .lb-dashboard-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .lb-dashboard-title {
+    font-size: 28px;
+  }
+
+  .lb-wallet-status {
+    width: 100%;
+    justify-content: center;
+  }
+}
