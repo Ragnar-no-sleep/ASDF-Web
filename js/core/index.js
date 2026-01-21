@@ -56,6 +56,9 @@ export {
   disableDebug
 } from './debug.js';
 
+// Redis client
+export { redis, REDIS_EVENTS } from './redis-client.js';
+
 /**
  * Initialize core modules
  * Call this on app startup

@@ -267,6 +267,156 @@ export const errors = {
   },
 
   // ============================================
+  // QUEST ERRORS
+  // ============================================
+  QUEST_NOT_FOUND: {
+    code: 'QUEST_NOT_FOUND',
+    name: 'Quest Not Found',
+    message: 'This quest does not exist or has been removed.',
+    action: null,
+    severity: 'error'
+  },
+  QUEST_ALREADY_ACTIVE: {
+    code: 'QUEST_ALREADY_ACTIVE',
+    name: 'Quest In Progress',
+    message: 'You already have this quest active.',
+    action: null,
+    severity: 'info'
+  },
+  QUEST_ALREADY_COMPLETED: {
+    code: 'QUEST_ALREADY_COMPLETED',
+    name: 'Quest Completed',
+    message: 'You have already completed this quest.',
+    action: null,
+    severity: 'info'
+  },
+  QUEST_PREREQUISITES_NOT_MET: {
+    code: 'QUEST_PREREQUISITES_NOT_MET',
+    name: 'Prerequisites Required',
+    message: 'Complete the required quests first.',
+    action: null,
+    severity: 'warning'
+  },
+  QUEST_SLOTS_FULL: {
+    code: 'QUEST_SLOTS_FULL',
+    name: 'Quest Slots Full',
+    message: 'Complete or abandon an active quest first.',
+    action: null,
+    severity: 'warning'
+  },
+  QUEST_VERIFICATION_FAILED: {
+    code: 'QUEST_VERIFICATION_FAILED',
+    name: 'Verification Failed',
+    message: 'Quest requirements could not be verified.',
+    action: 'retry',
+    severity: 'error'
+  },
+  QUEST_EXPIRED: {
+    code: 'QUEST_EXPIRED',
+    name: 'Quest Expired',
+    message: 'This quest has expired. Try again.',
+    action: null,
+    severity: 'warning'
+  },
+
+  // ============================================
+  // MODULE ERRORS
+  // ============================================
+  MODULE_NOT_FOUND: {
+    code: 'MODULE_NOT_FOUND',
+    name: 'Module Not Found',
+    message: 'This learning module does not exist.',
+    action: null,
+    severity: 'error'
+  },
+  MODULE_LOCKED: {
+    code: 'MODULE_LOCKED',
+    name: 'Module Locked',
+    message: 'Complete prerequisite modules first.',
+    action: null,
+    severity: 'warning'
+  },
+  MODULE_CONTENT_LOAD_FAILED: {
+    code: 'MODULE_CONTENT_LOAD_FAILED',
+    name: 'Content Load Failed',
+    message: 'Could not load module content. Please refresh.',
+    action: 'retry',
+    severity: 'error'
+  },
+
+  // ============================================
+  // QUIZ ERRORS
+  // ============================================
+  QUIZ_COOLDOWN: {
+    code: 'QUIZ_COOLDOWN',
+    name: 'Quiz Cooldown',
+    message: 'Please wait before attempting again.',
+    action: 'wait',
+    severity: 'info'
+  },
+  QUIZ_MAX_ATTEMPTS: {
+    code: 'QUIZ_MAX_ATTEMPTS',
+    name: 'Max Attempts Reached',
+    message: 'You have reached the maximum attempts for this quiz.',
+    action: null,
+    severity: 'warning'
+  },
+
+  // ============================================
+  // XP ERRORS
+  // ============================================
+  XP_DAILY_LIMIT: {
+    code: 'XP_DAILY_LIMIT',
+    name: 'Daily XP Limit',
+    message: 'You have reached your daily XP limit. Come back tomorrow!',
+    action: null,
+    severity: 'info'
+  },
+
+  // ============================================
+  // BADGE ERRORS
+  // ============================================
+  BADGE_NOT_UNLOCKED: {
+    code: 'BADGE_NOT_UNLOCKED',
+    name: 'Badge Locked',
+    message: 'You have not unlocked this badge yet.',
+    action: null,
+    severity: 'warning'
+  },
+  BADGE_MINT_FAILED: {
+    code: 'BADGE_MINT_FAILED',
+    name: 'Mint Failed',
+    message: 'Could not mint badge NFT. Please try again.',
+    action: 'retry',
+    severity: 'error'
+  },
+  BADGE_ALREADY_CLAIMED: {
+    code: 'BADGE_ALREADY_CLAIMED',
+    name: 'Already Claimed',
+    message: 'You have already claimed this badge.',
+    action: null,
+    severity: 'info'
+  },
+
+  // ============================================
+  // REDIS ERRORS
+  // ============================================
+  REDIS_TIMEOUT: {
+    code: 'REDIS_TIMEOUT',
+    name: 'Connection Timeout',
+    message: 'Server took too long to respond.',
+    action: 'retry',
+    severity: 'error'
+  },
+  REDIS_ERROR: {
+    code: 'REDIS_ERROR',
+    name: 'Server Error',
+    message: 'Could not save your progress. Working offline.',
+    action: 'retry',
+    severity: 'warning'
+  },
+
+  // ============================================
   // GENERIC ERRORS
   // ============================================
   UNKNOWN: {

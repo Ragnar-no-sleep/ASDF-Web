@@ -5,6 +5,9 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// JSON body parser for API routes
+app.use(express.json({ limit: '10kb' }));
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -144,8 +147,8 @@ app.use(
   })
 );
 
-// Explicit block for sensitive paths
-app.use(['/api', '/node_modules', '/.git', '/.env'], (req, res) => {
+// Explicit block for sensitive paths (note: /api routes are defined below)
+app.use(['/node_modules', '/.git', '/.env'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
@@ -156,6 +159,88 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
+});
+
+// ============================================
+// REDIS PROXY API
+// ============================================
+
+// Redis client (lazy initialization)
+let redisClient = null;
+
+function getRedisClient() {
+  if (!redisClient && process.env.REDIS_URL) {
+    const Redis = require('ioredis');
+    redisClient = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 3,
+      retryDelayOnFailover: 100,
+      enableReadyCheck: true,
+      lazyConnect: true
+    });
+
+    redisClient.on('error', (err) => {
+      console.error('[Redis] Connection error:', err.message);
+    });
+
+    redisClient.on('connect', () => {
+      console.log('[Redis] Connected');
+    });
+  }
+  return redisClient;
+}
+
+// Allowed Redis methods (whitelist for security)
+const REDIS_ALLOWED_METHODS = [
+  'GET', 'SET', 'DEL', 'INCR', 'INCRBY', 'DECR', 'DECRBY',
+  'MGET', 'MSET', 'SETNX', 'SETEX', 'TTL', 'EXPIRE', 'EXISTS',
+  'HGET', 'HSET', 'HDEL', 'HGETALL', 'HMGET', 'HMSET', 'HINCRBY', 'HEXISTS', 'HKEYS', 'HVALS', 'HLEN',
+  'SADD', 'SREM', 'SMEMBERS', 'SISMEMBER', 'SCARD', 'SUNION', 'SINTER',
+  'LPUSH', 'RPUSH', 'LPOP', 'RPOP', 'LRANGE', 'LLEN', 'LINDEX',
+  'ZADD', 'ZREM', 'ZSCORE', 'ZRANK', 'ZREVRANK', 'ZRANGE', 'ZREVRANGE', 'ZRANGEBYSCORE', 'ZCOUNT', 'ZCARD',
+  'KEYS', 'TYPE', 'SCAN'
+];
+
+// Redis proxy endpoint
+app.post('/api/redis', async (req, res) => {
+  const client = getRedisClient();
+
+  if (!client) {
+    return res.status(503).json({
+      error: 'Redis not configured',
+      message: 'Set REDIS_URL environment variable'
+    });
+  }
+
+  try {
+    const { method, params = [] } = req.body;
+
+    if (!method) {
+      return res.status(400).json({ error: 'Method required' });
+    }
+
+    const upperMethod = method.toUpperCase();
+
+    // Validate method against whitelist
+    if (!REDIS_ALLOWED_METHODS.includes(upperMethod)) {
+      return res.status(400).json({ error: `Method not allowed: ${method}` });
+    }
+
+    // Execute Redis command
+    const result = await client[upperMethod.toLowerCase()](...params);
+    res.json(result);
+
+  } catch (error) {
+    console.error('[Redis API] Error:', error.message);
+    res.status(500).json({
+      error: 'Redis operation failed',
+      message: error.message
+    });
+  }
+});
+
+// Catch-all for unknown /api routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 // Route /story to learn.html (old homepage)

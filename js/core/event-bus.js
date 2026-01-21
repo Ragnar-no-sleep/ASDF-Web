@@ -252,7 +252,47 @@ export const EVENTS = {
   WHALE_BURN: 'realtime:whale',
   LEADERBOARD_UPDATE: 'realtime:leaderboard',
   RANK_CHANGED: 'realtime:rank',
-  ANNOUNCEMENT: 'realtime:announcement'
+  ANNOUNCEMENT: 'realtime:announcement',
+
+  // Quest events
+  QUEST_UNLOCKED: 'quest:unlocked',
+  QUEST_STARTED: 'quest:started',
+  QUEST_PROGRESS: 'quest:progress',
+  QUEST_SUBMITTED: 'quest:submitted',
+  QUEST_VERIFIED: 'quest:verified',
+  QUEST_REJECTED: 'quest:rejected',
+  QUEST_COMPLETED: 'quest:completed',
+  QUEST_FAILED: 'quest:failed',
+
+  // Module events
+  MODULE_UNLOCKED: 'module:unlocked',
+  MODULE_STARTED: 'module:started',
+  MODULE_BLOCK_COMPLETED: 'module:block_completed',
+  MODULE_LESSON_COMPLETED: 'module:lesson_completed',
+  MODULE_COMPLETED: 'module:completed',
+
+  // Quiz events
+  QUIZ_STARTED: 'quiz:started',
+  QUIZ_ANSWERED: 'quiz:answered',
+  QUIZ_PASSED: 'quiz:passed',
+  QUIZ_FAILED: 'quiz:failed',
+
+  // XP & Progression events
+  XP_GAINED: 'xp:gained',
+  XP_LEVEL_UP: 'xp:level_up',
+  XP_STREAK_CONTINUED: 'xp:streak_continued',
+  XP_STREAK_BROKEN: 'xp:streak_broken',
+  XP_MILESTONE: 'xp:milestone',
+
+  // Badge events
+  BADGE_UNLOCKED: 'badge:unlocked',
+  BADGE_MINTED: 'badge:minted',
+  BADGE_CLAIMED: 'badge:claimed',
+
+  // Progress sync events
+  PROGRESS_SYNCED: 'progress:synced',
+  PROGRESS_CONFLICT: 'progress:conflict',
+  PROGRESS_OFFLINE: 'progress:offline'
 };
 
 // Global access for non-module scripts
