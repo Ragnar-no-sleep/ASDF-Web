@@ -456,139 +456,185 @@ export const Yggdrasil = {
   },
 
   /**
-   * Build Floating Islands from ecosystem projects - Organic Yggdrasil style
+   * Build Floating Islands from ecosystem projects - Phi-harmonic Yggdrasil style
+   * Projects are distributed along branches by track, using golden ratios
    */
   buildIslands() {
     const { islands: islandConfig } = CONFIG;
+    const PHI = 1.618033988749895;
+    const PHI_INV = 0.618033988749895;
 
-    ECOSYSTEM_PROJECTS.forEach((project, index) => {
-      const angle = index * GOLDEN_ANGLE;
-
-      // Position - orbit around the tree with more spread
-      const radius = islandConfig.orbitRadius + (Math.random() - 0.5) * 4;
-      const height =
-        islandConfig.orbitHeight.min +
-        Math.random() * (islandConfig.orbitHeight.max - islandConfig.orbitHeight.min);
-
-      const position = new THREE.Vector3(
-        Math.cos(angle) * radius,
-        height,
-        Math.sin(angle) * radius
-      );
-
-      // Size based on kScore
-      const sizeScale = 0.5 + (project.kScore / 100) * 0.5;
-      const size =
-        islandConfig.size.min + sizeScale * (islandConfig.size.max - islandConfig.size.min);
-
-      const trackColor = islandConfig.trackColors[project.track] || 0x888888;
-
-      // Create organic floating island
-      const island = new THREE.Group();
-
-      // === MAIN ROCK (organic icosahedron with noise) ===
-      const rockGeometry = new THREE.IcosahedronGeometry(size, 2);
-      const positionAttr = rockGeometry.attributes.position;
-      for (let i = 0; i < positionAttr.count; i++) {
-        const x = positionAttr.getX(i);
-        const y = positionAttr.getY(i);
-        const z = positionAttr.getZ(i);
-        // More noise at bottom (stalactite effect)
-        const bottomFactor = y < 0 ? 1.3 : 1.0;
-        const noise = 0.85 + Math.random() * 0.3;
-        positionAttr.setXYZ(i, x * noise, y * noise * bottomFactor, z * noise);
-      }
-      rockGeometry.computeVertexNormals();
-
-      // Darker, more natural stone color
-      const rockMaterial = new THREE.MeshStandardMaterial({
-        color: 0x2a2a35,
-        roughness: 0.85,
-        metalness: 0.1,
-        emissive: trackColor,
-        emissiveIntensity: project.status === 'live' ? 0.2 : 0.08,
-      });
-
-      const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-      island.add(rock);
-
-      // === MYSTICAL GLOW AURA ===
-      const auraGeometry = new THREE.SphereGeometry(size * 1.4, 16, 16);
-      const auraMaterial = new THREE.MeshBasicMaterial({
-        color: trackColor,
-        transparent: true,
-        opacity: project.status === 'live' ? 0.12 : 0.05,
-        side: THREE.BackSide,
-      });
-      const aura = new THREE.Mesh(auraGeometry, auraMaterial);
-      island.add(aura);
-
-      // === FLOATING RUNE RING ===
-      const ringGeometry = new THREE.TorusGeometry(size * 1.1, 0.05, 8, 32);
-      const ringMaterial = new THREE.MeshBasicMaterial({
-        color: trackColor,
-        transparent: true,
-        opacity: project.status === 'live' ? 0.6 : 0.25,
-      });
-      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = size * 0.3;
-      island.add(ring);
-
-      // === TINY ORBITING PARTICLES ===
-      const particleCount = 8;
-      const particleGeo = new THREE.BufferGeometry();
-      const particlePos = new Float32Array(particleCount * 3);
-      for (let i = 0; i < particleCount; i++) {
-        const pAngle = (i / particleCount) * Math.PI * 2;
-        const pRadius = size * 1.3;
-        particlePos[i * 3] = Math.cos(pAngle) * pRadius;
-        particlePos[i * 3 + 1] = (Math.random() - 0.5) * size;
-        particlePos[i * 3 + 2] = Math.sin(pAngle) * pRadius;
-      }
-      particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-      const particleMat = new THREE.PointsMaterial({
-        color: trackColor,
-        size: 0.12,
-        transparent: true,
-        opacity: 0.7,
-      });
-      const particles = new THREE.Points(particleGeo, particleMat);
-      island.add(particles);
-
-      // Position island
-      island.position.copy(position);
-
-      island.userData = {
-        type: 'island',
-        project: project,
-        originalEmissive: project.status === 'live' ? 0.2 : 0.08,
-        rockMaterial: rockMaterial,
-        auraMaterial: auraMaterial,
-        ringMaterial: ringMaterial,
-        particles: particles,
-      };
-
-      if (project.status === 'building') {
-        island.userData.building = true;
-      }
-
-      this.islandsGroup.add(island);
-      this.islands.set(project.id, {
-        mesh: island,
-        project: project,
-        position: position,
-        baseY: position.y,
-      });
-
-      // Create connection particles to burn core
-      ConnectionParticles.createConnection(
-        this.scene,
-        position,
-        CONFIG.burnCore.position,
-        trackColor
-      );
+    // Group projects by track
+    const tracks = { dev: [], games: [], content: [] };
+    ECOSYSTEM_PROJECTS.forEach(p => {
+      if (tracks[p.track]) tracks[p.track].push(p);
     });
+
+    // Track base angles (120° apart, covering full circle)
+    const trackAngles = {
+      dev: 0, // Front-right
+      games: (Math.PI * 2) / 3, // Back
+      content: (Math.PI * 4) / 3, // Front-left
+    };
+
+    // Track vertical zones (using phi ratios)
+    const trackHeights = {
+      dev: { min: 8, max: 14 }, // Higher - infrastructure
+      games: { min: 6, max: 12 }, // Middle - entertainment
+      content: { min: 7, max: 13 }, // Middle-high - education
+    };
+
+    // Process each track
+    Object.entries(tracks).forEach(([trackId, projects]) => {
+      const baseAngle = trackAngles[trackId];
+      const heights = trackHeights[trackId];
+      const trackSpread = Math.PI / 3; // 60° spread per track
+
+      projects.forEach((project, i) => {
+        const t = projects.length > 1 ? i / (projects.length - 1) : 0.5;
+
+        // Phi-based angular distribution within track sector
+        // Uses golden angle offsets for natural spacing
+        const phiOffset = (i * GOLDEN_ANGLE) % trackSpread;
+        const angle = baseAngle - trackSpread / 2 + phiOffset;
+
+        // Height distribution using phi spiral
+        const heightT = (i % 3) / 2; // Cycle through 3 height levels
+        const height = heights.min + heightT * (heights.max - heights.min);
+
+        // Radius varies with phi ratio for depth
+        const radiusBase = islandConfig.orbitRadius;
+        const radiusVariation = 4 * (PHI_INV + (i % 5) * 0.1);
+        const radius = radiusBase + radiusVariation * (i % 2 === 0 ? 1 : -1) * PHI_INV;
+
+        const position = new THREE.Vector3(
+          Math.cos(angle) * radius,
+          height,
+          Math.sin(angle) * radius
+        );
+
+        // Size based on kScore with phi scaling
+        const kScoreNorm = project.kScore / 100;
+        const sizeScale = PHI_INV + kScoreNorm * PHI_INV;
+        const size =
+          islandConfig.size.min + sizeScale * (islandConfig.size.max - islandConfig.size.min);
+
+        const trackColor = islandConfig.trackColors[project.track] || 0x888888;
+
+        this.createIsland(project, position, size, trackColor, islandConfig);
+      });
+    });
+  },
+
+  /**
+   * Create a single floating island
+   */
+  createIsland(project, position, size, trackColor, islandConfig) {
+    // Create organic floating island
+    const island = new THREE.Group();
+
+    // === MAIN ROCK (organic icosahedron with noise) ===
+    const rockGeometry = new THREE.IcosahedronGeometry(size, 2);
+    const positionAttr = rockGeometry.attributes.position;
+    for (let i = 0; i < positionAttr.count; i++) {
+      const x = positionAttr.getX(i);
+      const y = positionAttr.getY(i);
+      const z = positionAttr.getZ(i);
+      // More noise at bottom (stalactite effect)
+      const bottomFactor = y < 0 ? 1.3 : 1.0;
+      const noise = 0.85 + Math.random() * 0.3;
+      positionAttr.setXYZ(i, x * noise, y * noise * bottomFactor, z * noise);
+    }
+    rockGeometry.computeVertexNormals();
+
+    // Darker, more natural stone color
+    const rockMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2a2a35,
+      roughness: 0.85,
+      metalness: 0.1,
+      emissive: trackColor,
+      emissiveIntensity: project.status === 'live' ? 0.2 : 0.08,
+    });
+
+    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+    island.add(rock);
+
+    // === MYSTICAL GLOW AURA ===
+    const auraGeometry = new THREE.SphereGeometry(size * 1.4, 16, 16);
+    const auraMaterial = new THREE.MeshBasicMaterial({
+      color: trackColor,
+      transparent: true,
+      opacity: project.status === 'live' ? 0.12 : 0.05,
+      side: THREE.BackSide,
+    });
+    const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+    island.add(aura);
+
+    // === FLOATING RUNE RING ===
+    const ringGeometry = new THREE.TorusGeometry(size * 1.1, 0.05, 8, 32);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: trackColor,
+      transparent: true,
+      opacity: project.status === 'live' ? 0.6 : 0.25,
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = size * 0.3;
+    island.add(ring);
+
+    // === TINY ORBITING PARTICLES ===
+    const particleCount = 8;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      const pAngle = (i / particleCount) * Math.PI * 2;
+      const pRadius = size * 1.3;
+      particlePos[i * 3] = Math.cos(pAngle) * pRadius;
+      particlePos[i * 3 + 1] = (Math.random() - 0.5) * size;
+      particlePos[i * 3 + 2] = Math.sin(pAngle) * pRadius;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: trackColor,
+      size: 0.12,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    island.add(particles);
+
+    // Position island
+    island.position.copy(position);
+
+    island.userData = {
+      type: 'island',
+      project: project,
+      originalEmissive: project.status === 'live' ? 0.2 : 0.08,
+      rockMaterial: rockMaterial,
+      auraMaterial: auraMaterial,
+      ringMaterial: ringMaterial,
+      particles: particles,
+    };
+
+    if (project.status === 'building') {
+      island.userData.building = true;
+    }
+
+    this.islandsGroup.add(island);
+    this.islands.set(project.id, {
+      mesh: island,
+      project: project,
+      position: position,
+      baseY: position.y,
+    });
+
+    // Create connection particles to burn core
+    ConnectionParticles.createConnection(
+      this.scene,
+      position,
+      CONFIG.burnCore.position,
+      trackColor
+    );
   },
 
   /**

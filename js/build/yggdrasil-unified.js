@@ -35,6 +35,8 @@ const YggdrasilCosmos = {
   ctaHint: null,
   projectModal: null,
   skillModal: null,
+  componentModal: null,
+  filterLegend: null,
 
   // Data
   projectsData: null,
@@ -46,6 +48,13 @@ const YggdrasilCosmos = {
   rightPanelOpen: false,
   projectModalOpen: false,
   skillModalOpen: false,
+  componentModalOpen: false,
+
+  // Filter state
+  filters: {
+    tracks: { dev: true, games: true, content: true },
+    status: { live: true, building: true, planned: true },
+  },
   quizState: {
     currentQuestion: 0,
     answers: [],
@@ -650,9 +659,11 @@ const YggdrasilCosmos = {
     this.buildLeftPanel();
     this.buildRightPanel();
     this.buildBurnHud();
+    this.buildFilterLegend();
     this.buildProjectModal();
     this.buildSkillModal();
     this.buildLessonModal();
+    this.buildComponentModal();
 
     try {
       // Initialize Three.js dashboard with 5s timeout
@@ -2562,6 +2573,208 @@ const YggdrasilCosmos = {
         `;
 
     document.body.appendChild(this.burnHud);
+  },
+
+  /**
+   * Build filter & legend panel
+   */
+  buildFilterLegend() {
+    this.filterLegend = document.createElement('div');
+    this.filterLegend.className = 'ygg-filter-legend';
+    this.filterLegend.innerHTML = `
+      <div class="ygg-legend-header">
+        <span class="legend-title">🗺️ Legend</span>
+        <button class="legend-toggle">−</button>
+      </div>
+      <div class="ygg-legend-content">
+        <div class="legend-section">
+          <span class="legend-section-title">Tracks</span>
+          <label class="legend-filter" data-filter="track" data-value="dev">
+            <input type="checkbox" checked>
+            <span class="legend-color" style="background: #ff4444;"></span>
+            <span class="legend-label">Dev</span>
+            <span class="legend-count" data-track="dev">11</span>
+          </label>
+          <label class="legend-filter" data-filter="track" data-value="games">
+            <input type="checkbox" checked>
+            <span class="legend-color" style="background: #aa44ff;"></span>
+            <span class="legend-label">Games</span>
+            <span class="legend-count" data-track="games">4</span>
+          </label>
+          <label class="legend-filter" data-filter="track" data-value="content">
+            <input type="checkbox" checked>
+            <span class="legend-color" style="background: #44aaff;"></span>
+            <span class="legend-label">Content</span>
+            <span class="legend-count" data-track="content">6</span>
+          </label>
+        </div>
+        <div class="legend-section">
+          <span class="legend-section-title">Status</span>
+          <label class="legend-filter" data-filter="status" data-value="live">
+            <input type="checkbox" checked>
+            <span class="legend-icon">●</span>
+            <span class="legend-label">Live</span>
+          </label>
+          <label class="legend-filter" data-filter="status" data-value="building">
+            <input type="checkbox" checked>
+            <span class="legend-icon pulse">◐</span>
+            <span class="legend-label">Building</span>
+          </label>
+          <label class="legend-filter" data-filter="status" data-value="planned">
+            <input type="checkbox" checked>
+            <span class="legend-icon dim">○</span>
+            <span class="legend-label">Planned</span>
+          </label>
+        </div>
+        <div class="legend-section legend-phi">
+          <span class="legend-section-title">Φ Harmony</span>
+          <div class="phi-indicator">
+            <span class="phi-symbol">φ</span>
+            <span class="phi-value">1.618</span>
+          </div>
+          <p class="phi-desc">Projects positioned using golden angle (137.5°)</p>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(this.filterLegend);
+
+    // Toggle collapse
+    this.filterLegend.querySelector('.legend-toggle').addEventListener('click', () => {
+      this.filterLegend.classList.toggle('collapsed');
+      const btn = this.filterLegend.querySelector('.legend-toggle');
+      btn.textContent = this.filterLegend.classList.contains('collapsed') ? '+' : '−';
+    });
+
+    // Filter checkboxes
+    this.filterLegend.querySelectorAll('.legend-filter input').forEach(checkbox => {
+      checkbox.addEventListener('change', e => {
+        const label = e.target.closest('.legend-filter');
+        const filterType = label.dataset.filter;
+        const value = label.dataset.value;
+
+        if (filterType === 'track') {
+          this.filters.tracks[value] = e.target.checked;
+        } else if (filterType === 'status') {
+          this.filters.status[value] = e.target.checked;
+        }
+
+        this.applyFilters();
+      });
+    });
+  },
+
+  /**
+   * Apply filters to Yggdrasil islands
+   */
+  applyFilters() {
+    if (!this.dashboard?.cosmos?.islands) return;
+
+    const islands = this.dashboard.cosmos.islands;
+    islands.forEach((islandData, projectId) => {
+      const project = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
+      if (!project) return;
+
+      const trackVisible = this.filters.tracks[project.track];
+      const statusVisible = this.filters.status[project.status];
+      const visible = trackVisible && statusVisible;
+
+      islandData.mesh.visible = visible;
+    });
+  },
+
+  /**
+   * Build component detail modal
+   */
+  buildComponentModal() {
+    this.componentModal = document.createElement('div');
+    this.componentModal.className = 'ygg-component-modal';
+    this.componentModal.innerHTML = `
+      <div class="ygg-modal-backdrop"></div>
+      <div class="ygg-modal-content ygg-component-content">
+        <button class="ygg-modal-close">&times;</button>
+        <div class="ygg-modal-body"></div>
+      </div>
+    `;
+    document.body.appendChild(this.componentModal);
+
+    // Close events
+    this.componentModal
+      .querySelector('.ygg-modal-backdrop')
+      .addEventListener('click', () => this.closeComponentModal());
+    this.componentModal
+      .querySelector('.ygg-modal-close')
+      .addEventListener('click', () => this.closeComponentModal());
+  },
+
+  /**
+   * Open component modal
+   */
+  openComponentModal(projectId, component) {
+    const project = this.projectsData[projectId];
+    const projectTitle = project?.title || projectId;
+
+    this.componentModal.querySelector('.ygg-modal-body').innerHTML = `
+      <div class="ygg-component-modal-header">
+        <span class="component-modal-icon">${component.icon}</span>
+        <div class="component-modal-titles">
+          <h2>${component.name}</h2>
+          <span class="component-modal-project">Part of ${projectTitle}</span>
+        </div>
+        <span class="component-modal-status status-${component.status}">${component.status}</span>
+      </div>
+
+      <div class="component-modal-grid">
+        <div class="component-modal-section">
+          <h3>What</h3>
+          <p>${component.what || 'N/A'}</p>
+        </div>
+        <div class="component-modal-section">
+          <h3>How</h3>
+          <p>${component.how || 'N/A'}</p>
+        </div>
+        <div class="component-modal-section">
+          <h3>Why</h3>
+          <p>${component.why || 'N/A'}</p>
+        </div>
+        ${
+          component.future
+            ? `
+        <div class="component-modal-section future">
+          <h3>Future</h3>
+          <p>${component.future}</p>
+        </div>
+        `
+            : ''
+        }
+      </div>
+
+      <div class="component-modal-actions">
+        <button class="ygg-btn ygg-btn-primary" onclick="YggdrasilCosmos.openProjectModal('${projectId}')">
+          View Full Project
+        </button>
+        ${
+          project?.demo
+            ? `
+        <a href="${project.demo}" target="_blank" class="ygg-btn ygg-btn-secondary">
+          Open Demo
+        </a>
+        `
+            : ''
+        }
+      </div>
+    `;
+
+    this.componentModal.classList.add('open');
+    this.componentModalOpen = true;
+  },
+
+  /**
+   * Close component modal
+   */
+  closeComponentModal() {
+    this.componentModal.classList.remove('open');
+    this.componentModalOpen = false;
   },
 
   /**
