@@ -97,8 +97,22 @@
       { "phase": "Q3", "text": "Launch cross-chain burn synchronization" }
     ],
     "integrations": ["Helius RPC", "Jupiter", "Raydium", "Metaplex"],
-    "github": "https://github.com/asdf-ecosystem/burn-engine",
-    "demo": null
+    "github": "https://github.com/zeyxx/asdf-burn-engine",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      },
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Architecture",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      }
+    ]
   },
   "burn-tracker": {
     "id": "burn-tracker",
@@ -198,8 +212,22 @@
       { "phase": "Q3", "text": "Multi-token comparison dashboard" }
     ],
     "integrations": ["Burn Engine", "Helius", "Discord", "Telegram"],
-    "github": "https://github.com/asdf-ecosystem/burn-tracker",
-    "demo": "https://alonisthe.dev/burns"
+    "github": "https://github.com/sollama58/ASDFBurnTracker",
+    "demo": "https://alonisthe.dev/burns",
+    "contributors": [
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Backend Developer",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "token-launcher": {
     "id": "token-launcher",
@@ -299,8 +327,22 @@
       { "phase": "Q3", "text": "Public API for integrations" }
     ],
     "integrations": ["Burn Engine", "Metaplex", "Raydium", "Jupiter"],
-    "github": "https://github.com/asdf-ecosystem/launcher",
-    "demo": "https://alonisthe.dev/ignition"
+    "github": "https://github.com/sollama58/ASDev",
+    "demo": "https://alonisthe.dev/ignition",
+    "contributors": [
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Smart Contracts",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "oracle": {
     "id": "oracle",
@@ -394,8 +436,22 @@
       { "phase": "Q3", "text": "ML-based prediction models" }
     ],
     "integrations": ["Helius", "Jupiter", "Birdeye", "Burn Tracker"],
-    "github": "https://github.com/asdf-ecosystem/oracle",
-    "demo": null
+    "github": "https://github.com/zeyxx/asdf-oracle",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      },
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Architecture",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      }
+    ]
   },
   "learn-platform": {
     "id": "learn-platform",
@@ -495,8 +551,22 @@
       { "phase": "Q3", "text": "On-chain certificate NFTs" }
     ],
     "integrations": ["Community Hub", "Ambassador Program"],
-    "github": "https://github.com/asdf-ecosystem/learn",
-    "demo": "https://alonisthe.dev/learn.html"
+    "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
+    "demo": "https://alonisthe.dev/learn.html",
+    "contributors": [
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      },
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Content Writer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      }
+    ]
   },
   "rpc-monitor": {
     "id": "rpc-monitor",
@@ -590,8 +660,16 @@
       { "phase": "Q3", "text": "Cost tracking and optimization" }
     ],
     "integrations": ["Helius", "All Ecosystem Services"],
-    "github": "https://github.com/asdf-ecosystem/rpc-monitor",
-    "demo": null
+    "github": "https://github.com/zeyxx/asdf-validator",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Infrastructure Lead",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "holdex": {
     "id": "holdex",
@@ -685,8 +763,28 @@
       { "phase": "Q3", "text": "DEX aggregation beyond Jupiter" }
     ],
     "integrations": ["ASDF Oracle", "Jupiter", "Birdeye"],
-    "github": "https://github.com/asdf-ecosystem/holdex",
-    "demo": null
+    "github": "https://github.com/Ragnar-no-sleep/HolDex",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Backend Developer",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      },
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Frontend Developer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      }
+    ]
   },
   "games-platform": {
     "id": "games-platform",
@@ -780,8 +878,16 @@
       { "phase": "Q3", "text": "Mobile companion app" }
     ],
     "integrations": ["ASDF Oracle", "Burn Engine", "Wallet Adapters"],
-    "github": "https://github.com/asdf-ecosystem/games",
-    "demo": "https://alonisthe.dev/games.html"
+    "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
+    "demo": "https://alonisthe.dev/games.html",
+    "contributors": [
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      }
+    ]
   },
   "forecast": {
     "id": "forecast",
@@ -858,7 +964,21 @@
     ],
     "integrations": ["ASDF Oracle", "Helius", "Jupiter"],
     "github": "https://github.com/sollama58/ASDForecast",
-    "demo": null
+    "demo": null,
+    "contributors": [
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Smart Contracts",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "ignition": {
     "id": "ignition",
@@ -934,8 +1054,22 @@
       { "phase": "Q3", "text": "Cross-ecosystem launch partnerships" }
     ],
     "integrations": ["Burn Engine", "ASDF Oracle", "Helius"],
-    "github": "https://github.com/zeyxx",
-    "demo": null
+    "github": "https://github.com/zeyxx/ASDev",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      },
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Frontend Developer",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      }
+    ]
   },
   "community-hub": {
     "id": "community-hub",
@@ -1029,8 +1163,22 @@
       { "phase": "Q3", "text": "Treasury management dashboard" }
     ],
     "integrations": ["Discord", "Ambassador Program", "Learn Platform"],
-    "github": "https://github.com/asdf-ecosystem/hub",
-    "demo": null
+    "github": "https://github.com/Ragnar-no-sleep/ASDF-Builders",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Lead Developer",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Discord Bot",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "deploy-pipeline": {
     "id": "deploy-pipeline",
@@ -1124,8 +1272,22 @@
       { "phase": "Q3", "text": "Cost tracking and optimization" }
     ],
     "integrations": ["RPC Monitor", "All Services"],
-    "github": "https://github.com/asdf-ecosystem/pipeline",
-    "demo": null
+    "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "DevOps Lead",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      },
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Infrastructure",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      }
+    ]
   },
   "ambassador-program": {
     "id": "ambassador-program",
@@ -1220,7 +1382,21 @@
     ],
     "integrations": ["Community Hub", "Metaplex", "Discord"],
     "github": null,
-    "demo": null
+    "demo": null,
+    "contributors": [
+      {
+        "name": "Ragnar",
+        "github": "Ragnar-no-sleep",
+        "role": "Program Lead",
+        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      },
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Community Lead",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      }
+    ]
   },
   "content-factory": {
     "id": "content-factory",
@@ -1315,7 +1491,15 @@
     ],
     "integrations": ["Ambassador Program", "Discord", "Twitter"],
     "github": null,
-    "demo": null
+    "demo": null,
+    "contributors": [
+      {
+        "name": "sollama58",
+        "github": "sollama58",
+        "role": "Creative Director",
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
+      }
+    ]
   },
   "security-audit": {
     "id": "security-audit",
@@ -1410,7 +1594,15 @@
     ],
     "integrations": ["Deploy Pipeline", "All Smart Contracts"],
     "github": null,
-    "demo": null
+    "demo": null,
+    "contributors": [
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Security Lead",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+      }
+    ]
   },
   "pumparena": {
     "id": "pumparena",
