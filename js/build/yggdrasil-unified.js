@@ -753,15 +753,32 @@ const YggdrasilCosmos = {
    * Map ECOSYSTEM_PROJECTS IDs to projects.json IDs
    */
   mapProjectId(ecosystemId) {
+    // Direct mapping - all 21 projects use matching IDs in projects.json
     const mapping = {
-      holdex: 'holdex',
-      forecast: 'forecast',
+      // Dev track (11)
+      'burn-engine': 'burn-engine',
       burns: 'burns',
+      holdex: 'holdex',
+      oracle: 'oracle',
+      forecast: 'forecast',
+      'token-launcher': 'token-launcher',
+      ignition: 'ignition',
+      'rpc-monitor': 'rpc-monitor',
+      'deploy-pipeline': 'deploy-pipeline',
+      'security-audit': 'security-audit',
+      'burn-tracker': 'burn-tracker',
+      // Games track (4)
       pumparena: 'pumparena',
       arcade: 'arcade',
+      'games-platform': 'games-platform',
+      'learn-platform': 'learn-platform',
+      // Content track (6)
       manifesto: 'manifesto',
-      learn: 'learn',
       factory: 'factory',
+      learn: 'learn',
+      'community-hub': 'community-hub',
+      'ambassador-program': 'ambassador-program',
+      'content-factory': 'content-factory',
     };
     return mapping[ecosystemId] || ecosystemId;
   },
@@ -973,15 +990,30 @@ const YggdrasilCosmos = {
     } else {
       // Fallback: open the module related to this project
       const projectToCourse = {
+        // Dev track → Solana courses
         'burn-engine': 'solana-fundamentals',
         burns: 'solana-fundamentals',
         holdex: 'dapp-development',
+        oracle: 'solana-fundamentals',
         forecast: 'dapp-development',
+        'token-launcher': 'solana-fundamentals',
+        ignition: 'solana-fundamentals',
+        'rpc-monitor': 'dapp-development',
+        'deploy-pipeline': 'dapp-development',
+        'security-audit': 'solana-fundamentals',
+        'burn-tracker': 'dapp-development',
+        // Games track → Game design courses
         pumparena: 'game-design-fundamentals',
         arcade: 'game-design-fundamentals',
+        'games-platform': 'game-design-fundamentals',
+        'learn-platform': 'game-design-fundamentals',
+        // Content track → Content courses
         manifesto: 'crypto-writing',
-        learn: 'teaching-web3',
         factory: 'teaching-web3',
+        learn: 'teaching-web3',
+        'community-hub': 'community-building',
+        'ambassador-program': 'community-building',
+        'content-factory': 'crypto-writing',
       };
       const courseId = projectToCourse[projectId];
       if (courseId) {
