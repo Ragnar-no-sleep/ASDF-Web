@@ -7,6 +7,7 @@
 
 import { Dashboard, TRACKS, ECOSYSTEM_PROJECTS } from '../dashboard/index.js';
 import { COURSES, getCourse } from './data/courses.js';
+import { SKILLS_DATA, getSkill, getSkillsForProject } from './data/skills.js';
 
 /**
  * Promise with timeout wrapper
@@ -33,15 +34,18 @@ const YggdrasilCosmos = {
   burnHud: null,
   ctaHint: null,
   projectModal: null,
+  skillModal: null,
 
   // Data
   projectsData: null,
+  skillsData: SKILLS_DATA,
 
   // State
   initialized: false,
   leftPanelOpen: false,
   rightPanelOpen: false,
   projectModalOpen: false,
+  skillModalOpen: false,
   quizState: {
     currentQuestion: 0,
     answers: [],
@@ -647,6 +651,7 @@ const YggdrasilCosmos = {
     this.buildRightPanel();
     this.buildBurnHud();
     this.buildProjectModal();
+    this.buildSkillModal();
     this.buildLessonModal();
 
     try {
@@ -707,12 +712,9 @@ const YggdrasilCosmos = {
       this.openProjectModal(project.id);
     });
 
-    // Skill click -> could open skill detail or formation panel
-    this.dashboard.cosmos.on('skillClick', (skill, project) => {
-      // For now, open the project modal with skill highlighted
-      if (project) {
-        this.openProjectModal(project.id, skill.id);
-      }
+    // Skill click -> open skill detail modal
+    this.dashboard.cosmos.on('skillClick', skill => {
+      this.openSkillModal(skill.id);
     });
   },
 
@@ -943,6 +945,242 @@ const YggdrasilCosmos = {
   closeProjectModal() {
     this.projectModal.classList.remove('open');
     this.projectModalOpen = false;
+  },
+
+  /**
+   * Build skill detail modal
+   */
+  buildSkillModal() {
+    this.skillModal = document.createElement('div');
+    this.skillModal.className = 'ygg-skill-modal';
+    this.skillModal.innerHTML = `
+      <div class="ygg-modal-backdrop"></div>
+      <div class="ygg-modal-content">
+        <button class="ygg-modal-close">&times;</button>
+        <div class="ygg-modal-body"></div>
+      </div>
+    `;
+    document.body.appendChild(this.skillModal);
+
+    // Close events
+    this.skillModal
+      .querySelector('.ygg-modal-backdrop')
+      .addEventListener('click', () => this.closeSkillModal());
+    this.skillModal
+      .querySelector('.ygg-modal-close')
+      .addEventListener('click', () => this.closeSkillModal());
+  },
+
+  /**
+   * Open skill modal with detailed content
+   */
+  openSkillModal(skillId) {
+    const skill = getSkill(skillId);
+    if (!skill) {
+      console.warn('[YggdrasilCosmos] Skill not found:', skillId);
+      return;
+    }
+
+    const track = TRACKS[skill.track];
+    const trackColor = track?.color ? `#${track.color.toString(16).padStart(6, '0')}` : '#ff6644';
+
+    // Build topics HTML
+    const topicsHtml =
+      skill.topics
+        ?.map(
+          (topic, i) => `
+        <div class="ygg-skill-topic">
+          <div class="ygg-skill-topic-header">
+            <span class="ygg-skill-topic-num">${i + 1}</span>
+            <span class="ygg-skill-topic-name">${topic.name}</span>
+            <span class="ygg-skill-topic-duration">${topic.duration}</span>
+          </div>
+          <p class="ygg-skill-topic-desc">${topic.description}</p>
+        </div>
+      `
+        )
+        .join('') || '';
+
+    // Build outcomes HTML
+    const outcomesHtml =
+      skill.learningOutcomes?.map(outcome => `<li>${outcome}</li>`).join('') || '';
+
+    // Build resources HTML
+    const resourcesHtml =
+      skill.resources
+        ?.map(
+          r => `
+        <a href="${r.url}" target="_blank" rel="noopener" class="ygg-skill-resource">
+          <span class="ygg-resource-type">${r.type}</span>
+          <span class="ygg-resource-title">${r.title}</span>
+        </a>
+      `
+        )
+        .join('') || '';
+
+    // Build prerequisites HTML
+    const prereqsHtml = skill.prerequisites?.length
+      ? skill.prerequisites
+          .map(prereqId => {
+            const prereq = getSkill(prereqId);
+            return prereq
+              ? `<span class="ygg-skill-prereq" data-skill="${prereqId}">${prereq.icon} ${prereq.name}</span>`
+              : '';
+          })
+          .join('')
+      : '<span class="ygg-skill-prereq-none">None - start here!</span>';
+
+    // Build related projects HTML
+    const projectsHtml =
+      skill.projects
+        ?.map(projectId => {
+          const project = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
+          return project
+            ? `<span class="ygg-skill-project" data-project="${projectId}">${project.name}</span>`
+            : '';
+        })
+        .join('') || '';
+
+    this.skillModal.querySelector('.ygg-modal-body').innerHTML = `
+      <div class="ygg-skill-header" style="border-color: ${trackColor}">
+        <span class="ygg-skill-icon">${skill.icon}</span>
+        <div class="ygg-skill-title-group">
+          <h2 class="ygg-skill-title">${skill.name}</h2>
+          <div class="ygg-skill-meta">
+            <span class="ygg-skill-track" style="color: ${trackColor}">${track?.name || skill.track}</span>
+            <span class="ygg-skill-difficulty">Difficulty: ${'★'.repeat(skill.difficulty)}${'☆'.repeat(3 - skill.difficulty)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ygg-skill-stats">
+        <div class="ygg-skill-stat">
+          <span class="ygg-stat-value">${skill.estimatedHours}h</span>
+          <span class="ygg-stat-label">Duration</span>
+        </div>
+        <div class="ygg-skill-stat">
+          <span class="ygg-stat-value">${skill.xpReward}</span>
+          <span class="ygg-stat-label">XP Reward</span>
+        </div>
+        <div class="ygg-skill-stat">
+          <span class="ygg-stat-value">${skill.topics?.length || 0}</span>
+          <span class="ygg-stat-label">Topics</span>
+        </div>
+      </div>
+
+      <p class="ygg-skill-description">${skill.description}</p>
+
+      <section class="ygg-skill-section">
+        <h3>📋 Prerequisites</h3>
+        <div class="ygg-skill-prereqs">${prereqsHtml}</div>
+      </section>
+
+      <section class="ygg-skill-section">
+        <h3>🎯 Learning Outcomes</h3>
+        <ul class="ygg-skill-outcomes">${outcomesHtml}</ul>
+      </section>
+
+      ${
+        topicsHtml
+          ? `
+      <section class="ygg-skill-section">
+        <h3>📚 Topics Covered</h3>
+        <div class="ygg-skill-topics">${topicsHtml}</div>
+      </section>
+      `
+          : ''
+      }
+
+      ${
+        resourcesHtml
+          ? `
+      <section class="ygg-skill-section">
+        <h3>🔗 Resources</h3>
+        <div class="ygg-skill-resources">${resourcesHtml}</div>
+      </section>
+      `
+          : ''
+      }
+
+      ${
+        projectsHtml
+          ? `
+      <section class="ygg-skill-section">
+        <h3>🏝️ Used in Projects</h3>
+        <div class="ygg-skill-projects">${projectsHtml}</div>
+      </section>
+      `
+          : ''
+      }
+
+      <div class="ygg-skill-actions">
+        <button class="ygg-btn ygg-btn-primary" onclick="YggdrasilCosmos.startSkillLearning('${skillId}')">
+          Start Learning
+        </button>
+      </div>
+    `;
+
+    // Bind prereq clicks
+    this.skillModal.querySelectorAll('.ygg-skill-prereq[data-skill]').forEach(el => {
+      el.addEventListener('click', () => {
+        this.openSkillModal(el.dataset.skill);
+      });
+    });
+
+    // Bind project clicks
+    this.skillModal.querySelectorAll('.ygg-skill-project[data-project]').forEach(el => {
+      el.addEventListener('click', () => {
+        this.closeSkillModal();
+        this.showProjectModal(el.dataset.project);
+      });
+    });
+
+    this.skillModal.classList.add('open');
+    this.skillModalOpen = true;
+  },
+
+  /**
+   * Close skill modal
+   */
+  closeSkillModal() {
+    this.skillModal.classList.remove('open');
+    this.skillModalOpen = false;
+  },
+
+  /**
+   * Start learning a skill - find related course module
+   */
+  startSkillLearning(skillId) {
+    this.closeSkillModal();
+
+    // Map skills to course modules
+    const skillToCourse = {
+      solana_basics: 'solana-fundamentals',
+      web3_js: 'solana-fundamentals',
+      anchor: 'anchor-framework',
+      token_analysis: 'spl-tokens',
+      smart_contracts: 'anchor-framework',
+      api_integration: 'asdf-integration',
+      data_viz: 'asdf-integration',
+      burn_mechanics: 'asdf-integration',
+      game_design: 'game-fundamentals',
+      pixel_art: 'game-fundamentals',
+      game_economy: 'asdf-game-engine',
+      multiplayer: 'asdf-game-engine',
+      leaderboards: 'asdf-game-engine',
+      writing: 'technical-writing',
+      philosophy: 'content-fundamentals',
+      teaching: 'technical-writing',
+      storytelling: 'content-fundamentals',
+      community: 'community-growth',
+    };
+
+    const courseId = skillToCourse[skillId];
+    if (courseId) {
+      this.openModule(courseId);
+    } else {
+      this.showNotification('Course content coming soon!', 'info');
+    }
   },
 
   /**
