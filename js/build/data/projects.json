@@ -763,26 +763,20 @@
       { "phase": "Q3", "text": "DEX aggregation beyond Jupiter" }
     ],
     "integrations": ["ASDF Oracle", "Jupiter", "Birdeye"],
-    "github": "https://github.com/Ragnar-no-sleep/HolDex",
+    "github": "https://github.com/sollama58/HolDex",
     "demo": null,
     "contributors": [
       {
-        "name": "Ragnar",
-        "github": "Ragnar-no-sleep",
+        "name": "sollama58",
+        "github": "sollama58",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://avatars.githubusercontent.com/sollama58"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Backend Developer",
         "avatar": "https://avatars.githubusercontent.com/zeyxx"
-      },
-      {
-        "name": "sollama58",
-        "github": "sollama58",
-        "role": "Frontend Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
       }
     ]
   },
@@ -1920,123 +1914,129 @@
       { "phase": "Q3", "text": "Community manifesto contributions" }
     ],
     "integrations": ["Learn Platform", "Community Hub"],
-    "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
+    "github": "https://github.com/zeyxx/asdf-manifesto",
     "demo": "https://alonisthe.dev/manifesto.html",
     "contributors": [
       {
-        "name": "Ragnar",
-        "github": "Ragnar-no-sleep",
-        "role": "Founder & Writer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Author & Architect",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
       }
     ]
   },
-  "journey": {
-    "id": "journey",
-    "icon": "🗺️",
-    "title": "Builder's Journey",
+  "factory": {
+    "id": "factory",
+    "icon": "🏭",
+    "title": "Builder Factory",
     "status": "live",
     "category": "education",
-    "overview": "Interactive learning path that guides users from crypto basics to active builder. Combines storytelling with hands-on projects for an engaging educational experience.",
+    "overview": "Educational content hub powering the Build platform. Interactive courses, skill workshops, and hands-on projects that transform learners into active ASDF builders.",
     "features": [
       {
-        "name": "Narrative Learning Path",
-        "what": "Story-driven progression through crypto concepts.",
-        "how": "Each lesson is a chapter in the user's journey. Characters and scenarios make abstract concepts concrete.",
-        "why": "Stories are memorable. Emotional engagement improves retention."
+        "name": "Three Learning Tracks",
+        "what": "Specialized paths for Dev, Games, and Content builders.",
+        "how": "Track-specific curricula with progressive modules. Each track unlocks relevant skills in Yggdrasil.",
+        "why": "Different builders have different goals. Focused learning accelerates mastery."
       },
       {
-        "name": "Hands-on Projects",
-        "what": "Build real things at each stage.",
-        "how": "Guided projects with step-by-step instructions. Code templates and sandboxes.",
-        "why": "Learning by doing is more effective than passive consumption."
+        "name": "Interactive Workshops",
+        "what": "Hands-on coding sessions with real projects.",
+        "how": "Live code environments. Step-by-step guidance. Instant feedback on exercises.",
+        "why": "Learning by doing beats passive consumption."
       },
       {
-        "name": "Skill Tree Visualization",
-        "what": "Visual map of learning progress.",
-        "how": "Interactive skill tree showing completed and available lessons. Prerequisite connections.",
-        "why": "Progress visualization motivates continuation."
+        "name": "Skill Certification",
+        "what": "Verifiable proof of completed skills.",
+        "how": "Quiz assessments unlock skill badges. Progress stored on-chain via PDA.",
+        "why": "Credentials prove competence to ecosystem projects."
       },
       {
-        "name": "Community Cohorts",
-        "what": "Learn together with others at the same stage.",
-        "how": "Cohort-based programs with shared Discord channels. Weekly check-ins.",
-        "why": "Social learning increases completion rates."
+        "name": "XP & Progression",
+        "what": "Gamified learning with levels and rewards.",
+        "how": "Actions earn XP. Levels unlock advanced content. Streaks boost earnings.",
+        "why": "Gamification increases completion rates and engagement."
       }
     ],
-    "tech": ["Vanilla JS", "CSS3", "LocalStorage", "Service Worker"],
-    "dependencies": "Integrates with Learn Platform for content. Community Hub for cohorts.",
-    "architecture": "Progressive Web App. Works offline. Syncs progress when online.",
+    "tech": ["Vanilla JS", "CSS3", "Three.js", "LocalStorage", "Vite"],
+    "dependencies": "Core educational engine for Build platform. Feeds skill data to Yggdrasil visualization.",
+    "architecture": "Modular course system. LocalStorage for progress. Future: wallet-based cloud sync.",
     "miniTree": [
       {
-        "icon": "🌱",
-        "name": "Seedling Path",
+        "icon": "⚡",
+        "name": "Dev Track",
         "status": "completed",
-        "what": "Absolute beginner content.",
-        "how": "What is blockchain? What is Solana? First wallet setup.",
-        "why": "Everyone starts somewhere.",
-        "future": "More on-ramp scenarios."
+        "what": "Solana development curriculum.",
+        "how": "10 modules from basics to advanced. Anchor, PDAs, CPIs.",
+        "why": "Core technical skills for builders.",
+        "future": "Advanced specializations."
       },
       {
-        "icon": "🌿",
-        "name": "Sprout Path",
+        "icon": "🎮",
+        "name": "Games Track",
         "status": "completed",
-        "what": "Basic interactions.",
-        "how": "First transaction. Reading explorers. Understanding tokens.",
-        "why": "Hands-on from the start.",
-        "future": "Testnet projects."
+        "what": "Game development curriculum.",
+        "how": "Design, Canvas, economy, multiplayer.",
+        "why": "Games drive user acquisition.",
+        "future": "Engine-specific tracks."
       },
       {
-        "icon": "🌳",
-        "name": "Sapling Path",
+        "icon": "📝",
+        "name": "Content Track",
         "status": "completed",
-        "what": "First builds.",
-        "how": "Simple dApp. Reading program data. Using Jupiter.",
-        "why": "Transition to building.",
-        "future": "More project variety."
+        "what": "Content creation curriculum.",
+        "how": "Writing, teaching, community building.",
+        "why": "Content drives growth.",
+        "future": "Video production modules."
       },
       {
-        "icon": "🏔️",
-        "name": "Tree Path",
+        "icon": "🎯",
+        "name": "Quiz Engine",
+        "status": "completed",
+        "what": "Knowledge verification system.",
+        "how": "Multiple choice with explanations. Adaptive difficulty.",
+        "why": "Testing reinforces learning.",
+        "future": "AI-generated quizzes."
+      },
+      {
+        "icon": "🏆",
+        "name": "Badge System",
         "status": "in-progress",
-        "what": "Advanced builder skills.",
-        "how": "Writing programs. Security. Production deployment.",
-        "why": "Ready to contribute.",
-        "future": "Specialization tracks."
+        "what": "Visual achievement tracking.",
+        "how": "Milestone triggers. Skill unlocks.",
+        "why": "Recognition motivates progress.",
+        "future": "NFT badges."
       },
       {
-        "icon": "🌲",
-        "name": "Forest Path",
+        "icon": "☁️",
+        "name": "Cloud Sync",
         "status": "planned",
-        "what": "Ecosystem contributor.",
-        "how": "Contributing to ASDF. Leading projects. Mentoring others.",
-        "why": "Full circle - learner becomes teacher.",
-        "future": "Leadership tracks."
-      },
-      {
-        "icon": "👥",
-        "name": "Cohort System",
-        "status": "planned",
-        "what": "Group learning programs.",
-        "how": "Scheduled cohorts. Shared channels. Mentors.",
-        "why": "Community accelerates learning.",
-        "future": "Paid intensive programs."
+        "what": "Cross-device progress.",
+        "how": "Wallet-authenticated sync to backend.",
+        "why": "Learn anywhere, resume anywhere.",
+        "future": "Progress sharing."
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Complete Tree Path content" },
-      { "phase": "Q2", "text": "Launch cohort-based programs" },
-      { "phase": "Q3", "text": "Certification NFTs for completers" }
+      { "phase": "Q1", "text": "Complete all track content with quizzes" },
+      { "phase": "Q2", "text": "NFT badge minting for completers" },
+      { "phase": "Q3", "text": "Cloud sync with wallet authentication" }
     ],
-    "integrations": ["Learn Platform", "Community Hub", "Wallet Adapters"],
+    "integrations": ["Learn Platform", "Yggdrasil", "Wallet Adapters"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
-    "demo": "https://alonisthe.dev/journey.html",
+    "demo": "https://alonisthe.dev/build.html",
     "contributors": [
       {
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
         "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+      },
+      {
+        "name": "zeyxx",
+        "github": "zeyxx",
+        "role": "Course Architecture",
+        "avatar": "https://avatars.githubusercontent.com/zeyxx"
       },
       {
         "name": "sollama58",
