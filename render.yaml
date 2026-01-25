@@ -58,6 +58,8 @@ services:
         sync: false
       - key: REDIS_PREFIX
         value: "asdf:"
+      - key: REDIS_API_KEY
+        sync: false
 
       # PostgreSQL Database (set in Render dashboard)
       - key: DATABASE_URL

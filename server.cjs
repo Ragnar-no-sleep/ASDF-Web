@@ -199,11 +199,26 @@ const REDIS_ALLOWED_METHODS = [
   'SADD', 'SREM', 'SMEMBERS', 'SISMEMBER', 'SCARD', 'SUNION', 'SINTER',
   'LPUSH', 'RPUSH', 'LPOP', 'RPOP', 'LRANGE', 'LLEN', 'LINDEX',
   'ZADD', 'ZREM', 'ZSCORE', 'ZRANK', 'ZREVRANK', 'ZRANGE', 'ZREVRANGE', 'ZRANGEBYSCORE', 'ZCOUNT', 'ZCARD',
-  'KEYS', 'TYPE', 'SCAN'
+  'TYPE', 'SCAN'  // KEYS removed: O(N) blocking operation, use SCAN instead
 ];
 
-// Redis proxy endpoint
+// Redis proxy endpoint - INTERNAL USE ONLY
+// Requires REDIS_API_KEY header for authentication
 app.post('/api/redis', async (req, res) => {
+  // Security: Require API key for Redis access
+  const apiKey = req.headers['x-redis-api-key'];
+  const expectedKey = process.env.REDIS_API_KEY;
+
+  if (!expectedKey) {
+    // If no key configured, disable endpoint entirely in production
+    if (isProduction) {
+      return res.status(403).json({ error: 'Redis API disabled in production without REDIS_API_KEY' });
+    }
+    console.warn('[Redis API] No REDIS_API_KEY configured - endpoint unprotected in dev mode');
+  } else if (apiKey !== expectedKey) {
+    return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
+  }
+
   const client = getRedisClient();
 
   if (!client) {

@@ -129,3 +129,7 @@ debug/
 *.wallet
 wallet.json
 keypair.json
+
+# Test files (moved from root)
+tests/html/
+tests/js/test-*.js
