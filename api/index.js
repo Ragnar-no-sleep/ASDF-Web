@@ -118,8 +118,8 @@ const {
   getChallengeStats,
 } = require('./services/challenges');
 const {
-  NOTIFICATION_TYPES,
-  createNotification,
+  NOTIFICATION_TYPES: _NOTIFICATION_TYPES,
+  createNotification: _createNotification,
   getNotifications,
   getUnreadCount,
   markAsRead,
@@ -127,14 +127,14 @@ const {
   deleteNotification,
   getPreferences: getNotificationPreferences,
   updatePreferences: updateNotificationPreferences,
-  notifyAchievementUnlocked,
+  notifyAchievementUnlocked: _notifyAchievementUnlocked,
   getNotificationMetrics,
 } = require('./services/notifications');
 const {
   buildBurnTransaction,
   buildTransferTransaction,
   verifyTransaction,
-  completeTransaction,
+  completeTransaction: _completeTransaction,
   getTransactionMetrics,
 } = require('./services/transactions');
 const {
@@ -156,22 +156,22 @@ const {
 } = require('./services/eventBus');
 const {
   get: _cacheGet,
-  del: cacheDel,
-  wrap: cacheWrap,
+  del: _cacheDel,
+  wrap: _cacheWrap,
   invalidateTag,
   getStats: getCacheStats,
 } = require('./services/cache');
 const {
-  registerHandler: registerJobHandler,
-  enqueue: enqueueJob,
+  registerHandler: _registerJobHandler,
+  enqueue: _enqueueJob,
   getJob,
   getJobsByStatus,
   getQueueStats,
-  PRIORITY: JOB_PRIORITY,
+  PRIORITY: _JOB_PRIORITY,
 } = require('./services/queue');
 const {
   track: trackAnalytics,
-  trackPageView,
+  trackPageView: _trackPageView,
   trackAction,
   getAggregatedMetrics,
   getFunnelAnalysis,
