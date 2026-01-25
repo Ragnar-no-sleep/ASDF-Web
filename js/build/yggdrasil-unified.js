@@ -756,12 +756,12 @@ const YggdrasilCosmos = {
     const mapping = {
       holdex: 'holdex',
       forecast: 'forecast',
-      burns: 'burn-tracker',
-      pumparena: 'games-platform',
-      arcade: 'games-platform',
-      manifesto: 'learn-platform',
-      learn: 'learn-platform',
-      journey: 'learn-platform',
+      burns: 'burns',
+      pumparena: 'pumparena',
+      arcade: 'arcade',
+      manifesto: 'manifesto',
+      learn: 'learn',
+      factory: 'factory',
     };
     return mapping[ecosystemId] || ecosystemId;
   },

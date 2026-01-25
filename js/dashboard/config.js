@@ -366,14 +366,14 @@ export const ECOSYSTEM_PROJECTS = [
     skills: ['teaching', 'writing', 'solana_basics', 'community'],
   },
   {
-    id: 'journey',
-    name: 'Journey',
+    id: 'factory',
+    name: 'Factory',
     track: 'content',
     status: 'live',
-    description: 'Interactive learning path',
-    url: '/journey.html',
+    description: 'Builder education hub',
+    url: '/build.html',
     kScore: 82,
-    skills: ['teaching', 'storytelling', 'game_design', 'community'],
+    skills: ['teaching', 'writing', 'solana_basics', 'game_design', 'community'],
   },
 ];
 
