@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | $ASDFASDFA - Coming Soon</title>
+    <meta name="description" content="Token analytics and ecosystem metrics. Coming soon.">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alonisthe.dev/analytics">
+    <meta property="og:title" content="Analytics - ASDF Ecosystem">
+    <meta property="og:description" content="Token analytics and ecosystem metrics. Coming soon.">
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0d0906;
+            --surface: #1a1410;
+            --text: #faf8f5;
+            --text-muted: #c9b89a;
+            --text-ghost: #5a4d40;
+            --accent: #eab308;
+            --accent-soft: rgba(234, 179, 8, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .back {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-ghost);
+            text-decoration: none;
+        }
+        .back:hover { color: var(--accent); }
+
+        .container {
+            max-width: 480px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 300;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 17px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .features {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .feature {
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .feature-icon {
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
+        .feature-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .cta {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.3), rgba(234, 179, 8, 0.15));
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+        .cta:hover { transform: translateY(-2px); }
+
+        .hint {
+            margin-top: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-ghost);
+        }
+
+        .burn-link {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .burn-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back">&#8592; Hub</a>
+
+    <div class="container">
+        <span class="badge">COMING SOON</span>
+
+        <div class="icon">&#128202;</div>
+
+        <h1>Analytics</h1>
+
+        <p class="subtitle">
+            Deep ecosystem metrics and token analytics.<br>
+            We're building something meaningful.
+        </p>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">&#128293;</span>
+                <span class="feature-text">Burn rate tracking and projections</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">&#128200;</span>
+                <span class="feature-text">K-Score distribution analysis</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">&#128176;</span>
+                <span class="feature-text">Creator fee metrics</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">&#127919;</span>
+                <span class="feature-text">Ecosystem health dashboard</span>
+            </div>
+        </div>
+
+        <a href="burns.html" class="cta">Track Burns Now &#128293;</a>
+
+        <p class="hint">
+            In the meantime, check out the <a href="burns.html" class="burn-link">Burns tracker</a>
+        </p>
+    </div>
+</body>
+</html>
