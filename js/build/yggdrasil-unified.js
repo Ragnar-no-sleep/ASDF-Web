@@ -772,93 +772,100 @@ const YggdrasilCosmos = {
   openProjectModal(projectId, highlightSkillId = null) {
     const mappedId = this.mapProjectId(projectId);
     const project = this.projectsData[mappedId];
+    const ecosystemProject = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
+
     if (!project) {
       // Fallback to ECOSYSTEM_PROJECTS basic data
-      const basicProject = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
-      if (!basicProject) return;
+      if (!ecosystemProject) return;
 
       this.projectModal.querySelector('.ygg-modal-body').innerHTML = `
                 <div class="ygg-project-header">
-                    <span class="ygg-project-icon">${basicProject.name.charAt(0)}</span>
+                    <span class="ygg-project-icon">${ecosystemProject.name.charAt(0)}</span>
                     <div class="ygg-project-title-group">
-                        <h2>${basicProject.name}</h2>
-                        <span class="ygg-project-track track-${basicProject.track}">${basicProject.track}</span>
+                        <h2>${ecosystemProject.name}</h2>
+                        <span class="ygg-project-track track-${ecosystemProject.track}">${ecosystemProject.track}</span>
                     </div>
                 </div>
-                <p class="ygg-project-description">${basicProject.description}</p>
+                <p class="ygg-project-description">${ecosystemProject.description}</p>
                 <div class="ygg-project-status">
-                    <span class="status-badge status-${basicProject.status}">${basicProject.status}</span>
-                    <span class="kscore-badge">K-Score: ${basicProject.kScore}</span>
+                    <span class="status-badge status-${ecosystemProject.status}">${ecosystemProject.status}</span>
+                    <span class="kscore-badge">K-Score: ${ecosystemProject.kScore}</span>
                 </div>
             `;
     } else {
-      // Full project data from JSON
-      const featuresHtml =
-        project.features
-          ?.map(
-            f => `
-                <div class="ygg-feature-card">
-                    <h4>${f.name}</h4>
-                    <p class="feature-what"><strong>What:</strong> ${f.what}</p>
-                    <p class="feature-how"><strong>How:</strong> ${f.how}</p>
-                    <p class="feature-why"><strong>Why:</strong> ${f.why}</p>
-                </div>
-            `
-          )
-          .join('') || '';
+      // Tech tags
+      const techHtml = project.tech?.map(t => `<span class="tech-tag">${t}</span>`).join('') || '';
 
-      const miniTreeHtml =
+      // Components (miniTree) - clickable with details
+      const componentsHtml =
         project.miniTree
           ?.map(
-            item => `
-                <div class="ygg-minitree-item status-${item.status}">
-                    <span class="minitree-icon">${item.icon}</span>
-                    <div class="minitree-content">
-                        <span class="minitree-name">${item.name}</span>
-                        <span class="minitree-status">${item.status}</span>
+            (item, idx) => `
+                <div class="ygg-component-card" data-component-idx="${idx}">
+                    <div class="ygg-component-header">
+                        <span class="component-icon">${item.icon}</span>
+                        <span class="component-name">${item.name}</span>
+                        <span class="component-status status-${item.status}">${item.status}</span>
+                    </div>
+                    <div class="ygg-component-preview">${item.what || ''}</div>
+                    <div class="ygg-component-details" style="display: none;">
+                        <div class="component-detail-row">
+                            <span class="detail-label">What</span>
+                            <p>${item.what || 'N/A'}</p>
+                        </div>
+                        <div class="component-detail-row">
+                            <span class="detail-label">How</span>
+                            <p>${item.how || 'N/A'}</p>
+                        </div>
+                        <div class="component-detail-row">
+                            <span class="detail-label">Why</span>
+                            <p>${item.why || 'N/A'}</p>
+                        </div>
+                        ${
+                          item.future
+                            ? `
+                        <div class="component-detail-row">
+                            <span class="detail-label">Future</span>
+                            <p>${item.future}</p>
+                        </div>
+                        `
+                            : ''
+                        }
                     </div>
                 </div>
             `
           )
           .join('') || '';
 
-      const roadmapHtml =
-        project.roadmap
-          ?.map(
-            r => `
-                <div class="ygg-roadmap-item">
-                    <span class="roadmap-phase">${r.phase}</span>
-                    <span class="roadmap-text">${r.text}</span>
-                </div>
-            `
-          )
-          .join('') || '';
-
-      const techHtml = project.tech?.map(t => `<span class="tech-tag">${t}</span>`).join('') || '';
-
-      // Contributors (L2b Project Timeline)
-      const contributors = this.mockContributors[mappedId] || [];
+      // Contributors from projects.json
+      const contributors = project.contributors || [];
       const contributorsHtml =
         contributors
           .map(
             c => `
-                <div class="ygg-contributor-card">
-                    <span class="contributor-avatar">${c.avatar}</span>
-                    <div class="contributor-info">
-                        <span class="contributor-name">${c.name}</span>
-                        <span class="contributor-role">${c.role}</span>
+                <a href="https://github.com/${c.github}" target="_blank" rel="noopener" class="ygg-builder-card">
+                    <img src="${c.avatar}" alt="${c.name}" class="builder-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22>${c.name.charAt(0)}</text></svg>'">
+                    <div class="builder-info">
+                        <span class="builder-name">${c.name}</span>
+                        <span class="builder-role">${c.role}</span>
                     </div>
-                    <div class="contributor-stats">
-                        <span class="contributor-commits">${c.commits} commits</span>
-                        <span class="contributor-diff">
-                            <span class="diff-add">+${this.formatNumber(c.additions)}</span>
-                            <span class="diff-del">-${this.formatNumber(c.deletions)}</span>
-                        </span>
-                    </div>
-                </div>
+                    <span class="builder-github">@${c.github}</span>
+                </a>
             `
           )
-          .join('') || '';
+          .join('') || '<p class="no-contributors">No contributors listed</p>';
+
+      // Skills associated with this project (from ecosystem)
+      const projectSkills = ecosystemProject?.skills || [];
+      const skillsPreviewHtml = projectSkills
+        .slice(0, 4)
+        .map(skillId => {
+          const skill = getSkill(skillId);
+          return skill
+            ? `<span class="skill-preview-tag">${skill.icon || '📚'} ${skill.name}</span>`
+            : '';
+        })
+        .join('');
 
       this.projectModal.querySelector('.ygg-modal-body').innerHTML = `
                 <div class="ygg-project-header">
@@ -877,38 +884,13 @@ const YggdrasilCosmos = {
                 </div>
 
                 ${
-                  project.features?.length
-                    ? `
-                <section class="ygg-project-section">
-                    <h3>✨ Features</h3>
-                    <div class="ygg-features-grid">
-                        ${featuresHtml}
-                    </div>
-                </section>
-                `
-                    : ''
-                }
-
-                ${
                   project.miniTree?.length
                     ? `
                 <section class="ygg-project-section">
-                    <h3>🌳 Components</h3>
-                    <div class="ygg-minitree-grid">
-                        ${miniTreeHtml}
-                    </div>
-                </section>
-                `
-                    : ''
-                }
-
-                ${
-                  project.roadmap?.length
-                    ? `
-                <section class="ygg-project-section">
-                    <h3>🗺️ Roadmap</h3>
-                    <div class="ygg-roadmap">
-                        ${roadmapHtml}
+                    <h3>🧩 Components</h3>
+                    <p class="section-hint">Click a component for details</p>
+                    <div class="ygg-components-grid">
+                        ${componentsHtml}
                     </div>
                 </section>
                 `
@@ -919,8 +901,8 @@ const YggdrasilCosmos = {
                   contributors.length
                     ? `
                 <section class="ygg-project-section">
-                    <h3>👥 Contributors</h3>
-                    <div class="ygg-contributors-grid">
+                    <h3>👥 Builders</h3>
+                    <div class="ygg-builders-grid">
                         ${contributorsHtml}
                     </div>
                 </section>
@@ -928,15 +910,86 @@ const YggdrasilCosmos = {
                     : ''
                 }
 
+                <section class="ygg-project-section ygg-deeplearn-section">
+                    <h3>🎓 Deep Learn</h3>
+                    <p class="deeplearn-desc">Master this project from A to Z with a specialized learning track.</p>
+                    ${skillsPreviewHtml ? `<div class="deeplearn-skills-preview">${skillsPreviewHtml}</div>` : ''}
+                    <button class="ygg-btn ygg-btn-deeplearn" data-project="${mappedId}">
+                        <span class="deeplearn-icon">🚀</span>
+                        Start Learning Track
+                    </button>
+                </section>
+
                 <div class="ygg-project-actions">
                     ${project.demo ? `<a href="${project.demo}" target="_blank" class="ygg-btn ygg-btn-primary">View Demo</a>` : ''}
                     ${project.github ? `<a href="${project.github}" target="_blank" class="ygg-btn ygg-btn-secondary">GitHub</a>` : ''}
                 </div>
             `;
+
+      // Bind component click events
+      this.projectModal.querySelectorAll('.ygg-component-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const details = card.querySelector('.ygg-component-details');
+          const isOpen = card.classList.contains('expanded');
+
+          // Close all other cards
+          this.projectModal.querySelectorAll('.ygg-component-card.expanded').forEach(c => {
+            c.classList.remove('expanded');
+            c.querySelector('.ygg-component-details').style.display = 'none';
+          });
+
+          if (!isOpen) {
+            card.classList.add('expanded');
+            details.style.display = 'block';
+          }
+        });
+      });
+
+      // Bind deep learn button
+      const deepLearnBtn = this.projectModal.querySelector('.ygg-btn-deeplearn');
+      if (deepLearnBtn) {
+        deepLearnBtn.addEventListener('click', () => {
+          this.startProjectLearningTrack(mappedId, projectSkills);
+        });
+      }
     }
 
     this.projectModal.classList.add('open');
     this.projectModalOpen = true;
+  },
+
+  /**
+   * Start a project-specific learning track
+   */
+  startProjectLearningTrack(projectId, skillIds) {
+    this.closeProjectModal();
+
+    // If skills are available, open the first skill
+    if (skillIds && skillIds.length > 0) {
+      const firstSkill = skillIds[0];
+      setTimeout(() => {
+        this.openSkillModal(firstSkill);
+      }, 300);
+    } else {
+      // Fallback: open the module related to this project
+      const projectToCourse = {
+        'burn-engine': 'solana-fundamentals',
+        burns: 'solana-fundamentals',
+        holdex: 'dapp-development',
+        forecast: 'dapp-development',
+        pumparena: 'game-design-fundamentals',
+        arcade: 'game-design-fundamentals',
+        manifesto: 'crypto-writing',
+        learn: 'teaching-web3',
+        factory: 'teaching-web3',
+      };
+      const courseId = projectToCourse[projectId];
+      if (courseId) {
+        setTimeout(() => {
+          this.openModule(courseId);
+        }, 300);
+      }
+    }
   },
 
   /**

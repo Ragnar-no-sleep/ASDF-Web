@@ -2398,6 +2398,277 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 /* ============================================
+   PROJECT MODAL - ENHANCED LAYOUT
+   ============================================ */
+
+/* Section hint */
+.section-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: -8px 0 12px 0;
+  font-style: italic;
+}
+
+/* Components Grid */
+.ygg-components-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.ygg-component-card {
+  background: rgba(20, 20, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ygg-component-card:hover {
+  background: rgba(30, 30, 45, 0.8);
+  border-color: rgba(255, 100, 50, 0.3);
+  transform: translateY(-2px);
+}
+
+.ygg-component-card.expanded {
+  background: rgba(40, 30, 35, 0.9);
+  border-color: rgba(255, 100, 50, 0.5);
+}
+
+.ygg-component-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.component-icon {
+  font-size: 24px;
+}
+
+.component-name {
+  flex: 1;
+  font-weight: 600;
+  color: #fff;
+}
+
+.component-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.component-status.status-completed {
+  background: rgba(100, 255, 100, 0.2);
+  color: #8f8;
+}
+
+.component-status.status-in-progress {
+  background: rgba(255, 200, 50, 0.2);
+  color: #fc8;
+}
+
+.component-status.status-planned {
+  background: rgba(100, 150, 255, 0.2);
+  color: #8af;
+}
+
+.ygg-component-preview {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ygg-component-card.expanded .ygg-component-preview {
+  display: none;
+}
+
+.ygg-component-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.component-detail-row {
+  margin-bottom: 12px;
+}
+
+.component-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 150, 100, 0.9);
+  margin-bottom: 4px;
+}
+
+.component-detail-row p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+/* Builders Grid */
+.ygg-builders-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ygg-builder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(20, 20, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.ygg-builder-card:hover {
+  background: rgba(30, 30, 45, 0.8);
+  border-color: rgba(100, 150, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.builder-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.builder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.builder-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.builder-role {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.builder-github {
+  font-size: 12px;
+  color: rgba(100, 150, 255, 0.8);
+}
+
+.no-contributors {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Deep Learn Section */
+.ygg-deeplearn-section {
+  background: linear-gradient(135deg, rgba(255, 100, 50, 0.1), rgba(100, 50, 150, 0.1));
+  border: 1px solid rgba(255, 100, 50, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.ygg-deeplearn-section h3 {
+  margin-bottom: 8px;
+}
+
+.deeplearn-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 16px;
+}
+
+.deeplearn-skills-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.skill-preview-tag {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ygg-btn-deeplearn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #ff6644, #ff4466);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 100, 50, 0.3);
+}
+
+.ygg-btn-deeplearn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(255, 100, 50, 0.5);
+}
+
+.deeplearn-icon {
+  font-size: 20px;
+}
+
+/* Mobile adjustments for project modal */
+@media (max-width: 768px) {
+  .ygg-components-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ygg-builders-grid {
+    flex-direction: column;
+  }
+
+  .ygg-builder-card {
+    min-width: auto;
+  }
+
+  .ygg-deeplearn-section {
+    padding: 16px;
+  }
+
+  .ygg-btn-deeplearn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
    SKILL MODAL
    ============================================ */
 
