@@ -31,11 +31,12 @@ function setupErrorCollector(page) {
 
 // Filter out non-critical errors (favicon, etc)
 function filterCriticalErrors(errors) {
-  return errors.filter(e =>
-    !e.includes('favicon') &&
-    !e.includes('404') &&
-    !e.includes('net::ERR') &&
-    !e.includes('Failed to load resource')
+  return errors.filter(
+    e =>
+      !e.includes('favicon') &&
+      !e.includes('404') &&
+      !e.includes('net::ERR') &&
+      !e.includes('Failed to load resource')
   );
 }
 
@@ -188,18 +189,19 @@ test.describe('Cross-Page Consistency', () => {
   for (const { path, name } of pages) {
     test(`${name} should load successfully`, async ({ page }) => {
       // Add delay to avoid rate limiting in CI
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1500);
 
-      const response = await page.goto(path, { timeout: 15000 });
+      let response = await page.goto(path, { timeout: 15000 });
 
-      // Check response is OK (allow 429 retry with delay)
-      if (response?.status() === 429) {
-        await page.waitForTimeout(2000);
-        const retryResponse = await page.goto(path, { timeout: 15000 });
-        expect(retryResponse?.status()).toBeLessThan(400);
-      } else {
-        expect(response?.status()).toBeLessThan(400);
+      // Retry loop for rate limiting (429)
+      let retries = 0;
+      while (response?.status() === 429 && retries < 3) {
+        retries++;
+        await page.waitForTimeout(3000 * retries); // Exponential backoff
+        response = await page.goto(path, { timeout: 15000 });
       }
+
+      expect(response?.status()).toBeLessThan(400);
 
       // Wait for page to stabilize
       await page.waitForLoadState('networkidle');
@@ -210,10 +212,18 @@ test.describe('Cross-Page Consistency', () => {
 
     test(`${name} should be responsive (mobile)`, async ({ page }) => {
       // Add delay to avoid rate limiting in CI
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1500);
 
       await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto(path);
+
+      let response = await page.goto(path, { timeout: 15000 });
+
+      // Retry for rate limiting
+      if (response?.status() === 429) {
+        await page.waitForTimeout(5000);
+        await page.goto(path, { timeout: 15000 });
+      }
+
       await page.waitForLoadState('networkidle');
 
       // Body should be visible on mobile
