@@ -25,7 +25,7 @@ const PERF_CONFIG = {
       postProcessing: true,
       bloom: 1.0,
       antiAlias: true,
-      pixelRatio: window.devicePixelRatio
+      pixelRatio: window.devicePixelRatio,
     },
     high: {
       particles: { fire: 2000, snow: 10000 },
@@ -33,7 +33,7 @@ const PERF_CONFIG = {
       postProcessing: true,
       bloom: 0.8,
       antiAlias: true,
-      pixelRatio: Math.min(window.devicePixelRatio, 2)
+      pixelRatio: Math.min(window.devicePixelRatio, 2),
     },
     medium: {
       particles: { fire: 1000, snow: 5000 },
@@ -41,7 +41,7 @@ const PERF_CONFIG = {
       postProcessing: true,
       bloom: 0.5,
       antiAlias: true,
-      pixelRatio: Math.min(window.devicePixelRatio, 1.5)
+      pixelRatio: Math.min(window.devicePixelRatio, 1.5),
     },
     low: {
       particles: { fire: 500, snow: 2000 },
@@ -49,7 +49,7 @@ const PERF_CONFIG = {
       postProcessing: false,
       bloom: 0,
       antiAlias: false,
-      pixelRatio: 1
+      pixelRatio: 1,
     },
     minimal: {
       particles: { fire: 200, snow: 500 },
@@ -57,18 +57,18 @@ const PERF_CONFIG = {
       postProcessing: false,
       bloom: 0,
       antiAlias: false,
-      pixelRatio: 1
-    }
+      pixelRatio: 1,
+    },
   },
 
   // Adaptation settings
   adaptation: {
-    sampleSize: 60,       // FPS samples to average
-    checkInterval: 2000,  // How often to check (ms) - increased from 1000
+    sampleSize: 60, // FPS samples to average
+    checkInterval: 2000, // How often to check (ms) - increased from 1000
     downgradeThreshold: 0.75, // Downgrade if FPS below target * this (45 FPS)
-    upgradeThreshold: 0.95,   // Upgrade if FPS above target * this
-    cooldownAfterChange: 5000 // Wait 5s after quality change before adapting again
-  }
+    upgradeThreshold: 0.95, // Upgrade if FPS above target * this
+    cooldownAfterChange: 10000, // Wait 10s after quality change before adapting again
+  },
 };
 
 // ============================================
@@ -87,7 +87,7 @@ const PerformanceManager = {
   fps: {
     current: 60,
     samples: [],
-    lastTime: 0
+    lastTime: 0,
   },
 
   /**
@@ -96,16 +96,16 @@ const PerformanceManager = {
   adaptation: {
     enabled: true,
     lastCheck: 0,
-    lastChange: 0,  // Timestamp of last quality change
+    lastChange: 0, // Timestamp of last quality change
     stableCount: 0,
-    qualityLocked: false
+    qualityLocked: false,
   },
 
   /**
    * Callbacks
    */
   callbacks: {
-    onQualityChange: null
+    onQualityChange: null,
   },
 
   /**
@@ -113,6 +113,9 @@ const PerformanceManager = {
    * @param {Object} options
    */
   init(options = {}) {
+    // Reset any stale state from previous sessions
+    this.reset();
+
     // Detect initial quality based on device
     this.currentPreset = this.detectOptimalPreset();
 
@@ -127,6 +130,10 @@ const PerformanceManager = {
 
     this.adaptation.enabled = options.adaptiveQuality !== false;
 
+    // Set a grace period on init - don't adapt for first 10 seconds
+    // This allows shaders to compile and textures to load without false downgrades
+    this.adaptation.lastChange = performance.now();
+
     console.log(`[Performance] Initialized with preset: ${this.currentPreset}`);
 
     return this.getSettings();
@@ -138,8 +145,9 @@ const PerformanceManager = {
    */
   detectOptimalPreset() {
     // Check for mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-      .test(navigator.userAgent);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
 
     if (isMobile) {
       return 'low';
@@ -149,7 +157,7 @@ const PerformanceManager = {
     // System will upgrade if FPS is stable
     // Check device memory (if available)
     if (navigator.deviceMemory) {
-      if (navigator.deviceMemory >= 8) return 'high';  // Was ultra, start at high
+      if (navigator.deviceMemory >= 8) return 'high'; // Was ultra, start at high
       if (navigator.deviceMemory >= 4) return 'medium'; // Was high, start at medium
       if (navigator.deviceMemory >= 2) return 'low';
       return 'low';
@@ -184,15 +192,16 @@ const PerformanceManager = {
       }
 
       // Calculate average
-      this.fps.current = this.fps.samples.reduce((a, b) => a + b, 0) /
-        this.fps.samples.length;
+      this.fps.current = this.fps.samples.reduce((a, b) => a + b, 0) / this.fps.samples.length;
     }
 
     this.fps.lastTime = timestamp;
 
     // Check for adaptation
-    if (this.adaptation.enabled &&
-        timestamp - this.adaptation.lastCheck > PERF_CONFIG.adaptation.checkInterval) {
+    if (
+      this.adaptation.enabled &&
+      timestamp - this.adaptation.lastCheck > PERF_CONFIG.adaptation.checkInterval
+    ) {
       this.checkAdaptation();
       this.adaptation.lastCheck = timestamp;
     }
@@ -203,6 +212,12 @@ const PerformanceManager = {
    */
   checkAdaptation() {
     if (this.adaptation.qualityLocked) return;
+
+    // Need minimum samples before making any adaptation decisions
+    const minSamples = Math.min(30, PERF_CONFIG.adaptation.sampleSize / 2);
+    if (this.fps.samples.length < minSamples) {
+      return;
+    }
 
     const now = performance.now();
     const { cooldownAfterChange } = PERF_CONFIG.adaptation;
@@ -223,7 +238,9 @@ const PerformanceManager = {
 
       if (currentIndex > 0) {
         const newPreset = presetOrder[currentIndex - 1];
-        console.log(`[Performance] Downgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`);
+        console.log(
+          `[Performance] Downgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`
+        );
         this.setPreset(newPreset);
         this.adaptation.lastChange = now;
       }
@@ -235,7 +252,9 @@ const PerformanceManager = {
       // Wait for stable FPS before upgrading (10 checks = 20 seconds at 2s interval)
       if (this.adaptation.stableCount >= 10 && currentIndex < presetOrder.length - 1) {
         const newPreset = presetOrder[currentIndex + 1];
-        console.log(`[Performance] Upgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`);
+        console.log(
+          `[Performance] Upgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`
+        );
         this.setPreset(newPreset);
         this.adaptation.stableCount = 0;
         this.adaptation.lastChange = now;
@@ -261,7 +280,7 @@ const PerformanceManager = {
       this.callbacks.onQualityChange({
         oldPreset,
         newPreset: preset,
-        settings: this.getSettings()
+        settings: this.getSettings(),
       });
     }
   },
@@ -327,7 +346,7 @@ const PerformanceManager = {
       preset: this.currentPreset,
       adaptiveEnabled: this.adaptation.enabled,
       qualityLocked: this.adaptation.qualityLocked,
-      samples: this.fps.samples.length
+      samples: this.fps.samples.length,
     };
   },
 
@@ -339,7 +358,7 @@ const PerformanceManager = {
     this.fps.current = 60;
     this.fps.lastTime = 0;
     this.adaptation.stableCount = 0;
-  }
+  },
 };
 
 // ============================================
@@ -376,7 +395,7 @@ const LODManager = {
     this.objects.set(id, {
       object,
       levels: levels.sort((a, b) => a.distance - b.distance),
-      currentLevel: -1
+      currentLevel: -1,
     });
   },
 
@@ -428,7 +447,7 @@ const LODManager = {
    */
   clear() {
     this.objects.clear();
-  }
+  },
 };
 
 // ============================================
@@ -442,7 +461,7 @@ const MemoryManager = {
   resources: {
     geometries: new Set(),
     materials: new Set(),
-    textures: new Set()
+    textures: new Set(),
   },
 
   /**
@@ -492,20 +511,15 @@ const MemoryManager = {
     return {
       geometries: this.resources.geometries.size,
       materials: this.resources.materials.size,
-      textures: this.resources.textures.size
+      textures: this.resources.textures.size,
     };
-  }
+  },
 };
 
 // ============================================
 // EXPORTS
 // ============================================
 
-export {
-  PERF_CONFIG,
-  PerformanceManager,
-  LODManager,
-  MemoryManager
-};
+export { PERF_CONFIG, PerformanceManager, LODManager, MemoryManager };
 
 export default PerformanceManager;

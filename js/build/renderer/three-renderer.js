@@ -33,37 +33,37 @@ const THREE_CONFIG = {
     fov: 60,
     near: 0.1,
     far: 500,
-    position: { x: 0, y: 15, z: 70 }
+    position: { x: 0, y: 15, z: 70 },
   },
   // Scene settings
   scene: {
     backgroundColor: 0x020812,
     fogColor: 0x020812,
     fogNear: 50,
-    fogFar: 200
+    fogFar: 200,
   },
   // Lighting
   lights: {
     ambient: { color: 0x1a1a2e, intensity: 0.3 },
     moon: { color: 0x8888ff, intensity: 0.4, position: { x: 50, y: 80, z: -30 } },
-    fill: { color: 0x00d9ff, intensity: 0.2, position: { x: -30, y: 20, z: 40 } }
+    fill: { color: 0x00d9ff, intensity: 0.2, position: { x: -30, y: 20, z: 40 } },
   },
   // Island distribution
   islands: {
     baseRadius: 25,
     radiusStep: 3,
-    verticalSpread: 15
+    verticalSpread: 15,
   },
   // Animation
   animation: {
-    globalRotationSpeed: 0.0002
+    globalRotationSpeed: 0.0002,
   },
   // Performance
   performance: {
     antialias: true,
     pixelRatio: Math.min(window.devicePixelRatio, 2),
-    shadowMapEnabled: false
-  }
+    shadowMapEnabled: false,
+  },
 };
 
 // Status colors
@@ -71,7 +71,7 @@ const STATUS_COLORS = {
   live: 0x00ff88,
   building: 0xffaa00,
   planned: 0x8855cc,
-  default: 0x444466
+  default: 0x444466,
 };
 
 // ============================================
@@ -99,7 +99,7 @@ let islands = new Map();
 
 // Scene management
 let projectTreeScene = null;
-let currentViewLevel = 'COSMOS';  // COSMOS | PROJECT_TREE | SKILL_FOCUS
+let currentViewLevel = 'COSMOS'; // COSMOS | PROJECT_TREE | SKILL_FOCUS
 
 // Post-processing and performance
 let postProcessing = null;
@@ -120,7 +120,7 @@ let boundHandlers = {
   onClick: null,
   onKeyDown: null,
   onResize: null,
-  onVisibilityChange: null
+  onVisibilityChange: null,
 };
 
 // ============================================
@@ -171,23 +171,20 @@ const ThreeRenderer = {
     await this.createWorld();
 
     // Setup camera controller
-    cameraController = new CameraController(
-      this.THREE,
-      camera,
-      renderer.domElement,
-      { orbit: { autoRotate: true, autoRotateSpeed: 0.15 } }
-    );
+    cameraController = new CameraController(this.THREE, camera, renderer.domElement, {
+      orbit: { autoRotate: true, autoRotateSpeed: 0.15 },
+    });
 
     // Initialize performance manager
     performanceSettings = PerformanceManager.init({
-      onQualityChange: (data) => this.onQualityChange(data)
+      onQualityChange: data => this.onQualityChange(data),
     });
 
     // Initialize post-processing (if enabled)
     if (performanceSettings.postProcessing) {
       try {
         postProcessing = new PostProcessing(this.THREE, renderer, scene, camera, {
-          bloom: { strength: performanceSettings.bloom || 0.8 }
+          bloom: { strength: performanceSettings.bloom || 0.8 },
         });
         await postProcessing.init();
         console.log('[ThreeRenderer] Post-processing enabled');
@@ -242,17 +239,8 @@ const ThreeRenderer = {
     const { camera: camConfig } = THREE_CONFIG;
 
     const aspect = container.clientWidth / container.clientHeight;
-    camera = new THREE.PerspectiveCamera(
-      camConfig.fov,
-      aspect,
-      camConfig.near,
-      camConfig.far
-    );
-    camera.position.set(
-      camConfig.position.x,
-      camConfig.position.y,
-      camConfig.position.z
-    );
+    camera = new THREE.PerspectiveCamera(camConfig.fov, aspect, camConfig.near, camConfig.far);
+    camera.position.set(camConfig.position.x, camConfig.position.y, camConfig.position.z);
     camera.lookAt(0, 5, 0);
   },
 
@@ -266,7 +254,7 @@ const ThreeRenderer = {
     renderer = new THREE.WebGLRenderer({
       antialias: perfConfig.antialias,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(perfConfig.pixelRatio);
@@ -292,35 +280,17 @@ const ThreeRenderer = {
     const { lights } = THREE_CONFIG;
 
     // Ambient light (very dim)
-    const ambient = new THREE.AmbientLight(
-      lights.ambient.color,
-      lights.ambient.intensity
-    );
+    const ambient = new THREE.AmbientLight(lights.ambient.color, lights.ambient.intensity);
     scene.add(ambient);
 
     // Moonlight (directional)
-    const moonLight = new THREE.DirectionalLight(
-      lights.moon.color,
-      lights.moon.intensity
-    );
-    moonLight.position.set(
-      lights.moon.position.x,
-      lights.moon.position.y,
-      lights.moon.position.z
-    );
+    const moonLight = new THREE.DirectionalLight(lights.moon.color, lights.moon.intensity);
+    moonLight.position.set(lights.moon.position.x, lights.moon.position.y, lights.moon.position.z);
     scene.add(moonLight);
 
     // Fill light (subtle cyan)
-    const fillLight = new THREE.PointLight(
-      lights.fill.color,
-      lights.fill.intensity,
-      100
-    );
-    fillLight.position.set(
-      lights.fill.position.x,
-      lights.fill.position.y,
-      lights.fill.position.z
-    );
+    const fillLight = new THREE.PointLight(lights.fill.color, lights.fill.intensity, 100);
+    fillLight.position.set(lights.fill.position.x, lights.fill.position.y, lights.fill.position.z);
     scene.add(fillLight);
   },
 
@@ -409,11 +379,7 @@ const ThreeRenderer = {
     const { islands: islandConfig } = THREE_CONFIG;
 
     // Calculate positions using Fermat spiral
-    const positions = calculateFermatSpiral(
-      projects,
-      0, 0,
-      islandConfig.baseRadius / 5
-    );
+    const positions = calculateFermatSpiral(projects, 0, 0, islandConfig.baseRadius / 5);
 
     // Create islands at calculated positions
     projects.forEach((project, index) => {
@@ -452,8 +418,8 @@ const ThreeRenderer = {
    */
   bindEvents() {
     // Store handler references for cleanup
-    boundHandlers.onMouseMove = (e) => this.onMouseMove(e);
-    boundHandlers.onClick = (e) => this.onClick(e);
+    boundHandlers.onMouseMove = e => this.onMouseMove(e);
+    boundHandlers.onClick = e => this.onClick(e);
     boundHandlers.onResize = () => this.resize();
     boundHandlers.onVisibilityChange = () => {
       if (document.hidden) {
@@ -470,7 +436,7 @@ const ThreeRenderer = {
     renderer.domElement.addEventListener('click', boundHandlers.onClick);
 
     // Keyboard for navigation (Escape to go back)
-    boundHandlers.onKeyDown = (e) => this.onKeyDown(e);
+    boundHandlers.onKeyDown = e => this.onKeyDown(e);
     document.addEventListener('keydown', boundHandlers.onKeyDown);
 
     // Resize handler
@@ -498,7 +464,7 @@ const ThreeRenderer = {
       onClick: null,
       onKeyDown: null,
       onResize: null,
-      onVisibilityChange: null
+      onVisibilityChange: null,
     };
   },
 
@@ -536,7 +502,7 @@ const ThreeRenderer = {
         BuildState.emit('renderer:skillHover', {
           skillId: hoveredNode.getSkillId(),
           skill: hoveredNode.skill,
-          position: this.getScreenPosition(hoveredNode.getPosition())
+          position: this.getScreenPosition(hoveredNode.getPosition()),
         });
       }
       return;
@@ -562,6 +528,8 @@ const ThreeRenderer = {
    * @param {string} projectId
    */
   onIslandHover(projectId) {
+    console.log('[ThreeRenderer] Island hover:', projectId);
+
     // Unhover previous
     if (hoveredIsland) {
       hoveredIsland.setHovered(false);
@@ -577,7 +545,7 @@ const ThreeRenderer = {
       // Emit event
       BuildState.emit('renderer:nodeHover', {
         projectId,
-        position: this.getScreenPosition(island.getPosition())
+        position: this.getScreenPosition(island.getPosition()),
       });
     }
   },
@@ -600,6 +568,13 @@ const ThreeRenderer = {
    * @param {MouseEvent} e
    */
   onClick(e) {
+    console.log(
+      '[ThreeRenderer] Click detected, viewLevel:',
+      currentViewLevel,
+      'hoveredIsland:',
+      hoveredIsland?.getProjectId()
+    );
+
     // Handle clicks based on current view level
     if (currentViewLevel === 'PROJECT_TREE' && projectTreeScene) {
       // In PROJECT_TREE view, handle skill node clicks
@@ -609,7 +584,7 @@ const ThreeRenderer = {
       if (clickedNode) {
         BuildState.emit('renderer:skillClick', {
           skillId: clickedNode.getSkillId(),
-          skill: clickedNode.skill
+          skill: clickedNode.skill,
         });
       }
       return;
@@ -624,7 +599,7 @@ const ThreeRenderer = {
 
       BuildState.emit('renderer:nodeClick', {
         projectId,
-        project
+        project,
       });
 
       // Transition to PROJECT_TREE view
@@ -637,13 +612,13 @@ const ThreeRenderer = {
       if (coreIntersect.length > 0) {
         BuildState.emit('renderer:nodeClick', {
           projectId: 'burn-engine',
-          project: { id: 'burn-engine', name: 'Burn Engine' }
+          project: { id: 'burn-engine', name: 'Burn Engine' },
         });
 
         // Zoom to burn core (special case, not a project tree)
         cameraController.zoomToNode(burnCore.getGroup().position, {
           distance: 25,
-          duration: 1000
+          duration: 1000,
         });
       }
     }
@@ -655,6 +630,8 @@ const ThreeRenderer = {
    * @param {Object} project
    */
   async enterProjectTreeView(projectId, project) {
+    console.log('[ThreeRenderer] Entering PROJECT_TREE view for:', projectId);
+
     if (!projectTreeScene) {
       console.warn('[ThreeRenderer] ProjectTreeScene not initialized');
       return;
@@ -664,13 +641,11 @@ const ThreeRenderer = {
 
     // Get island position for camera target
     const island = islands.get(projectId);
-    const targetPosition = island
-      ? island.getPosition()
-      : new this.THREE.Vector3(0, 0, 0);
+    const targetPosition = island ? island.getPosition() : new this.THREE.Vector3(0, 0, 0);
 
     // Transition camera to PROJECT_TREE state
     cameraController.transitionToState('PROJECT_TREE', targetPosition, {
-      duration: 1200
+      duration: 1200,
     });
 
     // Load project into scene (after camera starts moving)
@@ -683,7 +658,7 @@ const ThreeRenderer = {
 
       BuildState.emit('renderer:viewChanged', {
         level: 'PROJECT_TREE',
-        projectId
+        projectId,
       });
     }, 400);
   },
@@ -710,7 +685,7 @@ const ThreeRenderer = {
 
     BuildState.emit('renderer:viewChanged', {
       level: 'COSMOS',
-      projectId: null
+      projectId: null,
     });
   },
 
@@ -773,7 +748,7 @@ const ThreeRenderer = {
 
     return {
       x: (vector.x * 0.5 + 0.5) * rect.width + rect.left,
-      y: (-vector.y * 0.5 + 0.5) * rect.height + rect.top
+      y: (-vector.y * 0.5 + 0.5) * rect.height + rect.top,
     };
   },
 
@@ -853,7 +828,7 @@ const ThreeRenderer = {
 
     cameraController.zoomToNode(island.getPosition(), {
       distance: options.distance || 20,
-      duration: options.duration || 1000
+      duration: options.duration || 1000,
     });
 
     this.selectProject(projectId);
@@ -892,7 +867,7 @@ const ThreeRenderer = {
   startLoop() {
     if (animationFrameId) return;
 
-    const animate = (timestamp) => {
+    const animate = timestamp => {
       animationFrameId = requestAnimationFrame(animate);
 
       if (isPaused) return;
@@ -974,7 +949,7 @@ const ThreeRenderer = {
     // For now, just log the change
     BuildState.emit('renderer:qualityChange', {
       preset: newPreset,
-      settings
+      settings,
     });
   },
 
@@ -1039,7 +1014,7 @@ const ThreeRenderer = {
       initialized: isInitialized,
       islandCount: islands.size,
       hasTree: !!yggdrasilTree,
-      hasParticles: !!(fireParticles && snowParticles)
+      hasParticles: !!(fireParticles && snowParticles),
     };
   },
 
@@ -1106,7 +1081,7 @@ const ThreeRenderer = {
     selectedIsland = null;
 
     console.log('[ThreeRenderer] Disposed');
-  }
+  },
 };
 
 // ============================================

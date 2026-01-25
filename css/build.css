@@ -4004,7 +4004,8 @@ body {
 
 /* Keyframes */
 @keyframes burnPulseHeart {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(-50%, -50%) scale(1);
     filter: brightness(1);
   }
@@ -4015,18 +4016,21 @@ body {
 }
 
 @keyframes burnPulseSvg {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     filter: brightness(1) drop-shadow(0 0 10px rgba(251, 146, 60, 0.3));
   }
   50% {
     transform: scale(1.02);
-    filter: brightness(1.1) drop-shadow(0 0 20px rgba(251, 146, 60, calc(var(--burn-glow-opacity, 0.6))));
+    filter: brightness(1.1)
+      drop-shadow(0 0 20px rgba(251, 146, 60, calc(var(--burn-glow-opacity, 0.6))));
   }
 }
 
 @keyframes burnGlowPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.6;
   }
@@ -5792,12 +5796,12 @@ body {
     radial-gradient(ellipse 30% 20% at 50% 70%, rgba(0, 0, 0, 0.3) 0%, transparent 50%),
     /* Stone wall texture */
     repeating-linear-gradient(
-      90deg,
-      rgba(60, 45, 35, 0.15) 0px,
-      transparent 2px,
-      transparent 30px,
-      rgba(60, 45, 35, 0.1) 32px
-    ),
+        90deg,
+        rgba(60, 45, 35, 0.15) 0px,
+        transparent 2px,
+        transparent 30px,
+        rgba(60, 45, 35, 0.1) 32px
+      ),
     repeating-linear-gradient(
       0deg,
       rgba(50, 35, 25, 0.12) 0px,
@@ -5806,14 +5810,15 @@ body {
       rgba(50, 35, 25, 0.08) 27px
     ),
     /* Warm forge interior */
-    linear-gradient(180deg,
-      #0a0604 0%,
-      #120a06 15%,
-      #1a0f08 35%,
-      #2a1510 55%,
-      #1f1008 75%,
-      #150a04 100%
-    );
+    linear-gradient(
+        180deg,
+        #0a0604 0%,
+        #120a06 15%,
+        #1a0f08 35%,
+        #2a1510 55%,
+        #1f1008 75%,
+        #150a04 100%
+      );
 }
 
 #view-marketplace::before {
@@ -5829,8 +5834,7 @@ body {
     /* Smoke wisps */
     radial-gradient(ellipse 20% 40% at 40% 30%, rgba(80, 70, 60, 0.06) 0%, transparent 50%),
     radial-gradient(ellipse 25% 35% at 60% 25%, rgba(70, 60, 50, 0.05) 0%, transparent 50%),
-    /* Sparks */
-    radial-gradient(circle at 35% 65%, rgba(255, 200, 100, 0.08) 0%, transparent 3%),
+    /* Sparks */ radial-gradient(circle at 35% 65%, rgba(255, 200, 100, 0.08) 0%, transparent 3%),
     radial-gradient(circle at 65% 70%, rgba(255, 180, 80, 0.06) 0%, transparent 2%);
   pointer-events: none;
   animation: forgeGlow 6s ease-in-out infinite;
@@ -5841,27 +5845,37 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* Vignette - dark corners like inside a forge */
-    radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+    /* Vignette - dark corners like inside a forge */ radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
   pointer-events: none;
 }
 
 @keyframes forgeGlow {
-  0%, 100% { opacity: 0.6; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-2px); }
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
 
 /* YOUR JOURNEY - Clean, Learning-Focused */
 #view-journey {
   position: relative;
   background:
-    /* Subtle gradient for focus */
-    linear-gradient(180deg,
-      #050508 0%,
-      #0a0a10 20%,
-      #0c0c14 50%,
-      #0a0a0f 100%
-    );
+    /* Subtle gradient for focus */ linear-gradient(
+    180deg,
+    #050508 0%,
+    #0a0a10 20%,
+    #0c0c14 50%,
+    #0a0a0f 100%
+  );
 }
 
 #view-journey::before {
@@ -5889,14 +5903,14 @@ body {
   position: relative;
   overflow: hidden;
   background:
-    /* Aged parchment base */
-    linear-gradient(180deg,
-      #1a1408 0%,
-      #1f180c 20%,
-      #241c10 50%,
-      #1a1408 80%,
-      #14100a 100%
-    );
+    /* Aged parchment base */ linear-gradient(
+    180deg,
+    #1a1408 0%,
+    #1f180c 20%,
+    #241c10 50%,
+    #1a1408 80%,
+    #14100a 100%
+  );
 }
 
 #view-path::before {
@@ -5916,12 +5930,12 @@ body {
     radial-gradient(ellipse 35% 25% at 75% 70%, rgba(101, 67, 33, 0.12) 0%, transparent 50%),
     /* Subtle path lines */
     repeating-linear-gradient(
-      45deg,
-      transparent 0px,
-      transparent 40px,
-      rgba(139, 90, 43, 0.03) 40px,
-      rgba(139, 90, 43, 0.03) 41px
-    ),
+        45deg,
+        transparent 0px,
+        transparent 40px,
+        rgba(139, 90, 43, 0.03) 40px,
+        rgba(139, 90, 43, 0.03) 41px
+      ),
     repeating-linear-gradient(
       -45deg,
       transparent 0px,
@@ -5938,8 +5952,20 @@ body {
   inset: 0;
   background:
     /* Burnt edges effect */
-    linear-gradient(to right, rgba(10, 8, 4, 0.4) 0%, transparent 5%, transparent 95%, rgba(10, 8, 4, 0.4) 100%),
-    linear-gradient(to bottom, rgba(10, 8, 4, 0.3) 0%, transparent 8%, transparent 92%, rgba(10, 8, 4, 0.3) 100%),
+    linear-gradient(
+      to right,
+      rgba(10, 8, 4, 0.4) 0%,
+      transparent 5%,
+      transparent 95%,
+      rgba(10, 8, 4, 0.4) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(10, 8, 4, 0.3) 0%,
+      transparent 8%,
+      transparent 92%,
+      rgba(10, 8, 4, 0.3) 100%
+    ),
     /* Paper texture noise */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
@@ -6018,11 +6044,7 @@ body {
 .intro-tooltip {
   position: fixed;
   z-index: 2;
-  background: linear-gradient(
-    135deg,
-    rgba(26, 15, 5, 0.98) 0%,
-    rgba(45, 24, 16, 0.98) 100%
-  );
+  background: linear-gradient(135deg, rgba(26, 15, 5, 0.98) 0%, rgba(45, 24, 16, 0.98) 100%);
   border: 2px solid var(--border-rust);
   border-radius: var(--radius);
   padding: 20px;
@@ -6030,7 +6052,9 @@ body {
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 40px rgba(234, 88, 12, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 /* Tooltip arrow */
@@ -6044,7 +6068,7 @@ body {
 }
 
 /* Arrow positions based on tooltip position */
-.intro-tooltip[data-position="bottom"] .intro-tooltip-arrow {
+.intro-tooltip[data-position='bottom'] .intro-tooltip-arrow {
   top: -9px;
   left: 50%;
   margin-left: -8px;
@@ -6052,7 +6076,7 @@ body {
   border-bottom: none;
 }
 
-.intro-tooltip[data-position="top"] .intro-tooltip-arrow {
+.intro-tooltip[data-position='top'] .intro-tooltip-arrow {
   bottom: -9px;
   left: 50%;
   margin-left: -8px;
@@ -6060,7 +6084,7 @@ body {
   border-top: none;
 }
 
-.intro-tooltip[data-position="left"] .intro-tooltip-arrow {
+.intro-tooltip[data-position='left'] .intro-tooltip-arrow {
   right: -9px;
   top: 50%;
   margin-top: -8px;
@@ -6068,7 +6092,7 @@ body {
   border-bottom: none;
 }
 
-.intro-tooltip[data-position="right"] .intro-tooltip-arrow {
+.intro-tooltip[data-position='right'] .intro-tooltip-arrow {
   left: -9px;
   top: 50%;
   margin-top: -8px;
@@ -6202,7 +6226,8 @@ body {
 }
 
 @keyframes introHighlightPulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(1) drop-shadow(0 0 10px rgba(251, 146, 60, 0.5));
   }
   50% {
@@ -6218,8 +6243,8 @@ body {
     transform: translateX(-50%) !important;
   }
 
-  .intro-tooltip[data-position="left"],
-  .intro-tooltip[data-position="right"] {
+  .intro-tooltip[data-position='left'],
+  .intro-tooltip[data-position='right'] {
     /* Force bottom position on mobile */
     top: auto !important;
     bottom: 20px !important;
@@ -6259,7 +6284,9 @@ body {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .project-panel-backdrop.active {
@@ -6274,11 +6301,7 @@ body {
   width: 400px;
   max-width: 90vw;
   height: 100vh;
-  background: linear-gradient(
-    180deg,
-    rgba(26, 15, 5, 0.98) 0%,
-    rgba(15, 10, 5, 0.99) 100%
-  );
+  background: linear-gradient(180deg, rgba(26, 15, 5, 0.98) 0%, rgba(15, 10, 5, 0.99) 100%);
   border-right: 2px solid var(--border-rust);
   z-index: 1001;
   display: flex;
@@ -6398,7 +6421,9 @@ body {
 }
 
 @keyframes panelSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Panel Sections */
@@ -6684,7 +6709,9 @@ body {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .factory-panel-backdrop.active {
@@ -6699,11 +6726,7 @@ body {
   width: 420px;
   max-width: 90vw;
   height: 100vh;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 20, 30, 0.98) 0%,
-    rgba(10, 15, 25, 0.99) 100%
-  );
+  background: linear-gradient(180deg, rgba(15, 20, 30, 0.98) 0%, rgba(10, 15, 25, 0.99) 100%);
   border-left: 2px solid rgba(59, 130, 246, 0.3);
   z-index: 1001;
   display: flex;
@@ -7163,8 +7186,96 @@ body {
   }
 
   @keyframes focusPulse {
-    0%, 100% {
+    0%,
+    100% {
       filter: brightness(1.2);
     }
   }
+}
+
+/* ============================================
+   DEMO MODE - Coming Soon Overlays
+   MVP: Yggdrasil works, DB/wallet features locked
+   ============================================ */
+
+.demo-feature {
+  position: relative;
+}
+
+.demo-feature::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(2px);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.demo-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(234, 179, 8, 0.1));
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #eab308;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  z-index: 11;
+  pointer-events: none;
+}
+
+/* Wallet status demo mode */
+.lb-wallet-status.demo-feature {
+  cursor: not-allowed;
+}
+
+.lb-wallet-status.demo-feature .lb-wallet-text {
+  opacity: 0.5;
+}
+
+/* Action buttons demo mode */
+.lb-action-btn.demo-feature {
+  cursor: not-allowed;
+}
+
+.lb-action-btn.demo-feature:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dashboard section demo banner */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05));
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 12px;
+}
+
+.demo-banner-icon {
+  font-size: 20px;
+}
+
+.demo-banner-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #eab308;
+}
+
+.demo-banner-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
 }

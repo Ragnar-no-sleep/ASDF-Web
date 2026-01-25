@@ -28,12 +28,7 @@ import { GitHubTimeline } from './components/github-timeline.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
-import {
-  escapeHtml,
-  sanitizeHtml,
-  safeInnerHTML,
-  safeTextContent
-} from './utils/security.js';
+import { escapeHtml, sanitizeHtml, safeInnerHTML, safeTextContent } from './utils/security.js';
 import { $, $$, on, delegate } from './utils/dom.js';
 
 // ============================================
@@ -70,7 +65,7 @@ const BuildApp = {
     githubTimeline: GitHubTimeline,
     renderer: RendererFactory,
     animations: Animations,
-    handlers: EventHandlers
+    handlers: EventHandlers,
   },
 
   /**
@@ -104,10 +99,27 @@ const BuildApp = {
 
       // 4c. Initialize renderer (progressive enhancement)
       const treeContainer = $('.tree-container');
+      console.log(
+        '[BuildApp] Tree container found:',
+        !!treeContainer,
+        'enableRenderer:',
+        options.enableRenderer
+      );
       if (treeContainer && options.enableRenderer !== false) {
-        await RendererFactory.init(treeContainer, {
-          mobileThree: options.mobileThree || false
-        });
+        try {
+          await RendererFactory.init(treeContainer, {
+            mobileThree: options.mobileThree || false,
+          });
+        } catch (err) {
+          console.error('[BuildApp] RendererFactory.init failed:', err);
+        }
+      } else {
+        console.warn(
+          '[BuildApp] Skipping renderer init - container:',
+          !!treeContainer,
+          'enabled:',
+          options.enableRenderer
+        );
       }
 
       // 5. Initialize quiz component
@@ -199,14 +211,14 @@ const BuildApp = {
     });
 
     // Project panel open event (from factory panel recommendations)
-    BuildState.subscribe('project:open', (data) => {
+    BuildState.subscribe('project:open', data => {
       if (data.projectId) {
         ProjectPanelComponent.open(data.projectId);
       }
     });
 
     // Renderer node click event (Three.js raycaster clicks)
-    BuildState.subscribe('renderer:nodeClick', (data) => {
+    BuildState.subscribe('renderer:nodeClick', data => {
       if (data.projectId) {
         // Open project panel for renderer clicks
         ProjectPanelComponent.open(data.projectId);
@@ -214,18 +226,18 @@ const BuildApp = {
     });
 
     // Renderer ready event - sync initial state
-    BuildState.subscribe('renderer:ready', (data) => {
+    BuildState.subscribe('renderer:ready', data => {
       console.log(`[BuildApp] Renderer ready: ${data.type}`);
       // Sync current filter if any
       if (TreeComponent.getCurrentFilter() !== 'all') {
         RendererFactory.getRenderer()?.update({
-          filter: TreeComponent.getCurrentFilter()
+          filter: TreeComponent.getCurrentFilter(),
         });
       }
     });
 
     // Renderer view changed event - manage back button
-    BuildState.subscribe('renderer:viewChanged', (data) => {
+    BuildState.subscribe('renderer:viewChanged', data => {
       const { level, projectId } = data;
       this.updateBackButton(level !== 'COSMOS');
 
@@ -236,14 +248,14 @@ const BuildApp = {
     });
 
     // Renderer skill click event - open formation for skill
-    BuildState.subscribe('renderer:skillClick', (data) => {
+    BuildState.subscribe('renderer:skillClick', data => {
       const { skillId, skill } = data;
       console.log(`[BuildApp] Skill clicked: ${skillId}`, skill);
       // TODO: Open formation panel for skill
     });
 
     // Project focus event - show skill tree and timeline
-    BuildState.subscribe(EVENTS.PROJECT_FOCUS, (data) => {
+    BuildState.subscribe(EVENTS.PROJECT_FOCUS, data => {
       if (data.projectId) {
         SkillTreeView.showForProject(data.projectId);
         GitHubTimeline.loadForProject(data.projectId);
@@ -262,7 +274,7 @@ const BuildApp = {
     });
 
     // Quiz complete - recommend formation track
-    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, (data) => {
+    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, data => {
       if (data.recommendedTrack) {
         FormationPanel.open(data.recommendedTrack);
       }
@@ -275,7 +287,7 @@ const BuildApp = {
       resizeTimeout = setTimeout(() => {
         BuildState.emit('window:resize', {
           width: window.innerWidth,
-          height: window.innerHeight
+          height: window.innerHeight,
         });
       }, 150);
     });
@@ -290,7 +302,7 @@ const BuildApp = {
     });
 
     // Keyboard shortcuts
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       // Ctrl/Cmd + Shift + R = Switch renderer
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
         e.preventDefault();
@@ -400,7 +412,7 @@ const BuildApp = {
       currentState: BuildState.currentState,
       selectedProject: BuildState.data.selectedProject,
       selectedTrack: BuildState.data.selectedTrack,
-      introCompleted: BuildState.data.introCompleted
+      introCompleted: BuildState.data.introCompleted,
     };
   },
 
@@ -454,7 +466,7 @@ const BuildApp = {
         alignItems: 'center',
         gap: '8px',
         backdropFilter: 'blur(10px)',
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s ease',
       });
 
       // Hover effect
@@ -489,8 +501,8 @@ const BuildApp = {
     escapeHtml,
     sanitizeHtml,
     safeInnerHTML,
-    safeTextContent
-  }
+    safeTextContent,
+  },
 };
 
 // ============================================
@@ -537,7 +549,7 @@ if (typeof window !== 'undefined') {
     GitHubTimeline: GitHubTimeline,
     Renderer: RendererFactory,
     Animations: Animations,
-    Handlers: EventHandlers
+    Handlers: EventHandlers,
   };
 }
 
@@ -551,7 +563,7 @@ if (typeof window !== 'undefined') {
  */
 if (typeof window !== 'undefined') {
   // Legacy openDocModal
-  window.openDocModal = (projectId) => {
+  window.openDocModal = projectId => {
     console.warn('[Legacy] openDocModal is deprecated, use BuildApp.openProject()');
     ModalFactory.openDoc(projectId);
   };
@@ -573,6 +585,6 @@ if (typeof window !== 'undefined') {
     get() {
       console.warn('[Legacy] projectsData is deprecated, use DataAdapter.getProjects()');
       return DataAdapter.getProjects();
-    }
+    },
   });
 }
