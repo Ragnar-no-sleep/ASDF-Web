@@ -33,15 +33,20 @@ const Dashboard = {
   lastMouseX: 0,
   lastMouseY: 0,
 
+  // Event handler references (for cleanup)
+  _handlers: {
+    mousemove: null,
+    keydown: null,
+  },
+
   /**
    * Initialize dashboard
    */
   async init(containerSelector) {
-    console.log('[Dashboard] Initializing Builder\'s Cosmos...');
-
-    this.container = typeof containerSelector === 'string'
-      ? document.querySelector(containerSelector)
-      : containerSelector;
+    this.container =
+      typeof containerSelector === 'string'
+        ? document.querySelector(containerSelector)
+        : containerSelector;
 
     if (!this.container) {
       throw new Error('[Dashboard] Container not found');
@@ -52,9 +57,7 @@ const Dashboard = {
 
     // Initialize error boundary first
     const webglSupported = ErrorBoundary.init(this.container, {
-      onError: (error, type) => {
-        console.error('[Dashboard] Error caught:', type, error);
-      }
+      onError: () => {},
     });
 
     if (!webglSupported) {
@@ -67,7 +70,7 @@ const Dashboard = {
       this.panel = Panel.init(this.container);
       this.formationPanel = FormationPanel.init(this.container);
       this.onboarding = Onboarding.init(this.container, {
-        onComplete: () => console.log('[Dashboard] Onboarding complete')
+        onComplete: () => {},
       });
 
       // Initialize cosmos with error wrapping
@@ -81,27 +84,28 @@ const Dashboard = {
       this.setupCallbacks();
       this.setupKeyboard();
 
-      // Track mouse
-      this.container.addEventListener('mousemove', (e) => {
+      // Track mouse (store handler for cleanup)
+      this._handlers.mousemove = e => {
         this.lastMouseX = e.clientX;
         this.lastMouseY = e.clientY;
         this.tooltip.updatePosition(e.clientX, e.clientY);
-      });
+      };
+      this.container.addEventListener('mousemove', this._handlers.mousemove);
 
       this.initialized = true;
-      console.log('[Dashboard] Builder\'s Cosmos ready');
 
       // Show onboarding for first-time users
       this.onboarding.showIfFirstTime();
 
       // Emit ready event
-      window.dispatchEvent(new CustomEvent('cosmos:ready', {
-        detail: { dashboard: this }
-      }));
+      window.dispatchEvent(
+        new CustomEvent('cosmos:ready', {
+          detail: { dashboard: this },
+        })
+      );
 
       return this;
     } catch (error) {
-      console.error('[Dashboard] Initialization failed:', error);
       throw error;
     }
   },
@@ -111,29 +115,33 @@ const Dashboard = {
    */
   setupCallbacks() {
     // Island hover -> tooltip
-    this.cosmos.on('islandHover', (project) => {
+    this.cosmos.on('islandHover', project => {
       if (project) {
         const track = TRACKS[project.track];
-        this.tooltip.show({
-          name: project.name,
-          type: 'project',
-          track: track?.name || project.track,
-          trackColor: track?.color,
-          status: project.status,
-          description: project.description,
-          kScore: project.kScore
-        }, this.lastMouseX, this.lastMouseY);
+        this.tooltip.show(
+          {
+            name: project.name,
+            type: 'project',
+            track: track?.name || project.track,
+            trackColor: track?.color,
+            status: project.status,
+            description: project.description,
+            kScore: project.kScore,
+          },
+          this.lastMouseX,
+          this.lastMouseY
+        );
       } else {
         this.tooltip.hide();
       }
     });
 
     // Island click -> panel + zoom
-    this.cosmos.on('islandClick', (project) => {
+    this.cosmos.on('islandClick', project => {
       this.currentProject = project;
       this.panel.open({
         ...project,
-        track: TRACKS[project.track]
+        track: TRACKS[project.track],
       });
 
       // Update UI
@@ -147,17 +155,21 @@ const Dashboard = {
     });
 
     // Skill hover -> tooltip
-    this.cosmos.on('skillHover', (skill) => {
+    this.cosmos.on('skillHover', skill => {
       if (skill) {
         const track = TRACKS[skill.track];
-        this.tooltip.show({
-          name: skill.name,
-          type: 'skill',
-          track: track?.name || skill.track,
-          trackColor: track?.color,
-          status: `Difficulty ${skill.difficulty}`,
-          description: `${skill.icon} ${skill.name}`
-        }, this.lastMouseX, this.lastMouseY);
+        this.tooltip.show(
+          {
+            name: skill.name,
+            type: 'skill',
+            track: track?.name || skill.track,
+            trackColor: track?.color,
+            status: `Difficulty ${skill.difficulty}`,
+            description: `${skill.icon} ${skill.name}`,
+          },
+          this.lastMouseX,
+          this.lastMouseY
+        );
       } else {
         this.tooltip.hide();
       }
@@ -165,11 +177,10 @@ const Dashboard = {
 
     // Skill click -> open FormationPanel
     this.cosmos.on('skillClick', (skill, project) => {
-      console.log('[Dashboard] Skill clicked:', skill.name, 'in', project.name);
       this.formationPanel.open({
         trackId: skill.track,
         skillId: skill.id,
-        skillName: skill.name
+        skillName: skill.name,
       });
     });
   },
@@ -178,7 +189,7 @@ const Dashboard = {
    * Setup keyboard shortcuts
    */
   setupKeyboard() {
-    window.addEventListener('keydown', (e) => {
+    this._handlers.keydown = e => {
       // Escape - go back
       if (e.key === 'Escape') {
         if (this.panel.isOpen) {
@@ -198,7 +209,8 @@ const Dashboard = {
         e.preventDefault();
         this.goBack();
       }
-    });
+    };
+    window.addEventListener('keydown', this._handlers.keydown);
   },
 
   /**
@@ -258,7 +270,6 @@ const Dashboard = {
    */
   resetOnboarding() {
     this.onboarding?.reset();
-    console.log('[Dashboard] Onboarding reset - refresh to see it again');
   },
 
   /**
@@ -272,14 +283,29 @@ const Dashboard = {
    * Dispose
    */
   dispose() {
+    // Remove event listeners
+    if (this.container && this._handlers.mousemove) {
+      this.container.removeEventListener('mousemove', this._handlers.mousemove);
+    }
+    if (this._handlers.keydown) {
+      window.removeEventListener('keydown', this._handlers.keydown);
+    }
+
+    // Clear handler references
+    this._handlers = { mousemove: null, keydown: null };
+
+    // Dispose components
     this.cosmos?.dispose();
     this.tooltip?.dispose();
     this.panel?.dispose();
     this.formationPanel?.dispose();
     this.onboarding?.dispose();
+
+    // Clear state
+    this.container = null;
+    this.currentProject = null;
     this.initialized = false;
-    console.log('[Dashboard] Disposed');
-  }
+  },
 };
 
 // Exports

@@ -17,7 +17,6 @@ export const Tooltip = {
    */
   init() {
     this.createElement();
-    console.log('[Tooltip] Initialized');
     return this;
   },
 
@@ -55,7 +54,7 @@ export const Tooltip = {
       fontFamily: "'Inter', -apple-system, sans-serif",
       color: '#e0e0e0',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 100, 50, 0.1)',
-      overflow: 'hidden'
+      overflow: 'hidden',
     });
 
     document.body.appendChild(this.element);
@@ -70,7 +69,7 @@ export const Tooltip = {
     Object.assign(track.style, {
       height: '3px',
       background: 'linear-gradient(90deg, #ff4444, #ff6644)',
-      marginBottom: '0'
+      marginBottom: '0',
     });
 
     const header = this.element.querySelector('.tooltip-header');
@@ -79,14 +78,14 @@ export const Tooltip = {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '12px 16px 8px',
-      gap: '12px'
+      gap: '12px',
     });
 
     const name = this.element.querySelector('.tooltip-name');
     Object.assign(name.style, {
       fontSize: '15px',
       fontWeight: '600',
-      color: '#ffffff'
+      color: '#ffffff',
     });
 
     const status = this.element.querySelector('.tooltip-status');
@@ -97,7 +96,7 @@ export const Tooltip = {
       padding: '3px 8px',
       borderRadius: '10px',
       background: 'rgba(0, 255, 136, 0.2)',
-      color: '#00ff88'
+      color: '#00ff88',
     });
 
     const description = this.element.querySelector('.tooltip-description');
@@ -105,7 +104,7 @@ export const Tooltip = {
       padding: '0 16px 12px',
       fontSize: '12px',
       color: '#999',
-      lineHeight: '1.4'
+      lineHeight: '1.4',
     });
 
     const footer = this.element.querySelector('.tooltip-footer');
@@ -115,13 +114,13 @@ export const Tooltip = {
       borderTop: '1px solid rgba(255, 255, 255, 0.05)',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
     });
 
     const kscore = this.element.querySelector('.tooltip-kscore');
     Object.assign(kscore.style, {
       fontSize: '12px',
-      color: '#00d9ff'
+      color: '#00d9ff',
     });
   },
 
@@ -139,7 +138,7 @@ export const Tooltip = {
     const trackColors = {
       dev: 'linear-gradient(90deg, #ff4444, #ff6644)',
       games: 'linear-gradient(90deg, #9944ff, #bb66ff)',
-      content: 'linear-gradient(90deg, #00d9ff, #00ffaa)'
+      content: 'linear-gradient(90deg, #00d9ff, #00ffaa)',
     };
     track.style.background = trackColors[data.track?.toLowerCase()] || trackColors.dev;
 
@@ -231,7 +230,7 @@ export const Tooltip = {
     if (this.element?.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
-  }
+  },
 };
 
 export default Tooltip;

@@ -12,7 +12,7 @@ import {
   getFormationTrack,
   getTrackModules,
   calculateTrackProgress,
-  getNextModule
+  getNextModule,
 } from '../data/formations.js';
 
 // ============================================
@@ -23,8 +23,8 @@ const CONFIG = {
   storageKey: 'asdf_formation_progress',
   animation: {
     slideDuration: 400,
-    stagger: 50
-  }
+    stagger: 50,
+  },
 };
 
 // ============================================
@@ -47,19 +47,16 @@ export const FormationPanel = {
   callbacks: {
     onModuleOpen: null,
     onTrackStart: null,
-    onClose: null
+    onClose: null,
   },
 
   /**
    * Initialize
    */
   init(container) {
-    const parent = typeof container === 'string'
-      ? document.querySelector(container)
-      : container;
+    const parent = typeof container === 'string' ? document.querySelector(container) : container;
 
     if (!parent) {
-      console.warn('[FormationPanel] Container not found');
       return this;
     }
 
@@ -68,7 +65,6 @@ export const FormationPanel = {
     this.createStyles();
     this.bindEvents();
 
-    console.log('[FormationPanel] Initialized');
     return this;
   },
 
@@ -547,7 +543,7 @@ export const FormationPanel = {
     this.backdrop.addEventListener('click', () => this.close());
 
     // Track card clicks
-    this.tracksContainer.addEventListener('click', (e) => {
+    this.tracksContainer.addEventListener('click', e => {
       const card = e.target.closest('.track-card');
       if (!card) return;
 
@@ -566,7 +562,7 @@ export const FormationPanel = {
     });
 
     // Module clicks
-    this.detailContent.addEventListener('click', (e) => {
+    this.detailContent.addEventListener('click', e => {
       const card = e.target.closest('.module-card');
       if (card && !card.classList.contains('locked')) {
         this.openModule(card.dataset.module);
@@ -574,7 +570,7 @@ export const FormationPanel = {
     });
 
     // Keyboard
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener('keydown', e => {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
@@ -667,12 +663,14 @@ export const FormationPanel = {
       </div>
 
       <h4 class="modules-title">Modules</h4>
-      ${modules.map((module, index) => {
-        const isCompleted = completedModules.includes(module.id);
-        const isLocked = !isCompleted && module.prerequisites.some(p => !completedModules.includes(p));
-        const isNext = nextModule?.id === module.id;
+      ${modules
+        .map((module, index) => {
+          const isCompleted = completedModules.includes(module.id);
+          const isLocked =
+            !isCompleted && module.prerequisites.some(p => !completedModules.includes(p));
+          const isNext = nextModule?.id === module.id;
 
-        return `
+          return `
           <div
             class="module-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${isNext ? 'next' : ''}"
             data-module="${module.id}"
@@ -695,7 +693,8 @@ export const FormationPanel = {
             </div>
           </div>
         `;
-      }).join('')}
+        })
+        .join('')}
     `;
   },
 
@@ -727,7 +726,6 @@ export const FormationPanel = {
     const isLocked = module.prerequisites.some(p => !completedModules.includes(p));
 
     if (isLocked) {
-      console.log('[FormationPanel] Module locked:', moduleId);
       return;
     }
 
@@ -736,8 +734,6 @@ export const FormationPanel = {
     if (this.callbacks.onModuleOpen) {
       this.callbacks.onModuleOpen(module);
     }
-
-    console.log('[FormationPanel] Opening module:', module.name);
   },
 
   /**
@@ -786,7 +782,7 @@ export const FormationPanel = {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify(this.progress));
     } catch (e) {
-      console.warn('[FormationPanel] Failed to save progress');
+      // Silent fail - localStorage may be unavailable
     }
   },
 
@@ -796,7 +792,7 @@ export const FormationPanel = {
   dispose() {
     this.panel?.remove();
     this.backdrop?.remove();
-  }
+  },
 };
 
 export default FormationPanel;

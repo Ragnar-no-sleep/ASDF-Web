@@ -13,7 +13,7 @@ export const ErrorType = {
   THREE_LOAD_FAILED: 'three_load_failed',
   INITIALIZATION_FAILED: 'initialization_failed',
   RENDER_ERROR: 'render_error',
-  UNKNOWN: 'unknown'
+  UNKNOWN: 'unknown',
 };
 
 /**
@@ -22,29 +22,30 @@ export const ErrorType = {
 const ERROR_MESSAGES = {
   [ErrorType.WEBGL_NOT_SUPPORTED]: {
     title: 'WebGL Not Supported',
-    message: 'Your browser or device does not support WebGL, which is required for the 3D experience.',
-    suggestion: 'Try using a modern browser like Chrome, Firefox, or Edge.'
+    message:
+      'Your browser or device does not support WebGL, which is required for the 3D experience.',
+    suggestion: 'Try using a modern browser like Chrome, Firefox, or Edge.',
   },
   [ErrorType.THREE_LOAD_FAILED]: {
     title: 'Failed to Load 3D Engine',
     message: 'Could not load the Three.js library.',
-    suggestion: 'Check your internet connection and try refreshing.'
+    suggestion: 'Check your internet connection and try refreshing.',
   },
   [ErrorType.INITIALIZATION_FAILED]: {
     title: 'Initialization Failed',
     message: 'The Cosmos could not be initialized.',
-    suggestion: 'Try refreshing the page or clearing your browser cache.'
+    suggestion: 'Try refreshing the page or clearing your browser cache.',
   },
   [ErrorType.RENDER_ERROR]: {
     title: 'Render Error',
     message: 'An error occurred while rendering the scene.',
-    suggestion: 'Try refreshing the page.'
+    suggestion: 'Try refreshing the page.',
   },
   [ErrorType.UNKNOWN]: {
     title: 'Something Went Wrong',
     message: 'An unexpected error occurred.',
-    suggestion: 'Try refreshing the page.'
-  }
+    suggestion: 'Try refreshing the page.',
+  },
 };
 
 /**
@@ -93,12 +94,9 @@ export const ErrorBoundary = {
    */
   setupGlobalHandlers() {
     // Catch unhandled errors
-    window.addEventListener('error', (event) => {
-      console.error('[ErrorBoundary] Uncaught error:', event.error);
-
+    window.addEventListener('error', event => {
       // Only show UI for critical errors
-      if (event.error?.message?.includes('THREE') ||
-          event.error?.message?.includes('WebGL')) {
+      if (event.error?.message?.includes('THREE') || event.error?.message?.includes('WebGL')) {
         this.showError(ErrorType.RENDER_ERROR, event.error);
       }
 
@@ -108,9 +106,7 @@ export const ErrorBoundary = {
     });
 
     // Catch unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
-      console.error('[ErrorBoundary] Unhandled rejection:', event.reason);
-
+    window.addEventListener('unhandledrejection', event => {
       if (this.onError) {
         this.onError(event.reason, ErrorType.UNKNOWN);
       }
@@ -124,7 +120,6 @@ export const ErrorBoundary = {
     try {
       return await fn();
     } catch (error) {
-      console.error('[ErrorBoundary] Caught error:', error);
       this.showError(errorType, error);
 
       if (this.onError) {
@@ -159,10 +154,14 @@ export const ErrorBoundary = {
         <h2 class="error-title">${config.title}</h2>
         <p class="error-message">${config.message}</p>
         <p class="error-suggestion">${config.suggestion}</p>
-        ${error ? `<details class="error-details">
+        ${
+          error
+            ? `<details class="error-details">
           <summary>Technical details</summary>
           <pre>${this.escapeHtml(error.message || String(error))}</pre>
-        </details>` : ''}
+        </details>`
+            : ''
+        }
         <button class="error-retry" onclick="location.reload()">
           Refresh Page
         </button>
@@ -179,8 +178,6 @@ export const ErrorBoundary = {
     } else {
       document.body.appendChild(this.errorElement);
     }
-
-    console.log('[ErrorBoundary] Showing error:', type);
   },
 
   /**
@@ -200,7 +197,7 @@ export const ErrorBoundary = {
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #020812 0%, #0a1628 100%)',
       zIndex: '10000',
-      fontFamily: "'Inter', -apple-system, sans-serif"
+      fontFamily: "'Inter', -apple-system, sans-serif",
     });
 
     const content = this.errorElement.querySelector('.error-content');
@@ -209,7 +206,7 @@ export const ErrorBoundary = {
         textAlign: 'center',
         maxWidth: '400px',
         padding: '40px',
-        color: '#e0e0e0'
+        color: '#e0e0e0',
       });
     }
 
@@ -217,7 +214,7 @@ export const ErrorBoundary = {
     if (icon) {
       Object.assign(icon.style, {
         color: '#ff4444',
-        marginBottom: '24px'
+        marginBottom: '24px',
       });
     }
 
@@ -227,7 +224,7 @@ export const ErrorBoundary = {
         margin: '0 0 12px',
         fontSize: '24px',
         fontWeight: '700',
-        color: '#fff'
+        color: '#fff',
       });
     }
 
@@ -237,7 +234,7 @@ export const ErrorBoundary = {
         margin: '0 0 8px',
         fontSize: '14px',
         color: '#aaa',
-        lineHeight: '1.6'
+        lineHeight: '1.6',
       });
     }
 
@@ -246,7 +243,7 @@ export const ErrorBoundary = {
       Object.assign(suggestion.style, {
         margin: '0 0 24px',
         fontSize: '13px',
-        color: '#666'
+        color: '#666',
       });
     }
 
@@ -256,7 +253,7 @@ export const ErrorBoundary = {
         marginBottom: '24px',
         textAlign: 'left',
         fontSize: '12px',
-        color: '#666'
+        color: '#666',
       });
 
       const pre = details.querySelector('pre');
@@ -269,7 +266,7 @@ export const ErrorBoundary = {
           overflow: 'auto',
           maxHeight: '100px',
           fontSize: '11px',
-          color: '#ff6666'
+          color: '#ff6666',
         });
       }
     }
@@ -285,7 +282,7 @@ export const ErrorBoundary = {
         fontSize: '14px',
         fontWeight: '500',
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s'
+        transition: 'transform 0.2s, box-shadow 0.2s',
       });
 
       button.addEventListener('mouseenter', () => {
@@ -326,7 +323,7 @@ export const ErrorBoundary = {
     this.clear();
     this.container = null;
     this.onError = null;
-  }
+  },
 };
 
 export default ErrorBoundary;

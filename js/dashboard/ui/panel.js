@@ -18,7 +18,6 @@ export const Panel = {
    */
   init(container) {
     this.createElement(container);
-    console.log('[Panel] Initialized');
     return this;
   },
 
@@ -67,7 +66,7 @@ export const Panel = {
       fontFamily: "'Inter', -apple-system, sans-serif",
       color: '#e0e0e0',
       overflow: 'hidden',
-      boxShadow: '-10px 0 40px rgba(0, 0, 0, 0.5)'
+      boxShadow: '-10px 0 40px rgba(0, 0, 0, 0.5)',
     });
 
     container.appendChild(this.element);
@@ -96,13 +95,13 @@ export const Panel = {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: '10'
+      zIndex: '10',
     });
 
     const trackIndicator = this.element.querySelector('.panel-track-indicator');
     Object.assign(trackIndicator.style, {
       height: '4px',
-      background: 'linear-gradient(90deg, #ff4444, #ff6644)'
+      background: 'linear-gradient(90deg, #ff4444, #ff6644)',
     });
 
     const header = this.element.querySelector('.panel-header');
@@ -110,7 +109,7 @@ export const Panel = {
       display: 'flex',
       alignItems: 'flex-start',
       gap: '16px',
-      padding: '24px 20px 16px'
+      padding: '24px 20px 16px',
     });
 
     const icon = this.element.querySelector('.panel-icon');
@@ -124,13 +123,13 @@ export const Panel = {
       justifyContent: 'center',
       fontSize: '28px',
       flexShrink: '0',
-      boxShadow: '0 4px 20px rgba(255, 68, 68, 0.3)'
+      boxShadow: '0 4px 20px rgba(255, 68, 68, 0.3)',
     });
 
     const titleGroup = this.element.querySelector('.panel-title-group');
     Object.assign(titleGroup.style, {
       flex: '1',
-      minWidth: '0'
+      minWidth: '0',
     });
 
     const title = this.element.querySelector('.panel-title');
@@ -139,7 +138,7 @@ export const Panel = {
       fontSize: '20px',
       fontWeight: '700',
       color: '#fff',
-      lineHeight: '1.2'
+      lineHeight: '1.2',
     });
 
     const track = this.element.querySelector('.panel-track');
@@ -147,7 +146,7 @@ export const Panel = {
       fontSize: '12px',
       textTransform: 'uppercase',
       letterSpacing: '1px',
-      color: '#ff6644'
+      color: '#ff6644',
     });
 
     const statusBar = this.element.querySelector('.panel-status-bar');
@@ -157,21 +156,21 @@ export const Panel = {
       padding: '12px 20px',
       background: 'rgba(0, 0, 0, 0.2)',
       borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
     });
 
     const status = this.element.querySelector('.panel-status');
     Object.assign(status.style, {
       fontSize: '12px',
       textTransform: 'uppercase',
-      letterSpacing: '0.5px'
+      letterSpacing: '0.5px',
     });
 
     const kscore = this.element.querySelector('.panel-kscore');
     Object.assign(kscore.style, {
       fontSize: '12px',
       color: '#00d9ff',
-      fontWeight: '600'
+      fontWeight: '600',
     });
 
     const description = this.element.querySelector('.panel-description');
@@ -179,19 +178,19 @@ export const Panel = {
       padding: '16px 20px',
       fontSize: '14px',
       color: '#aaa',
-      lineHeight: '1.6'
+      lineHeight: '1.6',
     });
 
     const content = this.element.querySelector('.panel-content');
     Object.assign(content.style, {
       flex: '1',
       overflowY: 'auto',
-      padding: '0 20px 20px'
+      padding: '0 20px 20px',
     });
 
     const section = this.element.querySelector('.panel-section');
     Object.assign(section.style, {
-      marginBottom: '20px'
+      marginBottom: '20px',
     });
 
     const sectionTitle = this.element.querySelector('.panel-section h3');
@@ -200,14 +199,14 @@ export const Panel = {
       textTransform: 'uppercase',
       letterSpacing: '1px',
       color: '#666',
-      margin: '0 0 12px'
+      margin: '0 0 12px',
     });
 
     const buttons = this.element.querySelector('.panel-buttons');
     Object.assign(buttons.style, {
       display: 'flex',
       flexDirection: 'column',
-      gap: '8px'
+      gap: '8px',
     });
   },
 
@@ -226,7 +225,7 @@ export const Panel = {
       close.style.color = '#888';
     });
 
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener('keydown', e => {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
@@ -253,7 +252,11 @@ export const Panel = {
     const trackColors = {
       dev: { gradient: 'linear-gradient(90deg, #ff4444, #ff6644)', color: '#ff6644', icon: '⚡' },
       games: { gradient: 'linear-gradient(90deg, #9944ff, #bb66ff)', color: '#bb66ff', icon: '🎮' },
-      content: { gradient: 'linear-gradient(90deg, #00d9ff, #00ffaa)', color: '#00d9ff', icon: '📚' }
+      content: {
+        gradient: 'linear-gradient(90deg, #00d9ff, #00ffaa)',
+        color: '#00d9ff',
+        icon: '📚',
+      },
     };
 
     const trackConfig = trackColors[project.track?.id || project.track] || trackColors.dev;
@@ -307,8 +310,7 @@ export const Panel = {
 
     if (project.status === 'live') {
       const learnBtn = this.createButton('Learn More', 'rgba(255, 255, 255, 0.1)', () => {
-        // Could navigate to learning content
-        console.log('Learn more about', project.id);
+        // Navigate to learning content when implemented
       });
       buttons.appendChild(learnBtn);
     }
@@ -330,7 +332,7 @@ export const Panel = {
       fontWeight: '500',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
-      textAlign: 'center'
+      textAlign: 'center',
     });
 
     btn.addEventListener('mouseenter', () => {
@@ -373,7 +375,7 @@ export const Panel = {
     if (this.element?.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
-  }
+  },
 };
 
 export default Panel;
