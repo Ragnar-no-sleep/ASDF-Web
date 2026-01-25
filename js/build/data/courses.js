@@ -1350,6 +1350,1141 @@ Critères:
       },
     ],
   },
+
+  'asdf-integration': {
+    id: 'asdf-integration',
+    title: 'ASDF Ecosystem Integration',
+    description: 'Intègre les protocoles ASDF dans tes projets.',
+    track: 'dev',
+    xpReward: 1000,
+    prerequisites: ['spl-tokens'],
+    lessons: [
+      {
+        id: 'asdf-1',
+        title: 'Architecture ASDF',
+        duration: '25 min',
+        xp: 200,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `L'écosystème **ASDF** est construit autour du mécanisme de **burn**. Chaque transaction contribue à la déflation du token.`,
+            },
+            {
+              type: 'diagram',
+              title: 'Écosystème ASDF',
+              content: `
+┌─────────────────────────────────────────────────────────────┐
+│                    ASDF ECOSYSTEM                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
+│   │  BURN ENGINE │    │   HOLDEX     │    │   ORACLE     │  │
+│   │  ──────────  │    │  ──────────  │    │  ──────────  │  │
+│   │  Auto-burn   │◄──►│  K-Score     │◄──►│  Metrics     │  │
+│   │  on transfer │    │  Analysis    │    │  Aggregator  │  │
+│   └──────────────┘    └──────────────┘    └──────────────┘  │
+│          │                   │                   │           │
+│          └───────────────────┼───────────────────┘           │
+│                              ▼                               │
+│                    ┌──────────────────┐                      │
+│                    │   BURN TRACKER   │                      │
+│                    │   ────────────   │                      │
+│                    │   Live stats     │                      │
+│                    │   Leaderboards   │                      │
+│                    └──────────────────┘                      │
+│                                                              │
+│   🔥 Burn Rate: ~3% par transaction                         │
+│   📊 K-Score: Métrique de qualité du holder                 │
+│   🌐 Oracle: Données on-chain agrégées                      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘`,
+            },
+            {
+              type: 'concept',
+              title: 'Le Burn Engine',
+              text: `Le Burn Engine intercepte chaque transfer et applique un taux de burn:
+
+\`\`\`javascript
+// Pseudo-code du mécanisme
+const BURN_RATE = 0.03; // 3%
+
+function transfer(from, to, amount) {
+  const burnAmount = amount * BURN_RATE;
+  const netAmount = amount - burnAmount;
+
+  // 1. Burn tokens
+  burn(from, burnAmount);
+
+  // 2. Transfer le reste
+  transferInternal(from, to, netAmount);
+
+  // 3. Émettre événement
+  emit('Burn', { from, amount: burnAmount });
+}
+\`\`\``,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 Le burn est **automatique** et **transparent**. L'utilisateur voit le montant net reçu, pas le montant brut envoyé.`,
+            },
+          ],
+        },
+        resources: [
+          { type: 'docs', title: 'ASDF Whitepaper', url: '/docs/whitepaper' },
+          {
+            type: 'github',
+            title: 'Burn Engine Source',
+            url: 'https://github.com/asdf-ecosystem/burn-engine',
+          },
+        ],
+      },
+      {
+        id: 'asdf-2',
+        title: 'Intégrer le K-Score',
+        duration: '30 min',
+        xp: 300,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Le **K-Score** (0-100) mesure la qualité d'un holder basé sur son comportement on-chain.`,
+            },
+            {
+              type: 'concept',
+              title: 'Facteurs du K-Score',
+              text: `| Facteur | Poids | Description |
+|---------|-------|-------------|
+| **Hold Duration** | 30% | Temps de détention |
+| **Transaction Pattern** | 25% | Régularité vs pump/dump |
+| **Burn Contribution** | 20% | Participation au burn |
+| **Ecosystem Activity** | 15% | Usage des dApps ASDF |
+| **Staking** | 10% | Tokens stakés |`,
+            },
+            {
+              type: 'concept',
+              title: 'API HolDex',
+              text: `\`\`\`typescript
+import { HolDexClient } from '@asdf/holdex-sdk';
+
+const holdex = new HolDexClient({
+  rpcUrl: 'https://api.mainnet-beta.solana.com',
+  apiKey: process.env.HOLDEX_API_KEY,
+});
+
+// Récupérer le K-Score d'un wallet
+async function getKScore(wallet: string) {
+  const result = await holdex.getScore(wallet);
+
+  return {
+    score: result.kScore,        // 0-100
+    tier: result.tier,           // 'diamond' | 'gold' | 'silver' | 'bronze'
+    factors: result.breakdown,   // Détail des facteurs
+    lastUpdated: result.timestamp,
+  };
+}
+
+// Vérifier eligibilité
+async function checkEligibility(wallet: string, minScore: number) {
+  const { score } = await getKScore(wallet);
+  return score >= minScore;
+}
+\`\`\``,
+            },
+            {
+              type: 'note',
+              variant: 'warning',
+              text: `⚠️ Le K-Score est recalculé toutes les heures. Cache les résultats côté client pour éviter les rate limits.`,
+            },
+          ],
+        },
+        exercise: {
+          type: 'code',
+          title: 'Implémenter un Gate K-Score',
+          instructions: `Crée une fonction qui vérifie si un wallet a un K-Score suffisant pour accéder à une fonctionnalité premium.`,
+          starterCode: `async function canAccessPremium(wallet, requiredScore = 50) {
+  // TODO:
+  // 1. Récupérer le K-Score du wallet
+  // 2. Comparer avec requiredScore
+  // 3. Retourner { allowed: boolean, score: number, message: string }
+
+}`,
+          solution: `const { score } = await holdex.getScore(wallet); return { allowed: score >= requiredScore, score, message: score >= requiredScore ? 'Access granted' : 'K-Score too low' };`,
+          hints: [
+            'Utilise holdex.getScore(wallet) pour récupérer le score',
+            "Compare avec requiredScore pour déterminer l'accès",
+          ],
+        },
+      },
+      {
+        id: 'asdf-3',
+        title: 'Projet: Burn-Enabled dApp',
+        duration: '2 hours',
+        xp: 500,
+        type: 'project',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Crée une dApp complète qui intègre le burn mechanism et affiche les stats en temps réel.`,
+            },
+            {
+              type: 'concept',
+              title: 'Spécifications',
+              text: `Ta dApp doit inclure:
+1. **Wallet Connect** - Connexion Phantom/Solflare
+2. **Token Transfer** - Avec burn automatique
+3. **Burn Stats** - Affichage en temps réel via WebSocket
+4. **K-Score Display** - Badge du holder
+
+**Stack recommandé:**
+- Next.js 14+ (App Router)
+- @solana/wallet-adapter-react
+- @asdf/burn-sdk
+- @asdf/holdex-sdk`,
+            },
+          ],
+        },
+        project: {
+          requirements: ['Node.js 18+', 'Wallet Phantom ou Solflare', 'Devnet SOL + ASDF tokens'],
+          steps: [
+            {
+              title: 'Setup Next.js',
+              instructions: `\`\`\`bash
+npx create-next-app@latest asdf-dapp --typescript --tailwind
+cd asdf-dapp
+npm install @solana/wallet-adapter-react @solana/wallet-adapter-wallets
+\`\`\``,
+            },
+            {
+              title: 'Implémenter Wallet Connect',
+              instructions: `Configure le WalletProvider dans ton layout et ajoute le bouton de connexion.`,
+            },
+            {
+              title: 'Intégrer le Burn SDK',
+              instructions: `\`\`\`bash
+npm install @asdf/burn-sdk @asdf/holdex-sdk
+\`\`\`
+
+Crée un hook \`useBurnTransfer\` qui gère les transfers avec burn.`,
+            },
+            {
+              title: 'Afficher les Stats',
+              instructions: `Connecte-toi au WebSocket du Burn Tracker pour afficher les burns en temps réel.`,
+            },
+          ],
+          submission: 'github',
+          rubric: [
+            { criterion: 'Wallet connect fonctionne', points: 20 },
+            { criterion: 'Transfer avec burn visible', points: 30 },
+            { criterion: 'Stats temps réel', points: 25 },
+            { criterion: 'K-Score affiché', points: 15 },
+            { criterion: 'Code propre et documenté', points: 10 },
+          ],
+        },
+      },
+    ],
+  },
+
+  'asdf-game-engine': {
+    id: 'asdf-game-engine',
+    title: 'ASDF Game Engine',
+    description: "Utilise l'infrastructure de jeu partagée ASDF.",
+    track: 'games',
+    xpReward: 600,
+    prerequisites: ['game-fundamentals'],
+    lessons: [
+      {
+        id: 'age-1',
+        title: 'Architecture du Engine',
+        duration: '30 min',
+        xp: 150,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `L'ASDF Game Engine fournit une base modulaire pour créer des mini-jeux browser avec leaderboards, anti-cheat, et rewards intégrés.`,
+            },
+            {
+              type: 'diagram',
+              title: 'Structure du Engine',
+              content: `
+┌─────────────────────────────────────────────────────────────┐
+│                    ASDF GAME ENGINE                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │                    BaseEngine                        │   │
+│   │  ─────────────────────────────────────────────────  │   │
+│   │  • Game loop (60fps)     • Input manager            │   │
+│   │  • State machine         • Event emitter            │   │
+│   │  • Asset loader          • Audio manager            │   │
+│   └─────────────────────────────────────────────────────┘   │
+│                           │                                  │
+│          ┌────────────────┼────────────────┐                │
+│          ▼                ▼                ▼                │
+│   ┌────────────┐   ┌────────────┐   ┌────────────┐         │
+│   │  Renderer  │   │   Physics  │   │    UI      │         │
+│   │  ────────  │   │  ────────  │   │  ────────  │         │
+│   │  Canvas 2D │   │  Collision │   │  HUD/Menu  │         │
+│   │  WebGL     │   │  Movement  │   │  Overlays  │         │
+│   └────────────┘   └────────────┘   └────────────┘         │
+│                                                              │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │                 Shared Services                      │   │
+│   │  • Leaderboard API   • Anti-cheat   • XP Rewards    │   │
+│   └─────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘`,
+            },
+            {
+              type: 'concept',
+              title: 'Hériter de BaseEngine',
+              text: `\`\`\`javascript
+import { BaseEngine } from '@asdf/game-engine';
+
+export class MyGame extends BaseEngine {
+  constructor(canvas) {
+    super(canvas, {
+      targetFPS: 60,
+      debug: true,
+      enableLeaderboard: true,
+    });
+
+    // État du jeu
+    this.score = 0;
+    this.player = null;
+    this.enemies = [];
+  }
+
+  // Appelé une fois au démarrage
+  async init() {
+    await this.loadAssets([
+      { id: 'player', src: '/sprites/player.png' },
+      { id: 'enemy', src: '/sprites/enemy.png' },
+    ]);
+
+    this.player = this.createPlayer();
+    this.spawnEnemies(5);
+  }
+
+  // Appelé chaque frame (60x/sec)
+  update(dt) {
+    this.player.update(dt, this.input);
+    this.enemies.forEach(e => e.update(dt));
+    this.checkCollisions();
+  }
+
+  // Appelé après update
+  render(ctx) {
+    ctx.clearRect(0, 0, this.width, this.height);
+    this.player.render(ctx);
+    this.enemies.forEach(e => e.render(ctx));
+    this.renderHUD(ctx);
+  }
+}
+\`\`\``,
+            },
+          ],
+        },
+        resources: [
+          {
+            type: 'github',
+            title: 'BaseEngine Source',
+            url: 'https://github.com/asdf-ecosystem/game-engine',
+          },
+        ],
+      },
+      {
+        id: 'age-2',
+        title: 'Leaderboards & Anti-Cheat',
+        duration: '25 min',
+        xp: 200,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Les leaderboards ASDF incluent un système anti-cheat basé sur la validation côté serveur et les signatures.`,
+            },
+            {
+              type: 'concept',
+              title: 'Soumettre un Score',
+              text: `\`\`\`javascript
+import { LeaderboardClient } from '@asdf/game-engine';
+
+const leaderboard = new LeaderboardClient({
+  gameId: 'my-game',
+  apiUrl: 'https://api.asdf.gg/leaderboard',
+});
+
+// À la fin du jeu
+async function submitScore(score, gameData) {
+  // gameData contient les preuves de jeu (inputs, replay, etc.)
+  const result = await leaderboard.submit({
+    score,
+    wallet: playerWallet,
+    proof: {
+      duration: gameData.duration,
+      inputs: gameData.inputLog,
+      checkpoints: gameData.checkpoints,
+      hash: gameData.stateHash,
+    },
+  });
+
+  if (result.verified) {
+    console.log('Score accepted! Rank:', result.rank);
+  } else {
+    console.warn('Score rejected:', result.reason);
+  }
+}
+\`\`\``,
+            },
+            {
+              type: 'concept',
+              title: 'Système de Preuves',
+              text: `| Preuve | Description | Détection |
+|--------|-------------|-----------|
+| **Duration** | Temps total de jeu | Score impossible si trop court |
+| **Input Log** | Séquence d'inputs | Pattern inhumain détecté |
+| **Checkpoints** | États intermédiaires | Incohérence = triche |
+| **State Hash** | Hash final du jeu | Manipulation détectée |`,
+            },
+            {
+              type: 'note',
+              variant: 'warning',
+              text: `⚠️ **Important**: Ne fais jamais confiance au client. Valide TOUJOURS les scores côté serveur. Le client peut être modifié.`,
+            },
+          ],
+        },
+        exercise: {
+          type: 'quiz',
+          title: 'Anti-Cheat Check',
+          questions: [
+            {
+              q: 'Pourquoi enregistrer les inputs pendant le jeu?',
+              options: [
+                'Pour le fun',
+                'Pour rejouer et vérifier que le score est possible',
+                'Pour les analytics',
+                'Pour le debug uniquement',
+              ],
+              correct: 1,
+              explanation:
+                "Les replays permettent de vérifier qu'un humain a réellement joué et que le score est atteignable.",
+            },
+            {
+              q: 'Où doit se faire la validation finale du score?',
+              options: [
+                'Dans le navigateur du joueur',
+                'Sur le serveur de jeu',
+                'Dans le smart contract',
+                'Sur le CDN',
+              ],
+              correct: 1,
+              explanation:
+                'Le serveur est la seule entité de confiance. Le client peut être modifié par le joueur.',
+            },
+          ],
+        },
+      },
+      {
+        id: 'age-3',
+        title: 'Juice & Polish',
+        duration: '20 min',
+        xp: 250,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Le "juice" rend un jeu satisfaisant. Ce sont les petits effets qui font la différence entre un prototype et un jeu poli.`,
+            },
+            {
+              type: 'concept',
+              title: 'Effets de Juice',
+              text: `\`\`\`javascript
+import { Juice } from '@asdf/game-engine';
+
+// Screen shake sur impact
+Juice.screenShake(this.camera, {
+  intensity: 10,
+  duration: 200,
+  decay: 'exponential',
+});
+
+// Particules d'explosion
+Juice.particles(x, y, {
+  count: 20,
+  spread: 360,
+  speed: { min: 100, max: 300 },
+  lifetime: { min: 200, max: 500 },
+  colors: ['#ff4400', '#ffaa00', '#ffff00'],
+});
+
+// Slow motion temporaire
+Juice.slowMotion({
+  scale: 0.3,      // 30% vitesse
+  duration: 500,   // pendant 500ms
+  easing: 'easeOut',
+});
+
+// Flash de l'écran
+Juice.flash('#ffffff', 100);
+
+// Son avec variation
+Juice.playSound('explosion', {
+  volume: 0.8,
+  pitch: Juice.random(0.9, 1.1),  // Légère variation
+});
+\`\`\``,
+            },
+            {
+              type: 'diagram',
+              title: 'Checklist Juice',
+              content: `
+┌────────────────────────────────────────────────┐
+│              JUICE CHECKLIST                    │
+├────────────────────────────────────────────────┤
+│                                                 │
+│  ☐ Screen shake sur les impacts                │
+│  ☐ Particules sur destruction                  │
+│  ☐ Flash blanc sur dégâts                      │
+│  ☐ Slow-mo sur moment clé                      │
+│  ☐ Sons avec variation de pitch                │
+│  ☐ Animation de score (+100 qui monte)         │
+│  ☐ Rebond/squash sur atterrissage              │
+│  ☐ Trail sur objets rapides                    │
+│  ☐ Glow sur power-ups                          │
+│  ☐ Hitstop (freeze 1-2 frames) sur hit         │
+│                                                 │
+└────────────────────────────────────────────────┘`,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 **Règle d'or**: Ajoute du juice sur CHAQUE interaction. Un clic, un hit, un pickup... tout mérite un feedback.`,
+            },
+          ],
+        },
+      },
+    ],
+  },
+
+  'build-mini-game': {
+    id: 'build-mini-game',
+    title: 'Build a Mini-Game',
+    description: "Crée ton propre mini-jeu pour l'arcade ASDF.",
+    track: 'games',
+    xpReward: 1000,
+    prerequisites: ['asdf-game-engine'],
+    lessons: [
+      {
+        id: 'bmg-1',
+        title: 'Game Design Document',
+        duration: '45 min',
+        xp: 200,
+        type: 'project',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Avant de coder, planifie. Un **GDD** (Game Design Document) clarifie ta vision et évite les pivots coûteux.`,
+            },
+            {
+              type: 'concept',
+              title: 'Structure du GDD',
+              text: `**1. High Concept** (1 phrase)
+Exemple: "Un endless runner où tu esquives des scams crypto"
+
+**2. Core Loop**
+- Action principale (courir, sauter)
+- Objectif (survivre, scorer)
+- Reward (XP, leaderboard)
+
+**3. Mécaniques**
+- Contrôles (clavier, souris, touch)
+- Obstacles/ennemis
+- Power-ups
+
+**4. Progression**
+- Difficulté croissante
+- Milestones (score thresholds)
+- Unlockables
+
+**5. Art & Audio**
+- Style visuel
+- Sons nécessaires
+- UI/HUD`,
+            },
+          ],
+        },
+        project: {
+          requirements: ['Google Docs ou Notion'],
+          steps: [
+            {
+              title: 'Choisis ton concept',
+              instructions: `Brainstorm 3 idées de mini-jeux. Choisis celle qui est:
+- Simple à implémenter (2-4h de dev)
+- Fun en 30 secondes
+- Compatible mobile (touch controls)`,
+            },
+            {
+              title: 'Écris le GDD',
+              instructions: `Documente les 5 sections: High Concept, Core Loop, Mécaniques, Progression, Art & Audio.`,
+            },
+            {
+              title: 'Feedback',
+              instructions: `Partage ton GDD sur Discord #games pour feedback de la communauté.`,
+            },
+          ],
+          submission: 'form',
+          rubric: [
+            { criterion: 'High concept clair', points: 20 },
+            { criterion: 'Core loop défini', points: 25 },
+            { criterion: 'Mécaniques réalistes', points: 25 },
+            { criterion: 'Scope raisonnable', points: 30 },
+          ],
+        },
+      },
+      {
+        id: 'bmg-2',
+        title: 'Prototype Jouable',
+        duration: '4 hours',
+        xp: 400,
+        type: 'project',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Transforme ton GDD en prototype jouable. Focus sur le **core loop** uniquement.`,
+            },
+            {
+              type: 'concept',
+              title: 'Règles du Prototype',
+              text: `**DO:**
+- ✅ Core mechanic fonctionnel
+- ✅ Contrôles réactifs
+- ✅ Une condition de victoire/défaite
+- ✅ Score basique
+
+**DON'T:**
+- ❌ Graphismes finaux
+- ❌ Menus élaborés
+- ❌ Sons
+- ❌ Leaderboard
+
+Le but est de tester si c'est **FUN**, pas si c'est beau.`,
+            },
+          ],
+        },
+        project: {
+          requirements: ['ASDF Game Engine installé', 'GDD approuvé'],
+          steps: [
+            {
+              title: 'Setup',
+              instructions: `\`\`\`bash
+npx create-asdf-game my-game
+cd my-game
+npm run dev
+\`\`\``,
+            },
+            {
+              title: 'Implémenter le Core Loop',
+              instructions: `Crée la boucle principale: input → update → render. Utilise des rectangles colorés comme placeholder.`,
+            },
+            {
+              title: 'Ajouter Score + Game Over',
+              instructions: `Affiche le score en haut. Détecte la condition de game over.`,
+            },
+            {
+              title: 'Playtest',
+              instructions: `Fais tester par 3 personnes. Note leurs réactions et frustrations.`,
+            },
+          ],
+          submission: 'github',
+          rubric: [
+            { criterion: 'Core loop fonctionnel', points: 30 },
+            { criterion: 'Contrôles réactifs', points: 20 },
+            { criterion: 'Score affiché', points: 15 },
+            { criterion: 'Game over détecté', points: 15 },
+            { criterion: 'Feedback de playtest', points: 20 },
+          ],
+        },
+      },
+      {
+        id: 'bmg-3',
+        title: 'Polish & Launch',
+        duration: '2 hours',
+        xp: 400,
+        type: 'project',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Finalise ton jeu avec le polish, connecte le leaderboard, et soumets pour review.`,
+            },
+            {
+              type: 'concept',
+              title: 'Checklist de Launch',
+              text: `**Art:**
+- [ ] Sprites/graphismes finaux
+- [ ] Animations fluides
+- [ ] UI cohérente
+
+**Audio:**
+- [ ] Son de hit/score
+- [ ] Musique de fond (optionnel)
+- [ ] Feedback sonore sur actions
+
+**Features:**
+- [ ] Leaderboard connecté
+- [ ] Touch controls (mobile)
+- [ ] Écran titre
+- [ ] Écran game over avec retry
+
+**Tech:**
+- [ ] Performance 60fps stable
+- [ ] Pas de memory leaks
+- [ ] Anti-cheat intégré`,
+            },
+          ],
+        },
+        project: {
+          requirements: ['Prototype approuvé'],
+          steps: [
+            {
+              title: 'Ajouter le Juice',
+              instructions: `Screen shake, particules, sons - suis la checklist du module précédent.`,
+            },
+            {
+              title: 'Connecter Leaderboard',
+              instructions: `Utilise \`LeaderboardClient\` pour soumettre les scores avec anti-cheat.`,
+            },
+            {
+              title: 'Test Mobile',
+              instructions: `Vérifie que les touch controls fonctionnent sur iOS et Android.`,
+            },
+            {
+              title: 'Soumettre pour Review',
+              instructions: `PR vers le repo ASDF Arcade avec:
+- Démo jouable
+- Screenshot/GIF
+- GDD final`,
+            },
+          ],
+          submission: 'github',
+          rubric: [
+            { criterion: 'Jeu complet et jouable', points: 25 },
+            { criterion: 'Juice et polish', points: 20 },
+            { criterion: 'Leaderboard fonctionnel', points: 20 },
+            { criterion: 'Mobile compatible', points: 15 },
+            { criterion: 'Code propre', points: 10 },
+            { criterion: 'Documentation', points: 10 },
+          ],
+        },
+      },
+    ],
+  },
+
+  'technical-writing': {
+    id: 'technical-writing',
+    title: 'Technical Writing',
+    description: 'Rédige de la documentation claire et des tutoriels efficaces.',
+    track: 'content',
+    xpReward: 500,
+    prerequisites: ['content-fundamentals'],
+    lessons: [
+      {
+        id: 'tw-1',
+        title: 'Structure de Documentation',
+        duration: '25 min',
+        xp: 150,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Une bonne documentation suit une structure prévisible. Le lecteur doit trouver ce qu'il cherche en **30 secondes**.`,
+            },
+            {
+              type: 'diagram',
+              title: 'Hiérarchie Docs',
+              content: `
+┌─────────────────────────────────────────────────┐
+│                 DOCUMENTATION                    │
+├─────────────────────────────────────────────────┤
+│                                                  │
+│   📖 GETTING STARTED (Quick Start)              │
+│   └── Installation → Hello World → Next Steps   │
+│                                                  │
+│   📚 GUIDES (How-To)                            │
+│   └── Task-oriented tutorials                   │
+│                                                  │
+│   📋 REFERENCE (API)                            │
+│   └── Complete API documentation                │
+│                                                  │
+│   💡 CONCEPTS (Explanation)                      │
+│   └── Architecture, design decisions            │
+│                                                  │
+│   ❓ TROUBLESHOOTING (FAQ)                       │
+│   └── Common errors, solutions                  │
+│                                                  │
+└─────────────────────────────────────────────────┘`,
+            },
+            {
+              type: 'concept',
+              title: 'Principes Clés',
+              text: `| Principe | Application |
+|----------|-------------|
+| **Scannability** | Headers clairs, listes, code blocks |
+| **Progressive Disclosure** | Simple d'abord, détails ensuite |
+| **Copy-Paste Ready** | Exemples qui fonctionnent tels quels |
+| **Versioning** | Indiquer la version concernée |
+| **Cross-References** | Liens vers docs connexes |`,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 **Test**: Demande à quelqu'un de trouver une info dans ta doc. S'il met plus de 30 secondes, restructure.`,
+            },
+          ],
+        },
+      },
+      {
+        id: 'tw-2',
+        title: 'Rédiger des Tutoriels',
+        duration: '30 min',
+        xp: 200,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Un bon tutoriel guide pas à pas vers un résultat concret. Le lecteur doit **réussir** quelque chose.`,
+            },
+            {
+              type: 'concept',
+              title: "Structure d'un Tutoriel",
+              text: `\`\`\`markdown
+# Titre: Verbe + Objectif
+"Créer une API REST avec Express"
+
+## Prérequis
+- Ce que le lecteur doit savoir
+- Ce qu'il doit avoir installé
+
+## Ce que vous allez construire
+- Screenshot/démo du résultat final
+- Liste des fonctionnalités
+
+## Étapes
+
+### 1. Setup (titre actionnable)
+Explication brève, puis code:
+
+\\\`\\\`\\\`bash
+npm init -y
+npm install express
+\\\`\\\`\\\`
+
+### 2. Étape suivante...
+
+## Vérification
+Comment savoir que ça marche?
+
+## Prochaines étapes
+Liens vers tutoriels avancés
+\`\`\``,
+            },
+            {
+              type: 'concept',
+              title: 'Erreurs Courantes',
+              text: `| ❌ Erreur | ✅ Correction |
+|-----------|--------------|
+| Sauter des étapes | Tester from scratch |
+| Code incomplet | Snippets copy-paste |
+| Pas de contexte | Expliquer le "pourquoi" |
+| Trop long | Découper en parties |
+| Pas de troubleshooting | Anticiper les erreurs |`,
+            },
+          ],
+        },
+        exercise: {
+          type: 'creative',
+          title: 'Rédige un Mini-Tutoriel',
+          instructions: `Écris un tutoriel de 500 mots max pour:
+"Comment connecter un wallet Phantom à une dApp React"
+
+Inclus:
+- Prérequis
+- Au moins 3 étapes avec code
+- Section troubleshooting (1 erreur courante)`,
+          rubric: [
+            { criterion: 'Structure claire', points: 25 },
+            { criterion: 'Code fonctionnel', points: 30 },
+            { criterion: 'Explications suffisantes', points: 25 },
+            { criterion: 'Troubleshooting utile', points: 20 },
+          ],
+        },
+      },
+      {
+        id: 'tw-3',
+        title: 'Documenter une API',
+        duration: '25 min',
+        xp: 150,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `La documentation API doit être **exhaustive** et **précise**. Chaque endpoint, chaque paramètre, chaque erreur.`,
+            },
+            {
+              type: 'concept',
+              title: 'Format Standard',
+              text: `\`\`\`markdown
+## GET /api/users/:id
+
+Récupère les informations d'un utilisateur.
+
+### Paramètres
+
+| Nom | Type | Requis | Description |
+|-----|------|--------|-------------|
+| id | string | Oui | ID unique de l'utilisateur |
+
+### Headers
+
+| Header | Valeur | Description |
+|--------|--------|-------------|
+| Authorization | Bearer <token> | JWT token |
+
+### Réponse (200 OK)
+
+\\\`\\\`\\\`json
+{
+  "id": "123",
+  "username": "builder42",
+  "kScore": 75,
+  "createdAt": "2025-01-15T10:00:00Z"
+}
+\\\`\\\`\\\`
+
+### Erreurs
+
+| Code | Message | Description |
+|------|---------|-------------|
+| 401 | Unauthorized | Token manquant ou invalide |
+| 404 | User not found | ID inexistant |
+\`\`\``,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 Utilise des outils comme **Swagger/OpenAPI** ou **Redoc** pour générer la doc automatiquement depuis le code.`,
+            },
+          ],
+        },
+      },
+    ],
+  },
+
+  'community-growth': {
+    id: 'community-growth',
+    title: 'Community & Growth',
+    description: 'Développe et engage une communauté crypto.',
+    track: 'content',
+    xpReward: 400,
+    prerequisites: ['content-fundamentals'],
+    lessons: [
+      {
+        id: 'cg-1',
+        title: 'Discord Management',
+        duration: '20 min',
+        xp: 100,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Discord est le hub des communautés crypto. Une bonne gestion fait la différence entre un serveur mort et un écosystème vivant.`,
+            },
+            {
+              type: 'diagram',
+              title: 'Structure Recommandée',
+              content: `
+┌─────────────────────────────────────────────────┐
+│                DISCORD STRUCTURE                 │
+├─────────────────────────────────────────────────┤
+│                                                  │
+│   📢 ANNOUNCEMENTS                               │
+│   ├── #announcements (read-only)                │
+│   └── #updates                                  │
+│                                                  │
+│   🏠 GENERAL                                     │
+│   ├── #general-chat                             │
+│   ├── #introductions                            │
+│   └── #memes                                    │
+│                                                  │
+│   💻 DEVELOPMENT                                 │
+│   ├── #dev-help                                 │
+│   ├── #code-review                              │
+│   └── #showcase                                 │
+│                                                  │
+│   🎮 GAMES                                       │
+│   ├── #arcade-chat                              │
+│   └── #leaderboards                             │
+│                                                  │
+│   🔒 PRIVATE (Role-gated)                        │
+│   ├── #holders-only                             │
+│   └── #builders-council                         │
+│                                                  │
+└─────────────────────────────────────────────────┘`,
+            },
+            {
+              type: 'concept',
+              title: 'Règles de Modération',
+              text: `| Action | Conséquence |
+|--------|-------------|
+| Premier avertissement | DM + rappel des règles |
+| Spam/Pub non sollicitée | Mute 24h |
+| Insultes | Mute 7 jours |
+| Scam/Phishing | Ban permanent + report |
+| Récidive | Escalade d'un niveau |
+
+**Clé**: Sois consistant. Les mêmes règles pour tout le monde.`,
+            },
+            {
+              type: 'note',
+              variant: 'warning',
+              text: `⚠️ **Sécurité**: Active le 2FA obligatoire pour les mods. Ne clique JAMAIS sur un lien suspect. Les scammers ciblent les communautés crypto.`,
+            },
+          ],
+        },
+      },
+      {
+        id: 'cg-2',
+        title: 'Twitter/X Strategy',
+        duration: '25 min',
+        xp: 150,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Twitter/X est le megaphone de crypto. Une bonne stratégie peut 10x ta reach.`,
+            },
+            {
+              type: 'concept',
+              title: 'Types de Content',
+              text: `| Type | Fréquence | Objectif |
+|------|-----------|----------|
+| **Thread éducatif** | 1-2/semaine | Authority building |
+| **Update projet** | Quand pertinent | Transparency |
+| **Meme/Humor** | 2-3/semaine | Engagement |
+| **Quote tweet** | Quotidien | Visibility |
+| **Reply game** | Continu | Network |`,
+            },
+            {
+              type: 'concept',
+              title: 'Timing Optimal',
+              text: `\`\`\`
+MEILLEURS HORAIRES (UTC):
+┌────────────────────────────────┐
+│  Lundi-Vendredi                │
+│  • 14:00-16:00 UTC (US wake)   │
+│  • 20:00-22:00 UTC (EU evening)│
+│                                │
+│  Weekend                       │
+│  • 15:00-18:00 UTC             │
+└────────────────────────────────┘
+
+ÉVITER:
+• Dimanche matin
+• Pendant les gros events crypto
+• Quand le marché crash
+\`\`\``,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 **Engagement hack**: Réponds aux gros comptes dans les 5 premières minutes de leur tweet. Ton reply sera vu par leurs followers.`,
+            },
+          ],
+        },
+        exercise: {
+          type: 'creative',
+          title: 'Planifie une Semaine',
+          instructions: `Crée un calendrier de content pour une semaine:
+- Minimum 7 posts
+- Au moins 1 thread éducatif
+- Mix de formats
+- Horaires précis
+
+Format: Tableau avec Jour | Heure | Type | Sujet`,
+          rubric: [
+            { criterion: 'Diversité des formats', points: 25 },
+            { criterion: 'Horaires pertinents', points: 25 },
+            { criterion: 'Sujets alignés avec ASDF', points: 25 },
+            { criterion: 'Thread de qualité', points: 25 },
+          ],
+        },
+      },
+      {
+        id: 'cg-3',
+        title: 'Métriques & Analytics',
+        duration: '20 min',
+        xp: 150,
+        type: 'lesson',
+        content: {
+          sections: [
+            {
+              type: 'intro',
+              text: `Ce qui ne se mesure pas ne s'améliore pas. Track les bonnes métriques pour optimiser ta stratégie.`,
+            },
+            {
+              type: 'concept',
+              title: 'Métriques Clés',
+              text: `| Métrique | Signification | Cible |
+|----------|---------------|-------|
+| **Followers growth** | Reach potentiel | +5%/mois |
+| **Engagement rate** | Qualité du content | >3% |
+| **Discord DAU** | Activité communauté | >10% des membres |
+| **Conversion rate** | Visiteur → membre | >20% |
+| **Retention (7d)** | Fidélité | >40% |`,
+            },
+            {
+              type: 'concept',
+              title: 'Outils',
+              text: `**Twitter Analytics:**
+- Built-in analytics (gratuit)
+- TweetHunter (scheduling + analytics)
+- Typefully (threads)
+
+**Discord:**
+- Server Insights (built-in)
+- Statbot (détaillé)
+- Carl-bot (logs)
+
+**Web:**
+- Plausible/Fathom (privacy-first)
+- Mixpanel (events)`,
+            },
+            {
+              type: 'note',
+              variant: 'tip',
+              text: `💡 Crée un **dashboard hebdomadaire** avec les 5 métriques clés. Review chaque lundi pour ajuster la stratégie.`,
+            },
+          ],
+        },
+      },
+    ],
+  },
 };
 
 /**
