@@ -311,11 +311,18 @@ export const SnowstormParticles = {
         }
 
         const halfSpread = snowstorm.spread * 0.4;
-        if (this.largePositions[i3] > halfSpread) this.largePositions[i3] -= halfSpread * 2;
-        if (this.largePositions[i3] < -halfSpread) this.largePositions[i3] += halfSpread * 2;
-        if (this.largePositions[i3 + 2] > halfSpread) this.largePositions[i3 + 2] -= halfSpread * 2;
-        if (this.largePositions[i3 + 2] < -halfSpread)
+        if (this.largePositions[i3] > halfSpread) {
+          this.largePositions[i3] -= halfSpread * 2;
+        }
+        if (this.largePositions[i3] < -halfSpread) {
+          this.largePositions[i3] += halfSpread * 2;
+        }
+        if (this.largePositions[i3 + 2] > halfSpread) {
+          this.largePositions[i3 + 2] -= halfSpread * 2;
+        }
+        if (this.largePositions[i3 + 2] < -halfSpread) {
           this.largePositions[i3 + 2] += halfSpread * 2;
+        }
       }
 
       this.largeGeometry.attributes.position.needsUpdate = true;

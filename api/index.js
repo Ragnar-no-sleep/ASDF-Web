@@ -156,7 +156,6 @@ const {
 } = require('./services/eventBus');
 const {
   get: _cacheGet,
-  set: _cacheSet,
   del: cacheDel,
   wrap: cacheWrap,
   invalidateTag,
