@@ -6,6 +6,7 @@
 'use strict';
 
 import { Dashboard, TRACKS, ECOSYSTEM_PROJECTS } from '../dashboard/index.js';
+import { COURSES, getCourse } from './data/courses.js';
 
 /**
  * Promise with timeout wrapper
@@ -1329,7 +1330,10 @@ const YggdrasilCosmos = {
    * Open module with lesson content
    */
   openModule(moduleId) {
-    const moduleData = this.mockLessons[moduleId];
+    // Try COURSES first, fallback to mockLessons
+    const courseData = getCourse(moduleId);
+    const moduleData = courseData || this.mockLessons[moduleId];
+
     if (!moduleData) {
       console.warn('[YggdrasilCosmos] No lessons found for module:', moduleId);
       return;
@@ -1338,27 +1342,34 @@ const YggdrasilCosmos = {
     this.currentModule = moduleId;
     this.currentLessonIndex = 0;
 
+    // Calculate total XP for the module
+    const totalXP =
+      moduleData.xpReward || moduleData.lessons.reduce((sum, l) => sum + (l.xp || 50), 0);
+
     // Update sidebar
     const moduleInfo = this.lessonModal.querySelector('.ygg-lesson-module-info');
     moduleInfo.innerHTML = `
-            <h2>${moduleData.title}</h2>
-            <p>${moduleData.description}</p>
-            <span class="ygg-lesson-count">${moduleData.lessons.length} lessons</span>
-        `;
+      <h2>${moduleData.title}</h2>
+      <p>${moduleData.description}</p>
+      <div class="ygg-lesson-meta">
+        <span class="ygg-lesson-count">${moduleData.lessons.length} lessons</span>
+        <span class="ygg-lesson-xp">+${totalXP} XP</span>
+      </div>
+    `;
 
     // Update lesson list
     const lessonList = this.lessonModal.querySelector('.ygg-lesson-list');
     lessonList.innerHTML = moduleData.lessons
       .map(
         (lesson, i) => `
-            <div class="ygg-lesson-item ${i === 0 ? 'active' : ''}" data-index="${i}">
-                <span class="lesson-number">${i + 1}</span>
-                <div class="lesson-info">
-                    <span class="lesson-title">${lesson.title}</span>
-                    <span class="lesson-duration">${lesson.duration}</span>
-                </div>
-                <span class="lesson-status">○</span>
+          <div class="ygg-lesson-item ${i === 0 ? 'active' : ''}" data-index="${i}">
+            <span class="lesson-number">${i + 1}</span>
+            <div class="lesson-info">
+              <span class="lesson-title">${lesson.title}</span>
+              <span class="lesson-duration">${lesson.duration}</span>
             </div>
+            <span class="lesson-status">○</span>
+          </div>
         `
       )
       .join('');
@@ -1382,10 +1393,12 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Show specific lesson
+   * Show specific lesson with rich content
    */
   showLesson(index) {
-    const moduleData = this.mockLessons[this.currentModule];
+    // Try COURSES first, fallback to mockLessons
+    const courseData = getCourse(this.currentModule);
+    const moduleData = courseData || this.mockLessons[this.currentModule];
     if (!moduleData || !moduleData.lessons[index]) return;
 
     this.currentLessonIndex = index;
@@ -1398,23 +1411,22 @@ const YggdrasilCosmos = {
 
     // Update header
     const header = this.lessonModal.querySelector('.ygg-lesson-header');
+    const typeIcon = this.getLessonTypeIcon(lesson.type);
     header.innerHTML = `
-            <span class="lesson-badge">Lesson ${index + 1}</span>
-            <h1>${lesson.title}</h1>
-            <span class="lesson-meta">${lesson.duration}</span>
-        `;
+      <div class="lesson-badge-row">
+        <span class="lesson-badge">${typeIcon} ${this.capitalize(lesson.type || 'Lesson')}</span>
+        <span class="lesson-xp">+${lesson.xp || 50} XP</span>
+      </div>
+      <h1>${lesson.title}</h1>
+      <span class="lesson-meta">${lesson.duration}</span>
+    `;
 
-    // Update body
+    // Update body with rich content
     const body = this.lessonModal.querySelector('.ygg-lesson-body');
-    body.innerHTML = `
-            <div class="lesson-content">
-                <p>${lesson.content}</p>
-            </div>
-            <div class="lesson-placeholder">
-                <div class="placeholder-icon">📖</div>
-                <p>Full lesson content, interactive examples, and quizzes coming soon!</p>
-            </div>
-        `;
+    body.innerHTML = this.renderLessonContent(lesson);
+
+    // Bind interactive elements
+    this.bindLessonInteractions(body, lesson);
 
     // Update actions
     const actions = this.lessonModal.querySelector('.ygg-lesson-actions');
@@ -1422,16 +1434,16 @@ const YggdrasilCosmos = {
     const isLast = index === moduleData.lessons.length - 1;
 
     actions.innerHTML = `
-            <button class="ygg-btn ygg-btn-secondary lesson-prev" ${isFirst ? 'disabled' : ''}>
-                ← Previous
-            </button>
-            <button class="ygg-btn ygg-btn-primary lesson-complete">
-                Mark Complete
-            </button>
-            <button class="ygg-btn ygg-btn-secondary lesson-next" ${isLast ? 'disabled' : ''}>
-                Next →
-            </button>
-        `;
+      <button class="ygg-btn ygg-btn-secondary lesson-prev" ${isFirst ? 'disabled' : ''}>
+        ← Previous
+      </button>
+      <button class="ygg-btn ygg-btn-primary lesson-complete">
+        ${lesson.type === 'quiz' ? 'Submit Quiz' : 'Mark Complete'}
+      </button>
+      <button class="ygg-btn ygg-btn-secondary lesson-next" ${isLast ? 'disabled' : ''}>
+        Next →
+      </button>
+    `;
 
     // Bind action events
     actions.querySelector('.lesson-prev')?.addEventListener('click', () => {
@@ -1441,8 +1453,494 @@ const YggdrasilCosmos = {
       if (!isLast) this.showLesson(index + 1);
     });
     actions.querySelector('.lesson-complete')?.addEventListener('click', () => {
-      this.completeLesson(index);
+      if (lesson.type === 'quiz') {
+        this.submitQuiz(lesson);
+      } else {
+        this.completeLesson(index);
+      }
     });
+  },
+
+  /**
+   * Get icon for lesson type
+   */
+  getLessonTypeIcon(type) {
+    const icons = {
+      lesson: '📖',
+      quiz: '❓',
+      project: '🔨',
+      video: '🎥',
+      article: '📄',
+    };
+    return icons[type] || '📖';
+  },
+
+  /**
+   * Capitalize string
+   */
+  capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  },
+
+  /**
+   * Render rich lesson content
+   */
+  renderLessonContent(lesson) {
+    let html = '<div class="lesson-content-rich">';
+
+    // Render content sections if available
+    if (lesson.content?.sections) {
+      html += lesson.content.sections.map(section => this.renderSection(section)).join('');
+    } else if (typeof lesson.content === 'string') {
+      // Fallback for simple string content
+      html += `<div class="lesson-section lesson-intro"><p>${lesson.content}</p></div>`;
+    }
+
+    // Render exercise if present
+    if (lesson.exercise) {
+      html += this.renderExercise(lesson.exercise);
+    }
+
+    // Render quiz if present
+    if (lesson.quiz) {
+      html += this.renderQuiz(lesson.quiz);
+    }
+
+    // Render project if present
+    if (lesson.project) {
+      html += this.renderProject(lesson.project);
+    }
+
+    // Render resources
+    if (lesson.resources?.length) {
+      html += this.renderResources(lesson.resources);
+    }
+
+    html += '</div>';
+    return html;
+  },
+
+  /**
+   * Render a content section
+   */
+  renderSection(section) {
+    switch (section.type) {
+      case 'intro':
+        return `<div class="lesson-section lesson-intro">${this.parseMarkdown(section.text)}</div>`;
+
+      case 'diagram':
+        return `
+          <div class="lesson-section lesson-diagram">
+            ${section.title ? `<h3>${section.title}</h3>` : ''}
+            <pre class="diagram-ascii">${this.escapeHtml(section.content)}</pre>
+          </div>`;
+
+      case 'concept':
+        return `
+          <div class="lesson-section lesson-concept">
+            <h3>${section.title}</h3>
+            ${this.parseMarkdown(section.text)}
+          </div>`;
+
+      case 'note':
+        const noteClass = section.variant || 'info';
+        const noteIcon = { tip: '💡', warning: '⚠️', info: 'ℹ️' }[noteClass] || 'ℹ️';
+        return `
+          <div class="lesson-section lesson-note lesson-note-${noteClass}">
+            <span class="note-icon">${noteIcon}</span>
+            ${this.parseMarkdown(section.text)}
+          </div>`;
+
+      default:
+        return `<div class="lesson-section">${this.parseMarkdown(section.text || '')}</div>`;
+    }
+  },
+
+  /**
+   * Render exercise
+   */
+  renderExercise(exercise) {
+    if (exercise.type === 'quiz') {
+      return this.renderInlineQuiz(exercise);
+    }
+
+    if (exercise.type === 'code') {
+      return `
+        <div class="lesson-section lesson-exercise">
+          <h3>🔧 Exercice: ${exercise.title}</h3>
+          <p class="exercise-instructions">${exercise.instructions}</p>
+          <div class="code-editor-container">
+            <pre class="code-starter"><code>${this.escapeHtml(exercise.starterCode || '')}</code></pre>
+            <textarea class="code-input" placeholder="Écris ton code ici...">${exercise.starterCode || ''}</textarea>
+          </div>
+          ${
+            exercise.hints
+              ? `
+            <details class="exercise-hints">
+              <summary>💡 Indices</summary>
+              <ul>${exercise.hints.map(h => `<li>${h}</li>`).join('')}</ul>
+            </details>
+          `
+              : ''
+          }
+          <button class="ygg-btn ygg-btn-secondary check-exercise">Vérifier</button>
+        </div>`;
+    }
+
+    if (exercise.type === 'project-mini') {
+      return `
+        <div class="lesson-section lesson-exercise">
+          <h3>🛠️ Mini-Projet: ${exercise.title}</h3>
+          <p class="exercise-instructions">${exercise.instructions}</p>
+          ${
+            exercise.verification
+              ? `
+            <div class="verification-input">
+              <label>${exercise.verification}</label>
+              <input type="text" class="verify-input" placeholder="Colle ta réponse ici...">
+              <button class="ygg-btn ygg-btn-secondary verify-exercise">Vérifier</button>
+            </div>
+          `
+              : ''
+          }
+        </div>`;
+    }
+
+    return '';
+  },
+
+  /**
+   * Render inline quiz (within a lesson)
+   */
+  renderInlineQuiz(exercise) {
+    return `
+      <div class="lesson-section lesson-quiz-inline">
+        <h3>✅ ${exercise.title}</h3>
+        <div class="quiz-questions">
+          ${exercise.questions
+            .map(
+              (q, i) => `
+            <div class="quiz-question" data-index="${i}" data-correct="${q.correct}">
+              <p class="question-text">${q.q}</p>
+              <div class="question-options">
+                ${q.options
+                  .map(
+                    (opt, j) => `
+                  <label class="option-label">
+                    <input type="radio" name="q${i}" value="${j}">
+                    <span class="option-text">${opt}</span>
+                  </label>
+                `
+                  )
+                  .join('')}
+              </div>
+              ${q.explanation ? `<p class="question-explanation hidden">${q.explanation}</p>` : ''}
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+        <button class="ygg-btn ygg-btn-secondary check-inline-quiz">Vérifier les réponses</button>
+      </div>`;
+  },
+
+  /**
+   * Render final quiz
+   */
+  renderQuiz(quiz) {
+    return `
+      <div class="lesson-section lesson-quiz-final">
+        <div class="quiz-info">
+          <span class="quiz-passing">Score requis: ${Math.round(quiz.passingScore * 100)}%</span>
+        </div>
+        <div class="quiz-questions">
+          ${quiz.questions
+            .map(
+              (q, i) => `
+            <div class="quiz-question" data-index="${i}" data-correct="${q.correct}">
+              <p class="question-number">Question ${i + 1}/${quiz.questions.length}</p>
+              <p class="question-text">${q.q}</p>
+              <div class="question-options">
+                ${q.options
+                  .map(
+                    (opt, j) => `
+                  <label class="option-label">
+                    <input type="radio" name="final-q${i}" value="${j}">
+                    <span class="option-text">${opt}</span>
+                  </label>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+      </div>`;
+  },
+
+  /**
+   * Render project section
+   */
+  renderProject(project) {
+    return `
+      <div class="lesson-section lesson-project">
+        <h3>🚀 Projet</h3>
+
+        ${
+          project.requirements
+            ? `
+          <div class="project-requirements">
+            <h4>Prérequis</h4>
+            <ul>${project.requirements.map(r => `<li>${r}</li>`).join('')}</ul>
+          </div>
+        `
+            : ''
+        }
+
+        ${
+          project.steps
+            ? `
+          <div class="project-steps">
+            <h4>Étapes</h4>
+            ${project.steps
+              .map(
+                (step, i) => `
+              <div class="project-step">
+                <h5>Étape ${i + 1}: ${step.title}</h5>
+                ${this.parseMarkdown(step.instructions)}
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+        `
+            : ''
+        }
+
+        ${
+          project.rubric
+            ? `
+          <div class="project-rubric">
+            <h4>Critères d'évaluation</h4>
+            <table>
+              <thead><tr><th>Critère</th><th>Points</th></tr></thead>
+              <tbody>
+                ${project.rubric.map(r => `<tr><td>${r.criterion}</td><td>${r.points}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        `
+            : ''
+        }
+
+        <div class="project-submission">
+          <p>Soumission via: <strong>${project.submission || 'github'}</strong></p>
+          <input type="text" class="project-url-input" placeholder="URL de ton projet (GitHub, etc.)">
+          <button class="ygg-btn ygg-btn-primary submit-project">Soumettre le projet</button>
+        </div>
+      </div>`;
+  },
+
+  /**
+   * Render resources section
+   */
+  renderResources(resources) {
+    return `
+      <div class="lesson-section lesson-resources">
+        <h3>📚 Ressources Complémentaires</h3>
+        <div class="resources-list">
+          ${resources
+            .map(r => {
+              const icon = { docs: '📄', video: '🎥', article: '📰', github: '🐙' }[r.type] || '🔗';
+              return `
+              <a href="${r.url}" target="_blank" rel="noopener" class="resource-link">
+                <span class="resource-icon">${icon}</span>
+                <span class="resource-title">${r.title}</span>
+                <span class="resource-external">↗</span>
+              </a>`;
+            })
+            .join('')}
+        </div>
+      </div>`;
+  },
+
+  /**
+   * Parse simple markdown
+   */
+  parseMarkdown(text) {
+    if (!text) return '';
+    return (
+      text
+        // Code blocks
+        .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+        // Bold
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        // Tables
+        .replace(/\|(.+)\|/g, match => {
+          const cells = match.split('|').filter(c => c.trim());
+          if (cells.every(c => c.trim().match(/^-+$/))) {
+            return ''; // Skip separator row
+          }
+          const isHeader = !this._tableStarted;
+          this._tableStarted = true;
+          const tag = isHeader ? 'th' : 'td';
+          return `<tr>${cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('')}</tr>`;
+        })
+        // Wrap tables
+        .replace(/(<tr>.*<\/tr>)+/g, '<table class="lesson-table">$&</table>')
+        // Paragraphs
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^/, '<p>')
+        .replace(/$/, '</p>')
+    );
+  },
+
+  /**
+   * Escape HTML
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  },
+
+  /**
+   * Bind interactive elements in lesson
+   */
+  bindLessonInteractions(container, lesson) {
+    // Check exercise button
+    container.querySelector('.check-exercise')?.addEventListener('click', () => {
+      const textarea = container.querySelector('.code-input');
+      if (textarea && lesson.exercise?.validation) {
+        const code = textarea.value;
+        const isValid = lesson.exercise.validation(code);
+        if (isValid) {
+          this.showNotification('✅ Correct!', 'success');
+        } else {
+          this.showNotification('❌ Pas tout à fait. Vérifie les indices.', 'error');
+        }
+      }
+    });
+
+    // Check inline quiz
+    container.querySelector('.check-inline-quiz')?.addEventListener('click', () => {
+      this.checkInlineQuiz(container);
+    });
+
+    // Verify mini-project
+    container.querySelector('.verify-exercise')?.addEventListener('click', () => {
+      const input = container.querySelector('.verify-input');
+      const pattern = lesson.exercise?.validationPattern;
+      if (input && pattern) {
+        const regex = new RegExp(pattern);
+        if (regex.test(input.value)) {
+          this.showNotification('✅ Valide! Bien joué.', 'success');
+        } else {
+          this.showNotification('❌ Format invalide. Vérifie ton input.', 'error');
+        }
+      }
+    });
+
+    // Submit project
+    container.querySelector('.submit-project')?.addEventListener('click', () => {
+      const input = container.querySelector('.project-url-input');
+      if (input?.value) {
+        this.showNotification('📬 Projet soumis! Review en cours...', 'success');
+        // TODO: Actually submit to backend
+      }
+    });
+  },
+
+  /**
+   * Check inline quiz answers
+   */
+  checkInlineQuiz(container) {
+    const questions = container.querySelectorAll('.quiz-question');
+    let correct = 0;
+
+    questions.forEach(q => {
+      const correctAnswer = parseInt(q.dataset.correct);
+      const selected = q.querySelector('input:checked');
+      const explanation = q.querySelector('.question-explanation');
+
+      if (selected) {
+        const answer = parseInt(selected.value);
+        if (answer === correctAnswer) {
+          q.classList.add('correct');
+          q.classList.remove('incorrect');
+          correct++;
+        } else {
+          q.classList.add('incorrect');
+          q.classList.remove('correct');
+        }
+      }
+
+      if (explanation) {
+        explanation.classList.remove('hidden');
+      }
+    });
+
+    const total = questions.length;
+    const percent = Math.round((correct / total) * 100);
+    this.showNotification(
+      `Score: ${correct}/${total} (${percent}%)`,
+      percent >= 66 ? 'success' : 'warning'
+    );
+  },
+
+  /**
+   * Submit final quiz
+   */
+  submitQuiz(lesson) {
+    const container = this.lessonModal.querySelector('.ygg-lesson-body');
+    const questions = container.querySelectorAll('.quiz-question');
+    let correct = 0;
+
+    questions.forEach(q => {
+      const correctAnswer = parseInt(q.dataset.correct);
+      const selected = q.querySelector('input:checked');
+
+      if (selected && parseInt(selected.value) === correctAnswer) {
+        q.classList.add('correct');
+        correct++;
+      } else {
+        q.classList.add('incorrect');
+      }
+    });
+
+    const total = questions.length;
+    const percent = correct / total;
+    const passed = percent >= (lesson.quiz?.passingScore || 0.66);
+
+    if (passed) {
+      this.showNotification(`🎉 Quiz réussi! ${Math.round(percent * 100)}%`, 'success');
+      this.completeLesson(this.currentLessonIndex);
+    } else {
+      this.showNotification(
+        `❌ Score: ${Math.round(percent * 100)}%. Il faut ${Math.round((lesson.quiz?.passingScore || 0.66) * 100)}%`,
+        'error'
+      );
+    }
+  },
+
+  /**
+   * Show notification
+   */
+  showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `ygg-notification ygg-notification-${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 10);
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
   },
 
   /**
