@@ -6,8 +6,9 @@
 'use strict';
 
 import { Dashboard, TRACKS, ECOSYSTEM_PROJECTS } from '../dashboard/index.js';
-import { COURSES, getCourse } from './data/courses.js';
-import { SKILLS_DATA, getSkill, getSkillsForProject } from './data/skills.js';
+import { getCourse } from './data/courses.js';
+import { SKILLS_DATA, getSkill } from './data/skills.js';
+import { ProgressTracker, GENERALIST_TRACKS } from './progress-tracker.js';
 
 /**
  * Promise with timeout wrapper
@@ -648,6 +649,10 @@ const YggdrasilCosmos = {
     // Load saved state from localStorage
     this.loadSavedState();
 
+    // Initialize progress tracker
+    ProgressTracker.init();
+    this.setupProgressListeners();
+
     // Load projects data
     await this.loadProjectsData();
 
@@ -829,7 +834,7 @@ const YggdrasilCosmos = {
         project.miniTree
           ?.map(
             (item, idx) => `
-                <div class="ygg-component-card" data-component-idx="${idx}">
+                <div class="ygg-component-card" data-component-idx="${idx}" data-project-id="${mappedId}" data-component-name="${item.name}">
                     <div class="ygg-component-header">
                         <span class="component-icon">${item.icon}</span>
                         <span class="component-name">${item.name}</span>
@@ -969,6 +974,14 @@ const YggdrasilCosmos = {
           if (!isOpen) {
             card.classList.add('expanded');
             details.style.display = 'block';
+
+            // Track specialized progress - component explored
+            const projectId = card.dataset.projectId;
+            const componentName = card.dataset.componentName;
+            if (projectId && componentName) {
+              ProgressTracker.completeProjectComponent(projectId, componentName);
+              this.refreshProfilePanel();
+            }
           }
         });
       });
@@ -984,6 +997,10 @@ const YggdrasilCosmos = {
 
     this.projectModal.classList.add('open');
     this.projectModalOpen = true;
+
+    // Track project exploration
+    ProgressTracker.exploreProject(projectId);
+    this.refreshProfilePanel();
   },
 
   /**
@@ -2281,8 +2298,13 @@ const YggdrasilCosmos = {
    * Mark lesson as complete
    */
   completeLesson(index) {
-    const moduleData = this.mockLessons[this.currentModule];
+    // Try COURSES first, fallback to mockLessons
+    const courseData = getCourse(this.currentModule);
+    const moduleData = courseData || this.mockLessons[this.currentModule];
     if (!moduleData) return;
+
+    const lesson = moduleData.lessons[index];
+    if (!lesson) return;
 
     // Update UI
     const lessonItem = this.lessonModal.querySelector(`.ygg-lesson-item[data-index="${index}"]`);
@@ -2291,15 +2313,33 @@ const YggdrasilCosmos = {
       lessonItem.classList.add('completed');
     }
 
-    // Award XP
-    this.profile.xp += 50;
+    // Track completion with ProgressTracker
+    const lessonId = lesson.id || `lesson-${index}`;
+    const result = ProgressTracker.completeLesson(this.currentModule, lessonId);
+
+    // Show XP notification if XP was earned
+    if (result.xp > 0) {
+      this.showXPNotification(result.xp);
+    }
+
+    // Sync with local profile state
+    this.profile.xp = ProgressTracker.data.totalXp;
     this.saveState();
 
-    // Show XP notification
-    this.showXPNotification(50);
+    // Check if all lessons are complete → mark module complete
+    const totalLessons = moduleData.lessons.length;
+    const completedInModule = ProgressTracker.data.completedLessons.filter(l =>
+      l.startsWith(`${this.currentModule}:`)
+    ).length;
+    if (completedInModule >= totalLessons) {
+      ProgressTracker.completeModule(this.currentModule);
+    }
+
+    // Refresh profile panel
+    this.refreshProfilePanel();
 
     // Auto-advance if not last
-    if (index < moduleData.lessons.length - 1) {
+    if (index < totalLessons - 1) {
       setTimeout(() => this.showLesson(index + 1), 500);
     }
   },
@@ -2371,116 +2411,233 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Render Builder Card
+   * Setup progress tracker event listeners
+   */
+  setupProgressListeners() {
+    // Listen for XP gains
+    ProgressTracker.on('levelUp', data => {
+      this.showNotification(
+        `Level Up! You're now ${data.title} (Level ${data.newLevel})`,
+        'success'
+      );
+      this.refreshProfilePanel();
+    });
+
+    // Listen for badge awards
+    ProgressTracker.on('badgeEarned', data => {
+      this.showNotification(`Badge Earned: ${data.badge.icon} ${data.badge.name}`, 'success');
+      this.refreshProfilePanel();
+    });
+
+    // Listen for streak updates
+    ProgressTracker.on('streakUpdate', data => {
+      if (data.streak > 1 && data.streak % 7 === 0) {
+        this.showNotification(`🔥 ${data.streak} day streak! Keep it up!`, 'info');
+      }
+    });
+
+    // Sync with profile on module completion
+    ProgressTracker.on('moduleComplete', () => {
+      this.refreshProfilePanel();
+    });
+  },
+
+  /**
+   * Refresh profile panel with latest data
+   */
+  refreshProfilePanel() {
+    if (this.rightPanel) {
+      const content = this.rightPanel.querySelector('.ygg-panel-content');
+      if (content) {
+        content.innerHTML = this.renderBuilderCard();
+        // Re-attach event listeners
+        const statsToggle = this.rightPanel.querySelector('.ygg-stats-toggle');
+        if (statsToggle) {
+          statsToggle.addEventListener('click', () => this.toggleStats());
+        }
+        const connectBtn = this.rightPanel.querySelector('.ygg-connect-wallet');
+        if (connectBtn) {
+          connectBtn.addEventListener('click', () => this.connectWallet());
+        }
+      }
+    }
+  },
+
+  /**
+   * Render Builder Card with ProgressTracker data
    */
   renderBuilderCard() {
-    const p = this.profile;
-    const level = this.calculateLevel(p.xp);
-    const levelTitle = this.getLevelTitle(level);
-    const walletDisplay = p.wallet ? `${p.wallet.slice(0, 4)}...${p.wallet.slice(-4)}` : null;
+    const stats = ProgressTracker.getStats();
+    const levelProgress = stats.levelProgress;
+    const badges = ProgressTracker.getEarnedBadges();
+    const walletDisplay = this.profile.wallet
+      ? `${this.profile.wallet.slice(0, 4)}...${this.profile.wallet.slice(-4)}`
+      : null;
 
     // Top badges (show up to 5)
     const topBadges =
-      p.badges.length > 0
-        ? p.badges
+      badges.length > 0
+        ? badges
             .slice(0, 5)
-            .map(b => `<span class="ygg-badge" title="${b.name}">${b.icon}</span>`)
+            .map(b => `<span class="ygg-badge" title="${b.name}: ${b.desc}">${b.icon}</span>`)
             .join('')
-        : '<span class="ygg-badge-placeholder">No badges yet</span>';
+        : '<span class="ygg-badge-placeholder">Complete lessons to earn badges</span>';
+
+    // XP progress bar
+    const xpPercent = levelProgress.next ? levelProgress.progress : 100;
 
     return `
-            <div class="ygg-builder-card">
-                <div class="ygg-builder-header">
-                    <div class="ygg-avatar-large">
-                        <span class="ygg-avatar-icon">🔥</span>
-                        <span class="ygg-level-badge">${level}</span>
-                    </div>
-                    <div class="ygg-builder-info">
-                        <div class="ygg-builder-name">${p.name}</div>
-                        ${
-                          walletDisplay
-                            ? `<div class="ygg-wallet-addr">${walletDisplay}</div>`
-                            : `<button class="ygg-connect-wallet">Connect Wallet</button>`
-                        }
-                    </div>
-                </div>
+      <div class="ygg-builder-card">
+        <div class="ygg-builder-header">
+          <div class="ygg-avatar-large">
+            <span class="ygg-avatar-icon">🔥</span>
+            <span class="ygg-level-badge">${stats.level}</span>
+          </div>
+          <div class="ygg-builder-info">
+            <div class="ygg-builder-name">${this.profile.name}</div>
+            ${
+              walletDisplay
+                ? `<div class="ygg-wallet-addr">${walletDisplay}</div>`
+                : `<button class="ygg-connect-wallet">Connect Wallet</button>`
+            }
+          </div>
+        </div>
 
-                <div class="ygg-builder-level">
-                    <span class="ygg-level-title">${levelTitle}</span>
-                    <span class="ygg-total-xp">${this.formatNumber(p.xp)} XP</span>
-                </div>
+        <div class="ygg-builder-level">
+          <span class="ygg-level-title">${levelProgress.current.title}</span>
+          <span class="ygg-total-xp">${this.formatNumber(stats.totalXp)} XP</span>
+        </div>
 
-                <div class="ygg-badges-row">
-                    ${topBadges}
-                </div>
+        <div class="ygg-xp-progress">
+          <div class="ygg-xp-bar">
+            <div class="ygg-xp-fill" style="width: ${xpPercent}%"></div>
+          </div>
+          ${
+            levelProgress.next
+              ? `<span class="ygg-xp-to-next">${this.formatNumber(levelProgress.xpToNext)} XP to ${levelProgress.next.title}</span>`
+              : `<span class="ygg-xp-to-next">Max Level Reached!</span>`
+          }
+        </div>
 
-                <button class="ygg-stats-toggle ${this.profileExpanded ? 'expanded' : ''}">
-                    <span>View Stats</span>
-                    <span class="ygg-stats-arrow">${this.profileExpanded ? '▲' : '▼'}</span>
-                </button>
+        <div class="ygg-streak-display ${stats.streak > 0 ? 'active' : ''}">
+          <span class="streak-icon">🔥</span>
+          <span class="streak-count">${stats.streak}</span>
+          <span class="streak-label">day streak</span>
+        </div>
 
-                <div class="ygg-stats-expanded ${this.profileExpanded ? 'show' : ''}">
-                    <div class="ygg-stats-section">
-                        <h4>Statistics</h4>
-                        <div class="ygg-stats-list">
-                            <div class="ygg-stat-row">
-                                <span>Quests Completed</span>
-                                <span>${p.questsCompleted}</span>
-                            </div>
-                            <div class="ygg-stat-row">
-                                <span>Modules Mastered</span>
-                                <span>${p.modulesCompleted}</span>
-                            </div>
-                            <div class="ygg-stat-row">
-                                <span>Projects Contributed</span>
-                                <span>${p.projectsContributed}</span>
-                            </div>
-                            <div class="ygg-stat-row">
-                                <span>PRs Merged</span>
-                                <span>${p.prsMerged}</span>
-                            </div>
-                            <div class="ygg-stat-row">
-                                <span>Tokens Burned</span>
-                                <span>${this.formatNumber(p.burned)} ASDF</span>
-                            </div>
-                            <div class="ygg-stat-row">
-                                <span>Streak</span>
-                                <span>${p.streak} days 🔥</span>
-                            </div>
-                        </div>
-                    </div>
+        <div class="ygg-badges-row">
+          ${topBadges}
+          ${badges.length > 5 ? `<span class="ygg-badge-more">+${badges.length - 5}</span>` : ''}
+        </div>
 
-                    <div class="ygg-stats-section">
-                        <h4>Track Progress</h4>
-                        <div class="ygg-track-progress-list">
-                            ${Object.entries(this.tracksData)
-                              .map(
-                                ([id, track]) => `
-                                <div class="ygg-track-progress-row">
-                                    <span class="ygg-track-label" style="color: ${track.color}">${track.icon} ${track.name}</span>
-                                    <div class="ygg-track-progress-bar">
-                                        <div class="ygg-track-progress-fill" style="width: ${this.userProgress[id]}%; background: ${track.color}"></div>
-                                    </div>
-                                    <span class="ygg-track-percent">${this.userProgress[id]}%</span>
-                                </div>
-                            `
-                              )
-                              .join('')}
-                        </div>
-                    </div>
+        <button class="ygg-stats-toggle ${this.profileExpanded ? 'expanded' : ''}">
+          <span>View Progress</span>
+          <span class="ygg-stats-arrow">${this.profileExpanded ? '▲' : '▼'}</span>
+        </button>
 
-                    ${
-                      p.memberSince
-                        ? `
-                        <div class="ygg-member-since">
-                            Member since ${new Date(p.memberSince).toLocaleDateString()}
-                        </div>
-                    `
-                        : ''
-                    }
-                </div>
+        <div class="ygg-stats-expanded ${this.profileExpanded ? 'show' : ''}">
+          <div class="ygg-stats-section">
+            <h4>Learning Stats</h4>
+            <div class="ygg-stats-grid">
+              <div class="ygg-stat-card">
+                <span class="stat-value">${stats.lessonsCompleted}</span>
+                <span class="stat-label">Lessons</span>
+              </div>
+              <div class="ygg-stat-card">
+                <span class="stat-value">${stats.modulesCompleted}</span>
+                <span class="stat-label">Modules</span>
+              </div>
+              <div class="ygg-stat-card">
+                <span class="stat-value">${stats.projectsExplored}</span>
+                <span class="stat-label">Projects</span>
+              </div>
+              <div class="ygg-stat-card">
+                <span class="stat-value">${stats.badgesEarned}</span>
+                <span class="stat-label">Badges</span>
+              </div>
             </div>
+          </div>
+
+          <div class="ygg-stats-section">
+            <h4>Generalist Tracks</h4>
+            <div class="ygg-track-progress-list">
+              ${Object.entries(GENERALIST_TRACKS)
+                .map(
+                  ([id, track]) => `
+                  <div class="ygg-track-progress-row">
+                    <span class="ygg-track-label" style="color: ${track.color}">${track.icon} ${track.name}</span>
+                    <div class="ygg-track-progress-bar">
+                      <div class="ygg-track-progress-fill" style="width: ${stats.trackProgress[id]}%; background: ${track.color}"></div>
+                    </div>
+                    <span class="ygg-track-percent">${stats.trackProgress[id]}%</span>
+                  </div>
+                `
+                )
+                .join('')}
+            </div>
+          </div>
+
+          <div class="ygg-stats-section">
+            <h4>Specialized Tracks</h4>
+            <div class="ygg-specialized-list">
+              ${this.renderSpecializedProgress()}
+            </div>
+          </div>
+
+          <div class="ygg-stats-section">
+            <h4>Streaks</h4>
+            <div class="ygg-stats-list">
+              <div class="ygg-stat-row">
+                <span>Current Streak</span>
+                <span>${stats.streak} days 🔥</span>
+              </div>
+              <div class="ygg-stat-row">
+                <span>Longest Streak</span>
+                <span>${stats.longestStreak} days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Render specialized project track progress
+   */
+  renderSpecializedProgress() {
+    const explored = ProgressTracker.data.exploredProjects;
+    if (explored.length === 0) {
+      return '<p class="ygg-no-progress">Explore projects to start specialized tracks</p>';
+    }
+
+    return explored
+      .slice(0, 5)
+      .map(projectId => {
+        const project = this.projectsData[projectId];
+        const progress = ProgressTracker.getSpecializedProgress(
+          projectId,
+          project?.miniTree?.length || 6
+        );
+        const ecosystemProject = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
+        const trackColor =
+          ecosystemProject?.track === 'dev'
+            ? '#ff4444'
+            : ecosystemProject?.track === 'games'
+              ? '#aa44ff'
+              : '#44aaff';
+
+        return `
+          <div class="ygg-specialized-row" data-project="${projectId}">
+            <span class="specialized-name">${project?.title || projectId}</span>
+            <div class="ygg-track-progress-bar small">
+              <div class="ygg-track-progress-fill" style="width: ${progress.percent}%; background: ${trackColor}"></div>
+            </div>
+            <span class="ygg-track-percent">${progress.percent}%</span>
+          </div>
         `;
+      })
+      .join('');
   },
 
   /**
