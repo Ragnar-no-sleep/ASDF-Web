@@ -120,6 +120,10 @@ data/
 coverage/
 .nyc_output/
 
+# Playwright
+playwright-report/
+test-results/
+
 # Debug
 debug/
 *.debug
