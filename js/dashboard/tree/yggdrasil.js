@@ -457,11 +457,10 @@ export const Yggdrasil = {
 
   /**
    * Build Floating Islands from ecosystem projects - Phi-harmonic Yggdrasil style
-   * Projects are distributed along branches by track, using golden ratios
+   * Projects spiral outward along branches by track, using golden ratios for spacing
    */
   buildIslands() {
     const { islands: islandConfig } = CONFIG;
-    const PHI = 1.618033988749895;
     const PHI_INV = 0.618033988749895;
 
     // Group projects by track
@@ -470,52 +469,68 @@ export const Yggdrasil = {
       if (tracks[p.track]) tracks[p.track].push(p);
     });
 
-    // Track base angles (120° apart, covering full circle)
-    const trackAngles = {
-      dev: 0, // Front-right
-      games: (Math.PI * 2) / 3, // Back
-      content: (Math.PI * 4) / 3, // Front-left
+    // Track configurations - wider spreads, different base angles
+    const trackConfig = {
+      dev: {
+        baseAngle: -Math.PI / 6, // -30° (front-right quadrant)
+        spread: Math.PI * 0.55, // 100° spread for 11 projects
+        radiusMin: 10,
+        radiusMax: 22,
+        heightMin: 7,
+        heightMax: 15,
+      },
+      games: {
+        baseAngle: (Math.PI * 2) / 3, // 120° (back-left)
+        spread: Math.PI * 0.4, // 72° for 4 projects
+        radiusMin: 11,
+        radiusMax: 18,
+        heightMin: 5,
+        heightMax: 13,
+      },
+      content: {
+        baseAngle: (Math.PI * 4) / 3, // 240° (front-left)
+        spread: Math.PI * 0.45, // 81° for 6 projects
+        radiusMin: 10,
+        radiusMax: 20,
+        heightMin: 6,
+        heightMax: 14,
+      },
     };
 
-    // Track vertical zones (using phi ratios)
-    const trackHeights = {
-      dev: { min: 8, max: 14 }, // Higher - infrastructure
-      games: { min: 6, max: 12 }, // Middle - entertainment
-      content: { min: 7, max: 13 }, // Middle-high - education
-    };
-
-    // Process each track
+    // Process each track with spiral distribution
     Object.entries(tracks).forEach(([trackId, projects]) => {
-      const baseAngle = trackAngles[trackId];
-      const heights = trackHeights[trackId];
-      const trackSpread = Math.PI / 3; // 60° spread per track
+      const cfg = trackConfig[trackId];
+      const n = projects.length;
 
       projects.forEach((project, i) => {
-        const t = projects.length > 1 ? i / (projects.length - 1) : 0.5;
+        // Normalized position in track (0 to 1)
+        const t = n > 1 ? i / (n - 1) : 0.5;
 
-        // Phi-based angular distribution within track sector
-        // Uses golden angle offsets for natural spacing
-        const phiOffset = (i * GOLDEN_ANGLE) % trackSpread;
-        const angle = baseAngle - trackSpread / 2 + phiOffset;
+        // Spiral angle: linear spread across the track's angular range
+        // Add small golden-ratio offset to break regularity
+        const goldenOffset = (i * GOLDEN_ANGLE * 0.1) % 0.3;
+        const angle = cfg.baseAngle + (t - 0.5) * cfg.spread + goldenOffset;
 
-        // Height distribution using phi spiral
-        const heightT = (i % 3) / 2; // Cycle through 3 height levels
-        const height = heights.min + heightT * (heights.max - heights.min);
+        // Radius: spiral outward using phi-based interpolation
+        // Alternating layers (even/odd) for depth variation
+        const layerOffset = (i % 2) * 2 - 1; // -1 or 1
+        const baseRadius = cfg.radiusMin + t * (cfg.radiusMax - cfg.radiusMin);
+        const radius = baseRadius + layerOffset * 1.5;
 
-        // Radius varies with phi ratio for depth
-        const radiusBase = islandConfig.orbitRadius;
-        const radiusVariation = 4 * (PHI_INV + (i % 5) * 0.1);
-        const radius = radiusBase + radiusVariation * (i % 2 === 0 ? 1 : -1) * PHI_INV;
+        // Height: distributed across vertical range with phi-wave modulation
+        // Creates natural clustering at golden ratio heights
+        const phiWave = Math.sin(t * Math.PI * 2 * PHI_INV) * 0.3;
+        const height = cfg.heightMin + (t + phiWave) * (cfg.heightMax - cfg.heightMin);
 
         const position = new THREE.Vector3(
           Math.cos(angle) * radius,
-          height,
+          Math.max(cfg.heightMin, Math.min(cfg.heightMax, height)),
           Math.sin(angle) * radius
         );
 
-        // Size based on kScore with phi scaling
+        // Size based on kScore with phi scaling (important projects slightly larger)
         const kScoreNorm = project.kScore / 100;
-        const sizeScale = PHI_INV + kScoreNorm * PHI_INV;
+        const sizeScale = 0.4 + kScoreNorm * 0.6;
         const size =
           islandConfig.size.min + sizeScale * (islandConfig.size.max - islandConfig.size.min);
 
