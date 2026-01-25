@@ -1,6 +1,7 @@
 /**
  * Yggdrasil Builder's Cosmos - Camera Controller
  * Smooth transitions between view levels
+ * Supports mouse + touch input
  */
 
 'use strict';
@@ -11,10 +12,10 @@ import { CONFIG, CAMERA_STATES, VIEWS } from '../config.js';
  * Easing functions
  */
 const Easing = {
-  easeInOutCubic: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-  easeOutCubic: (t) => 1 - Math.pow(1 - t, 3),
-  easeInOutQuad: (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
-  'power2.inOut': (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+  easeInOutCubic: t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+  easeOutCubic: t => 1 - Math.pow(1 - t, 3),
+  easeInOutQuad: t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
+  'power2.inOut': t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
 };
 
 /**
@@ -35,7 +36,7 @@ export const CameraController = {
     spherical: { radius: 50, phi: Math.PI / 3, theta: 0 },
     autoRotate: true,
     autoRotateSpeed: 0.08,
-    damping: 0.05
+    damping: 0.05,
   },
 
   // Transition
@@ -44,14 +45,28 @@ export const CameraController = {
     startTime: 0,
     duration: 1500,
     from: { position: null, target: null, fov: null },
-    to: { position: null, target: null, fov: null }
+    to: { position: null, target: null, fov: null },
   },
 
   // Input
   input: {
     isMouseDown: false,
+    isTouching: false,
     lastX: 0,
-    lastY: 0
+    lastY: 0,
+    pinchDistance: 0,
+  },
+
+  // Event handler references (for cleanup)
+  _handlers: {
+    mousedown: null,
+    mouseup: null,
+    mousemove: null,
+    wheel: null,
+    dblclick: null,
+    touchstart: null,
+    touchmove: null,
+    touchend: null,
   },
 
   /**
@@ -67,28 +82,28 @@ export const CameraController = {
     this.updateSphericalFromCamera();
 
     this.setupEvents();
-    console.log('[CameraController] Initialized');
   },
 
   /**
-   * Setup events
+   * Setup events with proper cleanup references
    */
   setupEvents() {
-    // Drag to orbit
-    this.domElement.addEventListener('mousedown', (e) => {
+    // === MOUSE EVENTS ===
+
+    this._handlers.mousedown = e => {
       if (e.button === 0) {
         this.input.isMouseDown = true;
         this.input.lastX = e.clientX;
         this.input.lastY = e.clientY;
         this.orbit.autoRotate = false;
       }
-    });
+    };
 
-    window.addEventListener('mouseup', () => {
+    this._handlers.mouseup = () => {
       this.input.isMouseDown = false;
-    });
+    };
 
-    window.addEventListener('mousemove', (e) => {
+    this._handlers.mousemove = e => {
       if (!this.input.isMouseDown || this.transition.active) return;
 
       const deltaX = e.clientX - this.input.lastX;
@@ -102,22 +117,96 @@ export const CameraController = {
 
       this.input.lastX = e.clientX;
       this.input.lastY = e.clientY;
-    });
+    };
 
-    // Scroll to zoom
-    this.domElement.addEventListener('wheel', (e) => {
+    this._handlers.wheel = e => {
       e.preventDefault();
       if (this.transition.active) return;
 
       const zoomSpeed = 0.1;
       this.orbit.spherical.radius *= 1 + e.deltaY * zoomSpeed * 0.01;
       this.orbit.spherical.radius = Math.max(10, Math.min(80, this.orbit.spherical.radius));
-    }, { passive: false });
+    };
 
-    // Double click to go home
-    this.domElement.addEventListener('dblclick', () => {
+    this._handlers.dblclick = () => {
       this.goHome();
-    });
+    };
+
+    // === TOUCH EVENTS (Mobile Support) ===
+
+    this._handlers.touchstart = e => {
+      e.preventDefault();
+      this.orbit.autoRotate = false;
+
+      if (e.touches.length === 1) {
+        // Single finger - rotate
+        this.input.isTouching = true;
+        this.input.lastX = e.touches[0].clientX;
+        this.input.lastY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        // Two fingers - pinch zoom
+        this.input.pinchDistance = this.getTouchDistance(e.touches);
+      }
+    };
+
+    this._handlers.touchmove = e => {
+      e.preventDefault();
+      if (this.transition.active) return;
+
+      if (e.touches.length === 1 && this.input.isTouching) {
+        // Rotate
+        const deltaX = e.touches[0].clientX - this.input.lastX;
+        const deltaY = e.touches[0].clientY - this.input.lastY;
+
+        // Increased sensitivity for touch
+        this.orbit.spherical.theta -= deltaX * 0.008;
+        this.orbit.spherical.phi = Math.max(
+          0.2,
+          Math.min(Math.PI - 0.2, this.orbit.spherical.phi + deltaY * 0.008)
+        );
+
+        this.input.lastX = e.touches[0].clientX;
+        this.input.lastY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        // Pinch zoom
+        const newDistance = this.getTouchDistance(e.touches);
+        const delta = this.input.pinchDistance - newDistance;
+
+        this.orbit.spherical.radius *= 1 + delta * 0.005;
+        this.orbit.spherical.radius = Math.max(10, Math.min(80, this.orbit.spherical.radius));
+
+        this.input.pinchDistance = newDistance;
+      }
+    };
+
+    this._handlers.touchend = e => {
+      if (e.touches.length === 0) {
+        this.input.isTouching = false;
+      }
+    };
+
+    // === ATTACH LISTENERS ===
+
+    // Mouse
+    this.domElement.addEventListener('mousedown', this._handlers.mousedown);
+    window.addEventListener('mouseup', this._handlers.mouseup);
+    window.addEventListener('mousemove', this._handlers.mousemove);
+    this.domElement.addEventListener('wheel', this._handlers.wheel, { passive: false });
+    this.domElement.addEventListener('dblclick', this._handlers.dblclick);
+
+    // Touch
+    this.domElement.addEventListener('touchstart', this._handlers.touchstart, { passive: false });
+    this.domElement.addEventListener('touchmove', this._handlers.touchmove, { passive: false });
+    this.domElement.addEventListener('touchend', this._handlers.touchend);
+  },
+
+  /**
+   * Get distance between two touch points
+   */
+  getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   },
 
   /**
@@ -144,13 +233,13 @@ export const CameraController = {
     const cameraPosition = {
       x: position.x + offset.x,
       y: position.y + offset.y,
-      z: position.z + offset.z
+      z: position.z + offset.z,
     };
 
     const targetPosition = {
       x: position.x,
       y: position.y,
-      z: position.z
+      z: position.z,
     };
 
     // Save current state for back navigation
@@ -158,7 +247,7 @@ export const CameraController = {
       view: this.currentView,
       target: { ...this.orbit.target },
       spherical: { ...this.orbit.spherical },
-      fov: this.camera.fov
+      fov: this.camera.fov,
     });
 
     // Disable auto-rotate during focus
@@ -166,8 +255,6 @@ export const CameraController = {
 
     this.currentView = viewType;
     this.startTransition(cameraPosition, targetPosition, state.fov || 45);
-
-    console.log('[CameraController] Focus on', viewType, 'at', position);
   },
 
   /**
@@ -189,8 +276,6 @@ export const CameraController = {
     if (prev.view === VIEWS.COSMOS) {
       this.orbit.autoRotate = true;
     }
-
-    console.log('[CameraController] Back to', prev.view);
   },
 
   /**
@@ -218,16 +303,16 @@ export const CameraController = {
       position: {
         x: this.camera.position.x,
         y: this.camera.position.y,
-        z: this.camera.position.z
+        z: this.camera.position.z,
       },
       target: { ...this.orbit.target },
-      fov: this.camera.fov
+      fov: this.camera.fov,
     };
 
     this.transition.to = {
       position: toPosition,
       target: toTarget,
-      fov: toFov
+      fov: toFov,
     };
   },
 
@@ -238,7 +323,7 @@ export const CameraController = {
     return {
       x: center.x + spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta),
       y: center.y + spherical.radius * Math.cos(spherical.phi),
-      z: center.z + spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta)
+      z: center.z + spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta),
     };
   },
 
@@ -273,13 +358,37 @@ export const CameraController = {
     const eased = easing(t);
 
     // Interpolate
-    this.camera.position.x = this.lerp(this.transition.from.position.x, this.transition.to.position.x, eased);
-    this.camera.position.y = this.lerp(this.transition.from.position.y, this.transition.to.position.y, eased);
-    this.camera.position.z = this.lerp(this.transition.from.position.z, this.transition.to.position.z, eased);
+    this.camera.position.x = this.lerp(
+      this.transition.from.position.x,
+      this.transition.to.position.x,
+      eased
+    );
+    this.camera.position.y = this.lerp(
+      this.transition.from.position.y,
+      this.transition.to.position.y,
+      eased
+    );
+    this.camera.position.z = this.lerp(
+      this.transition.from.position.z,
+      this.transition.to.position.z,
+      eased
+    );
 
-    this.orbit.target.x = this.lerp(this.transition.from.target.x, this.transition.to.target.x, eased);
-    this.orbit.target.y = this.lerp(this.transition.from.target.y, this.transition.to.target.y, eased);
-    this.orbit.target.z = this.lerp(this.transition.from.target.z, this.transition.to.target.z, eased);
+    this.orbit.target.x = this.lerp(
+      this.transition.from.target.x,
+      this.transition.to.target.x,
+      eased
+    );
+    this.orbit.target.y = this.lerp(
+      this.transition.from.target.y,
+      this.transition.to.target.y,
+      eased
+    );
+    this.orbit.target.z = this.lerp(
+      this.transition.from.target.z,
+      this.transition.to.target.z,
+      eased
+    );
 
     // FOV
     if (this.transition.to.fov) {
@@ -318,12 +427,39 @@ export const CameraController = {
   },
 
   /**
-   * Dispose
+   * Dispose - CRITICAL: Clean up all event listeners
    */
   dispose() {
+    // Remove mouse listeners
+    if (this.domElement) {
+      this.domElement.removeEventListener('mousedown', this._handlers.mousedown);
+      this.domElement.removeEventListener('wheel', this._handlers.wheel);
+      this.domElement.removeEventListener('dblclick', this._handlers.dblclick);
+      this.domElement.removeEventListener('touchstart', this._handlers.touchstart);
+      this.domElement.removeEventListener('touchmove', this._handlers.touchmove);
+      this.domElement.removeEventListener('touchend', this._handlers.touchend);
+    }
+
+    // Remove window listeners
+    window.removeEventListener('mouseup', this._handlers.mouseup);
+    window.removeEventListener('mousemove', this._handlers.mousemove);
+
+    // Clear references
+    this._handlers = {
+      mousedown: null,
+      mouseup: null,
+      mousemove: null,
+      wheel: null,
+      dblclick: null,
+      touchstart: null,
+      touchmove: null,
+      touchend: null,
+    };
+
     this.camera = null;
     this.domElement = null;
-  }
+    this.viewStack = [];
+  },
 };
 
 export default CameraController;

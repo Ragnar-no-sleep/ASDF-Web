@@ -15,7 +15,7 @@ let THREE = null;
 const NODE_TYPES = {
   PROJECT: 'project',
   MODULE: 'module',
-  TASK: 'task'
+  TASK: 'task',
 };
 
 /**
@@ -38,7 +38,6 @@ export const NodeManager = {
   init(scene, threeInstance) {
     this.scene = scene;
     THREE = threeInstance;
-    console.log('[NodeManager] Initialized');
   },
 
   /**
@@ -60,7 +59,7 @@ export const NodeManager = {
       const position = {
         x: Math.cos(angle) * radius,
         y: height,
-        z: Math.sin(angle) * radius
+        z: Math.sin(angle) * radius,
       };
 
       // Create project node
@@ -69,7 +68,7 @@ export const NodeManager = {
         type: NODE_TYPES.PROJECT,
         name: project.name,
         data: project,
-        position
+        position,
       });
 
       // Create module nodes if project has modules
@@ -77,8 +76,6 @@ export const NodeManager = {
         this.createModuleNodes(projectNode, project.modules);
       }
     });
-
-    console.log(`[NodeManager] Created ${this.nodes.size} nodes`);
   },
 
   /**
@@ -109,7 +106,7 @@ export const NodeManager = {
       emissive: config.color,
       emissiveIntensity: config.glowIntensity,
       roughness: 0.3,
-      metalness: 0.7
+      metalness: 0.7,
     });
 
     // Create mesh
@@ -124,8 +121,8 @@ export const NodeManager = {
         id,
         type,
         name,
-        ...data
-      }
+        ...data,
+      },
     };
 
     // Add to scene
@@ -137,7 +134,7 @@ export const NodeManager = {
       type,
       data,
       originalScale: mesh.scale.clone(),
-      originalEmissive: config.glowIntensity
+      originalEmissive: config.glowIntensity,
     });
 
     this.interactiveNodes.push(mesh);
@@ -148,7 +145,7 @@ export const NodeManager = {
       baseY: position.y,
       phase: Math.random() * Math.PI * 2,
       amplitude: 0.1 + Math.random() * 0.1,
-      speed: 0.5 + Math.random() * 0.5
+      speed: 0.5 + Math.random() * 0.5,
     });
 
     return mesh;
@@ -168,7 +165,7 @@ export const NodeManager = {
       const position = {
         x: projectPos.x + Math.cos(angle) * distance,
         y: projectPos.y + (Math.random() - 0.5) * 1,
-        z: projectPos.z + Math.sin(angle) * distance
+        z: projectPos.z + Math.sin(angle) * distance,
       };
 
       this.createNode({
@@ -176,7 +173,7 @@ export const NodeManager = {
         type: NODE_TYPES.MODULE,
         name: module.name,
         data: module,
-        position
+        position,
       });
     });
   },
@@ -259,7 +256,7 @@ export const NodeManager = {
   dispose() {
     this.clear();
     this.scene = null;
-  }
+  },
 };
 
 export { NODE_TYPES };

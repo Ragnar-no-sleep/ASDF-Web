@@ -1,7 +1,7 @@
 /**
  * Yggdrasil Builder's Cosmos - Skill Nodes
- * Cyberpunk holographic skill visualization
- * Apple-clean aesthetic with ice/neon contrast
+ * Nordic Rune Crystal visualization
+ * Fire & Ice aesthetic with mystical glow
  */
 
 'use strict';
@@ -10,26 +10,26 @@ import * as THREE from 'three';
 import { SKILLS, GOLDEN_ANGLE, PHI } from '../config.js';
 
 /**
- * Cyberpunk color palette - ice/neon for contrast
+ * Nordic rune color palette - fire/ice mystical
  */
-const CYBER_COLORS = {
-  // Core colors - ice white/cyan for visibility
-  core: 0x00ffff,      // Cyan
-  glow: 0x88ffff,      // Light cyan
-  ring: 0x00ddff,      // Electric blue
+const RUNE_COLORS = {
+  // Core colors - warm mystical glow
+  core: 0xffaa44, // Amber
+  glow: 0xff6622, // Fire orange
+  ring: 0x88ccff, // Ice blue
 
-  // Accent by difficulty
-  easy: 0x00ff88,      // Mint green
-  medium: 0x00ccff,    // Sky blue
-  hard: 0xff00ff,      // Magenta
+  // Accent by difficulty (elemental progression)
+  easy: 0x66dd88, // Nature green (earth)
+  medium: 0x4499ff, // Frost blue (water/ice)
+  hard: 0xff4466, // Blood red (fire)
 
   // Connection
-  line: 0x4488aa,
-  lineActive: 0x00ffff
+  line: 0x665544, // Weathered wood
+  lineActive: 0xffaa44, // Amber glow
 };
 
 /**
- * Skill Nodes System - Holographic Cyberpunk Style
+ * Skill Nodes System - Nordic Rune Crystal Style
  */
 export const SkillNodes = {
   group: null,
@@ -55,7 +55,7 @@ export const SkillNodes = {
   // Callbacks
   callbacks: {
     onSkillHover: null,
-    onSkillClick: null
+    onSkillClick: null,
   },
 
   /**
@@ -70,7 +70,6 @@ export const SkillNodes = {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
-    console.log('[SkillNodes] Initialized - Cyberpunk mode');
     return this;
   },
 
@@ -81,7 +80,9 @@ export const SkillNodes = {
     if (!project?.skills?.length) return;
 
     this.currentProject = project;
-    this.centerPosition = position.clone ? position.clone() : new THREE.Vector3(position.x, position.y, position.z);
+    this.centerPosition = position.clone
+      ? position.clone()
+      : new THREE.Vector3(position.x, position.y, position.z);
 
     // Clear existing
     this.clear();
@@ -101,8 +102,6 @@ export const SkillNodes = {
     this.animating = true;
     this.animationProgress = 0;
     this.showAnimation = true;
-
-    console.log('[SkillNodes] Showing', project.skills.length, 'skills for', project.name);
   },
 
   /**
@@ -140,7 +139,7 @@ export const SkillNodes = {
         localPosition: localPos,
         targetScale: 1,
         index: index,
-        baseY: worldPos.y
+        baseY: worldPos.y,
       };
 
       // Start scaled down
@@ -153,65 +152,68 @@ export const SkillNodes = {
         localPos: localPos,
         worldPos: worldPos,
         index: index,
-        angle: angle
+        angle: angle,
       });
     });
   },
 
   /**
-   * Create a holographic skill node
+   * Create a glowing orb skill node
    */
   createHolographicNode(skill, index) {
     const group = new THREE.Group();
 
     // Size based on difficulty
-    const baseSize = 0.35;
+    const baseSize = 0.3;
     const size = baseSize + skill.difficulty * 0.08;
 
     // Get color based on difficulty
-    const coreColor = skill.difficulty === 1 ? CYBER_COLORS.easy :
-                      skill.difficulty === 2 ? CYBER_COLORS.medium :
-                      CYBER_COLORS.hard;
+    const coreColor =
+      skill.difficulty === 1
+        ? RUNE_COLORS.easy
+        : skill.difficulty === 2
+          ? RUNE_COLORS.medium
+          : RUNE_COLORS.hard;
 
-    // === CORE GEM (Icosahedron) ===
-    const coreGeo = new THREE.IcosahedronGeometry(size, 1);
+    // === CORE ORB (smooth sphere) ===
+    const coreGeo = new THREE.SphereGeometry(size, 16, 16);
     const coreMat = new THREE.MeshStandardMaterial({
-      color: 0x112233,
+      color: 0x111118,
       emissive: coreColor,
       emissiveIntensity: 0.8,
-      roughness: 0.1,
-      metalness: 0.9,
+      roughness: 0.3,
+      metalness: 0.5,
       transparent: true,
-      opacity: 0.9
+      opacity: 0.9,
     });
     const core = new THREE.Mesh(coreGeo, coreMat);
     group.add(core);
 
-    // === OUTER GLOW SPHERE ===
-    const glowGeo = new THREE.SphereGeometry(size * 1.8, 16, 16);
+    // === OUTER GLOW ===
+    const glowGeo = new THREE.SphereGeometry(size * 1.5, 12, 12);
     const glowMat = new THREE.MeshBasicMaterial({
       color: coreColor,
       transparent: true,
       opacity: 0.15,
-      side: THREE.BackSide
+      side: THREE.BackSide,
     });
     const glow = new THREE.Mesh(glowGeo, glowMat);
     group.add(glow);
 
-    // === NEON RING ===
-    const ringGeo = new THREE.TorusGeometry(size * 1.4, 0.03, 8, 32);
+    // === THIN RING ===
+    const ringGeo = new THREE.TorusGeometry(size * 1.2, 0.02, 8, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: coreColor,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.6,
     });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = Math.PI / 2;
     group.add(ring);
 
-    // === ICON LABEL (Always visible) ===
-    const label = this.createCleanLabel(skill.icon, skill.name, coreColor);
-    label.position.y = size + 0.8;
+    // === ICON LABEL ===
+    const label = this.createRuneLabel(skill.icon, skill.name, coreColor);
+    label.position.y = size + 0.7;
     group.add(label);
 
     // Store references for animation
@@ -225,36 +227,50 @@ export const SkillNodes = {
   },
 
   /**
-   * Create clean Apple-style label
+   * Create mystical rune-style label
    */
-  createCleanLabel(icon, name, color) {
+  createRuneLabel(icon, name, color) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 80;
     const ctx = canvas.getContext('2d');
 
-    // Clean dark background with subtle border
-    ctx.fillStyle = 'rgba(8, 12, 20, 0.9)';
-    ctx.strokeStyle = `rgba(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255}, 0.5)`;
-    ctx.lineWidth = 2;
+    // Mystical dark background with colored glow border
+    const r = (color >> 16) & 255;
+    const g = (color >> 8) & 255;
+    const b = color & 255;
 
-    // Rounded rect
-    const radius = 12;
+    // Outer glow
+    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+    ctx.shadowBlur = 8;
+
+    // Stone-like background
+    ctx.fillStyle = 'rgba(20, 18, 25, 0.92)';
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.7)`;
+    ctx.lineWidth = 1.5;
+
+    // Slightly rough rectangle (stone tablet feel)
     ctx.beginPath();
-    ctx.roundRect(8, 8, 240, 64, radius);
+    ctx.roundRect(10, 10, 236, 60, 4);
     ctx.fill();
     ctx.stroke();
 
-    // Icon
-    ctx.font = '28px serif';
+    // Reset shadow
+    ctx.shadowBlur = 0;
+
+    // Icon with glow
+    ctx.font = '26px serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(icon, 24, 50);
+    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.8)`;
+    ctx.shadowBlur = 6;
+    ctx.fillText(icon, 22, 48);
 
-    // Name - clean sans-serif
-    ctx.font = '500 16px Inter, -apple-system, sans-serif';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(name, 60, 48);
+    // Name - runic feel with slight glow
+    ctx.font = '500 14px Georgia, serif';
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
+    ctx.shadowBlur = 4;
+    ctx.fillText(name, 56, 46);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
@@ -262,11 +278,11 @@ export const SkillNodes = {
     const material = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
-      depthTest: false
+      depthTest: false,
     });
 
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(2.5, 0.8, 1);
+    sprite.scale.set(2.2, 0.7, 1);
 
     return sprite;
   },
@@ -280,9 +296,9 @@ export const SkillNodes = {
     // Main orbit ring
     const ringGeo = new THREE.TorusGeometry(orbitRadius, 0.02, 8, 64);
     const ringMat = new THREE.MeshBasicMaterial({
-      color: CYBER_COLORS.ring,
+      color: RUNE_COLORS.ring,
       transparent: true,
-      opacity: 0.3
+      opacity: 0.3,
     });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.position.copy(this.centerPosition);
@@ -296,22 +312,25 @@ export const SkillNodes = {
     const points = [];
     const segments = 48;
     for (let i = 0; i < segments; i++) {
-      if (i % 3 === 0) { // Skip every 3rd point for dotted effect
+      if (i % 3 === 0) {
+        // Skip every 3rd point for dotted effect
         const angle = (i / segments) * Math.PI * 2;
-        points.push(new THREE.Vector3(
-          Math.cos(angle) * (orbitRadius + 0.5),
-          0,
-          Math.sin(angle) * (orbitRadius + 0.5)
-        ));
+        points.push(
+          new THREE.Vector3(
+            Math.cos(angle) * (orbitRadius + 0.5),
+            0,
+            Math.sin(angle) * (orbitRadius + 0.5)
+          )
+        );
       }
     }
 
     const dotsGeo = new THREE.BufferGeometry().setFromPoints(points);
     const dotsMat = new THREE.PointsMaterial({
-      color: CYBER_COLORS.core,
+      color: RUNE_COLORS.core,
       size: 0.08,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.5,
     });
     const dots = new THREE.Points(dotsGeo, dotsMat);
     dots.position.copy(this.centerPosition);
@@ -340,9 +359,9 @@ export const SkillNodes = {
 
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({
-        color: CYBER_COLORS.line,
+        color: RUNE_COLORS.line,
         transparent: true,
-        opacity: 0.2
+        opacity: 0.2,
       });
 
       const line = new THREE.Line(geometry, material);
@@ -362,8 +381,6 @@ export const SkillNodes = {
     this.animating = true;
     this.animationProgress = 0;
     this.showAnimation = false;
-
-    console.log('[SkillNodes] Hiding skills');
   },
 
   /**
@@ -574,7 +591,7 @@ export const SkillNodes = {
     const connection = this.connections.find(c => c.userData.skillId === node.userData.skillId);
     if (connection) {
       connection.material.opacity = 0.6;
-      connection.material.color.setHex(CYBER_COLORS.lineActive);
+      connection.material.color.setHex(RUNE_COLORS.lineActive);
     }
 
     if (this.callbacks.onSkillHover) {
@@ -601,7 +618,7 @@ export const SkillNodes = {
     const connection = this.connections.find(c => c.userData.skillId === node.userData.skillId);
     if (connection) {
       connection.material.opacity = 0.2;
-      connection.material.color.setHex(CYBER_COLORS.line);
+      connection.material.color.setHex(RUNE_COLORS.line);
     }
 
     if (this.callbacks.onSkillHover) {
@@ -656,7 +673,7 @@ export const SkillNodes = {
     if (this.group.parent) {
       this.group.parent.remove(this.group);
     }
-  }
+  },
 };
 
 export default SkillNodes;

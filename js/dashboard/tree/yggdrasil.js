@@ -7,7 +7,12 @@
 
 import * as THREE from 'three';
 import { CONFIG, CAMERA_STATES, VIEWS, GOLDEN_ANGLE, ECOSYSTEM_PROJECTS } from '../config.js';
-import { FireParticles, SnowstormParticles, ConnectionParticles } from './particles.js';
+import {
+  FireParticles,
+  SnowstormParticles,
+  EmberParticles,
+  ConnectionParticles,
+} from './particles.js';
 import { CameraController } from './camera.js';
 import { SkillNodes } from './skills.js';
 
@@ -55,7 +60,7 @@ export const Yggdrasil = {
     onIslandClick: null,
     onBurnCoreClick: null,
     onSkillHover: null,
-    onSkillClick: null
+    onSkillClick: null,
   },
 
   /**
@@ -79,6 +84,7 @@ export const Yggdrasil = {
     // Initialize particles
     FireParticles.init(this.scene);
     SnowstormParticles.init(this.scene);
+    EmberParticles.init(this.scene, CONFIG.burnCore.position);
 
     // Initialize skill nodes
     this.skillNodes = SkillNodes;
@@ -96,7 +102,6 @@ export const Yggdrasil = {
     this.clock = new THREE.Clock();
     this.start();
 
-    console.log('[Yggdrasil] Cosmos initialized');
     return this;
   },
 
@@ -107,7 +112,7 @@ export const Yggdrasil = {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
 
     this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
@@ -154,10 +159,7 @@ export const Yggdrasil = {
     const { lighting } = CONFIG;
 
     // Ambient - cool blue base
-    const ambient = new THREE.AmbientLight(
-      lighting.ambient.color,
-      lighting.ambient.intensity
-    );
+    const ambient = new THREE.AmbientLight(lighting.ambient.color, lighting.ambient.intensity);
     this.scene.add(ambient);
 
     // Fire light - warm, dynamic
@@ -171,19 +173,13 @@ export const Yggdrasil = {
     this.scene.add(this.fireLight);
 
     // Ice rim light - cold accent
-    const iceLight = new THREE.DirectionalLight(
-      lighting.ice.color,
-      lighting.ice.intensity
-    );
+    const iceLight = new THREE.DirectionalLight(lighting.ice.color, lighting.ice.intensity);
     const ip = lighting.ice.position;
     iceLight.position.set(ip.x, ip.y, ip.z);
     this.scene.add(iceLight);
 
     // Moon light - subtle fill
-    const moonLight = new THREE.DirectionalLight(
-      lighting.moon.color,
-      lighting.moon.intensity
-    );
+    const moonLight = new THREE.DirectionalLight(lighting.moon.color, lighting.moon.intensity);
     const mp = lighting.moon.position;
     moonLight.position.set(mp.x, mp.y, mp.z);
     this.scene.add(moonLight);
@@ -216,7 +212,7 @@ export const Yggdrasil = {
       roughness: 0.9,
       metalness: 0.1,
       emissive: 0x1a0800,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.2,
     });
 
     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
@@ -229,13 +225,14 @@ export const Yggdrasil = {
       roughness: 0.8,
       metalness: 0.1,
       emissive: 0x1a0800,
-      emissiveIntensity: 0.15
+      emissiveIntensity: 0.15,
     });
 
     for (let i = 0; i < tree.branches.count; i++) {
       const t = i / tree.branches.count;
       const angle = i * GOLDEN_ANGLE;
-      const height = tree.branches.baseHeight + t * (tree.trunk.height - tree.branches.baseHeight - 2);
+      const height =
+        tree.branches.baseHeight + t * (tree.trunk.height - tree.branches.baseHeight - 2);
       const length = tree.branches.spread * (0.5 + t * 0.5);
 
       // Create branch curve
@@ -269,7 +266,7 @@ export const Yggdrasil = {
     const rootMaterial = new THREE.MeshStandardMaterial({
       color: tree.roots.color,
       roughness: 0.95,
-      metalness: 0
+      metalness: 0,
     });
 
     for (let i = 0; i < tree.roots.count; i++) {
@@ -299,7 +296,7 @@ export const Yggdrasil = {
     const groundMaterial = new THREE.MeshStandardMaterial({
       color: 0x0a1520,
       roughness: 1,
-      metalness: 0
+      metalness: 0,
     });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
@@ -308,55 +305,169 @@ export const Yggdrasil = {
   },
 
   /**
-   * Build the Burn Core (heart of the tree)
+   * Build the Burn Core (heart of the tree) - Dramatic fiery effect
    */
   buildBurnCore() {
     const { burnCore } = CONFIG;
+    const pos = burnCore.position;
 
-    // Core geometry - icosahedron for crystalline look
+    // Create core group to hold all layers
+    this.burnCore = new THREE.Group();
+    this.burnCore.position.set(pos.x, pos.y, pos.z);
+    this.burnCore.userData = { type: 'burnCore' };
+
+    // === INNER CORE (white-hot center) ===
+    const innerGeometry = new THREE.IcosahedronGeometry(burnCore.radius * 0.4, 2);
+    const innerMaterial = new THREE.MeshBasicMaterial({
+      color: burnCore.innerColor || 0xffffcc,
+      transparent: true,
+      opacity: 0.95,
+    });
+    const innerCore = new THREE.Mesh(innerGeometry, innerMaterial);
+    innerCore.userData = { layer: 'inner' };
+    this.burnCore.add(innerCore);
+
+    // === MAIN CORE (burning) ===
     const coreGeometry = new THREE.IcosahedronGeometry(burnCore.radius, 1);
     const coreMaterial = new THREE.MeshStandardMaterial({
       color: burnCore.color,
       emissive: burnCore.glowColor,
-      emissiveIntensity: 1,
-      roughness: 0.2,
-      metalness: 0.8,
+      emissiveIntensity: 1.5,
+      roughness: 0.1,
+      metalness: 0.3,
       transparent: true,
-      opacity: 0.9
+      opacity: 0.85,
     });
+    const mainCore = new THREE.Mesh(coreGeometry, coreMaterial);
+    mainCore.userData = { layer: 'main', material: coreMaterial };
+    this.burnCore.add(mainCore);
 
-    this.burnCore = new THREE.Mesh(coreGeometry, coreMaterial);
-    const pos = burnCore.position;
-    this.burnCore.position.set(pos.x, pos.y, pos.z);
-    this.burnCore.userData = { type: 'burnCore' };
-
-    // Outer glow
-    const glowGeometry = new THREE.IcosahedronGeometry(burnCore.radius * 1.3, 1);
-    const glowMaterial = new THREE.MeshBasicMaterial({
-      color: burnCore.glowColor,
+    // === FLAME LAYER 1 (inner glow) ===
+    const flame1Geometry = new THREE.IcosahedronGeometry(burnCore.radius * 1.3, 1);
+    const flame1Material = new THREE.MeshBasicMaterial({
+      color: 0xff4400,
       transparent: true,
-      opacity: 0.2,
-      side: THREE.BackSide
+      opacity: 0.4,
+      side: THREE.BackSide,
     });
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-    this.burnCore.add(glow);
+    const flame1 = new THREE.Mesh(flame1Geometry, flame1Material);
+    flame1.userData = { layer: 'flame1', material: flame1Material };
+    this.burnCore.add(flame1);
+
+    // === FLAME LAYER 2 (outer glow) ===
+    const flame2Geometry = new THREE.IcosahedronGeometry(burnCore.radius * 1.6, 1);
+    const flame2Material = new THREE.MeshBasicMaterial({
+      color: 0xff6600,
+      transparent: true,
+      opacity: 0.25,
+      side: THREE.BackSide,
+    });
+    const flame2 = new THREE.Mesh(flame2Geometry, flame2Material);
+    flame2.userData = { layer: 'flame2', material: flame2Material };
+    this.burnCore.add(flame2);
+
+    // === FLAME LAYER 3 (aura) ===
+    const flame3Geometry = new THREE.IcosahedronGeometry(burnCore.radius * 2.2, 1);
+    const flame3Material = new THREE.MeshBasicMaterial({
+      color: 0xff8800,
+      transparent: true,
+      opacity: 0.12,
+      side: THREE.BackSide,
+    });
+    const flame3 = new THREE.Mesh(flame3Geometry, flame3Material);
+    flame3.userData = { layer: 'flame3', material: flame3Material };
+    this.burnCore.add(flame3);
+
+    // === OUTER HEAT DISTORTION RING ===
+    const ringGeometry = new THREE.TorusGeometry(burnCore.radius * 2.5, 0.15, 8, 32);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff4400,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.rotation.x = Math.PI / 2;
+    ring.userData = { layer: 'ring', material: ringMaterial };
+    this.burnCore.add(ring);
 
     this.treeGroup.add(this.burnCore);
   },
 
   /**
-   * Build Stone Islands from ecosystem projects
+   * Animate the Burn Core with pulsing flames
+   */
+  animateBurnCore(time, delta) {
+    if (!this.burnCore) return;
+
+    const { burnCore } = CONFIG;
+    const pulse = Math.sin(time * burnCore.pulseSpeed) * burnCore.pulseIntensity;
+    const pulse2 = Math.sin(time * burnCore.pulseSpeed * 1.3 + 1) * burnCore.pulseIntensity * 0.5;
+    const pulse3 = Math.sin(time * burnCore.pulseSpeed * 0.7 + 2) * burnCore.pulseIntensity * 0.3;
+
+    this.burnCore.children.forEach(child => {
+      const layer = child.userData.layer;
+
+      if (layer === 'inner') {
+        // White-hot center pulses subtly
+        child.scale.setScalar(1 + pulse * 0.1);
+      } else if (layer === 'main') {
+        // Main core rotates slowly
+        child.rotation.y += delta * 0.3;
+        child.rotation.x += delta * 0.1;
+        // Emissive intensity varies
+        if (child.userData.material) {
+          child.userData.material.emissiveIntensity = 1.2 + pulse * 0.5;
+        }
+      } else if (layer === 'flame1') {
+        // Inner flame layer
+        child.scale.setScalar(1 + pulse * 0.15);
+        child.rotation.y -= delta * 0.5;
+        if (child.userData.material) {
+          child.userData.material.opacity = 0.35 + pulse * 0.1;
+        }
+      } else if (layer === 'flame2') {
+        // Middle flame layer
+        child.scale.setScalar(1 + pulse2 * 0.2);
+        child.rotation.y += delta * 0.3;
+        if (child.userData.material) {
+          child.userData.material.opacity = 0.2 + pulse2 * 0.1;
+        }
+      } else if (layer === 'flame3') {
+        // Outer aura
+        child.scale.setScalar(1 + pulse3 * 0.25);
+        child.rotation.y -= delta * 0.2;
+        if (child.userData.material) {
+          child.userData.material.opacity = 0.1 + pulse3 * 0.05;
+        }
+      } else if (layer === 'ring') {
+        // Heat ring pulses
+        child.scale.setScalar(1 + pulse * 0.1);
+        child.rotation.z += delta * 0.5;
+        if (child.userData.material) {
+          child.userData.material.opacity = 0.25 + pulse * 0.1;
+        }
+      }
+    });
+
+    // Animate fire light intensity
+    if (this.fireLight) {
+      this.fireLight.intensity = CONFIG.lighting.fire.intensity * (1 + pulse * 0.3);
+    }
+  },
+
+  /**
+   * Build Floating Islands from ecosystem projects - Organic Yggdrasil style
    */
   buildIslands() {
     const { islands: islandConfig } = CONFIG;
 
     ECOSYSTEM_PROJECTS.forEach((project, index) => {
-      const t = index / ECOSYSTEM_PROJECTS.length;
       const angle = index * GOLDEN_ANGLE;
 
-      // Position
-      const radius = islandConfig.orbitRadius + (Math.random() - 0.5) * 3;
-      const height = islandConfig.orbitHeight.min +
+      // Position - orbit around the tree with more spread
+      const radius = islandConfig.orbitRadius + (Math.random() - 0.5) * 4;
+      const height =
+        islandConfig.orbitHeight.min +
         Math.random() * (islandConfig.orbitHeight.max - islandConfig.orbitHeight.min);
 
       const position = new THREE.Vector3(
@@ -367,52 +478,97 @@ export const Yggdrasil = {
 
       // Size based on kScore
       const sizeScale = 0.5 + (project.kScore / 100) * 0.5;
-      const size = islandConfig.size.min +
-        sizeScale * (islandConfig.size.max - islandConfig.size.min);
+      const size =
+        islandConfig.size.min + sizeScale * (islandConfig.size.max - islandConfig.size.min);
 
-      // Create island mesh (rock-like)
-      const islandGeometry = new THREE.DodecahedronGeometry(size, 1);
-      // Deform for organic look
-      const positionAttr = islandGeometry.attributes.position;
+      const trackColor = islandConfig.trackColors[project.track] || 0x888888;
+
+      // Create organic floating island
+      const island = new THREE.Group();
+
+      // === MAIN ROCK (organic icosahedron with noise) ===
+      const rockGeometry = new THREE.IcosahedronGeometry(size, 2);
+      const positionAttr = rockGeometry.attributes.position;
       for (let i = 0; i < positionAttr.count; i++) {
         const x = positionAttr.getX(i);
         const y = positionAttr.getY(i);
         const z = positionAttr.getZ(i);
-        const noise = 0.8 + Math.random() * 0.4;
-        positionAttr.setXYZ(i, x * noise, y * noise, z * noise);
+        // More noise at bottom (stalactite effect)
+        const bottomFactor = y < 0 ? 1.3 : 1.0;
+        const noise = 0.85 + Math.random() * 0.3;
+        positionAttr.setXYZ(i, x * noise, y * noise * bottomFactor, z * noise);
       }
-      islandGeometry.computeVertexNormals();
+      rockGeometry.computeVertexNormals();
 
-      const trackColor = islandConfig.trackColors[project.track] || 0x888888;
-
-      const islandMaterial = new THREE.MeshStandardMaterial({
-        color: islandConfig.rockColor,
-        roughness: 0.9,
+      // Darker, more natural stone color
+      const rockMaterial = new THREE.MeshStandardMaterial({
+        color: 0x2a2a35,
+        roughness: 0.85,
         metalness: 0.1,
         emissive: trackColor,
-        emissiveIntensity: project.status === 'live' ? 0.3 : 0.1
+        emissiveIntensity: project.status === 'live' ? 0.2 : 0.08,
       });
 
-      const island = new THREE.Mesh(islandGeometry, islandMaterial);
-      island.position.copy(position);
-      island.userData = {
-        type: 'island',
-        project: project,
-        originalEmissive: project.status === 'live' ? 0.3 : 0.1
-      };
+      const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+      island.add(rock);
 
-      // Add glow ring
-      const ringGeometry = new THREE.TorusGeometry(size * 1.2, 0.1, 8, 32);
+      // === MYSTICAL GLOW AURA ===
+      const auraGeometry = new THREE.SphereGeometry(size * 1.4, 16, 16);
+      const auraMaterial = new THREE.MeshBasicMaterial({
+        color: trackColor,
+        transparent: true,
+        opacity: project.status === 'live' ? 0.12 : 0.05,
+        side: THREE.BackSide,
+      });
+      const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+      island.add(aura);
+
+      // === FLOATING RUNE RING ===
+      const ringGeometry = new THREE.TorusGeometry(size * 1.1, 0.05, 8, 32);
       const ringMaterial = new THREE.MeshBasicMaterial({
         color: trackColor,
         transparent: true,
-        opacity: project.status === 'live' ? 0.5 : 0.2
+        opacity: project.status === 'live' ? 0.6 : 0.25,
       });
       const ring = new THREE.Mesh(ringGeometry, ringMaterial);
       ring.rotation.x = Math.PI / 2;
+      ring.position.y = size * 0.3;
       island.add(ring);
 
-      // Building indicator for non-live
+      // === TINY ORBITING PARTICLES ===
+      const particleCount = 8;
+      const particleGeo = new THREE.BufferGeometry();
+      const particlePos = new Float32Array(particleCount * 3);
+      for (let i = 0; i < particleCount; i++) {
+        const pAngle = (i / particleCount) * Math.PI * 2;
+        const pRadius = size * 1.3;
+        particlePos[i * 3] = Math.cos(pAngle) * pRadius;
+        particlePos[i * 3 + 1] = (Math.random() - 0.5) * size;
+        particlePos[i * 3 + 2] = Math.sin(pAngle) * pRadius;
+      }
+      particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+      const particleMat = new THREE.PointsMaterial({
+        color: trackColor,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const particles = new THREE.Points(particleGeo, particleMat);
+      island.add(particles);
+
+      // Position island
+      island.position.copy(position);
+
+      island.userData = {
+        type: 'island',
+        project: project,
+        originalEmissive: project.status === 'live' ? 0.2 : 0.08,
+        rockMaterial: rockMaterial,
+        auraMaterial: auraMaterial,
+        ringMaterial: ringMaterial,
+        particles: particles,
+      };
+
       if (project.status === 'building') {
         island.userData.building = true;
       }
@@ -422,7 +578,7 @@ export const Yggdrasil = {
         mesh: island,
         project: project,
         position: position,
-        baseY: position.y
+        baseY: position.y,
       });
 
       // Create connection particles to burn core
@@ -433,8 +589,6 @@ export const Yggdrasil = {
         trackColor
       );
     });
-
-    console.log('[Yggdrasil] Created', this.islands.size, 'islands');
   },
 
   /**
@@ -458,11 +612,17 @@ export const Yggdrasil = {
       // Mix of white, blue, and slight yellow
       const colorChoice = Math.random();
       if (colorChoice < 0.6) {
-        colors[i3] = 1; colors[i3 + 1] = 1; colors[i3 + 2] = 1;
+        colors[i3] = 1;
+        colors[i3 + 1] = 1;
+        colors[i3 + 2] = 1;
       } else if (colorChoice < 0.8) {
-        colors[i3] = 0.8; colors[i3 + 1] = 0.9; colors[i3 + 2] = 1;
+        colors[i3] = 0.8;
+        colors[i3 + 1] = 0.9;
+        colors[i3 + 2] = 1;
       } else {
-        colors[i3] = 1; colors[i3 + 1] = 0.95; colors[i3 + 2] = 0.8;
+        colors[i3] = 1;
+        colors[i3 + 1] = 0.95;
+        colors[i3 + 2] = 0.8;
       }
     }
 
@@ -474,7 +634,7 @@ export const Yggdrasil = {
       size: 0.5,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.8,
     });
 
     const stars = new THREE.Points(geometry, material);
@@ -486,8 +646,8 @@ export const Yggdrasil = {
    */
   setupEvents() {
     window.addEventListener('resize', () => this.onResize());
-    this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    this.renderer.domElement.addEventListener('click', (e) => this.onClick(e));
+    this.renderer.domElement.addEventListener('mousemove', e => this.onMouseMove(e));
+    this.renderer.domElement.addEventListener('click', e => this.onClick(e));
   },
 
   /**
@@ -535,30 +695,49 @@ export const Yggdrasil = {
       }
     }
 
-    const intersects = this.raycaster.intersectObjects([
-      ...this.islandsGroup.children,
-      this.burnCore
-    ]);
+    // Raycast - need recursive for Group children
+    const intersects = this.raycaster.intersectObjects(
+      [...this.islandsGroup.children, this.burnCore],
+      true // recursive - check child meshes of Groups
+    );
 
-    const hit = intersects.length > 0 ? intersects[0].object : null;
+    // Get the parent island Group from hit mesh
+    let hitIsland = null;
+    let hitBurnCore = false;
+    if (intersects.length > 0) {
+      const hit = intersects[0].object;
+      // Walk up to find island Group
+      let obj = hit;
+      while (obj) {
+        if (obj.userData?.type === 'island') {
+          hitIsland = obj;
+          break;
+        }
+        if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
+          hitBurnCore = true;
+          break;
+        }
+        obj = obj.parent;
+      }
+    }
 
     // Handle island hover
-    if (hit?.userData?.type === 'island') {
-      if (this.hoveredIsland !== hit) {
+    if (hitIsland) {
+      if (this.hoveredIsland !== hitIsland) {
         // Unhover previous
         if (this.hoveredIsland) {
           this.unhoverIsland(this.hoveredIsland);
         }
         // Hover new
-        this.hoverIsland(hit);
-        this.hoveredIsland = hit;
+        this.hoverIsland(hitIsland);
+        this.hoveredIsland = hitIsland;
         this.renderer.domElement.style.cursor = 'pointer';
 
         if (this.callbacks.onIslandHover) {
-          this.callbacks.onIslandHover(hit.userData.project);
+          this.callbacks.onIslandHover(hitIsland.userData.project);
         }
       }
-    } else if (hit?.userData?.type === 'burnCore') {
+    } else if (hitBurnCore) {
       this.renderer.domElement.style.cursor = 'pointer';
       if (this.hoveredIsland) {
         this.unhoverIsland(this.hoveredIsland);
@@ -581,7 +760,18 @@ export const Yggdrasil = {
    */
   hoverIsland(island) {
     island.scale.setScalar(1.2);
-    island.material.emissiveIntensity = 0.6;
+    // Enhance rock emissive
+    if (island.userData.rockMaterial) {
+      island.userData.rockMaterial.emissiveIntensity = 0.5;
+    }
+    // Brighten aura
+    if (island.userData.auraMaterial) {
+      island.userData.auraMaterial.opacity = 0.25;
+    }
+    // Brighten ring
+    if (island.userData.ringMaterial) {
+      island.userData.ringMaterial.opacity = 0.9;
+    }
   },
 
   /**
@@ -589,7 +779,17 @@ export const Yggdrasil = {
    */
   unhoverIsland(island) {
     island.scale.setScalar(1);
-    island.material.emissiveIntensity = island.userData.originalEmissive;
+    if (island.userData.rockMaterial) {
+      island.userData.rockMaterial.emissiveIntensity = island.userData.originalEmissive;
+    }
+    if (island.userData.auraMaterial) {
+      const isLive = island.userData.project?.status === 'live';
+      island.userData.auraMaterial.opacity = isLive ? 0.12 : 0.05;
+    }
+    if (island.userData.ringMaterial) {
+      const isLive = island.userData.project?.status === 'live';
+      island.userData.ringMaterial.opacity = isLive ? 0.6 : 0.25;
+    }
   },
 
   /**
@@ -624,9 +824,9 @@ export const Yggdrasil = {
         this.callbacks.onIslandClick(project);
       }
     } else {
-      // Check burn core click
+      // Check burn core click (recursive for flame layers)
       this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObject(this.burnCore);
+      const intersects = this.raycaster.intersectObject(this.burnCore, true);
       if (intersects.length > 0) {
         if (this.callbacks.onBurnCoreClick) {
           this.callbacks.onBurnCoreClick();
@@ -639,7 +839,7 @@ export const Yggdrasil = {
    * Setup skill node callbacks
    */
   setupSkillCallbacks() {
-    this.skillNodes.on('skillHover', (skill) => {
+    this.skillNodes.on('skillHover', skill => {
       if (this.callbacks.onSkillHover) {
         this.callbacks.onSkillHover(skill);
       }
@@ -684,35 +884,50 @@ export const Yggdrasil = {
     // Update particles
     FireParticles.update(delta);
     SnowstormParticles.update(delta);
+    EmberParticles.update(delta);
     ConnectionParticles.update(delta);
 
     // Update skill nodes
     this.skillNodes.update(delta, this.camera);
 
-    // Animate burn core
-    if (this.burnCore) {
-      const pulse = 1 + Math.sin(time * CONFIG.burnCore.pulseSpeed) * CONFIG.burnCore.pulseIntensity;
-      this.burnCore.scale.setScalar(pulse);
-      this.burnCore.rotation.y += delta * 0.3;
-    }
+    // Animate burn core with flame layers
+    this.animateBurnCore(time, delta);
 
     // Animate fire light
     if (this.fireLight) {
-      this.fireLight.intensity = CONFIG.lighting.fire.intensity *
+      this.fireLight.intensity =
+        CONFIG.lighting.fire.intensity *
         (0.8 + Math.sin(time * 3) * 0.2 + Math.sin(time * 7) * 0.1);
     }
 
-    // Float islands
+    // Float and animate islands
     for (const [id, data] of this.islands) {
       const offset = Math.sin(time * 0.5 + data.position.x) * 0.3;
       data.mesh.position.y = data.baseY + offset;
 
       // Slow rotation
-      data.mesh.rotation.y += delta * 0.1;
+      data.mesh.rotation.y += delta * 0.08;
+
+      // Aura pulse
+      if (data.mesh.userData.auraMaterial) {
+        const basePulse = data.mesh.userData.project?.status === 'live' ? 0.12 : 0.05;
+        const pulse = basePulse + Math.sin(time * 1.5 + data.position.x) * 0.05;
+        data.mesh.userData.auraMaterial.opacity = pulse;
+      }
+
+      // Ring rotation
+      if (data.mesh.userData.ringMaterial) {
+        // Find the ring mesh and rotate it
+        data.mesh.children.forEach(child => {
+          if (child.geometry?.type === 'TorusGeometry') {
+            child.rotation.z += delta * 0.3;
+          }
+        });
+      }
 
       // Building shimmer
-      if (data.mesh.userData.building) {
-        data.mesh.material.opacity = 0.6 + Math.sin(time * 2) * 0.2;
+      if (data.mesh.userData.building && data.mesh.userData.rockMaterial) {
+        data.mesh.userData.rockMaterial.emissiveIntensity = 0.1 + Math.sin(time * 2) * 0.08;
       }
     }
 
@@ -759,6 +974,7 @@ export const Yggdrasil = {
 
     FireParticles.dispose();
     SnowstormParticles.dispose();
+    EmberParticles.dispose();
     ConnectionParticles.dispose();
     this.skillNodes.dispose();
     this.cameraController.dispose();
@@ -768,9 +984,7 @@ export const Yggdrasil = {
     if (this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
-
-    console.log('[Yggdrasil] Disposed');
-  }
+  },
 };
 
 export default Yggdrasil;
