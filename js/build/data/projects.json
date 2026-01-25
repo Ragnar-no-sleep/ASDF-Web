@@ -1,7 +1,7 @@
 {
   "burn-engine": {
     "id": "burn-engine",
-    "icon": "\uD83D\uDD25",
+    "icon": "🔥",
     "title": "Burn Engine",
     "status": "live",
     "category": "core",
@@ -37,7 +37,7 @@
     "architecture": "The Burn Engine uses a Program Derived Address (PDA) to manage burn operations. Each transaction triggers a CPI call to the SPL Token burn instruction.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDD27",
+        "icon": "🔧",
         "name": "Core Burn Logic",
         "status": "completed",
         "what": "The fundamental algorithm that calculates and executes token burns.",
@@ -46,7 +46,7 @@
         "future": "Dynamic burn rates based on market conditions."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Transaction Parser",
         "status": "completed",
         "what": "Analyzes incoming transactions to identify burn-eligible operations.",
@@ -55,7 +55,7 @@
         "future": "Support for complex multi-instruction transactions."
       },
       {
-        "icon": "\uD83D\uDD17",
+        "icon": "🔗",
         "name": "Helius Integration",
         "status": "completed",
         "what": "Connection to Helius RPC infrastructure.",
@@ -64,7 +64,7 @@
         "future": "Multi-provider fallback system."
       },
       {
-        "icon": "\uD83D\uDCC8",
+        "icon": "📈",
         "name": "Analytics Module",
         "status": "completed",
         "what": "Collects and aggregates burn statistics.",
@@ -73,7 +73,7 @@
         "future": "Predictive analytics using ML."
       },
       {
-        "icon": "\uD83D\uDEE1\uFE0F",
+        "icon": "🛡️",
         "name": "Security Audit",
         "status": "in-progress",
         "what": "Comprehensive third-party security review.",
@@ -82,7 +82,7 @@
         "future": "Continuous audit program. Bug bounty expansion."
       },
       {
-        "icon": "\uD83C\uDF10",
+        "icon": "🌐",
         "name": "Cross-chain Bridge",
         "status": "planned",
         "what": "Enable burn mechanism across multiple blockchains.",
@@ -92,9 +92,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Complete security audit with OtterSec" },
-      { "phase": "Q2", "text": "Implement configurable burn rates per token" },
-      { "phase": "Q3", "text": "Launch cross-chain burn synchronization" }
+      {
+        "phase": "Q1",
+        "text": "Complete security audit with OtterSec"
+      },
+      {
+        "phase": "Q2",
+        "text": "Implement configurable burn rates per token"
+      },
+      {
+        "phase": "Q3",
+        "text": "Launch cross-chain burn synchronization"
+      }
     ],
     "integrations": ["Helius RPC", "Jupiter", "Raydium", "Metaplex"],
     "github": "https://github.com/zeyxx/asdf-burn-engine",
@@ -104,19 +113,19 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       },
       {
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Architecture",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
   "burn-tracker": {
     "id": "burn-tracker",
-    "icon": "\uD83D\uDCCA",
+    "icon": "📊",
     "title": "Burn Tracker",
     "status": "live",
     "category": "analytics",
@@ -152,7 +161,7 @@
     "architecture": "Backend subscribes to Helius webhooks. PostgreSQL stores historical data. WebSocket server pushes updates to clients.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCE1",
+        "icon": "📡",
         "name": "Webhook Listener",
         "status": "completed",
         "what": "Receives real-time burn event notifications.",
@@ -161,7 +170,7 @@
         "future": "Multi-chain webhook support."
       },
       {
-        "icon": "\uD83D\uDCBE",
+        "icon": "💾",
         "name": "Data Pipeline",
         "status": "completed",
         "what": "Transforms raw blockchain data into queryable records.",
@@ -170,7 +179,7 @@
         "future": "Real-time data validation."
       },
       {
-        "icon": "\uD83D\uDCC8",
+        "icon": "📈",
         "name": "Analytics Engine",
         "status": "completed",
         "what": "Calculates aggregated statistics and projections.",
@@ -179,7 +188,7 @@
         "future": "ML-powered predictions."
       },
       {
-        "icon": "\uD83C\uDF10",
+        "icon": "🌐",
         "name": "REST API",
         "status": "completed",
         "what": "Public endpoints for burn data.",
@@ -188,7 +197,7 @@
         "future": "GraphQL endpoint."
       },
       {
-        "icon": "\uD83D\uDCF1",
+        "icon": "📱",
         "name": "Embeddable Widget",
         "status": "in-progress",
         "what": "Plug-and-play component for other websites.",
@@ -197,7 +206,7 @@
         "future": "Theme customization."
       },
       {
-        "icon": "\uD83E\uDD16",
+        "icon": "🤖",
         "name": "Telegram Bot",
         "status": "planned",
         "what": "Telegram bot for burn notifications.",
@@ -207,9 +216,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Launch embeddable widget" },
-      { "phase": "Q2", "text": "ML-based burn rate predictions" },
-      { "phase": "Q3", "text": "Multi-token comparison dashboard" }
+      {
+        "phase": "Q1",
+        "text": "Launch embeddable widget"
+      },
+      {
+        "phase": "Q2",
+        "text": "ML-based burn rate predictions"
+      },
+      {
+        "phase": "Q3",
+        "text": "Multi-token comparison dashboard"
+      }
     ],
     "integrations": ["Burn Engine", "Helius", "Discord", "Telegram"],
     "github": "https://github.com/sollama58/ASDFBurnTracker",
@@ -219,19 +237,19 @@
         "name": "sollama58",
         "github": "sollama58",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Backend Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "token-launcher": {
     "id": "token-launcher",
-    "icon": "\uD83D\uDE80",
+    "icon": "🚀",
     "title": "Token Launcher",
     "status": "live",
     "category": "tools",
@@ -267,7 +285,7 @@
     "architecture": "Frontend wizard collects parameters. Backend validates and deploys. Raydium pool creation follows.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCDD",
+        "icon": "📝",
         "name": "Token Creation",
         "status": "completed",
         "what": "Core wizard for creating SPL tokens.",
@@ -276,7 +294,7 @@
         "future": "Token cloning feature."
       },
       {
-        "icon": "\uD83D\uDDBC\uFE0F",
+        "icon": "🖼️",
         "name": "Metaplex Integration",
         "status": "completed",
         "what": "Rich token metadata.",
@@ -285,7 +303,7 @@
         "future": "Dynamic metadata updates."
       },
       {
-        "icon": "\uD83D\uDCA7",
+        "icon": "💧",
         "name": "Raydium Pools",
         "status": "completed",
         "what": "Automated liquidity pool creation.",
@@ -294,7 +312,7 @@
         "future": "Multi-DEX deployment."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Management Dashboard",
         "status": "in-progress",
         "what": "Post-launch control panel.",
@@ -303,7 +321,7 @@
         "future": "Holder analytics. Airdrop tools."
       },
       {
-        "icon": "\uD83D\uDD10",
+        "icon": "🔐",
         "name": "Multi-sig Support",
         "status": "planned",
         "what": "Multiple signers for token authorities.",
@@ -312,7 +330,7 @@
         "future": "Governance-controlled authorities."
       },
       {
-        "icon": "\uD83D\uDCCB",
+        "icon": "📋",
         "name": "Token Templates",
         "status": "planned",
         "what": "Pre-configured token setups.",
@@ -322,9 +340,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Pre-configured token templates" },
-      { "phase": "Q2", "text": "Multi-signature authority support" },
-      { "phase": "Q3", "text": "Public API for integrations" }
+      {
+        "phase": "Q1",
+        "text": "Pre-configured token templates"
+      },
+      {
+        "phase": "Q2",
+        "text": "Multi-signature authority support"
+      },
+      {
+        "phase": "Q3",
+        "text": "Public API for integrations"
+      }
     ],
     "integrations": ["Burn Engine", "Metaplex", "Raydium", "Jupiter"],
     "github": "https://github.com/sollama58/ASDev",
@@ -334,19 +361,19 @@
         "name": "sollama58",
         "github": "sollama58",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Smart Contracts",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "oracle": {
     "id": "oracle",
-    "icon": "\uD83D\uDD2E",
+    "icon": "🔮",
     "title": "ASDF Oracle",
     "status": "building",
     "category": "infrastructure",
@@ -376,7 +403,7 @@
     "architecture": "Data collectors fetch from APIs. Python calculates K-Metric. InfluxDB stores time-series. Grafana visualizes.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "K-Metric Algorithm",
         "status": "completed",
         "what": "Proprietary ecosystem health formula.",
@@ -385,7 +412,7 @@
         "future": "Community-adjustable weights."
       },
       {
-        "icon": "\uD83D\uDD17",
+        "icon": "🔗",
         "name": "Multi-source Aggregator",
         "status": "completed",
         "what": "Data collection from multiple sources.",
@@ -394,7 +421,7 @@
         "future": "Dune Analytics integration."
       },
       {
-        "icon": "\uD83D\uDCE1",
+        "icon": "📡",
         "name": "REST API",
         "status": "in-progress",
         "what": "Public endpoints for K-Metric data.",
@@ -403,7 +430,7 @@
         "future": "WebSocket real-time updates."
       },
       {
-        "icon": "\uD83D\uDD14",
+        "icon": "🔔",
         "name": "Alert System",
         "status": "in-progress",
         "what": "Threshold-based notifications.",
@@ -412,7 +439,7 @@
         "future": "Custom user alerts."
       },
       {
-        "icon": "\uD83D\uDCC8",
+        "icon": "📈",
         "name": "Historical Data",
         "status": "planned",
         "what": "Long-term K-Metric trends.",
@@ -421,7 +448,7 @@
         "future": "Public data exports."
       },
       {
-        "icon": "\uD83E\uDDE0",
+        "icon": "🧠",
         "name": "ML Predictions",
         "status": "planned",
         "what": "Predict future K-Metric values.",
@@ -431,9 +458,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Public API with rate limiting" },
-      { "phase": "Q2", "text": "On-chain oracle program" },
-      { "phase": "Q3", "text": "ML-based prediction models" }
+      {
+        "phase": "Q1",
+        "text": "Public API with rate limiting"
+      },
+      {
+        "phase": "Q2",
+        "text": "On-chain oracle program"
+      },
+      {
+        "phase": "Q3",
+        "text": "ML-based prediction models"
+      }
     ],
     "integrations": ["Helius", "Jupiter", "Birdeye", "Burn Tracker"],
     "github": "https://github.com/zeyxx/asdf-oracle",
@@ -443,19 +479,19 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       },
       {
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Architecture",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
   "learn-platform": {
     "id": "learn-platform",
-    "icon": "\uD83D\uDCDA",
+    "icon": "📚",
     "title": "Learn Platform",
     "status": "live",
     "category": "education",
@@ -491,7 +527,7 @@
     "architecture": "Single-page application with vanilla JavaScript. LocalStorage persists progress.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCD6",
+        "icon": "📖",
         "name": "5 Learning Levels",
         "status": "completed",
         "what": "Progressive curriculum.",
@@ -500,7 +536,7 @@
         "future": "Expert-level content."
       },
       {
-        "icon": "\uD83C\uDFC5",
+        "icon": "🏅",
         "name": "Badge System",
         "status": "completed",
         "what": "Visual achievements.",
@@ -509,7 +545,7 @@
         "future": "Rare achievement badges."
       },
       {
-        "icon": "\u2705",
+        "icon": "✅",
         "name": "Quiz Engine",
         "status": "completed",
         "what": "Interactive knowledge checks.",
@@ -518,7 +554,7 @@
         "future": "Adaptive difficulty."
       },
       {
-        "icon": "\uD83D\uDCBE",
+        "icon": "💾",
         "name": "Progress Sync",
         "status": "completed",
         "what": "Persistent progress tracking.",
@@ -527,7 +563,7 @@
         "future": "Cloud sync with wallet."
       },
       {
-        "icon": "\uD83C\uDF10",
+        "icon": "🌐",
         "name": "Multi-language",
         "status": "in-progress",
         "what": "Platform localization.",
@@ -536,7 +572,7 @@
         "future": "Community translations."
       },
       {
-        "icon": "\uD83C\uDF96\uFE0F",
+        "icon": "🎖️",
         "name": "NFT Badges",
         "status": "planned",
         "what": "On-chain NFT certificates.",
@@ -546,9 +582,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Spanish and French translations" },
-      { "phase": "Q2", "text": "Community-contributed lessons" },
-      { "phase": "Q3", "text": "On-chain certificate NFTs" }
+      {
+        "phase": "Q1",
+        "text": "Spanish and French translations"
+      },
+      {
+        "phase": "Q2",
+        "text": "Community-contributed lessons"
+      },
+      {
+        "phase": "Q3",
+        "text": "On-chain certificate NFTs"
+      }
     ],
     "integrations": ["Community Hub", "Ambassador Program"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -558,19 +603,19 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "sollama58",
         "github": "sollama58",
         "role": "Content Writer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   },
   "rpc-monitor": {
     "id": "rpc-monitor",
-    "icon": "\uD83D\uDCE1",
+    "icon": "📡",
     "title": "RPC Monitor",
     "status": "live",
     "category": "infrastructure",
@@ -600,7 +645,7 @@
     "architecture": "Cron-based health checker. Results stored in Prometheus. Grafana dashboards visualize.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDC93",
+        "icon": "💓",
         "name": "Health Checker",
         "status": "completed",
         "what": "Core monitoring service.",
@@ -609,7 +654,7 @@
         "future": "Custom health check types."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Prometheus Export",
         "status": "completed",
         "what": "Metrics in Prometheus format.",
@@ -618,7 +663,7 @@
         "future": "Custom metric labels."
       },
       {
-        "icon": "\uD83D\uDD14",
+        "icon": "🔔",
         "name": "Alert Manager",
         "status": "completed",
         "what": "Automated notifications.",
@@ -627,7 +672,7 @@
         "future": "Escalation policies."
       },
       {
-        "icon": "\uD83D\uDCC8",
+        "icon": "📈",
         "name": "Grafana Dashboards",
         "status": "in-progress",
         "what": "Visual health dashboards.",
@@ -636,7 +681,7 @@
         "future": "Public status page."
       },
       {
-        "icon": "\uD83E\uDD16",
+        "icon": "🤖",
         "name": "Auto-failover",
         "status": "planned",
         "what": "Automatic switching to backup RPCs.",
@@ -645,7 +690,7 @@
         "future": "Weighted load balancing."
       },
       {
-        "icon": "\uD83C\uDF0D",
+        "icon": "🌍",
         "name": "Multi-region",
         "status": "planned",
         "what": "Monitoring from multiple locations.",
@@ -655,9 +700,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Automated failover to backup RPCs" },
-      { "phase": "Q2", "text": "Multi-region endpoint monitoring" },
-      { "phase": "Q3", "text": "Cost tracking and optimization" }
+      {
+        "phase": "Q1",
+        "text": "Automated failover to backup RPCs"
+      },
+      {
+        "phase": "Q2",
+        "text": "Multi-region endpoint monitoring"
+      },
+      {
+        "phase": "Q3",
+        "text": "Cost tracking and optimization"
+      }
     ],
     "integrations": ["Helius", "All Ecosystem Services"],
     "github": "https://github.com/zeyxx/asdf-validator",
@@ -667,13 +721,13 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Infrastructure Lead",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "holdex": {
     "id": "holdex",
-    "icon": "\uD83D\uDCC9",
+    "icon": "📉",
     "title": "HolDEX Terminal",
     "status": "live",
     "category": "trading",
@@ -703,7 +757,7 @@
     "architecture": "React frontend with TradingView widget. WebSocket feeds. Jupiter SDK handles swaps.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCC8",
+        "icon": "📈",
         "name": "TradingView Charts",
         "status": "completed",
         "what": "Professional charting.",
@@ -712,7 +766,7 @@
         "future": "Custom indicators."
       },
       {
-        "icon": "\uD83D\uDCCB",
+        "icon": "📋",
         "name": "Watchlists",
         "status": "completed",
         "what": "Custom token lists.",
@@ -721,7 +775,7 @@
         "future": "Shared watchlists."
       },
       {
-        "icon": "\uD83D\uDD14",
+        "icon": "🔔",
         "name": "Price Alerts",
         "status": "in-progress",
         "what": "Price target notifications.",
@@ -730,7 +784,7 @@
         "future": "Complex conditions."
       },
       {
-        "icon": "\uD83D\uDC0B",
+        "icon": "🐋",
         "name": "Whale Tracking",
         "status": "in-progress",
         "what": "Monitor large wallet movements.",
@@ -739,7 +793,7 @@
         "future": "Flow analysis."
       },
       {
-        "icon": "\uD83E\uDD16",
+        "icon": "🤖",
         "name": "Trading Bots",
         "status": "planned",
         "what": "Automated trading strategies.",
@@ -748,7 +802,7 @@
         "future": "Strategy marketplace."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Portfolio View",
         "status": "planned",
         "what": "Portfolio tracking.",
@@ -758,9 +812,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Copy trading functionality" },
-      { "phase": "Q2", "text": "Automated trading strategies" },
-      { "phase": "Q3", "text": "DEX aggregation beyond Jupiter" }
+      {
+        "phase": "Q1",
+        "text": "Copy trading functionality"
+      },
+      {
+        "phase": "Q2",
+        "text": "Automated trading strategies"
+      },
+      {
+        "phase": "Q3",
+        "text": "DEX aggregation beyond Jupiter"
+      }
     ],
     "integrations": ["ASDF Oracle", "Jupiter", "Birdeye"],
     "github": "https://github.com/sollama58/HolDex",
@@ -770,19 +833,19 @@
         "name": "sollama58",
         "github": "sollama58",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Backend Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "games-platform": {
     "id": "games-platform",
-    "icon": "\uD83C\uDFAE",
+    "icon": "🎮",
     "title": "Games Platform",
     "status": "live",
     "category": "gaming",
@@ -812,7 +875,7 @@
     "architecture": "Microservices with separate game engine and rewards service.",
     "miniTree": [
       {
-        "icon": "\uD83C\uDFB2",
+        "icon": "🎲",
         "name": "9 Mini-games",
         "status": "completed",
         "what": "Collection of casual games.",
@@ -821,7 +884,7 @@
         "future": "Community game submissions."
       },
       {
-        "icon": "\uD83C\uDFC6",
+        "icon": "🏆",
         "name": "Leaderboards",
         "status": "completed",
         "what": "Weekly competitive rankings.",
@@ -830,7 +893,7 @@
         "future": "All-time leaderboards."
       },
       {
-        "icon": "\uD83C\uDF9F\uFE0F",
+        "icon": "🎟️",
         "name": "Ticket System",
         "status": "completed",
         "what": "Entry tickets for prize pools.",
@@ -839,7 +902,7 @@
         "future": "Ticket marketplace."
       },
       {
-        "icon": "\uD83C\uDF81",
+        "icon": "🎁",
         "name": "Auto Rewards",
         "status": "in-progress",
         "what": "Automated prize distribution.",
@@ -848,7 +911,7 @@
         "future": "Instant micro-rewards."
       },
       {
-        "icon": "\uD83D\uDEE1\uFE0F",
+        "icon": "🛡️",
         "name": "Anti-cheat v2",
         "status": "in-progress",
         "what": "Enhanced cheat detection.",
@@ -857,7 +920,7 @@
         "future": "Real-time detection."
       },
       {
-        "icon": "\uD83C\uDFC5",
+        "icon": "🏅",
         "name": "Tournaments",
         "status": "planned",
         "what": "Organized PvP competitions.",
@@ -867,9 +930,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "PvP tournament mode" },
-      { "phase": "Q2", "text": "NFT reward integration" },
-      { "phase": "Q3", "text": "Mobile companion app" }
+      {
+        "phase": "Q1",
+        "text": "PvP tournament mode"
+      },
+      {
+        "phase": "Q2",
+        "text": "NFT reward integration"
+      },
+      {
+        "phase": "Q3",
+        "text": "Mobile companion app"
+      }
     ],
     "integrations": ["ASDF Oracle", "Burn Engine", "Wallet Adapters"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -879,13 +951,13 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
   "forecast": {
     "id": "forecast",
-    "icon": "\uD83D\uDCC8",
+    "icon": "📈",
     "title": "ASDForecast",
     "status": "live",
     "category": "trading",
@@ -915,7 +987,7 @@
     "architecture": "Prediction markets on Solana smart contracts. Oracle integration for resolution.",
     "miniTree": [
       {
-        "icon": "\uD83C\uDFAF",
+        "icon": "🎯",
         "name": "Price Markets",
         "status": "completed",
         "what": "Markets for price predictions.",
@@ -924,7 +996,7 @@
         "future": "Range predictions."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Event Markets",
         "status": "completed",
         "what": "Binary markets for events.",
@@ -933,7 +1005,7 @@
         "future": "Multi-outcome events."
       },
       {
-        "icon": "\uD83C\uDFC6",
+        "icon": "🏆",
         "name": "Leaderboards",
         "status": "completed",
         "what": "Rankings of top forecasters.",
@@ -942,7 +1014,7 @@
         "future": "Seasonal competitions."
       },
       {
-        "icon": "\uD83D\uDD2E",
+        "icon": "🔮",
         "name": "Oracle Integration",
         "status": "in-progress",
         "what": "Reliable price feeds.",
@@ -952,9 +1024,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Launch additional event markets" },
-      { "phase": "Q2", "text": "Seasonal prediction tournaments" },
-      { "phase": "Q3", "text": "Advanced analytics dashboard" }
+      {
+        "phase": "Q1",
+        "text": "Launch additional event markets"
+      },
+      {
+        "phase": "Q2",
+        "text": "Seasonal prediction tournaments"
+      },
+      {
+        "phase": "Q3",
+        "text": "Advanced analytics dashboard"
+      }
     ],
     "integrations": ["ASDF Oracle", "Helius", "Jupiter"],
     "github": "https://github.com/sollama58/ASDForecast",
@@ -964,19 +1045,19 @@
         "name": "sollama58",
         "github": "sollama58",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Smart Contracts",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "ignition": {
     "id": "ignition",
-    "icon": "\uD83D\uDD25",
+    "icon": "🔥",
     "title": "Ignition",
     "status": "live",
     "category": "launchpad",
@@ -1006,7 +1087,7 @@
     "architecture": "Launch contracts manage contributions and distribution. Vesting contracts handle unlocks.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDE80",
+        "icon": "🚀",
         "name": "Launch Platform",
         "status": "completed",
         "what": "Core fair launch platform.",
@@ -1015,7 +1096,7 @@
         "future": "Dutch auctions."
       },
       {
-        "icon": "\uD83D\uDD12",
+        "icon": "🔒",
         "name": "Vesting Contracts",
         "status": "completed",
         "what": "Time-locked distribution.",
@@ -1024,7 +1105,7 @@
         "future": "Milestone-based vesting."
       },
       {
-        "icon": "\uD83C\uDF31",
+        "icon": "🌱",
         "name": "Incubator",
         "status": "in-progress",
         "what": "Project review and support.",
@@ -1033,7 +1114,7 @@
         "future": "Mentor network."
       },
       {
-        "icon": "\uD83D\uDCCB",
+        "icon": "📋",
         "name": "Whitelist System",
         "status": "completed",
         "what": "Community allocation management.",
@@ -1043,9 +1124,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Launch first incubated projects" },
-      { "phase": "Q2", "text": "Introduce staking for allocation boost" },
-      { "phase": "Q3", "text": "Cross-ecosystem launch partnerships" }
+      {
+        "phase": "Q1",
+        "text": "Launch first incubated projects"
+      },
+      {
+        "phase": "Q2",
+        "text": "Introduce staking for allocation boost"
+      },
+      {
+        "phase": "Q3",
+        "text": "Cross-ecosystem launch partnerships"
+      }
     ],
     "integrations": ["Burn Engine", "ASDF Oracle", "Helius"],
     "github": "https://github.com/zeyxx/ASDev",
@@ -1055,19 +1145,19 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       },
       {
         "name": "sollama58",
         "github": "sollama58",
         "role": "Frontend Developer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   },
   "community-hub": {
     "id": "community-hub",
-    "icon": "\uD83C\uDFE0",
+    "icon": "🏠",
     "title": "Community Hub",
     "status": "building",
     "category": "community",
@@ -1097,7 +1187,7 @@
     "architecture": "Next.js app with SSR. Prisma ORM. Discord bot for sync.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCC5",
+        "icon": "📅",
         "name": "Event Calendar",
         "status": "completed",
         "what": "Shared event calendar.",
@@ -1106,7 +1196,7 @@
         "future": "Calendar exports."
       },
       {
-        "icon": "\uD83D\uDCE2",
+        "icon": "📢",
         "name": "Announcements",
         "status": "completed",
         "what": "Official announcement feed.",
@@ -1115,7 +1205,7 @@
         "future": "Newsletter subscriptions."
       },
       {
-        "icon": "\uD83D\uDDF3\uFE0F",
+        "icon": "🗳️",
         "name": "Proposal System",
         "status": "in-progress",
         "what": "Community proposals.",
@@ -1124,7 +1214,7 @@
         "future": "Proposal templates."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Community Metrics",
         "status": "planned",
         "what": "Health dashboard.",
@@ -1133,7 +1223,7 @@
         "future": "Churn analysis."
       },
       {
-        "icon": "\uD83C\uDFDB\uFE0F",
+        "icon": "🏛️",
         "name": "DAO Voting",
         "status": "planned",
         "what": "On-chain governance.",
@@ -1142,7 +1232,7 @@
         "future": "Quadratic voting."
       },
       {
-        "icon": "\uD83D\uDCB0",
+        "icon": "💰",
         "name": "Treasury View",
         "status": "planned",
         "what": "Treasury dashboard.",
@@ -1152,9 +1242,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "On-chain proposal voting" },
-      { "phase": "Q2", "text": "Delegation system" },
-      { "phase": "Q3", "text": "Treasury management dashboard" }
+      {
+        "phase": "Q1",
+        "text": "On-chain proposal voting"
+      },
+      {
+        "phase": "Q2",
+        "text": "Delegation system"
+      },
+      {
+        "phase": "Q3",
+        "text": "Treasury management dashboard"
+      }
     ],
     "integrations": ["Discord", "Ambassador Program", "Learn Platform"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Builders",
@@ -1164,19 +1263,19 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Discord Bot",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
   "deploy-pipeline": {
     "id": "deploy-pipeline",
-    "icon": "\uD83D\uDD27",
+    "icon": "🔧",
     "title": "Deploy Pipeline",
     "status": "building",
     "category": "infrastructure",
@@ -1206,7 +1305,7 @@
     "architecture": "GitHub Actions trigger on PR merge. Docker builds. Kubernetes orchestration.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDD04",
+        "icon": "🔄",
         "name": "GitHub Actions",
         "status": "completed",
         "what": "Automated CI/CD workflows.",
@@ -1215,7 +1314,7 @@
         "future": "Self-hosted runners."
       },
       {
-        "icon": "\uD83D\uDC33",
+        "icon": "🐳",
         "name": "Docker Builds",
         "status": "completed",
         "what": "Containerized services.",
@@ -1224,7 +1323,7 @@
         "future": "Build cache optimization."
       },
       {
-        "icon": "\u2638\uFE0F",
+        "icon": "☸️",
         "name": "K8s Deployment",
         "status": "in-progress",
         "what": "Kubernetes orchestration.",
@@ -1233,7 +1332,7 @@
         "future": "Horizontal autoscaling."
       },
       {
-        "icon": "\uD83D\uDD35",
+        "icon": "🔵",
         "name": "Blue-green Deploy",
         "status": "in-progress",
         "what": "Zero-downtime deployments.",
@@ -1242,7 +1341,7 @@
         "future": "A/B testing."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Post-deploy Monitor",
         "status": "planned",
         "what": "Health verification after deploy.",
@@ -1251,7 +1350,7 @@
         "future": "Performance baseline comparison."
       },
       {
-        "icon": "\uD83E\uDD9C",
+        "icon": "🦜",
         "name": "Canary Releases",
         "status": "planned",
         "what": "Gradual rollout.",
@@ -1261,9 +1360,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Canary deployment support" },
-      { "phase": "Q2", "text": "Automated rollback triggers" },
-      { "phase": "Q3", "text": "Cost tracking and optimization" }
+      {
+        "phase": "Q1",
+        "text": "Canary deployment support"
+      },
+      {
+        "phase": "Q2",
+        "text": "Automated rollback triggers"
+      },
+      {
+        "phase": "Q3",
+        "text": "Cost tracking and optimization"
+      }
     ],
     "integrations": ["RPC Monitor", "All Services"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -1273,19 +1381,19 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "DevOps Lead",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       },
       {
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Infrastructure",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
   "ambassador-program": {
     "id": "ambassador-program",
-    "icon": "\uD83C\uDF96\uFE0F",
+    "icon": "🎖️",
     "title": "Ambassador Program",
     "status": "planned",
     "category": "community",
@@ -1315,7 +1423,7 @@
     "architecture": "Mission tracking via Discord bot. NFT badges on-chain. Reward distribution automated.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDCCB",
+        "icon": "📋",
         "name": "Mission System",
         "status": "planned",
         "what": "Structured contribution tasks.",
@@ -1324,7 +1432,7 @@
         "future": "Community-submitted missions."
       },
       {
-        "icon": "\uD83C\uDFC6",
+        "icon": "🏆",
         "name": "Rank Progression",
         "status": "planned",
         "what": "Tiered ambassador levels.",
@@ -1333,7 +1441,7 @@
         "future": "Leadership councils."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Contribution Tracking",
         "status": "planned",
         "what": "Automated activity logging.",
@@ -1342,7 +1450,7 @@
         "future": "More platforms."
       },
       {
-        "icon": "\uD83C\uDF96\uFE0F",
+        "icon": "🎖️",
         "name": "NFT Badges",
         "status": "planned",
         "what": "On-chain achievements.",
@@ -1351,7 +1459,7 @@
         "future": "Dynamic badges."
       },
       {
-        "icon": "\uD83D\uDCB0",
+        "icon": "💰",
         "name": "Auto Rewards",
         "status": "planned",
         "what": "Periodic token distribution.",
@@ -1360,7 +1468,7 @@
         "future": "Streak bonuses."
       },
       {
-        "icon": "\uD83C\uDF0D",
+        "icon": "🌍",
         "name": "Regional Leads",
         "status": "planned",
         "what": "Geographic leadership.",
@@ -1370,9 +1478,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q2", "text": "Launch beta with core missions" },
-      { "phase": "Q3", "text": "NFT badge minting" },
-      { "phase": "Q4", "text": "Regional ambassador structure" }
+      {
+        "phase": "Q2",
+        "text": "Launch beta with core missions"
+      },
+      {
+        "phase": "Q3",
+        "text": "NFT badge minting"
+      },
+      {
+        "phase": "Q4",
+        "text": "Regional ambassador structure"
+      }
     ],
     "integrations": ["Community Hub", "Metaplex", "Discord"],
     "github": null,
@@ -1382,19 +1499,19 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Program Lead",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "sollama58",
         "github": "sollama58",
         "role": "Community Lead",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   },
   "content-factory": {
     "id": "content-factory",
-    "icon": "\uD83C\uDFAC",
+    "icon": "🎬",
     "title": "Content Factory",
     "status": "planned",
     "category": "community",
@@ -1424,7 +1541,7 @@
     "architecture": "React app with canvas editor. Templates in Cloudinary. Engagement tracked for rewards.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDDBC\uFE0F",
+        "icon": "🖼️",
         "name": "Template Library",
         "status": "planned",
         "what": "Pre-designed templates.",
@@ -1433,7 +1550,7 @@
         "future": "Community submissions."
       },
       {
-        "icon": "\uD83C\uDFA8",
+        "icon": "🎨",
         "name": "Meme Generator",
         "status": "planned",
         "what": "Easy meme creation.",
@@ -1442,7 +1559,7 @@
         "future": "AI suggestions."
       },
       {
-        "icon": "\uD83D\uDCC5",
+        "icon": "📅",
         "name": "Post Scheduler",
         "status": "planned",
         "what": "Schedule social posts.",
@@ -1451,7 +1568,7 @@
         "future": "Optimal time suggestions."
       },
       {
-        "icon": "\uD83D\uDCB0",
+        "icon": "💰",
         "name": "Creator Rewards",
         "status": "planned",
         "what": "Performance-based rewards.",
@@ -1460,7 +1577,7 @@
         "future": "Tiered creator program."
       },
       {
-        "icon": "\uD83D\uDCCA",
+        "icon": "📊",
         "name": "Analytics",
         "status": "planned",
         "what": "Content performance tracking.",
@@ -1469,7 +1586,7 @@
         "future": "Competitor analysis."
       },
       {
-        "icon": "\uD83E\uDD16",
+        "icon": "🤖",
         "name": "AI Suggestions",
         "status": "planned",
         "what": "AI content ideas.",
@@ -1479,9 +1596,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q2", "text": "Launch template library" },
-      { "phase": "Q3", "text": "Meme generator with AI" },
-      { "phase": "Q4", "text": "Creator rewards program" }
+      {
+        "phase": "Q2",
+        "text": "Launch template library"
+      },
+      {
+        "phase": "Q3",
+        "text": "Meme generator with AI"
+      },
+      {
+        "phase": "Q4",
+        "text": "Creator rewards program"
+      }
     ],
     "integrations": ["Ambassador Program", "Discord", "Twitter"],
     "github": null,
@@ -1491,13 +1617,13 @@
         "name": "sollama58",
         "github": "sollama58",
         "role": "Creative Director",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   },
   "security-audit": {
     "id": "security-audit",
-    "icon": "\uD83D\uDEE1\uFE0F",
+    "icon": "🛡️",
     "title": "Security Audit",
     "status": "planned",
     "category": "infrastructure",
@@ -1527,7 +1653,7 @@
     "architecture": "Python orchestration. Slither/Mythril for contracts. OWASP ZAP for APIs.",
     "miniTree": [
       {
-        "icon": "\uD83D\uDD0D",
+        "icon": "🔍",
         "name": "Contract Scanner",
         "status": "planned",
         "what": "Automated contract analysis.",
@@ -1536,7 +1662,7 @@
         "future": "Custom rule definitions."
       },
       {
-        "icon": "\uD83D\uDD77\uFE0F",
+        "icon": "🕷️",
         "name": "API Fuzzing",
         "status": "planned",
         "what": "Automated API testing.",
@@ -1545,7 +1671,7 @@
         "future": "Stateful fuzzing."
       },
       {
-        "icon": "\uD83D\uDCCB",
+        "icon": "📋",
         "name": "Checklist System",
         "status": "planned",
         "what": "Manual review checklist.",
@@ -1554,7 +1680,7 @@
         "future": "Role-based checklists."
       },
       {
-        "icon": "\uD83D\uDCDD",
+        "icon": "📝",
         "name": "Auto Reports",
         "status": "planned",
         "what": "Automated security reports.",
@@ -1563,7 +1689,7 @@
         "future": "Trend analysis."
       },
       {
-        "icon": "\uD83D\uDD14",
+        "icon": "🔔",
         "name": "Vuln Alerts",
         "status": "planned",
         "what": "Real-time vulnerability alerts.",
@@ -1572,7 +1698,7 @@
         "future": "CVE monitoring."
       },
       {
-        "icon": "\uD83C\uDFC6",
+        "icon": "🏆",
         "name": "Bug Bounty",
         "status": "planned",
         "what": "External researcher incentives.",
@@ -1582,9 +1708,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q2", "text": "Basic contract scanning" },
-      { "phase": "Q3", "text": "API security integration" },
-      { "phase": "Q4", "text": "Bug bounty platform" }
+      {
+        "phase": "Q2",
+        "text": "Basic contract scanning"
+      },
+      {
+        "phase": "Q3",
+        "text": "API security integration"
+      },
+      {
+        "phase": "Q4",
+        "text": "Bug bounty platform"
+      }
     ],
     "integrations": ["Deploy Pipeline", "All Smart Contracts"],
     "github": null,
@@ -1594,7 +1729,7 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Security Lead",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
@@ -1691,9 +1826,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Launch tournament mode beta" },
-      { "phase": "Q2", "text": "Equipment crafting and trading" },
-      { "phase": "Q3", "text": "Mobile-optimized experience" }
+      {
+        "phase": "Q1",
+        "text": "Launch tournament mode beta"
+      },
+      {
+        "phase": "Q2",
+        "text": "Equipment crafting and trading"
+      },
+      {
+        "phase": "Q3",
+        "text": "Mobile-optimized experience"
+      }
     ],
     "integrations": ["ASDF Oracle", "Games Platform", "Wallet Adapters"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -1703,7 +1847,7 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
@@ -1800,9 +1944,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Add 3 new mini-games" },
-      { "phase": "Q2", "text": "Multiplayer modes for existing games" },
-      { "phase": "Q3", "text": "Community game submissions" }
+      {
+        "phase": "Q1",
+        "text": "Add 3 new mini-games"
+      },
+      {
+        "phase": "Q2",
+        "text": "Multiplayer modes for existing games"
+      },
+      {
+        "phase": "Q3",
+        "text": "Community game submissions"
+      }
     ],
     "integrations": ["Wallet Adapters", "ASDF Oracle"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -1812,7 +1965,7 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       }
     ]
   },
@@ -1909,9 +2062,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Complete Spanish and French translations" },
-      { "phase": "Q2", "text": "Launch animated video series" },
-      { "phase": "Q3", "text": "Community manifesto contributions" }
+      {
+        "phase": "Q1",
+        "text": "Complete Spanish and French translations"
+      },
+      {
+        "phase": "Q2",
+        "text": "Launch animated video series"
+      },
+      {
+        "phase": "Q3",
+        "text": "Community manifesto contributions"
+      }
     ],
     "integrations": ["Learn Platform", "Community Hub"],
     "github": "https://github.com/zeyxx/asdf-manifesto",
@@ -1921,7 +2083,7 @@
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Author & Architect",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
@@ -2018,9 +2180,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Complete all track content with quizzes" },
-      { "phase": "Q2", "text": "NFT badge minting for completers" },
-      { "phase": "Q3", "text": "Cloud sync with wallet authentication" }
+      {
+        "phase": "Q1",
+        "text": "Complete all track content with quizzes"
+      },
+      {
+        "phase": "Q2",
+        "text": "NFT badge minting for completers"
+      },
+      {
+        "phase": "Q3",
+        "text": "Cloud sync with wallet authentication"
+      }
     ],
     "integrations": ["Learn Platform", "Yggdrasil", "Wallet Adapters"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -2030,19 +2201,19 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Course Architecture",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       },
       {
         "name": "sollama58",
         "github": "sollama58",
         "role": "Content Writer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   },
@@ -2139,9 +2310,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Launch public API" },
-      { "phase": "Q2", "text": "Mobile app" },
-      { "phase": "Q3", "text": "Multi-token comparison" }
+      {
+        "phase": "Q1",
+        "text": "Launch public API"
+      },
+      {
+        "phase": "Q2",
+        "text": "Mobile app"
+      },
+      {
+        "phase": "Q3",
+        "text": "Multi-token comparison"
+      }
     ],
     "integrations": ["Burn Engine", "Helius", "Discord", "Telegram"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -2151,13 +2331,13 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "zeyxx",
         "github": "zeyxx",
         "role": "Backend Developer",
-        "avatar": "https://avatars.githubusercontent.com/zeyxx"
+        "avatar": "https://github.com/zeyxx.png"
       }
     ]
   },
@@ -2254,9 +2434,18 @@
       }
     ],
     "roadmap": [
-      { "phase": "Q1", "text": "Complete all track content" },
-      { "phase": "Q2", "text": "Badge NFT minting" },
-      { "phase": "Q3", "text": "Cloud sync with wallet auth" }
+      {
+        "phase": "Q1",
+        "text": "Complete all track content"
+      },
+      {
+        "phase": "Q2",
+        "text": "Badge NFT minting"
+      },
+      {
+        "phase": "Q3",
+        "text": "Cloud sync with wallet auth"
+      }
     ],
     "integrations": ["Journey", "Community Hub"],
     "github": "https://github.com/Ragnar-no-sleep/ASDF-Web",
@@ -2266,13 +2455,13 @@
         "name": "Ragnar",
         "github": "Ragnar-no-sleep",
         "role": "Lead Developer",
-        "avatar": "https://avatars.githubusercontent.com/Ragnar-no-sleep"
+        "avatar": "https://github.com/Ragnar-no-sleep.png"
       },
       {
         "name": "sollama58",
         "github": "sollama58",
         "role": "Content Writer",
-        "avatar": "https://avatars.githubusercontent.com/sollama58"
+        "avatar": "https://github.com/sollama58.png"
       }
     ]
   }
