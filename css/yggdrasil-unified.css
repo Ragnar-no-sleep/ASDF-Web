@@ -1,24 +1,25 @@
 /**
  * Yggdrasil Cosmos - Full Screen Immersive Experience
  * No columns, no scroll - pure 3D cosmos with sliding panel overlays
+ *
+ * Design System: Uses design-tokens.css for phi-based spacing, typography, z-index
  */
 
+@import url('./design-tokens.css');
+
 /* ============================================
-   CSS VARIABLES
+   CSS VARIABLES (Legacy aliases → use tokens)
    ============================================ */
 :root {
-  --ygg-fire: #ff4500;
-  --ygg-fire-glow: rgba(255, 69, 0, 0.4);
-  --ygg-ice: #a5f2f3;
-  --ygg-ice-glow: rgba(165, 242, 243, 0.3);
-  --ygg-bg: #020812;
+  /* Legacy aliases - migrate to design tokens gradually */
+  --ygg-fire: var(--color-fire);
+  --ygg-fire-glow: var(--color-fire-glow);
+  --ygg-ice: var(--color-ice);
+  --ygg-ice-glow: var(--color-ice-glow);
+  --ygg-bg: var(--color-bg-primary);
 
-  --glass-bg: rgba(10, 15, 25, 0.92);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: blur(20px);
-
-  --panel-width: 380px;
-  --panel-padding: 20px;
+  /* Panel padding uses token */
+  --panel-padding: var(--space-lg);
 }
 
 /* ============================================
@@ -32,7 +33,7 @@
   height: 100vh;
   overflow: hidden;
   background: var(--ygg-bg);
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .yggdrasil-cosmos canvas {
@@ -42,7 +43,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   cursor: grab;
 }
 
@@ -72,8 +73,8 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   align-items: center;
   justify-content: center;
   background: var(--ygg-bg);
-  z-index: 100;
-  transition: opacity 0.8s ease;
+  z-index: var(--z-overlay);
+  transition: opacity var(--duration-slower) var(--ease-out);
 }
 
 .ygg-loading.fade-out {
@@ -144,8 +145,8 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  z-index: 100;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: var(--z-overlay);
+  transition: transform var(--duration-slow) var(--ease-in-out);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -191,23 +192,24 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-panel-close {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.1);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: var(--color-bg-hover);
   border: none;
-  border-radius: 50%;
-  color: #888;
-  font-size: 18px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-lg);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-colors), var(--transition-transform);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ygg-panel-close:hover {
-  background: rgba(255, 100, 100, 0.2);
-  color: #ff6666;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  transform: scale(1.05);
 }
 
 /* Panel content */
@@ -224,17 +226,17 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
+  width: var(--touch-target-comfortable);
+  height: var(--touch-target-comfortable);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  border-radius: 50%;
-  color: white;
-  font-size: 20px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: var(--text-xl);
   cursor: pointer;
-  z-index: 50;
-  transition: all 0.3s ease;
+  z-index: var(--z-sticky);
+  transition: var(--transition-all);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -880,12 +882,12 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
    ============================================ */
 .ygg-burn-hud {
   position: fixed;
-  bottom: 24px;
+  bottom: var(--space-lg);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: var(--space-xl);
   background: linear-gradient(
     90deg,
     rgba(0, 0, 0, 0) 0%,
@@ -893,10 +895,10 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
     rgba(10, 10, 15, 0.9) 80%,
     rgba(0, 0, 0, 0) 100%
   );
-  padding: 16px 48px;
-  border-radius: 100px;
+  padding: var(--space-md) var(--space-2xl);
+  border-radius: var(--radius-full);
   border-top: 1px solid rgba(255, 69, 0, 0.3);
-  z-index: 50;
+  z-index: var(--z-sticky);
 }
 
 .ygg-burn-metric {
@@ -953,11 +955,11 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   transform: translateX(-50%);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  padding: 12px 24px;
-  border-radius: 100px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  z-index: 50;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  z-index: var(--z-sticky);
   animation: float 3s ease-in-out infinite;
   pointer-events: none;
 }
@@ -1026,15 +1028,15 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 2000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
+    opacity var(--duration-normal) var(--ease-out),
+    visibility var(--duration-normal) var(--ease-out);
 }
 
 .ygg-project-modal.open {
@@ -1074,26 +1076,27 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 
 .ygg-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.1);
+  top: var(--space-md);
+  right: var(--space-md);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: var(--color-bg-hover);
   border: none;
-  border-radius: 50%;
-  color: #888;
-  font-size: 24px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-2xl);
   cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
+  transition: var(--transition-colors), var(--transition-transform);
+  z-index: var(--z-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ygg-modal-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: var(--color-bg-active);
+  color: var(--color-text-primary);
+  transform: scale(1.05);
 }
 
 .ygg-modal-body {
@@ -1504,15 +1507,15 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 2000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
+    opacity var(--duration-normal) var(--ease-out),
+    visibility var(--duration-normal) var(--ease-out);
 }
 
 .ygg-lesson-modal.open {
@@ -1769,14 +1772,14 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   transform: translate(-50%, -50%) scale(0.5);
   background: linear-gradient(135deg, #ffd700, #ffaa00);
   color: #000;
-  padding: 16px 32px;
-  border-radius: 12px;
-  font-size: 24px;
-  font-weight: 700;
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-md);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
   font-family: 'JetBrains Mono', monospace;
-  z-index: 3000;
+  z-index: var(--z-toast);
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all var(--duration-normal) var(--ease-bounce);
   box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
   pointer-events: none;
 }
@@ -2324,16 +2327,16 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   top: 20px;
   left: 50%;
   transform: translateX(-50%) translateY(-100px);
-  padding: 14px 24px;
+  padding: var(--space-sm) var(--space-lg);
   background: rgba(20, 25, 35, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 10000;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  z-index: var(--z-toast);
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-normal) var(--ease-in-out);
   backdrop-filter: blur(10px);
 }
 
@@ -2675,13 +2678,13 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 .ygg-skill-modal {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) var(--ease-out);
 }
 
 .ygg-skill-modal.open {
@@ -2715,23 +2718,24 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 
 .ygg-skill-modal .ygg-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.1);
+  top: var(--space-md);
+  right: var(--space-md);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: var(--color-bg-hover);
   border: none;
-  border-radius: 50%;
-  color: #888;
-  font-size: 20px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xl);
   cursor: pointer;
-  transition: all 0.2s;
-  z-index: 10;
+  transition: var(--transition-colors), var(--transition-transform);
+  z-index: var(--z-elevated);
 }
 
 .ygg-skill-modal .ygg-modal-close:hover {
-  background: rgba(255, 100, 100, 0.2);
-  color: #ff6666;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  transform: scale(1.05);
 }
 
 .ygg-skill-modal .ygg-modal-body {
@@ -3066,17 +3070,17 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 
 .ygg-filter-legend {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 1000;
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+  z-index: var(--z-overlay);
   background: linear-gradient(135deg, rgba(15, 20, 35, 0.95), rgba(10, 15, 25, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
   min-width: 200px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: blur(12px);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: var(--transition-all);
 }
 
 .ygg-filter-legend.collapsed .ygg-legend-content {
@@ -3302,13 +3306,13 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 .ygg-component-modal {
   position: fixed;
   inset: 0;
-  z-index: 10001;
+  z-index: var(--z-popover);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) var(--ease-out);
 }
 
 .ygg-component-modal.open {
@@ -3342,23 +3346,24 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 
 .ygg-component-modal .ygg-modal-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.1);
+  top: var(--space-md);
+  right: var(--space-md);
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  background: var(--color-bg-hover);
   border: none;
-  border-radius: 50%;
-  color: #888;
-  font-size: 20px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xl);
   cursor: pointer;
-  transition: all 0.2s;
-  z-index: 10;
+  transition: var(--transition-colors), var(--transition-transform);
+  z-index: var(--z-elevated);
 }
 
 .ygg-component-modal .ygg-modal-close:hover {
-  background: rgba(255, 100, 100, 0.2);
-  color: #ff6666;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  transform: scale(1.05);
 }
 
 /* Component Modal Header */
@@ -3796,23 +3801,23 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 /* Notification Toast */
-.ygg-notification {
+.ygg-notification-toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 10002;
-  padding: 16px 24px;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: var(--z-toast);
+  padding: var(--space-md) var(--space-lg);
   background: rgba(20, 25, 40, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   transform: translateY(100px);
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: var(--transition-all);
 }
 
 .ygg-notification.show {
