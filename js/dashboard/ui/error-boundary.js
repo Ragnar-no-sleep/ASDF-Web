@@ -1,6 +1,8 @@
 /**
  * Yggdrasil Builder's Cosmos - Error Boundary
  * Graceful error handling and fallback UI
+ *
+ * Styles are in css/yggdrasil-unified.css (.cosmos-error)
  */
 
 'use strict';
@@ -84,7 +86,7 @@ export const ErrorBoundary = {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       return !!gl;
-    } catch (e) {
+    } catch {
       return false;
     }
   },
@@ -139,7 +141,7 @@ export const ErrorBoundary = {
 
     const config = ERROR_MESSAGES[type] || ERROR_MESSAGES[ErrorType.UNKNOWN];
 
-    // Create error element
+    // Create error element with CSS classes (styles in yggdrasil-unified.css)
     this.errorElement = document.createElement('div');
     this.errorElement.className = 'cosmos-error';
     this.errorElement.innerHTML = `
@@ -168,131 +170,12 @@ export const ErrorBoundary = {
       </div>
     `;
 
-    // Apply styles
-    this.applyStyles();
-
     // Add to container or body
     if (this.container) {
       this.container.innerHTML = '';
       this.container.appendChild(this.errorElement);
     } else {
       document.body.appendChild(this.errorElement);
-    }
-  },
-
-  /**
-   * Apply error UI styles
-   */
-  applyStyles() {
-    if (!this.errorElement) return;
-
-    Object.assign(this.errorElement.style, {
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #020812 0%, #0a1628 100%)',
-      zIndex: '10000',
-      fontFamily: "'Inter', -apple-system, sans-serif",
-    });
-
-    const content = this.errorElement.querySelector('.error-content');
-    if (content) {
-      Object.assign(content.style, {
-        textAlign: 'center',
-        maxWidth: '400px',
-        padding: '40px',
-        color: '#e0e0e0',
-      });
-    }
-
-    const icon = this.errorElement.querySelector('.error-icon');
-    if (icon) {
-      Object.assign(icon.style, {
-        color: '#ff4444',
-        marginBottom: '24px',
-      });
-    }
-
-    const title = this.errorElement.querySelector('.error-title');
-    if (title) {
-      Object.assign(title.style, {
-        margin: '0 0 12px',
-        fontSize: '24px',
-        fontWeight: '700',
-        color: '#fff',
-      });
-    }
-
-    const message = this.errorElement.querySelector('.error-message');
-    if (message) {
-      Object.assign(message.style, {
-        margin: '0 0 8px',
-        fontSize: '14px',
-        color: '#aaa',
-        lineHeight: '1.6',
-      });
-    }
-
-    const suggestion = this.errorElement.querySelector('.error-suggestion');
-    if (suggestion) {
-      Object.assign(suggestion.style, {
-        margin: '0 0 24px',
-        fontSize: '13px',
-        color: '#666',
-      });
-    }
-
-    const details = this.errorElement.querySelector('.error-details');
-    if (details) {
-      Object.assign(details.style, {
-        marginBottom: '24px',
-        textAlign: 'left',
-        fontSize: '12px',
-        color: '#666',
-      });
-
-      const pre = details.querySelector('pre');
-      if (pre) {
-        Object.assign(pre.style, {
-          marginTop: '8px',
-          padding: '12px',
-          background: 'rgba(255, 0, 0, 0.1)',
-          borderRadius: '8px',
-          overflow: 'auto',
-          maxHeight: '100px',
-          fontSize: '11px',
-          color: '#ff6666',
-        });
-      }
-    }
-
-    const button = this.errorElement.querySelector('.error-retry');
-    if (button) {
-      Object.assign(button.style, {
-        padding: '12px 24px',
-        background: 'linear-gradient(135deg, #ff4444, #ff6644)',
-        border: 'none',
-        borderRadius: '8px',
-        color: '#fff',
-        fontSize: '14px',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-      });
-
-      button.addEventListener('mouseenter', () => {
-        button.style.transform = 'translateY(-2px)';
-        button.style.boxShadow = '0 4px 20px rgba(255, 68, 68, 0.4)';
-      });
-      button.addEventListener('mouseleave', () => {
-        button.style.transform = 'translateY(0)';
-        button.style.boxShadow = 'none';
-      });
     }
   },
 
