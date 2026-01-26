@@ -4,6 +4,8 @@
    "Don't trust. Verify. This is fine." 🔥
    ============================================ */
 
+@import url('./design-tokens.css');
+
 :root {
   /* === PHI SYSTEM === */
   --phi: 1.618033988749895;
@@ -73,8 +75,8 @@
   color: var(--bg-void);
   font-weight: 600;
   border-radius: 8px;
-  z-index: 10000;
-  transition: top 0.2s var(--ease-out);
+  z-index: var(--z-max);
+  transition: top var(--duration-fast) var(--ease-out);
 }
 
 .skip-link:focus {
@@ -1128,7 +1130,9 @@ body.hub-majestic {
   color: var(--text-muted);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  transition:
+    opacity 0.5s var(--ease-spring),
+    transform 0.5s var(--ease-spring);
   /* Center transform origin on parent's center (Tools button) */
   top: 50%;
   left: 50%;
@@ -1199,25 +1203,29 @@ body.hub-majestic {
     transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
   }
   12.5% {
-    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * 0.707))
+      translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   25% {
     transform: translateX(0) translateY(calc(var(--orbit-radius) * -0.618)) scale(0.9);
   }
   37.5% {
-    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * -0.707))
+      translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   50% {
     transform: translateX(calc(var(--orbit-radius) * -1)) translateY(0) scale(1);
   }
   62.5% {
-    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * -0.707))
+      translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   75% {
     transform: translateX(0) translateY(calc(var(--orbit-radius) * 0.618)) scale(0.9);
   }
   87.5% {
-    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * 0.707))
+      translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   100% {
     transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
@@ -1250,13 +1258,13 @@ body.hub-majestic {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   color: var(--text-ghost);
-  z-index: 100;
+  z-index: var(--z-overlay);
 }
 
 .hub-footer a {
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--duration-fast);
 }
 
 .hub-footer a:hover {
