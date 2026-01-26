@@ -9,6 +9,7 @@
 
 import { BuildState } from '../state.js';
 import { addClass, removeClass, setStyles } from '../utils/dom.js';
+import { INTERVAL, GAMIFICATION } from '../config/timing.js';
 
 // ============================================
 // PHI CONSTANTS
@@ -302,7 +303,7 @@ const StreakCounter = {
     countdownInterval = setInterval(() => {
       this.checkStreak();
       this.update();
-    }, 60000); // Update every minute
+    }, INTERVAL.COUNTDOWN);
   },
 
   /**
@@ -320,7 +321,7 @@ const StreakCounter = {
       addClass(streakElement, 'streak-counter--celebrate');
       setTimeout(() => {
         removeClass(streakElement, 'streak-counter--celebrate');
-      }, 2000);
+      }, GAMIFICATION.CELEBRATION);
     }
   },
 

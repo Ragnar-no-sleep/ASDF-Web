@@ -9,6 +9,7 @@
 
 import { BuildState } from '../state.js';
 import { addClass, removeClass } from '../utils/dom.js';
+import { DURATION, NOTIFICATION } from '../config/timing.js';
 
 // ============================================
 // ONBOARDING PROGRESS COMPONENT
@@ -118,9 +119,9 @@ const OnboardingProgress = {
         setTimeout(() => {
           progressElement?.remove();
           progressElement = null;
-        }, 300);
+        }, DURATION.NORMAL);
       }
-    }, 2000);
+    }, NOTIFICATION.TOAST);
   },
 
   /**

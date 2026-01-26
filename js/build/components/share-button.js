@@ -10,6 +10,7 @@
 import { BuildState } from '../state.js';
 import { addClass, removeClass } from '../utils/dom.js';
 import { sanitizeText } from '../utils/security.js';
+import { DURATION, NOTIFICATION } from '../config/timing.js';
 
 // ============================================
 // CONFIGURATION
@@ -176,7 +177,7 @@ const ShareButton = {
 
     const closeModal = () => {
       removeClass(modal, 'share-modal--visible');
-      setTimeout(() => modal.remove(), 300);
+      setTimeout(() => modal.remove(), DURATION.NORMAL);
     };
 
     close.addEventListener('click', closeModal);
@@ -297,8 +298,8 @@ const ShareButton = {
 
     setTimeout(() => {
       removeClass(toast, 'share-toast--visible');
-      setTimeout(() => toast.remove(), 300);
-    }, 2000);
+      setTimeout(() => toast.remove(), DURATION.NORMAL);
+    }, NOTIFICATION.TOAST);
   },
 
   /**

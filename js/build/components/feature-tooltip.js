@@ -10,6 +10,7 @@
 import { BuildState } from '../state.js';
 import { $, on, addClass, removeClass, setStyles } from '../utils/dom.js';
 import { sanitizeText } from '../utils/security.js';
+import { DURATION, NOTIFICATION } from '../config/timing.js';
 
 // ============================================
 // FEATURE TOOLTIPS CONFIGURATION
@@ -30,7 +31,7 @@ const FEATURE_TOOLTIPS = {
     description: 'Take the quiz to discover your ideal builder track.',
     position: 'bottom',
     trigger: 'intro:complete',
-    delay: 2000,
+    delay: NOTIFICATION.TOAST,
   },
   'formation-panel': {
     target: '.formation-panel',
@@ -266,7 +267,7 @@ const FeatureTooltip = {
       element.remove();
       activeTooltip = null;
       this.processQueue();
-    }, 200);
+    }, DURATION.FAST);
   },
 
   /**

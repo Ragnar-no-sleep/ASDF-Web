@@ -8,6 +8,7 @@
 'use strict';
 
 import { BuildState } from '../state.js';
+import { DURATION, GAMIFICATION } from '../config/timing.js';
 
 // ============================================
 // XP FLY-UP COMPONENT
@@ -49,7 +50,7 @@ const XPFlyup = {
         if (bonusPercent > 0) {
           setTimeout(() => {
             this.showBonus(`+${bonusPercent}% streak bonus!`);
-          }, 500);
+          }, GAMIFICATION.BONUS_DELAY);
         }
       }
     });
@@ -99,7 +100,7 @@ const XPFlyup = {
     // Remove after animation
     setTimeout(() => {
       el.remove();
-    }, 1500);
+    }, GAMIFICATION.XP_FLYUP);
   },
 
   /**
@@ -124,7 +125,7 @@ const XPFlyup = {
 
     setTimeout(() => {
       el.remove();
-    }, 1500);
+    }, GAMIFICATION.XP_FLYUP);
   },
 
   /**
@@ -144,7 +145,7 @@ const XPFlyup = {
 
     setTimeout(() => {
       el.remove();
-    }, 2000);
+    }, GAMIFICATION.LEVEL_UP);
   },
 
   /**

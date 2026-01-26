@@ -35,6 +35,7 @@ import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
 import { escapeHtml, sanitizeHtml, safeInnerHTML, safeTextContent } from './utils/security.js';
 import { $, $$, on, delegate } from './utils/dom.js';
+import { DURATION, DELAY } from './config/timing.js';
 
 // ============================================
 // BUILD V2 APPLICATION
@@ -208,12 +209,12 @@ const BuildApp = {
    */
   _hideLoading(el) {
     if (!el) return;
-    el.style.transition = 'opacity 0.3s ease';
+    el.style.transition = `opacity ${DURATION.NORMAL}ms ease`;
     el.style.opacity = '0';
     el.setAttribute('aria-busy', 'false');
     setTimeout(() => {
       el.style.display = 'none';
-    }, 300);
+    }, DURATION.NORMAL);
   },
 
   /**
@@ -364,7 +365,7 @@ const BuildApp = {
           width: window.innerWidth,
           height: window.innerHeight,
         });
-      }, 150);
+      }, DELAY.DEBOUNCE);
     });
 
     // Visibility change
