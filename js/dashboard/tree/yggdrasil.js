@@ -872,6 +872,47 @@ export const Yggdrasil = {
   },
 
   /**
+   * Pulse island on click - quick feedback animation
+   */
+  pulseIsland(island) {
+    const startScale = island.scale.x;
+    const pulseScale = 1.4;
+    const duration = 200; // ms
+    const startTime = performance.now();
+
+    // Flash emissive
+    if (island.userData.rockMaterial) {
+      island.userData.rockMaterial.emissiveIntensity = 1.0;
+    }
+    if (island.userData.ringMaterial) {
+      island.userData.ringMaterial.opacity = 1.0;
+    }
+
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const t = Math.min(elapsed / duration, 1);
+
+      // Scale: pulse up then back to hover state
+      if (t < 0.5) {
+        const upT = t * 2;
+        island.scale.setScalar(startScale + (pulseScale - startScale) * upT);
+      } else {
+        const downT = (t - 0.5) * 2;
+        island.scale.setScalar(pulseScale - (pulseScale - 1.2) * downT); // Settle at 1.2 (hover)
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Settle at hover state (camera is transitioning)
+        island.scale.setScalar(1.2);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  },
+
+  /**
    * Handle click - raycast at click time for mobile + accuracy
    */
   onClick(_event) {
@@ -916,6 +957,9 @@ export const Yggdrasil = {
     if (clickedIsland) {
       const project = clickedIsland.userData.project;
       const islandPosition = clickedIsland.position.clone();
+
+      // Click feedback - quick pulse animation
+      this.pulseIsland(clickedIsland);
 
       // Zoom to island
       this.cameraController.focusOn(islandPosition, 'project');
