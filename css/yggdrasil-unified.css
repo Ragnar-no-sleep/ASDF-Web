@@ -60,7 +60,7 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 /* ============================================
-   LOADING STATE
+   LOADING STATE - Branded Fire Animation
    ============================================ */
 .ygg-loading {
   position: absolute;
@@ -75,6 +75,7 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   background: var(--ygg-bg);
   z-index: var(--z-overlay);
   transition: opacity var(--duration-slower) var(--ease-out);
+  overflow: hidden;
 }
 
 .ygg-loading.fade-out {
@@ -83,54 +84,181 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   visibility: hidden;
 }
 
-.ygg-loading-icon {
-  font-size: 64px;
-  margin-bottom: 24px;
-  animation: pulse 2s ease-in-out infinite;
+/* Fire emblem with glow */
+.ygg-loading-emblem {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--space-xl);
 }
 
-@keyframes pulse {
+.ygg-loading-fire {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  animation: fire-pulse 1.618s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px var(--color-fire-glow));
+}
+
+.ygg-loading-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--color-fire);
+  border-radius: var(--radius-full);
+  opacity: 0.3;
+  animation: ring-expand 2.618s ease-out infinite;
+}
+
+.ygg-loading-ring:nth-child(2) {
+  animation-delay: 0.618s;
+}
+
+.ygg-loading-ring:nth-child(3) {
+  animation-delay: 1.236s;
+}
+
+@keyframes fire-pulse {
   0%,
   100% {
-    transform: scale(1);
-    filter: brightness(1);
+    transform: scale(1) translateY(0);
+    filter: drop-shadow(0 0 20px var(--color-fire-glow)) brightness(1);
   }
   50% {
-    transform: scale(1.1);
-    filter: brightness(1.3);
+    transform: scale(1.08) translateY(-4px);
+    filter: drop-shadow(0 0 30px var(--color-fire-glow)) brightness(1.2);
   }
 }
 
-.ygg-loading-text {
-  font-size: 14px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 24px;
+@keyframes ring-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
 }
 
+/* Particles rising */
+.ygg-loading-particles {
+  position: absolute;
+  bottom: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+}
+
+.ygg-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--color-fire);
+  border-radius: var(--radius-full);
+  animation: particle-rise 2s ease-out infinite;
+  opacity: 0;
+}
+
+.ygg-particle:nth-child(1) {
+  left: 20%;
+  animation-delay: 0s;
+}
+.ygg-particle:nth-child(2) {
+  left: 35%;
+  animation-delay: 0.3s;
+}
+.ygg-particle:nth-child(3) {
+  left: 50%;
+  animation-delay: 0.1s;
+}
+.ygg-particle:nth-child(4) {
+  left: 65%;
+  animation-delay: 0.5s;
+}
+.ygg-particle:nth-child(5) {
+  left: 80%;
+  animation-delay: 0.2s;
+}
+.ygg-particle:nth-child(6) {
+  left: 25%;
+  animation-delay: 0.7s;
+}
+.ygg-particle:nth-child(7) {
+  left: 55%;
+  animation-delay: 0.4s;
+}
+.ygg-particle:nth-child(8) {
+  left: 75%;
+  animation-delay: 0.6s;
+}
+
+@keyframes particle-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-150px) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Loading text */
+.ygg-loading-text {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
+/* Progress bar */
 .ygg-loading-bar {
   width: 200px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1px;
+  height: 3px;
+  background: var(--color-bg-hover);
+  border-radius: var(--radius-sm);
   overflow: hidden;
+  position: relative;
 }
 
 .ygg-loading-bar-inner {
-  width: 30%;
   height: 100%;
-  background: linear-gradient(90deg, var(--ygg-fire), #ff8800);
-  animation: loading 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--color-fire), var(--color-fire-light));
+  border-radius: var(--radius-sm);
+  animation: loading-sweep 1.618s var(--ease-in-out) infinite;
+  box-shadow: 0 0 10px var(--color-fire-glow);
 }
 
-@keyframes loading {
+@keyframes loading-sweep {
   0% {
-    transform: translateX(-100%);
+    width: 0%;
+    margin-left: 0%;
+  }
+  50% {
+    width: 40%;
+    margin-left: 30%;
   }
   100% {
-    transform: translateX(400%);
+    width: 0%;
+    margin-left: 100%;
   }
+}
+
+/* Legacy icon support (fallback) */
+.ygg-loading-icon {
+  font-size: 64px;
+  margin-bottom: var(--space-lg);
+  animation: fire-pulse 1.618s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px var(--color-fire-glow));
 }
 
 /* ============================================

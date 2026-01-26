@@ -1338,18 +1338,33 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Show loading overlay
+   * Show loading overlay with branded fire animation
    */
   showLoading() {
     this.loadingEl = document.createElement('div');
     this.loadingEl.className = 'ygg-loading';
     this.loadingEl.innerHTML = `
-            <div class="ygg-loading-icon">🔥</div>
-            <div class="ygg-loading-text">Igniting Yggdrasil</div>
-            <div class="ygg-loading-bar">
-                <div class="ygg-loading-bar-inner"></div>
-            </div>
-        `;
+      <div class="ygg-loading-emblem">
+        <div class="ygg-loading-ring"></div>
+        <div class="ygg-loading-ring"></div>
+        <div class="ygg-loading-ring"></div>
+        <div class="ygg-loading-fire">🔥</div>
+      </div>
+      <div class="ygg-loading-particles">
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+        <div class="ygg-particle"></div>
+      </div>
+      <div class="ygg-loading-text">Igniting Yggdrasil</div>
+      <div class="ygg-loading-bar">
+        <div class="ygg-loading-bar-inner"></div>
+      </div>
+    `;
     this.container.appendChild(this.loadingEl);
   },
 
