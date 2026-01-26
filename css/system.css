@@ -1603,6 +1603,181 @@ h6 {
 }
 
 /* ============================================
+   STREAK COUNTER - Daily Habit Tracking
+   ============================================ */
+
+.streak-counter {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--glass-bg, rgba(0, 0, 0, 0.7));
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-sticky);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.streak-counter--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.streak-counter__fire {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.streak-counter__main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.streak-counter__number {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+}
+
+.streak-counter__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.streak-counter__bonus {
+  padding: var(--space-1) var(--space-2);
+  background: rgba(251, 146, 60, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--accent);
+}
+
+.streak-counter__warning {
+  padding: var(--space-1) var(--space-2);
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: #f59e0b;
+}
+
+.streak-counter--warning {
+  border-color: rgba(245, 158, 11, 0.5);
+  animation: streak-pulse 2s ease-in-out infinite;
+}
+
+.streak-counter--milestone {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+}
+
+.streak-counter--celebrate {
+  animation: streak-celebrate 0.6s ease-out;
+}
+
+@keyframes streak-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes streak-celebrate {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   XP FLY-UP ANIMATION
+   ============================================ */
+
+.xp-flyup {
+  position: fixed;
+  pointer-events: none;
+  z-index: var(--z-toast);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+  animation: xp-fly 1.5s ease-out forwards;
+}
+
+.xp-flyup--bonus {
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.xp-flyup--levelup {
+  font-size: var(--text-2xl);
+  color: #8b5cf6;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  animation: xp-levelup 2s ease-out forwards;
+}
+
+@keyframes xp-fly {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(0.8);
+  }
+}
+
+@keyframes xp-levelup {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.2);
+  }
+  40% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.9);
+  }
+}
+
+/* ============================================
    REDUCED MOTION
    ============================================ */
 

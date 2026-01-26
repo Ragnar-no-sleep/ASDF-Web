@@ -27,6 +27,8 @@ import { SkillTreeView } from './components/skill-tree-view.js';
 import { GitHubTimeline } from './components/github-timeline.js';
 import { FeatureTooltip } from './components/feature-tooltip.js';
 import { OnboardingProgress } from './components/onboarding-progress.js';
+import { StreakCounter } from './components/streak-counter.js';
+import { XPFlyup } from './components/xp-flyup.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
@@ -67,6 +69,8 @@ const BuildApp = {
     githubTimeline: GitHubTimeline,
     featureTooltip: FeatureTooltip,
     onboardingProgress: OnboardingProgress,
+    streakCounter: StreakCounter,
+    xpFlyup: XPFlyup,
     renderer: RendererFactory,
     animations: Animations,
     handlers: EventHandlers,
@@ -149,9 +153,11 @@ const BuildApp = {
       // 10. Initialize event handlers
       EventHandlers.init();
 
-      // 11. Initialize FTUE components
+      // 11. Initialize FTUE and Habit Loop components
       FeatureTooltip.init();
       OnboardingProgress.init();
+      StreakCounter.init();
+      XPFlyup.init();
 
       // 12. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
