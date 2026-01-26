@@ -6007,7 +6007,7 @@ body {
 .intro-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-max);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;

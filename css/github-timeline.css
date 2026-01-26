@@ -3,6 +3,8 @@
  * Commit history and contributor activity display
  */
 
+@import url('./design-tokens.css');
+
 /* ============================================
    TIMELINE CONTAINER
    ============================================ */

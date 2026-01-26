@@ -6,6 +6,8 @@
    Shared across: learn, tools, build, play, games, faq/glossary
    ============================================ */
 
+@import url('./design-tokens.css');
+
 /* Ensure body has proper setup for the background */
 html {
   background: #020812 !important;
