@@ -1074,31 +1074,70 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 /* ============================================
-   CTA HINT
+   CTA HINT - First-time visitor onboarding
    ============================================ */
 .ygg-cta-hint {
   position: fixed;
   bottom: 100px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(20px);
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--color-fire);
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   z-index: var(--z-sticky);
-  animation: float 3s ease-in-out infinite;
   pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+  box-shadow:
+    0 0 20px var(--color-fire-glow),
+    var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
-@keyframes float {
+.ygg-cta-hint.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: cta-float 3s ease-in-out infinite;
+}
+
+.ygg-cta-hint.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+}
+
+.ygg-cta-hint .cta-icon {
+  font-size: var(--text-xl);
+  animation: cta-bounce 1s ease-in-out infinite;
+}
+
+.ygg-cta-hint .cta-text {
+  font-weight: var(--font-medium);
+}
+
+@keyframes cta-float {
   0%,
   100% {
     transform: translateX(-50%) translateY(0);
   }
   50% {
     transform: translateX(-50%) translateY(-8px);
+  }
+}
+
+@keyframes cta-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
   }
 }
 

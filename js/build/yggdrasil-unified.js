@@ -2950,26 +2950,54 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Show CTA hint
+   * Show CTA hint for first-time visitors only
    */
   showCTAHint() {
+    // Check if user has already interacted (returning visitor)
+    const hasSeenHint = localStorage.getItem('ygg_cta_seen');
+    if (hasSeenHint) return;
+
     this.ctaHint = document.createElement('div');
     this.ctaHint.className = 'ygg-cta-hint';
-    this.ctaHint.textContent = '👆 Click an island to explore';
+    this.ctaHint.innerHTML = `
+      <span class="cta-icon">👆</span>
+      <span class="cta-text">Click an island to explore</span>
+    `;
     document.body.appendChild(this.ctaHint);
 
-    // Hide on first click
+    // Show after brief delay for loading to finish
+    setTimeout(() => {
+      if (this.ctaHint) {
+        this.ctaHint.classList.add('visible');
+      }
+    }, 1000);
+
+    // Hide on first click and remember
     this.container.addEventListener(
       'click',
       () => {
         if (this.ctaHint) {
-          this.ctaHint.style.opacity = '0';
+          this.ctaHint.classList.remove('visible');
+          this.ctaHint.classList.add('hidden');
           setTimeout(() => this.ctaHint?.remove(), 300);
           this.ctaHint = null;
+          // Remember user has interacted
+          localStorage.setItem('ygg_cta_seen', 'true');
         }
       },
       { once: true }
     );
+
+    // Auto-hide after 10 seconds if not clicked
+    setTimeout(() => {
+      if (this.ctaHint) {
+        this.ctaHint.classList.remove('visible');
+        this.ctaHint.classList.add('hidden');
+        setTimeout(() => this.ctaHint?.remove(), 300);
+        this.ctaHint = null;
+        localStorage.setItem('ygg_cta_seen', 'true');
+      }
+    }, 10000);
   },
 
   /**
