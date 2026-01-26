@@ -709,6 +709,24 @@ export const Yggdrasil = {
     window.addEventListener('resize', () => this.onResize());
     this.renderer.domElement.addEventListener('mousemove', e => this.onMouseMove(e));
     this.renderer.domElement.addEventListener('click', e => this.onClick(e));
+
+    // Touch support for mobile - tap to click islands
+    this.renderer.domElement.addEventListener(
+      'touchend',
+      e => {
+        // Only handle single-finger tap (not pinch/pan end)
+        if (e.changedTouches.length === 1) {
+          const touch = e.changedTouches[0];
+          // Update mouse position from touch
+          const rect = this.renderer.domElement.getBoundingClientRect();
+          this.mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+          this.mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+          // Trigger click handler
+          this.onClick(e);
+        }
+      },
+      { passive: true }
+    );
   },
 
   /**
@@ -854,9 +872,9 @@ export const Yggdrasil = {
   },
 
   /**
-   * Handle click
+   * Handle click - raycast at click time for mobile + accuracy
    */
-  onClick(event) {
+  onClick(_event) {
     // Check skill click first (when in project view)
     if (this.currentView === VIEWS.PROJECT_TREE && this.skillNodes.isVisible) {
       const skill = this.skillNodes.handleClick();
@@ -868,30 +886,52 @@ export const Yggdrasil = {
       }
     }
 
-    if (this.hoveredIsland) {
-      const project = this.hoveredIsland.userData.project;
-      const islandPosition = this.hoveredIsland.position.clone();
+    // Raycast at click time (fixes mobile where hover never fires)
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(
+      [...this.islandsGroup.children, this.burnCore],
+      true
+    );
+
+    // Find clicked island or burn core
+    let clickedIsland = null;
+    let clickedBurnCore = false;
+
+    if (intersects.length > 0) {
+      const hit = intersects[0].object;
+      let obj = hit;
+      while (obj) {
+        if (obj.userData?.type === 'island') {
+          clickedIsland = obj;
+          break;
+        }
+        if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
+          clickedBurnCore = true;
+          break;
+        }
+        obj = obj.parent;
+      }
+    }
+
+    if (clickedIsland) {
+      const project = clickedIsland.userData.project;
+      const islandPosition = clickedIsland.position.clone();
 
       // Zoom to island
       this.cameraController.focusOn(islandPosition, 'project');
       this.currentView = VIEWS.PROJECT_TREE;
 
-      // Show skills after a delay for camera transition
+      // Show skills after camera transition (reduced delay for responsiveness)
       setTimeout(() => {
         this.skillNodes.showForProject(project, islandPosition);
-      }, 800);
+      }, 500);
 
       if (this.callbacks.onIslandClick) {
         this.callbacks.onIslandClick(project);
       }
-    } else {
-      // Check burn core click (recursive for flame layers)
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObject(this.burnCore, true);
-      if (intersects.length > 0) {
-        if (this.callbacks.onBurnCoreClick) {
-          this.callbacks.onBurnCoreClick();
-        }
+    } else if (clickedBurnCore) {
+      if (this.callbacks.onBurnCoreClick) {
+        this.callbacks.onBurnCoreClick();
       }
     }
   },
