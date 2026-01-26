@@ -90,11 +90,37 @@ const RendererFactory = {
       }
     }
 
-    // Initialize the chosen renderer
-    await this.current.init(container, {
+    // Initialize the chosen renderer with timeout protection
+    const INIT_TIMEOUT = this.type === 'three' ? 8000 : 3000; // 8s for Three.js, 3s for SVG
+    const initPromise = this.current.init(container, {
       ...options,
       capabilities: this.capabilities,
     });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`Renderer init timed out after ${INIT_TIMEOUT}ms`)),
+        INIT_TIMEOUT
+      );
+    });
+
+    try {
+      await Promise.race([initPromise, timeoutPromise]);
+    } catch (err) {
+      // If Three.js times out, fallback to SVG
+      if (this.type === 'three') {
+        console.warn('[RendererFactory] Three.js timed out, falling back to SVG');
+        this.type = 'svg';
+        const { SVGRenderer } = await import('./svg-renderer.js');
+        this.current = SVGRenderer;
+        await this.current.init(container, {
+          ...options,
+          capabilities: this.capabilities,
+        });
+      } else {
+        throw err;
+      }
+    }
 
     // Emit event
     BuildState.emit('renderer:ready', {

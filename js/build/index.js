@@ -25,6 +25,8 @@ import { FormationPanel } from './components/formation-panel.js';
 import { BuilderProfile } from './components/builder-profile.js';
 import { SkillTreeView } from './components/skill-tree-view.js';
 import { GitHubTimeline } from './components/github-timeline.js';
+import { FeatureTooltip } from './components/feature-tooltip.js';
+import { OnboardingProgress } from './components/onboarding-progress.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
@@ -63,6 +65,8 @@ const BuildApp = {
     builderProfile: BuilderProfile,
     skillTreeView: SkillTreeView,
     githubTimeline: GitHubTimeline,
+    featureTooltip: FeatureTooltip,
+    onboardingProgress: OnboardingProgress,
     renderer: RendererFactory,
     animations: Animations,
     handlers: EventHandlers,
@@ -79,12 +83,14 @@ const BuildApp = {
     }
 
     console.log('[BuildApp] Initializing v' + this.version);
+    const loadingEl = $('#app-loading');
 
     try {
       // 1. Initialize state management
       BuildState.init();
 
       // 2. Pre-load data
+      this._updateLoadingText(loadingEl, 'Loading project data...');
       await DataAdapter.getProjects();
       console.log('[BuildApp] Data loaded');
 
@@ -107,6 +113,7 @@ const BuildApp = {
       );
       if (treeContainer && options.enableRenderer !== false) {
         try {
+          this._updateLoadingText(loadingEl, 'Rendering Yggdrasil cosmos...');
           await RendererFactory.init(treeContainer, {
             mobileThree: options.mobileThree || false,
           });
@@ -142,25 +149,84 @@ const BuildApp = {
       // 10. Initialize event handlers
       EventHandlers.init();
 
-      // 11. Show intro if first visit (or skip if option set)
+      // 11. Initialize FTUE components
+      FeatureTooltip.init();
+      OnboardingProgress.init();
+
+      // 12. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
         IntroComponent.init('#intro-container');
       }
 
-      // 12. Set up global listeners
+      // 14. Set up global listeners
       this.setupGlobalListeners();
 
-      // 13. Mark as initialized
+      // 15. Mark as initialized
       this.initialized = true;
 
       // Emit ready event
       BuildState.emit('app:ready', { version: this.version });
 
+      // Hide loading overlay with fade
+      this._hideLoading(loadingEl);
+
       console.log('[BuildApp] Initialization complete');
     } catch (error) {
       console.error('[BuildApp] Initialization failed:', error);
+      this._showLoadingError(loadingEl, error);
       throw error;
     }
+  },
+
+  /**
+   * Update loading text
+   * @param {HTMLElement} el - Loading overlay element
+   * @param {string} text - New text to display
+   * @private
+   */
+  _updateLoadingText(el, text) {
+    if (!el) return;
+    const textEl = el.querySelector('.loading-text');
+    if (textEl) {
+      safeTextContent(textEl, text);
+    }
+  },
+
+  /**
+   * Hide loading overlay with animation
+   * @param {HTMLElement} el - Loading overlay element
+   * @private
+   */
+  _hideLoading(el) {
+    if (!el) return;
+    el.style.transition = 'opacity 0.3s ease';
+    el.style.opacity = '0';
+    el.setAttribute('aria-busy', 'false');
+    setTimeout(() => {
+      el.style.display = 'none';
+    }, 300);
+  },
+
+  /**
+   * Show error state in loading overlay
+   * @param {HTMLElement} el - Loading overlay element
+   * @param {Error} error - The error that occurred
+   * @private
+   */
+  _showLoadingError(el, error) {
+    if (!el) return;
+    el.setAttribute('aria-busy', 'false');
+    safeInnerHTML(
+      el,
+      `<div class="error-state">
+        <div class="error-icon">&#9888;</div>
+        <p class="error-title">Failed to load Yggdrasil</p>
+        <p class="error-message">${escapeHtml(error.message || 'Unknown error')}</p>
+        <button class="btn-retry" onclick="location.reload()">
+          <span>&#8635;</span> Retry
+        </button>
+      </div>`
+    );
   },
 
   /**

@@ -82,6 +82,12 @@
          YGGDRASIL COSMOS - Full Screen Immersive
          ============================================ -->
     <main class="yggdrasil-cosmos" id="yggdrasil-cosmos">
+        <!-- Loading Overlay - shown during initialization -->
+        <div id="app-loading" class="loading-overlay" aria-busy="true" aria-label="Loading Yggdrasil">
+            <div class="spinner spinner-lg spinner-fire"></div>
+            <p class="loading-text">Awakening Yggdrasil...</p>
+        </div>
+
         <!-- Three.js Cosmos - populated by init script -->
 
         <!-- SVG Fallback for non-WebGL browsers -->

@@ -8,14 +8,7 @@
 
 'use strict';
 
-import {
-  STORAGE_KEY,
-  STORAGE_VERSION,
-  STATES,
-  TRANSITIONS,
-  EVENTS,
-  DEFAULTS
-} from './config.js';
+import { STORAGE_KEY, STORAGE_VERSION, STATES, TRANSITIONS, EVENTS, DEFAULTS } from './config.js';
 
 // ============================================
 // VALIDATION UTILITIES
@@ -80,7 +73,17 @@ const BuildState = {
     quizResult: null,
     introCompleted: false,
     completedProjects: [],
-    viewHistory: []
+    viewHistory: [],
+    // FTUE Onboarding milestones
+    onboarding: {
+      introSeen: false, // Watched intro to completion
+      firstProjectClick: false, // Clicked on first project
+      firstQuizComplete: false, // Completed quiz
+      firstTrackStart: false, // Started a learning track
+      firstModuleComplete: false, // Completed first module
+      exploredProjects: 0, // Number of projects explored
+      lastMilestoneAt: null, // Timestamp of last milestone
+    },
   },
 
   // Observer pattern
@@ -145,12 +148,7 @@ const BuildState = {
 
     // Check if transition is valid (or bypass with force)
     if (!payload.force && !this.canTransition(this._currentState, newState)) {
-      console.warn(
-        '[BuildState] Invalid transition:',
-        this._currentState,
-        '->',
-        newState
-      );
+      console.warn('[BuildState] Invalid transition:', this._currentState, '->', newState);
       return false;
     }
 
@@ -170,7 +168,7 @@ const BuildState = {
     this.data.viewHistory.push({
       state: newState,
       timestamp: Date.now(),
-      payload
+      payload,
     });
 
     // Limit history to last 50 entries
@@ -212,6 +210,9 @@ const BuildState = {
       return;
     }
     this.data.selectedProject = projectId;
+    // Track onboarding milestones
+    this.completeMilestone('firstProjectClick');
+    this.completeMilestone('exploredProjects');
     this.emit(EVENTS.PROJECT_SELECT, { projectId });
     this.saveToLocal();
   },
@@ -236,6 +237,8 @@ const BuildState = {
       return;
     }
     this.data.selectedTrack = trackId;
+    // Track onboarding milestone for first track
+    this.completeMilestone('firstTrackStart');
     this.emit(EVENTS.TRACK_SELECT, { trackId });
     this.saveToLocal();
   },
@@ -245,7 +248,63 @@ const BuildState = {
    */
   completeIntro() {
     this.data.introCompleted = true;
+    this.completeMilestone('introSeen');
     this.saveToLocal();
+  },
+
+  // ============================================
+  // ONBOARDING MILESTONES
+  // ============================================
+
+  /**
+   * Complete an onboarding milestone
+   * @param {string} milestone - Milestone key
+   */
+  completeMilestone(milestone) {
+    if (!this.data.onboarding) {
+      this.data.onboarding = {};
+    }
+
+    // Skip if already completed (except counters)
+    if (milestone !== 'exploredProjects' && this.data.onboarding[milestone]) {
+      return;
+    }
+
+    if (milestone === 'exploredProjects') {
+      this.data.onboarding.exploredProjects = (this.data.onboarding.exploredProjects || 0) + 1;
+    } else {
+      this.data.onboarding[milestone] = true;
+    }
+
+    this.data.onboarding.lastMilestoneAt = Date.now();
+    this.emit('onboarding:milestone', {
+      milestone,
+      onboarding: { ...this.data.onboarding },
+    });
+    this.saveToLocal();
+
+    // Check if all core milestones complete
+    this.checkOnboardingComplete();
+  },
+
+  /**
+   * Check if core onboarding is complete
+   */
+  checkOnboardingComplete() {
+    const { introSeen, firstProjectClick, firstQuizComplete } = this.data.onboarding || {};
+    if (introSeen && firstProjectClick && firstQuizComplete) {
+      this.emit('onboarding:complete', { onboarding: { ...this.data.onboarding } });
+    }
+  },
+
+  /**
+   * Get onboarding progress (0-100)
+   * @returns {number}
+   */
+  getOnboardingProgress() {
+    const milestones = ['introSeen', 'firstProjectClick', 'firstQuizComplete', 'firstTrackStart'];
+    const completed = milestones.filter(m => this.data.onboarding?.[m]).length;
+    return Math.round((completed / milestones.length) * 100);
   },
 
   /**
@@ -273,6 +332,7 @@ const BuildState = {
 
     this.data.quizResult = winner;
     this.data.selectedTrack = winner;
+    this.completeMilestone('firstQuizComplete');
     this.emit(EVENTS.QUIZ_COMPLETE, { result: winner, answers: [...this.data.quizAnswers] });
     this.saveToLocal();
 
@@ -392,9 +452,9 @@ const BuildState = {
           selectedTrack: this.data.selectedTrack,
           quizResult: this.data.quizResult,
           introCompleted: this.data.introCompleted,
-          completedProjects: this.data.completedProjects.slice(0, 100) // Limit
+          completedProjects: this.data.completedProjects.slice(0, 100), // Limit
         },
-        lastSaved: Date.now()
+        lastSaved: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
@@ -505,7 +565,7 @@ const BuildState = {
     this.loadFromLocal();
     console.log('[BuildState] Initialized', {
       state: this._currentState,
-      track: this.data.selectedTrack
+      track: this.data.selectedTrack,
     });
     this.emit('initialized', { state: this._currentState });
   },
@@ -523,11 +583,11 @@ const BuildState = {
       quizResult: null,
       introCompleted: false,
       completedProjects: [],
-      viewHistory: []
+      viewHistory: [],
     };
     this.clearLocal();
     this.emit('reset', {});
-  }
+  },
 };
 
 // Export for ES modules
