@@ -3,6 +3,8 @@
    The World Tree - Vertical Medallion Layout
    ============================================ */
 
+@import url('./design-tokens.css');
+
 :root {
   /* Fire Palette */
   --bg-void: #0a0a0f;
@@ -2246,40 +2248,40 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-lg);
 }
 
 .modal.active {
   display: flex;
 }
 
-/* Modal z-index hierarchy - doc-modal on top when opened from feature tree */
+/* Modal z-index hierarchy - use calc() for relative stacking within modal layer */
 #doc-modal {
-  z-index: 1000;
+  z-index: var(--z-modal);
 }
 #feature-modal {
-  z-index: 1010;
+  z-index: calc(var(--z-modal) + 10);
 }
 #component-modal {
-  z-index: 1020;
+  z-index: calc(var(--z-modal) + 20);
 }
 #deep-modal {
-  z-index: 1005;
+  z-index: calc(var(--z-modal) + 5);
 }
 #code-learning-modal {
-  z-index: 1025;
+  z-index: calc(var(--z-modal) + 25);
 }
 
 /* When component-modal is active, it should be on top */
 #component-modal.active {
-  z-index: 1030;
+  z-index: calc(var(--z-modal) + 30);
 }
 #code-learning-modal.active {
-  z-index: 1035;
+  z-index: calc(var(--z-modal) + 35);
 }
 
 .modal-backdrop {
@@ -6218,11 +6220,11 @@ body {
   opacity: 0;
 }
 
-/* Highlighted target element */
+/* Highlighted target element - needs to be above all modals during intro */
 .intro-highlighted {
   position: relative;
-  z-index: 10000 !important;
-  animation: introHighlightPulse 1.5s ease-in-out infinite;
+  z-index: var(--z-max) !important;
+  animation: introHighlightPulse 1.3s ease-in-out infinite; /* fib[6] * 100ms */
 }
 
 @keyframes introHighlightPulse {
@@ -6281,12 +6283,12 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: var(--z-overlay);
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
+    opacity var(--duration-normal) var(--ease-out),
+    visibility var(--duration-normal) var(--ease-out);
 }
 
 .project-panel-backdrop.active {
@@ -6303,11 +6305,11 @@ body {
   height: 100vh;
   background: linear-gradient(180deg, rgba(26, 15, 5, 0.98) 0%, rgba(15, 10, 5, 0.99) 100%);
   border-right: 2px solid var(--border-rust);
-  z-index: 1001;
+  z-index: calc(var(--z-overlay) + 1);
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--duration-normal) var(--ease-in-out);
   box-shadow: 4px 0 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -6706,12 +6708,12 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: var(--z-overlay);
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
+    opacity var(--duration-normal) var(--ease-out),
+    visibility var(--duration-normal) var(--ease-out);
 }
 
 .factory-panel-backdrop.active {
@@ -6728,11 +6730,11 @@ body {
   height: 100vh;
   background: linear-gradient(180deg, rgba(15, 20, 30, 0.98) 0%, rgba(10, 15, 25, 0.99) 100%);
   border-left: 2px solid rgba(59, 130, 246, 0.3);
-  z-index: 1001;
+  z-index: calc(var(--z-overlay) + 1);
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--duration-normal) var(--ease-in-out);
   box-shadow: -4px 0 40px rgba(0, 0, 0, 0.5);
 }
 
