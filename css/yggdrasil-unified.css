@@ -1165,24 +1165,31 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   }
 
   .ygg-burn-hud {
-    padding: 12px 24px;
-    gap: 16px;
+    padding: var(--space-sm) var(--space-lg);
+    gap: var(--space-md);
+    bottom: var(--space-md);
   }
 
   .ygg-burn-metric-value {
-    font-size: 14px;
+    font-size: var(--text-sm);
   }
 
+  /* Keep touch target accessible on mobile */
   .ygg-toggle-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    font-size: var(--text-base);
   }
 
   .ygg-modal-content {
     width: 95vw;
     max-height: 90vh;
     margin: 5vh auto;
+  }
+
+  /* CTA hint moves up on mobile to avoid HUD overlap */
+  .ygg-cta-hint {
+    bottom: 140px;
   }
 }
 
@@ -3464,6 +3471,34 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
   line-height: 1.4;
+}
+
+/* Filter legend mobile */
+@media (max-width: 768px) {
+  .ygg-filter-legend {
+    bottom: auto;
+    top: var(--space-md);
+    left: var(--space-md);
+    max-width: 160px;
+    min-width: auto;
+  }
+
+  .ygg-filter-legend:not(.collapsed) {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .ygg-legend-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .legend-title {
+    font-size: var(--text-xs);
+  }
+
+  .ygg-legend-content {
+    padding: var(--space-sm);
+  }
 }
 
 /* ============================================
