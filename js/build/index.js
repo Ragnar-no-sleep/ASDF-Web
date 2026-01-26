@@ -29,6 +29,7 @@ import { FeatureTooltip } from './components/feature-tooltip.js';
 import { OnboardingProgress } from './components/onboarding-progress.js';
 import { StreakCounter } from './components/streak-counter.js';
 import { XPFlyup } from './components/xp-flyup.js';
+import { ShareButton } from './components/share-button.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
@@ -71,6 +72,7 @@ const BuildApp = {
     onboardingProgress: OnboardingProgress,
     streakCounter: StreakCounter,
     xpFlyup: XPFlyup,
+    shareButton: ShareButton,
     renderer: RendererFactory,
     animations: Animations,
     handlers: EventHandlers,
@@ -158,6 +160,7 @@ const BuildApp = {
       OnboardingProgress.init();
       StreakCounter.init();
       XPFlyup.init();
+      ShareButton.init();
 
       // 12. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
