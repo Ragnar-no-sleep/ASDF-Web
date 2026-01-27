@@ -31,7 +31,7 @@
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
   /* Timing */
-  --transition: 0.3s ease;
+  --transition: var(--duration-normal) ease;
 }
 
 /* ============================================
@@ -395,7 +395,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
-  padding: 40px 50px;
+  padding: var(--space-2xl) var(--space-3xl);
 }
 
 /* ============================================
@@ -404,7 +404,7 @@
 .arcade-cards {
   display: grid;
   grid-template-columns: repeat(2, 240px);
-  gap: 20px;
+  gap: var(--space-lg);
 }
 
 @media (max-width: 600px) {
@@ -420,11 +420,11 @@
   position: relative;
   background: rgba(10, 10, 20, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 35px 30px;
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl) var(--space-xl);
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all var(--duration-normal) cubic-bezier(0.25, 0.46, 0.45, 0.94);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -451,7 +451,7 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) ease;
 }
 
 .arcade-card:hover {
@@ -481,22 +481,22 @@
 /* Card icon */
 .arcade-card-icon {
   font-size: 3.5rem;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
   display: block;
-  transition: all 0.3s ease;
+  transition: all var(--duration-normal) ease;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Card title - Neo Arcade Font */
 .arcade-card-title {
   font-family: var(--font-arcade);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: #888;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  transition: all 0.3s ease;
+  letter-spacing: var(--tracking-wider);
+  transition: all var(--duration-normal) ease;
 }
 
 .arcade-card:hover .arcade-card-title {
@@ -544,14 +544,14 @@
 
 .arcade-card-status {
   font-family: var(--font-arcade);
-  font-size: 0.55rem;
+  font-size: var(--text-2xs);
   color: #555;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 10px;
-  padding: 4px 8px;
+  letter-spacing: var(--tracking-wide);
+  margin-top: var(--space-sm);
+  padding: var(--space-2xs) var(--space-xs);
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   display: inline-block;
 }
 
@@ -578,11 +578,11 @@
 .arcade-page .nav-logo-text {
   font-family: var(--font-arcade);
   color: var(--neon-cyan);
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
   text-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
-  transition: all 0.3s ease;
+  transition: all var(--duration-normal) ease;
 }
 
 .arcade-page .nav-logo:hover .nav-logo-text {
@@ -598,9 +598,9 @@
   background: transparent;
   border: 1px solid var(--neon-cyan);
   color: var(--neon-cyan);
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  transition: all 0.2s ease;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  transition: all var(--duration-fast) ease;
 }
 
 .arcade-page .wallet-btn:hover {
@@ -612,14 +612,14 @@
   font-family: var(--font-arcade);
   border-color: #444;
   color: #555;
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
 }
 
 .arcade-page .visitor-badge {
   font-family: var(--font-arcade);
   border-color: #333;
   color: #555;
-  font-size: 0.65rem;
+  font-size: var(--text-2xs);
 }
 
 /* ============================================
@@ -676,11 +676,11 @@
    ============================================ */
 @media (max-width: 600px) {
   .arcade-hub {
-    padding: 20px;
+    padding: var(--space-lg);
   }
 
   .arcade-card {
-    padding: 25px 20px;
+    padding: var(--space-xl) var(--space-lg);
   }
 
   .arcade-card-icon {
@@ -688,7 +688,7 @@
   }
 
   .arcade-card-title {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
   }
 }
 
