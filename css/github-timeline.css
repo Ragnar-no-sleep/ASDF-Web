@@ -12,7 +12,7 @@
 .github-timeline {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: var(--space-md) var(--space-lg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.2);
 }
@@ -32,15 +32,15 @@
 .timeline-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
+  gap: var(--space-sm);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   color: #fff;
   margin: 0;
 }
 
 .timeline-icon {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .timeline-refresh {
@@ -48,11 +48,11 @@
   height: 32px;
   border: none;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: #666;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .timeline-refresh:hover {
@@ -69,8 +69,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-lg);
   color: #888;
 }
 
@@ -90,7 +90,7 @@
 }
 
 .error-icon {
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
   color: #ef4444;
 }
 
@@ -99,11 +99,11 @@
    ============================================ */
 
 .timeline-content {
-  padding: 16px 20px;
+  padding: var(--space-md) var(--space-lg);
 }
 
 .timeline-section {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .timeline-section:last-child {
@@ -111,12 +111,12 @@
 }
 
 .section-title {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 12px;
+  letter-spacing: var(--tracking-wide);
+  margin: 0 0 var(--space-md);
 }
 
 /* ============================================
@@ -130,9 +130,9 @@
 }
 
 .commit-item {
-  padding: 12px 0;
+  padding: var(--space-md) 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  animation: commitSlideIn 0.3s ease backwards;
+  animation: commitSlideIn var(--duration-normal) ease backwards;
 }
 
 @keyframes commitSlideIn {
@@ -147,15 +147,15 @@
 }
 
 .commit-sha {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-2xs);
 }
 
 .commit-sha a {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: #00d9ff;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--duration-fast);
 }
 
 .commit-sha a:hover {
@@ -163,9 +163,9 @@
 }
 
 .commit-message {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -173,8 +173,8 @@
 
 .commit-meta {
   display: flex;
-  gap: 12px;
-  font-size: 0.7rem;
+  gap: var(--space-md);
+  font-size: var(--text-xs);
   color: #666;
 }
 
@@ -189,19 +189,19 @@
 .contributors-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .contributor-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  animation: contributorFadeIn 0.3s ease backwards;
-  transition: all 0.2s;
+  border-radius: var(--radius-md);
+  animation: contributorFadeIn var(--duration-normal) ease backwards;
+  transition: all var(--duration-fast);
 }
 
 .contributor-card:hover {
@@ -219,11 +219,11 @@
 .contributor-link {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm);
   flex: 1;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .contributor-link:hover .contributor-name {
@@ -244,12 +244,12 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.05);
   color: #666;
   text-decoration: none;
-  font-size: 0.85rem;
-  transition: all 0.2s;
+  font-size: var(--text-sm);
+  transition: all var(--duration-fast);
   flex-shrink: 0;
 }
 
@@ -271,12 +271,12 @@
 }
 
 .contributor-name {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: #fff;
 }
 
 .contributor-commits {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: #666;
 }
 
@@ -287,30 +287,30 @@
 .repo-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .stat-icon {
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .stat-value {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   color: #fff;
 }
 
 .stat-label {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: #666;
 }
 
@@ -318,25 +318,25 @@
   flex: 1;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .completion-bar {
   height: 6px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 
 .completion-fill {
   height: 100%;
   background: linear-gradient(90deg, #00ff88, #00d9ff);
-  border-radius: 3px;
-  transition: width 0.5s ease;
+  border-radius: var(--radius-xs);
+  transition: width var(--duration-slow) ease;
 }
 
 .completion-label {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: #888;
   text-align: center;
 }
@@ -346,10 +346,10 @@
    ============================================ */
 
 .empty-state {
-  padding: 20px;
+  padding: var(--space-lg);
   text-align: center;
   color: #666;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 /* ============================================
