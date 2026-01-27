@@ -94,8 +94,8 @@
 }
 
 .nav-logo-text {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
   background: var(--valhalla-sunset);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -376,7 +376,7 @@
 }
 
 .hub-subtitle {
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   color: var(--valhalla-steel);
   max-width: 600px;
   margin: 0 auto;
@@ -503,7 +503,7 @@
 }
 
 .hub-card-stat-icon {
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 /* Card Arrow */
@@ -626,7 +626,7 @@
 }
 
 .valhalla-section-subtitle {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--valhalla-steel);
   max-width: 600px;
   margin: 0 auto;
@@ -1056,7 +1056,7 @@
   position: absolute;
   bottom: var(--space-xs);
   left: var(--space-xs);
-  padding: 2px var(--space-xs);
+  padding: var(--space-2xs) var(--space-xs);
   background: rgba(0, 0, 0, 0.7);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
@@ -1209,7 +1209,7 @@
   width: 120px;
   height: 6px;
   background: var(--valhalla-stone);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   appearance: none;
   cursor: pointer;
 }
