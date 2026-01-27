@@ -1441,7 +1441,7 @@ h6 {
 
 .feature-tooltip {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-toast);
   max-width: 280px;
   padding: var(--space-4);
   background: var(--surface-elevated);
@@ -1543,14 +1543,14 @@ h6 {
 }
 
 .feature-tooltip__dismiss:hover {
-  background: var(--accent-hover, #f97316);
+  background: var(--accent-hover);
 }
 
 /* Target highlight */
 .feature-tooltip-target {
   position: relative;
-  z-index: 999;
-  box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.3);
+  z-index: calc(var(--z-toast) - 1);
+  box-shadow: 0 0 0 4px var(--accent-soft);
   border-radius: var(--radius-md);
 }
 
@@ -1569,7 +1569,7 @@ h6 {
   font-size: var(--text-xs);
   color: var(--text-secondary);
   backdrop-filter: blur(8px);
-  z-index: 100;
+  z-index: var(--z-overlay);
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -1658,7 +1658,7 @@ h6 {
 
 .streak-counter__bonus {
   padding: var(--space-1) var(--space-2);
-  background: rgba(251, 146, 60, 0.2);
+  background: var(--accent-soft);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
@@ -1667,24 +1667,24 @@ h6 {
 
 .streak-counter__warning {
   padding: var(--space-1) var(--space-2);
-  background: rgba(245, 158, 11, 0.2);
+  background: var(--warning-soft);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
-  color: #f59e0b;
+  color: var(--warning);
 }
 
 .streak-counter--warning {
-  border-color: rgba(245, 158, 11, 0.5);
-  animation: streak-pulse 2s ease-in-out infinite;
+  border-color: var(--warning);
+  animation: streak-pulse var(--duration-slower) ease-in-out infinite;
 }
 
 .streak-counter--milestone {
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+  box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .streak-counter--celebrate {
-  animation: streak-celebrate 0.6s ease-out;
+  animation: streak-celebrate var(--duration-slower) ease-out;
 }
 
 @keyframes streak-pulse {
@@ -1726,19 +1726,19 @@ h6 {
   font-size: var(--text-lg);
   font-weight: var(--font-bold);
   color: var(--accent);
-  text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+  text-shadow: 0 0 10px var(--accent-glow);
   animation: xp-fly 1.5s ease-out forwards;
 }
 
 .xp-flyup--bonus {
-  color: #10b981;
-  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  color: var(--success);
+  text-shadow: 0 0 10px var(--success-soft);
 }
 
 .xp-flyup--levelup {
   font-size: var(--text-2xl);
-  color: #8b5cf6;
-  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  color: var(--info);
+  text-shadow: 0 0 20px var(--info-soft);
   animation: xp-levelup 2s ease-out forwards;
 }
 
@@ -1803,7 +1803,7 @@ h6 {
 .share-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--glass-bg, rgba(0, 0, 0, 0.7));
   backdrop-filter: blur(4px);
 }
 
