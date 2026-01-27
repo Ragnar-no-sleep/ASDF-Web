@@ -114,8 +114,14 @@ const Dashboard = {
    * Setup event callbacks
    */
   setupCallbacks() {
-    // Island hover -> tooltip
+    // Island hover -> tooltip (only in COSMOS view, not when panel is open)
     this.cosmos.on('islandHover', project => {
+      // Don't show tooltip if panel is open or in project view
+      if (this.panel.isOpen || this.cosmos.getCurrentView() !== VIEWS.COSMOS) {
+        this.tooltip.hide();
+        return;
+      }
+
       if (project) {
         const track = TRACKS[project.track];
         this.tooltip.show(
@@ -138,6 +144,9 @@ const Dashboard = {
 
     // Island click -> panel + zoom
     this.cosmos.on('islandClick', project => {
+      // Hide tooltip immediately on click (prevents tooltip persisting during zoom)
+      this.tooltip.hide();
+
       this.currentProject = project;
       this.panel.open({
         ...project,
