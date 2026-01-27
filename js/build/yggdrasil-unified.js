@@ -51,6 +51,7 @@ const YggdrasilCosmos = {
   projectModalOpen: false,
   skillModalOpen: false,
   componentModalOpen: false,
+  previousFocusElement: null, // Focus management for a11y
 
   // Filter state
   filters: {
@@ -741,10 +742,13 @@ const YggdrasilCosmos = {
   buildProjectModal() {
     this.projectModal = document.createElement('div');
     this.projectModal.className = 'ygg-project-modal';
+    this.projectModal.setAttribute('role', 'dialog');
+    this.projectModal.setAttribute('aria-modal', 'true');
+    this.projectModal.setAttribute('aria-labelledby', 'project-modal-title');
     this.projectModal.innerHTML = `
             <div class="ygg-modal-backdrop"></div>
             <div class="ygg-modal-content">
-                <button class="ygg-modal-close">&times;</button>
+                <button class="ygg-modal-close" aria-label="Close modal">&times;</button>
                 <div class="ygg-modal-body"></div>
             </div>
         `;
@@ -996,8 +1000,17 @@ const YggdrasilCosmos = {
       }
     }
 
+    // Store focus for restoration
+    this.previousFocusElement = document.activeElement;
+
     this.projectModal.classList.add('open');
     this.projectModalOpen = true;
+
+    // Focus the close button after animation
+    requestAnimationFrame(() => {
+      const closeBtn = this.projectModal.querySelector('.ygg-modal-close');
+      if (closeBtn) closeBtn.focus();
+    });
 
     // Track project exploration
     ProgressTracker.exploreProject(projectId);
@@ -1059,6 +1072,12 @@ const YggdrasilCosmos = {
   closeProjectModal() {
     this.projectModal.classList.remove('open');
     this.projectModalOpen = false;
+
+    // Restore focus to previous element
+    if (this.previousFocusElement && typeof this.previousFocusElement.focus === 'function') {
+      this.previousFocusElement.focus();
+      this.previousFocusElement = null;
+    }
   },
 
   /**
@@ -1067,10 +1086,13 @@ const YggdrasilCosmos = {
   buildSkillModal() {
     this.skillModal = document.createElement('div');
     this.skillModal.className = 'ygg-skill-modal';
+    this.skillModal.setAttribute('role', 'dialog');
+    this.skillModal.setAttribute('aria-modal', 'true');
+    this.skillModal.setAttribute('aria-labelledby', 'skill-modal-title');
     this.skillModal.innerHTML = `
       <div class="ygg-modal-backdrop"></div>
       <div class="ygg-modal-content">
-        <button class="ygg-modal-close">&times;</button>
+        <button class="ygg-modal-close" aria-label="Close modal">&times;</button>
         <div class="ygg-modal-body"></div>
       </div>
     `;
@@ -1249,8 +1271,19 @@ const YggdrasilCosmos = {
       });
     });
 
+    // Store focus for restoration (only if not coming from another modal)
+    if (!this.projectModalOpen && !this.componentModalOpen) {
+      this.previousFocusElement = document.activeElement;
+    }
+
     this.skillModal.classList.add('open');
     this.skillModalOpen = true;
+
+    // Focus the close button after animation
+    requestAnimationFrame(() => {
+      const closeBtn = this.skillModal.querySelector('.ygg-modal-close');
+      if (closeBtn) closeBtn.focus();
+    });
   },
 
   /**
@@ -1259,6 +1292,17 @@ const YggdrasilCosmos = {
   closeSkillModal() {
     this.skillModal.classList.remove('open');
     this.skillModalOpen = false;
+
+    // Restore focus to previous element (if no other modal open)
+    if (
+      !this.projectModalOpen &&
+      !this.componentModalOpen &&
+      this.previousFocusElement &&
+      typeof this.previousFocusElement.focus === 'function'
+    ) {
+      this.previousFocusElement.focus();
+      this.previousFocusElement = null;
+    }
   },
 
   /**
@@ -2862,10 +2906,13 @@ const YggdrasilCosmos = {
   buildComponentModal() {
     this.componentModal = document.createElement('div');
     this.componentModal.className = 'ygg-component-modal';
+    this.componentModal.setAttribute('role', 'dialog');
+    this.componentModal.setAttribute('aria-modal', 'true');
+    this.componentModal.setAttribute('aria-labelledby', 'component-modal-title');
     this.componentModal.innerHTML = `
       <div class="ygg-modal-backdrop"></div>
       <div class="ygg-modal-content ygg-component-content">
-        <button class="ygg-modal-close">&times;</button>
+        <button class="ygg-modal-close" aria-label="Close modal">&times;</button>
         <div class="ygg-modal-body"></div>
       </div>
     `;
@@ -2938,8 +2985,19 @@ const YggdrasilCosmos = {
       </div>
     `;
 
+    // Store focus for restoration (only if not coming from another modal)
+    if (!this.projectModalOpen && !this.skillModalOpen) {
+      this.previousFocusElement = document.activeElement;
+    }
+
     this.componentModal.classList.add('open');
     this.componentModalOpen = true;
+
+    // Focus the close button after animation
+    requestAnimationFrame(() => {
+      const closeBtn = this.componentModal.querySelector('.ygg-modal-close');
+      if (closeBtn) closeBtn.focus();
+    });
   },
 
   /**
@@ -2948,6 +3006,17 @@ const YggdrasilCosmos = {
   closeComponentModal() {
     this.componentModal.classList.remove('open');
     this.componentModalOpen = false;
+
+    // Restore focus to previous element (if no other modal open)
+    if (
+      !this.projectModalOpen &&
+      !this.skillModalOpen &&
+      this.previousFocusElement &&
+      typeof this.previousFocusElement.focus === 'function'
+    ) {
+      this.previousFocusElement.focus();
+      this.previousFocusElement = null;
+    }
   },
 
   /**
