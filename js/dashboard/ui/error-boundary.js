@@ -133,6 +133,17 @@ export const ErrorBoundary = {
   },
 
   /**
+   * Check if running in development mode
+   */
+  isDevelopment() {
+    return (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port !== ''
+    );
+  },
+
+  /**
    * Show error UI
    */
   showError(type, error = null) {
@@ -140,10 +151,21 @@ export const ErrorBoundary = {
     this.hasError = true;
 
     const config = ERROR_MESSAGES[type] || ERROR_MESSAGES[ErrorType.UNKNOWN];
+    const isDev = this.isDevelopment();
 
     // Create error element with CSS classes (styles in yggdrasil-unified.css)
     this.errorElement = document.createElement('div');
     this.errorElement.className = 'cosmos-error';
+
+    // Build error details only in development (security: no stack traces in prod)
+    const errorDetails =
+      error && isDev
+        ? `<details class="error-details">
+          <summary>Technical details (dev only)</summary>
+          <pre>${this.escapeHtml(error.message || String(error))}</pre>
+        </details>`
+        : '';
+
     this.errorElement.innerHTML = `
       <div class="error-content">
         <div class="error-icon">
@@ -156,15 +178,8 @@ export const ErrorBoundary = {
         <h2 class="error-title">${config.title}</h2>
         <p class="error-message">${config.message}</p>
         <p class="error-suggestion">${config.suggestion}</p>
-        ${
-          error
-            ? `<details class="error-details">
-          <summary>Technical details</summary>
-          <pre>${this.escapeHtml(error.message || String(error))}</pre>
-        </details>`
-            : ''
-        }
-        <button class="error-retry" onclick="location.reload()">
+        ${errorDetails}
+        <button class="error-retry" type="button">
           Refresh Page
         </button>
       </div>
@@ -176,6 +191,14 @@ export const ErrorBoundary = {
       this.container.appendChild(this.errorElement);
     } else {
       document.body.appendChild(this.errorElement);
+    }
+
+    // Attach event listener (CSP compliant - no inline handlers)
+    const retryButton = this.errorElement.querySelector('.error-retry');
+    if (retryButton) {
+      retryButton.addEventListener('click', () => {
+        window.location.reload();
+      });
     }
   },
 
