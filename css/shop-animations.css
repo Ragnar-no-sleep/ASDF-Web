@@ -17,7 +17,7 @@
 .filter-btn,
 .btn-purchase,
 .btn-action {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-fast) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============================================
@@ -229,7 +229,7 @@
 
 /* Grid Items Stagger Animation */
 .shop-item-grid .shop-item-card {
-  animation: shopFadeIn 0.3s ease-out backwards;
+  animation: shopFadeIn var(--duration-normal) ease-out backwards;
 }
 
 .shop-item-grid .shop-item-card:nth-child(1) {
@@ -272,7 +272,7 @@
 
 .shop-item-card .card-glow {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) ease;
 }
 
 /* Card Selection */
@@ -291,7 +291,7 @@
   pointer-events: none;
   background: radial-gradient(circle at 50% 50%, var(--tier-color, #a855f7) 0%, transparent 70%);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) ease;
 }
 
 .shop-item-card.has-particles:hover::before {
@@ -342,7 +342,7 @@
   background: linear-gradient(90deg, #2a2a3e 25%, #3a3a4e 50%, #2a2a3e 75%);
   background-size: 200% 100%;
   animation: shopShimmer 1.5s infinite;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .skeleton-thumbnail {
@@ -353,13 +353,13 @@
 .skeleton-name {
   height: 16px;
   width: 80%;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
 }
 
 .skeleton-tier {
   height: 12px;
   width: 50%;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-md);
 }
 
 .skeleton-price {
@@ -372,7 +372,7 @@
    ============================================ */
 
 .shop-filters {
-  animation: shopSlideInLeft 0.3s ease-out;
+  animation: shopSlideInLeft var(--duration-normal) ease-out;
 }
 
 .filter-chip:hover,
@@ -382,11 +382,11 @@
 
 .filter-chip.active,
 .filter-btn.active {
-  animation: shopBounce 0.3s ease-out;
+  animation: shopBounce var(--duration-normal) ease-out;
 }
 
 .active-filter-tag {
-  animation: shopFadeInScale 0.2s ease-out;
+  animation: shopFadeInScale var(--duration-fast) ease-out;
 }
 
 /* ============================================
@@ -394,19 +394,19 @@
    ============================================ */
 
 .shop-preview-panel {
-  animation: shopSlideInRight 0.3s ease-out;
+  animation: shopSlideInRight var(--duration-normal) ease-out;
 }
 
 .preview-canvas-container {
-  animation: shopFadeInScale 0.4s ease-out 0.1s backwards;
+  animation: shopFadeInScale var(--duration-slow) ease-out 0.1s backwards;
 }
 
 .preview-details {
-  animation: shopFadeIn 0.3s ease-out 0.2s backwards;
+  animation: shopFadeIn var(--duration-normal) ease-out 0.2s backwards;
 }
 
 .preview-actions {
-  animation: shopFadeIn 0.3s ease-out 0.3s backwards;
+  animation: shopFadeIn var(--duration-normal) ease-out 0.3s backwards;
 }
 
 /* Preview Particles */
@@ -424,7 +424,7 @@
 .preview-particles::after {
   content: '✨';
   position: absolute;
-  font-size: 12px;
+  font-size: var(--text-xs);
   animation: shopParticleFloat 3s ease-in-out infinite;
 }
 
@@ -471,7 +471,7 @@
 }
 
 .btn-favorite.active {
-  animation: shopBounce 0.3s ease-out;
+  animation: shopBounce var(--duration-normal) ease-out;
 }
 
 /* ============================================
@@ -479,11 +479,11 @@
    ============================================ */
 
 .toast {
-  animation: shopSlideInRight 0.3s ease-out;
+  animation: shopSlideInRight var(--duration-normal) ease-out;
 }
 
 .toast.removing {
-  animation: shopSlideInRight 0.3s ease-out reverse forwards;
+  animation: shopSlideInRight var(--duration-normal) ease-out reverse forwards;
 }
 
 /* ============================================
@@ -491,15 +491,15 @@
    ============================================ */
 
 .shop-modal-overlay {
-  animation: shopFadeIn 0.2s ease-out;
+  animation: shopFadeIn var(--duration-fast) ease-out;
 }
 
 .shop-modal {
-  animation: shopFadeInScale 0.3s ease-out;
+  animation: shopFadeInScale var(--duration-normal) ease-out;
 }
 
 .purchase-modal .modal-body {
-  animation: shopFadeIn 0.3s ease-out 0.1s backwards;
+  animation: shopFadeIn var(--duration-normal) ease-out 0.1s backwards;
 }
 
 /* ============================================
@@ -519,13 +519,13 @@
    ============================================ */
 
 .currency-update {
-  animation: shopCountUp 0.3s ease-out;
+  animation: shopCountUp var(--duration-normal) ease-out;
 }
 
 .currency-earned {
   animation:
-    shopFloat 0.5s ease-out,
-    shopFadeIn 0.3s ease-out;
+    shopFloat var(--duration-slow) ease-out,
+    shopFadeIn var(--duration-normal) ease-out;
 }
 
 /* ============================================
@@ -533,7 +533,7 @@
    ============================================ */
 
 .shop-empty-state {
-  animation: shopFadeIn 0.5s ease-out;
+  animation: shopFadeIn var(--duration-slow) ease-out;
 }
 
 .shop-empty-state .empty-icon {
