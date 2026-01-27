@@ -11,6 +11,7 @@
 import { BuildState } from '../state.js';
 import { TreeComponent } from '../components/tree.js';
 import { $, $$, addClass, removeClass, setStyles } from '../utils/dom.js';
+import { DURATION, NOTIFICATION } from '../config/timing.js';
 
 // ============================================
 // CONFIGURATION
@@ -18,13 +19,13 @@ import { $, $$, addClass, removeClass, setStyles } from '../utils/dom.js';
 
 const SVG_CONFIG = {
   // Animation settings (CSS-based)
-  transitionDuration: 300,
+  transitionDuration: DURATION.NORMAL,
   // Pulse animation
   pulseEnabled: true,
   // Hover effects
   hoverScale: 1.08,
   // Performance
-  throttleHover: 16 // ~60fps
+  throttleHover: 16, // ~60fps
 };
 
 // ============================================
@@ -86,7 +87,7 @@ const SVGRenderer = {
    * @returns {Promise<void>}
    */
   waitForSVG() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const observer = new MutationObserver((mutations, obs) => {
         svgElement = $('svg', container) || $('.yggdrasil-svg', container);
         if (svgElement) {
@@ -97,7 +98,7 @@ const SVGRenderer = {
 
       observer.observe(container, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
 
       // Timeout fallback
@@ -105,7 +106,7 @@ const SVGRenderer = {
         observer.disconnect();
         svgElement = $('svg', container);
         resolve();
-      }, 2000);
+      }, NOTIFICATION.TOAST);
     });
   },
 
@@ -127,7 +128,7 @@ const SVGRenderer = {
     // Enable hardware acceleration via CSS
     setStyles(svgElement, {
       willChange: 'transform',
-      transform: 'translateZ(0)'
+      transform: 'translateZ(0)',
     });
 
     // Enhance tree nodes for better interactions
@@ -136,7 +137,7 @@ const SVGRenderer = {
       // Ensure nodes are interactive
       setStyles(node, {
         cursor: 'pointer',
-        transition: `transform ${SVG_CONFIG.transitionDuration}ms ease-out`
+        transition: `transform ${SVG_CONFIG.transitionDuration}ms ease-out`,
       });
     });
   },
@@ -148,7 +149,7 @@ const SVGRenderer = {
     if (!svgElement) return;
 
     // Throttled hover effect
-    svgElement.addEventListener('mousemove', (e) => {
+    svgElement.addEventListener('mousemove', e => {
       if (hoverThrottleId) return;
 
       hoverThrottleId = setTimeout(() => {
@@ -202,7 +203,7 @@ const SVGRenderer = {
 
     setStyles(node, {
       transformOrigin: `${centerX}px ${centerY}px`,
-      transform: `scale(${SVG_CONFIG.hoverScale})`
+      transform: `scale(${SVG_CONFIG.hoverScale})`,
     });
   },
 
@@ -290,12 +291,12 @@ const SVGRenderer = {
     // Map intensity to pulse speed (faster = more burns)
     const minDuration = 800;
     const maxDuration = 2500;
-    const duration = maxDuration - (intensity * (maxDuration - minDuration));
+    const duration = maxDuration - intensity * (maxDuration - minDuration);
 
     heart.style.setProperty('--burn-pulse-duration', `${duration}ms`);
 
     // Update glow intensity
-    const glowIntensity = 0.3 + (intensity * 0.7);
+    const glowIntensity = 0.3 + intensity * 0.7;
     heart.style.setProperty('--burn-glow-intensity', glowIntensity);
   },
 
@@ -312,14 +313,14 @@ const SVGRenderer = {
     node.scrollIntoView({
       behavior: options.instant ? 'instant' : 'smooth',
       block: 'center',
-      inline: 'center'
+      inline: 'center',
     });
 
     // Pulse animation
     addClass(node, 'focusing');
     setTimeout(() => {
       removeClass(node, 'focusing');
-    }, 600);
+    }, DURATION.SLOWER);
 
     this.selectProject(projectId);
   },
@@ -338,7 +339,7 @@ const SVGRenderer = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
   },
 
@@ -350,7 +351,7 @@ const SVGRenderer = {
     // Just emit event for any listeners
     BuildState.emit('renderer:resize', {
       width: container?.clientWidth || 0,
-      height: container?.clientHeight || 0
+      height: container?.clientHeight || 0,
     });
   },
 
@@ -406,7 +407,7 @@ const SVGRenderer = {
     return {
       type: 'svg',
       initialized: isInitialized,
-      nodeCount: svgElement ? $$('.tree-node, .realm', svgElement).length : 0
+      nodeCount: svgElement ? $$('.tree-node, .realm', svgElement).length : 0,
     };
   },
 
@@ -430,7 +431,7 @@ const SVGRenderer = {
     isInitialized = false;
 
     console.log('[SVGRenderer] Disposed');
-  }
+  },
 };
 
 // ============================================
