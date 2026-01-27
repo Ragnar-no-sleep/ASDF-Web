@@ -649,8 +649,8 @@ a:hover {
   align-items: center;
   gap: var(--space-sm);
   color: var(--text-primary);
-  font-weight: 500;
-  font-size: 1.1rem;
+  font-weight: var(--font-medium);
+  font-size: var(--text-lg);
   letter-spacing: -0.02em;
 }
 
@@ -658,11 +658,11 @@ a:hover {
   width: 32px;
   height: 32px;
   background: var(--gold);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .nav-links {
@@ -672,8 +672,8 @@ a:hover {
 
 .nav-links a {
   color: var(--text-muted);
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
   letter-spacing: 0.02em;
   transition: var(--transition);
 }
@@ -709,11 +709,11 @@ a:hover {
   background: var(--gold-glow);
   border: 1px solid rgba(201, 162, 39, 0.3);
   border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
   color: var(--gold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-wide);
   margin-bottom: var(--space-lg);
 }
 
@@ -737,7 +737,7 @@ a:hover {
 
 .hero-title {
   font-size: clamp(2.5rem, 8vw, 4rem);
-  font-weight: 300;
+  font-weight: var(--font-normal);
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin-bottom: var(--space-md);
@@ -769,7 +769,7 @@ a:hover {
   padding: var(--space-xl);
   background: linear-gradient(135deg, rgba(201, 162, 39, 0.05), transparent);
   border: 1px solid rgba(201, 162, 39, 0.15);
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
   position: relative;
   overflow: hidden;
 }
@@ -786,11 +786,11 @@ a:hover {
 }
 
 .mega-stat-label {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: var(--tracking-wider);
   margin-bottom: var(--space-md);
 }
 
@@ -865,7 +865,7 @@ a:hover {
   padding: var(--space-lg);
   background: var(--charcoal);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   text-align: center;
   transition: var(--transition);
 }
@@ -890,7 +890,7 @@ a:hover {
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -911,8 +911,8 @@ a:hover {
 }
 
 .section-title {
-  font-size: 1.8rem;
-  font-weight: 300;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-normal);
   letter-spacing: -0.02em;
   margin-bottom: var(--space-sm);
 }
@@ -934,11 +934,11 @@ a:hover {
   padding: var(--space-sm) var(--space-md);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-muted);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
   cursor: pointer;
   transition: var(--transition);
 }
@@ -952,7 +952,7 @@ a:hover {
   background: var(--gold);
   border-color: var(--gold);
   color: var(--black);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 /* Podium */
@@ -970,7 +970,7 @@ a:hover {
   padding: var(--space-lg);
   background: var(--charcoal);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   min-width: 160px;
   transition: var(--transition);
 }
@@ -996,15 +996,15 @@ a:hover {
 
 .place-wallet {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   margin-bottom: var(--space-xs);
 }
 
 .place-amount {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
   color: var(--gold);
 }
 
@@ -1012,7 +1012,7 @@ a:hover {
 .leaderboard-table {
   background: var(--charcoal);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -1021,11 +1021,11 @@ a:hover {
   grid-template-columns: 80px 1fr 150px 100px;
   padding: var(--space-md) var(--space-lg);
   background: var(--slate);
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-medium);
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-wide);
 }
 
 .table-body {
@@ -1084,7 +1084,7 @@ a:hover {
   background: linear-gradient(90deg, var(--charcoal) 25%, var(--slate) 50%, var(--charcoal) 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
 }
 
@@ -1126,7 +1126,7 @@ a:hover {
   padding: var(--space-md) var(--space-lg);
   background: var(--charcoal);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   transition: var(--transition);
 }
 
@@ -1156,14 +1156,14 @@ a:hover {
 }
 
 .feed-time {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
 .feed-amount {
   font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
   color: var(--gold);
 }
 
@@ -1181,12 +1181,12 @@ a:hover {
   padding: var(--space-xl);
   background: linear-gradient(135deg, rgba(201, 162, 39, 0.08), rgba(201, 162, 39, 0.02));
   border: 1px solid rgba(201, 162, 39, 0.2);
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
 }
 
 .cta-title {
-  font-size: 1.8rem;
-  font-weight: 300;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-normal);
   letter-spacing: -0.02em;
   margin-bottom: var(--space-sm);
 }
@@ -1202,9 +1202,9 @@ a:hover {
   padding: var(--space-md) var(--space-xl);
   background: var(--gold);
   color: var(--black);
-  font-weight: 600;
-  font-size: 0.9rem;
-  border-radius: 8px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
   transition: var(--transition);
 }
 
@@ -1234,7 +1234,7 @@ a:hover {
 
 .footer-links a {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .footer-links a:hover {
@@ -1249,12 +1249,12 @@ a:hover {
 }
 
 .footer-text {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-dim);
 }
 
 .footer-copy {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-dim);
 }
 
