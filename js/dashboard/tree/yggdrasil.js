@@ -805,21 +805,29 @@ export const Yggdrasil = {
     // Raycast
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
-    // Check skill hover first (when in project view)
-    if (this.currentView === VIEWS.PROJECT_TREE && this.skillNodes.isVisible) {
-      const skill = this.skillNodes.checkHover(this.raycaster);
-      if (skill) {
-        this.renderer.domElement.style.cursor = 'pointer';
-        // Clear island hover
-        if (this.hoveredIsland) {
-          this.unhoverIsland(this.hoveredIsland);
-          this.hoveredIsland = null;
+    // In PROJECT_TREE view: only check skill hover, not islands
+    if (this.currentView === VIEWS.PROJECT_TREE) {
+      // Clear any island hover state when entering project view
+      if (this.hoveredIsland) {
+        this.unhoverIsland(this.hoveredIsland);
+        this.hoveredIsland = null;
+        if (this.callbacks.onIslandHover) {
+          this.callbacks.onIslandHover(null); // Hide tooltip
         }
-        return;
       }
+      this.renderer.domElement.style.cursor = 'default';
+
+      // Only check skills if visible
+      if (this.skillNodes.isVisible) {
+        const skill = this.skillNodes.checkHover(this.raycaster);
+        if (skill) {
+          this.renderer.domElement.style.cursor = 'pointer';
+        }
+      }
+      return; // Don't raycast islands in project view
     }
 
-    // Raycast against hitboxes (fast: 21 spheres vs 100+ meshes)
+    // COSMOS view: raycast against hitboxes (fast: 21 spheres vs 100+ meshes)
     const intersects = this.raycaster.intersectObjects(
       [...this.hitboxes, this.burnCore],
       true // true for burnCore children
