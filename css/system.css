@@ -591,7 +591,7 @@ h6 {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 3px 8px;
+  padding: var(--space-1) var(--space-2);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
@@ -1240,7 +1240,7 @@ h6 {
   height: 48px;
   color: var(--error);
   opacity: 0.8;
-  font-size: 2.5rem;
+  font-size: var(--text-4xl);
 }
 
 .error-state-title,
