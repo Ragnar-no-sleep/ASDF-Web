@@ -14,17 +14,22 @@
 // ============================================
 
 // escapeHtml provided by utils.js (loaded first)
+// Note: Uses local sanitizeNumber without bounds (simple validation only)
+// For bounded sanitization, use GameValidation.sanitizeNumber from shared/validation.js
 
 /**
- * Validate and sanitize a number
+ * Validate and sanitize a number (no bounds enforcement)
  * @param {*} value - Value to validate
  * @param {number} defaultValue - Default if invalid
  * @returns {number}
  */
-function sanitizeNumber(value, defaultValue = 0) {
+function sanitizeNumberSimple(value, defaultValue = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : defaultValue;
 }
+
+// Alias for backwards compatibility within this module
+const sanitizeNumber = sanitizeNumberSimple;
 
 /**
  * Validate wallet address format (Solana base58)

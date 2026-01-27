@@ -11,14 +11,7 @@ const activeGames = {};
 // activeGameModes is defined in state.js (loaded before engine.js)
 const activeGameSessions = {}; // Anti-cheat session tracking
 
-/**
- * Sanitize number for security
- */
-function sanitizeNumber(value, min, max, defaultValue) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return defaultValue;
-  return Math.max(min, Math.min(max, num));
-}
+// sanitizeNumber and isValidGameId are provided by shared/validation.js
 
 function startGame(gameId) {
   if (!isValidGameId(gameId)) return;
@@ -280,7 +273,9 @@ async function endGame(gameId, finalScore) {
         GameRewards.processScoreResponse(apiResult, gameId);
 
         // Add achievements section to game over screen
-        const achievementsSection = GameRewards.createGameOverAchievements(apiResult.newAchievements);
+        const achievementsSection = GameRewards.createGameOverAchievements(
+          apiResult.newAchievements
+        );
         if (achievementsSection) {
           gameOverDiv.appendChild(achievementsSection);
         }
@@ -1087,9 +1082,23 @@ function startBurnRunner(gameId) {
 
   // Malus items (run through = negative effect)
   const malusTypes = [
-    { icon: '🐌', name: 'SLOW', width: 30, height: 25, effect: 'slow', duration: GAME_TIMING.EFFECT.VERY_SLOW },
+    {
+      icon: '🐌',
+      name: 'SLOW',
+      width: 30,
+      height: 25,
+      effect: 'slow',
+      duration: GAME_TIMING.EFFECT.VERY_SLOW,
+    },
     { icon: '❄️', name: 'FREEZE', width: 28, height: 28, effect: 'freeze', duration: 500 },
-    { icon: '🌀', name: 'DIZZY', width: 26, height: 26, effect: 'dizzy', duration: GAME_TIMING.EFFECT.SLOW },
+    {
+      icon: '🌀',
+      name: 'DIZZY',
+      width: 26,
+      height: 26,
+      effect: 'dizzy',
+      duration: GAME_TIMING.EFFECT.SLOW,
+    },
     { icon: '💨', name: 'WIND', width: 30, height: 25, effect: 'pushback', duration: 0 },
   ];
 
