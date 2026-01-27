@@ -9,6 +9,7 @@ import { Dashboard, TRACKS, ECOSYSTEM_PROJECTS } from '../dashboard/index.js';
 import { getCourse } from './data/courses.js';
 import { SKILLS_DATA, getSkill } from './data/skills.js';
 import { ProgressTracker, GENERALIST_TRACKS } from './progress-tracker.js';
+import { DURATION, DELAY, NOTIFICATION } from './config/timing.js';
 
 /**
  * Promise with timeout wrapper
@@ -1374,7 +1375,7 @@ const YggdrasilCosmos = {
   hideLoading() {
     if (this.loadingEl) {
       this.loadingEl.classList.add('fade-out');
-      setTimeout(() => this.loadingEl?.remove(), 800);
+      setTimeout(() => this.loadingEl?.remove(), DURATION.SLOWER);
     }
   },
 
@@ -2305,8 +2306,8 @@ const YggdrasilCosmos = {
     setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
       notification.classList.remove('show');
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
+      setTimeout(() => notification.remove(), DURATION.NORMAL);
+    }, NOTIFICATION.STANDARD);
   },
 
   /**
@@ -2355,7 +2356,7 @@ const YggdrasilCosmos = {
 
     // Auto-advance if not last
     if (index < totalLessons - 1) {
-      setTimeout(() => this.showLesson(index + 1), 500);
+      setTimeout(() => this.showLesson(index + 1), DELAY.SEQUENCE);
     }
   },
 
@@ -2372,8 +2373,8 @@ const YggdrasilCosmos = {
       notification.classList.add('show');
       setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-      }, 1500);
+        setTimeout(() => notification.remove(), DURATION.NORMAL);
+      }, NOTIFICATION.TOAST);
     }, 10);
   },
 
@@ -2970,7 +2971,7 @@ const YggdrasilCosmos = {
       if (this.ctaHint) {
         this.ctaHint.classList.add('visible');
       }
-    }, 1000);
+    }, NOTIFICATION.TOAST / 2);
 
     // Hide on first click and remember
     this.container.addEventListener(
@@ -2979,7 +2980,7 @@ const YggdrasilCosmos = {
         if (this.ctaHint) {
           this.ctaHint.classList.remove('visible');
           this.ctaHint.classList.add('hidden');
-          setTimeout(() => this.ctaHint?.remove(), 300);
+          setTimeout(() => this.ctaHint?.remove(), DURATION.NORMAL);
           this.ctaHint = null;
           // Remember user has interacted
           localStorage.setItem('ygg_cta_seen', 'true');
@@ -2993,11 +2994,11 @@ const YggdrasilCosmos = {
       if (this.ctaHint) {
         this.ctaHint.classList.remove('visible');
         this.ctaHint.classList.add('hidden');
-        setTimeout(() => this.ctaHint?.remove(), 300);
+        setTimeout(() => this.ctaHint?.remove(), DURATION.NORMAL);
         this.ctaHint = null;
         localStorage.setItem('ygg_cta_seen', 'true');
       }
-    }, 10000);
+    }, NOTIFICATION.IMPORTANT * 2);
   },
 
   /**
