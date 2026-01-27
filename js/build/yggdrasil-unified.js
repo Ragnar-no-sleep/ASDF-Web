@@ -67,6 +67,18 @@ const YggdrasilCosmos = {
   },
   profileExpanded: false,
 
+  /**
+   * Dependency injection - allows mocking in tests
+   * Override via init(container, { deps: {...} })
+   */
+  deps: {
+    Dashboard,
+    ProgressTracker,
+    DataAdapter,
+    getCourse,
+    getSkill,
+  },
+
   // Quiz questions (from config)
   quizQuestions: [
     {
@@ -637,8 +649,16 @@ const YggdrasilCosmos = {
 
   /**
    * Initialize cosmos
+   * @param {string|Element} containerSelector - Container element or selector
+   * @param {Object} options - Configuration options
+   * @param {Object} options.deps - Dependency overrides for testing
    */
-  async init(containerSelector) {
+  async init(containerSelector, options = {}) {
+    // Merge dependency overrides
+    if (options.deps) {
+      this.deps = { ...this.deps, ...options.deps };
+    }
+
     this.container =
       typeof containerSelector === 'string'
         ? document.querySelector(containerSelector)
@@ -653,7 +673,7 @@ const YggdrasilCosmos = {
     this.loadSavedState();
 
     // Initialize progress tracker
-    ProgressTracker.init();
+    this.deps.ProgressTracker.init();
     this.setupProgressListeners();
 
     // Load projects data
@@ -676,7 +696,7 @@ const YggdrasilCosmos = {
     try {
       // Initialize Three.js dashboard with 5s timeout
       this.dashboard = await withTimeout(
-        Dashboard.init(this.container),
+        this.deps.Dashboard.init(this.container),
         5000,
         'Three.js initialization timed out'
       );
@@ -712,7 +732,7 @@ const YggdrasilCosmos = {
    */
   async loadProjectsData() {
     try {
-      this.projectsData = await DataAdapter.getProjects();
+      this.projectsData = await this.deps.DataAdapter.getProjects();
     } catch (e) {
       console.warn('[YggdrasilCosmos] Failed to load projects data:', e);
       this.projectsData = {};
@@ -898,7 +918,7 @@ const YggdrasilCosmos = {
       const skillsPreviewHtml = projectSkills
         .slice(0, 4)
         .map(skillId => {
-          const skill = getSkill(skillId);
+          const skill = this.deps.getSkill(skillId);
           return skill
             ? `<span class="skill-preview-tag">${skill.icon || '📚'} ${skill.name}</span>`
             : '';
@@ -1111,7 +1131,7 @@ const YggdrasilCosmos = {
    * Open skill modal with detailed content
    */
   openSkillModal(skillId) {
-    const skill = getSkill(skillId);
+    const skill = this.deps.getSkill(skillId);
     if (!skill) {
       console.warn('[YggdrasilCosmos] Skill not found:', skillId);
       return;
@@ -1158,7 +1178,7 @@ const YggdrasilCosmos = {
     const prereqsHtml = skill.prerequisites?.length
       ? skill.prerequisites
           .map(prereqId => {
-            const prereq = getSkill(prereqId);
+            const prereq = this.deps.getSkill(prereqId);
             return prereq
               ? `<span class="ygg-skill-prereq" data-skill="${prereqId}">${prereq.icon} ${prereq.name}</span>`
               : '';
@@ -1742,7 +1762,7 @@ const YggdrasilCosmos = {
    */
   openModule(moduleId) {
     // Try COURSES first, fallback to mockLessons
-    const courseData = getCourse(moduleId);
+    const courseData = this.deps.getCourse(moduleId);
     const moduleData = courseData || this.mockLessons[moduleId];
 
     if (!moduleData) {
@@ -1808,7 +1828,7 @@ const YggdrasilCosmos = {
    */
   showLesson(index) {
     // Try COURSES first, fallback to mockLessons
-    const courseData = getCourse(this.currentModule);
+    const courseData = this.deps.getCourse(this.currentModule);
     const moduleData = courseData || this.mockLessons[this.currentModule];
     if (!moduleData || !moduleData.lessons[index]) return;
 
@@ -2363,7 +2383,7 @@ const YggdrasilCosmos = {
    */
   completeLesson(index) {
     // Try COURSES first, fallback to mockLessons
-    const courseData = getCourse(this.currentModule);
+    const courseData = this.deps.getCourse(this.currentModule);
     const moduleData = courseData || this.mockLessons[this.currentModule];
     if (!moduleData) return;
 

@@ -293,6 +293,27 @@ function generateProjectImmersiveContent(project) {
 
 const ModalFactory = {
   /**
+   * Dependency injection - allows mocking in tests
+   * Override via configure({ deps: {...} })
+   */
+  deps: {
+    DataAdapter,
+    BuildState,
+  },
+
+  /**
+   * Configure dependencies
+   * @param {Object} options
+   * @param {Object} options.deps - Dependency overrides
+   */
+  configure(options = {}) {
+    if (options.deps) {
+      this.deps = { ...this.deps, ...options.deps };
+    }
+    return this;
+  },
+
+  /**
    * Modal type creators - Strategy pattern for Open/Closed principle
    * Add new modal types here without modifying create() method
    */
@@ -382,7 +403,7 @@ const ModalFactory = {
    * @returns {string} Modal ID
    */
   async openDoc(projectId) {
-    const project = await DataAdapter.getProject(projectId);
+    const project = await this.deps.DataAdapter.getProject(projectId);
     if (!project) {
       console.warn('[ModalFactory] Project not found:', projectId);
       return null;
@@ -411,7 +432,7 @@ const ModalFactory = {
     }
 
     // Store current project
-    BuildState.selectProject(projectId);
+    this.deps.BuildState.selectProject(projectId);
 
     return this.open('doc-modal');
   },
@@ -423,7 +444,7 @@ const ModalFactory = {
    * @returns {string} Modal ID
    */
   async openFeature(projectId, featureIndex) {
-    const project = await DataAdapter.getProject(projectId);
+    const project = await this.deps.DataAdapter.getProject(projectId);
     if (!project) return null;
 
     const feature = project.features[featureIndex];
@@ -447,7 +468,7 @@ const ModalFactory = {
    * @returns {string} Modal ID
    */
   async openComponent(projectId, componentIndex) {
-    const project = await DataAdapter.getProject(projectId);
+    const project = await this.deps.DataAdapter.getProject(projectId);
     if (!project) return null;
 
     const component = project.miniTree[componentIndex];
@@ -470,7 +491,7 @@ const ModalFactory = {
    * @returns {string} Modal ID
    */
   async openProjectImmersive(projectId) {
-    const project = await DataAdapter.getProject(projectId);
+    const project = await this.deps.DataAdapter.getProject(projectId);
     if (!project) return null;
 
     // Check if immersive modal exists, create if not
@@ -519,7 +540,7 @@ const ModalFactory = {
     }
 
     // Store current project
-    BuildState.selectProject(projectId);
+    this.deps.BuildState.selectProject(projectId);
 
     return this.open('project-immersive-modal');
   },
@@ -546,7 +567,7 @@ const ModalFactory = {
     document.body.style.overflow = 'hidden';
 
     // Emit event
-    BuildState.emit(EVENTS.MODAL_OPEN, { modalId, type: config.type });
+    this.deps.BuildState.emit(EVENTS.MODAL_OPEN, { modalId, type: config.type });
 
     // Callback
     if (config.onOpen) {
@@ -579,7 +600,7 @@ const ModalFactory = {
     }
 
     // Emit event
-    BuildState.emit(EVENTS.MODAL_CLOSE, { modalId, type: config.type });
+    this.deps.BuildState.emit(EVENTS.MODAL_CLOSE, { modalId, type: config.type });
 
     // Callback
     if (config.onClose) {

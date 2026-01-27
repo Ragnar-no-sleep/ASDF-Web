@@ -54,10 +54,26 @@ const BuilderProfile = {
   isOpen: false,
 
   /**
+   * Dependency injection - allows mocking in tests
+   * Override via init(container, { deps: {...} })
+   */
+  deps: {
+    BuildState,
+    GitHubApiService,
+  },
+
+  /**
    * Initialize builder profile
    * @param {string|Element} containerSelector
+   * @param {Object} options - Configuration options
+   * @param {Object} options.deps - Dependency overrides for testing
    */
-  init(containerSelector = 'body') {
+  init(containerSelector = 'body', options = {}) {
+    // Merge dependency overrides
+    if (options.deps) {
+      this.deps = { ...this.deps, ...options.deps };
+    }
+
     const container =
       typeof containerSelector === 'string' ? $(containerSelector) : containerSelector;
 
@@ -186,14 +202,14 @@ const BuilderProfile = {
     on(this.backdrop, 'click', () => this.close());
 
     // Listen for contributor clicks
-    BuildState.subscribe('contributor:click', data => {
+    this.deps.BuildState.subscribe('contributor:click', data => {
       if (data.login) {
         this.open(data.login);
       }
     });
 
     // Listen for builder profile request
-    BuildState.subscribe('builder:view', data => {
+    this.deps.BuildState.subscribe('builder:view', data => {
       if (data.username) {
         this.open(data.username);
       }
@@ -232,7 +248,7 @@ const BuilderProfile = {
       this.showError(error.message);
     }
 
-    BuildState.emit('builder:opened', { username });
+    this.deps.BuildState.emit('builder:opened', { username });
   },
 
   /**
@@ -246,7 +262,7 @@ const BuilderProfile = {
       this.backdrop.style.display = 'none';
     }, PROFILE_CONFIG.animation.fadeIn);
 
-    BuildState.emit('builder:closed', {});
+    this.deps.BuildState.emit('builder:closed', {});
   },
 
   /**
@@ -255,7 +271,7 @@ const BuilderProfile = {
    * @returns {Promise<Object>}
    */
   async fetchProfile(username) {
-    const profileData = await GitHubApiService.getUserProfile(username);
+    const profileData = await this.deps.GitHubApiService.getUserProfile(username);
     if (!profileData) {
       throw new Error('Profile not found');
     }
