@@ -1372,6 +1372,25 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   }
 }
 
+.ygg-live-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--ygg-fire);
+  text-transform: uppercase;
+}
+
+/* Disconnected state */
+.ygg-live-indicator:not(.is-live) .ygg-live-dot {
+  background: var(--text-dim);
+  box-shadow: none;
+  animation: none;
+}
+
+.ygg-live-indicator:not(.is-live) .ygg-live-text {
+  color: var(--text-dim);
+}
+
 /* ============================================
    CTA HINT - First-time visitor onboarding
    ============================================ */

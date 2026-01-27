@@ -11,6 +11,7 @@ import { SKILLS_DATA, getSkill } from './data/skills.js';
 import { ProgressTracker, GENERALIST_TRACKS } from './progress-tracker.js';
 import { DURATION, DELAY, NOTIFICATION } from './config/timing.js';
 import { DataAdapter } from './data/adapter.js';
+import { BurnApiService } from './services/burn-api.js';
 
 /**
  * Promise with timeout wrapper
@@ -75,9 +76,14 @@ const YggdrasilCosmos = {
     Dashboard,
     ProgressTracker,
     DataAdapter,
+    BurnApiService,
     getCourse,
     getSkill,
   },
+
+  // Live burn stats state
+  burnPollInterval: null,
+  burnIsLive: false,
 
   // Quiz questions (from config)
   quizQuestions: [
@@ -2788,32 +2794,102 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Build burn stats HUD
+   * Build burn stats HUD with live updates
    */
   buildBurnHud() {
     this.burnHud = document.createElement('div');
     this.burnHud.className = 'ygg-burn-hud';
 
-    const s = this.mockBurnStats;
+    // Initial placeholder content
     this.burnHud.innerHTML = `
             <div class="ygg-burn-metric">
                 <span class="ygg-burn-metric-label">Total Burned</span>
-                <span class="ygg-burn-metric-value">${this.formatNumber(s.total)}</span>
+                <span class="ygg-burn-metric-value" data-stat="total">--</span>
             </div>
             <div class="ygg-burn-metric">
                 <span class="ygg-burn-metric-label">24h Burned</span>
-                <span class="ygg-burn-metric-value">${this.formatNumber(s.daily)}</span>
+                <span class="ygg-burn-metric-value" data-stat="daily">--</span>
             </div>
-            <div class="ygg-live-indicator">
+            <div class="ygg-live-indicator" title="Live data">
                 <div class="ygg-live-dot"></div>
+                <span class="ygg-live-text">LIVE</span>
             </div>
             <div class="ygg-burn-metric">
-                <span class="ygg-burn-metric-label">APY</span>
-                <span class="ygg-burn-metric-value">${s.apy}%</span>
+                <span class="ygg-burn-metric-label">Burn %</span>
+                <span class="ygg-burn-metric-value" data-stat="percentage">--</span>
             </div>
         `;
 
     document.body.appendChild(this.burnHud);
+
+    // Fetch initial data and start polling
+    this.updateBurnStats();
+    this.startBurnPolling();
+  },
+
+  /**
+   * Update burn stats from API
+   */
+  async updateBurnStats() {
+    try {
+      const stats = await this.deps.BurnApiService.getStats();
+
+      // Update HUD values
+      const totalEl = this.burnHud?.querySelector('[data-stat="total"]');
+      const dailyEl = this.burnHud?.querySelector('[data-stat="daily"]');
+      const percentEl = this.burnHud?.querySelector('[data-stat="percentage"]');
+      const liveIndicator = this.burnHud?.querySelector('.ygg-live-indicator');
+
+      if (totalEl) {
+        totalEl.textContent = this.deps.BurnApiService.formatAmount(stats.totalBurned);
+      }
+      if (dailyEl) {
+        dailyEl.textContent = this.deps.BurnApiService.formatAmount(stats.burnedToday || 0);
+      }
+      if (percentEl) {
+        percentEl.textContent = `${(stats.burnPercentage || 0).toFixed(2)}%`;
+      }
+
+      // Update live indicator
+      this.burnIsLive = true;
+      if (liveIndicator) {
+        liveIndicator.classList.add('is-live');
+        liveIndicator.title = `Last update: ${new Date().toLocaleTimeString()}`;
+      }
+    } catch (error) {
+      console.warn('[YggdrasilCosmos] Failed to update burn stats:', error);
+      this.burnIsLive = false;
+      const liveIndicator = this.burnHud?.querySelector('.ygg-live-indicator');
+      if (liveIndicator) {
+        liveIndicator.classList.remove('is-live');
+        liveIndicator.title = 'Connection lost - retrying...';
+      }
+    }
+  },
+
+  /**
+   * Start polling for burn stats updates
+   */
+  startBurnPolling() {
+    // Poll every 30 seconds
+    const POLL_INTERVAL = 30000;
+
+    // Clear any existing interval
+    this.stopBurnPolling();
+
+    this.burnPollInterval = setInterval(() => {
+      this.updateBurnStats();
+    }, POLL_INTERVAL);
+  },
+
+  /**
+   * Stop burn stats polling
+   */
+  stopBurnPolling() {
+    if (this.burnPollInterval) {
+      clearInterval(this.burnPollInterval);
+      this.burnPollInterval = null;
+    }
   },
 
   /**
@@ -3140,6 +3216,9 @@ const YggdrasilCosmos = {
    * Dispose
    */
   dispose() {
+    // Stop burn polling
+    this.stopBurnPolling();
+
     this.dashboard?.dispose();
     this.loadingEl?.remove();
     this.burnHud?.remove();
