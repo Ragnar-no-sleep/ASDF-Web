@@ -314,9 +314,9 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-panel-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-inverse);
 }
 
 .ygg-panel-close {
@@ -376,11 +376,11 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-toggle-btn.left {
-  left: 16px;
+  left: var(--space-md);
 }
 
 .ygg-toggle-btn.right {
-  right: 16px;
+  right: var(--space-md);
 }
 
 .ygg-toggle-btn.left:hover {
@@ -703,86 +703,86 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 .ygg-section-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  margin: 20px 0;
+  margin: var(--space-lg) 0;
 }
 
 .ygg-section-title {
-  font-size: 11px;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0 0 16px;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-md);
 }
 
 /* ============================================
    QUIZ SECTION (Find Your Path)
    ============================================ */
 .ygg-quiz-section {
-  background: rgba(255, 69, 0, 0.05);
+  background: var(--color-fire-bg);
   border: 1px solid rgba(255, 69, 0, 0.2);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
 }
 
 .ygg-quiz-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-md);
 }
 
 .ygg-quiz-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-inverse);
 }
 
 .ygg-quiz-step {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
 }
 
 .ygg-quiz-progress {
   height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin-bottom: 16px;
+  background: var(--color-bg-hover);
+  border-radius: var(--radius-xs);
+  margin-bottom: var(--space-md);
   overflow: hidden;
 }
 
 .ygg-quiz-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--ygg-fire), #ff8800);
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, var(--ygg-fire), var(--color-fire-light));
+  transition: width var(--duration-normal) ease;
 }
 
 .ygg-quiz-question {
-  font-size: 15px;
-  color: white;
-  margin: 0 0 16px;
-  line-height: 1.4;
+  font-size: var(--text-base);
+  color: var(--color-text-inverse);
+  margin: 0 0 var(--space-md);
+  line-height: var(--leading-snug);
 }
 
 .ygg-quiz-options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .ygg-quiz-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
   width: 100%;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: white;
-  font-size: 13px;
+  padding: var(--space-md) var(--space-md);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--color-text-inverse);
+  font-size: var(--text-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) ease;
   text-align: left;
 }
 
@@ -793,8 +793,8 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-quiz-option-icon {
-  font-size: 18px;
-  width: 24px;
+  font-size: var(--text-lg);
+  width: var(--space-lg);
   text-align: center;
 }
 
@@ -804,21 +804,21 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 
 /* Quiz Result */
 .ygg-quiz-result {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
 }
 
 .ygg-quiz-result-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 .ygg-quiz-result-icon {
-  font-size: 32px;
+  font-size: var(--text-3xl);
 }
 
 .ygg-quiz-result-text {
@@ -827,39 +827,39 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-quiz-result-label {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-muted);
 }
 
 .ygg-quiz-result-track {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
 }
 
 .ygg-quiz-result-desc {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 12px;
-  line-height: 1.4;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-md);
+  line-height: var(--leading-snug);
 }
 
 .ygg-quiz-retake {
-  padding: 8px 16px;
+  padding: var(--space-sm) var(--space-md);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .ygg-quiz-retake:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-inverse);
 }
 
 /* ============================================
@@ -868,16 +868,16 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 .ygg-tracks-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .ygg-track-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) ease;
 }
 
 .ygg-track-card:hover {
@@ -898,19 +898,19 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 .ygg-track-header {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 .ygg-track-icon {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: var(--color-bg-hover);
+  border-radius: var(--radius-md);
 }
 
 .ygg-track-info {
@@ -919,28 +919,28 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
 }
 
 .ygg-track-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 4px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-inverse);
+  margin-bottom: var(--space-xs);
 }
 
 .ygg-track-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  gap: var(--space-xs);
+  font-size: var(--text-2xs);
+  color: var(--color-text-muted);
 }
 
 .ygg-track-badge {
-  font-size: 9px;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 3px 8px;
-  background: rgba(255, 69, 0, 0.2);
+  letter-spacing: var(--tracking-wide);
+  padding: 3px var(--space-sm);
+  background: var(--color-fire-bg);
   color: var(--ygg-fire);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
