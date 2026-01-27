@@ -10,6 +10,7 @@
 import { MODAL_TYPES, EVENTS, SELECTORS } from '../config.js';
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
+import { GitHubApiService } from '../services/github-api.js';
 import {
   safeInnerHTML,
   safeTextContent,
@@ -88,6 +89,11 @@ function generateDocModalContent(project) {
        </a>`
       : '';
 
+  // Timeline link (always available for projects with GitHub repos)
+  const timelineLink = `<button class="modal-link timeline-link" data-project-id="${sanitizeText(project.id)}" aria-label="View project timeline">
+    <span class="link-icon">&#128337;</span> Timeline
+  </button>`;
+
   return `
     <div class="modal-header">
       <span class="modal-icon" id="doc-modal-icon">${icon}</span>
@@ -116,6 +122,7 @@ function generateDocModalContent(project) {
         <p id="doc-modal-deps">${deps}</p>
       </div>
       <div class="modal-links">
+        ${timelineLink}
         ${githubLink}
         ${demoLink}
       </div>
@@ -288,6 +295,152 @@ function generateProjectImmersiveContent(project) {
 }
 
 // ============================================
+// FIBONACCI XP CALCULATION
+// ============================================
+
+/**
+ * Pre-computed Fibonacci sequence for XP tiers
+ * Maps contribution count to XP using Fibonacci scaling
+ */
+const FIBONACCI_XP = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584];
+
+/**
+ * Calculate XP based on contributions using Fibonacci scaling
+ * @param {number} contributions - Number of contributions
+ * @returns {number} XP value
+ */
+function calculateFibonacciXP(contributions) {
+  if (contributions <= 0) return 0;
+  // Map contributions to Fibonacci index (log scale)
+  const index = Math.min(Math.floor(Math.log2(contributions + 1)) + 1, FIBONACCI_XP.length - 1);
+  const baseXP = FIBONACCI_XP[index];
+  // Add bonus for extra contributions within the tier
+  const tierBonus = contributions % (1 << (index - 1));
+  return baseXP + Math.floor(tierBonus * 0.1);
+}
+
+/**
+ * Detect commit type from message
+ * @param {string} message - Commit message
+ * @returns {Object} Type info with label and class
+ */
+function detectCommitType(message) {
+  const lowerMsg = message.toLowerCase();
+  if (lowerMsg.startsWith('feat')) return { label: 'feat', class: 'commit-feat' };
+  if (lowerMsg.startsWith('fix')) return { label: 'fix', class: 'commit-fix' };
+  if (lowerMsg.startsWith('refactor')) return { label: 'refactor', class: 'commit-refactor' };
+  if (lowerMsg.startsWith('docs')) return { label: 'docs', class: 'commit-docs' };
+  if (lowerMsg.startsWith('test')) return { label: 'test', class: 'commit-test' };
+  if (lowerMsg.startsWith('chore')) return { label: 'chore', class: 'commit-chore' };
+  if (lowerMsg.startsWith('style')) return { label: 'style', class: 'commit-style' };
+  if (lowerMsg.startsWith('perf')) return { label: 'perf', class: 'commit-perf' };
+  return { label: 'commit', class: 'commit-other' };
+}
+
+/**
+ * Format date for timeline display
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted date
+ */
+function formatTimelineDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// ============================================
+// TIMELINE MODAL TEMPLATE
+// ============================================
+
+/**
+ * Generate project timeline modal content
+ * @param {Object} project - Project data
+ * @param {Array} commits - Recent commits
+ * @param {Array} contributors - Project contributors
+ * @returns {string} HTML content
+ */
+function generateTimelineModalContent(project, commits, contributors) {
+  const icon = sanitizeText(project.icon || '📊');
+  const title = sanitizeText(project.title);
+
+  // Generate commit timeline
+  const commitItems = commits
+    .map((commit, i) => {
+      const sha = sanitizeText(commit.sha);
+      const message = sanitizeText(commit.message);
+      const author = sanitizeText(commit.author);
+      const date = formatTimelineDate(commit.date);
+      const url = sanitizeUrl(commit.url) || '#';
+      const type = detectCommitType(commit.message);
+
+      return `
+      <li class="commit-item" style="animation-delay: ${i * 50}ms">
+        <div class="commit-timeline-row">
+          <span class="commit-date">${date}</span>
+          <span class="commit-dot">●</span>
+          <span class="commit-line"></span>
+          <span class="commit-type ${type.class}">${type.label}</span>
+          <span class="commit-message-text">${message}</span>
+        </div>
+        <div class="commit-attribution">
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="commit-sha-link">${sha}</a>
+          <span class="commit-by">↳ @${author}</span>
+        </div>
+      </li>
+    `;
+    })
+    .join('');
+
+  // Generate builder cards with Fibonacci XP
+  const builderCards = contributors
+    .map((contrib, i) => {
+      const login = sanitizeText(contrib.login);
+      const avatar = sanitizeUrl(contrib.avatar) || '/assets/default-avatar.png';
+      const xp = calculateFibonacciXP(contrib.contributions);
+      const url = sanitizeUrl(contrib.url) || '#';
+
+      return `
+      <div class="builder-card" style="animation-delay: ${i * 80}ms">
+        <img src="${avatar}" alt="${login}" class="builder-avatar" loading="lazy" />
+        <span class="builder-name">@${login}</span>
+        <span class="builder-xp">${xp} XP</span>
+        <a href="${url}" target="_blank" rel="noopener noreferrer"
+           class="builder-stats-btn" aria-label="View ${login} stats">📊</a>
+      </div>
+    `;
+    })
+    .join('');
+
+  return `
+    <div class="modal-header timeline-header">
+      <span class="modal-icon">${icon}</span>
+      <h2 class="modal-title">${title}</h2>
+      <span class="modal-subtitle">Project Timeline</span>
+      <button class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body timeline-body">
+      <section class="timeline-section">
+        <h3 class="section-title">GitHub Commit History</h3>
+        <ul class="commits-timeline">
+          ${commitItems || '<li class="empty-state">No commits found</li>'}
+        </ul>
+      </section>
+      <section class="timeline-section">
+        <h3 class="section-title">Builders</h3>
+        <p class="xp-note">XP based on Fibonacci contribution scaling</p>
+        <div class="builders-grid">
+          ${builderCards || '<div class="empty-state">No contributors found</div>'}
+        </div>
+      </section>
+      <div class="timeline-actions">
+        <button class="btn-back-tree" aria-label="Back to Project Tree">
+          ← Back to Project Tree
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================
 // MODAL FACTORY
 // ============================================
 
@@ -299,6 +452,7 @@ const ModalFactory = {
   deps: {
     DataAdapter,
     BuildState,
+    GitHubApiService,
   },
 
   /**
@@ -325,6 +479,7 @@ const ModalFactory = {
       factory.openComponent(config.projectId, config.componentIndex),
     [MODAL_TYPES.PROJECT_IMMERSIVE]: (factory, config) =>
       factory.openProjectImmersive(config.projectId),
+    [MODAL_TYPES.PROJECT_TIMELINE]: (factory, config) => factory.openTimeline(config.projectId),
   },
 
   /**
@@ -429,6 +584,18 @@ const ModalFactory = {
           this.openFeature(projectId, featureIndex);
         });
       });
+
+      // Bind timeline link click handler
+      const timelineLink = $('.timeline-link', content);
+      if (timelineLink) {
+        on(timelineLink, 'click', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const pId = timelineLink.dataset.projectId;
+          this.close('doc-modal');
+          this.openTimeline(pId);
+        });
+      }
     }
 
     // Store current project
@@ -543,6 +710,96 @@ const ModalFactory = {
     this.deps.BuildState.selectProject(projectId);
 
     return this.open('project-immersive-modal');
+  },
+
+  /**
+   * Open project timeline modal (L2b - heart click)
+   * Shows GitHub commit history and builder cards with Fibonacci XP
+   * @param {string} projectId
+   * @returns {string} Modal ID
+   */
+  async openTimeline(projectId) {
+    // Get project data
+    const project = await this.deps.DataAdapter.getProject(projectId);
+    if (!project) {
+      console.warn('[ModalFactory] Project not found:', projectId);
+      return null;
+    }
+
+    // Emit loading event
+    this.deps.BuildState.emit(EVENTS.TIMELINE_LOAD, { projectId });
+
+    // Fetch GitHub data in parallel
+    const [commits, contributors] = await Promise.all([
+      this.deps.GitHubApiService.getRecentCommits(projectId, 10),
+      this.deps.GitHubApiService.getContributors(projectId, 8),
+    ]);
+
+    // Check if timeline modal exists, create if not
+    let modal = byId('project-timeline-modal');
+    if (!modal) {
+      modal = createElement(
+        'div',
+        {
+          id: 'project-timeline-modal',
+          className: 'modal timeline-modal',
+        },
+        [
+          createElement('div', { className: 'modal-backdrop' }),
+          createElement('div', { className: 'modal-content timeline-content' }),
+        ]
+      );
+      document.body.appendChild(modal);
+      this.register('project-timeline-modal', { type: MODAL_TYPES.PROJECT_TIMELINE });
+
+      // Initialize the config
+      const config = modalConfigs.get('project-timeline-modal');
+      config.element = modal;
+      config.backdrop = $(SELECTORS.MODAL_BACKDROP, modal);
+
+      on(config.backdrop, 'click', () => this.close('project-timeline-modal'));
+    }
+
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+      safeInnerHTML(content, generateTimelineModalContent(project, commits, contributors));
+
+      // Bind close button
+      const closeBtn = content.querySelector('.modal-close');
+      if (closeBtn) {
+        on(closeBtn, 'click', () => this.close('project-timeline-modal'));
+      }
+
+      // Bind back button
+      const backBtn = content.querySelector('.btn-back-tree');
+      if (backBtn) {
+        on(backBtn, 'click', () => this.close('project-timeline-modal'));
+      }
+
+      // Bind builder card clicks (emit event for profile viewing)
+      const builderCards = $$('.builder-card', content);
+      builderCards.forEach(card => {
+        const statsBtn = card.querySelector('.builder-stats-btn');
+        if (statsBtn) {
+          on(statsBtn, 'click', e => {
+            e.preventDefault();
+            const nameEl = card.querySelector('.builder-name');
+            if (nameEl) {
+              const username = nameEl.textContent.replace('@', '');
+              this.deps.BuildState.emit(EVENTS.CONTRIBUTOR_CLICK, { username });
+            }
+          });
+        }
+      });
+    }
+
+    // Emit loaded event
+    this.deps.BuildState.emit(EVENTS.TIMELINE_LOADED, { projectId, commits, contributors });
+
+    // Store current project
+    this.deps.BuildState.selectProject(projectId);
+
+    return this.open('project-timeline-modal');
   },
 
   /**

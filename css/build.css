@@ -2491,7 +2491,42 @@ body {
 
 .modal-links {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.modal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm, 6px);
+  color: #fff;
+  font-size: var(--text-sm, 14px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-link .link-icon {
+  font-size: 1.1em;
+}
+
+.modal-link.timeline-link {
+  background: rgba(0, 217, 255, 0.1);
+  border-color: rgba(0, 217, 255, 0.2);
+}
+
+.modal-link.timeline-link:hover {
+  background: rgba(0, 217, 255, 0.2);
+  border-color: rgba(0, 217, 255, 0.4);
 }
 
 /* Feature Modal */

@@ -348,13 +348,399 @@
 .empty-state {
   padding: var(--space-lg);
   text-align: center;
-  color: #666;
+  color: #888;
   font-size: var(--text-sm);
+}
+
+/* ============================================
+   TIMELINE MODAL
+   ============================================ */
+
+.timeline-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--duration-normal),
+    visibility var(--duration-normal);
+}
+
+.timeline-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.timeline-modal .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.timeline-modal .timeline-content {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Timeline Header */
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.timeline-header .modal-icon {
+  font-size: var(--text-2xl);
+}
+
+.timeline-header .modal-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: #fff;
+  margin: 0;
+}
+
+.timeline-header .modal-subtitle {
+  font-size: var(--text-sm);
+  color: #888;
+  margin-left: auto;
+}
+
+.timeline-header .modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  color: #888;
+  font-size: var(--text-xl);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.timeline-header .modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Timeline Body */
+.timeline-body {
+  padding: var(--space-xl);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Commits Timeline */
+.commits-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.commits-timeline::before {
+  content: '';
+  position: absolute;
+  left: 90px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.commit-item {
+  padding: var(--space-md) 0;
+  animation: commitSlideIn var(--duration-normal) ease backwards;
+}
+
+.commit-timeline-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.commit-date {
+  width: 80px;
+  font-size: var(--text-xs);
+  color: #888;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.commit-dot {
+  color: #00ff88;
+  font-size: var(--text-sm);
+  z-index: 1;
+  position: relative;
+}
+
+.commit-line {
+  flex: 0 0 20px;
+  height: 2px;
+  background: linear-gradient(90deg, #00ff88, transparent);
+}
+
+.commit-type {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.commit-feat {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+.commit-fix {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+.commit-refactor {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+.commit-docs {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+.commit-test {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+}
+.commit-chore {
+  background: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
+.commit-style {
+  background: rgba(236, 72, 153, 0.2);
+  color: #ec4899;
+}
+.commit-perf {
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+.commit-other {
+  background: rgba(255, 255, 255, 0.1);
+  color: #888;
+}
+
+.commit-message-text {
+  font-size: var(--text-sm);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.commit-attribution {
+  margin-left: 116px;
+  padding-top: var(--space-2xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.commit-sha-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--text-xs);
+  color: #00d9ff;
+  text-decoration: none;
+}
+
+.commit-sha-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.commit-by {
+  font-size: var(--text-xs);
+  color: #888;
+}
+
+/* Builders Grid */
+.builders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.builder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-lg) var(--space-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  animation: contributorFadeIn var(--duration-normal) ease backwards;
+  transition: all var(--duration-fast);
+}
+
+.builder-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.builder-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  object-fit: cover;
+}
+
+.builder-name {
+  font-size: var(--text-sm);
+  color: #fff;
+  font-weight: var(--font-medium);
+}
+
+.builder-xp {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: #fbbf24;
+}
+
+.builder-stats-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  font-size: var(--text-base);
+  transition: all var(--duration-fast);
+}
+
+.builder-stats-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+/* XP Note */
+.xp-note {
+  font-size: var(--text-xs);
+  color: #666;
+  margin: 0 0 var(--space-md);
+  font-style: italic;
+}
+
+/* Timeline Actions */
+.timeline-actions {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.btn-back-tree {
+  padding: var(--space-sm) var(--space-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.btn-back-tree:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
+
+@media (max-width: 768px) {
+  .timeline-modal .timeline-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .timeline-header {
+    padding: var(--space-md) var(--space-lg);
+    flex-wrap: wrap;
+  }
+
+  .timeline-header .modal-subtitle {
+    order: 3;
+    width: 100%;
+    margin: var(--space-xs) 0 0;
+  }
+
+  .timeline-body {
+    padding: var(--space-lg);
+  }
+
+  .commits-timeline::before {
+    left: 10px;
+  }
+
+  .commit-timeline-row {
+    flex-wrap: wrap;
+  }
+
+  .commit-date {
+    width: auto;
+    order: -1;
+    text-align: left;
+    margin-left: 24px;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .commit-dot {
+    position: absolute;
+    left: 0;
+  }
+
+  .commit-line {
+    display: none;
+  }
+
+  .commit-attribution {
+    margin-left: 24px;
+  }
+
+  .builders-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .builder-card {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .builder-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
 
 @media (max-width: 480px) {
   .contributors-grid {
@@ -372,5 +758,19 @@
   .stat-item {
     width: 100%;
     justify-content: center;
+  }
+
+  .builders-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .commit-message-text {
+    width: 100%;
+    margin-top: var(--space-xs);
+  }
+
+  .commit-type {
+    order: -1;
+    margin-bottom: var(--space-2xs);
   }
 }
