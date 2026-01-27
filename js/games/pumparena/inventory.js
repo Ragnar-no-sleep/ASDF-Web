@@ -1008,10 +1008,12 @@ const PumpArenaInventory = {
       if (itemDef?.effect) {
         if (itemDef.effect.xpBonus) bonuses.xpBonus += itemDef.effect.xpBonus;
         if (itemDef.effect.taskSpeedBonus) bonuses.taskSpeedBonus += itemDef.effect.taskSpeedBonus;
-        if (itemDef.effect.influenceRegenBonus)
+        if (itemDef.effect.influenceRegenBonus) {
           bonuses.influenceRegenBonus += itemDef.effect.influenceRegenBonus;
-        if (itemDef.effect.eventBonusChance)
+        }
+        if (itemDef.effect.eventBonusChance) {
           bonuses.eventBonusChance += itemDef.effect.eventBonusChance;
+        }
       }
     }
 
@@ -1314,17 +1316,21 @@ const PumpArenaInventory = {
     const parts = [];
     const statNames = { dev: 'DEV', com: 'COM', mkt: 'MKT', str: 'STR', cha: 'CHA', lck: 'LCK' };
 
-    if (effect.stat && effect.bonus)
+    if (effect.stat && effect.bonus) {
       parts.push(`+${effect.bonus} ${statNames[effect.stat] || effect.stat}`);
-    if (effect.stat2 && effect.bonus2)
+    }
+    if (effect.stat2 && effect.bonus2) {
       parts.push(`+${effect.bonus2} ${statNames[effect.stat2] || effect.stat2}`);
+    }
     if (effect.allStatsBonus) parts.push(`+${effect.allStatsBonus} ALL`);
     if (effect.xpBonus) parts.push(`+${Math.round(effect.xpBonus * 100)}% XP`);
     if (effect.taskSpeedBonus) parts.push(`+${Math.round(effect.taskSpeedBonus * 100)}% Speed`);
-    if (effect.influenceRegenBonus)
+    if (effect.influenceRegenBonus) {
       parts.push(`+${Math.round(effect.influenceRegenBonus * 100)}% Regen`);
-    if (effect.eventBonusChance)
+    }
+    if (effect.eventBonusChance) {
       parts.push(`+${Math.round(effect.eventBonusChance * 100)}% Events`);
+    }
 
     return parts.join(' | ');
   },

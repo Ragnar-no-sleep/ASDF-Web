@@ -172,38 +172,38 @@ const {
 const {
   track: trackAnalytics,
   trackPageView: _trackPageView,
-  trackAction,
+  trackAction: _trackAction,
   getAggregatedMetrics,
   getFunnelAnalysis,
   getAnalyticsMetrics,
   EVENT_TYPES: ANALYTICS_EVENTS,
 } = require('./services/analytics');
 const {
-  schedule: scheduleTask,
-  scheduleInterval,
+  schedule: _scheduleTask,
+  scheduleInterval: _scheduleInterval,
   getAllTasks,
   getHistory: getTaskHistory,
   getSchedulerMetrics,
-  SCHEDULES,
+  SCHEDULES: _SCHEDULES,
 } = require('./services/scheduler');
 const {
-  checkLimit: checkRateLimit,
-  checkTokenBucket,
-  createMiddleware: createRateLimitMiddleware,
+  checkLimit: _checkRateLimit,
+  checkTokenBucket: _checkTokenBucket,
+  createMiddleware: _createRateLimitMiddleware,
   getStats: getRateLimitStats,
   getBannedList,
   removeBan,
   extractIP,
 } = require('./services/ratelimit');
 const {
-  validate,
-  registerSchema,
-  createMiddleware: createValidationMiddleware,
-  sanitizeValue,
+  validate: _validate,
+  registerSchema: _registerSchema,
+  createMiddleware: _createValidationMiddleware,
+  sanitizeValue: _sanitizeValue,
   getStats: getValidatorStats,
 } = require('./services/validator');
 const {
-  isEnabled: isFeatureEnabled,
+  isEnabled: _isFeatureEnabled,
   evaluate: evaluateFlag,
   getAllFlags,
   setFlagEnabled,
@@ -214,45 +214,45 @@ const {
 } = require('./services/featureflags');
 const {
   log: auditLog,
-  logSecurity,
+  logSecurity: _logSecurity,
   logAdmin: logAdminAction,
   search: searchAudit,
   getActiveAlerts,
   exportLogs: exportAuditLogs,
   getStats: getAuditStats,
-  createMiddleware: createAuditMiddleware,
+  createMiddleware: _createAuditMiddleware,
   EVENT_TYPES: AUDIT_EVENTS,
-  CATEGORIES: AUDIT_CATEGORIES,
+  CATEGORIES: _AUDIT_CATEGORIES,
   SEVERITY: AUDIT_SEVERITY,
 } = require('./services/audit');
 const {
-  getCircuit,
-  execute: circuitExecute,
-  wrap: circuitWrap,
+  getCircuit: _getCircuit,
+  execute: _circuitExecute,
+  wrap: _circuitWrap,
   getAllCircuits,
   getCircuitStatus,
   forceCircuitState,
   resetCircuit,
   getStats: getCircuitStats,
-  STATES: CIRCUIT_STATES,
+  STATES: _CIRCUIT_STATES,
 } = require('./services/circuitbreaker');
 const {
-  startTrace,
-  startSpan,
-  endSpan,
-  getCurrentTrace,
-  createMiddleware: createTracingMiddleware,
+  startTrace: _startTrace,
+  startSpan: _startSpan,
+  endSpan: _endSpan,
+  getCurrentTrace: _getCurrentTrace,
+  createMiddleware: _createTracingMiddleware,
   getTrace,
   searchTraces,
   getSlowTraces,
   getErrorTraces,
-  getRecentTraces,
+  getRecentTraces: _getRecentTraces,
   getStats: getTracingStats,
   setSampleRate,
 } = require('./services/tracing');
 const {
-  registerCheck,
-  runAllChecks,
+  registerCheck: _registerCheck,
+  runAllChecks: _runAllChecks,
   livenessProbe,
   readinessProbe,
   startupProbe,
@@ -260,16 +260,16 @@ const {
   getHistory: getHealthHistory,
   getTrend: getHealthTrend,
   getStats: getHealthStats,
-  CHECK_TYPES,
+  CHECK_TYPES: _CHECK_TYPES,
 } = require('./services/healthcheck');
 const {
   get: getConfig,
   set: setConfig,
   getAll: getAllConfig,
-  onChange: onConfigChange,
+  onChange: _onConfigChange,
   getHistory: getConfigHistory,
   getStats: getConfigStats,
-  defineSchema: defineConfigSchema,
+  defineSchema: _defineConfigSchema,
 } = require('./services/config');
 const {
   registerServer,
@@ -278,14 +278,14 @@ const {
   initiateShutdown,
   getHealthState: getShutdownState,
   getStats: getShutdownStats,
-  isAcceptingTraffic,
+  isAcceptingTraffic: _isAcceptingTraffic,
 } = require('./services/shutdown');
 const {
   middleware: versioningMiddleware,
   getVersionInfo,
   getStats: getVersioningStats,
-  detectVersion,
-  validateVersion,
+  detectVersion: _detectVersion,
+  validateVersion: _validateVersion,
 } = require('./services/versioning');
 const {
   createBatchHandler,
@@ -298,22 +298,22 @@ const {
   clearCache: clearCompressionCache,
 } = require('./services/compression');
 const {
-  registerEndpoint,
-  executeRequest,
-  executeEnhancedRequest,
+  registerEndpoint: _registerEndpoint,
+  executeRequest: _executeRequest,
+  executeEnhancedRequest: _executeEnhancedRequest,
   getAllEndpointsStatus,
   checkAllEndpointsHealth,
   getStats: getRpcStats,
-  ENDPOINT_TYPES,
+  ENDPOINT_TYPES: _ENDPOINT_TYPES,
 } = require('./services/rpcFailover');
 const {
   trackTransaction,
   getTransactionStatus,
   getActiveTransactions,
-  getHistory: getTxHistory,
+  getHistory: _getTxHistory,
   getWalletHistory: getTxWalletHistory,
   getStats: getTxMonitorStats,
-  TX_STATES,
+  TX_STATES: _TX_STATES,
   TX_TYPES,
 } = require('./services/txMonitor');
 const {
@@ -324,16 +324,16 @@ const {
   getHourlyAverages: getFeeHourlyAverages,
   estimateComputeUnits,
   getStats: getPriorityFeeStats,
-  PRIORITY_LEVELS,
+  PRIORITY_LEVELS: _PRIORITY_LEVELS,
 } = require('./services/priorityFee');
 const {
   connect: wsConnect,
   getConnectionStatus: getWsStatus,
-  subscribeAccount,
-  subscribeSignature,
+  subscribeAccount: _subscribeAccount,
+  subscribeSignature: _subscribeSignature,
   getSubscriptions: getWsSubscriptions,
   getStats: getWsStats,
-  shutdown: wsShutdown,
+  shutdown: _wsShutdown,
 } = require('./services/wsManager');
 
 // Phase 12: Data Management & Compliance
@@ -346,15 +346,15 @@ const {
   getStats: getDataExportStats,
 } = require('./services/dataExport');
 const {
-  middleware: idempotencyMiddleware,
-  generateKey: generateIdempotencyKey,
-  invalidateKey: invalidateIdempotencyKey,
+  middleware: _idempotencyMiddleware,
+  generateKey: _generateIdempotencyKey,
+  invalidateKey: _invalidateIdempotencyKey,
   getStats: getIdempotencyStats,
 } = require('./services/idempotency');
 const {
-  createSession,
-  validateSession,
-  refreshSession,
+  createSession: _createSession,
+  validateSession: _validateSession,
+  refreshSession: _refreshSession,
   revokeSession,
   revokeAllUserSessions,
   getUserSessions,
@@ -364,9 +364,9 @@ const {
   getStats: getSessionStats,
 } = require('./services/sessionManager');
 const {
-  registerTag: registerApiTag,
-  registerSchema: registerApiSchema,
-  registerRoute: registerApiRoute,
+  registerTag: _registerApiTag,
+  registerSchema: _registerApiSchema,
+  registerRoute: _registerApiRoute,
   generateSpec,
   serveDocumentation,
   serveSwaggerUI,
@@ -374,7 +374,7 @@ const {
 } = require('./services/openApiGenerator');
 
 // Phase 15: Storage Abstraction (Redis/Memory)
-const { getStorage, isStorageReady, BACKENDS } = require('./services/storage');
+const { getStorage, isStorageReady, BACKENDS: _BACKENDS } = require('./services/storage');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
