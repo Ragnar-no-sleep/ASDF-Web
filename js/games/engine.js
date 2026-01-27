@@ -13,46 +13,8 @@ const activeGameSessions = {}; // Anti-cheat session tracking
 
 // sanitizeNumber and isValidGameId are provided by shared/validation.js
 
-function startGame(gameId) {
-  if (!isValidGameId(gameId)) return;
-
-  // Check if starting in competitive mode
-  const isCompetitive = activeGameModes[gameId] === 'competitive';
-  if (isCompetitive) {
-    // Verify we can still play competitive and start session
-    if (!canPlayCompetitive(gameId)) {
-      alert('Mode compétitif non disponible. Basculement vers le mode entraînement.');
-      activeGameModes[gameId] = 'practice';
-      const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-      const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-      if (competitiveBtn) competitiveBtn.classList.remove('active');
-      if (practiceBtn) practiceBtn.classList.add('active');
-    } else {
-      // Start competitive session timer
-      if (!startCompetitiveSession()) {
-        alert("Temps compétitif épuisé pour aujourd'hui! Basculement vers le mode entraînement.");
-        activeGameModes[gameId] = 'practice';
-        const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-        const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-        if (competitiveBtn) competitiveBtn.classList.remove('active');
-        if (practiceBtn) practiceBtn.classList.add('active');
-      }
-    }
-  }
-
-  // Start anti-cheat session
-  if (typeof AntiCheat !== 'undefined') {
-    const session = AntiCheat.startSession(gameId);
-    activeGameSessions[gameId] = session.id;
-  }
-
-  const overlay = document.getElementById(`overlay-${gameId}`);
-  if (overlay) overlay.classList.add('hidden');
-
-  requestAnimationFrame(() => {
-    initializeGame(gameId);
-  });
-}
+// startGame() - now provided by shared/lifecycle.js
+// See GameLifecycle.startGame() for implementation
 
 /**
  * Record a game action for anti-cheat tracking
@@ -74,54 +36,11 @@ function recordScoreUpdate(gameId, score, delta) {
   }
 }
 
-function initializeGame(gameId) {
-  switch (gameId) {
-    case 'tokencatcher':
-      startTokenCatcher(gameId);
-      break;
-    case 'burnrunner':
-      startBurnRunner(gameId);
-      break;
-    case 'scamblaster':
-      startScamBlaster(gameId);
-      break;
-    case 'cryptoheist':
-      startCryptoHeist(gameId);
-      break;
-    case 'pumparena':
-      startPumpArena(gameId);
-      break;
-    case 'whalewatch':
-      startWhaleWatch(gameId);
-      break;
-    case 'stakestacker':
-      startStakeStacker(gameId);
-      break;
-    case 'dexdash':
-      startDexDash(gameId);
-      break;
-    case 'burnorhold':
-      startBurnOrHold(gameId);
-      break;
-    case 'liquiditymaze':
-      startLiquidityMaze(gameId);
-      break;
-    default:
-    // Game not implemented
-  }
-}
+// initializeGame() - now provided by engines/index.js
+// See GameEngines for modular game routing with legacy fallback
 
-function stopGame(gameId) {
-  if (activeGames[gameId]) {
-    if (activeGames[gameId].interval) {
-      clearInterval(activeGames[gameId].interval);
-    }
-    if (activeGames[gameId].cleanup) {
-      activeGames[gameId].cleanup();
-    }
-    delete activeGames[gameId];
-  }
-}
+// stopGame() - now provided by shared/lifecycle.js
+// See GameLifecycle.stopGame() for implementation
 
 function updateScore(gameId, score) {
   const scoreEl = document.getElementById(`score-${gameId}`);
@@ -135,162 +54,8 @@ function updateScore(gameId, score) {
   }
 }
 
-async function endGame(gameId, finalScore) {
-  if (!isValidGameId(gameId)) return;
-
-  const safeScore = sanitizeNumber(finalScore, 0, 999999999, 0);
-  updateScore(gameId, safeScore);
-  stopGame(gameId);
-
-  const isCompetitive = activeGameModes[gameId] === 'competitive';
-
-  // End anti-cheat session and get validation data
-  let sessionData = null;
-  const sessionId = activeGameSessions[gameId];
-  if (sessionId && typeof AntiCheat !== 'undefined') {
-    sessionData = AntiCheat.endSession(sessionId, safeScore);
-    delete activeGameSessions[gameId];
-
-    if (sessionData && !sessionData.valid) {
-      console.warn(`Session flagged for ${gameId}:`, sessionData.flags);
-    }
-  }
-
-  // Award XP from game score (ASDF Engage integration)
-  let xpResult = null;
-  if (safeScore > 0 && typeof addXpFromGame === 'function') {
-    xpResult = addXpFromGame(safeScore);
-    if (xpResult.success) {
-      // Show XP notification
-      if (typeof showXpNotification === 'function') {
-        showXpNotification(xpResult.xpGained, gameId);
-      }
-      // Show tier up celebration if applicable
-      if (xpResult.tieredUp && typeof showTierUpCelebration === 'function') {
-        showTierUpCelebration(ASDF.engageTierNames[xpResult.tier.index - 1], xpResult.tier.name);
-      }
-    }
-  }
-
-  let apiResult = null;
-  let submitError = null;
-
-  if (appState.wallet) {
-    try {
-      // Include anti-cheat session data with score submission
-      apiResult = await ApiClient.submitScore(gameId, safeScore, isCompetitive, sessionData);
-      if (apiResult.isNewBest) {
-        appState.practiceScores[gameId] = apiResult.bestScore;
-        saveState();
-        document.getElementById(`best-${gameId}`).textContent = apiResult.bestScore;
-      }
-    } catch (error) {
-      console.error('Failed to submit score:', error);
-      submitError = error.message;
-      if (safeScore > (appState.practiceScores[gameId] || 0)) {
-        appState.practiceScores[gameId] = safeScore;
-        saveState();
-      }
-    }
-  } else {
-    if (safeScore > (appState.practiceScores[gameId] || 0)) {
-      appState.practiceScores[gameId] = safeScore;
-      saveState();
-    }
-  }
-
-  const arena = document.getElementById(`arena-${gameId}`);
-  if (arena) {
-    const gameOverDiv = document.createElement('div');
-    gameOverDiv.id = `gameover-${gameId}`;
-    gameOverDiv.className = 'game-over-overlay';
-
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'game-over-title';
-    titleDiv.textContent = 'GAME OVER';
-
-    const scoreDiv = document.createElement('div');
-    scoreDiv.className = 'game-over-score';
-    scoreDiv.textContent = `Score: ${safeScore.toLocaleString()}`;
-
-    if (apiResult?.isNewBest) {
-      const newBestDiv = document.createElement('div');
-      newBestDiv.className = 'game-over-new-best';
-      newBestDiv.textContent = 'NEW BEST SCORE!';
-      gameOverDiv.appendChild(titleDiv);
-      gameOverDiv.appendChild(newBestDiv);
-    } else {
-      gameOverDiv.appendChild(titleDiv);
-    }
-
-    gameOverDiv.appendChild(scoreDiv);
-
-    // Show XP gained from this game
-    if (xpResult && xpResult.success && xpResult.xpGained > 0) {
-      const xpDiv = document.createElement('div');
-      xpDiv.className = 'game-over-xp';
-      xpDiv.textContent = `+${xpResult.xpGained} XP`;
-      gameOverDiv.appendChild(xpDiv);
-
-      // Show current tier progress (using DOM API for XSS safety)
-      const tierDiv = document.createElement('div');
-      tierDiv.className = 'game-over-tier';
-      const tier = xpResult.tier;
-
-      const tierNameSpan = document.createElement('span');
-      tierNameSpan.className = 'tier-name';
-      tierNameSpan.style.color = ASDF.getTierColor(tier.index, 'engage');
-      tierNameSpan.textContent = tier.name;
-      tierDiv.appendChild(tierNameSpan);
-
-      if (!tier.isMax) {
-        const progressSpan = document.createElement('span');
-        progressSpan.className = 'tier-progress';
-        progressSpan.textContent = ` ${Math.round(tier.progress * 100)}%`;
-        tierDiv.appendChild(progressSpan);
-      }
-      gameOverDiv.appendChild(tierDiv);
-    }
-
-    if (isCompetitive && apiResult?.rank) {
-      const rankDiv = document.createElement('div');
-      rankDiv.className = 'game-over-rank';
-      rankDiv.textContent = `Weekly Rank: #${apiResult.rank}`;
-      gameOverDiv.appendChild(rankDiv);
-    }
-
-    if (submitError) {
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'game-over-error';
-      errorDiv.textContent = `(Score saved locally - ${submitError})`;
-      gameOverDiv.appendChild(errorDiv);
-    }
-
-    // Show achievements unlocked from this game
-    if (apiResult?.newAchievements && apiResult.newAchievements.length > 0) {
-      // Process and show achievement notifications
-      if (typeof GameRewards !== 'undefined') {
-        GameRewards.processScoreResponse(apiResult, gameId);
-
-        // Add achievements section to game over screen
-        const achievementsSection = GameRewards.createGameOverAchievements(
-          apiResult.newAchievements
-        );
-        if (achievementsSection) {
-          gameOverDiv.appendChild(achievementsSection);
-        }
-      }
-    }
-
-    const restartBtn = document.createElement('button');
-    restartBtn.className = 'btn btn-primary game-over-restart';
-    restartBtn.textContent = 'PLAY AGAIN';
-    restartBtn.addEventListener('click', () => restartGame(gameId));
-
-    gameOverDiv.appendChild(restartBtn);
-    arena.appendChild(gameOverDiv);
-  }
-}
+// endGame() - now provided by shared/lifecycle.js
+// See GameLifecycle.endGame() for implementation with achievements support
 
 // ============================================
 // GAME IMPLEMENTATIONS - Placeholder stubs
