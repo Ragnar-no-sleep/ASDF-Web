@@ -178,6 +178,18 @@ const BurnRunner = {
     this.createArena(arena);
     this.canvas = document.getElementById('br-canvas');
     this.ctx = this.canvas.getContext('2d');
+
+    // Cache DOM references for performance (avoid lookups in game loop)
+    this.dom = {
+      jumps: document.getElementById('br-jumps'),
+      distance: document.getElementById('br-distance'),
+      tokens: document.getElementById('br-tokens'),
+      dashCd: document.getElementById('br-dash-cd'),
+      shieldCd: document.getElementById('br-shield-cd'),
+      dashAbility: document.getElementById('br-dash-ability'),
+      shieldAbility: document.getElementById('br-shield-ability'),
+    };
+
     this.timing = GameTiming.create();
 
     // Initialize GameJuice for visual feedback
@@ -448,7 +460,7 @@ const BurnRunner = {
    * Update jumps display
    */
   updateJumpsDisplay() {
-    const jumpsEl = document.getElementById('br-jumps');
+    const jumpsEl = this.dom.jumps;
     if (jumpsEl) {
       jumpsEl.innerHTML =
         '⬆️'.repeat(this.state.jumpsLeft) + '⬛'.repeat(this.state.maxJumps - this.state.jumpsLeft);
@@ -655,14 +667,18 @@ const BurnRunner = {
    */
   updateEffects() {
     const now = Date.now();
-    if (this.state.effects.shield && now > this.state.effects.shieldEnd)
+    if (this.state.effects.shield && now > this.state.effects.shieldEnd) {
       this.state.effects.shield = false;
-    if (this.state.effects.speedBoost && now > this.state.effects.speedBoostEnd)
+    }
+    if (this.state.effects.speedBoost && now > this.state.effects.speedBoostEnd) {
       this.state.effects.speedBoost = false;
-    if (this.state.effects.slow && now > this.state.effects.slowEnd)
+    }
+    if (this.state.effects.slow && now > this.state.effects.slowEnd) {
       this.state.effects.slow = false;
-    if (this.state.effects.freeze && now > this.state.effects.freezeEnd)
+    }
+    if (this.state.effects.freeze && now > this.state.effects.freezeEnd) {
       this.state.effects.freeze = false;
+    }
   },
 
   /**
@@ -683,10 +699,10 @@ const BurnRunner = {
    */
   updateAbilityCooldowns() {
     const now = Date.now();
-    const dashCdEl = document.getElementById('br-dash-cd');
-    const shieldCdEl = document.getElementById('br-shield-cd');
-    const dashAbilityEl = document.getElementById('br-dash-ability');
-    const shieldAbilityEl = document.getElementById('br-shield-ability');
+    const dashCdEl = this.dom.dashCd;
+    const shieldCdEl = this.dom.shieldCd;
+    const dashAbilityEl = this.dom.dashAbility;
+    const shieldAbilityEl = this.dom.shieldAbility;
 
     if (dashCdEl && dashAbilityEl) {
       const dashRemaining = Math.max(
@@ -919,11 +935,11 @@ const BurnRunner = {
       return p.life > 0 && p.alpha > 0.05;
     });
 
-    // Update UI
-    const distanceEl = document.getElementById('br-distance');
-    const tokensEl = document.getElementById('br-tokens');
+    // Update UI (using cached DOM references)
+    const distanceEl = this.dom.distance;
+    const tokensEl = this.dom.tokens;
     if (distanceEl) distanceEl.textContent = Math.floor(this.state.distance) + 'm';
-    if (tokensEl) tokensEl.textContent = this.state.tokens + ' &#128293;';
+    if (tokensEl) tokensEl.textContent = this.state.tokens + ' 🔥';
     this.state.score = Math.floor(this.state.distance) + this.state.tokens * 10;
     updateScore(this.gameId, this.state.score);
   },

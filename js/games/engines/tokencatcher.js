@@ -102,6 +102,15 @@ const TokenCatcher = {
     // Setup canvas
     this.canvas = document.getElementById('tc-canvas');
     this.ctx = this.canvas.getContext('2d');
+
+    // Cache DOM references for performance (avoid lookups in game loop)
+    this.dom = {
+      score: document.getElementById('tc-score'),
+      time: document.getElementById('tc-time'),
+      combo: document.getElementById('tc-combo'),
+      comboContainer: document.getElementById('tc-combo-container'),
+    };
+
     this.resizeCanvas();
 
     // Initialize timing for frame-independent movement
@@ -315,8 +324,7 @@ const TokenCatcher = {
     this.timerInterval = setInterval(() => {
       if (self.state.gameOver) return;
       self.state.timeLeft--;
-      const timeEl = document.getElementById('tc-time');
-      if (timeEl) timeEl.textContent = self.state.timeLeft;
+      if (self.dom.time) self.dom.time.textContent = self.state.timeLeft;
 
       // Update difficulty curve
       self.updateDifficulty();
@@ -547,8 +555,8 @@ const TokenCatcher = {
    * Update combo display
    */
   updateComboDisplay() {
-    const comboEl = document.getElementById('tc-combo');
-    const containerEl = document.getElementById('tc-combo-container');
+    const comboEl = this.dom.combo;
+    const containerEl = this.dom.comboContainer;
     if (comboEl) {
       const multiplier = this.getComboMultiplier();
       comboEl.innerHTML = `${this.state.combo}<span style="font-size:12px;color:${multiplier > 1 ? '#fbbf24' : 'var(--text-muted)'};">x${multiplier}</span>`;
@@ -745,7 +753,7 @@ const TokenCatcher = {
           self.state.score += points;
           self.addEffect(token.x, token.y, `+${points}`, color);
           self.triggerImpact(token.x, token.y, effectType);
-          document.getElementById('tc-score').textContent = self.state.score;
+          self.dom.score.textContent = self.state.score;
           updateScore(self.gameId, self.state.score);
           recordGameAction(self.gameId, 'shoot_token', {
             type: token.isSkull ? 'skull' : token.isScam ? 'scam' : 'good',
@@ -788,7 +796,7 @@ const TokenCatcher = {
             self.state.score += enemy.points;
             self.addEffect(enemy.x, enemy.y - 20, `+${enemy.points}`, '#22c55e');
             self.triggerImpact(enemy.x, enemy.y, 'enemy_kill');
-            document.getElementById('tc-score').textContent = self.state.score;
+            self.dom.score.textContent = self.state.score;
             updateScore(self.gameId, self.state.score);
           }
           return false;
@@ -884,7 +892,7 @@ const TokenCatcher = {
           });
         }
         recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -21 : 13);
-        document.getElementById('tc-score').textContent = self.state.score;
+        self.dom.score.textContent = self.state.score;
         updateScore(self.gameId, self.state.score);
         return false;
       }
@@ -907,7 +915,7 @@ const TokenCatcher = {
         self.addEffect(enemy.x, enemy.y, `-${penalty}`, '#ef4444');
         self.triggerImpact(enemy.x, enemy.y, 'damage');
         self.resetCombo(); // Enemy hit resets combo
-        document.getElementById('tc-score').textContent = self.state.score;
+        self.dom.score.textContent = self.state.score;
         updateScore(self.gameId, self.state.score);
         return false;
       }
