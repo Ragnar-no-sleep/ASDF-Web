@@ -4,7 +4,80 @@ const path = require('path');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
+// SSR renderer for games page
+const { renderGamesPage } = require('./ssr/games.cjs');
+
 const app = express();
+
+// =============================================================================
+// BOT DETECTION
+// =============================================================================
+
+/**
+ * Common bot/crawler user agents
+ * Used to serve SSR content for better SEO
+ */
+const BOT_USER_AGENTS = [
+  'googlebot',
+  'bingbot',
+  'slurp',
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'twitterbot',
+  'linkedinbot',
+  'whatsapp',
+  'telegrambot',
+  'discordbot',
+  'slackbot',
+  'applebot',
+  'petalbot',
+  'semrushbot',
+  'ahrefsbot',
+  'mj12bot',
+  'dotbot',
+  'rogerbot',
+  'embedly',
+  'quora link preview',
+  'showyoubot',
+  'outbrain',
+  'pinterest',
+  'developers.google.com',
+  'redditbot',
+  'snapchat',
+];
+
+/**
+ * Check if request is from a bot/crawler
+ * @param {import('express').Request} req
+ * @returns {boolean}
+ */
+function isBot(req) {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+
+  // Check for known bots
+  if (BOT_USER_AGENTS.some((bot) => ua.includes(bot))) {
+    return true;
+  }
+
+  // Check for headless browsers (often used by prerender services)
+  if (ua.includes('headless') || ua.includes('phantom') || ua.includes('prerender')) {
+    return true;
+  }
+
+  // Check _escaped_fragment_ query param (old Google AJAX crawling)
+  if (req.query._escaped_fragment_ !== undefined) {
+    return true;
+  }
+
+  // Force SSR with ?ssr=1 query param (for testing)
+  if (req.query.ssr === '1') {
+    return true;
+  }
+
+  return false;
+}
 
 // JSON body parser for API routes
 app.use(express.json({ limit: '10kb' }));
@@ -271,10 +344,25 @@ app.get('/widget', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route /ignition to games.html
-app.get('/ignition', (req, res) => {
+// Route /games and /ignition to games page
+// Serves SSR for bots/crawlers, static file for browsers
+async function serveGamesPage(req, res) {
+  if (isBot(req)) {
+    try {
+      const html = await renderGamesPage();
+      res.set('Content-Type', 'text/html');
+      res.set('X-SSR', 'true'); // Debug header
+      return res.send(html);
+    } catch (err) {
+      console.error('[SSR] Games page error:', err.message);
+      // Fall through to static file
+    }
+  }
   res.sendFile(path.join(__dirname, 'games.html'));
-});
+}
+
+app.get('/games', serveGamesPage);
+app.get('/ignition', serveGamesPage);
 
 // Route /privacy to privacy.html (for Play Store requirement)
 app.get('/privacy', (req, res) => {
