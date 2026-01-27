@@ -5,8 +5,8 @@
  * - rotation.js - Game rotation cycle
  * - leaderboard.js - Leaderboard display
  * - competitive.js - Competitive mode timer
- *
- * Note: Grid and modal functions remain in ui.js for now
+ * - grid.js - Games grid rendering
+ * - modal.js - Game modal management
  */
 
 'use strict';
@@ -16,6 +16,8 @@ const GameUI = {
   rotation: typeof GameRotation !== 'undefined' ? GameRotation : null,
   leaderboard: typeof LeaderboardUI !== 'undefined' ? LeaderboardUI : null,
   competitive: typeof CompetitiveUI !== 'undefined' ? CompetitiveUI : null,
+  grid: typeof GridUI !== 'undefined' ? GridUI : null,
+  modal: typeof ModalUI !== 'undefined' ? ModalUI : null,
 
   initialized: false,
 
@@ -35,6 +37,12 @@ const GameUI = {
     if (typeof CompetitiveUI !== 'undefined') {
       this.competitive = CompetitiveUI;
     }
+    if (typeof GridUI !== 'undefined') {
+      this.grid = GridUI;
+    }
+    if (typeof ModalUI !== 'undefined') {
+      this.modal = ModalUI;
+    }
 
     this.initialized = true;
     console.log('[GameUI] Initialized with modules:', this.getLoadedModules());
@@ -49,6 +57,8 @@ const GameUI = {
     if (this.rotation) modules.push('rotation');
     if (this.leaderboard) modules.push('leaderboard');
     if (this.competitive) modules.push('competitive');
+    if (this.grid) modules.push('grid');
+    if (this.modal) modules.push('modal');
     return modules;
   },
 
@@ -57,7 +67,13 @@ const GameUI = {
    * @returns {boolean}
    */
   isComplete() {
-    return this.rotation !== null && this.leaderboard !== null && this.competitive !== null;
+    return (
+      this.rotation !== null &&
+      this.leaderboard !== null &&
+      this.competitive !== null &&
+      this.grid !== null &&
+      this.modal !== null
+    );
   },
 };
 

@@ -1,52 +1,21 @@
 /**
- * ASDF Games - UI Components
- * Grid rendering and modal management
+ * ASDF Games - Modal UI
  *
- * Note: Rotation, leaderboard, and competitive functions
- * have been extracted to ui/ subdirectory modules
+ * Handles game modal generation and lifecycle
+ * Extracted from ui.js for modularity
  */
 
 'use strict';
 
-// ============================================
-// GAMES GRID
-// ============================================
+const ModalUI = {
+  /**
+   * Generate all game modals
+   */
+  generate() {
+    const container = document.getElementById('game-modals');
+    if (!container) return;
 
-function renderGamesGrid() {
-  const grid = document.getElementById('games-grid');
-  const currentGame = getCurrentGame();
-
-  grid.innerHTML = GAMES.map(game => {
-    const isFeatured = game.id === currentGame.id;
-    // All games accessible - no holder restriction
-    const isLocked = false;
-    const highScore = appState.practiceScores[game.id] || 0;
-
-    return `
-            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}" data-action="open-game" style="cursor: pointer;">
-                <div class="game-icon">${game.icon}</div>
-                <h3 class="game-name">${escapeHtml(game.name)}</h3>
-                <p class="game-type">${escapeHtml(game.type)}</p>
-                <div class="game-highscore">
-                    Best: ${highScore}
-                </div>
-                <button class="btn game-play-btn" data-action="open-game" data-game="${game.id}">
-                    Play
-                </button>
-            </div>
-        `;
-  }).join('');
-}
-
-// ============================================
-// GAME MODALS
-// ============================================
-
-function generateGameModals() {
-  const container = document.getElementById('game-modals');
-
-  container.innerHTML = GAMES.map(
-    game => `
+    container.innerHTML = GAMES.map(game => `
         <div class="game-modal" id="modal-${game.id}">
             <div class="game-modal-content">
                 <div class="game-modal-header">
@@ -102,77 +71,110 @@ function generateGameModals() {
                 </div>
             </div>
         </div>
-    `
-  ).join('');
+    `).join('');
+  },
+
+  /**
+   * Open a game modal
+   * @param {string} gameId - The game ID
+   */
+  open(gameId) {
+    if (!isValidGameId(gameId)) return;
+    const game = GAMES.find(g => g.id === gameId);
+    if (!game) return;
+
+    // All games accessible - no holder restriction
+    const modal = document.getElementById(`modal-${gameId}`);
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Load mini leaderboard for this game
+    loadMiniLeaderboard(gameId);
+  },
+
+  /**
+   * Close a game modal
+   * @param {string} gameId - The game ID
+   */
+  close(gameId) {
+    if (!isValidGameId(gameId)) return;
+
+    const modal = document.getElementById(`modal-${gameId}`);
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    const overlay = document.getElementById(`overlay-${gameId}`);
+    if (overlay) overlay.classList.remove('hidden');
+
+    const arena = document.getElementById(`arena-${gameId}`);
+    if (arena) arena.innerHTML = '';
+
+    // End competitive session if active
+    if (activeGameModes[gameId] === 'competitive') {
+      endCompetitiveSession();
+      // Reset to practice mode for next time
+      activeGameModes[gameId] = 'practice';
+      const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
+      const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
+      if (competitiveBtn) competitiveBtn.classList.remove('active');
+      if (practiceBtn) practiceBtn.classList.add('active');
+      // Hide timer
+      const timerStat = document.getElementById(`timer-stat-${gameId}`);
+      if (timerStat) timerStat.style.display = 'none';
+    }
+
+    stopGame(gameId);
+  },
+
+  /**
+   * Restart a game
+   * @param {string} gameId - The game ID
+   */
+  restart(gameId) {
+    if (!isValidGameId(gameId)) return;
+
+    stopGame(gameId);
+    const scoreEl = document.getElementById(`score-${gameId}`);
+    if (scoreEl) scoreEl.textContent = '0';
+
+    const gameOver = document.getElementById(`gameover-${gameId}`);
+    if (gameOver) gameOver.remove();
+
+    const arena = document.getElementById(`arena-${gameId}`);
+    if (arena) arena.innerHTML = '';
+
+    startGame(gameId);
+  },
+};
+
+// Legacy function exports for backwards compatibility
+function generateGameModals() {
+  return ModalUI.generate();
 }
 
-// ============================================
-// GAME LIFECYCLE
-// ============================================
-
 function openGame(gameId) {
-  if (!isValidGameId(gameId)) return;
-  const game = GAMES.find(g => g.id === gameId);
-  if (!game) return;
-
-  // All games accessible - no holder restriction
-  document.getElementById(`modal-${gameId}`).classList.add('active');
-  document.body.style.overflow = 'hidden';
-
-  // Load mini leaderboard for this game
-  loadMiniLeaderboard(gameId);
+  return ModalUI.open(gameId);
 }
 
 function closeGame(gameId) {
-  if (!isValidGameId(gameId)) return;
+  return ModalUI.close(gameId);
+}
 
-  const modal = document.getElementById(`modal-${gameId}`);
-  if (modal) modal.classList.remove('active');
-  document.body.style.overflow = '';
-
-  const overlay = document.getElementById(`overlay-${gameId}`);
-  if (overlay) overlay.classList.remove('hidden');
-
-  const arena = document.getElementById(`arena-${gameId}`);
-  if (arena) arena.innerHTML = '';
-
-  // End competitive session if active
-  if (activeGameModes[gameId] === 'competitive') {
-    endCompetitiveSession();
-    // Reset to practice mode for next time
-    activeGameModes[gameId] = 'practice';
-    const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-    const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-    if (competitiveBtn) competitiveBtn.classList.remove('active');
-    if (practiceBtn) practiceBtn.classList.add('active');
-    // Hide timer
-    const timerStat = document.getElementById(`timer-stat-${gameId}`);
-    if (timerStat) timerStat.style.display = 'none';
-  }
-
-  stopGame(gameId);
+function restartGame(gameId) {
+  return ModalUI.restart(gameId);
 }
 
 function playFeaturedGame() {
   const game = getCurrentGame();
-  openGame(game.id);
+  ModalUI.open(game.id);
 }
 
 function scrollToGames() {
-  document.getElementById('games-section').scrollIntoView({ behavior: 'smooth' });
+  const section = document.getElementById('games-section');
+  if (section) section.scrollIntoView({ behavior: 'smooth' });
 }
 
-function restartGame(gameId) {
-  if (!isValidGameId(gameId)) return;
-
-  stopGame(gameId);
-  document.getElementById(`score-${gameId}`).textContent = '0';
-
-  const gameOver = document.getElementById(`gameover-${gameId}`);
-  if (gameOver) gameOver.remove();
-
-  const arena = document.getElementById(`arena-${gameId}`);
-  if (arena) arena.innerHTML = '';
-
-  startGame(gameId);
+// Export for module systems
+if (typeof window !== 'undefined') {
+  window.ModalUI = ModalUI;
 }
