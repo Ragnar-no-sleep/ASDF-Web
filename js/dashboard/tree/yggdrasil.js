@@ -36,6 +36,7 @@ export const Yggdrasil = {
 
   // Islands data
   islands: new Map(),
+  hitboxes: [], // Invisible spheres for fast raycasting
 
   // Controllers
   cameraController: null,
@@ -53,6 +54,14 @@ export const Yggdrasil = {
   hoveredIsland: null,
   lastRaycastTime: 0,
   raycastThrottle: 33, // ~30fps
+
+  // Drag detection (distinguish drag from click)
+  dragState: {
+    startX: 0,
+    startY: 0,
+    isDragging: false,
+    threshold: 5, // pixels - movement beyond this = drag, not click
+  },
 
   // Callbacks
   callbacks: {
@@ -635,12 +644,28 @@ export const Yggdrasil = {
       island.userData.building = true;
     }
 
+    // === HITBOX SPHERE (invisible, for fast raycasting) ===
+    const hitboxGeometry = new THREE.SphereGeometry(size * 1.5, 8, 6);
+    const hitboxMaterial = new THREE.MeshBasicMaterial({
+      visible: false, // Invisible - only for raycasting
+    });
+    const hitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+    hitbox.position.copy(position);
+    hitbox.userData = {
+      type: 'islandHitbox',
+      island: island,
+      project: project,
+    };
+    this.scene.add(hitbox);
+    this.hitboxes.push(hitbox);
+
     this.islandsGroup.add(island);
     this.islands.set(project.id, {
       mesh: island,
       project: project,
       position: position,
       baseY: position.y,
+      hitbox: hitbox, // Reference for position sync
     });
 
     // Create connection particles to burn core
@@ -710,6 +735,26 @@ export const Yggdrasil = {
     this.renderer.domElement.addEventListener('mousemove', e => this.onMouseMove(e));
     this.renderer.domElement.addEventListener('click', e => this.onClick(e));
 
+    // Drag detection: track mousedown position to distinguish drag from click
+    this.renderer.domElement.addEventListener('mousedown', e => {
+      this.dragState.startX = e.clientX;
+      this.dragState.startY = e.clientY;
+      this.dragState.isDragging = false;
+    });
+
+    // Mark as dragging if mouse moves beyond threshold
+    this.renderer.domElement.addEventListener('mousemove', e => {
+      if (e.buttons === 1) {
+        // Left mouse button held
+        const dx = e.clientX - this.dragState.startX;
+        const dy = e.clientY - this.dragState.startY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > this.dragState.threshold) {
+          this.dragState.isDragging = true;
+        }
+      }
+    });
+
     // Touch support for mobile - tap to click islands
     this.renderer.domElement.addEventListener(
       'touchend',
@@ -774,29 +819,30 @@ export const Yggdrasil = {
       }
     }
 
-    // Raycast - need recursive for Group children
+    // Raycast against hitboxes (fast: 21 spheres vs 100+ meshes)
     const intersects = this.raycaster.intersectObjects(
-      [...this.islandsGroup.children, this.burnCore],
-      true // recursive - check child meshes of Groups
+      [...this.hitboxes, this.burnCore],
+      true // true for burnCore children
     );
 
-    // Get the parent island Group from hit mesh
+    // Process hit
     let hitIsland = null;
     let hitBurnCore = false;
     if (intersects.length > 0) {
       const hit = intersects[0].object;
-      // Walk up to find island Group
-      let obj = hit;
-      while (obj) {
-        if (obj.userData?.type === 'island') {
-          hitIsland = obj;
-          break;
+      if (hit.userData?.type === 'islandHitbox') {
+        // Got hitbox - retrieve actual island mesh
+        hitIsland = hit.userData.island;
+      } else {
+        // Check for burnCore
+        let obj = hit;
+        while (obj) {
+          if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
+            hitBurnCore = true;
+            break;
+          }
+          obj = obj.parent;
         }
-        if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
-          hitBurnCore = true;
-          break;
-        }
-        obj = obj.parent;
       }
     }
 
@@ -916,6 +962,17 @@ export const Yggdrasil = {
    * Handle click - raycast at click time for mobile + accuracy
    */
   onClick(_event) {
+    // Ignore clicks that were actually drags (user was orbiting camera)
+    if (this.dragState.isDragging) {
+      this.dragState.isDragging = false;
+      return;
+    }
+
+    // Ignore clicks during camera transitions (prevents state corruption)
+    if (this.cameraController.transition.active) {
+      return;
+    }
+
     // Check skill click first (when in project view)
     if (this.currentView === VIEWS.PROJECT_TREE && this.skillNodes.isVisible) {
       const skill = this.skillNodes.handleClick();
@@ -927,11 +984,11 @@ export const Yggdrasil = {
       }
     }
 
-    // Raycast at click time (fixes mobile where hover never fires)
+    // Raycast at click time using hitboxes (fast + fixes mobile)
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
-      [...this.islandsGroup.children, this.burnCore],
-      true
+      [...this.hitboxes, this.burnCore],
+      true // true for burnCore children
     );
 
     // Find clicked island or burn core
@@ -940,17 +997,19 @@ export const Yggdrasil = {
 
     if (intersects.length > 0) {
       const hit = intersects[0].object;
-      let obj = hit;
-      while (obj) {
-        if (obj.userData?.type === 'island') {
-          clickedIsland = obj;
-          break;
+      if (hit.userData?.type === 'islandHitbox') {
+        // Got hitbox - retrieve actual island mesh
+        clickedIsland = hit.userData.island;
+      } else {
+        // Check for burnCore
+        let obj = hit;
+        while (obj) {
+          if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
+            clickedBurnCore = true;
+            break;
+          }
+          obj = obj.parent;
         }
-        if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
-          clickedBurnCore = true;
-          break;
-        }
-        obj = obj.parent;
       }
     }
 
@@ -1050,6 +1109,11 @@ export const Yggdrasil = {
       const offset = Math.sin(time * 0.5 + data.position.x) * 0.3;
       data.mesh.position.y = data.baseY + offset;
 
+      // Sync hitbox position with floating island
+      if (data.hitbox) {
+        data.hitbox.position.y = data.baseY + offset;
+      }
+
       // Slow rotation
       data.mesh.rotation.y += delta * 0.08;
 
@@ -1123,6 +1187,14 @@ export const Yggdrasil = {
     ConnectionParticles.dispose();
     this.skillNodes.dispose();
     this.cameraController.dispose();
+
+    // Clean up hitboxes
+    this.hitboxes.forEach(hitbox => {
+      hitbox.geometry.dispose();
+      hitbox.material.dispose();
+      this.scene.remove(hitbox);
+    });
+    this.hitboxes = [];
 
     this.renderer.dispose();
 
