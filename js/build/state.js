@@ -1,37 +1,23 @@
 /**
- * Build V2 - State Management
- * State Machine with Observer pattern for Build page
+ * Build V2 - State Management (Facade)
+ * Composes focused managers while maintaining backward compatibility
  *
- * @version 2.0.0
+ * @version 2.1.0 - SRP Refactor
  * @security Data validation for localStorage
  */
 
 'use strict';
 
-import { STORAGE_KEY, STORAGE_VERSION, STATES, TRANSITIONS, EVENTS, DEFAULTS } from './config.js';
+import { STORAGE_VERSION, EVENTS, DEFAULTS } from './config.js';
+import { EventBus } from './state/event-bus.js';
+import { StateMachine, isValidState } from './state/state-machine.js';
+import { OnboardingManager } from './state/onboarding-manager.js';
+import { QuizManager, isValidTrackId } from './state/quiz-manager.js';
+import { PersistenceManager } from './state/persistence-manager.js';
 
 // ============================================
 // VALIDATION UTILITIES
 // ============================================
-
-/**
- * Validate state name
- * @param {string} state - State to validate
- * @returns {boolean}
- */
-function isValidState(state) {
-  return Object.values(STATES).includes(state);
-}
-
-/**
- * Validate track ID
- * @param {string} trackId - Track ID to validate
- * @returns {boolean}
- */
-function isValidTrackId(trackId) {
-  if (typeof trackId !== 'string') return false;
-  return /^[a-z]{2,20}$/.test(trackId);
-}
 
 /**
  * Validate project ID
@@ -43,29 +29,25 @@ function isValidProjectId(projectId) {
   return /^[a-z0-9-]{2,50}$/.test(projectId);
 }
 
-/**
- * Validate timestamp
- * @param {*} timestamp - Timestamp to validate
- * @returns {number|null}
- */
-function validateTimestamp(timestamp) {
-  const num = Number(timestamp);
-  if (!Number.isFinite(num)) return null;
-  // Must be within reasonable range (year 2020 to 2100)
-  if (num < 1577836800000 || num > 4102444800000) return null;
-  return num;
-}
-
 // ============================================
-// BUILD STATE - Singleton
+// BUILD STATE - Facade over focused managers
 // ============================================
 
 const BuildState = {
-  // Current state
-  _currentState: DEFAULTS.initialState,
-  _previousState: null,
+  /**
+   * Composed managers (internal)
+   */
+  _managers: {
+    events: EventBus,
+    state: StateMachine,
+    onboarding: OnboardingManager,
+    quiz: QuizManager,
+    persistence: PersistenceManager,
+  },
 
-  // Data
+  /**
+   * Legacy data structure (backward compatibility)
+   */
   data: {
     selectedProject: null,
     selectedTrack: null,
@@ -74,23 +56,11 @@ const BuildState = {
     introCompleted: false,
     completedProjects: [],
     viewHistory: [],
-    // FTUE Onboarding milestones
-    onboarding: {
-      introSeen: false, // Watched intro to completion
-      firstProjectClick: false, // Clicked on first project
-      firstQuizComplete: false, // Completed quiz
-      firstTrackStart: false, // Started a learning track
-      firstModuleComplete: false, // Completed first module
-      exploredProjects: 0, // Number of projects explored
-      lastMilestoneAt: null, // Timestamp of last milestone
-    },
+    onboarding: {},
   },
 
-  // Observer pattern
-  _listeners: new Map(),
-
   // ============================================
-  // STATE MACHINE
+  // STATE MACHINE (delegated to StateMachine)
   // ============================================
 
   /**
@@ -98,7 +68,7 @@ const BuildState = {
    * @returns {string}
    */
   get currentState() {
-    return this._currentState;
+    return this._managers.state.currentState;
   },
 
   /**
@@ -106,56 +76,29 @@ const BuildState = {
    * @returns {string|null}
    */
   get previousState() {
-    return this._previousState;
+    return this._managers.state.previousState;
+  },
+
+  // Alias for compatibility
+  get _currentState() {
+    return this._managers.state.currentState;
+  },
+
+  get _previousState() {
+    return this._managers.state.previousState;
   },
 
   /**
    * Check if transition is valid
-   * @param {string} from - Source state
-   * @param {string} to - Target state
-   * @returns {boolean}
    */
   canTransition(from, to) {
-    if (!isValidState(from) || !isValidState(to)) return false;
-    const allowed = TRANSITIONS[from];
-    return allowed && allowed.includes(to);
+    return this._managers.state.canTransition(from, to);
   },
 
   /**
    * Transition to a new state
-   * @param {string} newState - Target state
-   * @param {Object} payload - Optional payload data
-   * @returns {boolean} Success status
    */
   transition(newState, payload = {}) {
-    if (!isValidState(newState)) {
-      console.warn('[BuildState] Invalid state:', newState);
-      return false;
-    }
-
-    // Allow same-state transitions with different payloads
-    if (newState === this._currentState && !payload.force) {
-      // Just update data if provided
-      if (payload.projectId && isValidProjectId(payload.projectId)) {
-        this.data.selectedProject = payload.projectId;
-      }
-      if (payload.trackId && isValidTrackId(payload.trackId)) {
-        this.data.selectedTrack = payload.trackId;
-      }
-      this.emit(EVENTS.STATE_CHANGE, { state: newState, payload });
-      return true;
-    }
-
-    // Check if transition is valid (or bypass with force)
-    if (!payload.force && !this.canTransition(this._currentState, newState)) {
-      console.warn('[BuildState] Invalid transition:', this._currentState, '->', newState);
-      return false;
-    }
-
-    const oldState = this._currentState;
-    this._previousState = oldState;
-    this._currentState = newState;
-
     // Update data based on payload
     if (payload.projectId && isValidProjectId(payload.projectId)) {
       this.data.selectedProject = payload.projectId;
@@ -164,36 +107,22 @@ const BuildState = {
       this.data.selectedTrack = payload.trackId;
     }
 
-    // Track view history
-    this.data.viewHistory.push({
-      state: newState,
-      timestamp: Date.now(),
-      payload,
-    });
+    const result = this._managers.state.transition(newState, payload);
 
-    // Limit history to last 50 entries
-    if (this.data.viewHistory.length > 50) {
-      this.data.viewHistory = this.data.viewHistory.slice(-50);
+    // Sync view history
+    if (result) {
+      this.data.viewHistory = this._managers.state.getHistory();
+      this.saveToLocal();
     }
 
-    // Emit events
-    this.emit(`${EVENTS.STATE_EXIT}:${oldState}`, { from: oldState, to: newState, payload });
-    this.emit(`${EVENTS.STATE_ENTER}:${newState}`, { from: oldState, to: newState, payload });
-    this.emit(EVENTS.STATE_CHANGE, { from: oldState, to: newState, payload });
-
-    // Persist state
-    this.saveToLocal();
-
-    return true;
+    return result;
   },
 
   /**
    * Go back to previous state
-   * @returns {boolean}
    */
   goBack() {
-    if (!this._previousState) return false;
-    return this.transition(this._previousState, { force: true });
+    return this._managers.state.goBack();
   },
 
   // ============================================
@@ -202,7 +131,6 @@ const BuildState = {
 
   /**
    * Select a project
-   * @param {string} projectId
    */
   selectProject(projectId) {
     if (!isValidProjectId(projectId)) {
@@ -210,9 +138,11 @@ const BuildState = {
       return;
     }
     this.data.selectedProject = projectId;
+
     // Track onboarding milestones
-    this.completeMilestone('firstProjectClick');
-    this.completeMilestone('exploredProjects');
+    this._managers.onboarding.completeMilestone('firstProjectClick');
+    this._managers.onboarding.completeMilestone('exploredProjects');
+
     this.emit(EVENTS.PROJECT_SELECT, { projectId });
     this.saveToLocal();
   },
@@ -229,7 +159,6 @@ const BuildState = {
 
   /**
    * Select a track
-   * @param {string} trackId
    */
   selectTrack(trackId) {
     if (!isValidTrackId(trackId)) {
@@ -237,8 +166,10 @@ const BuildState = {
       return;
     }
     this.data.selectedTrack = trackId;
-    // Track onboarding milestone for first track
-    this.completeMilestone('firstTrackStart');
+
+    // Track onboarding milestone
+    this._managers.onboarding.completeMilestone('firstTrackStart');
+
     this.emit(EVENTS.TRACK_SELECT, { trackId });
     this.saveToLocal();
   },
@@ -248,91 +179,68 @@ const BuildState = {
    */
   completeIntro() {
     this.data.introCompleted = true;
-    this.completeMilestone('introSeen');
+    this._managers.onboarding.completeMilestone('introSeen');
     this.saveToLocal();
   },
 
   // ============================================
-  // ONBOARDING MILESTONES
+  // ONBOARDING (delegated to OnboardingManager)
   // ============================================
 
   /**
    * Complete an onboarding milestone
-   * @param {string} milestone - Milestone key
    */
   completeMilestone(milestone) {
-    if (!this.data.onboarding) {
-      this.data.onboarding = {};
+    const result = this._managers.onboarding.completeMilestone(milestone);
+    if (result) {
+      this.data.onboarding = this._managers.onboarding.getState();
+      this.saveToLocal();
     }
-
-    // Skip if already completed (except counters)
-    if (milestone !== 'exploredProjects' && this.data.onboarding[milestone]) {
-      return;
-    }
-
-    if (milestone === 'exploredProjects') {
-      this.data.onboarding.exploredProjects = (this.data.onboarding.exploredProjects || 0) + 1;
-    } else {
-      this.data.onboarding[milestone] = true;
-    }
-
-    this.data.onboarding.lastMilestoneAt = Date.now();
-    this.emit('onboarding:milestone', {
-      milestone,
-      onboarding: { ...this.data.onboarding },
-    });
-    this.saveToLocal();
-
-    // Check if all core milestones complete
-    this.checkOnboardingComplete();
   },
 
   /**
    * Check if core onboarding is complete
    */
   checkOnboardingComplete() {
-    const { introSeen, firstProjectClick, firstQuizComplete } = this.data.onboarding || {};
-    if (introSeen && firstProjectClick && firstQuizComplete) {
-      this.emit('onboarding:complete', { onboarding: { ...this.data.onboarding } });
-    }
+    // Handled internally by OnboardingManager
+    return this._managers.onboarding.isComplete();
   },
 
   /**
    * Get onboarding progress (0-100)
-   * @returns {number}
    */
   getOnboardingProgress() {
-    const milestones = ['introSeen', 'firstProjectClick', 'firstQuizComplete', 'firstTrackStart'];
-    const completed = milestones.filter(m => this.data.onboarding?.[m]).length;
-    return Math.round((completed / milestones.length) * 100);
+    return this._managers.onboarding.getProgress();
   },
+
+  // ============================================
+  // QUIZ (delegated to QuizManager)
+  // ============================================
 
   /**
    * Record quiz answer
-   * @param {string} trackId
    */
   recordQuizAnswer(trackId) {
     if (!isValidTrackId(trackId)) return;
-    this.data.quizAnswers.push(trackId);
+
+    this._managers.quiz.recordAnswer(trackId);
+    this.data.quizAnswers = this._managers.quiz.getAnswers();
+
     this.emit(EVENTS.QUIZ_ANSWER, { trackId, answers: [...this.data.quizAnswers] });
   },
 
   /**
    * Complete quiz and calculate result
-   * @returns {string} Winning track ID
    */
   completeQuiz() {
-    const counts = {};
-    this.data.quizAnswers.forEach(t => {
-      counts[t] = (counts[t] || 0) + 1;
-    });
-
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const winner = sorted.length > 0 ? sorted[0][0] : DEFAULTS.defaultTrack;
+    const winner = this._managers.quiz.complete();
 
     this.data.quizResult = winner;
     this.data.selectedTrack = winner;
-    this.completeMilestone('firstQuizComplete');
+    this.data.quizAnswers = this._managers.quiz.getAnswers();
+
+    this._managers.onboarding.completeMilestone('firstQuizComplete');
+
     this.emit(EVENTS.QUIZ_COMPLETE, { result: winner, answers: [...this.data.quizAnswers] });
     this.saveToLocal();
 
@@ -343,14 +251,18 @@ const BuildState = {
    * Reset quiz
    */
   resetQuiz() {
+    this._managers.quiz.reset();
     this.data.quizAnswers = [];
     this.data.quizResult = null;
     this.emit(EVENTS.QUIZ_START, {});
   },
 
+  // ============================================
+  // PROJECT COMPLETION
+  // ============================================
+
   /**
    * Mark a project as viewed/completed
-   * @param {string} projectId
    */
   markProjectCompleted(projectId) {
     if (!isValidProjectId(projectId)) return;
@@ -362,196 +274,116 @@ const BuildState = {
 
   /**
    * Check if project is completed
-   * @param {string} projectId
-   * @returns {boolean}
    */
   isProjectCompleted(projectId) {
     return this.data.completedProjects.includes(projectId);
   },
 
   // ============================================
-  // OBSERVER PATTERN
+  // OBSERVER PATTERN (delegated to EventBus)
   // ============================================
 
   /**
    * Subscribe to events
-   * @param {string} event - Event name
-   * @param {Function} callback - Callback function
-   * @returns {Function} Unsubscribe function
    */
   subscribe(event, callback) {
-    if (typeof callback !== 'function') {
-      console.warn('[BuildState] Callback must be a function');
-      return () => {};
-    }
-
-    if (!this._listeners.has(event)) {
-      this._listeners.set(event, new Set());
-    }
-    this._listeners.get(event).add(callback);
-
-    // Return unsubscribe function
-    return () => {
-      this._listeners.get(event)?.delete(callback);
-    };
+    return this._managers.events.subscribe(event, callback);
   },
 
   /**
    * Emit an event
-   * @param {string} event - Event name
-   * @param {*} data - Event data
    */
   emit(event, data = null) {
-    const listeners = this._listeners.get(event);
-    if (listeners) {
-      listeners.forEach(callback => {
-        try {
-          callback(data);
-        } catch (err) {
-          console.error(`[BuildState] Error in ${event} listener:`, err);
-        }
-      });
-    }
-
-    // Also emit to window for external listeners
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(`build:${event}`, { detail: data }));
-    }
+    this._managers.events.emit(event, data);
   },
 
   /**
    * Remove all listeners for an event
-   * @param {string} event
    */
   off(event) {
-    this._listeners.delete(event);
+    this._managers.events.off(event);
   },
 
   /**
    * Clear all listeners
    */
   clearListeners() {
-    this._listeners.clear();
+    this._managers.events.clear();
+  },
+
+  // Backward compatibility alias
+  get _listeners() {
+    return this._managers.events._listeners;
   },
 
   // ============================================
-  // PERSISTENCE
+  // PERSISTENCE (delegated to PersistenceManager)
   // ============================================
 
   /**
    * Save state to localStorage
    */
   saveToLocal() {
-    try {
-      const data = {
-        version: STORAGE_VERSION,
-        currentState: this._currentState,
-        previousState: this._previousState,
-        data: {
-          selectedProject: this.data.selectedProject,
-          selectedTrack: this.data.selectedTrack,
-          quizResult: this.data.quizResult,
-          introCompleted: this.data.introCompleted,
-          completedProjects: this.data.completedProjects.slice(0, 100), // Limit
-        },
-        lastSaved: Date.now(),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.warn('[BuildState] Failed to save to localStorage:', e);
-    }
+    this._managers.persistence.save({
+      currentState: this._managers.state.currentState,
+      previousState: this._managers.state.previousState,
+      data: {
+        selectedProject: this.data.selectedProject,
+        selectedTrack: this.data.selectedTrack,
+        quizResult: this.data.quizResult,
+        introCompleted: this.data.introCompleted,
+        completedProjects: this.data.completedProjects.slice(0, 100),
+        onboarding: this._managers.onboarding.getState(),
+      },
+    });
   },
 
   /**
-   * Load state from localStorage with validation
+   * Load state from localStorage
    */
   loadFromLocal() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+    const saved = this._managers.persistence.load();
+    if (!saved) return;
 
-      let data;
-      try {
-        data = JSON.parse(saved);
-      } catch (parseError) {
-        console.warn('[BuildState] Corrupted localStorage data, resetting');
-        localStorage.removeItem(STORAGE_KEY);
-        return;
-      }
-
-      // Version check
-      if (!data || data.version !== STORAGE_VERSION) {
-        console.log('[BuildState] Storage version mismatch, migrating...');
-        this._migrateStorage(data);
-        return;
-      }
-
-      // Validate and restore state
-      if (isValidState(data.currentState)) {
-        this._currentState = data.currentState;
-      }
-      if (data.previousState === null || isValidState(data.previousState)) {
-        this._previousState = data.previousState;
-      }
-
-      // Restore data with validation
-      if (data.data) {
-        if (data.data.selectedProject && isValidProjectId(data.data.selectedProject)) {
-          this.data.selectedProject = data.data.selectedProject;
-        }
-        if (data.data.selectedTrack && isValidTrackId(data.data.selectedTrack)) {
-          this.data.selectedTrack = data.data.selectedTrack;
-        }
-        if (data.data.quizResult && isValidTrackId(data.data.quizResult)) {
-          this.data.quizResult = data.data.quizResult;
-        }
-        if (typeof data.data.introCompleted === 'boolean') {
-          this.data.introCompleted = data.data.introCompleted;
-        }
-        if (Array.isArray(data.data.completedProjects)) {
-          this.data.completedProjects = data.data.completedProjects
-            .filter(isValidProjectId)
-            .slice(0, 100);
-        }
-      }
-
-      console.log('[BuildState] Loaded from localStorage (validated)');
-    } catch (e) {
-      console.warn('[BuildState] Failed to load from localStorage:', e);
-    }
-  },
-
-  /**
-   * Migrate old storage format
-   * @param {Object} oldData
-   */
-  _migrateStorage(oldData) {
-    // Migrate from legacy keys
-    const legacyTrack = localStorage.getItem('asdf-path-track');
-    const legacyJourney = localStorage.getItem('asdf-journey-track');
-
-    if (legacyTrack && isValidTrackId(legacyTrack)) {
-      this.data.quizResult = legacyTrack;
-      this.data.selectedTrack = legacyTrack;
-    }
-    if (legacyJourney && isValidTrackId(legacyJourney)) {
-      this.data.selectedTrack = legacyJourney;
+    // Restore state machine
+    if (saved.currentState) {
+      this._managers.state.restore(saved.currentState, saved.previousState);
     }
 
-    // Clean up legacy keys
-    localStorage.removeItem('asdf-path-track');
-    localStorage.removeItem('asdf-journey-track');
+    // Restore data
+    if (saved.data) {
+      if (saved.data.selectedProject && isValidProjectId(saved.data.selectedProject)) {
+        this.data.selectedProject = saved.data.selectedProject;
+      }
+      if (saved.data.selectedTrack && isValidTrackId(saved.data.selectedTrack)) {
+        this.data.selectedTrack = saved.data.selectedTrack;
+      }
+      if (saved.data.quizResult && isValidTrackId(saved.data.quizResult)) {
+        this.data.quizResult = saved.data.quizResult;
+        this._managers.quiz.restore({ result: saved.data.quizResult });
+      }
+      if (typeof saved.data.introCompleted === 'boolean') {
+        this.data.introCompleted = saved.data.introCompleted;
+      }
+      if (Array.isArray(saved.data.completedProjects)) {
+        this.data.completedProjects = saved.data.completedProjects
+          .filter(isValidProjectId)
+          .slice(0, 100);
+      }
+      if (saved.data.onboarding) {
+        this._managers.onboarding.restore(saved.data.onboarding);
+        this.data.onboarding = this._managers.onboarding.getState();
+      }
+    }
 
-    // Save new format
-    this.saveToLocal();
-    console.log('[BuildState] Migration complete');
+    console.log('[BuildState] Loaded from localStorage (validated)');
   },
 
   /**
    * Clear local storage
    */
   clearLocal() {
-    localStorage.removeItem(STORAGE_KEY);
+    this._managers.persistence.clear();
   },
 
   // ============================================
@@ -564,18 +396,20 @@ const BuildState = {
   init() {
     this.loadFromLocal();
     console.log('[BuildState] Initialized', {
-      state: this._currentState,
+      state: this.currentState,
       track: this.data.selectedTrack,
     });
-    this.emit('initialized', { state: this._currentState });
+    this.emit('initialized', { state: this.currentState });
   },
 
   /**
    * Reset all state
    */
   reset() {
-    this._currentState = DEFAULTS.initialState;
-    this._previousState = null;
+    this._managers.state.reset();
+    this._managers.onboarding.reset();
+    this._managers.quiz.reset();
+
     this.data = {
       selectedProject: null,
       selectedTrack: null,
@@ -584,15 +418,28 @@ const BuildState = {
       introCompleted: false,
       completedProjects: [],
       viewHistory: [],
+      onboarding: {},
     };
+
     this.clearLocal();
     this.emit('reset', {});
+  },
+
+  /**
+   * Get access to individual managers (for advanced use)
+   * @returns {Object}
+   */
+  getManagers() {
+    return { ...this._managers };
   },
 };
 
 // Export for ES modules
 export { BuildState };
 export default BuildState;
+
+// Re-export managers for direct access
+export { EventBus, StateMachine, OnboardingManager, QuizManager, PersistenceManager };
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
