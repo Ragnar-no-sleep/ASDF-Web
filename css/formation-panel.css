@@ -16,7 +16,7 @@
   backdrop-filter: blur(4px);
   z-index: calc(var(--z-modal) - 1);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .formation-panel.open ~ .formation-backdrop,
@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 20px;
+  padding: var(--space-lg) var(--space-lg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.3);
 }
@@ -72,15 +72,15 @@
 .formation-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 1.25rem;
-  font-weight: 600;
+  gap: var(--space-sm);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
   color: #fff;
   margin: 0;
 }
 
 .formation-icon {
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
 }
 
 .formation-close {
@@ -88,11 +88,11 @@
   height: 36px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #888;
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .formation-close:hover {
@@ -105,19 +105,19 @@
    ============================================ */
 
 .formation-tracks {
-  padding: 20px;
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .track-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) ease;
 }
 
 .track-card:hover {
@@ -128,8 +128,8 @@
 
 .track-card-header {
   display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .track-icon {
@@ -139,8 +139,8 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  font-size: 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xl);
   color: var(--track-color, #666);
   flex-shrink: 0;
 }
@@ -151,14 +151,14 @@
 }
 
 .track-name {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   color: #fff;
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-2xs);
 }
 
 .track-desc {
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: #888;
   margin: 0;
   line-height: 1.4;
@@ -166,52 +166,52 @@
 
 .track-meta {
   display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
-  font-size: 0.75rem;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-xs);
   color: #666;
 }
 
 .track-difficulty {
   text-transform: capitalize;
-  padding: 2px 8px;
+  padding: var(--space-2xs) var(--space-sm);
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
 .track-progress {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
 }
 
 .progress-bar {
   height: 6px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-xs);
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s ease;
+  border-radius: var(--radius-xs);
+  transition: width var(--duration-slow) ease;
 }
 
 .progress-label {
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   color: #666;
 }
 
 .track-start-btn {
   width: 100%;
-  padding: 10px 16px;
+  padding: var(--space-sm) var(--space-md);
   border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color: #fff;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .track-start-btn:hover {
@@ -224,22 +224,22 @@
    ============================================ */
 
 .formation-detail {
-  padding: 20px;
+  padding: var(--space-lg);
 }
 
 .formation-back {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-sm);
   border: none;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: #888;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   cursor: pointer;
-  margin-bottom: 20px;
-  transition: all 0.2s;
+  margin-bottom: var(--space-lg);
+  transition: all var(--duration-fast);
 }
 
 .formation-back:hover {
@@ -249,12 +249,12 @@
 
 .track-detail-header {
   display: flex;
-  gap: 16px;
-  padding: 20px;
+  gap: var(--space-md);
+  padding: var(--space-lg);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  margin-bottom: 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
 }
 
 .track-icon-large {
@@ -264,37 +264,37 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  font-size: 2rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-2xl);
   color: var(--track-color);
   flex-shrink: 0;
 }
 
 .track-name-large {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
   color: #fff;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-sm);
 }
 
 .track-desc-detail {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: #888;
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-sm);
   line-height: 1.5;
 }
 
 .track-stats {
   display: flex;
-  gap: 16px;
-  font-size: 0.75rem;
+  gap: var(--space-md);
+  font-size: var(--text-xs);
   color: #666;
 }
 
 .difficulty-badge {
-  padding: 2px 8px;
+  padding: var(--space-2xs) var(--space-sm);
   background: var(--track-color);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   color: #fff;
   text-transform: capitalize;
 }
@@ -304,10 +304,10 @@
    ============================================ */
 
 .modules-title {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: #888;
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-md);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -315,20 +315,20 @@
 .modules-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .module-card {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  gap: var(--space-md);
+  padding: var(--space-md);
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  animation: moduleSlideIn 0.4s ease backwards;
+  transition: all var(--duration-fast) ease;
+  animation: moduleSlideIn var(--duration-normal) ease backwards;
 }
 
 @keyframes moduleSlideIn {
@@ -365,8 +365,8 @@
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 50%;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: #666;
   flex-shrink: 0;
 }
@@ -387,34 +387,34 @@
 }
 
 .module-name {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
   color: #fff;
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-2xs);
 }
 
 .module-desc {
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: #888;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-sm);
   line-height: 1.4;
 }
 
 .module-meta {
   display: flex;
-  gap: 12px;
-  font-size: 0.7rem;
+  gap: var(--space-sm);
+  font-size: var(--text-2xs);
   color: #666;
 }
 
 .module-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .status-icon {
-  font-size: 1.2rem;
+  font-size: var(--text-lg);
 }
 
 .status-icon.completed {
@@ -426,12 +426,12 @@
 }
 
 .status-badge.next {
-  padding: 4px 8px;
+  padding: var(--space-2xs) var(--space-sm);
   background: var(--track-color);
-  border-radius: 4px;
-  font-size: 0.7rem;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-2xs);
   color: #fff;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 /* ============================================
@@ -450,7 +450,7 @@
   .track-icon {
     width: 40px;
     height: 40px;
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
   }
 
   .track-detail-header {
