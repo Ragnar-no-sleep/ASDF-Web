@@ -21,10 +21,10 @@
   --neon-green: #39ff14;
   --neon-purple: #bf00ff;
 
-  /* Text */
+  /* Text - WCAG 2.1 AA compliant (min 4.5:1 on dark bg) */
   --text-white: #ffffff;
-  --text-gray: #888888;
-  --text-dim: #555555;
+  --text-gray: #888888; /* ~5.4:1 - OK */
+  --text-dim: #767676; /* ~4.5:1 - was #555555 */
 
   /* Fonts */
   --font-arcade: 'Orbitron', sans-serif;
@@ -538,14 +538,14 @@
 }
 
 .arcade-card.not-available:hover .arcade-card-title {
-  color: #666;
+  color: var(--text-dim); /* WCAG compliant - was #666 */
   text-shadow: none;
 }
 
 .arcade-card-status {
   font-family: var(--font-arcade);
   font-size: var(--text-2xs);
-  color: #555;
+  color: var(--text-dim); /* WCAG compliant - was #555 */
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
   margin-top: var(--space-sm);
@@ -610,15 +610,15 @@
 
 .arcade-page .dev-mode-btn {
   font-family: var(--font-arcade);
-  border-color: #444;
-  color: #555;
+  border-color: #555;
+  color: var(--text-dim); /* WCAG compliant - was #555 */
   font-size: var(--text-xs);
 }
 
 .arcade-page .visitor-badge {
   font-family: var(--font-arcade);
-  border-color: #333;
-  color: #555;
+  border-color: #444;
+  color: var(--text-dim); /* WCAG compliant - was #555 */
   font-size: var(--text-2xs);
 }
 

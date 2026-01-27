@@ -26,8 +26,8 @@
   --valhalla-fire-light: #fed7aa;
   --valhalla-ember: #ef4444;
 
-  /* Metal & Stone */
-  --valhalla-steel: #64748b;
+  /* Metal & Stone - WCAG 2.1 AA compliant */
+  --valhalla-steel: #8994a5; /* Lightened for 4.5:1 contrast - was #64748b */
   --valhalla-iron: #475569;
   --valhalla-stone: #374151;
   --valhalla-obsidian: #1e293b;

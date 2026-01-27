@@ -142,12 +142,12 @@
   --color-bg-hover: rgba(255, 255, 255, 0.06);
   --color-bg-active: rgba(255, 255, 255, 0.1);
 
-  /* Text */
+  /* Text - WCAG 2.1 AA compliant (min 4.5:1 contrast on #020812) */
   --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.7);
-  --color-text-tertiary: rgba(255, 255, 255, 0.5);
-  --color-text-muted: rgba(255, 255, 255, 0.4);
-  --color-text-disabled: rgba(255, 255, 255, 0.25);
+  --color-text-secondary: rgba(255, 255, 255, 0.7); /* ~8.9:1 */
+  --color-text-tertiary: rgba(255, 255, 255, 0.55); /* ~5.5:1 - was 0.5 */
+  --color-text-muted: rgba(255, 255, 255, 0.55); /* ~5.5:1 - was 0.4 */
+  --color-text-disabled: rgba(255, 255, 255, 0.35); /* Disabled state - intentionally lower */
 
   /* Borders */
   --color-border-subtle: rgba(255, 255, 255, 0.06);
