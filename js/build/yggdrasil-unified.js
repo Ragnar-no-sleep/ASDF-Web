@@ -10,6 +10,7 @@ import { getCourse } from './data/courses.js';
 import { SKILLS_DATA, getSkill } from './data/skills.js';
 import { ProgressTracker, GENERALIST_TRACKS } from './progress-tracker.js';
 import { DURATION, DELAY, NOTIFICATION } from './config/timing.js';
+import { DataAdapter } from './data/adapter.js';
 
 /**
  * Promise with timeout wrapper
@@ -707,12 +708,11 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Load projects data from JSON
+   * Load projects data via DataAdapter
    */
   async loadProjectsData() {
     try {
-      const response = await fetch('./js/build/data/projects.json');
-      this.projectsData = await response.json();
+      this.projectsData = await DataAdapter.getProjects();
     } catch (e) {
       console.warn('[YggdrasilCosmos] Failed to load projects data:', e);
       this.projectsData = {};

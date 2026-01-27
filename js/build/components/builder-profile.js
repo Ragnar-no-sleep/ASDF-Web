@@ -17,12 +17,10 @@ import { sanitizeText } from '../utils/security.js';
 // ============================================
 
 const PROFILE_CONFIG = {
-  // GitHub API base
-  githubApi: 'https://api.github.com/users',
   // Animation
   animation: {
-    fadeIn: 300
-  }
+    fadeIn: 300,
+  },
 };
 
 // ============================================
@@ -60,9 +58,8 @@ const BuilderProfile = {
    * @param {string|Element} containerSelector
    */
   init(containerSelector = 'body') {
-    const container = typeof containerSelector === 'string'
-      ? $(containerSelector)
-      : containerSelector;
+    const container =
+      typeof containerSelector === 'string' ? $(containerSelector) : containerSelector;
 
     if (!container) {
       console.warn('[BuilderProfile] Container not found');
@@ -189,21 +186,21 @@ const BuilderProfile = {
     on(this.backdrop, 'click', () => this.close());
 
     // Listen for contributor clicks
-    BuildState.subscribe('contributor:click', (data) => {
+    BuildState.subscribe('contributor:click', data => {
       if (data.login) {
         this.open(data.login);
       }
     });
 
     // Listen for builder profile request
-    BuildState.subscribe('builder:view', (data) => {
+    BuildState.subscribe('builder:view', data => {
       if (data.username) {
         this.open(data.username);
       }
     });
 
     // Keyboard
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
@@ -253,22 +250,16 @@ const BuilderProfile = {
   },
 
   /**
-   * Fetch GitHub profile
+   * Fetch GitHub profile via service
    * @param {string} username
    * @returns {Promise<Object>}
    */
   async fetchProfile(username) {
-    const response = await fetch(`${PROFILE_CONFIG.githubApi}/${username}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-
-    if (!response.ok) {
+    const profileData = await GitHubApiService.getUserProfile(username);
+    if (!profileData) {
       throw new Error('Profile not found');
     }
-
-    return response.json();
+    return profileData;
   },
 
   /**
@@ -450,7 +441,7 @@ const BuilderProfile = {
     this.backdrop = null;
     this.currentUser = null;
     this.isOpen = false;
-  }
+  },
 };
 
 // ============================================
