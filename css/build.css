@@ -2326,8 +2326,8 @@ body {
   position: absolute;
   top: var(--space-md);
   right: var(--space-md);
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4588,8 +4588,8 @@ body {
   }
 
   .tree-node .node-medallion {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
   .tree-node .node-icon {
@@ -6331,8 +6331,8 @@ body {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(124, 45, 18, 0.3);
   border-radius: var(--radius-md);
@@ -6754,8 +6754,8 @@ body {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: var(--radius-md);
