@@ -21,49 +21,49 @@
  * @returns {*} Validated value or default
  */
 function validateSettingValue(key, value, defaults) {
-    const defaultValue = defaults[key];
-    if (defaultValue === undefined) {
-        return undefined; // Unknown key
-    }
+  const defaultValue = defaults[key];
+  if (defaultValue === undefined) {
+    return undefined; // Unknown key
+  }
 
-    const expectedType = typeof defaultValue;
+  const expectedType = typeof defaultValue;
 
-    switch (expectedType) {
-        case 'boolean':
-            return typeof value === 'boolean' ? value : defaultValue;
+  switch (expectedType) {
+    case 'boolean':
+      return typeof value === 'boolean' ? value : defaultValue;
 
-        case 'number':
-            const num = Number(value);
-            if (!Number.isFinite(num)) return defaultValue;
-            // For volume settings, clamp to 0-1
-            if (key.includes('Volume')) {
-                return Math.max(0, Math.min(1, num));
-            }
-            return num;
+    case 'number':
+      const num = Number(value);
+      if (!Number.isFinite(num)) return defaultValue;
+      // For volume settings, clamp to 0-1
+      if (key.includes('Volume')) {
+        return Math.max(0, Math.min(1, num));
+      }
+      return num;
 
-        case 'string':
-            if (typeof value !== 'string') return defaultValue;
-            // Validate language codes
-            if (key === 'language') {
-                const validLangs = ['en', 'fr', 'es', 'de', 'jp'];
-                return validLangs.includes(value) ? value : 'en';
-            }
-            // Validate theme
-            if (key === 'theme') {
-                const validThemes = ['dark', 'light'];
-                return validThemes.includes(value) ? value : 'dark';
-            }
-            // Validate default currency
-            if (key === 'defaultCurrency') {
-                const validCurrencies = ['burn', 'coins'];
-                return validCurrencies.includes(value) ? value : 'burn';
-            }
-            // Limit string length for safety
-            return value.slice(0, 50);
+    case 'string':
+      if (typeof value !== 'string') return defaultValue;
+      // Validate language codes
+      if (key === 'language') {
+        const validLangs = ['en', 'fr', 'es', 'de', 'jp'];
+        return validLangs.includes(value) ? value : 'en';
+      }
+      // Validate theme
+      if (key === 'theme') {
+        const validThemes = ['dark', 'light'];
+        return validThemes.includes(value) ? value : 'dark';
+      }
+      // Validate default currency
+      if (key === 'defaultCurrency') {
+        const validCurrencies = ['burn', 'coins'];
+        return validCurrencies.includes(value) ? value : 'burn';
+      }
+      // Limit string length for safety
+      return value.slice(0, 50);
 
-        default:
-            return defaultValue;
-    }
+    default:
+      return defaultValue;
+  }
 }
 
 // ============================================
@@ -71,381 +71,399 @@ function validateSettingValue(key, value, defaults) {
 // ============================================
 
 const Settings = {
-    // Storage key
-    STORAGE_KEY: 'asdf_settings',
+  // Storage key
+  STORAGE_KEY: 'asdf_settings',
 
-    // Default settings
-    defaults: {
-        // Visual
-        theme: 'dark',
-        animations: true,
-        particles: true,
-        reducedMotion: false,
+  // Default settings
+  defaults: {
+    // Visual
+    theme: 'dark',
+    animations: true,
+    particles: true,
+    reducedMotion: false,
 
-        // Audio
-        masterVolume: 0.7,
-        musicVolume: 0.5,
-        sfxVolume: 0.8,
-        ambientEnabled: true,
-        uiSoundsEnabled: true,
+    // Audio
+    masterVolume: 0.7,
+    musicVolume: 0.5,
+    sfxVolume: 0.8,
+    ambientEnabled: true,
+    uiSoundsEnabled: true,
 
-        // Notifications
-        notifyGameEvents: true,
-        notifyShopDeals: true,
-        notifyAchievements: true,
-        notifySystem: true,
+    // Notifications
+    notifyGameEvents: true,
+    notifyShopDeals: true,
+    notifyAchievements: true,
+    notifySystem: true,
 
-        // Gameplay
-        autoSave: true,
-        showTutorials: true,
+    // Gameplay
+    autoSave: true,
+    showTutorials: true,
 
-        // Shop & Cosmetics
-        confirmPurchases: true,
-        shopParticles: true,
-        autoEquipPurchases: false,
-        defaultCurrency: 'burn',
+    // Shop & Cosmetics
+    confirmPurchases: true,
+    shopParticles: true,
+    autoEquipPurchases: false,
+    defaultCurrency: 'burn',
 
-        // Privacy
-        shareStats: false,
-        analyticsEnabled: true,
+    // Privacy
+    shareStats: false,
+    analyticsEnabled: true,
 
-        // Language
-        language: 'en'
-    },
+    // Language
+    language: 'en',
+  },
 
-    // Current settings
-    current: {},
+  // Current settings
+  current: {},
 
-    // DOM elements
-    elements: {},
+  // DOM elements
+  elements: {},
 
-    // ============================================
-    // INITIALIZATION
-    // ============================================
+  // ============================================
+  // INITIALIZATION
+  // ============================================
 
-    /**
-     * Initialize settings
-     */
-    init() {
-        console.log('[Settings] Initializing...');
+  /**
+   * Initialize settings
+   */
+  init() {
+    console.log('[Settings] Initializing...');
 
-        // Load settings
-        this.load();
+    // Load settings
+    this.load();
 
-        // Cache elements
-        this.cacheElements();
+    // Cache elements
+    this.cacheElements();
 
-        // Setup event listeners
-        this.setupEvents();
+    // Setup event listeners
+    this.setupEvents();
 
-        // Apply settings
-        this.applyAll();
+    // Apply settings
+    this.applyAll();
 
-        // Render UI
-        this.render();
-    },
+    // Render UI
+    this.render();
+  },
 
-    /**
-     * Cache DOM elements
-     */
-    cacheElements() {
-        this.elements = {
-            container: document.getElementById('settings-section')
-        };
+  /**
+   * Cache DOM elements
+   */
+  cacheElements() {
+    this.elements = {
+      container: document.getElementById('settings-section'),
+    };
 
-        // Cache all setting controls
-        document.querySelectorAll('[data-setting]').forEach(el => {
-            const key = el.dataset.setting;
-            this.elements[key] = el;
-        });
-    },
+    // Cache all setting controls
+    document.querySelectorAll('[data-setting]').forEach(el => {
+      const key = el.dataset.setting;
+      this.elements[key] = el;
+    });
+  },
 
-    /**
-     * Setup event listeners
-     */
-    setupEvents() {
-        // Toggle switches
-        document.querySelectorAll('.toggle-switch[data-setting]').forEach(el => {
-            el.addEventListener('click', () => {
-                const key = el.dataset.setting;
-                this.toggle(key);
-                el.classList.toggle('active');
-                this.playFeedback();
-            });
-        });
-
-        // Sliders
-        document.querySelectorAll('.settings-slider[data-setting]').forEach(el => {
-            el.addEventListener('input', (e) => {
-                const key = el.dataset.setting;
-                this.set(key, parseFloat(e.target.value));
-            });
-
-            el.addEventListener('change', () => {
-                this.playFeedback();
-            });
-        });
-
-        // Selects
-        document.querySelectorAll('.settings-select[data-setting]').forEach(el => {
-            el.addEventListener('change', (e) => {
-                const key = el.dataset.setting;
-                this.set(key, e.target.value);
-                this.playFeedback();
-            });
-        });
-
-        // Reset button
-        const resetBtn = document.getElementById('settings-reset-btn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                if (confirm('Reset all settings to defaults?')) {
-                    this.resetAll();
-                }
-            });
+  /**
+   * Setup event listeners
+   */
+  setupEvents() {
+    // Toggle switches
+    document.querySelectorAll('.toggle-switch[data-setting]').forEach(el => {
+      el.addEventListener('click', () => {
+        const key = el.dataset.setting;
+        const newValue = this.toggle(key);
+        el.classList.toggle('active');
+        // Update ARIA state for accessibility
+        el.setAttribute('aria-checked', String(newValue));
+        this.playFeedback();
+      });
+      // Handle keyboard activation (Enter/Space)
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
         }
+      });
+    });
 
-        // Export data button
-        const exportBtn = document.getElementById('settings-export-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.exportData();
-            });
+    // Sliders
+    document.querySelectorAll('.settings-slider[data-setting]').forEach(el => {
+      el.addEventListener('input', e => {
+        const key = el.dataset.setting;
+        const value = parseFloat(e.target.value);
+        this.set(key, value);
+        // Update ARIA state for accessibility
+        el.setAttribute('aria-valuenow', String(value));
+      });
+
+      el.addEventListener('change', () => {
+        this.playFeedback();
+      });
+    });
+
+    // Selects
+    document.querySelectorAll('.settings-select[data-setting]').forEach(el => {
+      el.addEventListener('change', e => {
+        const key = el.dataset.setting;
+        this.set(key, e.target.value);
+        this.playFeedback();
+      });
+    });
+
+    // Reset button
+    const resetBtn = document.getElementById('settings-reset-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (confirm('Reset all settings to defaults?')) {
+          this.resetAll();
         }
+      });
+    }
 
-        // Clear data button
-        const clearBtn = document.getElementById('settings-clear-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                if (confirm('This will delete all your local data. Are you sure?')) {
-                    this.clearAllData();
-                }
-            });
+    // Export data button
+    const exportBtn = document.getElementById('settings-export-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        this.exportData();
+      });
+    }
+
+    // Clear data button
+    const clearBtn = document.getElementById('settings-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (confirm('This will delete all your local data. Are you sure?')) {
+          this.clearAllData();
         }
-    },
+      });
+    }
+  },
 
-    // ============================================
-    // DATA MANAGEMENT
-    // ============================================
+  // ============================================
+  // DATA MANAGEMENT
+  // ============================================
 
-    /**
-     * Load settings from localStorage with validation
-     */
-    load() {
+  /**
+   * Load settings from localStorage with validation
+   */
+  load() {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        let parsed;
         try {
-            const stored = localStorage.getItem(this.STORAGE_KEY);
-            if (stored) {
-                let parsed;
-                try {
-                    parsed = JSON.parse(stored);
-                } catch (parseError) {
-                    console.warn('[Settings] Corrupted settings data, using defaults');
-                    localStorage.removeItem(this.STORAGE_KEY);
-                    this.current = { ...this.defaults };
-                    return;
-                }
-
-                // Validate each setting
-                this.current = { ...this.defaults };
-                if (parsed && typeof parsed === 'object') {
-                    for (const key of Object.keys(this.defaults)) {
-                        if (key in parsed) {
-                            const validatedValue = validateSettingValue(key, parsed[key], this.defaults);
-                            if (validatedValue !== undefined) {
-                                this.current[key] = validatedValue;
-                            }
-                        }
-                    }
-                }
-            } else {
-                this.current = { ...this.defaults };
-            }
-        } catch (e) {
-            console.error('[Settings] Failed to load:', e);
-            this.current = { ...this.defaults };
+          parsed = JSON.parse(stored);
+        } catch (parseError) {
+          console.warn('[Settings] Corrupted settings data, using defaults');
+          localStorage.removeItem(this.STORAGE_KEY);
+          this.current = { ...this.defaults };
+          return;
         }
 
-        console.log('[Settings] Loaded (validated):', this.current);
-    },
-
-    /**
-     * Save settings to localStorage
-     */
-    save() {
-        try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.current));
-            console.log('[Settings] Saved');
-        } catch (e) {
-            console.error('[Settings] Failed to save:', e);
-        }
-    },
-
-    /**
-     * Get a setting value
-     */
-    get(key) {
-        // Only allow known keys
-        if (!(key in this.defaults)) {
-            console.warn('[Settings] Unknown setting key:', key);
-            return undefined;
-        }
-        return this.current[key] ?? this.defaults[key];
-    },
-
-    /**
-     * Set a setting value (with validation)
-     */
-    set(key, value) {
-        // Only allow known keys
-        if (!(key in this.defaults)) {
-            console.warn('[Settings] Cannot set unknown key:', key);
-            return false;
-        }
-
-        // Validate value
-        const validatedValue = validateSettingValue(key, value, this.defaults);
-        if (validatedValue === undefined) {
-            console.warn('[Settings] Invalid value for', key);
-            return false;
-        }
-
-        this.current[key] = validatedValue;
-        this.save();
-        this.apply(key, validatedValue);
-        return true;
-    },
-
-    /**
-     * Toggle a boolean setting
-     */
-    toggle(key) {
-        const current = this.get(key);
-        this.set(key, !current);
-        return !current;
-    },
-
-    /**
-     * Reset all settings to defaults
-     */
-    resetAll() {
+        // Validate each setting
         this.current = { ...this.defaults };
-        this.save();
-        this.applyAll();
-        this.render();
-
-        if (window.Hub) {
-            window.Hub.showNotification('Settings reset to defaults', 'info');
-        }
-    },
-
-    // ============================================
-    // APPLY SETTINGS
-    // ============================================
-
-    /**
-     * Apply all settings
-     */
-    applyAll() {
-        Object.keys(this.current).forEach(key => {
-            this.apply(key, this.current[key]);
-        });
-    },
-
-    /**
-     * Apply a single setting
-     */
-    apply(key, value) {
-        switch (key) {
-            case 'theme':
-                document.documentElement.setAttribute('data-theme', value);
-                break;
-
-            case 'animations':
-                document.body.classList.toggle('no-animations', !value);
-                break;
-
-            case 'particles':
-                const particles = document.querySelector('.valhalla-particles');
-                if (particles) {
-                    particles.style.display = value ? 'block' : 'none';
-                }
-                break;
-
-            case 'reducedMotion':
-                document.body.classList.toggle('reduced-motion', value);
-                break;
-
-            case 'masterVolume':
-            case 'musicVolume':
-            case 'sfxVolume':
-                if (window.ValhallaAudio) {
-                    window.ValhallaAudio.setVolume(key.replace('Volume', ''), value);
-                }
-                break;
-
-            case 'ambientEnabled':
-                if (window.ValhallaAudio) {
-                    if (value) {
-                        window.ValhallaAudio.playAmbient();
-                    } else {
-                        window.ValhallaAudio.stopAmbient();
-                    }
-                }
-                break;
-
-            case 'language':
-                document.documentElement.setAttribute('lang', value);
-                // Trigger language change event
-                window.dispatchEvent(new CustomEvent('languagechange', { detail: value }));
-                break;
-
-            case 'shopParticles':
-                // Toggle shop particle effects
-                document.body.classList.toggle('no-shop-particles', !value);
-                break;
-
-            case 'confirmPurchases':
-            case 'autoEquipPurchases':
-            case 'defaultCurrency':
-                // These are read by the shop module when needed
-                // Dispatch event for shop to react
-                window.dispatchEvent(new CustomEvent('settingschange', {
-                    detail: { key, value }
-                }));
-                break;
-        }
-    },
-
-    // ============================================
-    // RENDERING
-    // ============================================
-
-    /**
-     * Render settings UI
-     */
-    render() {
-        // Update all controls to match current values
-        Object.keys(this.current).forEach(key => {
-            const el = this.elements[key] || document.querySelector(`[data-setting="${key}"]`);
-            if (!el) return;
-
-            const value = this.current[key];
-
-            if (el.classList.contains('toggle-switch')) {
-                el.classList.toggle('active', value);
-            } else if (el.classList.contains('settings-slider')) {
-                el.value = value;
-            } else if (el.classList.contains('settings-select')) {
-                el.value = value;
+        if (parsed && typeof parsed === 'object') {
+          for (const key of Object.keys(this.defaults)) {
+            if (key in parsed) {
+              const validatedValue = validateSettingValue(key, parsed[key], this.defaults);
+              if (validatedValue !== undefined) {
+                this.current[key] = validatedValue;
+              }
             }
-        });
-    },
+          }
+        }
+      } else {
+        this.current = { ...this.defaults };
+      }
+    } catch (e) {
+      console.error('[Settings] Failed to load:', e);
+      this.current = { ...this.defaults };
+    }
 
-    /**
-     * Generate settings HTML
-     */
-    generateHTML() {
-        return `
+    console.log('[Settings] Loaded (validated):', this.current);
+  },
+
+  /**
+   * Save settings to localStorage
+   */
+  save() {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.current));
+      console.log('[Settings] Saved');
+    } catch (e) {
+      console.error('[Settings] Failed to save:', e);
+    }
+  },
+
+  /**
+   * Get a setting value
+   */
+  get(key) {
+    // Only allow known keys
+    if (!(key in this.defaults)) {
+      console.warn('[Settings] Unknown setting key:', key);
+      return undefined;
+    }
+    return this.current[key] ?? this.defaults[key];
+  },
+
+  /**
+   * Set a setting value (with validation)
+   */
+  set(key, value) {
+    // Only allow known keys
+    if (!(key in this.defaults)) {
+      console.warn('[Settings] Cannot set unknown key:', key);
+      return false;
+    }
+
+    // Validate value
+    const validatedValue = validateSettingValue(key, value, this.defaults);
+    if (validatedValue === undefined) {
+      console.warn('[Settings] Invalid value for', key);
+      return false;
+    }
+
+    this.current[key] = validatedValue;
+    this.save();
+    this.apply(key, validatedValue);
+    return true;
+  },
+
+  /**
+   * Toggle a boolean setting
+   */
+  toggle(key) {
+    const current = this.get(key);
+    this.set(key, !current);
+    return !current;
+  },
+
+  /**
+   * Reset all settings to defaults
+   */
+  resetAll() {
+    this.current = { ...this.defaults };
+    this.save();
+    this.applyAll();
+    this.render();
+
+    if (window.Hub) {
+      window.Hub.showNotification('Settings reset to defaults', 'info');
+    }
+  },
+
+  // ============================================
+  // APPLY SETTINGS
+  // ============================================
+
+  /**
+   * Apply all settings
+   */
+  applyAll() {
+    Object.keys(this.current).forEach(key => {
+      this.apply(key, this.current[key]);
+    });
+  },
+
+  /**
+   * Apply a single setting
+   */
+  apply(key, value) {
+    switch (key) {
+      case 'theme':
+        document.documentElement.setAttribute('data-theme', value);
+        break;
+
+      case 'animations':
+        document.body.classList.toggle('no-animations', !value);
+        break;
+
+      case 'particles':
+        const particles = document.querySelector('.valhalla-particles');
+        if (particles) {
+          particles.style.display = value ? 'block' : 'none';
+        }
+        break;
+
+      case 'reducedMotion':
+        document.body.classList.toggle('reduced-motion', value);
+        break;
+
+      case 'masterVolume':
+      case 'musicVolume':
+      case 'sfxVolume':
+        if (window.ValhallaAudio) {
+          window.ValhallaAudio.setVolume(key.replace('Volume', ''), value);
+        }
+        break;
+
+      case 'ambientEnabled':
+        if (window.ValhallaAudio) {
+          if (value) {
+            window.ValhallaAudio.playAmbient();
+          } else {
+            window.ValhallaAudio.stopAmbient();
+          }
+        }
+        break;
+
+      case 'language':
+        document.documentElement.setAttribute('lang', value);
+        // Trigger language change event
+        window.dispatchEvent(new CustomEvent('languagechange', { detail: value }));
+        break;
+
+      case 'shopParticles':
+        // Toggle shop particle effects
+        document.body.classList.toggle('no-shop-particles', !value);
+        break;
+
+      case 'confirmPurchases':
+      case 'autoEquipPurchases':
+      case 'defaultCurrency':
+        // These are read by the shop module when needed
+        // Dispatch event for shop to react
+        window.dispatchEvent(
+          new CustomEvent('settingschange', {
+            detail: { key, value },
+          })
+        );
+        break;
+    }
+  },
+
+  // ============================================
+  // RENDERING
+  // ============================================
+
+  /**
+   * Render settings UI
+   */
+  render() {
+    // Update all controls to match current values
+    Object.keys(this.current).forEach(key => {
+      const el = this.elements[key] || document.querySelector(`[data-setting="${key}"]`);
+      if (!el) return;
+
+      const value = this.current[key];
+
+      if (el.classList.contains('toggle-switch')) {
+        el.classList.toggle('active', value);
+        // Update ARIA state for accessibility
+        el.setAttribute('aria-checked', String(value));
+      } else if (el.classList.contains('settings-slider')) {
+        el.value = value;
+        // Update ARIA state for accessibility
+        el.setAttribute('aria-valuenow', String(value));
+      } else if (el.classList.contains('settings-select')) {
+        el.value = value;
+      }
+    });
+  },
+
+  /**
+   * Generate settings HTML
+   */
+  generateHTML() {
+    return `
             <!-- Visual Settings -->
             <div class="settings-group">
                 <div class="settings-group-header">
@@ -605,93 +623,100 @@ const Settings = {
                 <button class="btn-valhalla-secondary" id="settings-reset-btn">Reset All Settings</button>
             </div>
         `;
-    },
+  },
 
-    // ============================================
-    // DATA EXPORT
-    // ============================================
+  // ============================================
+  // DATA EXPORT
+  // ============================================
 
-    /**
-     * Export all user data
-     */
-    exportData() {
-        const data = {
-            exportDate: new Date().toISOString(),
-            settings: this.current,
-            profile: {},
-            shop: {},
-            games: {}
-        };
+  /**
+   * Export all user data
+   */
+  exportData() {
+    const data = {
+      exportDate: new Date().toISOString(),
+      settings: this.current,
+      profile: {},
+      shop: {},
+      games: {},
+    };
 
-        // Collect all localStorage data
-        const keys = ['asdf_shop_state', 'asdf_engage', 'asdf_history', 'asdf_achievements', 'pumpArenaStats', 'pumpArenaRPG'];
-        keys.forEach(key => {
-            const value = localStorage.getItem(key);
-            if (value) {
-                try {
-                    data[key] = JSON.parse(value);
-                } catch {
-                    data[key] = value;
-                }
-            }
-        });
-
-        // Download as JSON
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `asdf-data-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        if (window.Hub) {
-            window.Hub.showNotification('Data exported successfully', 'success');
+    // Collect all localStorage data
+    const keys = [
+      'asdf_shop_state',
+      'asdf_engage',
+      'asdf_history',
+      'asdf_achievements',
+      'pumpArenaStats',
+      'pumpArenaRPG',
+    ];
+    keys.forEach(key => {
+      const value = localStorage.getItem(key);
+      if (value) {
+        try {
+          data[key] = JSON.parse(value);
+        } catch {
+          data[key] = value;
         }
-    },
+      }
+    });
 
-    /**
-     * Clear all local data
-     */
-    clearAllData() {
-        // List of keys to clear
-        const keys = [
-            'asdf_settings',
-            'asdf_shop_state',
-            'asdf_shop_favorites',
-            'asdf_currency',
-            'asdf_engage',
-            'asdf_history',
-            'asdf_achievements',
-            'pumpArenaStats',
-            'pumpArenaRPG',
-            'connectedWallet'
-        ];
+    // Download as JSON
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `asdf-data-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 
-        keys.forEach(key => localStorage.removeItem(key));
-
-        if (window.Hub) {
-            window.Hub.showNotification('All data cleared', 'info');
-        }
-
-        // Reload page
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-    },
-
-    // ============================================
-    // UTILITIES
-    // ============================================
-
-    /**
-     * Play feedback sound
-     */
-    playFeedback() {
-        if (this.get('uiSoundsEnabled') && window.ValhallaAudio) {
-            window.ValhallaAudio.play('click');
-        }
+    if (window.Hub) {
+      window.Hub.showNotification('Data exported successfully', 'success');
     }
+  },
+
+  /**
+   * Clear all local data
+   */
+  clearAllData() {
+    // List of keys to clear
+    const keys = [
+      'asdf_settings',
+      'asdf_shop_state',
+      'asdf_shop_favorites',
+      'asdf_currency',
+      'asdf_engage',
+      'asdf_history',
+      'asdf_achievements',
+      'pumpArenaStats',
+      'pumpArenaRPG',
+      'connectedWallet',
+    ];
+
+    keys.forEach(key => localStorage.removeItem(key));
+
+    if (window.Hub) {
+      window.Hub.showNotification('All data cleared', 'info');
+    }
+
+    // Reload page
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  },
+
+  // ============================================
+  // UTILITIES
+  // ============================================
+
+  /**
+   * Play feedback sound
+   */
+  playFeedback() {
+    if (this.get('uiSoundsEnabled') && window.ValhallaAudio) {
+      window.ValhallaAudio.play('click');
+    }
+  },
 };
 
 // ============================================
@@ -699,10 +724,10 @@ const Settings = {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    Settings.init();
+  Settings.init();
 });
 
 // Global export
 if (typeof window !== 'undefined') {
-    window.Settings = Settings;
+  window.Settings = Settings;
 }

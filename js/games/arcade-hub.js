@@ -3,38 +3,49 @@
  * Card navigation only
  */
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    function init() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setup);
-        } else {
-            setup();
+  function init() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setup);
+    } else {
+      setup();
+    }
+  }
+
+  function setup() {
+    const cards = document.querySelectorAll('.arcade-card');
+
+    cards.forEach(card => {
+      // Click handler
+      const handleActivation = () => {
+        // Don't navigate if not available
+        if (card.classList.contains('not-available')) {
+          return;
         }
-    }
 
-    function setup() {
-        const cards = document.querySelectorAll('.arcade-card');
+        const target = card.dataset.hubView;
+        if (target && window.Hub && typeof window.Hub.navigateTo === 'function') {
+          window.Hub.navigateTo(target);
+        } else if (target) {
+          window.location.hash = target;
+        }
+      };
 
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                // Don't navigate if not available
-                if (card.classList.contains('not-available')) {
-                    return;
-                }
+      card.addEventListener('click', handleActivation);
 
-                const target = card.dataset.hubView;
-                if (target && window.Hub && typeof window.Hub.navigateTo === 'function') {
-                    window.Hub.navigateTo(target);
-                } else if (target) {
-                    window.location.hash = target;
-                }
-            });
-        });
+      // Keyboard accessibility - Enter/Space activates the card
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleActivation();
+        }
+      });
+    });
 
-        console.log('[ArcadeHub] Ready');
-    }
+    console.log('[ArcadeHub] Ready');
+  }
 
-    init();
+  init();
 })();

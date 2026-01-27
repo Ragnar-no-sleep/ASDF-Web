@@ -134,23 +134,23 @@
              ============================================ -->
         <section class="arcade-hub" id="hub-section">
             <!-- Cards Grid -->
-            <div class="arcade-cards">
-                <div class="arcade-card card-games" data-hub-view="games">
-                    <span class="arcade-card-icon">🎮</span>
+            <div class="arcade-cards" role="group" aria-label="Hub navigation">
+                <div class="arcade-card card-games" data-hub-view="games" role="button" tabindex="0" aria-label="Open Games section">
+                    <span class="arcade-card-icon" aria-hidden="true">🎮</span>
                     <h3 class="arcade-card-title">Games</h3>
                 </div>
-                <div class="arcade-card card-shop not-available">
-                    <span class="arcade-card-icon">🛒</span>
+                <div class="arcade-card card-shop not-available" role="button" tabindex="-1" aria-label="Shop - Not available yet" aria-disabled="true">
+                    <span class="arcade-card-icon" aria-hidden="true">🛒</span>
                     <h3 class="arcade-card-title">Shop</h3>
                     <span class="arcade-card-status">Not Available</span>
                 </div>
-                <div class="arcade-card card-profile not-available">
-                    <span class="arcade-card-icon">👤</span>
+                <div class="arcade-card card-profile not-available" role="button" tabindex="-1" aria-label="Profile - Not available yet" aria-disabled="true">
+                    <span class="arcade-card-icon" aria-hidden="true">👤</span>
                     <h3 class="arcade-card-title">Profile</h3>
                     <span class="arcade-card-status">Not Available</span>
                 </div>
-                <div class="arcade-card card-settings" data-hub-view="settings">
-                    <span class="arcade-card-icon">⚙️</span>
+                <div class="arcade-card card-settings" data-hub-view="settings" role="button" tabindex="0" aria-label="Open Settings">
+                    <span class="arcade-card-icon" aria-hidden="true">⚙️</span>
                     <h3 class="arcade-card-title">Settings</h3>
                 </div>
             </div>
@@ -213,10 +213,10 @@
         </div>
 
         <!-- All Games Section -->
-        <section class="games-section" id="games-section" style="display: none;">
+        <section class="games-section" id="games-section" style="display: none;" aria-labelledby="games-section-title">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">All Games</h2>
+                    <h2 class="section-title" id="games-section-title">All Games</h2>
                     <p class="section-subtitle">9 unique mini-games. Play, earn XP, climb the leaderboards!</p>
                 </div>
 
@@ -266,11 +266,11 @@
         <!-- ============================================
              COSMETIC SHOP SECTION
              ============================================ -->
-        <section class="valhalla-section" id="shop-section" style="display: none;">
+        <section class="valhalla-section" id="shop-section" style="display: none;" aria-labelledby="shop-section-title">
             <div class="container" style="max-width: 1400px; margin: 0 auto;">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">🛒</span>
+                    <h2 class="valhalla-section-title" id="shop-section-title">
+                        <span class="icon" aria-hidden="true">🛒</span>
                         Cosmetic Shop
                         <span class="valhalla-badge">NEW</span>
                     </h2>
@@ -279,7 +279,7 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
                 </div>
 
                 <!-- Shop Container - Rendered by ShopV2 -->
@@ -290,11 +290,11 @@
         <!-- ============================================
              PROFILE SECTION
              ============================================ -->
-        <section class="valhalla-section" id="profile-section" style="display: none;">
+        <section class="valhalla-section" id="profile-section" style="display: none;" aria-labelledby="profile-section-title">
             <div class="container" style="max-width: 1200px; margin: 0 auto;">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">👤</span>
+                    <h2 class="valhalla-section-title" id="profile-section-title">
+                        <span class="icon" aria-hidden="true">👤</span>
                         Profile
                     </h2>
                     <p class="valhalla-section-subtitle">Your stats, achievements, and journey</p>
@@ -302,8 +302,8 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
-                    <button class="btn-valhalla-icon" id="profile-refresh-btn" title="Refresh" style="margin-left: 10px;">🔄</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
+                    <button class="btn-valhalla-icon" id="profile-refresh-btn" aria-label="Refresh profile data" style="margin-left: 10px;">🔄</button>
                 </div>
 
                 <div class="profile-container">
@@ -312,7 +312,7 @@
                         <!-- Avatar Card -->
                         <div class="profile-avatar-card">
                             <div class="profile-avatar-preview">
-                                <canvas id="profile-avatar-canvas" width="200" height="200"></canvas>
+                                <canvas id="profile-avatar-canvas" width="200" height="200" role="img" aria-label="Your ASDF Dog avatar preview"></canvas>
                             </div>
                             <h3 class="profile-name">ASDF Warrior</h3>
                             <div class="profile-wallet" id="profile-wallet">Not Connected</div>
@@ -381,12 +381,12 @@
                                 </button>
                             </div>
                             <div class="profile-panel-body">
-                                <div class="profile-inventory-filters" id="profile-inventory-filters">
-                                    <button class="inv-filter-btn active" data-layer="all">All</button>
-                                    <button class="inv-filter-btn" data-layer="skin">🐕 Skins</button>
-                                    <button class="inv-filter-btn" data-layer="outfit">👕 Outfits</button>
-                                    <button class="inv-filter-btn" data-layer="head">🎩 Head</button>
-                                    <button class="inv-filter-btn" data-layer="aura">✨ Auras</button>
+                                <div class="profile-inventory-filters" id="profile-inventory-filters" role="tablist" aria-label="Filter cosmetics by category">
+                                    <button class="inv-filter-btn active" data-layer="all" role="tab" aria-selected="true" aria-controls="profile-inventory-grid">All</button>
+                                    <button class="inv-filter-btn" data-layer="skin" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">🐕 Skins</button>
+                                    <button class="inv-filter-btn" data-layer="outfit" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">👕 Outfits</button>
+                                    <button class="inv-filter-btn" data-layer="head" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">🎩 Head</button>
+                                    <button class="inv-filter-btn" data-layer="aura" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">✨ Auras</button>
                                 </div>
                                 <div class="profile-inventory-grid" id="profile-inventory-grid">
                                     <!-- Rendered by JS -->
@@ -403,13 +403,13 @@
                                 </h3>
                             </div>
                             <div class="profile-panel-body">
-                                <table class="history-table">
+                                <table class="history-table" aria-label="Transaction history">
                                     <thead>
                                         <tr>
-                                            <th>Type</th>
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Date</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="history-table-body">
@@ -426,11 +426,11 @@
         <!-- ============================================
              SETTINGS SECTION
              ============================================ -->
-        <section class="valhalla-section" id="settings-section" style="display: none;">
+        <section class="valhalla-section" id="settings-section" style="display: none;" aria-labelledby="settings-section-title">
             <div class="settings-container">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">⚙️</span>
+                    <h2 class="valhalla-section-title" id="settings-section-title">
+                        <span class="icon" aria-hidden="true">⚙️</span>
                         Settings
                     </h2>
                     <p class="valhalla-section-subtitle">Customize your experience</p>
@@ -438,7 +438,7 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
                 </div>
 
                 <!-- Visual Settings -->
@@ -450,24 +450,24 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Animations</div>
+                                <div class="settings-item-label" id="label-animations">Animations</div>
                                 <div class="settings-item-desc">Enable UI animations and transitions</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="animations"></div>
+                            <div class="toggle-switch active" data-setting="animations" role="switch" aria-checked="true" aria-labelledby="label-animations" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Background Particles</div>
+                                <div class="settings-item-label" id="label-particles">Background Particles</div>
                                 <div class="settings-item-desc">Floating embers and mist effects</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="particles"></div>
+                            <div class="toggle-switch active" data-setting="particles" role="switch" aria-checked="true" aria-labelledby="label-particles" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Reduced Motion</div>
+                                <div class="settings-item-label" id="label-reducedMotion">Reduced Motion</div>
                                 <div class="settings-item-desc">Minimize motion for accessibility</div>
                             </div>
-                            <div class="toggle-switch" data-setting="reducedMotion"></div>
+                            <div class="toggle-switch" data-setting="reducedMotion" role="switch" aria-checked="false" aria-labelledby="label-reducedMotion" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -481,38 +481,38 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Master Volume</div>
+                                <div class="settings-item-label" id="label-masterVolume">Master Volume</div>
                                 <div class="settings-item-desc">Overall audio level</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="masterVolume" min="0" max="1" step="0.1" value="0.7">
+                            <input type="range" class="settings-slider" data-setting="masterVolume" min="0" max="1" step="0.1" value="0.7" aria-labelledby="label-masterVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Music Volume</div>
+                                <div class="settings-item-label" id="label-musicVolume">Music Volume</div>
                                 <div class="settings-item-desc">Background music level</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="musicVolume" min="0" max="1" step="0.1" value="0.5">
+                            <input type="range" class="settings-slider" data-setting="musicVolume" min="0" max="1" step="0.1" value="0.5" aria-labelledby="label-musicVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.5">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Sound Effects</div>
+                                <div class="settings-item-label" id="label-sfxVolume">Sound Effects</div>
                                 <div class="settings-item-desc">UI and game sound effects</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="sfxVolume" min="0" max="1" step="0.1" value="0.8">
+                            <input type="range" class="settings-slider" data-setting="sfxVolume" min="0" max="1" step="0.1" value="0.8" aria-labelledby="label-sfxVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.8">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Ambient Sounds</div>
+                                <div class="settings-item-label" id="label-ambientEnabled">Ambient Sounds</div>
                                 <div class="settings-item-desc">Background ambience</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="ambientEnabled"></div>
+                            <div class="toggle-switch active" data-setting="ambientEnabled" role="switch" aria-checked="true" aria-labelledby="label-ambientEnabled" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">UI Sounds</div>
+                                <div class="settings-item-label" id="label-uiSoundsEnabled">UI Sounds</div>
                                 <div class="settings-item-desc">Click and hover sounds</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="uiSoundsEnabled"></div>
+                            <div class="toggle-switch active" data-setting="uiSoundsEnabled" role="switch" aria-checked="true" aria-labelledby="label-uiSoundsEnabled" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -526,24 +526,24 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Game Events</div>
+                                <div class="settings-item-label" id="label-notifyGameEvents">Game Events</div>
                                 <div class="settings-item-desc">New games and leaderboard updates</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyGameEvents"></div>
+                            <div class="toggle-switch active" data-setting="notifyGameEvents" role="switch" aria-checked="true" aria-labelledby="label-notifyGameEvents" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Shop Deals</div>
+                                <div class="settings-item-label" id="label-notifyShopDeals">Shop Deals</div>
                                 <div class="settings-item-desc">Sales and new items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyShopDeals"></div>
+                            <div class="toggle-switch active" data-setting="notifyShopDeals" role="switch" aria-checked="true" aria-labelledby="label-notifyShopDeals" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Achievements</div>
+                                <div class="settings-item-label" id="label-notifyAchievements">Achievements</div>
                                 <div class="settings-item-desc">When you unlock achievements</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyAchievements"></div>
+                            <div class="toggle-switch active" data-setting="notifyAchievements" role="switch" aria-checked="true" aria-labelledby="label-notifyAchievements" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -557,31 +557,31 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Confirm Purchases</div>
+                                <div class="settings-item-label" id="label-confirmPurchases">Confirm Purchases</div>
                                 <div class="settings-item-desc">Show confirmation before buying items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="confirmPurchases"></div>
+                            <div class="toggle-switch active" data-setting="confirmPurchases" role="switch" aria-checked="true" aria-labelledby="label-confirmPurchases" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Show Item Particles</div>
+                                <div class="settings-item-label" id="label-shopParticles">Show Item Particles</div>
                                 <div class="settings-item-desc">Animated effects on high-tier items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="shopParticles"></div>
+                            <div class="toggle-switch active" data-setting="shopParticles" role="switch" aria-checked="true" aria-labelledby="label-shopParticles" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Auto-Equip Purchases</div>
+                                <div class="settings-item-label" id="label-autoEquipPurchases">Auto-Equip Purchases</div>
                                 <div class="settings-item-desc">Automatically equip items after buying</div>
                             </div>
-                            <div class="toggle-switch" data-setting="autoEquipPurchases"></div>
+                            <div class="toggle-switch" data-setting="autoEquipPurchases" role="switch" aria-checked="false" aria-labelledby="label-autoEquipPurchases" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Default Currency</div>
+                                <div class="settings-item-label" id="label-defaultCurrency">Default Currency</div>
                                 <div class="settings-item-desc">Preferred payment method</div>
                             </div>
-                            <select class="settings-select" data-setting="defaultCurrency">
+                            <select class="settings-select" data-setting="defaultCurrency" aria-labelledby="label-defaultCurrency">
                                 <option value="burn" selected>🔥 Burn Tokens</option>
                                 <option value="coins">🪙 Shop Coins</option>
                             </select>
@@ -601,14 +601,14 @@
                                 <div class="settings-item-label">Export Data</div>
                                 <div class="settings-item-desc">Download all your data as JSON</div>
                             </div>
-                            <button class="btn-valhalla-secondary" id="settings-export-btn">Export</button>
+                            <button class="btn-valhalla-secondary" id="settings-export-btn" aria-label="Export all your data as JSON file">Export</button>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
                                 <div class="settings-item-label">Clear All Data</div>
                                 <div class="settings-item-desc">Delete all local data</div>
                             </div>
-                            <button class="btn-valhalla-secondary" id="settings-clear-btn" style="border-color: #ef4444; color: #ef4444;">Clear</button>
+                            <button class="btn-valhalla-secondary" id="settings-clear-btn" style="border-color: #ef4444; color: #ef4444;" aria-label="Clear all local data - this action cannot be undone">Clear</button>
                         </div>
                     </div>
                 </div>
@@ -622,10 +622,10 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Display Language</div>
+                                <div class="settings-item-label" id="label-language">Display Language</div>
                                 <div class="settings-item-desc">Choose your preferred language</div>
                             </div>
-                            <select class="settings-select" data-setting="language">
+                            <select class="settings-select" data-setting="language" aria-labelledby="label-language">
                                 <option value="en" selected>English</option>
                                 <option value="fr">Français</option>
                                 <option value="es">Español</option>
@@ -637,7 +637,7 @@
 
                 <!-- Reset -->
                 <div style="text-align: center; padding: 20px;">
-                    <button class="btn-valhalla-secondary" id="settings-reset-btn">Reset All Settings</button>
+                    <button class="btn-valhalla-secondary" id="settings-reset-btn" aria-label="Reset all settings to default values">Reset All Settings</button>
                 </div>
             </div>
         </section>
