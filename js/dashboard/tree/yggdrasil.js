@@ -1,12 +1,16 @@
 /**
  * Yggdrasil Builder's Cosmos - Main Tree Visualization
  * Fire & Ice themed world tree with Stone Islands
+ *
+ * Refactored for SRP compliance:
+ * - InputController: handles mouse/touch/raycasting
+ * - IslandFactory: creates island meshes and hitboxes
  */
 
 'use strict';
 
 import * as THREE from 'three';
-import { CONFIG, CAMERA_STATES, VIEWS, GOLDEN_ANGLE, ECOSYSTEM_PROJECTS } from '../config.js';
+import { CONFIG, CAMERA_STATES, VIEWS, GOLDEN_ANGLE } from '../config.js';
 import {
   FireParticles,
   SnowstormParticles,
@@ -15,6 +19,8 @@ import {
 } from './particles.js';
 import { CameraController } from './camera.js';
 import { SkillNodes } from './skills.js';
+import { InputController } from './input-controller.js';
+import { IslandFactory } from './island-factory.js';
 
 /**
  * Main Yggdrasil Cosmos visualization
@@ -38,30 +44,16 @@ export const Yggdrasil = {
   islands: new Map(),
   hitboxes: [], // Invisible spheres for fast raycasting
 
-  // Controllers
+  // Controllers (extracted for SRP)
   cameraController: null,
   skillNodes: null,
+  inputController: null,
 
   // State
   container: null,
   animationId: null,
   isRunning: false,
   currentView: VIEWS.COSMOS,
-
-  // Raycasting
-  raycaster: null,
-  mouse: null,
-  hoveredIsland: null,
-  lastRaycastTime: 0,
-  raycastThrottle: 33, // ~30fps
-
-  // Drag detection (distinguish drag from click)
-  dragState: {
-    startX: 0,
-    startY: 0,
-    isDragging: false,
-    threshold: 5, // pixels - movement beyond this = drag, not click
-  },
 
   // Callbacks
   callbacks: {
@@ -75,20 +67,23 @@ export const Yggdrasil = {
   /**
    * Initialize the cosmos
    */
-  async init(container, options = {}) {
+  async init(container, _options = {}) {
     this.container = container;
 
     this.setupRenderer();
     this.setupScene();
     this.setupCamera();
     this.setupLighting();
-    this.setupRaycasting();
 
     // Build the world
     this.buildYggdrasil();
     this.buildBurnCore();
-    this.buildIslands();
     this.buildStars();
+
+    // Build islands via factory (SRP extraction)
+    const { islands, hitboxes } = IslandFactory.buildAll(this.scene, this.islandsGroup);
+    this.islands = islands;
+    this.hitboxes = hitboxes;
 
     // Initialize particles
     FireParticles.init(this.scene);
@@ -104,8 +99,22 @@ export const Yggdrasil = {
     this.cameraController = CameraController;
     this.cameraController.init(this.camera, this.renderer.domElement);
 
-    // Events
-    this.setupEvents();
+    // Input controller (SRP extraction)
+    this.inputController = InputController;
+    this.inputController.init({
+      renderer: this.renderer,
+      camera: this.camera,
+      scene: this.scene,
+      getHitboxes: () => this.hitboxes,
+      getBurnCore: () => this.burnCore,
+      getSkillNodes: () => this.skillNodes,
+      getCameraController: () => this.cameraController,
+      getCurrentView: () => this.currentView,
+    });
+    this.setupInputCallbacks();
+
+    // Resize handling
+    window.addEventListener('resize', () => this.onResize());
 
     // Start
     this.clock = new THREE.Clock();
@@ -192,14 +201,6 @@ export const Yggdrasil = {
     const mp = lighting.moon.position;
     moonLight.position.set(mp.x, mp.y, mp.z);
     this.scene.add(moonLight);
-  },
-
-  /**
-   * Setup raycasting
-   */
-  setupRaycasting() {
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
   },
 
   /**
@@ -465,219 +466,6 @@ export const Yggdrasil = {
   },
 
   /**
-   * Build Floating Islands from ecosystem projects - Phi-harmonic Yggdrasil style
-   * Projects spiral outward along branches by track, using golden ratios for spacing
-   */
-  buildIslands() {
-    const { islands: islandConfig } = CONFIG;
-    const PHI_INV = 0.618033988749895;
-
-    // Group projects by track
-    const tracks = { dev: [], games: [], content: [] };
-    ECOSYSTEM_PROJECTS.forEach(p => {
-      if (tracks[p.track]) tracks[p.track].push(p);
-    });
-
-    // Track configurations - wider spreads, different base angles
-    const trackConfig = {
-      dev: {
-        baseAngle: -Math.PI / 6, // -30° (front-right quadrant)
-        spread: Math.PI * 0.55, // 100° spread for 11 projects
-        radiusMin: 10,
-        radiusMax: 22,
-        heightMin: 7,
-        heightMax: 15,
-      },
-      games: {
-        baseAngle: (Math.PI * 2) / 3, // 120° (back-left)
-        spread: Math.PI * 0.4, // 72° for 4 projects
-        radiusMin: 11,
-        radiusMax: 18,
-        heightMin: 5,
-        heightMax: 13,
-      },
-      content: {
-        baseAngle: (Math.PI * 4) / 3, // 240° (front-left)
-        spread: Math.PI * 0.45, // 81° for 6 projects
-        radiusMin: 10,
-        radiusMax: 20,
-        heightMin: 6,
-        heightMax: 14,
-      },
-    };
-
-    // Process each track with spiral distribution
-    Object.entries(tracks).forEach(([trackId, projects]) => {
-      const cfg = trackConfig[trackId];
-      const n = projects.length;
-
-      projects.forEach((project, i) => {
-        // Normalized position in track (0 to 1)
-        const t = n > 1 ? i / (n - 1) : 0.5;
-
-        // Spiral angle: linear spread across the track's angular range
-        // Add small golden-ratio offset to break regularity
-        const goldenOffset = (i * GOLDEN_ANGLE * 0.1) % 0.3;
-        const angle = cfg.baseAngle + (t - 0.5) * cfg.spread + goldenOffset;
-
-        // Radius: spiral outward using phi-based interpolation
-        // Alternating layers (even/odd) for depth variation
-        const layerOffset = (i % 2) * 2 - 1; // -1 or 1
-        const baseRadius = cfg.radiusMin + t * (cfg.radiusMax - cfg.radiusMin);
-        const radius = baseRadius + layerOffset * 1.5;
-
-        // Height: distributed across vertical range with phi-wave modulation
-        // Creates natural clustering at golden ratio heights
-        const phiWave = Math.sin(t * Math.PI * 2 * PHI_INV) * 0.3;
-        const height = cfg.heightMin + (t + phiWave) * (cfg.heightMax - cfg.heightMin);
-
-        const position = new THREE.Vector3(
-          Math.cos(angle) * radius,
-          Math.max(cfg.heightMin, Math.min(cfg.heightMax, height)),
-          Math.sin(angle) * radius
-        );
-
-        // Size based on kScore with phi scaling (important projects slightly larger)
-        const kScoreNorm = project.kScore / 100;
-        const sizeScale = 0.4 + kScoreNorm * 0.6;
-        const size =
-          islandConfig.size.min + sizeScale * (islandConfig.size.max - islandConfig.size.min);
-
-        const trackColor = islandConfig.trackColors[project.track] || 0x888888;
-
-        this.createIsland(project, position, size, trackColor, islandConfig);
-      });
-    });
-  },
-
-  /**
-   * Create a single floating island
-   */
-  createIsland(project, position, size, trackColor, islandConfig) {
-    // Create organic floating island
-    const island = new THREE.Group();
-
-    // === MAIN ROCK (organic icosahedron with noise) ===
-    const rockGeometry = new THREE.IcosahedronGeometry(size, 2);
-    const positionAttr = rockGeometry.attributes.position;
-    for (let i = 0; i < positionAttr.count; i++) {
-      const x = positionAttr.getX(i);
-      const y = positionAttr.getY(i);
-      const z = positionAttr.getZ(i);
-      // More noise at bottom (stalactite effect)
-      const bottomFactor = y < 0 ? 1.3 : 1.0;
-      const noise = 0.85 + Math.random() * 0.3;
-      positionAttr.setXYZ(i, x * noise, y * noise * bottomFactor, z * noise);
-    }
-    rockGeometry.computeVertexNormals();
-
-    // Darker, more natural stone color
-    const rockMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2a2a35,
-      roughness: 0.85,
-      metalness: 0.1,
-      emissive: trackColor,
-      emissiveIntensity: project.status === 'live' ? 0.2 : 0.08,
-    });
-
-    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-    island.add(rock);
-
-    // === MYSTICAL GLOW AURA ===
-    const auraGeometry = new THREE.SphereGeometry(size * 1.4, 16, 16);
-    const auraMaterial = new THREE.MeshBasicMaterial({
-      color: trackColor,
-      transparent: true,
-      opacity: project.status === 'live' ? 0.12 : 0.05,
-      side: THREE.BackSide,
-    });
-    const aura = new THREE.Mesh(auraGeometry, auraMaterial);
-    island.add(aura);
-
-    // === FLOATING RUNE RING ===
-    const ringGeometry = new THREE.TorusGeometry(size * 1.1, 0.05, 8, 32);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: trackColor,
-      transparent: true,
-      opacity: project.status === 'live' ? 0.6 : 0.25,
-    });
-    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = size * 0.3;
-    island.add(ring);
-
-    // === TINY ORBITING PARTICLES ===
-    const particleCount = 8;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePos = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      const pAngle = (i / particleCount) * Math.PI * 2;
-      const pRadius = size * 1.3;
-      particlePos[i * 3] = Math.cos(pAngle) * pRadius;
-      particlePos[i * 3 + 1] = (Math.random() - 0.5) * size;
-      particlePos[i * 3 + 2] = Math.sin(pAngle) * pRadius;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: trackColor,
-      size: 0.12,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    island.add(particles);
-
-    // Position island
-    island.position.copy(position);
-
-    island.userData = {
-      type: 'island',
-      project: project,
-      originalEmissive: project.status === 'live' ? 0.2 : 0.08,
-      rockMaterial: rockMaterial,
-      auraMaterial: auraMaterial,
-      ringMaterial: ringMaterial,
-      particles: particles,
-    };
-
-    if (project.status === 'building') {
-      island.userData.building = true;
-    }
-
-    // === HITBOX SPHERE (invisible, for fast raycasting) ===
-    const hitboxGeometry = new THREE.SphereGeometry(size * 1.5, 8, 6);
-    const hitboxMaterial = new THREE.MeshBasicMaterial({
-      visible: false, // Invisible - only for raycasting
-    });
-    const hitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
-    hitbox.position.copy(position);
-    hitbox.userData = {
-      type: 'islandHitbox',
-      island: island,
-      project: project,
-    };
-    this.scene.add(hitbox);
-    this.hitboxes.push(hitbox);
-
-    this.islandsGroup.add(island);
-    this.islands.set(project.id, {
-      mesh: island,
-      project: project,
-      position: position,
-      baseY: position.y,
-      hitbox: hitbox, // Reference for position sync
-    });
-
-    // Create connection particles to burn core
-    ConnectionParticles.createConnection(
-      this.scene,
-      position,
-      CONFIG.burnCore.position,
-      trackColor
-    );
-  },
-
-  /**
    * Build starfield
    */
   buildStars() {
@@ -728,50 +516,52 @@ export const Yggdrasil = {
   },
 
   /**
-   * Setup events
+   * Setup input controller callbacks
+   * Wires InputController events to Yggdrasil callbacks
    */
-  setupEvents() {
-    window.addEventListener('resize', () => this.onResize());
-    this.renderer.domElement.addEventListener('mousemove', e => this.onMouseMove(e));
-    this.renderer.domElement.addEventListener('click', e => this.onClick(e));
-
-    // Drag detection: track mousedown position to distinguish drag from click
-    this.renderer.domElement.addEventListener('mousedown', e => {
-      this.dragState.startX = e.clientX;
-      this.dragState.startY = e.clientY;
-      this.dragState.isDragging = false;
-    });
-
-    // Mark as dragging if mouse moves beyond threshold
-    this.renderer.domElement.addEventListener('mousemove', e => {
-      if (e.buttons === 1) {
-        // Left mouse button held
-        const dx = e.clientX - this.dragState.startX;
-        const dy = e.clientY - this.dragState.startY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance > this.dragState.threshold) {
-          this.dragState.isDragging = true;
-        }
+  setupInputCallbacks() {
+    // Island hover -> forward to registered callback
+    this.inputController.on('islandHover', project => {
+      if (this.callbacks.onIslandHover) {
+        this.callbacks.onIslandHover(project);
       }
     });
 
-    // Touch support for mobile - tap to click islands
-    this.renderer.domElement.addEventListener(
-      'touchend',
-      e => {
-        // Only handle single-finger tap (not pinch/pan end)
-        if (e.changedTouches.length === 1) {
-          const touch = e.changedTouches[0];
-          // Update mouse position from touch
-          const rect = this.renderer.domElement.getBoundingClientRect();
-          this.mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
-          this.mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
-          // Trigger click handler
-          this.onClick(e);
-        }
-      },
-      { passive: true }
-    );
+    // Island click -> zoom + forward
+    this.inputController.on('islandClick', island => {
+      const project = island.userData.project;
+      const islandPosition = island.position.clone();
+
+      // Click feedback
+      this.inputController.pulseIsland(island);
+
+      // Zoom to island
+      this.cameraController.focusOn(islandPosition, 'project');
+      this.currentView = VIEWS.PROJECT_TREE;
+
+      // Show skills after transition
+      setTimeout(() => {
+        this.skillNodes.showForProject(project, islandPosition);
+      }, 500);
+
+      if (this.callbacks.onIslandClick) {
+        this.callbacks.onIslandClick(project);
+      }
+    });
+
+    // Burn core click
+    this.inputController.on('burnCoreClick', () => {
+      if (this.callbacks.onBurnCoreClick) {
+        this.callbacks.onBurnCoreClick();
+      }
+    });
+
+    // Skill click
+    this.inputController.on('skillClick', (skill, project) => {
+      if (this.callbacks.onSkillClick) {
+        this.callbacks.onSkillClick(skill, project);
+      }
+    });
   },
 
   /**
@@ -784,267 +574,6 @@ export const Yggdrasil = {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
-  },
-
-  /**
-   * Handle mouse move (throttled raycasting)
-   */
-  onMouseMove(event) {
-    // Always update mouse position for click accuracy
-    const rect = this.renderer.domElement.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    // Throttle raycasting to ~30fps for performance
-    const now = performance.now();
-    if (now - this.lastRaycastTime < this.raycastThrottle) {
-      return;
-    }
-    this.lastRaycastTime = now;
-
-    // Raycast
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-
-    // In PROJECT_TREE view: only check skill hover, not islands
-    if (this.currentView === VIEWS.PROJECT_TREE) {
-      // Clear any island hover state when entering project view
-      if (this.hoveredIsland) {
-        this.unhoverIsland(this.hoveredIsland);
-        this.hoveredIsland = null;
-        if (this.callbacks.onIslandHover) {
-          this.callbacks.onIslandHover(null); // Hide tooltip
-        }
-      }
-      this.renderer.domElement.style.cursor = 'default';
-
-      // Only check skills if visible
-      if (this.skillNodes.isVisible) {
-        const skill = this.skillNodes.checkHover(this.raycaster);
-        if (skill) {
-          this.renderer.domElement.style.cursor = 'pointer';
-        }
-      }
-      return; // Don't raycast islands in project view
-    }
-
-    // COSMOS view: raycast against hitboxes (fast: 21 spheres vs 100+ meshes)
-    const intersects = this.raycaster.intersectObjects(
-      [...this.hitboxes, this.burnCore],
-      true // true for burnCore children
-    );
-
-    // Process hit
-    let hitIsland = null;
-    let hitBurnCore = false;
-    if (intersects.length > 0) {
-      const hit = intersects[0].object;
-      if (hit.userData?.type === 'islandHitbox') {
-        // Got hitbox - retrieve actual island mesh
-        hitIsland = hit.userData.island;
-      } else {
-        // Check for burnCore
-        let obj = hit;
-        while (obj) {
-          if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
-            hitBurnCore = true;
-            break;
-          }
-          obj = obj.parent;
-        }
-      }
-    }
-
-    // Handle island hover
-    if (hitIsland) {
-      if (this.hoveredIsland !== hitIsland) {
-        // Unhover previous
-        if (this.hoveredIsland) {
-          this.unhoverIsland(this.hoveredIsland);
-        }
-        // Hover new
-        this.hoverIsland(hitIsland);
-        this.hoveredIsland = hitIsland;
-        this.renderer.domElement.style.cursor = 'pointer';
-
-        if (this.callbacks.onIslandHover) {
-          this.callbacks.onIslandHover(hitIsland.userData.project);
-        }
-      }
-    } else if (hitBurnCore) {
-      this.renderer.domElement.style.cursor = 'pointer';
-      if (this.hoveredIsland) {
-        this.unhoverIsland(this.hoveredIsland);
-        this.hoveredIsland = null;
-      }
-    } else {
-      if (this.hoveredIsland) {
-        this.unhoverIsland(this.hoveredIsland);
-        this.hoveredIsland = null;
-        if (this.callbacks.onIslandHover) {
-          this.callbacks.onIslandHover(null);
-        }
-      }
-      this.renderer.domElement.style.cursor = 'default';
-    }
-  },
-
-  /**
-   * Hover island effect
-   */
-  hoverIsland(island) {
-    island.scale.setScalar(1.2);
-    // Enhance rock emissive
-    if (island.userData.rockMaterial) {
-      island.userData.rockMaterial.emissiveIntensity = 0.5;
-    }
-    // Brighten aura
-    if (island.userData.auraMaterial) {
-      island.userData.auraMaterial.opacity = 0.25;
-    }
-    // Brighten ring
-    if (island.userData.ringMaterial) {
-      island.userData.ringMaterial.opacity = 0.9;
-    }
-  },
-
-  /**
-   * Unhover island
-   */
-  unhoverIsland(island) {
-    island.scale.setScalar(1);
-    if (island.userData.rockMaterial) {
-      island.userData.rockMaterial.emissiveIntensity = island.userData.originalEmissive;
-    }
-    if (island.userData.auraMaterial) {
-      const isLive = island.userData.project?.status === 'live';
-      island.userData.auraMaterial.opacity = isLive ? 0.12 : 0.05;
-    }
-    if (island.userData.ringMaterial) {
-      const isLive = island.userData.project?.status === 'live';
-      island.userData.ringMaterial.opacity = isLive ? 0.6 : 0.25;
-    }
-  },
-
-  /**
-   * Pulse island on click - quick feedback animation
-   */
-  pulseIsland(island) {
-    const startScale = island.scale.x;
-    const pulseScale = 1.4;
-    const duration = 200; // ms
-    const startTime = performance.now();
-
-    // Flash emissive
-    if (island.userData.rockMaterial) {
-      island.userData.rockMaterial.emissiveIntensity = 1.0;
-    }
-    if (island.userData.ringMaterial) {
-      island.userData.ringMaterial.opacity = 1.0;
-    }
-
-    const animate = () => {
-      const elapsed = performance.now() - startTime;
-      const t = Math.min(elapsed / duration, 1);
-
-      // Scale: pulse up then back to hover state
-      if (t < 0.5) {
-        const upT = t * 2;
-        island.scale.setScalar(startScale + (pulseScale - startScale) * upT);
-      } else {
-        const downT = (t - 0.5) * 2;
-        island.scale.setScalar(pulseScale - (pulseScale - 1.2) * downT); // Settle at 1.2 (hover)
-      }
-
-      if (t < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Settle at hover state (camera is transitioning)
-        island.scale.setScalar(1.2);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  },
-
-  /**
-   * Handle click - raycast at click time for mobile + accuracy
-   */
-  onClick(_event) {
-    // Ignore clicks that were actually drags (user was orbiting camera)
-    if (this.dragState.isDragging) {
-      this.dragState.isDragging = false;
-      return;
-    }
-
-    // Ignore clicks during camera transitions (prevents state corruption)
-    if (this.cameraController.transition.active) {
-      return;
-    }
-
-    // Check skill click first (when in project view)
-    if (this.currentView === VIEWS.PROJECT_TREE && this.skillNodes.isVisible) {
-      const skill = this.skillNodes.handleClick();
-      if (skill) {
-        if (this.callbacks.onSkillClick) {
-          this.callbacks.onSkillClick(skill, this.skillNodes.currentProject);
-        }
-        return;
-      }
-    }
-
-    // Raycast at click time using hitboxes (fast + fixes mobile)
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(
-      [...this.hitboxes, this.burnCore],
-      true // true for burnCore children
-    );
-
-    // Find clicked island or burn core
-    let clickedIsland = null;
-    let clickedBurnCore = false;
-
-    if (intersects.length > 0) {
-      const hit = intersects[0].object;
-      if (hit.userData?.type === 'islandHitbox') {
-        // Got hitbox - retrieve actual island mesh
-        clickedIsland = hit.userData.island;
-      } else {
-        // Check for burnCore
-        let obj = hit;
-        while (obj) {
-          if (obj.userData?.type === 'burnCore' || obj === this.burnCore) {
-            clickedBurnCore = true;
-            break;
-          }
-          obj = obj.parent;
-        }
-      }
-    }
-
-    if (clickedIsland) {
-      const project = clickedIsland.userData.project;
-      const islandPosition = clickedIsland.position.clone();
-
-      // Click feedback - quick pulse animation
-      this.pulseIsland(clickedIsland);
-
-      // Zoom to island
-      this.cameraController.focusOn(islandPosition, 'project');
-      this.currentView = VIEWS.PROJECT_TREE;
-
-      // Show skills after camera transition (reduced delay for responsiveness)
-      setTimeout(() => {
-        this.skillNodes.showForProject(project, islandPosition);
-      }, 500);
-
-      if (this.callbacks.onIslandClick) {
-        this.callbacks.onIslandClick(project);
-      }
-    } else if (clickedBurnCore) {
-      if (this.callbacks.onBurnCoreClick) {
-        this.callbacks.onBurnCoreClick();
-      }
-    }
   },
 
   /**
@@ -1113,7 +642,7 @@ export const Yggdrasil = {
     }
 
     // Float and animate islands
-    for (const [id, data] of this.islands) {
+    for (const [_id, data] of this.islands) {
       const offset = Math.sin(time * 0.5 + data.position.x) * 0.3;
       data.mesh.position.y = data.baseY + offset;
 
@@ -1160,7 +689,7 @@ export const Yggdrasil = {
    */
   on(event, callback) {
     const key = `on${event.charAt(0).toUpperCase() + event.slice(1)}`;
-    if (this.callbacks.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(this.callbacks, key)) {
       this.callbacks[key] = callback;
     }
   },
@@ -1189,19 +718,19 @@ export const Yggdrasil = {
   dispose() {
     this.stop();
 
+    // Dispose controllers (SRP modules)
+    this.inputController?.dispose();
+    this.skillNodes?.dispose();
+    this.cameraController?.dispose();
+
+    // Dispose particles
     FireParticles.dispose();
     SnowstormParticles.dispose();
     EmberParticles.dispose();
     ConnectionParticles.dispose();
-    this.skillNodes.dispose();
-    this.cameraController.dispose();
 
-    // Clean up hitboxes
-    this.hitboxes.forEach(hitbox => {
-      hitbox.geometry.dispose();
-      hitbox.material.dispose();
-      this.scene.remove(hitbox);
-    });
+    // Clean up islands and hitboxes via factory
+    IslandFactory.disposeAll(this.islands, this.hitboxes, this.scene);
     this.hitboxes = [];
 
     this.renderer.dispose();
