@@ -69,6 +69,16 @@ const SHARE_TEMPLATES = {
 
 const ShareButton = {
   /**
+   * Platform share handlers - Strategy pattern for extensibility
+   * Add new platforms here without modifying share() method
+   */
+  platformHandlers: {
+    twitter: (button, content) => button.shareTwitter(content),
+    copy: (button, content) => button.copyLink(content),
+    native: (button, content) => button.nativeShare(content),
+  },
+
+  /**
    * Initialize share button component
    */
   init() {
@@ -204,16 +214,9 @@ const ShareButton = {
    * @param {Object} content - Share content
    */
   share(platform, content) {
-    switch (platform) {
-      case 'twitter':
-        this.shareTwitter(content);
-        break;
-      case 'copy':
-        this.copyLink(content);
-        break;
-      case 'native':
-        this.nativeShare(content);
-        break;
+    const handler = this.platformHandlers[platform];
+    if (handler) {
+      handler(this, content);
     }
 
     // Track share

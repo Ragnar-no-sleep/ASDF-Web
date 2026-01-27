@@ -33,6 +33,18 @@ export const NodeManager = {
   animations: [],
 
   /**
+   * Geometry factories by node type - Strategy pattern
+   * Maps node types to geometry constructors. Add new types here.
+   * @type {Object.<string, (size: number) => THREE.BufferGeometry>}
+   */
+  geometryFactories: {
+    [NODE_TYPES.PROJECT]: size => new THREE.IcosahedronGeometry(size, 1),
+    [NODE_TYPES.MODULE]: size => new THREE.OctahedronGeometry(size, 0),
+    [NODE_TYPES.TASK]: size => new THREE.TetrahedronGeometry(size, 0),
+    default: size => new THREE.SphereGeometry(size, 16, 16),
+  },
+
+  /**
    * Initialize the node manager
    */
   init(scene, threeInstance) {
@@ -84,21 +96,9 @@ export const NodeManager = {
   createNode({ id, type, name, data, position }) {
     const config = DASHBOARD_CONFIG.tree.nodes[type];
 
-    // Create geometry based on type
-    let geometry;
-    switch (type) {
-      case NODE_TYPES.PROJECT:
-        geometry = new THREE.IcosahedronGeometry(config.size, 1);
-        break;
-      case NODE_TYPES.MODULE:
-        geometry = new THREE.OctahedronGeometry(config.size, 0);
-        break;
-      case NODE_TYPES.TASK:
-        geometry = new THREE.TetrahedronGeometry(config.size, 0);
-        break;
-      default:
-        geometry = new THREE.SphereGeometry(config.size, 16, 16);
-    }
+    // Create geometry based on type using strategy pattern
+    const factory = this.geometryFactories[type] || this.geometryFactories.default;
+    const geometry = factory(config.size);
 
     // Create material with glow effect
     const material = new THREE.MeshStandardMaterial({

@@ -1932,39 +1932,43 @@ const YggdrasilCosmos = {
   },
 
   /**
+   * Section renderer strategies (Open/Closed principle)
+   */
+  sectionRenderers: {
+    intro: (section, ctx) =>
+      `<div class="lesson-section lesson-intro">${ctx.parseMarkdown(section.text)}</div>`,
+
+    diagram: (section, ctx) => `
+      <div class="lesson-section lesson-diagram">
+        ${section.title ? `<h3>${section.title}</h3>` : ''}
+        <pre class="diagram-ascii">${ctx.escapeHtml(section.content)}</pre>
+      </div>`,
+
+    concept: (section, ctx) => `
+      <div class="lesson-section lesson-concept">
+        <h3>${section.title}</h3>
+        ${ctx.parseMarkdown(section.text)}
+      </div>`,
+
+    note: (section, ctx) => {
+      const noteClass = section.variant || 'info';
+      const noteIcon = { tip: '💡', warning: '⚠️', info: 'ℹ️' }[noteClass] || 'ℹ️';
+      return `
+        <div class="lesson-section lesson-note lesson-note-${noteClass}">
+          <span class="note-icon">${noteIcon}</span>
+          ${ctx.parseMarkdown(section.text)}
+        </div>`;
+    },
+  },
+
+  /**
    * Render a content section
    */
   renderSection(section) {
-    switch (section.type) {
-      case 'intro':
-        return `<div class="lesson-section lesson-intro">${this.parseMarkdown(section.text)}</div>`;
-
-      case 'diagram':
-        return `
-          <div class="lesson-section lesson-diagram">
-            ${section.title ? `<h3>${section.title}</h3>` : ''}
-            <pre class="diagram-ascii">${this.escapeHtml(section.content)}</pre>
-          </div>`;
-
-      case 'concept':
-        return `
-          <div class="lesson-section lesson-concept">
-            <h3>${section.title}</h3>
-            ${this.parseMarkdown(section.text)}
-          </div>`;
-
-      case 'note':
-        const noteClass = section.variant || 'info';
-        const noteIcon = { tip: '💡', warning: '⚠️', info: 'ℹ️' }[noteClass] || 'ℹ️';
-        return `
-          <div class="lesson-section lesson-note lesson-note-${noteClass}">
-            <span class="note-icon">${noteIcon}</span>
-            ${this.parseMarkdown(section.text)}
-          </div>`;
-
-      default:
-        return `<div class="lesson-section">${this.parseMarkdown(section.text || '')}</div>`;
-    }
+    const renderer = this.sectionRenderers[section.type];
+    return renderer
+      ? renderer(section, this)
+      : `<div class="lesson-section">${this.parseMarkdown(section.text || '')}</div>`;
   },
 
   /**

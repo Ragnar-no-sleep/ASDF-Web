@@ -15,7 +15,7 @@ import {
   safeTextContent,
   sanitizeHtml,
   sanitizeText,
-  sanitizeUrl
+  sanitizeUrl,
 } from '../utils/security.js';
 import {
   $,
@@ -27,7 +27,7 @@ import {
   hide,
   on,
   once,
-  createElement
+  createElement,
 } from '../utils/dom.js';
 
 // ============================================
@@ -59,28 +59,34 @@ function generateDocModalContent(project) {
   const status = sanitizeText(project.status);
   const overview = sanitizeText(project.overview);
 
-  const features = project.features.map((f, i) => {
-    const name = sanitizeText(typeof f === 'string' ? f : f.name);
-    return `<li data-feature-index="${i}" data-project-id="${sanitizeText(project.id)}">${name}</li>`;
-  }).join('');
+  const features = project.features
+    .map((f, i) => {
+      const name = sanitizeText(typeof f === 'string' ? f : f.name);
+      return `<li data-feature-index="${i}" data-project-id="${sanitizeText(project.id)}">${name}</li>`;
+    })
+    .join('');
 
-  const techTags = project.tech.map(t => {
-    return `<span class="doc-tech-tag">${sanitizeText(t)}</span>`;
-  }).join('');
+  const techTags = project.tech
+    .map(t => {
+      return `<span class="doc-tech-tag">${sanitizeText(t)}</span>`;
+    })
+    .join('');
 
   const deps = sanitizeText(project.dependencies || '');
 
-  const githubLink = project.github && sanitizeUrl(project.github)
-    ? `<a href="${sanitizeUrl(project.github)}" class="modal-link" target="_blank" rel="noopener noreferrer">
+  const githubLink =
+    project.github && sanitizeUrl(project.github)
+      ? `<a href="${sanitizeUrl(project.github)}" class="modal-link" target="_blank" rel="noopener noreferrer">
          <span class="link-icon">&#128187;</span> GitHub
        </a>`
-    : '';
+      : '';
 
-  const demoLink = project.demo && sanitizeUrl(project.demo)
-    ? `<a href="${sanitizeUrl(project.demo)}" class="modal-link" target="_blank" rel="noopener noreferrer">
+  const demoLink =
+    project.demo && sanitizeUrl(project.demo)
+      ? `<a href="${sanitizeUrl(project.demo)}" class="modal-link" target="_blank" rel="noopener noreferrer">
          <span class="link-icon">&#127760;</span> Demo
        </a>`
-    : '';
+      : '';
 
   return `
     <div class="modal-header">
@@ -203,35 +209,41 @@ function generateProjectImmersiveContent(project) {
   const architecture = sanitizeText(project.architecture || '');
 
   // Mini tree (skill tree)
-  const miniTreeItems = (project.miniTree || []).map((item, i) => {
-    const itemIcon = sanitizeText(item.icon || '');
-    const itemName = sanitizeText(item.name);
-    const itemStatus = sanitizeText(item.status);
-    return `
+  const miniTreeItems = (project.miniTree || [])
+    .map((item, i) => {
+      const itemIcon = sanitizeText(item.icon || '');
+      const itemName = sanitizeText(item.name);
+      const itemStatus = sanitizeText(item.status);
+      return `
       <div class="mini-tree-item ${itemStatus}" data-component-index="${i}">
         <span class="mini-tree-icon">${itemIcon}</span>
         <span class="mini-tree-name">${itemName}</span>
         <span class="mini-tree-status">${itemStatus}</span>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   // Roadmap
-  const roadmapItems = (project.roadmap || []).map(item => {
-    const phase = sanitizeText(item.phase);
-    const text = sanitizeText(item.text);
-    return `
+  const roadmapItems = (project.roadmap || [])
+    .map(item => {
+      const phase = sanitizeText(item.phase);
+      const text = sanitizeText(item.text);
+      return `
       <div class="roadmap-item">
         <span class="roadmap-phase">${phase}</span>
         <span class="roadmap-text">${text}</span>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   // Integrations
-  const integrations = (project.integrations || []).map(int => {
-    return `<span class="integration-tag">${sanitizeText(int)}</span>`;
-  }).join('');
+  const integrations = (project.integrations || [])
+    .map(int => {
+      return `<span class="integration-tag">${sanitizeText(int)}</span>`;
+    })
+    .join('');
 
   return `
     <div class="immersive-header">
@@ -281,6 +293,20 @@ function generateProjectImmersiveContent(project) {
 
 const ModalFactory = {
   /**
+   * Modal type creators - Strategy pattern for Open/Closed principle
+   * Add new modal types here without modifying create() method
+   */
+  modalCreators: {
+    [MODAL_TYPES.DOC]: (factory, config) => factory.openDoc(config.projectId),
+    [MODAL_TYPES.FEATURE]: (factory, config) =>
+      factory.openFeature(config.projectId, config.featureIndex),
+    [MODAL_TYPES.COMPONENT]: (factory, config) =>
+      factory.openComponent(config.projectId, config.componentIndex),
+    [MODAL_TYPES.PROJECT_IMMERSIVE]: (factory, config) =>
+      factory.openProjectImmersive(config.projectId),
+  },
+
+  /**
    * Register a modal configuration
    * @param {string} modalId - Modal element ID
    * @param {Object} config - Modal configuration
@@ -293,7 +319,7 @@ const ModalFactory = {
       type: config.type || MODAL_TYPES.DOC,
       onOpen: config.onOpen || null,
       onClose: config.onClose || null,
-      ...config
+      ...config,
     });
   },
 
@@ -326,7 +352,7 @@ const ModalFactory = {
     });
 
     // Global escape key handler
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       if (e.key === 'Escape' && modalStack.length > 0) {
         this.close(modalStack[modalStack.length - 1]);
       }
@@ -342,23 +368,12 @@ const ModalFactory = {
    * @returns {string} Modal ID
    */
   async create(type, config = {}) {
-    switch (type) {
-      case MODAL_TYPES.DOC:
-        return this.openDoc(config.projectId);
-
-      case MODAL_TYPES.FEATURE:
-        return this.openFeature(config.projectId, config.featureIndex);
-
-      case MODAL_TYPES.COMPONENT:
-        return this.openComponent(config.projectId, config.componentIndex);
-
-      case MODAL_TYPES.PROJECT_IMMERSIVE:
-        return this.openProjectImmersive(config.projectId);
-
-      default:
-        console.warn('[ModalFactory] Unknown modal type:', type);
-        return null;
+    const creator = this.modalCreators[type];
+    if (creator) {
+      return creator(this, config);
     }
+    console.warn('[ModalFactory] Unknown modal type:', type);
+    return null;
   },
 
   /**
@@ -387,7 +402,7 @@ const ModalFactory = {
       // Bind feature click handlers
       const featureItems = $$('.doc-features-list li', content);
       featureItems.forEach(li => {
-        on(li, 'click', (e) => {
+        on(li, 'click', e => {
           e.stopPropagation();
           const featureIndex = parseInt(li.dataset.featureIndex, 10);
           this.openFeature(projectId, featureIndex);
@@ -461,13 +476,17 @@ const ModalFactory = {
     // Check if immersive modal exists, create if not
     let modal = byId('project-immersive-modal');
     if (!modal) {
-      modal = createElement('div', {
-        id: 'project-immersive-modal',
-        className: 'modal immersive-modal'
-      }, [
-        createElement('div', { className: 'modal-backdrop' }),
-        createElement('div', { className: 'modal-content immersive-content' })
-      ]);
+      modal = createElement(
+        'div',
+        {
+          id: 'project-immersive-modal',
+          className: 'modal immersive-modal',
+        },
+        [
+          createElement('div', { className: 'modal-backdrop' }),
+          createElement('div', { className: 'modal-content immersive-content' }),
+        ]
+      );
       document.body.appendChild(modal);
       this.register('project-immersive-modal', { type: MODAL_TYPES.PROJECT_IMMERSIVE });
 
@@ -590,7 +609,7 @@ const ModalFactory = {
    */
   getCurrentModal() {
     return modalStack.length > 0 ? modalStack[modalStack.length - 1] : null;
-  }
+  },
 };
 
 // Export for ES modules

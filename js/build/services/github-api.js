@@ -22,15 +22,15 @@ const PROJECT_REPOS = {
   'token-launcher': { owner: 'Ragnar-no-sleep', repo: 'token-launcher' },
   'learn-platform': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
   'games-platform': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
-  'holdex': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
-  'forecast': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
-  'ignition': { owner: 'Ragnar-no-sleep', repo: 'ignition' },
-  'oracle': { owner: 'Ragnar-no-sleep', repo: 'asdf-oracle' },
+  holdex: { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
+  forecast: { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
+  ignition: { owner: 'Ragnar-no-sleep', repo: 'ignition' },
+  oracle: { owner: 'Ragnar-no-sleep', repo: 'asdf-oracle' },
   'rpc-monitor': { owner: 'Ragnar-no-sleep', repo: 'rpc-monitor' },
   'community-hub': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
   'deploy-pipeline': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
   'ambassador-program': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
-  'security-audit': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' }
+  'security-audit': { owner: 'Ragnar-no-sleep', repo: 'ASDF-Web' },
 };
 
 // ============================================
@@ -50,7 +50,7 @@ const GitHubApiService = {
    */
   isCacheValid(key) {
     const cached = this.cache[key];
-    return cached && (Date.now() - cached.timestamp) < CACHE_TTL;
+    return cached && Date.now() - cached.timestamp < CACHE_TTL;
   },
 
   /**
@@ -73,7 +73,7 @@ const GitHubApiService = {
   setCache(key, data) {
     this.cache[key] = {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   },
 
@@ -90,8 +90,8 @@ const GitHubApiService = {
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/vnd.github.v3+json'
-        }
+          Accept: 'application/vnd.github.v3+json',
+        },
       });
       clearTimeout(timeoutId);
       return response;
@@ -116,9 +116,7 @@ const GitHubApiService = {
 
     try {
       const { owner, repo } = repoConfig;
-      const response = await this.fetchWithTimeout(
-        `${GITHUB_API}/repos/${owner}/${repo}`
-      );
+      const response = await this.fetchWithTimeout(`${GITHUB_API}/repos/${owner}/${repo}`);
 
       if (!response.ok) {
         if (response.status === 403) {
@@ -137,7 +135,7 @@ const GitHubApiService = {
         openIssues: data.open_issues_count,
         language: data.language,
         updatedAt: data.updated_at,
-        url: data.html_url
+        url: data.html_url,
       };
 
       this.setCache(cacheKey, result);
@@ -178,7 +176,7 @@ const GitHubApiService = {
         message: commit.commit.message.split('\n')[0].substring(0, 60),
         author: commit.commit.author.name,
         date: commit.commit.author.date,
-        url: commit.html_url
+        url: commit.html_url,
       }));
 
       this.setCache(cacheKey, commits);
@@ -218,7 +216,7 @@ const GitHubApiService = {
         login: contrib.login,
         avatar: contrib.avatar_url,
         contributions: contrib.contributions,
-        url: contrib.html_url
+        url: contrib.html_url,
       }));
 
       this.setCache(cacheKey, contributors);
@@ -304,7 +302,7 @@ const GitHubApiService = {
       this.getRepoInfo(projectId),
       this.getRecentCommits(projectId, 5),
       this.getContributors(projectId, 5),
-      this.getCompletionPercentage(projectId)
+      this.getCompletionPercentage(projectId),
     ]);
 
     const result = {
@@ -313,7 +311,7 @@ const GitHubApiService = {
       commits,
       contributors,
       completion,
-      fetchedAt: Date.now()
+      fetchedAt: Date.now(),
     };
 
     this.setCache(cacheKey, result);
@@ -337,9 +335,7 @@ const GitHubApiService = {
     if (cached) return cached;
 
     try {
-      const response = await this.fetchWithTimeout(
-        `${GITHUB_API}/users/${username}`
-      );
+      const response = await this.fetchWithTimeout(`${GITHUB_API}/users/${username}`);
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -367,7 +363,7 @@ const GitHubApiService = {
         followers: data.followers,
         following: data.following,
         createdAt: data.created_at,
-        url: data.html_url
+        url: data.html_url,
       };
 
       this.setCache(cacheKey, result);
@@ -406,7 +402,7 @@ const GitHubApiService = {
         type: event.type,
         repo: event.repo?.name,
         createdAt: event.created_at,
-        payload: this.summarizeEventPayload(event)
+        payload: this.summarizeEventPayload(event),
       }));
 
       this.setCache(cacheKey, activity);
@@ -418,32 +414,31 @@ const GitHubApiService = {
   },
 
   /**
+   * Event summarizer strategies (Open/Closed principle)
+   */
+  eventSummarizers: {
+    PushEvent: event => {
+      const commits = event.payload?.commits?.length || 0;
+      return `Pushed ${commits} commit${commits !== 1 ? 's' : ''}`;
+    },
+    PullRequestEvent: event =>
+      `${event.payload?.action} PR #${event.payload?.pull_request?.number}`,
+    IssuesEvent: event => `${event.payload?.action} issue #${event.payload?.issue?.number}`,
+    CreateEvent: event => `Created ${event.payload?.ref_type} ${event.payload?.ref || ''}`,
+    DeleteEvent: event => `Deleted ${event.payload?.ref_type} ${event.payload?.ref || ''}`,
+    WatchEvent: () => 'Starred repository',
+    ForkEvent: () => 'Forked repository',
+    IssueCommentEvent: event => `Commented on #${event.payload?.issue?.number}`,
+  },
+
+  /**
    * Summarize event payload for display
    * @param {Object} event
    * @returns {string}
    */
   summarizeEventPayload(event) {
-    switch (event.type) {
-      case 'PushEvent':
-        const commits = event.payload?.commits?.length || 0;
-        return `Pushed ${commits} commit${commits !== 1 ? 's' : ''}`;
-      case 'PullRequestEvent':
-        return `${event.payload?.action} PR #${event.payload?.pull_request?.number}`;
-      case 'IssuesEvent':
-        return `${event.payload?.action} issue #${event.payload?.issue?.number}`;
-      case 'CreateEvent':
-        return `Created ${event.payload?.ref_type} ${event.payload?.ref || ''}`;
-      case 'DeleteEvent':
-        return `Deleted ${event.payload?.ref_type} ${event.payload?.ref || ''}`;
-      case 'WatchEvent':
-        return 'Starred repository';
-      case 'ForkEvent':
-        return 'Forked repository';
-      case 'IssueCommentEvent':
-        return `Commented on #${event.payload?.issue?.number}`;
-      default:
-        return event.type.replace('Event', '');
-    }
+    const summarizer = this.eventSummarizers[event.type];
+    return summarizer ? summarizer(event) : event.type.replace('Event', '');
   },
 
   /**
@@ -476,7 +471,7 @@ const GitHubApiService = {
         forks: repo.forks_count,
         language: repo.language,
         updatedAt: repo.updated_at,
-        url: repo.html_url
+        url: repo.html_url,
       }));
 
       this.setCache(cacheKey, repos);
@@ -501,7 +496,7 @@ const GitHubApiService = {
     const [profile, activity, repos] = await Promise.all([
       this.getUserProfile(username),
       this.getUserActivity(username, 10),
-      this.getUserRepos(username, 6)
+      this.getUserRepos(username, 6),
     ]);
 
     if (!profile) {
@@ -512,7 +507,7 @@ const GitHubApiService = {
       ...profile,
       activity,
       repos,
-      fetchedAt: Date.now()
+      fetchedAt: Date.now(),
     };
 
     this.setCache(cacheKey, result);
@@ -537,15 +532,13 @@ const GitHubApiService = {
     for (const [projectId, repoConfig] of Object.entries(PROJECT_REPOS)) {
       try {
         const contributors = await this.getContributors(projectId, 100);
-        const found = contributors.find(c =>
-          c.login.toLowerCase() === username.toLowerCase()
-        );
+        const found = contributors.find(c => c.login.toLowerCase() === username.toLowerCase());
 
         if (found) {
           contributions.push({
             projectId,
             repo: repoConfig.repo,
-            contributions: found.contributions
+            contributions: found.contributions,
           });
         }
       } catch (error) {
@@ -575,7 +568,7 @@ const GitHubApiService = {
       openIssues: 0,
       language: 'JavaScript',
       updatedAt: new Date().toISOString(),
-      url: `https://github.com/Ragnar-no-sleep/${projectId}`
+      url: `https://github.com/Ragnar-no-sleep/${projectId}`,
     };
   },
 
@@ -590,8 +583,8 @@ const GitHubApiService = {
         message: 'Recent updates',
         author: 'Builder',
         date: new Date().toISOString(),
-        url: '#'
-      }
+        url: '#',
+      },
     ];
   },
 
@@ -605,8 +598,8 @@ const GitHubApiService = {
         login: 'Ragnar',
         avatar: '/assets/default-avatar.png',
         contributions: 100,
-        url: 'https://github.com/Ragnar-no-sleep'
-      }
+        url: 'https://github.com/Ragnar-no-sleep',
+      },
     ];
   },
 
@@ -629,7 +622,7 @@ const GitHubApiService = {
       followers: 0,
       following: 0,
       createdAt: null,
-      url: `https://github.com/${username}`
+      url: `https://github.com/${username}`,
     };
   },
 
@@ -653,7 +646,7 @@ const GitHubApiService = {
    */
   clearCache() {
     this.cache = {};
-  }
+  },
 };
 
 // ============================================
