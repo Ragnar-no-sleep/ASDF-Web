@@ -20,8 +20,8 @@ const _getDeckBuilderState = () => {
     if (typeof getDeckState === 'function') return getDeckState();
     return window.PumpArenaState?.get?.()?.deckbuilding || { collection: [], activeDeck: [], presets: {} };
 };
-const getActiveDeck = () => _getDeckBuilderState().activeDeck || [];
-const addCardToCollection = (cardId) => {
+const _getActiveDeckLocal = () => _getDeckBuilderState().activeDeck || [];
+const _addCardToCollectionLocal = (cardId) => {
     const state = window.PumpArenaState?.get?.();
     if (!state?.deckbuilding) return;
     state.deckbuilding.collection = state.deckbuilding.collection || [];

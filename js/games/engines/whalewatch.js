@@ -11,12 +11,13 @@
 'use strict';
 
 const WhaleWatch = {
+    version: '1.2.0', // 3D flip + celebrations + hints
     gameId: 'whalewatch',
     state: null,
     timerInterval: null,
     memoryTimerInterval: null,
 
-    // Symbol legend with names
+    // Symbol legend with names (expanded)
     symbolLegend: [
         { symbol: '&#128293;', name: 'Fire' },
         { symbol: '&#128142;', name: 'Diamond' },
@@ -26,7 +27,14 @@ const WhaleWatch = {
         { symbol: '&#127918;', name: 'Game' },
         { symbol: '&#127942;', name: 'Trophy' },
         { symbol: '&#128171;', name: 'Sparkle' },
+        { symbol: '&#127873;', name: 'Gift' },
+        { symbol: '&#128081;', name: 'Crown' },
+        { symbol: '&#9889;', name: 'Bolt' },
+        { symbol: '&#128302;', name: 'Crystal' },
     ],
+
+    // Celebration particles
+    particles: [],
 
     /**
      * Start the game
@@ -46,12 +54,19 @@ const WhaleWatch = {
                 targetIndex: 0,
                 foundCount: 0,
                 totalTargets: 0,
-                timer: 45,
-                cols: 5,
-                rows: 5,
+                timer: 55,        // fib[9]
+                cols: 5,          // fib[4]
+                rows: 5,          // fib[4]
                 completed: false,
                 mistakes: 0,
                 maxMistakes: 3,
+                // Hint system
+                hintsRemaining: 2,
+                hintActive: false,
+                // Combo system
+                combo: 0,
+                lastFindTime: 0,
+                comboTimeout: 2000, // 2s to maintain combo
             },
             // Memory Game (right side)
             memoryGame: {
@@ -61,13 +76,28 @@ const WhaleWatch = {
                 currentShowIndex: 0,
                 waitingForInput: false,
                 inputTimer: 0,
-                inputTimeLimit: 10,
+                inputTimeLimit: 13,  // fib[6]
                 buttons: [],
                 round: 1,
                 completed: false,
             },
             colors: ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899'],
+            // Difficulty progression (Fibonacci-based)
+            difficulty: {
+                symbolsPerLevel: [3, 4, 5, 6, 8, 10, 12], // fib-ish progression
+                timerPerLevel: [55, 50, 45, 40, 35, 30, 25],
+                gridSizes: [
+                    { cols: 4, rows: 4 },  // 16 cells
+                    { cols: 5, rows: 4 },  // 20 cells
+                    { cols: 5, rows: 5 },  // 25 cells
+                    { cols: 6, rows: 5 },  // 30 cells
+                    { cols: 6, rows: 6 },  // 36 cells
+                    { cols: 7, rows: 6 },  // 42 cells
+                    { cols: 8, rows: 6 },  // 48 cells
+                ]
+            }
         };
+        this.particles = [];
 
         this.createArena(arena);
         this.buildLegend();
@@ -92,11 +122,16 @@ const WhaleWatch = {
                 <div style="flex:1;display:flex;flex-direction:column;background:rgba(0,0,0,0.3);border-radius:12px;padding:15px;border:2px solid #333;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <div style="font-size:14px;font-weight:bold;color:var(--gold);">&#127919; SYMBOL MATCH</div>
-                        <div style="display:flex;gap:10px;">
-                            <span style="color:var(--accent-fire);font-size:12px;">&#9202; <span id="sm-timer">45</span>s</span>
-                            <span style="color:var(--green);font-size:12px;"><span id="sm-found">0</span>/<span id="sm-total">0</span></span>
-                            <span style="color:#ef4444;font-size:12px;">&#10060; <span id="sm-mistakes">0</span>/3</span>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <span style="color:var(--accent-fire);font-size:11px;">&#9202; <span id="sm-timer">45</span>s</span>
+                            <span style="color:var(--green);font-size:11px;"><span id="sm-found">0</span>/<span id="sm-total">0</span></span>
+                            <span style="color:#ef4444;font-size:11px;">&#10060; <span id="sm-mistakes">0</span>/3</span>
+                            <button id="hint-btn" style="background:#a855f7;border:none;border-radius:4px;padding:2px 8px;color:white;font-size:10px;cursor:pointer;">&#128161; <span id="hints-left">2</span></button>
                         </div>
+                    </div>
+                    <!-- Combo indicator -->
+                    <div id="combo-display" style="display:none;position:absolute;top:50px;right:20px;background:linear-gradient(135deg,#f97316,#fbbf24);padding:4px 12px;border-radius:20px;font-size:14px;font-weight:bold;color:white;z-index:10;">
+                        x<span id="combo-count">0</span> COMBO!
                     </div>
                     <!-- Legend -->
                     <div id="symbol-legend" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;padding:6px;background:rgba(0,0,0,0.4);border-radius:8px;font-size:10px;"></div>
@@ -159,22 +194,43 @@ const WhaleWatch = {
         const smTotalEl = document.getElementById('sm-total');
         const smTargetNameEl = document.getElementById('sm-target-name');
         const smMistakesEl = document.getElementById('sm-mistakes');
+        const hintsLeftEl = document.getElementById('hints-left');
+        const hintBtn = document.getElementById('hint-btn');
 
         this.state.symbolMatch.grid = [];
         this.state.symbolMatch.foundCount = 0;
         this.state.symbolMatch.completed = false;
         this.state.symbolMatch.mistakes = 0;
+        this.state.symbolMatch.combo = 0;
         smMistakesEl.textContent = '0';
 
-        // Pick target from legend
-        this.state.symbolMatch.targetIndex = Math.floor(Math.random() * this.symbolLegend.length);
+        // Setup hint button
+        if (hintBtn) {
+            const self = this;
+            hintBtn.onclick = () => self.useHint();
+            hintsLeftEl.textContent = this.state.symbolMatch.hintsRemaining;
+            hintBtn.style.opacity = this.state.symbolMatch.hintsRemaining > 0 ? '1' : '0.5';
+        }
+
+        // Difficulty scaling based on level
+        const levelIndex = Math.min(this.state.level - 1, this.state.difficulty.gridSizes.length - 1);
+        const gridSize = this.state.difficulty.gridSizes[levelIndex];
+        this.state.symbolMatch.cols = gridSize.cols;
+        this.state.symbolMatch.rows = gridSize.rows;
+        this.state.symbolMatch.totalTargets = this.state.difficulty.symbolsPerLevel[levelIndex];
+        this.state.symbolMatch.timer = this.state.difficulty.timerPerLevel[levelIndex];
+
+        // Update grid CSS
+        symbolGrid.style.gridTemplateColumns = `repeat(${gridSize.cols}, 1fr)`;
+
+        // Pick target from legend (use more symbols at higher levels)
+        const availableSymbols = Math.min(8 + this.state.level, this.symbolLegend.length);
+        this.state.symbolMatch.targetIndex = Math.floor(Math.random() * availableSymbols);
         const target = this.symbolLegend[this.state.symbolMatch.targetIndex];
         smTargetNameEl.textContent = target.name;
 
         // Create grid
         const totalCells = this.state.symbolMatch.cols * this.state.symbolMatch.rows;
-        this.state.symbolMatch.totalTargets = 3 + this.state.level;
-
         const gridSymbols = [];
 
         for (let i = 0; i < this.state.symbolMatch.totalTargets; i++) {
@@ -184,7 +240,7 @@ const WhaleWatch = {
         for (let i = this.state.symbolMatch.totalTargets; i < totalCells; i++) {
             let randomItem;
             do {
-                randomItem = this.symbolLegend[Math.floor(Math.random() * this.symbolLegend.length)];
+                randomItem = this.symbolLegend[Math.floor(Math.random() * availableSymbols)];
             } while (randomItem.symbol === target.symbol);
             gridSymbols.push({ symbol: randomItem.symbol, isTarget: false, found: false });
         }
@@ -193,20 +249,135 @@ const WhaleWatch = {
 
         smTotalEl.textContent = this.state.symbolMatch.totalTargets;
         smFoundEl.textContent = '0';
-        this.state.symbolMatch.timer = Math.max(20, 45 - this.state.level * 3);
         smTimerEl.textContent = this.state.symbolMatch.timer;
 
         symbolGrid.innerHTML = '';
         const self = this;
         this.state.symbolMatch.grid.forEach((cell, idx) => {
-            const cellEl = document.createElement('div');
-            cellEl.dataset.index = idx;
-            cellEl.dataset.revealed = 'false';
-            cellEl.style.cssText = `background:linear-gradient(135deg,#3b82f6,#1e40af);border:2px solid #60a5fa;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all 0.2s;`;
-            cellEl.textContent = '❓';
-            cellEl.onclick = () => self.clickSymbol(idx);
-            symbolGrid.appendChild(cellEl);
+            // Create 3D flip card container
+            const cardContainer = document.createElement('div');
+            cardContainer.className = 'flip-card';
+            cardContainer.dataset.index = idx;
+            cardContainer.style.cssText = `
+                perspective: 1000px;
+                cursor: pointer;
+                aspect-ratio: 1;
+            `;
+
+            const cardInner = document.createElement('div');
+            cardInner.className = 'flip-card-inner';
+            cardInner.style.cssText = `
+                position: relative;
+                width: 100%;
+                height: 100%;
+                transition: transform 0.5s;
+                transform-style: preserve-3d;
+            `;
+
+            // Card back (question mark)
+            const cardBack = document.createElement('div');
+            cardBack.className = 'flip-card-back';
+            cardBack.style.cssText = `
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                backface-visibility: hidden;
+                background: linear-gradient(135deg, #3b82f6, #1e40af);
+                border: 2px solid #60a5fa;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+            `;
+            cardBack.textContent = '❓';
+
+            // Card front (symbol)
+            const cardFront = document.createElement('div');
+            cardFront.className = 'flip-card-front';
+            cardFront.style.cssText = `
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                backface-visibility: hidden;
+                transform: rotateY(180deg);
+                background: rgba(59, 130, 246, 0.2);
+                border: 2px solid #60a5fa;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+            `;
+            cardFront.innerHTML = cell.symbol;
+
+            cardInner.appendChild(cardBack);
+            cardInner.appendChild(cardFront);
+            cardContainer.appendChild(cardInner);
+
+            cardContainer.onclick = () => self.clickSymbol(idx);
+            symbolGrid.appendChild(cardContainer);
         });
+    },
+
+    /**
+     * Use hint to reveal one unfound target
+     */
+    useHint() {
+        if (this.state.symbolMatch.hintsRemaining <= 0) return;
+        if (this.state.symbolMatch.hintActive) return;
+
+        const symbolGrid = document.getElementById('symbol-grid');
+        const hintsLeftEl = document.getElementById('hints-left');
+        const hintBtn = document.getElementById('hint-btn');
+
+        // Find unfound target
+        const unfoundIndex = this.state.symbolMatch.grid.findIndex(
+            (cell, idx) => cell.isTarget && !cell.found &&
+            symbolGrid.children[idx].querySelector('.flip-card-inner').style.transform !== 'rotateY(180deg)'
+        );
+
+        if (unfoundIndex === -1) return;
+
+        this.state.symbolMatch.hintsRemaining--;
+        this.state.symbolMatch.hintActive = true;
+        hintsLeftEl.textContent = this.state.symbolMatch.hintsRemaining;
+        hintBtn.style.opacity = this.state.symbolMatch.hintsRemaining > 0 ? '1' : '0.5';
+
+        // Briefly reveal the target
+        const cardInner = symbolGrid.children[unfoundIndex].querySelector('.flip-card-inner');
+        cardInner.style.transform = 'rotateY(180deg)';
+
+        // Add glow effect
+        symbolGrid.children[unfoundIndex].style.boxShadow = '0 0 20px #fbbf24';
+
+        const self = this;
+        setTimeout(() => {
+            if (!self.state.symbolMatch.grid[unfoundIndex].found) {
+                cardInner.style.transform = '';
+            }
+            symbolGrid.children[unfoundIndex].style.boxShadow = '';
+            self.state.symbolMatch.hintActive = false;
+        }, 1500);
+    },
+
+    /**
+     * Spawn celebration particles
+     */
+    spawnCelebration(x, y, count = 8) {
+        const colors = ['#fbbf24', '#22c55e', '#3b82f6', '#a855f7', '#ef4444'];
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2;
+            const speed = 3 + Math.random() * 3;
+            this.particles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 2,
+                life: 40 + Math.random() * 20,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: 4 + Math.random() * 4
+            });
+        }
     },
 
     /**
@@ -218,28 +389,56 @@ const WhaleWatch = {
         const symbolGrid = document.getElementById('symbol-grid');
         const smFoundEl = document.getElementById('sm-found');
         const smMistakesEl = document.getElementById('sm-mistakes');
+        const comboDisplay = document.getElementById('combo-display');
+        const comboCount = document.getElementById('combo-count');
 
         const cell = this.state.symbolMatch.grid[index];
-        const cellEl = symbolGrid.children[index];
+        const cardContainer = symbolGrid.children[index];
+        const cardInner = cardContainer.querySelector('.flip-card-inner');
+        const cardFront = cardContainer.querySelector('.flip-card-front');
 
         if (cell.found) return;
-        if (cellEl.dataset.revealed === 'true') return;
+        if (cardInner.style.transform === 'rotateY(180deg)') return;
 
-        cellEl.innerHTML = cell.symbol;
-        cellEl.style.background = 'rgba(59,130,246,0.15)';
+        // 3D flip animation
+        cardInner.style.transform = 'rotateY(180deg)';
 
         if (cell.isTarget) {
             cell.found = true;
-            cellEl.dataset.revealed = 'true';
             this.state.symbolMatch.foundCount++;
             smFoundEl.textContent = this.state.symbolMatch.foundCount;
 
-            cellEl.style.background = 'rgba(34,197,94,0.5)';
-            cellEl.style.borderColor = '#22c55e';
-            cellEl.style.transform = 'scale(1.1)';
-            setTimeout(() => (cellEl.style.transform = ''), 200);
+            // Update combo
+            const now = Date.now();
+            if (now - this.state.symbolMatch.lastFindTime < this.state.symbolMatch.comboTimeout) {
+                this.state.symbolMatch.combo++;
+            } else {
+                this.state.symbolMatch.combo = 1;
+            }
+            this.state.symbolMatch.lastFindTime = now;
 
-            const bonus = 10 + this.state.level * 5;
+            // Show combo display
+            if (this.state.symbolMatch.combo > 1) {
+                comboCount.textContent = this.state.symbolMatch.combo;
+                comboDisplay.style.display = 'block';
+                comboDisplay.style.animation = 'none';
+                comboDisplay.offsetHeight; // Trigger reflow
+                comboDisplay.style.animation = 'pulse 0.3s ease-out';
+            }
+
+            // Success styling
+            cardFront.style.background = 'rgba(34, 197, 94, 0.5)';
+            cardFront.style.borderColor = '#22c55e';
+            cardContainer.style.transform = 'scale(1.1)';
+            setTimeout(() => (cardContainer.style.transform = ''), 200);
+
+            // Celebration particles
+            const rect = cardContainer.getBoundingClientRect();
+            this.spawnCelebration(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+            // Score with combo multiplier (Fibonacci: 1, 2, 3, 5, 8)
+            const comboMultiplier = [1, 1, 2, 3, 5, 8][Math.min(this.state.symbolMatch.combo, 5)];
+            const bonus = (10 + this.state.level * 5) * comboMultiplier;
             this.state.score += bonus;
             document.getElementById('ww-score').textContent = this.state.score;
             recordScoreUpdate(this.gameId, this.state.score, bonus);
@@ -250,8 +449,18 @@ const WhaleWatch = {
                 this.state.score += timeBonus;
                 document.getElementById('ww-score').textContent = this.state.score;
 
+                // Big celebration
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const x = 100 + Math.random() * 200;
+                        const y = 100 + Math.random() * 200;
+                        this.spawnCelebration(x, y, 12);
+                    }, i * 100);
+                }
+
                 const self = this;
                 setTimeout(() => {
+                    comboDisplay.style.display = 'none';
                     self.state.level++;
                     document.getElementById('ww-level').textContent = self.state.level;
                     self.setupSymbolHunt();
@@ -261,12 +470,19 @@ const WhaleWatch = {
                 }, 1000);
             }
         } else {
-            cellEl.style.background = 'rgba(239,68,68,0.5)';
-            cellEl.style.borderColor = '#ef4444';
+            // Wrong card - flip it red then back
+            cardFront.style.background = 'rgba(239, 68, 68, 0.5)';
+            cardFront.style.borderColor = '#ef4444';
+
+            // Reset combo
+            this.state.symbolMatch.combo = 0;
+            comboDisplay.style.display = 'none';
+
+            const self = this;
             setTimeout(() => {
-                cellEl.textContent = '❓';
-                cellEl.style.background = 'linear-gradient(135deg,#3b82f6,#1e40af)';
-                cellEl.style.borderColor = '#60a5fa';
+                cardInner.style.transform = '';
+                cardFront.style.background = 'rgba(59, 130, 246, 0.2)';
+                cardFront.style.borderColor = '#60a5fa';
             }, 500);
 
             this.state.score = Math.max(0, this.state.score - 5);
@@ -282,15 +498,16 @@ const WhaleWatch = {
                 symbolGrid.style.boxShadow = '0 0 20px #ef4444';
                 setTimeout(() => (symbolGrid.style.boxShadow = ''), 300);
 
+                // Reset all found cards
                 this.state.symbolMatch.grid.forEach((cell, idx) => {
                     if (cell.found && cell.isTarget) {
                         cell.found = false;
-                        const cardEl = symbolGrid.children[idx];
-                        cardEl.textContent = '❓';
-                        cardEl.style.background = 'linear-gradient(135deg,#3b82f6,#1e40af)';
-                        cardEl.style.borderColor = '#60a5fa';
-                        cardEl.style.transform = '';
-                        cardEl.dataset.revealed = 'false';
+                        const container = symbolGrid.children[idx];
+                        const inner = container.querySelector('.flip-card-inner');
+                        const front = container.querySelector('.flip-card-front');
+                        inner.style.transform = '';
+                        front.style.background = 'rgba(59, 130, 246, 0.2)';
+                        front.style.borderColor = '#60a5fa';
                     }
                 });
 

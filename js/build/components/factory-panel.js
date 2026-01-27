@@ -28,6 +28,7 @@ import {
 // TRACK MODULES DATA
 // ============================================
 
+// Note: Growth track merged into Content as of 2026-01-21
 const TRACK_MODULES = {
   dev: [
     { id: 'solana-basics', name: 'Solana Fundamentals', icon: '&#9883;', duration: '2h', status: 'available' },
@@ -37,13 +38,6 @@ const TRACK_MODULES = {
     { id: 'pda-accounts', name: 'PDAs & Accounts', icon: '&#128273;', duration: '3h', status: 'locked' },
     { id: 'testing-programs', name: 'Testing Programs', icon: '&#128269;', duration: '2h', status: 'locked' }
   ],
-  growth: [
-    { id: 'crypto-marketing', name: 'Crypto Marketing 101', icon: '&#128200;', duration: '1.5h', status: 'available' },
-    { id: 'community-building', name: 'Community Building', icon: '&#128101;', duration: '2h', status: 'available' },
-    { id: 'viral-hooks', name: 'Viral Hooks', icon: '&#128293;', duration: '1h', status: 'available' },
-    { id: 'tokenomics', name: 'Tokenomics Design', icon: '&#128178;', duration: '2h', status: 'locked' },
-    { id: 'analytics', name: 'On-Chain Analytics', icon: '&#128202;', duration: '2h', status: 'locked' }
-  ],
   gaming: [
     { id: 'game-design', name: 'Game Design Basics', icon: '&#127922;', duration: '2h', status: 'available' },
     { id: 'unity-solana', name: 'Unity + Solana', icon: '&#127918;', duration: '4h', status: 'available' },
@@ -52,20 +46,26 @@ const TRACK_MODULES = {
     { id: 'multiplayer', name: 'Multiplayer Systems', icon: '&#128101;', duration: '3h', status: 'locked' }
   ],
   content: [
+    // Content creation
     { id: 'crypto-writing', name: 'Crypto Writing', icon: '&#128221;', duration: '1h', status: 'available' },
     { id: 'video-production', name: 'Video Production', icon: '&#127909;', duration: '2h', status: 'available' },
     { id: 'thread-mastery', name: 'Thread Mastery', icon: '&#128172;', duration: '1h', status: 'available' },
     { id: 'brand-building', name: 'Personal Branding', icon: '&#127775;', duration: '2h', status: 'locked' },
-    { id: 'monetization', name: 'Creator Monetization', icon: '&#128176;', duration: '1.5h', status: 'locked' }
+    { id: 'monetization', name: 'Creator Monetization', icon: '&#128176;', duration: '1.5h', status: 'locked' },
+    // Growth (merged)
+    { id: 'crypto-marketing', name: 'Crypto Marketing 101', icon: '&#128200;', duration: '1.5h', status: 'available' },
+    { id: 'community-building', name: 'Community Building', icon: '&#128101;', duration: '2h', status: 'available' },
+    { id: 'viral-hooks', name: 'Viral Hooks', icon: '&#128293;', duration: '1h', status: 'locked' },
+    { id: 'tokenomics', name: 'Tokenomics Design', icon: '&#128178;', duration: '2h', status: 'locked' },
+    { id: 'analytics', name: 'On-Chain Analytics', icon: '&#128202;', duration: '2h', status: 'locked' }
   ]
 };
 
-// Project recommendations by track
+// Project recommendations by track (Growth merged into Content)
 const TRACK_PROJECTS = {
   dev: ['burn-tracker', 'token-launcher', 'oracle', 'rpc-monitor'],
-  growth: ['community-hub', 'ambassador-program', 'games-platform'],
   gaming: ['games-platform', 'holdex', 'forecast'],
-  content: ['learn-platform', 'community-hub', 'ambassador-program']
+  content: ['learn-platform', 'community-hub', 'ambassador-program', 'games-platform']
 };
 
 // ============================================

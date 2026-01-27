@@ -111,15 +111,19 @@ function sanitizeColor(color) {
 }
 
 /**
- * Sanitize number for display
+ * Sanitize number for display (no bounds enforcement)
+ * Note: For bounded sanitization, use GameValidation.sanitizeNumber from shared/validation.js
  * @param {*} num - Number to sanitize
- * @returns {number} Safe number
+ * @returns {number} Safe number (0 if invalid)
  */
-function sanitizeNumber(num) {
+function sanitizeNumberForDisplay(num) {
   const parsed = Number(num);
   if (!Number.isFinite(parsed)) return 0;
   return parsed;
 }
+
+// Alias for backwards compatibility within this module
+const sanitizeNumber = sanitizeNumberForDisplay;
 
 /**
  * Create a modal overlay with standard close behavior (DRY helper)

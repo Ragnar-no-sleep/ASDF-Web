@@ -139,7 +139,7 @@ Used for internal thresholds and weights.
 - **CSP** - Content Security Policy configured
 - **No inline scripts** - External JS files only
 
-See `docs/SECURITY_AUDIT.md` for full audit.
+See `docs/SECURITY_AUDIT_2026.md` for latest audit (Jan 2026).
 
 ---
 
@@ -184,9 +184,11 @@ Deployed on [Render](https://render.com) - see `render.yaml`
 | ------------------------------ | ----------------------------- |
 | `README.md`                    | This file - project overview  |
 | `CLAUDE.md`                    | Claude Code instructions (FR) |
-| `docs/SECURITY_AUDIT.md`       | Security review               |
+| `ARCHITECTURE-learn-build.md`  | Quest/XP/Badge architecture   |
+| `ROADMAP-build.md`             | Main roadmap (Build + Learn)  |
+| `ROADMAP-games.md`             | Games roadmap                 |
+| `docs/SECURITY_AUDIT_2026.md`  | Security audit (Jan 2026)     |
 | `docs/BACKEND_ARCHITECTURE.md` | API architecture              |
-| `docs/HELIUS_AUDIT_REPORT.md`  | Solana integration audit      |
 
 ---
 

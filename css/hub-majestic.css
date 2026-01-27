@@ -4,6 +4,8 @@
    "Don't trust. Verify. This is fine." 🔥
    ============================================ */
 
+@import url('./design-tokens.css');
+
 :root {
   /* === PHI SYSTEM === */
   --phi: 1.618033988749895;
@@ -68,17 +70,17 @@
   top: -100%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 24px;
+  padding: var(--space-sm) var(--space-lg);
   background: var(--gold);
   color: var(--bg-void);
-  font-weight: 600;
-  border-radius: 8px;
-  z-index: 10000;
-  transition: top 0.2s var(--ease-out);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  z-index: var(--z-max);
+  transition: top var(--duration-fast) var(--ease-out);
 }
 
 .skip-link:focus {
-  top: 16px;
+  top: var(--space-md);
 }
 
 /* === RESET === */
@@ -937,10 +939,10 @@ body.hub-majestic {
 /* === NODE CONTENT === */
 .hub-node-icon {
   position: relative;
-  font-size: 28px;
-  margin-bottom: 6px;
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-xs);
   z-index: 2;
-  transition: transform 0.4s var(--ease-spring);
+  transition: transform var(--duration-normal) var(--ease-spring);
 }
 
 .hub-node:hover .hub-node-icon {
@@ -950,13 +952,13 @@ body.hub-majestic {
 .hub-node-label {
   position: relative;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--text-secondary);
   z-index: 2;
-  transition: color 0.3s;
+  transition: color var(--duration-fast);
 }
 
 .hub-node:hover .hub-node-label {
@@ -997,17 +999,17 @@ body.hub-majestic {
 
 .hub-node-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  padding: 3px 8px;
+  top: calc(-1 * var(--space-xs));
+  right: calc(-1 * var(--space-xs));
+  padding: var(--space-2xs) var(--space-sm);
   font-family: 'JetBrains Mono', monospace;
   font-size: 7px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--bg-deep);
   background: linear-gradient(135deg, var(--gold) 0%, var(--amber) 100%);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   z-index: 5;
 }
 
@@ -1098,17 +1100,17 @@ body.hub-majestic {
 
 .hub-tools-icon {
   position: relative;
-  font-size: 36px;
-  margin-bottom: 6px;
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-xs);
   z-index: 2;
 }
 
 .hub-tools-label {
   position: relative;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
   color: var(--gold);
   z-index: 2;
@@ -1123,12 +1125,14 @@ body.hub-majestic {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: var(--space-2xs);
   text-decoration: none;
   color: var(--text-muted);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  transition:
+    opacity var(--duration-slow) var(--ease-spring),
+    transform var(--duration-slow) var(--ease-spring);
   /* Center transform origin on parent's center (Tools button) */
   top: 50%;
   left: 50%;
@@ -1152,13 +1156,13 @@ body.hub-majestic {
 }
 
 .hub-tools-item span:first-child {
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 .hub-tools-item span:last-child {
   font-family: 'JetBrains Mono', monospace;
   font-size: 7px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1199,25 +1203,29 @@ body.hub-majestic {
     transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
   }
   12.5% {
-    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * 0.707))
+      translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   25% {
     transform: translateX(0) translateY(calc(var(--orbit-radius) * -0.618)) scale(0.9);
   }
   37.5% {
-    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * -0.707))
+      translateY(calc(var(--orbit-radius) * -0.5)) scale(0.95);
   }
   50% {
     transform: translateX(calc(var(--orbit-radius) * -1)) translateY(0) scale(1);
   }
   62.5% {
-    transform: translateX(calc(var(--orbit-radius) * -0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * -0.707))
+      translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   75% {
     transform: translateX(0) translateY(calc(var(--orbit-radius) * 0.618)) scale(0.9);
   }
   87.5% {
-    transform: translateX(calc(var(--orbit-radius) * 0.707)) translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
+    transform: translateX(calc(var(--orbit-radius) * 0.707))
+      translateY(calc(var(--orbit-radius) * 0.5)) scale(0.95);
   }
   100% {
     transform: translateX(var(--orbit-radius)) translateY(0) scale(1);
@@ -1241,22 +1249,22 @@ body.hub-majestic {
 
 .hub-footer {
   position: fixed;
-  bottom: 12px;
+  bottom: var(--space-sm);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: var(--text-2xs);
   color: var(--text-ghost);
-  z-index: 100;
+  z-index: var(--z-overlay);
 }
 
 .hub-footer a {
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--duration-fast);
 }
 
 .hub-footer a:hover {
@@ -1305,8 +1313,8 @@ body.hub-majestic {
   }
 
   .hub-node-icon {
-    font-size: 22px;
-    margin-bottom: 4px;
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-2xs);
   }
   .hub-node-label {
     font-size: 7px;
@@ -1318,10 +1326,10 @@ body.hub-majestic {
     height: 95px;
   }
   .hub-tools-icon {
-    font-size: 28px;
+    font-size: var(--text-2xl);
   }
   .hub-tools-label {
-    font-size: 8px;
+    font-size: var(--text-2xs);
   }
 
   .hub-tools-item {
@@ -1395,10 +1403,10 @@ body.hub-majestic {
     height: 80px;
   }
   .hub-tools-icon {
-    font-size: 24px;
+    font-size: var(--text-xl);
   }
   .hub-tools-label {
-    font-size: 8px;
+    font-size: var(--text-2xs);
   }
 
   .hub-tools-item {

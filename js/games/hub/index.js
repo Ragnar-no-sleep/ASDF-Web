@@ -213,11 +213,12 @@ const Hub = {
             });
         }
 
-        // For games view, also show legacy sections
+        // For games view, also show legacy sections (but NOT pump arena - disabled)
         if (view === 'games') {
             if (this.sections.hero) this.sections.hero.style.display = 'block';
             if (this.sections.accessBar) this.sections.accessBar.style.display = 'flex';
-            if (this.sections.pumpArena) this.sections.pumpArena.style.display = 'block';
+            // Pump Arena DISABLED - not MVP ready
+            // if (this.sections.pumpArena) this.sections.pumpArena.style.display = 'block';
         }
     },
 

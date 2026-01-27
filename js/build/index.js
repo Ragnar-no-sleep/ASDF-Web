@@ -25,16 +25,17 @@ import { FormationPanel } from './components/formation-panel.js';
 import { BuilderProfile } from './components/builder-profile.js';
 import { SkillTreeView } from './components/skill-tree-view.js';
 import { GitHubTimeline } from './components/github-timeline.js';
+import { FeatureTooltip } from './components/feature-tooltip.js';
+import { OnboardingProgress } from './components/onboarding-progress.js';
+import { StreakCounter } from './components/streak-counter.js';
+import { XPFlyup } from './components/xp-flyup.js';
+import { ShareButton } from './components/share-button.js';
 import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
-import {
-  escapeHtml,
-  sanitizeHtml,
-  safeInnerHTML,
-  safeTextContent
-} from './utils/security.js';
+import { escapeHtml, sanitizeHtml, safeInnerHTML, safeTextContent } from './utils/security.js';
 import { $, $$, on, delegate } from './utils/dom.js';
+import { DURATION, DELAY } from './config/timing.js';
 
 // ============================================
 // BUILD V2 APPLICATION
@@ -68,9 +69,14 @@ const BuildApp = {
     builderProfile: BuilderProfile,
     skillTreeView: SkillTreeView,
     githubTimeline: GitHubTimeline,
+    featureTooltip: FeatureTooltip,
+    onboardingProgress: OnboardingProgress,
+    streakCounter: StreakCounter,
+    xpFlyup: XPFlyup,
+    shareButton: ShareButton,
     renderer: RendererFactory,
     animations: Animations,
-    handlers: EventHandlers
+    handlers: EventHandlers,
   },
 
   /**
@@ -84,12 +90,14 @@ const BuildApp = {
     }
 
     console.log('[BuildApp] Initializing v' + this.version);
+    const loadingEl = $('#app-loading');
 
     try {
       // 1. Initialize state management
       BuildState.init();
 
       // 2. Pre-load data
+      this._updateLoadingText(loadingEl, 'Loading project data...');
       await DataAdapter.getProjects();
       console.log('[BuildApp] Data loaded');
 
@@ -104,10 +112,28 @@ const BuildApp = {
 
       // 4c. Initialize renderer (progressive enhancement)
       const treeContainer = $('.tree-container');
+      console.log(
+        '[BuildApp] Tree container found:',
+        !!treeContainer,
+        'enableRenderer:',
+        options.enableRenderer
+      );
       if (treeContainer && options.enableRenderer !== false) {
-        await RendererFactory.init(treeContainer, {
-          mobileThree: options.mobileThree || false
-        });
+        try {
+          this._updateLoadingText(loadingEl, 'Rendering Yggdrasil cosmos...');
+          await RendererFactory.init(treeContainer, {
+            mobileThree: options.mobileThree || false,
+          });
+        } catch (err) {
+          console.error('[BuildApp] RendererFactory.init failed:', err);
+        }
+      } else {
+        console.warn(
+          '[BuildApp] Skipping renderer init - container:',
+          !!treeContainer,
+          'enabled:',
+          options.enableRenderer
+        );
       }
 
       // 5. Initialize quiz component
@@ -130,25 +156,87 @@ const BuildApp = {
       // 10. Initialize event handlers
       EventHandlers.init();
 
-      // 11. Show intro if first visit (or skip if option set)
+      // 11. Initialize FTUE and Habit Loop components
+      FeatureTooltip.init();
+      OnboardingProgress.init();
+      StreakCounter.init();
+      XPFlyup.init();
+      ShareButton.init();
+
+      // 12. Show intro if first visit (or skip if option set)
       if (!options.skipIntro) {
         IntroComponent.init('#intro-container');
       }
 
-      // 12. Set up global listeners
+      // 14. Set up global listeners
       this.setupGlobalListeners();
 
-      // 13. Mark as initialized
+      // 15. Mark as initialized
       this.initialized = true;
 
       // Emit ready event
       BuildState.emit('app:ready', { version: this.version });
 
+      // Hide loading overlay with fade
+      this._hideLoading(loadingEl);
+
       console.log('[BuildApp] Initialization complete');
     } catch (error) {
       console.error('[BuildApp] Initialization failed:', error);
+      this._showLoadingError(loadingEl, error);
       throw error;
     }
+  },
+
+  /**
+   * Update loading text
+   * @param {HTMLElement} el - Loading overlay element
+   * @param {string} text - New text to display
+   * @private
+   */
+  _updateLoadingText(el, text) {
+    if (!el) return;
+    const textEl = el.querySelector('.loading-text');
+    if (textEl) {
+      safeTextContent(textEl, text);
+    }
+  },
+
+  /**
+   * Hide loading overlay with animation
+   * @param {HTMLElement} el - Loading overlay element
+   * @private
+   */
+  _hideLoading(el) {
+    if (!el) return;
+    el.style.transition = `opacity ${DURATION.NORMAL}ms ease`;
+    el.style.opacity = '0';
+    el.setAttribute('aria-busy', 'false');
+    setTimeout(() => {
+      el.style.display = 'none';
+    }, DURATION.NORMAL);
+  },
+
+  /**
+   * Show error state in loading overlay
+   * @param {HTMLElement} el - Loading overlay element
+   * @param {Error} error - The error that occurred
+   * @private
+   */
+  _showLoadingError(el, error) {
+    if (!el) return;
+    el.setAttribute('aria-busy', 'false');
+    safeInnerHTML(
+      el,
+      `<div class="error-state">
+        <div class="error-icon">&#9888;</div>
+        <p class="error-title">Failed to load Yggdrasil</p>
+        <p class="error-message">${escapeHtml(error.message || 'Unknown error')}</p>
+        <button class="btn-retry" onclick="location.reload()">
+          <span>&#8635;</span> Retry
+        </button>
+      </div>`
+    );
   },
 
   /**
@@ -199,14 +287,14 @@ const BuildApp = {
     });
 
     // Project panel open event (from factory panel recommendations)
-    BuildState.subscribe('project:open', (data) => {
+    BuildState.subscribe('project:open', data => {
       if (data.projectId) {
         ProjectPanelComponent.open(data.projectId);
       }
     });
 
     // Renderer node click event (Three.js raycaster clicks)
-    BuildState.subscribe('renderer:nodeClick', (data) => {
+    BuildState.subscribe('renderer:nodeClick', data => {
       if (data.projectId) {
         // Open project panel for renderer clicks
         ProjectPanelComponent.open(data.projectId);
@@ -214,18 +302,36 @@ const BuildApp = {
     });
 
     // Renderer ready event - sync initial state
-    BuildState.subscribe('renderer:ready', (data) => {
+    BuildState.subscribe('renderer:ready', data => {
       console.log(`[BuildApp] Renderer ready: ${data.type}`);
       // Sync current filter if any
       if (TreeComponent.getCurrentFilter() !== 'all') {
         RendererFactory.getRenderer()?.update({
-          filter: TreeComponent.getCurrentFilter()
+          filter: TreeComponent.getCurrentFilter(),
         });
       }
     });
 
+    // Renderer view changed event - manage back button
+    BuildState.subscribe('renderer:viewChanged', data => {
+      const { level, projectId } = data;
+      this.updateBackButton(level !== 'COSMOS');
+
+      if (level === 'PROJECT_TREE' && projectId) {
+        // Optionally open project panel
+        ProjectPanelComponent.open(projectId);
+      }
+    });
+
+    // Renderer skill click event - open formation for skill
+    BuildState.subscribe('renderer:skillClick', data => {
+      const { skillId, skill } = data;
+      console.log(`[BuildApp] Skill clicked: ${skillId}`, skill);
+      // TODO: Open formation panel for skill
+    });
+
     // Project focus event - show skill tree and timeline
-    BuildState.subscribe(EVENTS.PROJECT_FOCUS, (data) => {
+    BuildState.subscribe(EVENTS.PROJECT_FOCUS, data => {
       if (data.projectId) {
         SkillTreeView.showForProject(data.projectId);
         GitHubTimeline.loadForProject(data.projectId);
@@ -244,7 +350,7 @@ const BuildApp = {
     });
 
     // Quiz complete - recommend formation track
-    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, (data) => {
+    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, data => {
       if (data.recommendedTrack) {
         FormationPanel.open(data.recommendedTrack);
       }
@@ -257,9 +363,9 @@ const BuildApp = {
       resizeTimeout = setTimeout(() => {
         BuildState.emit('window:resize', {
           width: window.innerWidth,
-          height: window.innerHeight
+          height: window.innerHeight,
         });
-      }, 150);
+      }, DELAY.DEBOUNCE);
     });
 
     // Visibility change
@@ -272,7 +378,7 @@ const BuildApp = {
     });
 
     // Keyboard shortcuts
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       // Ctrl/Cmd + Shift + R = Switch renderer
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
         e.preventDefault();
@@ -382,7 +488,7 @@ const BuildApp = {
       currentState: BuildState.currentState,
       selectedProject: BuildState.data.selectedProject,
       selectedTrack: BuildState.data.selectedTrack,
-      introCompleted: BuildState.data.introCompleted
+      introCompleted: BuildState.data.introCompleted,
     };
   },
 
@@ -398,14 +504,81 @@ const BuildApp = {
   },
 
   /**
+   * Back button reference
+   */
+  _backButton: null,
+
+  /**
+   * Update back button visibility
+   * @param {boolean} show - Whether to show the back button
+   */
+  updateBackButton(show) {
+    // Create back button if doesn't exist
+    if (!this._backButton) {
+      this._backButton = document.createElement('button');
+      this._backButton.className = 'cosmos-back-btn';
+      this._backButton.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Back to Cosmos</span>
+      `;
+      this._backButton.setAttribute('aria-label', 'Back to Cosmos view');
+
+      // Style the button
+      Object.assign(this._backButton.style, {
+        position: 'fixed',
+        top: '100px',
+        left: '20px',
+        zIndex: '1000',
+        padding: '10px 16px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: '8px',
+        color: '#fff',
+        fontSize: '14px',
+        cursor: 'pointer',
+        display: 'none',
+        alignItems: 'center',
+        gap: '8px',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease',
+      });
+
+      // Hover effect
+      this._backButton.addEventListener('mouseenter', () => {
+        this._backButton.style.background = 'rgba(0, 217, 255, 0.3)';
+        this._backButton.style.borderColor = 'rgba(0, 217, 255, 0.5)';
+      });
+      this._backButton.addEventListener('mouseleave', () => {
+        this._backButton.style.background = 'rgba(0, 0, 0, 0.7)';
+        this._backButton.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      });
+
+      // Click handler
+      this._backButton.addEventListener('click', () => {
+        const renderer = RendererFactory.getRenderer();
+        if (renderer && renderer.goBackToCosmos) {
+          renderer.goBackToCosmos();
+        }
+      });
+
+      document.body.appendChild(this._backButton);
+    }
+
+    // Show/hide button
+    this._backButton.style.display = show ? 'flex' : 'none';
+  },
+
+  /**
    * Expose utilities for external use
    */
   utils: {
     escapeHtml,
     sanitizeHtml,
     safeInnerHTML,
-    safeTextContent
-  }
+    safeTextContent,
+  },
 };
 
 // ============================================
@@ -452,7 +625,7 @@ if (typeof window !== 'undefined') {
     GitHubTimeline: GitHubTimeline,
     Renderer: RendererFactory,
     Animations: Animations,
-    Handlers: EventHandlers
+    Handlers: EventHandlers,
   };
 }
 
@@ -466,7 +639,7 @@ if (typeof window !== 'undefined') {
  */
 if (typeof window !== 'undefined') {
   // Legacy openDocModal
-  window.openDocModal = (projectId) => {
+  window.openDocModal = projectId => {
     console.warn('[Legacy] openDocModal is deprecated, use BuildApp.openProject()');
     ModalFactory.openDoc(projectId);
   };
@@ -488,6 +661,6 @@ if (typeof window !== 'undefined') {
     get() {
       console.warn('[Legacy] projectsData is deprecated, use DataAdapter.getProjects()');
       return DataAdapter.getProjects();
-    }
+    },
   });
 }

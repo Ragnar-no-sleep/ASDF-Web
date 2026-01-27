@@ -18,16 +18,16 @@ const RENDERER_CONFIG = {
   webgl: {
     minVersion: 1,
     requiredExtensions: ['OES_texture_float'],
-    maxTextureSize: 2048
+    maxTextureSize: 2048,
   },
   // Performance thresholds
   performance: {
     minFPS: 30,
-    testDuration: 500 // ms
+    testDuration: 500, // ms
   },
   // User preferences
   respectReducedMotion: true,
-  allowUserOverride: true
+  allowUserOverride: true,
 };
 
 // ============================================
@@ -53,7 +53,7 @@ const RendererFactory = {
     webgl2: false,
     reducedMotion: false,
     mobile: false,
-    lowPower: false
+    lowPower: false,
   },
 
   /**
@@ -81,18 +81,51 @@ const RendererFactory = {
       this.type = 'svg';
       const { SVGRenderer } = await import('./svg-renderer.js');
       this.current = SVGRenderer;
+      // Clear any saved preference when falling back to SVG automatically
+      // This prevents persisting fallback as a "preference"
+      const savedPref = localStorage.getItem('asdf-renderer-preference');
+      if (savedPref === 'svg') {
+        console.log('[RendererFactory] Clearing stale SVG preference');
+        localStorage.removeItem('asdf-renderer-preference');
+      }
     }
 
-    // Initialize the chosen renderer
-    await this.current.init(container, {
+    // Initialize the chosen renderer with timeout protection
+    const INIT_TIMEOUT = this.type === 'three' ? 8000 : 3000; // 8s for Three.js, 3s for SVG
+    const initPromise = this.current.init(container, {
       ...options,
-      capabilities: this.capabilities
+      capabilities: this.capabilities,
     });
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`Renderer init timed out after ${INIT_TIMEOUT}ms`)),
+        INIT_TIMEOUT
+      );
+    });
+
+    try {
+      await Promise.race([initPromise, timeoutPromise]);
+    } catch (err) {
+      // If Three.js times out, fallback to SVG
+      if (this.type === 'three') {
+        console.warn('[RendererFactory] Three.js timed out, falling back to SVG');
+        this.type = 'svg';
+        const { SVGRenderer } = await import('./svg-renderer.js');
+        this.current = SVGRenderer;
+        await this.current.init(container, {
+          ...options,
+          capabilities: this.capabilities,
+        });
+      } else {
+        throw err;
+      }
+    }
 
     // Emit event
     BuildState.emit('renderer:ready', {
       type: this.type,
-      capabilities: this.capabilities
+      capabilities: this.capabilities,
     });
 
     return this.current;
@@ -103,9 +136,7 @@ const RendererFactory = {
    */
   async detectCapabilities() {
     // Check reduced motion preference
-    this.capabilities.reducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+    this.capabilities.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Check if mobile
     this.capabilities.mobile = this.isMobileDevice();
@@ -129,8 +160,7 @@ const RendererFactory = {
     try {
       const canvas = document.createElement('canvas');
       const contextName = version === 2 ? 'webgl2' : 'webgl';
-      const gl = canvas.getContext(contextName) ||
-                 canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext(contextName) || canvas.getContext('experimental-webgl');
 
       if (!gl) return false;
 
@@ -164,12 +194,20 @@ const RendererFactory = {
 
   /**
    * Check if device is mobile
+   * Uses UA detection only - window width should NOT affect WebGL decision
    * @returns {boolean}
    */
   isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
-    ) || window.innerWidth < 768;
+    );
+    console.log(
+      '[RendererFactory] Mobile UA check:',
+      isMobileUA,
+      'UA:',
+      navigator.userAgent.substring(0, 50)
+    );
+    return isMobileUA;
   },
 
   /**
@@ -207,20 +245,31 @@ const RendererFactory = {
    * @returns {boolean}
    */
   shouldUseThree(options = {}) {
+    console.log('[RendererFactory] shouldUseThree() checking with options:', options);
+    console.log('[RendererFactory] Current capabilities:', this.capabilities);
+
     // User can force a specific renderer
     if (options.forceRenderer) {
+      console.log('[RendererFactory] Forced renderer:', options.forceRenderer);
       return options.forceRenderer === 'three';
     }
 
     // Check URL parameter override
     const urlParams = new URLSearchParams(window.location.search);
     const rendererParam = urlParams.get('renderer');
-    if (rendererParam === 'three') return true;
-    if (rendererParam === 'svg') return false;
+    if (rendererParam === 'three') {
+      console.log('[RendererFactory] URL param forces Three.js');
+      return true;
+    }
+    if (rendererParam === 'svg') {
+      console.log('[RendererFactory] URL param forces SVG');
+      return false;
+    }
 
     // Check localStorage preference
     if (RENDERER_CONFIG.allowUserOverride) {
       const savedPref = localStorage.getItem('asdf-renderer-preference');
+      console.log('[RendererFactory] localStorage preference:', savedPref);
       if (savedPref === 'three') return true;
       if (savedPref === 'svg') return false;
     }
@@ -251,6 +300,7 @@ const RendererFactory = {
     }
 
     // All checks passed, use Three.js
+    console.log('[RendererFactory] All checks passed -> using Three.js');
     return true;
   },
 
@@ -272,6 +322,13 @@ const RendererFactory = {
     // Load and init new renderer
     if (type === 'three') {
       const { ThreeRenderer } = await import('./three-renderer.js');
+      const { PerformanceManager } = await import('./performance.js');
+
+      // Reset performance tracking before init to avoid false downgrades
+      PerformanceManager.reset();
+      // Set a grace period - prevent adaptation for 10 seconds after switch
+      PerformanceManager.adaptation.lastChange = performance.now();
+
       this.current = ThreeRenderer;
     } else {
       const { SVGRenderer } = await import('./svg-renderer.js');
@@ -281,7 +338,7 @@ const RendererFactory = {
     this.type = type;
 
     await this.current.init(container, {
-      capabilities: this.capabilities
+      capabilities: this.capabilities,
     });
 
     // Save preference
@@ -325,7 +382,7 @@ const RendererFactory = {
     }
     this.current = null;
     this.type = null;
-  }
+  },
 };
 
 // ============================================

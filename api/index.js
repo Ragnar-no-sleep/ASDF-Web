@@ -12,12 +12,10 @@
 
 // Load environment-specific .env file
 const path = require('path');
-const envFile = process.env.NODE_ENV === 'production'
-  ? '.env.production'
-  : '.env.development';
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
 
 require('dotenv').config({
-  path: path.join(__dirname, envFile)
+  path: path.join(__dirname, envFile),
 });
 
 // Fallback to .env if specific file doesn't exist
@@ -114,8 +112,14 @@ const {
   getAchievementMetrics,
 } = require('./services/achievements');
 const {
-  NOTIFICATION_TYPES,
-  createNotification,
+  getActiveChallenges,
+  updateProgress: updateChallengeProgress,
+  claimReward: claimChallengeReward,
+  getChallengeStats,
+} = require('./services/challenges');
+const {
+  NOTIFICATION_TYPES: _NOTIFICATION_TYPES,
+  createNotification: _createNotification,
   getNotifications,
   getUnreadCount,
   markAsRead,
@@ -123,14 +127,14 @@ const {
   deleteNotification,
   getPreferences: getNotificationPreferences,
   updatePreferences: updateNotificationPreferences,
-  notifyAchievementUnlocked,
+  notifyAchievementUnlocked: _notifyAchievementUnlocked,
   getNotificationMetrics,
 } = require('./services/notifications');
 const {
   buildBurnTransaction,
   buildTransferTransaction,
   verifyTransaction,
-  completeTransaction,
+  completeTransaction: _completeTransaction,
   getTransactionMetrics,
 } = require('./services/transactions');
 const {
@@ -152,55 +156,54 @@ const {
 } = require('./services/eventBus');
 const {
   get: _cacheGet,
-  set: _cacheSet,
-  del: cacheDel,
-  wrap: cacheWrap,
+  del: _cacheDel,
+  wrap: _cacheWrap,
   invalidateTag,
   getStats: getCacheStats,
 } = require('./services/cache');
 const {
-  registerHandler: registerJobHandler,
-  enqueue: enqueueJob,
+  registerHandler: _registerJobHandler,
+  enqueue: _enqueueJob,
   getJob,
   getJobsByStatus,
   getQueueStats,
-  PRIORITY: JOB_PRIORITY,
+  PRIORITY: _JOB_PRIORITY,
 } = require('./services/queue');
 const {
   track: trackAnalytics,
-  trackPageView,
-  trackAction,
+  trackPageView: _trackPageView,
+  trackAction: _trackAction,
   getAggregatedMetrics,
   getFunnelAnalysis,
   getAnalyticsMetrics,
   EVENT_TYPES: ANALYTICS_EVENTS,
 } = require('./services/analytics');
 const {
-  schedule: scheduleTask,
-  scheduleInterval,
+  schedule: _scheduleTask,
+  scheduleInterval: _scheduleInterval,
   getAllTasks,
   getHistory: getTaskHistory,
   getSchedulerMetrics,
-  SCHEDULES,
+  SCHEDULES: _SCHEDULES,
 } = require('./services/scheduler');
 const {
-  checkLimit: checkRateLimit,
-  checkTokenBucket,
-  createMiddleware: createRateLimitMiddleware,
+  checkLimit: _checkRateLimit,
+  checkTokenBucket: _checkTokenBucket,
+  createMiddleware: _createRateLimitMiddleware,
   getStats: getRateLimitStats,
   getBannedList,
   removeBan,
   extractIP,
 } = require('./services/ratelimit');
 const {
-  validate,
-  registerSchema,
-  createMiddleware: createValidationMiddleware,
-  sanitizeValue,
+  validate: _validate,
+  registerSchema: _registerSchema,
+  createMiddleware: _createValidationMiddleware,
+  sanitizeValue: _sanitizeValue,
   getStats: getValidatorStats,
 } = require('./services/validator');
 const {
-  isEnabled: isFeatureEnabled,
+  isEnabled: _isFeatureEnabled,
   evaluate: evaluateFlag,
   getAllFlags,
   setFlagEnabled,
@@ -211,45 +214,45 @@ const {
 } = require('./services/featureflags');
 const {
   log: auditLog,
-  logSecurity,
+  logSecurity: _logSecurity,
   logAdmin: logAdminAction,
   search: searchAudit,
   getActiveAlerts,
   exportLogs: exportAuditLogs,
   getStats: getAuditStats,
-  createMiddleware: createAuditMiddleware,
+  createMiddleware: _createAuditMiddleware,
   EVENT_TYPES: AUDIT_EVENTS,
-  CATEGORIES: AUDIT_CATEGORIES,
+  CATEGORIES: _AUDIT_CATEGORIES,
   SEVERITY: AUDIT_SEVERITY,
 } = require('./services/audit');
 const {
-  getCircuit,
-  execute: circuitExecute,
-  wrap: circuitWrap,
+  getCircuit: _getCircuit,
+  execute: _circuitExecute,
+  wrap: _circuitWrap,
   getAllCircuits,
   getCircuitStatus,
   forceCircuitState,
   resetCircuit,
   getStats: getCircuitStats,
-  STATES: CIRCUIT_STATES,
+  STATES: _CIRCUIT_STATES,
 } = require('./services/circuitbreaker');
 const {
-  startTrace,
-  startSpan,
-  endSpan,
-  getCurrentTrace,
-  createMiddleware: createTracingMiddleware,
+  startTrace: _startTrace,
+  startSpan: _startSpan,
+  endSpan: _endSpan,
+  getCurrentTrace: _getCurrentTrace,
+  createMiddleware: _createTracingMiddleware,
   getTrace,
   searchTraces,
   getSlowTraces,
   getErrorTraces,
-  getRecentTraces,
+  getRecentTraces: _getRecentTraces,
   getStats: getTracingStats,
   setSampleRate,
 } = require('./services/tracing');
 const {
-  registerCheck,
-  runAllChecks,
+  registerCheck: _registerCheck,
+  runAllChecks: _runAllChecks,
   livenessProbe,
   readinessProbe,
   startupProbe,
@@ -257,16 +260,16 @@ const {
   getHistory: getHealthHistory,
   getTrend: getHealthTrend,
   getStats: getHealthStats,
-  CHECK_TYPES,
+  CHECK_TYPES: _CHECK_TYPES,
 } = require('./services/healthcheck');
 const {
   get: getConfig,
   set: setConfig,
   getAll: getAllConfig,
-  onChange: onConfigChange,
+  onChange: _onConfigChange,
   getHistory: getConfigHistory,
   getStats: getConfigStats,
-  defineSchema: defineConfigSchema,
+  defineSchema: _defineConfigSchema,
 } = require('./services/config');
 const {
   registerServer,
@@ -275,14 +278,14 @@ const {
   initiateShutdown,
   getHealthState: getShutdownState,
   getStats: getShutdownStats,
-  isAcceptingTraffic,
+  isAcceptingTraffic: _isAcceptingTraffic,
 } = require('./services/shutdown');
 const {
   middleware: versioningMiddleware,
   getVersionInfo,
   getStats: getVersioningStats,
-  detectVersion,
-  validateVersion,
+  detectVersion: _detectVersion,
+  validateVersion: _validateVersion,
 } = require('./services/versioning');
 const {
   createBatchHandler,
@@ -295,22 +298,22 @@ const {
   clearCache: clearCompressionCache,
 } = require('./services/compression');
 const {
-  registerEndpoint,
-  executeRequest,
-  executeEnhancedRequest,
+  registerEndpoint: _registerEndpoint,
+  executeRequest: _executeRequest,
+  executeEnhancedRequest: _executeEnhancedRequest,
   getAllEndpointsStatus,
   checkAllEndpointsHealth,
   getStats: getRpcStats,
-  ENDPOINT_TYPES,
+  ENDPOINT_TYPES: _ENDPOINT_TYPES,
 } = require('./services/rpcFailover');
 const {
   trackTransaction,
   getTransactionStatus,
   getActiveTransactions,
-  getHistory: getTxHistory,
+  getHistory: _getTxHistory,
   getWalletHistory: getTxWalletHistory,
   getStats: getTxMonitorStats,
-  TX_STATES,
+  TX_STATES: _TX_STATES,
   TX_TYPES,
 } = require('./services/txMonitor');
 const {
@@ -321,16 +324,16 @@ const {
   getHourlyAverages: getFeeHourlyAverages,
   estimateComputeUnits,
   getStats: getPriorityFeeStats,
-  PRIORITY_LEVELS,
+  PRIORITY_LEVELS: _PRIORITY_LEVELS,
 } = require('./services/priorityFee');
 const {
   connect: wsConnect,
   getConnectionStatus: getWsStatus,
-  subscribeAccount,
-  subscribeSignature,
+  subscribeAccount: _subscribeAccount,
+  subscribeSignature: _subscribeSignature,
   getSubscriptions: getWsSubscriptions,
   getStats: getWsStats,
-  shutdown: wsShutdown,
+  shutdown: _wsShutdown,
 } = require('./services/wsManager');
 
 // Phase 12: Data Management & Compliance
@@ -343,15 +346,15 @@ const {
   getStats: getDataExportStats,
 } = require('./services/dataExport');
 const {
-  middleware: idempotencyMiddleware,
-  generateKey: generateIdempotencyKey,
-  invalidateKey: invalidateIdempotencyKey,
+  middleware: _idempotencyMiddleware,
+  generateKey: _generateIdempotencyKey,
+  invalidateKey: _invalidateIdempotencyKey,
   getStats: getIdempotencyStats,
 } = require('./services/idempotency');
 const {
-  createSession,
-  validateSession,
-  refreshSession,
+  createSession: _createSession,
+  validateSession: _validateSession,
+  refreshSession: _refreshSession,
   revokeSession,
   revokeAllUserSessions,
   getUserSessions,
@@ -361,9 +364,9 @@ const {
   getStats: getSessionStats,
 } = require('./services/sessionManager');
 const {
-  registerTag: registerApiTag,
-  registerSchema: registerApiSchema,
-  registerRoute: registerApiRoute,
+  registerTag: _registerApiTag,
+  registerSchema: _registerApiSchema,
+  registerRoute: _registerApiRoute,
   generateSpec,
   serveDocumentation,
   serveSwaggerUI,
@@ -371,7 +374,7 @@ const {
 } = require('./services/openApiGenerator');
 
 // Phase 15: Storage Abstraction (Redis/Memory)
-const { getStorage, isStorageReady, BACKENDS } = require('./services/storage');
+const { getStorage, isStorageReady, BACKENDS: _BACKENDS } = require('./services/storage');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -1842,6 +1845,148 @@ app.post('/api/game/submit', authMiddleware, walletRateLimiter, async (req, res)
 });
 
 /**
+ * Submit score (simplified endpoint for frontend)
+ * POST /api/scores/submit
+ *
+ * Accepts client-side anti-cheat data and validates scores
+ * Returns achievements unlocked by this score
+ */
+app.post('/api/scores/submit', authMiddleware, walletRateLimiter, async (req, res) => {
+  try {
+    const { gameId, score, isCompetitive = false, sessionData } = req.body;
+    const wallet = req.user.wallet;
+
+    // Validate required fields
+    if (!gameId || typeof score !== 'number') {
+      return res.status(400).json({ error: 'gameId and score required' });
+    }
+
+    // Sanitize score
+    const safeScore = Math.max(0, Math.min(999999999, Math.floor(score)));
+
+    // Validate client-side anti-cheat data if provided
+    let validationFlags = [];
+    if (sessionData) {
+      // Check for suspicious flags from client anti-cheat
+      if (sessionData.flags && sessionData.flags.length > 0) {
+        validationFlags = sessionData.flags;
+        logAudit('client_anticheat_flags', {
+          wallet: wallet.slice(0, 8) + '...',
+          gameId,
+          flags: validationFlags,
+        });
+      }
+
+      // Validate score plausibility based on duration
+      if (sessionData.duration && sessionData.duration > 0) {
+        const scoreRate = safeScore / (sessionData.duration / 1000);
+        // More than 20 points per second is suspicious for most games
+        if (scoreRate > 20) {
+          validationFlags.push('HIGH_SCORE_RATE');
+        }
+      }
+    }
+
+    // Record game for achievements (updates stats and checks unlocks)
+    const newAchievements = recordGameForAchievements(wallet, safeScore);
+
+    // Track best scores per game in a simple in-memory store
+    // In production, this would use a database
+    const bestScoreKey = `${wallet}:${gameId}:best`;
+    const currentBest = global.bestScores?.get(bestScoreKey) || 0;
+    const isNewBest = safeScore > currentBest;
+
+    if (isNewBest) {
+      if (!global.bestScores) global.bestScores = new Map();
+      global.bestScores.set(bestScoreKey, safeScore);
+    }
+
+    // Update daily challenge progress
+    const completedChallenges = updateChallengeProgress(wallet, {
+      gameId,
+      score: safeScore,
+      isHighScore: isNewBest,
+      isPerfect: sessionData?.isPerfect || false,
+    });
+
+    // Log the submission
+    logAudit('score_submitted', {
+      wallet: wallet.slice(0, 8) + '...',
+      gameId,
+      score: safeScore,
+      isCompetitive,
+      isNewBest,
+      achievementsUnlocked: newAchievements.length,
+    });
+
+    res.json({
+      success: true,
+      score: safeScore,
+      isNewBest,
+      bestScore: isNewBest ? safeScore : currentBest,
+      validationFlags,
+      newAchievements: newAchievements.map(a => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        rarity: a.rarity,
+        xpReward: a.xpReward,
+        icon: a.icon,
+      })),
+      completedChallenges,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-submit') });
+  }
+});
+
+/**
+ * Get best score for a game
+ * GET /api/scores/best/:gameId
+ */
+app.get('/api/scores/best/:gameId', authMiddleware, async (req, res) => {
+  try {
+    const { gameId } = req.params;
+    const wallet = req.user.wallet;
+
+    const bestScoreKey = `${wallet}:${gameId}:best`;
+    const bestScore = global.bestScores?.get(bestScoreKey) || 0;
+
+    res.json({
+      gameId,
+      bestScore,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-best') });
+  }
+});
+
+/**
+ * Get all best scores for user
+ * GET /api/scores/all
+ */
+app.get('/api/scores/all', authMiddleware, async (req, res) => {
+  try {
+    const wallet = req.user.wallet;
+    const scores = {};
+
+    // Iterate through best scores map for this wallet
+    if (global.bestScores) {
+      for (const [key, value] of global.bestScores.entries()) {
+        if (key.startsWith(wallet)) {
+          const gameId = key.split(':')[1];
+          scores[gameId] = value;
+        }
+      }
+    }
+
+    res.json({ scores });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'scores-all') });
+  }
+});
+
+/**
  * Get player's game statistics
  * GET /api/game/stats
  */
@@ -2134,6 +2279,67 @@ app.get('/api/achievements/leaderboard', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'achievement-leaderboard') });
+  }
+});
+
+// ============================================
+// DAILY CHALLENGES ROUTES
+// ============================================
+
+/**
+ * Get active daily challenges with progress
+ * GET /api/games/challenges
+ */
+app.get('/api/games/challenges', authMiddleware, async (req, res) => {
+  try {
+    const challenges = getActiveChallenges(req.user.wallet);
+
+    res.json({
+      challenges,
+      count: challenges.length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'get-challenges') });
+  }
+});
+
+/**
+ * Claim challenge reward
+ * POST /api/games/challenges/:id/claim
+ */
+app.post('/api/games/challenges/:id/claim', authMiddleware, async (req, res) => {
+  try {
+    const challengeId = req.params.id;
+    const result = claimChallengeReward(req.user.wallet, challengeId);
+
+    if (!result.success) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    // TODO: Award XP via progression system when implemented
+    // For now, XP is returned to client for display
+
+    res.json({
+      success: true,
+      xpAwarded: result.xpAwarded,
+      coinsAwarded: result.coinsAwarded,
+      challenge: result.challenge,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'claim-challenge') });
+  }
+});
+
+/**
+ * Get challenge statistics (admin)
+ * GET /api/games/challenges/stats
+ */
+app.get('/api/games/challenges/stats', authMiddleware, async (req, res) => {
+  try {
+    const stats = getChallengeStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'challenge-stats') });
   }
 });
 
@@ -5393,6 +5599,446 @@ app.get('/api/status', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ status: 'error' });
+  }
+});
+
+// ============================================
+// FORMATIONS & LEARNING PROGRESS (Phase 16)
+// ============================================
+
+// Formation tracks and modules data (static, no DB needed)
+const formationsData = {
+  tracks: {
+    dev: {
+      id: 'dev',
+      name: 'Developer',
+      icon: '{ }',
+      color: '#ff4444',
+      description: 'Master Solana development from basics to advanced smart contracts',
+      duration: '12 weeks',
+      difficulty: 'intermediate',
+      modules: [
+        'dev-fundamentals',
+        'dev-solana-basics',
+        'dev-token-mastery',
+        'dev-anchor-deep',
+        'dev-helius-integration',
+        'dev-security-audit',
+      ],
+    },
+    games: {
+      id: 'games',
+      name: 'Game Developer',
+      icon: '\u25C8',
+      color: '#9944ff',
+      description: 'Build web3 games with blockchain integration',
+      duration: '10 weeks',
+      difficulty: 'intermediate',
+      modules: [
+        'gaming-fundamentals',
+        'gaming-canvas',
+        'gaming-mechanics',
+        'gaming-web3',
+        'gaming-tokenomics',
+      ],
+    },
+    content: {
+      id: 'content',
+      name: 'Creator',
+      icon: '\u2726',
+      color: '#00d9ff',
+      description: 'Create content, build communities, and drive growth',
+      duration: '12 weeks',
+      difficulty: 'beginner',
+      modules: [
+        'content-fundamentals',
+        'content-storytelling',
+        'content-video',
+        'content-community',
+        'growth-fundamentals',
+        'growth-analytics',
+        'growth-viral-loops',
+        'growth-community',
+        'growth-tokenomics',
+      ],
+    },
+  },
+  modules: {
+    'dev-fundamentals': {
+      id: 'dev-fundamentals',
+      track: 'dev',
+      name: 'Web Dev Fundamentals',
+      xpReward: 100,
+      prerequisites: [],
+    },
+    'dev-solana-basics': {
+      id: 'dev-solana-basics',
+      track: 'dev',
+      name: 'Solana Fundamentals',
+      xpReward: 200,
+      prerequisites: ['dev-fundamentals'],
+    },
+    'dev-token-mastery': {
+      id: 'dev-token-mastery',
+      track: 'dev',
+      name: 'Token Mastery',
+      xpReward: 300,
+      prerequisites: ['dev-solana-basics'],
+    },
+    'dev-anchor-deep': {
+      id: 'dev-anchor-deep',
+      track: 'dev',
+      name: 'Anchor Deep Dive',
+      xpReward: 500,
+      prerequisites: ['dev-token-mastery'],
+    },
+    'dev-helius-integration': {
+      id: 'dev-helius-integration',
+      track: 'dev',
+      name: 'Helius Integration',
+      xpReward: 250,
+      prerequisites: ['dev-solana-basics'],
+    },
+    'dev-security-audit': {
+      id: 'dev-security-audit',
+      track: 'dev',
+      name: 'Security & Auditing',
+      xpReward: 400,
+      prerequisites: ['dev-anchor-deep'],
+    },
+    'gaming-fundamentals': {
+      id: 'gaming-fundamentals',
+      track: 'games',
+      name: 'Game Design Basics',
+      xpReward: 100,
+      prerequisites: [],
+    },
+    'gaming-canvas': {
+      id: 'gaming-canvas',
+      track: 'games',
+      name: 'Canvas Graphics',
+      xpReward: 200,
+      prerequisites: ['gaming-fundamentals'],
+    },
+    'gaming-mechanics': {
+      id: 'gaming-mechanics',
+      track: 'games',
+      name: 'Game Mechanics',
+      xpReward: 250,
+      prerequisites: ['gaming-canvas'],
+    },
+    'gaming-web3': {
+      id: 'gaming-web3',
+      track: 'games',
+      name: 'Web3 Integration',
+      xpReward: 400,
+      prerequisites: ['gaming-mechanics'],
+    },
+    'gaming-tokenomics': {
+      id: 'gaming-tokenomics',
+      track: 'games',
+      name: 'Game Tokenomics',
+      xpReward: 300,
+      prerequisites: ['gaming-web3'],
+    },
+    'content-fundamentals': {
+      id: 'content-fundamentals',
+      track: 'content',
+      name: 'Content Basics',
+      xpReward: 80,
+      prerequisites: [],
+    },
+    'content-storytelling': {
+      id: 'content-storytelling',
+      track: 'content',
+      name: 'Storytelling',
+      xpReward: 150,
+      prerequisites: ['content-fundamentals'],
+    },
+    'content-video': {
+      id: 'content-video',
+      track: 'content',
+      name: 'Video Production',
+      xpReward: 200,
+      prerequisites: ['content-storytelling'],
+    },
+    'content-community': {
+      id: 'content-community',
+      track: 'content',
+      name: 'Community Content',
+      xpReward: 120,
+      prerequisites: ['content-fundamentals'],
+    },
+    'growth-fundamentals': {
+      id: 'growth-fundamentals',
+      track: 'content',
+      name: 'Growth Fundamentals',
+      xpReward: 100,
+      prerequisites: ['content-fundamentals'],
+    },
+    'growth-analytics': {
+      id: 'growth-analytics',
+      track: 'content',
+      name: 'Analytics & Metrics',
+      xpReward: 180,
+      prerequisites: ['growth-fundamentals'],
+    },
+    'growth-viral-loops': {
+      id: 'growth-viral-loops',
+      track: 'content',
+      name: 'Viral Mechanics',
+      xpReward: 220,
+      prerequisites: ['growth-analytics'],
+    },
+    'growth-community': {
+      id: 'growth-community',
+      track: 'content',
+      name: 'Community Building',
+      xpReward: 180,
+      prerequisites: ['growth-fundamentals'],
+    },
+    'growth-tokenomics': {
+      id: 'growth-tokenomics',
+      track: 'content',
+      name: 'Growth Tokenomics',
+      xpReward: 150,
+      prerequisites: ['growth-viral-loops'],
+    },
+  },
+};
+
+// In-memory formation progress (will be replaced by PostgreSQL later)
+const formationProgress = new Map();
+
+/**
+ * Get all formation tracks
+ * GET /api/formations/tracks
+ */
+app.get('/api/formations/tracks', (req, res) => {
+  res.json(formationsData.tracks);
+});
+
+/**
+ * Get specific track with modules
+ * GET /api/formations/tracks/:trackId
+ */
+app.get('/api/formations/tracks/:trackId', (req, res) => {
+  const { trackId } = req.params;
+  const track = formationsData.tracks[trackId];
+
+  if (!track) {
+    return res.status(404).json({ error: 'Track not found' });
+  }
+
+  // Enrich with full module data
+  const modules = track.modules.map(id => formationsData.modules[id]).filter(Boolean);
+
+  res.json({
+    ...track,
+    moduleDetails: modules,
+  });
+});
+
+/**
+ * Get all modules
+ * GET /api/formations/modules
+ */
+app.get('/api/formations/modules', (req, res) => {
+  const { track } = req.query;
+
+  if (track) {
+    const filtered = Object.values(formationsData.modules).filter(m => m.track === track);
+    return res.json(filtered);
+  }
+
+  res.json(formationsData.modules);
+});
+
+/**
+ * Get specific module
+ * GET /api/formations/modules/:moduleId
+ */
+app.get('/api/formations/modules/:moduleId', (req, res) => {
+  const { moduleId } = req.params;
+  const module = formationsData.modules[moduleId];
+
+  if (!module) {
+    return res.status(404).json({ error: 'Module not found' });
+  }
+
+  res.json(module);
+});
+
+/**
+ * Get user's formation progress
+ * GET /api/formations/progress/:wallet
+ */
+app.get('/api/formations/progress/:wallet', async (req, res) => {
+  try {
+    const { wallet } = req.params;
+
+    if (!isValidAddress(wallet)) {
+      return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+
+    const progress = formationProgress.get(wallet) || {};
+
+    // Calculate progress percentages for each track
+    const trackProgress = {};
+    for (const [trackId, track] of Object.entries(formationsData.tracks)) {
+      const completed = progress[trackId]?.completed || [];
+      const total = track.modules.length;
+      trackProgress[trackId] = {
+        completed: completed.length,
+        total,
+        percentage: Math.round((completed.length / total) * 100),
+        modules: completed,
+      };
+    }
+
+    res.json({
+      wallet,
+      progress: trackProgress,
+      raw: progress,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'formation-progress') });
+  }
+});
+
+/**
+ * Complete a module
+ * POST /api/formations/progress/complete
+ */
+app.post('/api/formations/progress/complete', authMiddleware, async (req, res) => {
+  try {
+    const wallet = req.wallet;
+    const { trackId, moduleId } = req.body;
+
+    // Validate module exists
+    const module = formationsData.modules[moduleId];
+    if (!module) {
+      return res.status(404).json({ error: 'Module not found' });
+    }
+
+    // Validate track matches
+    if (module.track !== trackId) {
+      return res.status(400).json({ error: 'Module does not belong to specified track' });
+    }
+
+    // Get or create progress
+    let progress = formationProgress.get(wallet);
+    if (!progress) {
+      progress = {};
+      formationProgress.set(wallet, progress);
+    }
+
+    if (!progress[trackId]) {
+      progress[trackId] = { completed: [], startedAt: Date.now() };
+    }
+
+    // Check if already completed
+    if (progress[trackId].completed.includes(moduleId)) {
+      return res.status(400).json({ error: 'Module already completed' });
+    }
+
+    // Check prerequisites
+    const prereqsMet = module.prerequisites.every(prereq =>
+      progress[trackId].completed.includes(prereq)
+    );
+
+    if (!prereqsMet) {
+      return res.status(400).json({
+        error: 'Prerequisites not met',
+        required: module.prerequisites,
+      });
+    }
+
+    // Mark as completed
+    progress[trackId].completed.push(moduleId);
+    progress[trackId].lastCompleted = moduleId;
+    progress[trackId].lastCompletedAt = Date.now();
+
+    // Award XP via progression system
+    const xpResult = getProgression().awardXP(wallet, 'achievement', {
+      rarity: module.xpReward >= 400 ? 'rare' : module.xpReward >= 200 ? 'uncommon' : 'common',
+    });
+
+    // Log completion
+    auditLog(
+      AUDIT_EVENTS.USER_ACTION,
+      {
+        wallet: wallet.slice(0, 8) + '...',
+        action: 'module_completed',
+        trackId,
+        moduleId,
+        xpAwarded: xpResult.xpAwarded,
+      },
+      { severity: AUDIT_SEVERITY.LOW }
+    );
+
+    res.json({
+      success: true,
+      moduleId,
+      trackId,
+      xpAwarded: xpResult.xpAwarded,
+      levelUp: xpResult.levelUp,
+      newLevel: xpResult.newLevel,
+      trackProgress: {
+        completed: progress[trackId].completed.length,
+        total: formationsData.tracks[trackId].modules.length,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'complete-module') });
+  }
+});
+
+/**
+ * Get next available module in a track
+ * GET /api/formations/next/:wallet/:trackId
+ */
+app.get('/api/formations/next/:wallet/:trackId', async (req, res) => {
+  try {
+    const { wallet, trackId } = req.params;
+
+    if (!isValidAddress(wallet)) {
+      return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+
+    const track = formationsData.tracks[trackId];
+    if (!track) {
+      return res.status(404).json({ error: 'Track not found' });
+    }
+
+    const progress = formationProgress.get(wallet) || {};
+    const completed = progress[trackId]?.completed || [];
+
+    // Find next module where prerequisites are met
+    for (const moduleId of track.modules) {
+      if (completed.includes(moduleId)) continue;
+
+      const module = formationsData.modules[moduleId];
+      const prereqsMet = module.prerequisites.every(p => completed.includes(p));
+
+      if (prereqsMet) {
+        return res.json({
+          nextModule: module,
+          completedCount: completed.length,
+          totalCount: track.modules.length,
+        });
+      }
+    }
+
+    // Track completed
+    res.json({
+      nextModule: null,
+      completedCount: completed.length,
+      totalCount: track.modules.length,
+      trackCompleted: true,
+    });
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'next-module') });
   }
 });
 

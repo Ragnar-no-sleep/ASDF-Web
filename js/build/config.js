@@ -14,7 +14,8 @@ export const STORAGE_KEY = 'asdf_build_v2';
 export const STORAGE_VERSION = 1;
 
 // ============================================
-// TRACKS - Builder Paths
+// TRACKS - Builder Paths (3 tracks: dev, games, content)
+// Note: Growth track merged into Content as of 2026-01-21
 // ============================================
 export const TRACKS = {
   dev: {
@@ -23,32 +24,24 @@ export const TRACKS = {
     name: 'Developer',
     desc: 'Master Solana, Rust, TypeScript',
     color: '#ea4e33',
-    modules: 12
-  },
-  growth: {
-    id: 'growth',
-    icon: '\u2197',  // ↗
-    name: 'Growth',
-    desc: 'Distribution, hooks, viral loops',
-    color: '#f59e0b',
-    modules: 10
+    modules: 12,
   },
   gaming: {
     id: 'gaming',
-    icon: '\u25C8',  // ◈
+    icon: '\u25C8', // ◈
     name: 'Game Dev',
     desc: 'Unity, game design, tokenomics',
     color: '#8b5cf6',
-    modules: 8
+    modules: 8,
   },
   content: {
     id: 'content',
-    icon: '\u2726',  // ✦
+    icon: '\u2726', // ✦
     name: 'Creator',
-    desc: 'Narrative, video, community',
+    desc: 'Narrative, video, community, growth',
     color: '#06b6d4',
-    modules: 9
-  }
+    modules: 12, // Increased: 9 original + growth modules merged
+  },
 };
 
 // ============================================
@@ -59,20 +52,20 @@ export const STATUS = {
     id: 'live',
     label: 'Live',
     color: '#4ade80',
-    cssClass: 'live'
+    cssClass: 'live',
   },
   building: {
     id: 'building',
     label: 'Building',
     color: '#f59e0b',
-    cssClass: 'building'
+    cssClass: 'building',
   },
   planned: {
     id: 'planned',
     label: 'Planned',
     color: '#8b5cf6',
-    cssClass: 'planned'
-  }
+    cssClass: 'planned',
+  },
 };
 
 // ============================================
@@ -83,7 +76,7 @@ export const STATES = {
   QUIZ: 'quiz',
   TREE: 'tree',
   PROJECT: 'project',
-  TRACK: 'track'
+  TRACK: 'track',
 };
 
 // ============================================
@@ -94,11 +87,11 @@ export const TRANSITIONS = {
   [STATES.QUIZ]: [STATES.TREE, STATES.PROJECT],
   [STATES.TREE]: [STATES.PROJECT, STATES.INTRO, STATES.QUIZ],
   [STATES.PROJECT]: [STATES.TREE, STATES.TRACK],
-  [STATES.TRACK]: [STATES.TREE, STATES.PROJECT]
+  [STATES.TRACK]: [STATES.TREE, STATES.PROJECT],
 };
 
 // ============================================
-// QUIZ QUESTIONS
+// QUIZ QUESTIONS (3 tracks: dev, gaming, content)
 // ============================================
 export const QUIZ_QUESTIONS = [
   {
@@ -106,31 +99,28 @@ export const QUIZ_QUESTIONS = [
     text: 'What excites you most?',
     options: [
       { track: 'dev', text: 'Building systems that scale', icon: '\u{1F527}' },
-      { track: 'growth', text: 'Watching metrics go up', icon: '\u{1F4C8}' },
       { track: 'gaming', text: 'Creating immersive experiences', icon: '\u{1F3AE}' },
-      { track: 'content', text: 'Telling compelling stories', icon: '\u{1F3AC}' }
-    ]
+      { track: 'content', text: 'Growing communities & telling stories', icon: '\u{1F4C8}' },
+    ],
   },
   {
     id: 'q2',
     text: 'Your ideal Friday night?',
     options: [
       { track: 'dev', text: 'Debugging a tricky issue', icon: '\u{1F41B}' },
-      { track: 'growth', text: 'Analyzing conversion funnels', icon: '\u{1F4CA}' },
       { track: 'gaming', text: 'Playtesting new mechanics', icon: '\u{1F3B2}' },
-      { track: 'content', text: 'Editing a video', icon: '\u{1F3A5}' }
-    ]
+      { track: 'content', text: 'Editing content & analyzing metrics', icon: '\u{1F3A5}' },
+    ],
   },
   {
     id: 'q3',
     text: 'Pick your superpower',
     options: [
       { track: 'dev', text: 'Read any codebase instantly', icon: '\u26A1' },
-      { track: 'growth', text: 'Predict viral content', icon: '\u{1F52E}' },
       { track: 'gaming', text: 'Design perfect game loops', icon: '\u{1F504}' },
-      { track: 'content', text: 'Captivate any audience', icon: '\u2728' }
-    ]
-  }
+      { track: 'content', text: 'Predict viral content & captivate audiences', icon: '\u{1F52E}' },
+    ],
+  },
 ];
 
 // ============================================
@@ -141,7 +131,8 @@ export const MODAL_TYPES = {
   FEATURE: 'feature',
   COMPONENT: 'component',
   CODE_LEARNING: 'code-learning',
-  PROJECT_IMMERSIVE: 'project-immersive'
+  PROJECT_IMMERSIVE: 'project-immersive',
+  PROJECT_TIMELINE: 'project-timeline',
 };
 
 // ============================================
@@ -209,7 +200,7 @@ export const EVENTS = {
   TIMELINE_LOAD: 'timeline:load',
   TIMELINE_LOADED: 'timeline:loaded',
   TIMELINE_ERROR: 'timeline:error',
-  CONTRIBUTOR_CLICK: 'contributor:click'
+  CONTRIBUTOR_CLICK: 'contributor:click',
 };
 
 // ============================================
@@ -269,7 +260,7 @@ export const SELECTORS = {
   // GitHub Timeline
   GITHUB_TIMELINE: '.github-timeline',
   COMMIT_ITEM: '.commit-item',
-  CONTRIBUTOR_CARD: '.contributor-card'
+  CONTRIBUTOR_CARD: '.contributor-card',
 };
 
 // ============================================
@@ -279,7 +270,7 @@ export const DEFAULTS = {
   initialState: STATES.TREE,
   defaultTrack: 'dev',
   animationDuration: 300,
-  debounceDelay: 150
+  debounceDelay: 150,
 };
 
 // Export for non-module environments
@@ -295,6 +286,6 @@ if (typeof window !== 'undefined') {
     MODAL_TYPES,
     EVENTS,
     SELECTORS,
-    DEFAULTS
+    DEFAULTS,
   };
 }

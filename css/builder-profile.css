@@ -3,6 +3,8 @@
  * Modal card for builder/contributor profiles
  */
 
+@import url('./design-tokens.css');
+
 /* ============================================
    BACKDROP
    ============================================ */
@@ -10,11 +12,11 @@
 .builder-profile-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--glass-bg, rgba(0, 0, 0, 0.7));
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: var(--z-modal);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) ease;
 }
 
 .builder-profile-modal.open ~ .builder-profile-backdrop,
@@ -31,10 +33,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  z-index: 1001;
+  z-index: calc(var(--z-modal) + 1);
   opacity: 0;
   pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
 .builder-profile-modal.open {
@@ -44,35 +46,35 @@
 }
 
 .builder-profile-card {
-  width: 380px;
+  width: var(--panel-width);
   max-width: 90vw;
   max-height: 90vh;
   background: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-xl);
 }
 
 .profile-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: var(--space-md);
+  right: var(--space-md);
   width: 32px;
   height: 32px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-hover);
   border-radius: 50%;
-  color: #888;
-  font-size: 1.25rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-xl);
   cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s;
+  z-index: var(--z-elevated);
+  transition: all var(--duration-fast);
 }
 
 .profile-close:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--color-bg-active);
+  color: var(--color-text-primary);
 }
 
 /* ============================================
@@ -85,16 +87,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 40px;
-  color: #888;
-  gap: 16px;
+  padding: var(--space-2xl) var(--space-xl);
+  color: var(--color-text-muted);
+  gap: var(--space-md);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #00ff88;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-success);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -106,8 +108,8 @@
 }
 
 .error-icon {
-  font-size: 2rem;
-  color: #ef4444;
+  font-size: var(--text-3xl);
+  color: var(--color-error);
 }
 
 /* ============================================
@@ -115,21 +117,21 @@
    ============================================ */
 
 .profile-content {
-  padding: 24px;
+  padding: var(--space-lg);
 }
 
 .profile-header {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .profile-avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 3px solid var(--color-border-default);
+  background: var(--color-bg-surface);
 }
 
 .profile-info {
@@ -138,23 +140,23 @@
 }
 
 .profile-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 4px;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-xs);
 }
 
 .profile-login {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 0 0 8px;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-sm);
 }
 
 .profile-bio {
-  font-size: 0.85rem;
-  color: #888;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
   margin: 0;
-  line-height: 1.4;
+  line-height: var(--leading-snug);
 }
 
 /* ============================================
@@ -164,10 +166,10 @@
 .profile-stats {
   display: flex;
   justify-content: space-around;
-  padding: 16px 0;
-  margin-bottom: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-md) 0;
+  margin-bottom: var(--space-md);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .stat-item {
@@ -176,17 +178,17 @@
 
 .stat-value {
   display: block;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #fff;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
 }
 
 .stat-label {
   display: block;
-  font-size: 0.7rem;
-  color: #666;
+  font-size: var(--text-2xs);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--tracking-wide);
 }
 
 /* ============================================
@@ -194,35 +196,35 @@
    ============================================ */
 
 .profile-details {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 0.85rem;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  font-size: var(--text-sm);
 }
 
 .detail-icon {
   width: 20px;
-  color: #666;
+  color: var(--color-text-tertiary);
   text-align: center;
 }
 
 .detail-value {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .detail-item a.detail-value {
-  color: #00d9ff;
+  color: var(--color-info);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color var(--duration-fast);
 }
 
 .detail-item a.detail-value:hover {
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 /* ============================================
@@ -230,41 +232,41 @@
    ============================================ */
 
 .profile-contributions {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
 }
 
 .profile-contributions h4 {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #666;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 12px;
+  letter-spacing: var(--tracking-wide);
+  margin: 0 0 var(--space-md);
 }
 
 .contributions-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .contribution-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
 }
 
 .contribution-project {
-  font-size: 0.85rem;
-  color: #fff;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
 }
 
 .contribution-count {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
 }
 
 /* ============================================
@@ -273,24 +275,24 @@
 
 .profile-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .profile-btn {
   flex: 1;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: var(--space-md) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   text-align: center;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all var(--duration-fast);
 }
 
 .profile-btn.primary {
   background: #24292e;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
 }
 
 .profile-btn.primary:hover {

@@ -35,6 +35,7 @@ let isPanelOpen = false;
 // TRACK MODULES DATA
 // ============================================
 
+// Note: Growth track merged into Content as of 2026-01-21
 const TRACK_MODULES = {
   dev: [
     { name: 'Solana Fundamentals', status: 'available', xp: 100 },
@@ -50,18 +51,6 @@ const TRACK_MODULES = {
     { name: 'Governance Programs', status: 'locked', xp: 300 },
     { name: 'Advanced Optimizations', status: 'locked', xp: 400 }
   ],
-  growth: [
-    { name: 'Crypto Marketing 101', status: 'available', xp: 100 },
-    { name: 'Community Building', status: 'available', xp: 150 },
-    { name: 'Discord Management', status: 'locked', xp: 150 },
-    { name: 'Twitter Growth', status: 'locked', xp: 200 },
-    { name: 'Content Strategy', status: 'locked', xp: 200 },
-    { name: 'Viral Mechanics', status: 'locked', xp: 250 },
-    { name: 'Partnerships', status: 'locked', xp: 250 },
-    { name: 'Tokenomics Design', status: 'locked', xp: 300 },
-    { name: 'Launch Strategy', status: 'locked', xp: 350 },
-    { name: 'Analytics & Metrics', status: 'locked', xp: 300 }
-  ],
   gaming: [
     { name: 'Game Design Basics', status: 'available', xp: 100 },
     { name: 'Canvas & WebGL', status: 'available', xp: 150 },
@@ -73,6 +62,7 @@ const TRACK_MODULES = {
     { name: 'Anti-cheat Systems', status: 'locked', xp: 300 }
   ],
   content: [
+    // Content creation
     { name: 'Crypto Storytelling', status: 'available', xp: 100 },
     { name: 'Thread Writing', status: 'available', xp: 100 },
     { name: 'Video Production', status: 'locked', xp: 200 },
@@ -81,7 +71,17 @@ const TRACK_MODULES = {
     { name: 'Community Voice', status: 'locked', xp: 200 },
     { name: 'Educational Content', status: 'locked', xp: 250 },
     { name: 'Brand Building', status: 'locked', xp: 300 },
-    { name: 'Influencer Strategy', status: 'locked', xp: 350 }
+    { name: 'Influencer Strategy', status: 'locked', xp: 350 },
+    // Growth (merged)
+    { name: 'Crypto Marketing 101', status: 'available', xp: 100 },
+    { name: 'Community Building', status: 'available', xp: 150 },
+    { name: 'Discord Management', status: 'locked', xp: 150 },
+    { name: 'Twitter Strategy', status: 'locked', xp: 200 },
+    { name: 'Viral Mechanics', status: 'locked', xp: 250 },
+    { name: 'Partnerships', status: 'locked', xp: 250 },
+    { name: 'Tokenomics Design', status: 'locked', xp: 300 },
+    { name: 'Launch Strategy', status: 'locked', xp: 350 },
+    { name: 'Analytics & Metrics', status: 'locked', xp: 300 }
   ]
 };
 

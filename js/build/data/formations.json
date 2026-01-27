@@ -1,0 +1,464 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-21",
+    "description": "Educational content for ASDF Builder tracks"
+  },
+  "tracks": {
+    "dev": {
+      "id": "dev",
+      "name": "Developer Track",
+      "icon": "\uD83D\uDCBB",
+      "description": "Learn to build on Solana with Rust, Anchor, and the ASDF ecosystem",
+      "duration": "12 weeks",
+      "level": "intermediate",
+      "color": "#9945FF",
+      "modules": [
+        {
+          "id": "solana-fundamentals",
+          "title": "Solana Fundamentals",
+          "description": "Core concepts of Solana blockchain",
+          "order": 1,
+          "xpReward": 500,
+          "lessons": [
+            {
+              "id": "intro-to-solana",
+              "title": "Introduction to Solana",
+              "type": "video",
+              "duration": "15 min",
+              "content": "https://www.youtube.com/watch?v=BxYN_DEH2rw",
+              "xp": 100,
+              "summary": "Overview of Solana's architecture, consensus mechanism, and key features"
+            },
+            {
+              "id": "accounts-model",
+              "title": "Solana Account Model",
+              "type": "article",
+              "duration": "20 min",
+              "content": "https://solana.com/docs/core/accounts",
+              "xp": 100,
+              "summary": "Understanding accounts, PDAs, and data storage on Solana"
+            },
+            {
+              "id": "transactions-basics",
+              "title": "Transactions & Instructions",
+              "type": "article",
+              "duration": "15 min",
+              "content": "https://solana.com/docs/core/transactions",
+              "xp": 100,
+              "summary": "How transactions work, instruction format, and signatures"
+            },
+            {
+              "id": "quiz-fundamentals",
+              "title": "Knowledge Check",
+              "type": "quiz",
+              "duration": "5 min",
+              "xp": 50,
+              "questions": [
+                {
+                  "q": "What consensus mechanism does Solana use?",
+                  "options": ["Proof of Work", "Proof of Stake", "Proof of History + Tower BFT", "Delegated Proof of Stake"],
+                  "correct": 2
+                },
+                {
+                  "q": "What is a PDA?",
+                  "options": ["Personal Data Account", "Program Derived Address", "Public Data Array", "Private Derivation Algorithm"],
+                  "correct": 1
+                },
+                {
+                  "q": "How much SOL is required to store 1KB of data on-chain (approx)?",
+                  "options": ["0.001 SOL", "0.007 SOL", "0.1 SOL", "1 SOL"],
+                  "correct": 1
+                }
+              ],
+              "passingScore": 0.66
+            }
+          ]
+        },
+        {
+          "id": "anchor-framework",
+          "title": "Anchor Framework",
+          "description": "Building Solana programs with Anchor",
+          "order": 2,
+          "xpReward": 800,
+          "prerequisites": ["solana-fundamentals"],
+          "lessons": [
+            {
+              "id": "anchor-intro",
+              "title": "What is Anchor?",
+              "type": "video",
+              "duration": "12 min",
+              "content": "https://www.youtube.com/watch?v=oD5WbRPZrZk",
+              "xp": 100,
+              "summary": "Introduction to Anchor framework and its benefits"
+            },
+            {
+              "id": "anchor-project-structure",
+              "title": "Project Structure",
+              "type": "article",
+              "duration": "15 min",
+              "content": "https://www.anchor-lang.com/docs/high-level-overview",
+              "xp": 100,
+              "summary": "Understanding Anchor project layout, Anchor.toml, and program structure"
+            },
+            {
+              "id": "anchor-accounts-macros",
+              "title": "Accounts & Macros",
+              "type": "article",
+              "duration": "25 min",
+              "content": "https://www.anchor-lang.com/docs/account-constraints",
+              "xp": 150,
+              "summary": "Account validation, constraints, and Anchor macros"
+            },
+            {
+              "id": "anchor-hello-world",
+              "title": "Build: Hello World Program",
+              "type": "project",
+              "duration": "45 min",
+              "xp": 300,
+              "instructions": "Create a simple Anchor program that stores a message on-chain",
+              "requirements": ["Rust installed", "Anchor CLI", "Solana CLI"],
+              "submission": "github"
+            }
+          ]
+        },
+        {
+          "id": "spl-tokens",
+          "title": "SPL Tokens",
+          "description": "Working with Solana's token standard",
+          "order": 3,
+          "xpReward": 600,
+          "prerequisites": ["anchor-framework"],
+          "lessons": [
+            {
+              "id": "token-basics",
+              "title": "Token Program Basics",
+              "type": "article",
+              "duration": "20 min",
+              "content": "https://spl.solana.com/token",
+              "xp": 100,
+              "summary": "Understanding mints, token accounts, and authorities"
+            },
+            {
+              "id": "token-creation",
+              "title": "Creating Tokens",
+              "type": "video",
+              "duration": "18 min",
+              "content": "https://www.youtube.com/watch?v=iO5lDH1v_I0",
+              "xp": 100,
+              "summary": "Step-by-step token creation with metadata"
+            },
+            {
+              "id": "token-transfers",
+              "title": "Token Transfers & Burns",
+              "type": "article",
+              "duration": "15 min",
+              "content": "https://spl.solana.com/token#transferring-tokens",
+              "xp": 100,
+              "summary": "Implementing transfers, burns, and authority management"
+            }
+          ]
+        },
+        {
+          "id": "asdf-integration",
+          "title": "ASDF Ecosystem Integration",
+          "description": "Building with ASDF protocols",
+          "order": 4,
+          "xpReward": 1000,
+          "prerequisites": ["spl-tokens"],
+          "lessons": [
+            {
+              "id": "burn-engine-integration",
+              "title": "Integrating Burn Engine",
+              "type": "article",
+              "duration": "30 min",
+              "content": "/docs/burn-engine-integration",
+              "xp": 200,
+              "summary": "How to integrate automatic burns into your token"
+            },
+            {
+              "id": "holdex-api",
+              "title": "Using HolDex API",
+              "type": "article",
+              "duration": "25 min",
+              "content": "/docs/holdex-api",
+              "xp": 150,
+              "summary": "Fetching K-Score and token metrics"
+            },
+            {
+              "id": "build-burn-token",
+              "title": "Build: Burn-Enabled Token",
+              "type": "project",
+              "duration": "2 hours",
+              "xp": 500,
+              "instructions": "Create and deploy a token with automatic burn mechanics",
+              "requirements": ["Completed SPL Tokens module", "Devnet SOL"],
+              "submission": "github"
+            }
+          ]
+        }
+      ]
+    },
+    "games": {
+      "id": "games",
+      "name": "Games Track",
+      "icon": "\uD83C\uDFAE",
+      "description": "Create engaging browser games for the ASDF ecosystem",
+      "duration": "10 weeks",
+      "level": "intermediate",
+      "color": "#F97316",
+      "modules": [
+        {
+          "id": "game-fundamentals",
+          "title": "Game Development Fundamentals",
+          "description": "Core concepts of browser game development",
+          "order": 1,
+          "xpReward": 400,
+          "lessons": [
+            {
+              "id": "canvas-basics",
+              "title": "Canvas API Basics",
+              "type": "article",
+              "duration": "25 min",
+              "content": "https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial",
+              "xp": 100,
+              "summary": "Drawing, animation loops, and basic rendering"
+            },
+            {
+              "id": "game-loops",
+              "title": "Game Loops & Timing",
+              "type": "video",
+              "duration": "20 min",
+              "content": "https://www.youtube.com/watch?v=X1cQ9M3AYTU",
+              "xp": 100,
+              "summary": "RequestAnimationFrame, delta time, and phi-based timing"
+            },
+            {
+              "id": "input-handling",
+              "title": "Input Handling",
+              "type": "article",
+              "duration": "15 min",
+              "content": "/docs/game-input-handling",
+              "xp": 100,
+              "summary": "Keyboard, mouse, and touch input for games"
+            }
+          ]
+        },
+        {
+          "id": "asdf-game-engine",
+          "title": "ASDF Game Engine",
+          "description": "Using the shared game infrastructure",
+          "order": 2,
+          "xpReward": 600,
+          "prerequisites": ["game-fundamentals"],
+          "lessons": [
+            {
+              "id": "engine-architecture",
+              "title": "Engine Architecture",
+              "type": "article",
+              "duration": "30 min",
+              "content": "/docs/game-engine-architecture",
+              "xp": 150,
+              "summary": "Understanding the modular game engine structure"
+            },
+            {
+              "id": "shared-utilities",
+              "title": "Shared Utilities",
+              "type": "article",
+              "duration": "20 min",
+              "content": "/docs/game-utilities",
+              "xp": 100,
+              "summary": "Juice effects, transitions, and feedback systems"
+            },
+            {
+              "id": "leaderboard-integration",
+              "title": "Leaderboard Integration",
+              "type": "article",
+              "duration": "25 min",
+              "content": "/docs/game-leaderboards",
+              "xp": 150,
+              "summary": "Connecting to the leaderboard API with anti-cheat"
+            }
+          ]
+        },
+        {
+          "id": "build-mini-game",
+          "title": "Build a Mini-Game",
+          "description": "Create your own arcade game",
+          "order": 3,
+          "xpReward": 1000,
+          "prerequisites": ["asdf-game-engine"],
+          "lessons": [
+            {
+              "id": "game-design-doc",
+              "title": "Game Design Document",
+              "type": "project",
+              "duration": "1 hour",
+              "xp": 200,
+              "instructions": "Create a design document for your mini-game concept",
+              "submission": "form"
+            },
+            {
+              "id": "game-prototype",
+              "title": "Prototype Development",
+              "type": "project",
+              "duration": "4 hours",
+              "xp": 400,
+              "instructions": "Build a playable prototype of your game",
+              "submission": "github"
+            },
+            {
+              "id": "game-polish",
+              "title": "Polish & Submit",
+              "type": "project",
+              "duration": "2 hours",
+              "xp": 400,
+              "instructions": "Add juice effects, sounds, and submit for review",
+              "submission": "github"
+            }
+          ]
+        }
+      ]
+    },
+    "content": {
+      "id": "content",
+      "name": "Content Creator Track",
+      "icon": "\uD83C\uDFA8",
+      "description": "Create educational content, docs, and community resources",
+      "duration": "8 weeks",
+      "level": "beginner",
+      "color": "#10B981",
+      "modules": [
+        {
+          "id": "content-fundamentals",
+          "title": "Content Creation Fundamentals",
+          "description": "Core skills for creating quality content",
+          "order": 1,
+          "xpReward": 300,
+          "lessons": [
+            {
+              "id": "writing-for-crypto",
+              "title": "Writing for Crypto Audiences",
+              "type": "article",
+              "duration": "20 min",
+              "content": "/docs/writing-for-crypto",
+              "xp": 100,
+              "summary": "Tone, terminology, and engaging crypto audiences"
+            },
+            {
+              "id": "visual-communication",
+              "title": "Visual Communication",
+              "type": "video",
+              "duration": "15 min",
+              "content": "https://www.youtube.com/watch?v=c8jrC0Dw8MA",
+              "xp": 100,
+              "summary": "Creating clear infographics and diagrams"
+            },
+            {
+              "id": "asdf-brand-guide",
+              "title": "ASDF Brand Guidelines",
+              "type": "article",
+              "duration": "10 min",
+              "content": "/docs/brand-guidelines",
+              "xp": 50,
+              "summary": "Colors, logos, and brand voice"
+            }
+          ]
+        },
+        {
+          "id": "technical-writing",
+          "title": "Technical Writing",
+          "description": "Documentation and tutorial creation",
+          "order": 2,
+          "xpReward": 500,
+          "prerequisites": ["content-fundamentals"],
+          "lessons": [
+            {
+              "id": "doc-structure",
+              "title": "Documentation Structure",
+              "type": "article",
+              "duration": "25 min",
+              "content": "/docs/documentation-guide",
+              "xp": 150,
+              "summary": "Organizing docs for developer audiences"
+            },
+            {
+              "id": "tutorial-creation",
+              "title": "Creating Tutorials",
+              "type": "article",
+              "duration": "30 min",
+              "content": "/docs/tutorial-guide",
+              "xp": 150,
+              "summary": "Step-by-step tutorial best practices"
+            },
+            {
+              "id": "write-tutorial",
+              "title": "Build: Write a Tutorial",
+              "type": "project",
+              "duration": "2 hours",
+              "xp": 300,
+              "instructions": "Create a tutorial for an ASDF feature",
+              "submission": "github"
+            }
+          ]
+        },
+        {
+          "id": "community-growth",
+          "title": "Community & Growth",
+          "description": "Building and engaging communities",
+          "order": 3,
+          "xpReward": 400,
+          "prerequisites": ["content-fundamentals"],
+          "lessons": [
+            {
+              "id": "discord-management",
+              "title": "Discord Community Management",
+              "type": "article",
+              "duration": "20 min",
+              "content": "/docs/discord-management",
+              "xp": 100,
+              "summary": "Moderation, engagement, and community health"
+            },
+            {
+              "id": "twitter-strategy",
+              "title": "Twitter/X Strategy",
+              "type": "article",
+              "duration": "15 min",
+              "content": "/docs/twitter-strategy",
+              "xp": 100,
+              "summary": "Building presence and engagement on X"
+            },
+            {
+              "id": "viral-content",
+              "title": "Creating Viral Content",
+              "type": "video",
+              "duration": "18 min",
+              "content": "https://www.youtube.com/watch?v=BQLyC-Z9WZE",
+              "xp": 100,
+              "summary": "Hooks, formats, and timing for viral posts"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "quizConfig": {
+    "passingThreshold": 0.618,
+    "maxAttempts": 3,
+    "cooldownMs": 1260000,
+    "questionTypes": ["multiple_choice", "true_false", "code_completion"]
+  },
+  "xpConfig": {
+    "baseRewards": {
+      "video_watched": 50,
+      "article_read": 50,
+      "quiz_passed": 100,
+      "project_submitted": 200,
+      "project_approved": 300,
+      "module_completed": 500,
+      "track_completed": 5000
+    },
+    "streakFormula": "bonus = phi^(streak/7) - 1, capped at 0.618",
+    "levelThresholds": "TRUE Fibonacci cumulative: L1:0, L2:100, L3:200, L4:400, L5:700, L6:1200..."
+  }
+}

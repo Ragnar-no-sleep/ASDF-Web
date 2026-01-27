@@ -778,7 +778,7 @@ function leaveFaction(playerState, reason = 'story_gate') {
 /**
  * Modify faction standing
  */
-function modifyFactionStanding(factionId, amount, playerState) {
+function _modifyFactionStandingFactions(factionId, amount, playerState) {
     if (!playerState.faction.standing) {
         playerState.faction.standing = {};
     }
@@ -792,7 +792,7 @@ function modifyFactionStanding(factionId, amount, playerState) {
 /**
  * Get player's standing with a faction
  */
-function getFactionStanding(factionId, playerState) {
+function _getFactionStandingFactions(factionId, playerState) {
     return playerState?.faction?.standing?.[factionId] || 0;
 }
 
@@ -824,8 +824,8 @@ if (typeof window !== 'undefined') {
         // Actions
         joinFaction,
         leaveFaction,
-        modifyFactionStanding,
-        getFactionStanding,
+        modifyFactionStanding: _modifyFactionStandingFactions,
+        getFactionStanding: _getFactionStandingFactions,
         applyFactionBonus,
 
         // Helpers

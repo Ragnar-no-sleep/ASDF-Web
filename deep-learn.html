@@ -793,18 +793,21 @@
                     <h3>&#128138; Key Numbers</h3>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4);">
                         <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">8%</div>
+                            <div id="stat-burned" style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">~8%</div>
                             <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Already Burned</div>
                         </div>
                         <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">44.8%</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Fee Routing</div>
+                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">&#966;&#8315;&#185;</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Fee Ratio (61.8%)</div>
                         </div>
                         <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
                             <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">24/7</div>
                             <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Automated</div>
                         </div>
                     </div>
+                    <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--space-3); text-align: center;">
+                        &#8594; <a href="burns.html" style="color: var(--accent);">Check live burn stats</a>
+                    </p>
                 </div>
 
                 <div class="level-nav">
@@ -1099,6 +1102,13 @@
                                 <div class="tool-status">&#10003; Live</div>
                             </div>
                         </a>
+                        <a href="build.html" class="tool-card">
+                            <span class="tool-icon">&#127795;</span>
+                            <div>
+                                <div class="tool-name">Builder Path</div>
+                                <div class="tool-status">&#10003; Yggdrasil</div>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -1300,7 +1310,10 @@
 
                 <div class="level-nav" style="margin-top: var(--space-8);">
                     <button class="btn btn-secondary" data-nav-view="ecosystem">&#8592; Back</button>
-                    <a href="burns.html" class="btn btn-primary">View Live Burns &#8594;</a>
+                    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                        <a href="build.html" class="btn btn-primary">Start Building &#127795;</a>
+                        <a href="burns.html" class="btn btn-secondary">Track Burns &#128293;</a>
+                    </div>
                 </div>
             </div>
 

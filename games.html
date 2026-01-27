@@ -41,7 +41,7 @@
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
         img-src 'self' data: https:;
-        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com https://asdf-api.onrender.com;
+        connect-src 'self' http://localhost:3000 http://localhost:3001 https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com https://asdf-api.onrender.com;
         object-src 'none';
         base-uri 'self';
         form-action 'self';
@@ -116,7 +116,6 @@
             </div>
 
             <div class="nav-right">
-                <button id="dev-mode-btn" class="dev-mode-btn" title="Toggle Developer Mode">DEV</button>
                 <span id="user-badge" class="visitor-badge" role="status" aria-live="polite">VISITOR</span>
                 <button id="wallet-btn" class="wallet-btn" aria-label="Connect Phantom wallet">
                     <span id="wallet-btn-text">Connect Wallet</span>
@@ -135,23 +134,23 @@
              ============================================ -->
         <section class="arcade-hub" id="hub-section">
             <!-- Cards Grid -->
-            <div class="arcade-cards">
-                <div class="arcade-card card-games" data-hub-view="games">
-                    <span class="arcade-card-icon">🎮</span>
+            <div class="arcade-cards" role="group" aria-label="Hub navigation">
+                <div class="arcade-card card-games" data-hub-view="games" role="button" tabindex="0" aria-label="Open Games section">
+                    <span class="arcade-card-icon" aria-hidden="true">🎮</span>
                     <h3 class="arcade-card-title">Games</h3>
                 </div>
-                <div class="arcade-card card-shop not-available">
-                    <span class="arcade-card-icon">🛒</span>
+                <div class="arcade-card card-shop not-available" role="button" tabindex="-1" aria-label="Shop - Not available yet" aria-disabled="true">
+                    <span class="arcade-card-icon" aria-hidden="true">🛒</span>
                     <h3 class="arcade-card-title">Shop</h3>
                     <span class="arcade-card-status">Not Available</span>
                 </div>
-                <div class="arcade-card card-profile not-available">
-                    <span class="arcade-card-icon">👤</span>
+                <div class="arcade-card card-profile not-available" role="button" tabindex="-1" aria-label="Profile - Not available yet" aria-disabled="true">
+                    <span class="arcade-card-icon" aria-hidden="true">👤</span>
                     <h3 class="arcade-card-title">Profile</h3>
                     <span class="arcade-card-status">Not Available</span>
                 </div>
-                <div class="arcade-card card-settings" data-hub-view="settings">
-                    <span class="arcade-card-icon">⚙️</span>
+                <div class="arcade-card card-settings" data-hub-view="settings" role="button" tabindex="0" aria-label="Open Settings">
+                    <span class="arcade-card-icon" aria-hidden="true">⚙️</span>
                     <h3 class="arcade-card-title">Settings</h3>
                 </div>
             </div>
@@ -207,18 +206,18 @@
                 <span class="access-icon"></span>
                 <span>Game of the Week: <strong id="access-gotw-status">Available</strong></span>
             </div>
-            <div class="access-item locked" id="access-all">
+            <div class="access-item unlocked" id="access-all">
                 <span class="access-icon"></span>
-                <span>All 9 Games: <strong>Holders Only</strong></span>
+                <span>All 9 Games: <strong>All Access</strong></span>
             </div>
         </div>
 
         <!-- All Games Section -->
-        <section class="games-section" id="games-section" style="display: none;">
+        <section class="games-section" id="games-section" style="display: none;" aria-labelledby="games-section-title">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">All Games</h2>
-                    <p class="section-subtitle">9 unique games, 1 featured each week. Hold 1M+ $asdfasdfa to unlock all.</p>
+                    <h2 class="section-title" id="games-section-title">All Games</h2>
+                    <p class="section-subtitle">9 unique mini-games. Play, earn XP, climb the leaderboards!</p>
                 </div>
 
                 <div class="games-grid" id="games-grid">
@@ -227,85 +226,51 @@
             </div>
         </section>
 
-        <!-- Pump Arena Special Section -->
-        <section class="pump-arena-section" style="display: none; padding: 60px 20px; background: var(--bg-burnt); border: 4px solid var(--gold); border-radius: 40px; margin: 20px auto; max-width: 1150px; box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title" style="display: flex; align-items: center; gap: 12px; justify-content: center;">
-                        <span style="font-size: 40px;">📈</span>
-                        Pump Arena
-                        <span style="background: linear-gradient(90deg, var(--gold), var(--accent-fire)); padding: 4px 12px; border-radius: 20px; font-size: 12px; text-transform: uppercase;">Always Available</span>
-                    </h2>
-                    <p class="section-subtitle">Master the art of trading! Practice your skills with virtual $1000.</p>
-                </div>
-
-                <div style="display: flex; justify-content: center; max-width: 400px; margin: 30px auto 0;">
-                    <!-- Classic Mode -->
-                    <div class="game-card" style="background: var(--bg-burnt); border: 2px solid var(--gold); width: 100%;">
-                        <div class="game-icon">🎮</div>
-                        <h3 class="game-name">Classic Mode</h3>
-                        <p class="game-type">Practice Trading</p>
-                        <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0;">Free to play. Practice your trading skills with virtual $1000. Compete for leaderboard spots!</p>
-                        <button id="pump-classic-btn" class="btn game-play-btn" data-mode="classic" style="background: var(--green); border-color: var(--green-light);">
-                            PLAY FREE
-                        </button>
+        <!-- Pump Arena Special Section - Coming Soon -->
+        <section class="pump-arena-section" id="pump-arena-section" style="padding: 60px 20px; background: linear-gradient(135deg, rgba(26, 15, 5, 0.95), rgba(45, 24, 16, 0.9)); border: 2px solid rgba(234, 179, 8, 0.3); border-radius: 24px; margin: 40px auto; max-width: 800px;">
+            <div class="container" style="text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px; filter: grayscale(0.3);">&#128200;</div>
+                <h2 style="font-size: 28px; font-weight: 600; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; justify-content: center;">
+                    Pump Arena
+                    <span style="background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(234, 179, 8, 0.1)); border: 1px solid rgba(234, 179, 8, 0.4); padding: 4px 12px; border-radius: 100px; font-size: 11px; color: #eab308; font-weight: 600; letter-spacing: 0.5px;">COMING SOON</span>
+                </h2>
+                <p style="font-size: 15px; color: #c9b89a; line-height: 1.6; max-width: 500px; margin: 0 auto 24px;">
+                    Master the art of trading! Practice your skills with virtual $1000 in a risk-free environment.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 400px; margin: 0 auto 24px;">
+                    <div style="padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <div style="font-size: 20px; margin-bottom: 4px;">&#127919;</div>
+                        <div style="font-size: 11px; color: #8a7a68;">Paper Trading</div>
+                    </div>
+                    <div style="padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <div style="font-size: 20px; margin-bottom: 4px;">&#128200;</div>
+                        <div style="font-size: 11px; color: #8a7a68;">Leaderboards</div>
+                    </div>
+                    <div style="padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <div style="font-size: 20px; margin-bottom: 4px;">&#127942;</div>
+                        <div style="font-size: 11px; color: #8a7a68;">Competitions</div>
                     </div>
                 </div>
+                <p style="font-size: 12px; color: #5a4d40; font-family: 'JetBrains Mono', monospace;">
+                    We're polishing the experience. Stay tuned.
+                </p>
             </div>
         </section>
 
-        <!-- Pump Arena Modal -->
+        <!-- Pump Arena Modal - DISABLED (not MVP ready)
         <div class="game-modal" id="modal-pumparena">
-            <div class="game-modal-content">
-                <div class="game-modal-header">
-                    <h2 class="game-modal-title">
-                        <span>📈</span>
-                        <span>Pump Arena</span>
-                        <span id="pump-mode-badge" style="background: var(--green); padding: 4px 10px; border-radius: 12px; font-size: 12px; margin-left: 10px;">CLASSIC</span>
-                    </h2>
-                    <div class="game-modal-header-actions">
-                        <button id="open-shop-btn" class="btn" style="background: var(--gold); color: #000; font-size: 12px; padding: 8px 16px; margin-right: 10px;">
-                            <span style="margin-right: 4px;">🛒</span> Cosmetics
-                        </button>
-                        <button id="close-pumparena-btn" class="game-modal-close" data-game="pumparena">&times;</button>
-                    </div>
-                </div>
-                <div class="game-modal-body">
-                    <div class="game-arena" id="arena-pumparena">
-                        <div class="game-start-overlay" id="overlay-pumparena">
-                            <div class="game-instructions">
-                                <h3>Pump Arena</h3>
-                                <p>Buy low, sell high on a volatile chart. Time your trades perfectly!</p>
-                            </div>
-                            <button id="start-pumparena-btn" class="btn btn-primary" data-game="pumparena">
-                                START GAME
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="game-controls">
-                    <div class="game-stats">
-                        <div class="game-stat">
-                            <div class="game-stat-value" id="score-pumparena">0</div>
-                            <div class="game-stat-label">Profit</div>
-                        </div>
-                        <div class="game-stat">
-                            <div class="game-stat-value" id="best-pumparena">0</div>
-                            <div class="game-stat-label">Best</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            ...
         </div>
+        -->
 
         <!-- ============================================
              COSMETIC SHOP SECTION
              ============================================ -->
-        <section class="valhalla-section" id="shop-section" style="display: none;">
+        <section class="valhalla-section" id="shop-section" style="display: none;" aria-labelledby="shop-section-title">
             <div class="container" style="max-width: 1400px; margin: 0 auto;">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">🛒</span>
+                    <h2 class="valhalla-section-title" id="shop-section-title">
+                        <span class="icon" aria-hidden="true">🛒</span>
                         Cosmetic Shop
                         <span class="valhalla-badge">NEW</span>
                     </h2>
@@ -314,7 +279,7 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
                 </div>
 
                 <!-- Shop Container - Rendered by ShopV2 -->
@@ -325,11 +290,11 @@
         <!-- ============================================
              PROFILE SECTION
              ============================================ -->
-        <section class="valhalla-section" id="profile-section" style="display: none;">
+        <section class="valhalla-section" id="profile-section" style="display: none;" aria-labelledby="profile-section-title">
             <div class="container" style="max-width: 1200px; margin: 0 auto;">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">👤</span>
+                    <h2 class="valhalla-section-title" id="profile-section-title">
+                        <span class="icon" aria-hidden="true">👤</span>
                         Profile
                     </h2>
                     <p class="valhalla-section-subtitle">Your stats, achievements, and journey</p>
@@ -337,8 +302,8 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
-                    <button class="btn-valhalla-icon" id="profile-refresh-btn" title="Refresh" style="margin-left: 10px;">🔄</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
+                    <button class="btn-valhalla-icon" id="profile-refresh-btn" aria-label="Refresh profile data" style="margin-left: 10px;">🔄</button>
                 </div>
 
                 <div class="profile-container">
@@ -347,7 +312,7 @@
                         <!-- Avatar Card -->
                         <div class="profile-avatar-card">
                             <div class="profile-avatar-preview">
-                                <canvas id="profile-avatar-canvas" width="200" height="200"></canvas>
+                                <canvas id="profile-avatar-canvas" width="200" height="200" role="img" aria-label="Your ASDF Dog avatar preview"></canvas>
                             </div>
                             <h3 class="profile-name">ASDF Warrior</h3>
                             <div class="profile-wallet" id="profile-wallet">Not Connected</div>
@@ -416,12 +381,12 @@
                                 </button>
                             </div>
                             <div class="profile-panel-body">
-                                <div class="profile-inventory-filters" id="profile-inventory-filters">
-                                    <button class="inv-filter-btn active" data-layer="all">All</button>
-                                    <button class="inv-filter-btn" data-layer="skin">🐕 Skins</button>
-                                    <button class="inv-filter-btn" data-layer="outfit">👕 Outfits</button>
-                                    <button class="inv-filter-btn" data-layer="head">🎩 Head</button>
-                                    <button class="inv-filter-btn" data-layer="aura">✨ Auras</button>
+                                <div class="profile-inventory-filters" id="profile-inventory-filters" role="tablist" aria-label="Filter cosmetics by category">
+                                    <button class="inv-filter-btn active" data-layer="all" role="tab" aria-selected="true" aria-controls="profile-inventory-grid">All</button>
+                                    <button class="inv-filter-btn" data-layer="skin" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">🐕 Skins</button>
+                                    <button class="inv-filter-btn" data-layer="outfit" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">👕 Outfits</button>
+                                    <button class="inv-filter-btn" data-layer="head" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">🎩 Head</button>
+                                    <button class="inv-filter-btn" data-layer="aura" role="tab" aria-selected="false" aria-controls="profile-inventory-grid">✨ Auras</button>
                                 </div>
                                 <div class="profile-inventory-grid" id="profile-inventory-grid">
                                     <!-- Rendered by JS -->
@@ -438,13 +403,13 @@
                                 </h3>
                             </div>
                             <div class="profile-panel-body">
-                                <table class="history-table">
+                                <table class="history-table" aria-label="Transaction history">
                                     <thead>
                                         <tr>
-                                            <th>Type</th>
-                                            <th>Description</th>
-                                            <th>Amount</th>
-                                            <th>Date</th>
+                                            <th scope="col">Type</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="history-table-body">
@@ -461,11 +426,11 @@
         <!-- ============================================
              SETTINGS SECTION
              ============================================ -->
-        <section class="valhalla-section" id="settings-section" style="display: none;">
+        <section class="valhalla-section" id="settings-section" style="display: none;" aria-labelledby="settings-section-title">
             <div class="settings-container">
                 <div class="valhalla-section-header">
-                    <h2 class="valhalla-section-title">
-                        <span class="icon">⚙️</span>
+                    <h2 class="valhalla-section-title" id="settings-section-title">
+                        <span class="icon" aria-hidden="true">⚙️</span>
                         Settings
                     </h2>
                     <p class="valhalla-section-subtitle">Customize your experience</p>
@@ -473,7 +438,7 @@
 
                 <!-- Back to Hub -->
                 <div style="margin-bottom: 20px;">
-                    <button class="btn-valhalla-secondary" data-hub-back>← Back to Hub</button>
+                    <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">← Back to Hub</button>
                 </div>
 
                 <!-- Visual Settings -->
@@ -485,24 +450,24 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Animations</div>
+                                <div class="settings-item-label" id="label-animations">Animations</div>
                                 <div class="settings-item-desc">Enable UI animations and transitions</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="animations"></div>
+                            <div class="toggle-switch active" data-setting="animations" role="switch" aria-checked="true" aria-labelledby="label-animations" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Background Particles</div>
+                                <div class="settings-item-label" id="label-particles">Background Particles</div>
                                 <div class="settings-item-desc">Floating embers and mist effects</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="particles"></div>
+                            <div class="toggle-switch active" data-setting="particles" role="switch" aria-checked="true" aria-labelledby="label-particles" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Reduced Motion</div>
+                                <div class="settings-item-label" id="label-reducedMotion">Reduced Motion</div>
                                 <div class="settings-item-desc">Minimize motion for accessibility</div>
                             </div>
-                            <div class="toggle-switch" data-setting="reducedMotion"></div>
+                            <div class="toggle-switch" data-setting="reducedMotion" role="switch" aria-checked="false" aria-labelledby="label-reducedMotion" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -516,38 +481,38 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Master Volume</div>
+                                <div class="settings-item-label" id="label-masterVolume">Master Volume</div>
                                 <div class="settings-item-desc">Overall audio level</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="masterVolume" min="0" max="1" step="0.1" value="0.7">
+                            <input type="range" class="settings-slider" data-setting="masterVolume" min="0" max="1" step="0.1" value="0.7" aria-labelledby="label-masterVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Music Volume</div>
+                                <div class="settings-item-label" id="label-musicVolume">Music Volume</div>
                                 <div class="settings-item-desc">Background music level</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="musicVolume" min="0" max="1" step="0.1" value="0.5">
+                            <input type="range" class="settings-slider" data-setting="musicVolume" min="0" max="1" step="0.1" value="0.5" aria-labelledby="label-musicVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.5">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Sound Effects</div>
+                                <div class="settings-item-label" id="label-sfxVolume">Sound Effects</div>
                                 <div class="settings-item-desc">UI and game sound effects</div>
                             </div>
-                            <input type="range" class="settings-slider" data-setting="sfxVolume" min="0" max="1" step="0.1" value="0.8">
+                            <input type="range" class="settings-slider" data-setting="sfxVolume" min="0" max="1" step="0.1" value="0.8" aria-labelledby="label-sfxVolume" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.8">
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Ambient Sounds</div>
+                                <div class="settings-item-label" id="label-ambientEnabled">Ambient Sounds</div>
                                 <div class="settings-item-desc">Background ambience</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="ambientEnabled"></div>
+                            <div class="toggle-switch active" data-setting="ambientEnabled" role="switch" aria-checked="true" aria-labelledby="label-ambientEnabled" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">UI Sounds</div>
+                                <div class="settings-item-label" id="label-uiSoundsEnabled">UI Sounds</div>
                                 <div class="settings-item-desc">Click and hover sounds</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="uiSoundsEnabled"></div>
+                            <div class="toggle-switch active" data-setting="uiSoundsEnabled" role="switch" aria-checked="true" aria-labelledby="label-uiSoundsEnabled" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -561,24 +526,24 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Game Events</div>
+                                <div class="settings-item-label" id="label-notifyGameEvents">Game Events</div>
                                 <div class="settings-item-desc">New games and leaderboard updates</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyGameEvents"></div>
+                            <div class="toggle-switch active" data-setting="notifyGameEvents" role="switch" aria-checked="true" aria-labelledby="label-notifyGameEvents" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Shop Deals</div>
+                                <div class="settings-item-label" id="label-notifyShopDeals">Shop Deals</div>
                                 <div class="settings-item-desc">Sales and new items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyShopDeals"></div>
+                            <div class="toggle-switch active" data-setting="notifyShopDeals" role="switch" aria-checked="true" aria-labelledby="label-notifyShopDeals" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Achievements</div>
+                                <div class="settings-item-label" id="label-notifyAchievements">Achievements</div>
                                 <div class="settings-item-desc">When you unlock achievements</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="notifyAchievements"></div>
+                            <div class="toggle-switch active" data-setting="notifyAchievements" role="switch" aria-checked="true" aria-labelledby="label-notifyAchievements" tabindex="0"></div>
                         </div>
                     </div>
                 </div>
@@ -592,31 +557,31 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Confirm Purchases</div>
+                                <div class="settings-item-label" id="label-confirmPurchases">Confirm Purchases</div>
                                 <div class="settings-item-desc">Show confirmation before buying items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="confirmPurchases"></div>
+                            <div class="toggle-switch active" data-setting="confirmPurchases" role="switch" aria-checked="true" aria-labelledby="label-confirmPurchases" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Show Item Particles</div>
+                                <div class="settings-item-label" id="label-shopParticles">Show Item Particles</div>
                                 <div class="settings-item-desc">Animated effects on high-tier items</div>
                             </div>
-                            <div class="toggle-switch active" data-setting="shopParticles"></div>
+                            <div class="toggle-switch active" data-setting="shopParticles" role="switch" aria-checked="true" aria-labelledby="label-shopParticles" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Auto-Equip Purchases</div>
+                                <div class="settings-item-label" id="label-autoEquipPurchases">Auto-Equip Purchases</div>
                                 <div class="settings-item-desc">Automatically equip items after buying</div>
                             </div>
-                            <div class="toggle-switch" data-setting="autoEquipPurchases"></div>
+                            <div class="toggle-switch" data-setting="autoEquipPurchases" role="switch" aria-checked="false" aria-labelledby="label-autoEquipPurchases" tabindex="0"></div>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Default Currency</div>
+                                <div class="settings-item-label" id="label-defaultCurrency">Default Currency</div>
                                 <div class="settings-item-desc">Preferred payment method</div>
                             </div>
-                            <select class="settings-select" data-setting="defaultCurrency">
+                            <select class="settings-select" data-setting="defaultCurrency" aria-labelledby="label-defaultCurrency">
                                 <option value="burn" selected>🔥 Burn Tokens</option>
                                 <option value="coins">🪙 Shop Coins</option>
                             </select>
@@ -636,14 +601,14 @@
                                 <div class="settings-item-label">Export Data</div>
                                 <div class="settings-item-desc">Download all your data as JSON</div>
                             </div>
-                            <button class="btn-valhalla-secondary" id="settings-export-btn">Export</button>
+                            <button class="btn-valhalla-secondary" id="settings-export-btn" aria-label="Export all your data as JSON file">Export</button>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-info">
                                 <div class="settings-item-label">Clear All Data</div>
                                 <div class="settings-item-desc">Delete all local data</div>
                             </div>
-                            <button class="btn-valhalla-secondary" id="settings-clear-btn" style="border-color: #ef4444; color: #ef4444;">Clear</button>
+                            <button class="btn-valhalla-secondary" id="settings-clear-btn" style="border-color: #ef4444; color: #ef4444;" aria-label="Clear all local data - this action cannot be undone">Clear</button>
                         </div>
                     </div>
                 </div>
@@ -657,10 +622,10 @@
                     <div class="settings-group-body">
                         <div class="settings-item">
                             <div class="settings-item-info">
-                                <div class="settings-item-label">Display Language</div>
+                                <div class="settings-item-label" id="label-language">Display Language</div>
                                 <div class="settings-item-desc">Choose your preferred language</div>
                             </div>
-                            <select class="settings-select" data-setting="language">
+                            <select class="settings-select" data-setting="language" aria-labelledby="label-language">
                                 <option value="en" selected>English</option>
                                 <option value="fr">Français</option>
                                 <option value="es">Español</option>
@@ -672,7 +637,7 @@
 
                 <!-- Reset -->
                 <div style="text-align: center; padding: 20px;">
-                    <button class="btn-valhalla-secondary" id="settings-reset-btn">Reset All Settings</button>
+                    <button class="btn-valhalla-secondary" id="settings-reset-btn" aria-label="Reset all settings to default values">Reset All Settings</button>
                 </div>
             </div>
         </section>
@@ -705,9 +670,16 @@
     <script src="js/games/solana.js"></script>
     <script src="js/games/api.js"></script>
     <script src="js/games/state.js"></script>
-    <script src="js/games/ui.js"></script>
 
-    <!-- Pump Arena RPG Module -->
+    <!-- UI Modules (load order matters) -->
+    <script src="js/games/ui/rotation.js"></script>
+    <script src="js/games/ui/leaderboard.js"></script>
+    <script src="js/games/ui/competitive.js"></script>
+    <script src="js/games/ui/grid.js"></script>
+    <script src="js/games/ui/modal.js"></script>
+    <script src="js/games/ui/index.js"></script>
+
+    <!-- Pump Arena RPG Module - DISABLED (not MVP ready)
     <script src="js/games/pumparena/rpgstate.js"></script>
     <script src="js/games/pumparena/character.js"></script>
     <script src="js/games/pumparena/daily.js"></script>
@@ -722,7 +694,6 @@
     <script src="js/games/pumparena/equipment.js"></script>
     <script src="js/games/pumparena/trading.js"></script>
     <script src="js/games/pumparena/cosmetics.js"></script>
-    <!-- Pump Arena Expansion Modules -->
     <script src="js/games/pumparena/premium-effects.js"></script>
     <script src="js/games/pumparena/combat-animations.js"></script>
     <script src="js/games/pumparena/reward-feedback.js"></script>
@@ -738,6 +709,7 @@
     <script src="js/games/pumparena/tutorial-combat.js"></script>
     <script src="js/games/pumparena/effects-integration.js"></script>
     <script src="js/games/pumparena/index.js"></script>
+    -->
 
     <!-- Shop V2 Module -->
     <script src="js/games/shop/placeholders.js"></script>
@@ -773,6 +745,7 @@
     <script src="js/games/shared/input.js"></script>
     <script src="js/games/shared/intervals.js"></script>
     <script src="js/games/shared/timing.js"></script>
+    <script src="js/games/shared/juice.js"></script>
     <script src="js/games/shared/index.js"></script>
 
     <!-- Game Engines (Modular) -->

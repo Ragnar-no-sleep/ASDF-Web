@@ -61,7 +61,7 @@ let ScrollTrigger = null;
 let isLoaded = false;
 
 /**
- * Load GSAP library dynamically
+ * Load GSAP library dynamically via script tag (IIFE libraries don't work with ES module import)
  * @returns {Promise<Object>}
  */
 async function loadGSAP() {
@@ -75,27 +75,39 @@ async function loadGSAP() {
     return gsap;
   }
 
-  try {
-    // Dynamic import from CDN
-    const gsapModule = await import('https://unpkg.com/gsap@3.12.4/dist/gsap.min.js');
-    gsap = gsapModule.gsap || window.gsap;
+  // Load via script tag (GSAP is IIFE, not ES module)
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/gsap@3.12.4/dist/gsap.min.js';
+    script.async = true;
+    script.onload = () => {
+      gsap = window.gsap;
+      isLoaded = true;
+      console.log('[Animations] GSAP loaded');
 
-    // Try to load ScrollTrigger
-    try {
-      await import('https://unpkg.com/gsap@3.12.4/dist/ScrollTrigger.min.js');
-      ScrollTrigger = window.ScrollTrigger;
-      gsap.registerPlugin(ScrollTrigger);
-    } catch (e) {
-      console.warn('[Animations] ScrollTrigger not loaded:', e.message);
-    }
-
-    isLoaded = true;
-    console.log('[Animations] GSAP loaded');
-    return gsap;
-  } catch (error) {
-    console.warn('[Animations] GSAP load failed, using CSS fallback:', error.message);
-    return null;
-  }
+      // Try to load ScrollTrigger
+      const scrollScript = document.createElement('script');
+      scrollScript.src = 'https://unpkg.com/gsap@3.12.4/dist/ScrollTrigger.min.js';
+      scrollScript.async = true;
+      scrollScript.onload = () => {
+        ScrollTrigger = window.ScrollTrigger;
+        if (gsap && ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+        resolve(gsap);
+      };
+      scrollScript.onerror = () => {
+        console.warn('[Animations] ScrollTrigger not loaded');
+        resolve(gsap);
+      };
+      document.head.appendChild(scrollScript);
+    };
+    script.onerror = () => {
+      console.warn('[Animations] GSAP load failed, using CSS fallback');
+      resolve(null);
+    };
+    document.head.appendChild(script);
+  });
 }
 
 // ============================================

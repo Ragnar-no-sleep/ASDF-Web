@@ -19,10 +19,10 @@ import {
   compileTransaction,
   getBase64Encoder,
   pipe
-} from '@solana/kit';
+} from 'https://esm.sh/@solana/kit@5';
 
 // System Program for SOL transfers
-import { getTransferSolInstruction } from '@solana-program/system';
+import { getTransferSolInstruction } from 'https://esm.sh/@solana-program/system@0.7';
 
 // Token Program for SPL transfers
 import {
@@ -30,7 +30,7 @@ import {
   findAssociatedTokenPda,
   getCreateAssociatedTokenIdempotentInstruction,
   TOKEN_PROGRAM_ADDRESS
-} from '@solana-program/token';
+} from 'https://esm.sh/@solana-program/token@0.5';
 
 import { SolanaClient, ASDF_TOKEN_MINT, TOKEN_DECIMALS, solToLamports } from './client.js';
 import { WalletManager } from './wallet-manager.js';

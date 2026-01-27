@@ -40,7 +40,7 @@ const _modifyStoryGateFactionStanding = (id, amount) => {
     window.PumpArenaState?.save?.();
     return state.faction.standing[id];
 };
-const recordStoryGateDecline = (gateId) => {
+const _recordStoryGateDeclineLocal = (gateId) => {
     const state = getRPGState();
     if (!state.faction) return;
     state.faction.storyGatesDeclined = state.faction.storyGatesDeclined || {};
@@ -49,7 +49,7 @@ const recordStoryGateDecline = (gateId) => {
     state.faction.storyGatesCooldowns[gateId] = Date.now() + 86400000;
     window.PumpArenaState?.save?.();
 };
-const getStoryGateDeclineCount = (gateId) => getFactionState().storyGatesDeclined?.[gateId] || 0;
+const _getStoryGateDeclineCountLocal = (gateId) => getFactionState().storyGatesDeclined?.[gateId] || 0;
 const isStoryGateOnCooldown = (gateId) => {
     const cooldown = getFactionState().storyGatesCooldowns?.[gateId] || 0;
     return Date.now() < cooldown;

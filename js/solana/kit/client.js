@@ -10,7 +10,7 @@
 'use strict';
 
 // ============================================
-// IMPORTS (via importmap in HTML)
+// IMPORTS (direct from esm.sh CDN)
 // ============================================
 
 import {
@@ -20,7 +20,7 @@ import {
   lamports,
   getBase58Decoder,
   getBase58Encoder
-} from '@solana/kit';
+} from 'https://esm.run/@solana/web3.js@2';
 
 // ============================================
 // CONFIGURATION
@@ -306,7 +306,7 @@ export function isValidAddress(addressStr) {
 // ============================================
 
 export { SolanaClient, ASDF_TOKEN_MINT, TOKEN_DECIMALS };
-export { address, lamports } from '@solana/kit';
+export { address, lamports } from 'https://esm.run/@solana/web3.js@2';
 
 // Default export
 export default SolanaClient;

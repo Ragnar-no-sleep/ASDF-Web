@@ -30,6 +30,37 @@ export default defineConfig({
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',
+        // Manual chunks for better code splitting
+        manualChunks: id => {
+          // Three.js and related
+          if (id.includes('three-renderer') || id.includes('node_modules/three')) {
+            return 'three-renderer';
+          }
+          // SVG renderer fallback
+          if (id.includes('svg-renderer')) {
+            return 'svg-renderer';
+          }
+          // Performance monitoring
+          if (id.includes('renderer/performance')) {
+            return 'performance';
+          }
+          // Large data files - courses and formations
+          if (id.includes('data/courses') || id.includes('data/formations')) {
+            return 'courses-data';
+          }
+          // Skills data
+          if (id.includes('data/skills')) {
+            return 'skills-data';
+          }
+          // Yggdrasil unified (heavy component)
+          if (id.includes('yggdrasil-unified')) {
+            return 'yggdrasil-unified';
+          }
+          // Games engine
+          if (id.includes('js/games/')) {
+            return 'games';
+          }
+        },
       },
     },
 
@@ -45,6 +76,14 @@ export default defineConfig({
     port: 5173,
     open: '/',
     cors: true,
+    proxy: {
+      // Proxy API calls to avoid CORS in development
+      '/api': {
+        target: 'https://asdf-api.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
 
   // Resolve aliases

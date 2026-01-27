@@ -371,17 +371,10 @@ function updateWalletUI(publicKey) {
 
 function updateAccessUI() {
   const accessAll = document.getElementById('access-all');
-  const hasFullAccess = appState.isHolder || testMode;
-
-  if (hasFullAccess) {
-    accessAll.classList.remove('locked');
-    accessAll.classList.add('unlocked');
-    accessAll.querySelector('strong').textContent = testMode ? 'Test Mode' : 'Unlocked';
-  } else {
-    accessAll.classList.add('locked');
-    accessAll.classList.remove('unlocked');
-    accessAll.querySelector('strong').textContent = 'Holders Only';
-  }
+  // All games accessible - no holder restriction
+  accessAll.classList.remove('locked');
+  accessAll.classList.add('unlocked');
+  accessAll.querySelector('strong').textContent = 'All Access';
 }
 
 // ============================================
@@ -451,19 +444,10 @@ function endCompetitiveSession() {
  * @returns {boolean} true if competitive mode is available
  */
 function canPlayCompetitive(gameId) {
-  // No wallet = no competitive
-  if (!appState.wallet && !testMode) return false;
-
-  // Time exhausted = no competitive
+  // All games accessible - no holder restriction
+  // Only check time limit
   if (getCompetitiveTimeRemaining() <= 0) return false;
-
-  // Get current featured game
-  const currentGame = getCurrentGame();
-  const isFeatured = gameId === currentGame.id;
-
-  // Wallet connected = featured game only
-  // Holder 1M+ or testMode = all games
-  return isFeatured || appState.isHolder || testMode;
+  return true;
 }
 
 /**

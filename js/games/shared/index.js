@@ -15,6 +15,7 @@ const GameShared = {
     Canvas: null,
     Input: null,
     Intervals: null,
+    Juice: null,
 
     initialized: false,
 
@@ -32,6 +33,7 @@ const GameShared = {
         this.Canvas = typeof CanvasManager !== 'undefined' ? CanvasManager : null;
         this.Input = typeof InputManager !== 'undefined' ? InputManager : null;
         this.Intervals = typeof IntervalManager !== 'undefined' ? IntervalManager : null;
+        this.Juice = typeof GameJuice !== 'undefined' ? GameJuice : null;
 
         // Validate all modules loaded
         const missing = [];
@@ -41,6 +43,7 @@ const GameShared = {
         if (!this.Canvas) missing.push('canvas.js');
         if (!this.Input) missing.push('input.js');
         if (!this.Intervals) missing.push('intervals.js');
+        if (!this.Juice) missing.push('juice.js');
 
         if (missing.length > 0) {
             console.warn('[GameShared] Missing modules:', missing.join(', '));
@@ -59,15 +62,18 @@ const GameShared = {
     createContext(gameId, canvas) {
         if (!this.initialized) this.init();
 
+        const ctx = canvas ? canvas.getContext('2d') : null;
         const intervals = this.Intervals ? this.Intervals.create() : null;
         const input = this.Input && canvas ? this.Input.create({ canvas }) : null;
+        const juice = this.Juice && canvas && ctx ? this.Juice.create(canvas, ctx) : null;
 
         return {
             gameId,
             canvas,
-            ctx: canvas ? canvas.getContext('2d') : null,
+            ctx,
             intervals,
             input,
+            juice,
 
             // Convenience methods
             updateScore: (score) => updateScore(gameId, score),
@@ -79,6 +85,7 @@ const GameShared = {
             cleanup() {
                 if (intervals) intervals.cleanup();
                 if (input) input.cleanup();
+                if (juice) juice.cleanup();
             }
         };
     }
