@@ -111,6 +111,7 @@ data/
 !src/data/
 !js/build/data/
 !js/shared/data/
+!js/dashboard/data/
 
 # Backups
 *.bak
