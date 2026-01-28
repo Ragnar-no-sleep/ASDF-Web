@@ -8,6 +8,78 @@
 'use strict';
 
 const ModalUI = {
+  /** @type {Element|null} Previously focused element before modal opened */
+  _previousFocus: null,
+
+  /** @type {Function|null} Keydown handler for focus trap */
+  _focusTrapHandler: null,
+
+  /**
+   * Get focusable elements within a container
+   * @param {Element} container
+   * @returns {Element[]}
+   */
+  _getFocusableElements(container) {
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    return Array.from(container.querySelectorAll(selector)).filter(el => !el.disabled);
+  },
+
+  /**
+   * Set up focus trap for modal
+   * @param {Element} modal
+   */
+  _setupFocusTrap(modal) {
+    // Store previous focus to restore later
+    this._previousFocus = document.activeElement;
+
+    const focusableElements = this._getFocusableElements(modal);
+    if (focusableElements.length === 0) return;
+
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+
+    // Focus first element
+    firstFocusable.focus();
+
+    // Handle tab key to trap focus
+    this._focusTrapHandler = e => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    };
+
+    modal.addEventListener('keydown', this._focusTrapHandler);
+  },
+
+  /**
+   * Remove focus trap and restore previous focus
+   * @param {Element} modal
+   */
+  _removeFocusTrap(modal) {
+    if (this._focusTrapHandler) {
+      modal.removeEventListener('keydown', this._focusTrapHandler);
+      this._focusTrapHandler = null;
+    }
+
+    // Restore previous focus
+    if (this._previousFocus && typeof this._previousFocus.focus === 'function') {
+      this._previousFocus.focus();
+      this._previousFocus = null;
+    }
+  },
+
   /**
    * Generate all game modals
    */
@@ -15,7 +87,8 @@ const ModalUI = {
     const container = document.getElementById('game-modals');
     if (!container) return;
 
-    container.innerHTML = GAMES.map(game => `
+    container.innerHTML = GAMES.map(
+      game => `
         <div class="game-modal" id="modal-${game.id}">
             <div class="game-modal-content">
                 <div class="game-modal-header">
@@ -71,7 +144,8 @@ const ModalUI = {
                 </div>
             </div>
         </div>
-    `).join('');
+    `
+    ).join('');
   },
 
   /**
@@ -85,7 +159,11 @@ const ModalUI = {
 
     // All games accessible - no holder restriction
     const modal = document.getElementById(`modal-${gameId}`);
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      // Set up focus trap for accessibility
+      this._setupFocusTrap(modal);
+    }
     document.body.style.overflow = 'hidden';
 
     // Load mini leaderboard for this game
@@ -100,7 +178,11 @@ const ModalUI = {
     if (!isValidGameId(gameId)) return;
 
     const modal = document.getElementById(`modal-${gameId}`);
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('active');
+      // Remove focus trap and restore previous focus
+      this._removeFocusTrap(modal);
+    }
     document.body.style.overflow = '';
 
     const overlay = document.getElementById(`overlay-${gameId}`);
