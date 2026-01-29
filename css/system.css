@@ -20,6 +20,10 @@
   --bg-hover: #18181c;
   --bg-active: #1f1f24;
 
+  /* Surface aliases (backwards compatibility) */
+  --surface-default: var(--bg-surface);
+  --surface-elevated: var(--bg-elevated);
+
   /* Borders - subtle hierarchy */
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.1);
@@ -127,10 +131,18 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* UI micro-interactions */
   --duration-fast: 150ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
   --duration-slower: 500ms;
+
+  /* Fibonacci timings (for animations - fib[n] * 100ms) */
+  --fib-quick: 300ms; /* fib[3] */
+  --fib-normal: 500ms; /* fib[4] */
+  --fib-slow: 800ms; /* fib[5] */
+  --fib-slower: 1300ms; /* fib[6] */
+  --fib-extended: 2100ms; /* fib[7] */
 
   /* ===== Z-INDEX ===== */
 
