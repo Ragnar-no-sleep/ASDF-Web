@@ -1,7 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "",
+  "framework": null,
+  "installCommand": "echo 'No install needed'",
+  "buildCommand": "echo 'No build needed'",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/story", "destination": "/learn.html" },
@@ -28,6 +30,5 @@
       "source": "/css/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
-  ],
-  "ignoreCommand": "exit 0"
+  ]
 }
