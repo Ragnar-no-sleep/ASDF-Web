@@ -73,6 +73,8 @@ async function initialize() {
       max: DB_CONFIG.pool.max,
       idleTimeoutMillis: DB_CONFIG.pool.idleTimeoutMs,
       connectionTimeoutMillis: DB_CONFIG.pool.connectionTimeoutMs,
+      // Schema isolation: all ASDF tables in 'asdf' schema
+      options: '-c search_path=asdf,public',
     });
 
     // Test connection

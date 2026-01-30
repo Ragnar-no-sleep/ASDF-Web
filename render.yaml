@@ -1,18 +1,55 @@
+# ===========================================
+# ASDF-WEB RENDER BLUEPRINT
+# ===========================================
+# Owns shared infrastructure (PostgreSQL + Redis)
+# Region: Oregon (starter tier features)
+#
+# "φ distrusts φ" - κυνικός
+
+# ===========================================
+# SHARED INFRASTRUCTURE
+# ===========================================
+databases:
+  - name: asdf-shared-db
+    region: oregon
+    plan: starter
+    postgresMajorVersion: 16
+    ipAllowList: []  # Internal only
+
 services:
+  # ===========================================
+  # SHARED REDIS
+  # ===========================================
+  - type: redis
+    name: asdf-shared-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Internal only
+
   # ===========================================
   # FRONTEND - Web Static Server
   # ===========================================
   - type: web
-    name: asdf-web
+    name: asdf-gateway
     runtime: node
-    region: frankfurt
-    plan: free
+    region: oregon
+    plan: starter
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asdf-shared-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: asdf-shared-redis
+          property: connectionString
 
   # ===========================================
   # API - Backend Server
@@ -20,8 +57,8 @@ services:
   - type: web
     name: asdf-api
     runtime: node
-    region: frankfurt
-    plan: free
+    region: oregon
+    plan: starter
     rootDir: api
     buildCommand: npm install
     startCommand: npm start
@@ -33,6 +70,23 @@ services:
       - key: API_PORT
         value: 3001
 
+      # Database (shared)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asdf-shared-db
+          property: connectionString
+
+      # Redis (shared)
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: asdf-shared-redis
+          property: connectionString
+      - key: STORAGE_BACKEND
+        value: redis
+      - key: REDIS_PREFIX
+        value: "asdf:"
+
       # Helius RPC (set in Render dashboard)
       - key: HELIUS_API_KEY
         sync: false
@@ -43,24 +97,14 @@ services:
       - key: JWT_SECRET
         sync: false
 
-      # CORS - Update with your actual domains
+      # CORS
       - key: ALLOWED_ORIGINS
-        value: https://asdf-web.onrender.com,https://alonisthe.dev
+        value: https://asdf-gateway.onrender.com,https://alonisthe.dev
 
       # Solana
       - key: ASDF_TOKEN_MINT
         value: 9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump
 
-      # Redis Storage (Cache)
-      - key: STORAGE_BACKEND
-        value: redis
-      - key: REDIS_URL
-        sync: false
-      - key: REDIS_PREFIX
-        value: "asdf:"
-      - key: REDIS_API_KEY
-        sync: false
-
-      # PostgreSQL Database (set in Render dashboard)
-      - key: DATABASE_URL
-        sync: false
+      # CYNIC Integration (future)
+      - key: CYNIC_MCP_URL
+        value: https://cynic-mcp.onrender.com
