@@ -21,10 +21,10 @@ const { getStorage } = require('./storage');
 // ============================================
 
 const DB_CONFIG = {
-  // Connection pool
+  // Connection pool - sized for production load
   pool: {
-    min: 2,
-    max: 10,
+    min: 5, // Increased from 2 for faster response
+    max: 20, // Increased from 10 for concurrent requests
     idleTimeoutMs: 30000,
     connectionTimeoutMs: 5000,
   },
@@ -425,6 +425,39 @@ const MIGRATIONS = [
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS engage_tier SMALLINT DEFAULT 0;
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS discount_applied INTEGER DEFAULT 0;
             ALTER TABLE purchases ADD COLUMN IF NOT EXISTS xp_granted INTEGER DEFAULT 0;
+        `,
+  },
+  {
+    version: 5,
+    name: 'performance_indexes',
+    up: `
+            -- ============================================
+            -- PERFORMANCE OPTIMIZATION: Additional Indexes
+            -- Based on AUDIT-SYNTHESIS-K1 findings
+            -- ============================================
+
+            -- Sessions: Index for expired session cleanup
+            CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)
+                WHERE revoked = false;
+
+            -- Inventory: Index for wallet lookups
+            CREATE INDEX IF NOT EXISTS idx_inventory_wallet ON inventory(wallet);
+
+            -- Users: Index for activity queries
+            CREATE INDEX IF NOT EXISTS idx_users_last_seen ON users(last_seen DESC);
+
+            -- Burns: Composite index for timeframe queries
+            CREATE INDEX IF NOT EXISTS idx_burns_wallet_date ON burns(wallet, burned_at DESC);
+
+            -- Game scores: Index for wallet+game type queries
+            CREATE INDEX IF NOT EXISTS idx_scores_wallet_game ON game_scores(wallet, game_type);
+
+            -- Purchases: Index for wallet history
+            CREATE INDEX IF NOT EXISTS idx_purchases_wallet_date ON purchases(wallet, purchased_at DESC);
+
+            -- Session expiration: Add default expiration (24h) for new sessions
+            ALTER TABLE sessions
+                ALTER COLUMN expires_at SET DEFAULT NOW() + INTERVAL '24 hours';
         `,
   },
 ];
