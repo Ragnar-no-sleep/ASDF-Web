@@ -709,7 +709,10 @@ function walletRateLimiter(req, res, next) {
   walletRateLimits.set(wallet, walletData);
 
   if (walletData.count > WALLET_RATE_CONFIG.maxRequests) {
-    console.warn(`[RateLimit] Wallet ${wallet.slice(0, 8)}... exceeded limit`);
+    // SECURITY: Don't log wallet addresses in production
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[RateLimit] Wallet ${wallet.slice(0, 8)}... exceeded limit`);
+    }
     return res.status(429).json({
       error: 'Too many requests from this wallet',
       retryAfter: Math.ceil((walletData.windowStart + WALLET_RATE_CONFIG.windowMs - now) / 1000),

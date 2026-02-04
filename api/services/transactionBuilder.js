@@ -21,15 +21,15 @@
 'use strict';
 
 const {
-    Connection,
-    PublicKey,
-    Transaction,
-    VersionedTransaction,
-    TransactionMessage,
-    ComputeBudgetProgram,
-    AddressLookupTableAccount,
-    SystemProgram,
-    LAMPORTS_PER_SOL
+  Connection,
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+  TransactionMessage,
+  ComputeBudgetProgram,
+  AddressLookupTableAccount,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
 } = require('@solana/web3.js');
 
 const { logAudit } = require('./leaderboard');
@@ -39,39 +39,39 @@ const { logAudit } = require('./leaderboard');
 // ============================================
 
 const TX_CONFIG = {
-    // Compute budget defaults
-    defaultComputeUnits: 200000,
-    maxComputeUnits: 1400000,
-    minComputeUnits: 50000,
+  // Compute budget defaults
+  defaultComputeUnits: 200000,
+  maxComputeUnits: 1400000,
+  minComputeUnits: 50000,
 
-    // Priority fee bounds (microLamports per CU)
-    minPriorityFee: 1,
-    maxPriorityFee: 10000000,  // 10 SOL safety cap
-    defaultPriorityFee: 1000,
+  // Priority fee bounds (microLamports per CU)
+  minPriorityFee: 1,
+  maxPriorityFee: 10000000, // 10 SOL safety cap
+  defaultPriorityFee: 1000,
 
-    // Transaction settings
-    maxInstructions: 20,
-    maxSigners: 10,
-    maxLookupTables: 4,
+  // Transaction settings
+  maxInstructions: 20,
+  maxSigners: 10,
+  maxLookupTables: 4,
 
-    // Retry settings
-    maxRetries: 3,
-    retryDelay: 2000,
-    confirmationTimeout: 60000,
+  // Retry settings
+  maxRetries: 3,
+  retryDelay: 2000,
+  confirmationTimeout: 60000,
 
-    // Simulation settings
-    simulationCommitment: 'confirmed',
-    sendCommitment: 'confirmed'
+  // Simulation settings
+  simulationCommitment: 'confirmed',
+  sendCommitment: 'confirmed',
 };
 
 // Transaction types for tracking
 const TX_TYPES = {
-    BURN: 'burn',
-    TRANSFER: 'transfer',
-    SWAP: 'swap',
-    NFT_TRANSFER: 'nft_transfer',
-    CNFT_TRANSFER: 'cnft_transfer',
-    CUSTOM: 'custom'
+  BURN: 'burn',
+  TRANSFER: 'transfer',
+  SWAP: 'swap',
+  NFT_TRANSFER: 'nft_transfer',
+  CNFT_TRANSFER: 'cnft_transfer',
+  CUSTOM: 'custom',
 };
 
 // ============================================
@@ -85,16 +85,17 @@ let connection = null;
  * @returns {Connection}
  */
 function getConnection() {
-    if (!connection) {
-        const rpcUrl = process.env.HELIUS_RPC_URL ||
-            `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`;
+  if (!connection) {
+    const rpcUrl =
+      process.env.HELIUS_RPC_URL ||
+      `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`;
 
-        connection = new Connection(rpcUrl, {
-            commitment: TX_CONFIG.sendCommitment,
-            confirmTransactionInitialTimeout: TX_CONFIG.confirmationTimeout
-        });
-    }
-    return connection;
+    connection = new Connection(rpcUrl, {
+      commitment: TX_CONFIG.sendCommitment,
+      confirmTransactionInitialTimeout: TX_CONFIG.confirmationTimeout,
+    });
+  }
+  return connection;
 }
 
 // ============================================
@@ -102,267 +103,263 @@ function getConnection() {
 // ============================================
 
 class TransactionBuilder {
-    constructor(options = {}) {
-        this.feePayer = null;
-        this.instructions = [];
-        this.signers = [];
-        this.lookupTables = [];
-        this.computeUnits = null;
-        this.priorityFee = null;
-        this.useVersioned = options.useVersioned ?? true;
-        this.type = options.type || TX_TYPES.CUSTOM;
-        this.metadata = options.metadata || {};
+  constructor(options = {}) {
+    this.feePayer = null;
+    this.instructions = [];
+    this.signers = [];
+    this.lookupTables = [];
+    this.computeUnits = null;
+    this.priorityFee = null;
+    this.useVersioned = options.useVersioned ?? true;
+    this.type = options.type || TX_TYPES.CUSTOM;
+    this.metadata = options.metadata || {};
+  }
+
+  /**
+   * Set fee payer
+   * @param {string|PublicKey} payer - Fee payer public key
+   * @returns {TransactionBuilder}
+   */
+  setFeePayer(payer) {
+    this.feePayer = typeof payer === 'string' ? new PublicKey(payer) : payer;
+    return this;
+  }
+
+  /**
+   * Add instruction
+   * @param {TransactionInstruction} instruction - Instruction to add
+   * @returns {TransactionBuilder}
+   */
+  addInstruction(instruction) {
+    if (this.instructions.length >= TX_CONFIG.maxInstructions) {
+      throw new Error(`Maximum ${TX_CONFIG.maxInstructions} instructions allowed`);
+    }
+    this.instructions.push(instruction);
+    return this;
+  }
+
+  /**
+   * Add multiple instructions
+   * @param {TransactionInstruction[]} instructions - Instructions to add
+   * @returns {TransactionBuilder}
+   */
+  addInstructions(instructions) {
+    for (const ix of instructions) {
+      this.addInstruction(ix);
+    }
+    return this;
+  }
+
+  /**
+   * Set compute units
+   * @param {number} units - Compute units
+   * @returns {TransactionBuilder}
+   */
+  setComputeUnits(units) {
+    this.computeUnits = Math.min(
+      Math.max(units, TX_CONFIG.minComputeUnits),
+      TX_CONFIG.maxComputeUnits
+    );
+    return this;
+  }
+
+  /**
+   * Set priority fee
+   * @param {number} microLamports - Priority fee in microLamports per CU
+   * @returns {TransactionBuilder}
+   */
+  setPriorityFee(microLamports) {
+    this.priorityFee = Math.min(
+      Math.max(microLamports, TX_CONFIG.minPriorityFee),
+      TX_CONFIG.maxPriorityFee
+    );
+    return this;
+  }
+
+  /**
+   * Add address lookup table
+   * @param {AddressLookupTableAccount} table - Lookup table
+   * @returns {TransactionBuilder}
+   */
+  addLookupTable(table) {
+    if (this.lookupTables.length >= TX_CONFIG.maxLookupTables) {
+      throw new Error(`Maximum ${TX_CONFIG.maxLookupTables} lookup tables allowed`);
+    }
+    this.lookupTables.push(table);
+    return this;
+  }
+
+  /**
+   * Set transaction type for tracking
+   * @param {string} type - Transaction type
+   * @returns {TransactionBuilder}
+   */
+  setType(type) {
+    this.type = type;
+    return this;
+  }
+
+  /**
+   * Set metadata for tracking
+   * @param {Object} metadata - Metadata object
+   * @returns {TransactionBuilder}
+   */
+  setMetadata(metadata) {
+    this.metadata = { ...this.metadata, ...metadata };
+    return this;
+  }
+
+  /**
+   * Build compute budget instructions
+   * @returns {TransactionInstruction[]}
+   */
+  buildComputeBudgetInstructions() {
+    const instructions = [];
+
+    // Set compute unit limit
+    const units = this.computeUnits || TX_CONFIG.defaultComputeUnits;
+    instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units }));
+
+    // Set priority fee
+    const fee = this.priorityFee || TX_CONFIG.defaultPriorityFee;
+    instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee }));
+
+    return instructions;
+  }
+
+  /**
+   * Build legacy transaction
+   * @param {string} blockhash - Recent blockhash
+   * @param {number} lastValidBlockHeight - Last valid block height
+   * @returns {Transaction}
+   */
+  buildLegacyTransaction(blockhash, lastValidBlockHeight) {
+    if (!this.feePayer) {
+      throw new Error('Fee payer is required');
     }
 
-    /**
-     * Set fee payer
-     * @param {string|PublicKey} payer - Fee payer public key
-     * @returns {TransactionBuilder}
-     */
-    setFeePayer(payer) {
-        this.feePayer = typeof payer === 'string' ? new PublicKey(payer) : payer;
-        return this;
+    if (this.instructions.length === 0) {
+      throw new Error('At least one instruction is required');
     }
 
-    /**
-     * Add instruction
-     * @param {TransactionInstruction} instruction - Instruction to add
-     * @returns {TransactionBuilder}
-     */
-    addInstruction(instruction) {
-        if (this.instructions.length >= TX_CONFIG.maxInstructions) {
-            throw new Error(`Maximum ${TX_CONFIG.maxInstructions} instructions allowed`);
-        }
-        this.instructions.push(instruction);
-        return this;
+    const transaction = new Transaction({
+      feePayer: this.feePayer,
+      blockhash,
+      lastValidBlockHeight,
+    });
+
+    // Add compute budget instructions first
+    const computeIxs = this.buildComputeBudgetInstructions();
+    for (const ix of computeIxs) {
+      transaction.add(ix);
     }
 
-    /**
-     * Add multiple instructions
-     * @param {TransactionInstruction[]} instructions - Instructions to add
-     * @returns {TransactionBuilder}
-     */
-    addInstructions(instructions) {
-        for (const ix of instructions) {
-            this.addInstruction(ix);
-        }
-        return this;
+    // Add user instructions
+    for (const ix of this.instructions) {
+      transaction.add(ix);
     }
 
-    /**
-     * Set compute units
-     * @param {number} units - Compute units
-     * @returns {TransactionBuilder}
-     */
-    setComputeUnits(units) {
-        this.computeUnits = Math.min(
-            Math.max(units, TX_CONFIG.minComputeUnits),
-            TX_CONFIG.maxComputeUnits
-        );
-        return this;
+    return transaction;
+  }
+
+  /**
+   * Build versioned transaction (v0)
+   * @param {string} blockhash - Recent blockhash
+   * @returns {VersionedTransaction}
+   */
+  buildVersionedTransaction(blockhash) {
+    if (!this.feePayer) {
+      throw new Error('Fee payer is required');
     }
 
-    /**
-     * Set priority fee
-     * @param {number} microLamports - Priority fee in microLamports per CU
-     * @returns {TransactionBuilder}
-     */
-    setPriorityFee(microLamports) {
-        this.priorityFee = Math.min(
-            Math.max(microLamports, TX_CONFIG.minPriorityFee),
-            TX_CONFIG.maxPriorityFee
-        );
-        return this;
+    if (this.instructions.length === 0) {
+      throw new Error('At least one instruction is required');
     }
 
-    /**
-     * Add address lookup table
-     * @param {AddressLookupTableAccount} table - Lookup table
-     * @returns {TransactionBuilder}
-     */
-    addLookupTable(table) {
-        if (this.lookupTables.length >= TX_CONFIG.maxLookupTables) {
-            throw new Error(`Maximum ${TX_CONFIG.maxLookupTables} lookup tables allowed`);
-        }
-        this.lookupTables.push(table);
-        return this;
+    // Combine compute budget and user instructions
+    const allInstructions = [...this.buildComputeBudgetInstructions(), ...this.instructions];
+
+    // Create message
+    const message = new TransactionMessage({
+      payerKey: this.feePayer,
+      recentBlockhash: blockhash,
+      instructions: allInstructions,
+    });
+
+    // Compile with lookup tables if available
+    const compiledMessage =
+      this.lookupTables.length > 0
+        ? message.compileToV0Message(this.lookupTables)
+        : message.compileToV0Message();
+
+    return new VersionedTransaction(compiledMessage);
+  }
+
+  /**
+   * Build transaction (auto-selects versioned or legacy)
+   * @returns {Promise<Object>}
+   */
+  async build() {
+    const conn = getConnection();
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(
+      TX_CONFIG.sendCommitment
+    );
+
+    let transaction;
+    let isVersioned;
+
+    if (this.useVersioned && this.lookupTables.length === 0) {
+      // Use versioned even without lookup tables for future compatibility
+      transaction = this.buildVersionedTransaction(blockhash);
+      isVersioned = true;
+    } else if (this.useVersioned && this.lookupTables.length > 0) {
+      transaction = this.buildVersionedTransaction(blockhash);
+      isVersioned = true;
+    } else {
+      transaction = this.buildLegacyTransaction(blockhash, lastValidBlockHeight);
+      isVersioned = false;
     }
 
-    /**
-     * Set transaction type for tracking
-     * @param {string} type - Transaction type
-     * @returns {TransactionBuilder}
-     */
-    setType(type) {
-        this.type = type;
-        return this;
-    }
+    return {
+      transaction,
+      blockhash,
+      lastValidBlockHeight,
+      isVersioned,
+      type: this.type,
+      metadata: this.metadata,
+      computeUnits: this.computeUnits || TX_CONFIG.defaultComputeUnits,
+      priorityFee: this.priorityFee || TX_CONFIG.defaultPriorityFee,
+    };
+  }
 
-    /**
-     * Set metadata for tracking
-     * @param {Object} metadata - Metadata object
-     * @returns {TransactionBuilder}
-     */
-    setMetadata(metadata) {
-        this.metadata = { ...this.metadata, ...metadata };
-        return this;
-    }
+  /**
+   * Build and serialize for client signing
+   * @returns {Promise<Object>}
+   */
+  async buildForSigning() {
+    const result = await this.build();
 
-    /**
-     * Build compute budget instructions
-     * @returns {TransactionInstruction[]}
-     */
-    buildComputeBudgetInstructions() {
-        const instructions = [];
+    // Serialize transaction
+    const serialized = result.isVersioned
+      ? Buffer.from(result.transaction.serialize()).toString('base64')
+      : result.transaction
+          .serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          })
+          .toString('base64');
 
-        // Set compute unit limit
-        const units = this.computeUnits || TX_CONFIG.defaultComputeUnits;
-        instructions.push(
-            ComputeBudgetProgram.setComputeUnitLimit({ units })
-        );
-
-        // Set priority fee
-        const fee = this.priorityFee || TX_CONFIG.defaultPriorityFee;
-        instructions.push(
-            ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee })
-        );
-
-        return instructions;
-    }
-
-    /**
-     * Build legacy transaction
-     * @param {string} blockhash - Recent blockhash
-     * @param {number} lastValidBlockHeight - Last valid block height
-     * @returns {Transaction}
-     */
-    buildLegacyTransaction(blockhash, lastValidBlockHeight) {
-        if (!this.feePayer) {
-            throw new Error('Fee payer is required');
-        }
-
-        if (this.instructions.length === 0) {
-            throw new Error('At least one instruction is required');
-        }
-
-        const transaction = new Transaction({
-            feePayer: this.feePayer,
-            blockhash,
-            lastValidBlockHeight
-        });
-
-        // Add compute budget instructions first
-        const computeIxs = this.buildComputeBudgetInstructions();
-        for (const ix of computeIxs) {
-            transaction.add(ix);
-        }
-
-        // Add user instructions
-        for (const ix of this.instructions) {
-            transaction.add(ix);
-        }
-
-        return transaction;
-    }
-
-    /**
-     * Build versioned transaction (v0)
-     * @param {string} blockhash - Recent blockhash
-     * @returns {VersionedTransaction}
-     */
-    buildVersionedTransaction(blockhash) {
-        if (!this.feePayer) {
-            throw new Error('Fee payer is required');
-        }
-
-        if (this.instructions.length === 0) {
-            throw new Error('At least one instruction is required');
-        }
-
-        // Combine compute budget and user instructions
-        const allInstructions = [
-            ...this.buildComputeBudgetInstructions(),
-            ...this.instructions
-        ];
-
-        // Create message
-        const message = new TransactionMessage({
-            payerKey: this.feePayer,
-            recentBlockhash: blockhash,
-            instructions: allInstructions
-        });
-
-        // Compile with lookup tables if available
-        const compiledMessage = this.lookupTables.length > 0
-            ? message.compileToV0Message(this.lookupTables)
-            : message.compileToV0Message();
-
-        return new VersionedTransaction(compiledMessage);
-    }
-
-    /**
-     * Build transaction (auto-selects versioned or legacy)
-     * @returns {Promise<Object>}
-     */
-    async build() {
-        const conn = getConnection();
-        const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(
-            TX_CONFIG.sendCommitment
-        );
-
-        let transaction;
-        let isVersioned;
-
-        if (this.useVersioned && this.lookupTables.length === 0) {
-            // Use versioned even without lookup tables for future compatibility
-            transaction = this.buildVersionedTransaction(blockhash);
-            isVersioned = true;
-        } else if (this.useVersioned && this.lookupTables.length > 0) {
-            transaction = this.buildVersionedTransaction(blockhash);
-            isVersioned = true;
-        } else {
-            transaction = this.buildLegacyTransaction(blockhash, lastValidBlockHeight);
-            isVersioned = false;
-        }
-
-        return {
-            transaction,
-            blockhash,
-            lastValidBlockHeight,
-            isVersioned,
-            type: this.type,
-            metadata: this.metadata,
-            computeUnits: this.computeUnits || TX_CONFIG.defaultComputeUnits,
-            priorityFee: this.priorityFee || TX_CONFIG.defaultPriorityFee
-        };
-    }
-
-    /**
-     * Build and serialize for client signing
-     * @returns {Promise<Object>}
-     */
-    async buildForSigning() {
-        const result = await this.build();
-
-        // Serialize transaction
-        const serialized = result.isVersioned
-            ? Buffer.from(result.transaction.serialize()).toString('base64')
-            : result.transaction.serialize({
-                requireAllSignatures: false,
-                verifySignatures: false
-            }).toString('base64');
-
-        return {
-            transaction: serialized,
-            blockhash: result.blockhash,
-            lastValidBlockHeight: result.lastValidBlockHeight,
-            isVersioned: result.isVersioned,
-            type: result.type,
-            computeUnits: result.computeUnits,
-            priorityFee: result.priorityFee,
-            estimatedFee: calculateEstimatedFee(result.computeUnits, result.priorityFee)
-        };
-    }
+    return {
+      transaction: serialized,
+      blockhash: result.blockhash,
+      lastValidBlockHeight: result.lastValidBlockHeight,
+      isVersioned: result.isVersioned,
+      type: result.type,
+      computeUnits: result.computeUnits,
+      priorityFee: result.priorityFee,
+      estimatedFee: calculateEstimatedFee(result.computeUnits, result.priorityFee),
+    };
+  }
 }
 
 // ============================================
@@ -376,16 +373,16 @@ class TransactionBuilder {
  * @returns {Object}
  */
 function calculateEstimatedFee(computeUnits, priorityFee) {
-    const baseFee = 5000; // 5000 lamports base fee
-    const priorityFeeLamports = Math.ceil((computeUnits * priorityFee) / 1_000_000);
-    const totalLamports = baseFee + priorityFeeLamports;
+  const baseFee = 5000; // 5000 lamports base fee
+  const priorityFeeLamports = Math.ceil((computeUnits * priorityFee) / 1_000_000);
+  const totalLamports = baseFee + priorityFeeLamports;
 
-    return {
-        baseFee: baseFee,
-        priorityFee: priorityFeeLamports,
-        total: totalLamports,
-        totalSol: totalLamports / LAMPORTS_PER_SOL
-    };
+  return {
+    baseFee: baseFee,
+    priorityFee: priorityFeeLamports,
+    total: totalLamports,
+    totalSol: totalLamports / LAMPORTS_PER_SOL,
+  };
 }
 
 /**
@@ -394,27 +391,26 @@ function calculateEstimatedFee(computeUnits, priorityFee) {
  * @returns {Promise<number>}
  */
 async function estimateComputeUnits(transaction) {
-    const conn = getConnection();
+  const conn = getConnection();
 
-    try {
-        const simulation = await conn.simulateTransaction(transaction, {
-            commitment: TX_CONFIG.simulationCommitment,
-            replaceRecentBlockhash: true
-        });
+  try {
+    const simulation = await conn.simulateTransaction(transaction, {
+      commitment: TX_CONFIG.simulationCommitment,
+      replaceRecentBlockhash: true,
+    });
 
-        if (simulation.value.err) {
-            console.warn('[TxBuilder] Simulation error:', simulation.value.err);
-            return TX_CONFIG.defaultComputeUnits;
-        }
-
-        // Add 20% buffer (Fibonacci ratio ~1.21)
-        const estimated = simulation.value.unitsConsumed || TX_CONFIG.defaultComputeUnits;
-        return Math.ceil(estimated * 1.21);
-
-    } catch (error) {
-        console.error('[TxBuilder] Simulation failed:', error.message);
-        return TX_CONFIG.defaultComputeUnits;
+    if (simulation.value.err) {
+      console.warn('[TxBuilder] Simulation error:', simulation.value.err);
+      return TX_CONFIG.defaultComputeUnits;
     }
+
+    // Add 20% buffer (Fibonacci ratio ~1.21)
+    const estimated = simulation.value.unitsConsumed || TX_CONFIG.defaultComputeUnits;
+    return Math.ceil(estimated * 1.21);
+  } catch (error) {
+    console.error('[TxBuilder] Simulation failed:', error.message);
+    return TX_CONFIG.defaultComputeUnits;
+  }
 }
 
 /**
@@ -423,23 +419,25 @@ async function estimateComputeUnits(transaction) {
  * @returns {Promise<AddressLookupTableAccount|null>}
  */
 async function loadLookupTable(address) {
-    const conn = getConnection();
+  const conn = getConnection();
 
-    try {
-        const pubkey = new PublicKey(address);
-        const response = await conn.getAddressLookupTable(pubkey);
+  try {
+    const pubkey = new PublicKey(address);
+    const response = await conn.getAddressLookupTable(pubkey);
 
-        if (!response.value) {
-            console.warn('[TxBuilder] Lookup table not found:', address);
-            return null;
-        }
-
-        return response.value;
-
-    } catch (error) {
-        console.error('[TxBuilder] Failed to load lookup table:', error.message);
-        return null;
+    if (!response.value) {
+      // SECURITY: Don't log addresses in production
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[TxBuilder] Lookup table not found:', address);
+      }
+      return null;
     }
+
+    return response.value;
+  } catch (error) {
+    console.error('[TxBuilder] Failed to load lookup table:', error.message);
+    return null;
+  }
 }
 
 /**
@@ -449,89 +447,91 @@ async function loadLookupTable(address) {
  * @returns {Promise<Object>}
  */
 async function sendAndConfirm(signedTransaction, options = {}) {
-    const {
-        maxRetries = TX_CONFIG.maxRetries,
-        skipPreflight = false,
-        commitment = TX_CONFIG.sendCommitment
-    } = options;
+  const {
+    maxRetries = TX_CONFIG.maxRetries,
+    skipPreflight = false,
+    commitment = TX_CONFIG.sendCommitment,
+  } = options;
 
-    const conn = getConnection();
-    const txBuffer = Buffer.from(signedTransaction, 'base64');
+  const conn = getConnection();
+  const txBuffer = Buffer.from(signedTransaction, 'base64');
 
-    let lastError;
+  let lastError;
 
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            // Deserialize to check if versioned
-            let transaction;
-            try {
-                transaction = VersionedTransaction.deserialize(txBuffer);
-            } catch {
-                transaction = Transaction.from(txBuffer);
-            }
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Deserialize to check if versioned
+      let transaction;
+      try {
+        transaction = VersionedTransaction.deserialize(txBuffer);
+      } catch {
+        transaction = Transaction.from(txBuffer);
+      }
 
-            // Send transaction
-            const signature = await conn.sendRawTransaction(txBuffer, {
-                skipPreflight,
-                preflightCommitment: commitment,
-                maxRetries: 0 // We handle retries ourselves
-            });
+      // Send transaction
+      const signature = await conn.sendRawTransaction(txBuffer, {
+        skipPreflight,
+        preflightCommitment: commitment,
+        maxRetries: 0, // We handle retries ourselves
+      });
 
-            console.log(`[TxBuilder] Sent transaction: ${signature.slice(0, 16)}...`);
+      console.log(`[TxBuilder] Sent transaction: ${signature.slice(0, 16)}...`);
 
-            // Wait for confirmation
-            const confirmation = await conn.confirmTransaction({
-                signature,
-                blockhash: transaction.message?.recentBlockhash || transaction.recentBlockhash,
-                lastValidBlockHeight: options.lastValidBlockHeight
-            }, commitment);
+      // Wait for confirmation
+      const confirmation = await conn.confirmTransaction(
+        {
+          signature,
+          blockhash: transaction.message?.recentBlockhash || transaction.recentBlockhash,
+          lastValidBlockHeight: options.lastValidBlockHeight,
+        },
+        commitment
+      );
 
-            if (confirmation.value.err) {
-                throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
-            }
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
 
-            logAudit('transaction_confirmed', {
-                signature: signature.slice(0, 16) + '...',
-                attempt: attempt + 1
-            });
+      logAudit('transaction_confirmed', {
+        signature: signature.slice(0, 16) + '...',
+        attempt: attempt + 1,
+      });
 
-            return {
-                success: true,
-                signature,
-                slot: confirmation.context?.slot,
-                confirmations: 1
-            };
+      return {
+        success: true,
+        signature,
+        slot: confirmation.context?.slot,
+        confirmations: 1,
+      };
+    } catch (error) {
+      lastError = error;
+      console.warn(`[TxBuilder] Attempt ${attempt + 1} failed:`, error.message);
 
-        } catch (error) {
-            lastError = error;
-            console.warn(`[TxBuilder] Attempt ${attempt + 1} failed:`, error.message);
+      // Check for non-retryable errors
+      const nonRetryable = [
+        'already been processed',
+        'Blockhash not found',
+        'block height exceeded',
+        'insufficient funds',
+      ];
 
-            // Check for non-retryable errors
-            const nonRetryable = [
-                'already been processed',
-                'Blockhash not found',
-                'block height exceeded',
-                'insufficient funds'
-            ];
+      if (nonRetryable.some(msg => error.message?.includes(msg))) {
+        break;
+      }
 
-            if (nonRetryable.some(msg => error.message?.includes(msg))) {
-                break;
-            }
-
-            if (attempt < maxRetries - 1) {
-                await new Promise(r => setTimeout(r, TX_CONFIG.retryDelay * (attempt + 1)));
-            }
-        }
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, TX_CONFIG.retryDelay * (attempt + 1)));
+      }
     }
+  }
 
-    logAudit('transaction_failed', {
-        error: lastError?.message?.slice(0, 100)
-    });
+  logAudit('transaction_failed', {
+    error: lastError?.message?.slice(0, 100),
+  });
 
-    return {
-        success: false,
-        error: lastError?.message || 'Transaction failed after retries'
-    };
+  return {
+    success: false,
+    error: lastError?.message || 'Transaction failed after retries',
+  };
 }
 
 // ============================================
@@ -546,23 +546,23 @@ async function sendAndConfirm(signedTransaction, options = {}) {
  * @returns {Promise<Object>}
  */
 async function buildSolTransfer(from, to, amountSol) {
-    const fromPubkey = new PublicKey(from);
-    const toPubkey = new PublicKey(to);
-    const lamports = Math.floor(amountSol * LAMPORTS_PER_SOL);
+  const fromPubkey = new PublicKey(from);
+  const toPubkey = new PublicKey(to);
+  const lamports = Math.floor(amountSol * LAMPORTS_PER_SOL);
 
-    const instruction = SystemProgram.transfer({
-        fromPubkey,
-        toPubkey,
-        lamports
-    });
+  const instruction = SystemProgram.transfer({
+    fromPubkey,
+    toPubkey,
+    lamports,
+  });
 
-    const builder = new TransactionBuilder({ type: TX_TYPES.TRANSFER })
-        .setFeePayer(fromPubkey)
-        .addInstruction(instruction)
-        .setComputeUnits(TX_CONFIG.minComputeUnits)
-        .setMetadata({ amount: amountSol, recipient: to });
+  const builder = new TransactionBuilder({ type: TX_TYPES.TRANSFER })
+    .setFeePayer(fromPubkey)
+    .addInstruction(instruction)
+    .setComputeUnits(TX_CONFIG.minComputeUnits)
+    .setMetadata({ amount: amountSol, recipient: to });
 
-    return builder.buildForSigning();
+  return builder.buildForSigning();
 }
 
 /**
@@ -572,21 +572,21 @@ async function buildSolTransfer(from, to, amountSol) {
  * @returns {Promise<Object>}
  */
 async function buildMemoTransaction(payer, message) {
-    const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+  const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
-    const instruction = {
-        keys: [],
-        programId: MEMO_PROGRAM_ID,
-        data: Buffer.from(message, 'utf-8')
-    };
+  const instruction = {
+    keys: [],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(message, 'utf-8'),
+  };
 
-    const builder = new TransactionBuilder({ type: TX_TYPES.CUSTOM })
-        .setFeePayer(payer)
-        .addInstruction(instruction)
-        .setComputeUnits(TX_CONFIG.minComputeUnits)
-        .setMetadata({ memo: message.slice(0, 50) });
+  const builder = new TransactionBuilder({ type: TX_TYPES.CUSTOM })
+    .setFeePayer(payer)
+    .addInstruction(instruction)
+    .setComputeUnits(TX_CONFIG.minComputeUnits)
+    .setMetadata({ memo: message.slice(0, 50) });
 
-    return builder.buildForSigning();
+  return builder.buildForSigning();
 }
 
 // ============================================
@@ -594,11 +594,11 @@ async function buildMemoTransaction(payer, message) {
 // ============================================
 
 const txMetrics = {
-    built: 0,
-    sent: 0,
-    confirmed: 0,
-    failed: 0,
-    totalFees: 0
+  built: 0,
+  sent: 0,
+  confirmed: 0,
+  failed: 0,
+  totalFees: 0,
 };
 
 /**
@@ -606,10 +606,10 @@ const txMetrics = {
  * @returns {Object}
  */
 function getMetrics() {
-    return {
-        ...txMetrics,
-        avgFee: txMetrics.confirmed > 0 ? txMetrics.totalFees / txMetrics.confirmed : 0
-    };
+  return {
+    ...txMetrics,
+    avgFee: txMetrics.confirmed > 0 ? txMetrics.totalFees / txMetrics.confirmed : 0,
+  };
 }
 
 // ============================================
@@ -617,23 +617,23 @@ function getMetrics() {
 // ============================================
 
 module.exports = {
-    // Builder class
-    TransactionBuilder,
+  // Builder class
+  TransactionBuilder,
 
-    // Helper functions
-    calculateEstimatedFee,
-    estimateComputeUnits,
-    loadLookupTable,
-    sendAndConfirm,
+  // Helper functions
+  calculateEstimatedFee,
+  estimateComputeUnits,
+  loadLookupTable,
+  sendAndConfirm,
 
-    // Pre-built templates
-    buildSolTransfer,
-    buildMemoTransaction,
+  // Pre-built templates
+  buildSolTransfer,
+  buildMemoTransaction,
 
-    // Metrics
-    getMetrics,
+  // Metrics
+  getMetrics,
 
-    // Configuration
-    TX_CONFIG,
-    TX_TYPES
+  // Configuration
+  TX_CONFIG,
+  TX_TYPES,
 };
