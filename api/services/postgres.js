@@ -907,11 +907,18 @@ async function seedShopItems(items) {
 }
 
 /**
- * Get shop catalog with filters
- * @param {Object} filters - { layer, tier, rarity, collection, is_active }
+ * Get shop catalog with filters and pagination
+ * @param {Object} filters - { layer, tier, rarity, collection_id, limit, offset }
  */
 async function getShopCatalog(filters = {}) {
-  const cacheKey = `shop:catalog:${JSON.stringify(filters)}`;
+  // Extract pagination params (not part of cache key for filtered results)
+  const limit = Math.min(filters.limit || 50, 100);
+  const offset = filters.offset || 0;
+  const filterKey = { ...filters };
+  delete filterKey.limit;
+  delete filterKey.offset;
+
+  const cacheKey = `shop:catalog:${JSON.stringify(filterKey)}:${limit}:${offset}`;
 
   return getWithCache(
     cacheKey,
@@ -941,16 +948,34 @@ async function getShopCatalog(filters = {}) {
       whereClause += ` AND (available_from IS NULL OR available_from <= NOW())`;
       whereClause += ` AND (available_until IS NULL OR available_until > NOW())`;
 
+      // Get total count for pagination metadata
+      const countResult = await query(
+        `SELECT COUNT(*) as total FROM shop_items ${whereClause}`,
+        params
+      );
+      const total = parseInt(countResult.rows[0]?.total || 0);
+
+      // Get paginated items
+      params.push(limit, offset);
       const result = await query(
         `
             SELECT * FROM shop_items
             ${whereClause}
             ORDER BY sort_order ASC, tier ASC, name ASC
+            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
         `,
         params
       );
 
-      return result.rows;
+      return {
+        items: result.rows,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + result.rows.length < total,
+        },
+      };
     },
     60
   ); // 1 minute cache
@@ -973,14 +998,25 @@ async function getShopItem(itemId) {
 }
 
 /**
- * Get user's shop inventory (owned items)
+ * Get user's shop inventory (owned items) with pagination
+ * @param {string} wallet - User wallet address
+ * @param {Object} options - { limit, offset }
  */
-async function getUserShopInventory(wallet) {
-  const cacheKey = `shop:inventory:${wallet}`;
+async function getUserShopInventory(wallet, options = {}) {
+  const limit = Math.min(options.limit || 50, 100);
+  const offset = options.offset || 0;
+  const cacheKey = `shop:inventory:${wallet}:${limit}:${offset}`;
 
   return getWithCache(
     cacheKey,
     async () => {
+      // Get total count
+      const countResult = await query('SELECT COUNT(*) as total FROM inventory WHERE wallet = $1', [
+        wallet,
+      ]);
+      const total = parseInt(countResult.rows[0]?.total || 0);
+
+      // Get paginated items
       const result = await query(
         `
             SELECT i.*, inv.acquired_at
@@ -988,11 +1024,20 @@ async function getUserShopInventory(wallet) {
             JOIN shop_items i ON i.id = inv.item_id
             WHERE inv.wallet = $1
             ORDER BY inv.acquired_at DESC
+            LIMIT $2 OFFSET $3
         `,
-        [wallet]
+        [wallet, limit, offset]
       );
 
-      return result.rows;
+      return {
+        items: result.rows,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + result.rows.length < total,
+        },
+      };
     },
     60
   );
@@ -1142,6 +1187,7 @@ async function removeFavorite(wallet, itemId) {
 
 /**
  * Get collections with user progress
+ * Optimized: Single query with LEFT JOIN instead of N+1
  */
 async function getCollections(wallet = null) {
   const cacheKey = wallet ? `shop:collections:${wallet}` : 'shop:collections:all';
@@ -1149,31 +1195,38 @@ async function getCollections(wallet = null) {
   return getWithCache(
     cacheKey,
     async () => {
-      const collections = await query(`
-            SELECT c.*,
-                   (SELECT COUNT(*) FROM shop_items WHERE collection_id = c.id) as total_items
-            FROM collections c
-            WHERE c.is_active = true
-            ORDER BY c.name ASC
-        `);
-
       if (wallet) {
-        // Add owned count per collection
-        for (const col of collections.rows) {
-          const owned = await query(
-            `
-                    SELECT COUNT(*) as count
-                    FROM inventory inv
-                    JOIN shop_items i ON i.id = inv.item_id
-                    WHERE inv.wallet = $1 AND i.collection_id = $2
-                `,
-            [wallet, col.id]
-          );
-          col.owned_count = parseInt(owned.rows[0]?.count || 0);
-        }
+        // Single query: collections + total items + owned count
+        const result = await query(
+          `
+          SELECT
+            c.*,
+            COUNT(DISTINCT si.id) as total_items,
+            COUNT(DISTINCT inv.item_id) as owned_count
+          FROM collections c
+          LEFT JOIN shop_items si ON si.collection_id = c.id AND si.is_active = true
+          LEFT JOIN inventory inv ON inv.item_id = si.id AND inv.wallet = $1
+          WHERE c.is_active = true
+          GROUP BY c.id
+          ORDER BY c.name ASC
+          `,
+          [wallet]
+        );
+        return result.rows;
+      } else {
+        // No wallet: just collections with total items
+        const result = await query(`
+          SELECT
+            c.*,
+            COUNT(si.id) as total_items
+          FROM collections c
+          LEFT JOIN shop_items si ON si.collection_id = c.id AND si.is_active = true
+          WHERE c.is_active = true
+          GROUP BY c.id
+          ORDER BY c.name ASC
+        `);
+        return result.rows;
       }
-
-      return collections.rows;
     },
     120
   );

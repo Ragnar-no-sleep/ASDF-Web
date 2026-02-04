@@ -1252,7 +1252,7 @@ shopV2.initializeShop().catch(err => console.error('[ShopV2] Init error:', err.m
  */
 app.get('/api/v2/shop/catalog', optionalAuthMiddleware, async (req, res) => {
   try {
-    const { layer, tier, rarity, collection_id } = req.query;
+    const { layer, tier, rarity, collection_id, limit, offset } = req.query;
     const engageTier = req.user?.tierIndex || 0;
     const wallet = req.user?.wallet || null;
 
@@ -1273,12 +1273,24 @@ app.get('/api/v2/shop/catalog', optionalAuthMiddleware, async (req, res) => {
     if (collection_id) {
       filters.collection_id = collection_id;
     }
+    // Pagination
+    if (limit) {
+      filters.limit = parseInt(limit);
+    }
+    if (offset) {
+      filters.offset = parseInt(offset);
+    }
 
-    const catalog = await shopV2.getCatalog(filters, wallet, currentSupply, engageTier);
+    const { items, pagination } = await shopV2.getCatalog(
+      filters,
+      wallet,
+      currentSupply,
+      engageTier
+    );
 
     res.json({
-      items: catalog,
-      total: catalog.length,
+      items,
+      pagination,
       supply: currentSupply,
     });
   } catch (error) {
@@ -1317,10 +1329,15 @@ app.get('/api/v2/shop/item/:itemId', optionalAuthMiddleware, async (req, res) =>
  */
 app.get('/api/v2/shop/inventory', authMiddleware, async (req, res) => {
   try {
-    const inventory = await shopV2.getInventory(req.user.wallet);
+    const { limit, offset } = req.query;
+    const options = {};
+    if (limit) options.limit = parseInt(limit);
+    if (offset) options.offset = parseInt(offset);
+
+    const { items, pagination } = await shopV2.getInventory(req.user.wallet, options);
     const equipped = await shopV2.getEquipped(req.user.wallet);
 
-    res.json({ inventory, equipped });
+    res.json({ inventory: items, pagination, equipped });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'shop-v2-inventory') });
   }
