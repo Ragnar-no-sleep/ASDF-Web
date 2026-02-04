@@ -9,6 +9,25 @@
 const GOTW_STORAGE_KEY = 'asdf_gotw_v2'; // Bumped version for new format
 const GOTW_INTEGRITY_KEY = 'asdf_gotw_integrity';
 
+// RGPD: Check if user has given consent for functional cookies
+function hasStorageConsent() {
+  // Check if consent manager is loaded
+  if (window.ASFConsent && typeof window.ASFConsent.hasConsent === 'function') {
+    return window.ASFConsent.hasConsent('functional');
+  }
+  // Fallback: check localStorage directly (consent is always stored)
+  try {
+    const consent = localStorage.getItem('asdf_consent');
+    if (consent) {
+      const parsed = JSON.parse(consent);
+      return parsed.given && parsed.categories?.functional;
+    }
+  } catch (e) {
+    // Ignore
+  }
+  return false;
+}
+
 const appState = {
   wallet: null,
   isHolder: false, // SECURITY: Never trust from localStorage, always verify on-chain
@@ -143,6 +162,12 @@ function validateStateSchema(data) {
 }
 
 function loadState() {
+  // RGPD: Only load from localStorage if user has given consent
+  if (!hasStorageConsent()) {
+    console.log('[State] No storage consent, using session-only state');
+    return;
+  }
+
   try {
     const saved = localStorage.getItem(GOTW_STORAGE_KEY);
     if (saved) {
@@ -187,6 +212,11 @@ function loadState() {
 }
 
 function saveState() {
+  // RGPD: Only save to localStorage if user has given consent
+  if (!hasStorageConsent()) {
+    return; // State lives in memory only this session
+  }
+
   try {
     // Only save non-sensitive data
     const safeState = {
