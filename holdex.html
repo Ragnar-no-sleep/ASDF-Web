@@ -4,6 +4,7 @@
     <style>html,body{background:#0a0a0f!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>HolDEX - Token Tracker for Holders | ASDF Ecosystem</title>
     <meta name="description" content="DEX screener built for holders. Track Solana tokens with K-Score conviction metrics. Fees fuel the ASDF burn.">
 
@@ -30,7 +31,13 @@
         connect-src 'self' https://holdex.onrender.com https://*.solana.com https://api.dexscreener.com;
     ">
 
+    <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/holdex.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
 </head>
 <body>
     <!-- Subtle Background -->
@@ -40,16 +47,72 @@
         <div class="bg-glow"></div>
     </div>
 
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/asdforecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link active">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">Theme</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <div class="eco-theme-card" data-theme="ember">
+                <div class="eco-theme-swatch eco-swatch-ember"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Ember</div><div class="eco-theme-desc">Hall of Flames</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="matrix">
+                <div class="eco-theme-swatch eco-swatch-matrix"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Matrix</div><div class="eco-theme-desc">Prediction Terminal</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="holdex">
+                <div class="eco-theme-swatch eco-swatch-holdex"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">HolDex</div><div class="eco-theme-desc">Token Tracker</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="delegate">
+                <div class="eco-theme-swatch eco-swatch-delegate"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Delegate</div><div class="eco-theme-desc">Staking Dashboard</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="arcade">
+                <div class="eco-theme-swatch eco-swatch-arcade"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Arcade</div><div class="eco-theme-desc">Ignition Games</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+        </div>
+    </aside>
+
     <!-- Dashboard -->
-    <div class="dashboard">
-        <!-- Header -->
+    <div class="dashboard eco-page">
+        <!-- Sub-Header (search bar) -->
         <header class="header">
             <div class="header-left">
-                <a href="/" class="logo">
-                    <span class="logo-asdf">ASDF</span>
-                    <span class="logo-sep">/</span>
-                    <span class="logo-page">HolDEX</span>
-                </a>
+                <span class="logo-page">HolDEX</span>
             </div>
 
             <div class="header-center">
@@ -62,14 +125,7 @@
                 </div>
             </div>
 
-            <div class="header-right">
-                <nav class="nav">
-                    <a href="/">Home</a>
-                    <a href="/ignition">Ignition</a>
-                    <a href="/forecast">Forecast</a>
-                    <a href="/burns">Burns</a>
-                </nav>
-            </div>
+            <div class="header-right"></div>
         </header>
 
         <!-- Main Content -->
@@ -359,5 +415,7 @@
     </div>
 
     <script src="js/holdex.js"></script>
+    <script src="js/ecosystem.js" defer></script>
+    <script src="js/consent/index.js"></script>
 </body>
 </html>
