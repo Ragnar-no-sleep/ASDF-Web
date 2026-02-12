@@ -4,6 +4,7 @@
     <style>html{background:#020812!important}body{background:transparent!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>Game of the Week | ASDF Ecosystem</title>
     <meta name="description" content="Play weekly games and compete for top scores. Token-gated gaming for $asdfasdfa holders.">
     <link rel="canonical" href="https://alonisthe.dev/games">
@@ -59,12 +60,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Styles -->
+    <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/games.css">
     <link rel="stylesheet" href="css/games-arcade.css">
     <link rel="stylesheet" href="css/viking-bg.css">
     <link rel="stylesheet" href="css/shop.css">
     <link rel="stylesheet" href="css/shop-animations.css">
     <link rel="stylesheet" href="css/valhalla.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
 </head>
 <body class="arcade-page">
     <!-- ============================================
@@ -97,15 +104,75 @@
     <!-- Skip to main content for accessibility -->
     <a href="#main-content" class="skip-link" style="position: absolute; left: -9999px; top: 0; z-index: 9999; padding: 8px 16px; background: var(--accent-fire); color: #fff; text-decoration: none;">Skip to main content</a>
 
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--ignition">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/asdforecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link active">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">Theme</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <div class="eco-theme-card" data-theme="ember">
+                <div class="eco-theme-swatch eco-swatch-ember"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Ember</div><div class="eco-theme-desc">Hall of Flames</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="matrix">
+                <div class="eco-theme-swatch eco-swatch-matrix"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Matrix</div><div class="eco-theme-desc">Prediction Terminal</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="holdex">
+                <div class="eco-theme-swatch eco-swatch-holdex"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">HolDex</div><div class="eco-theme-desc">Token Tracker</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="delegate">
+                <div class="eco-theme-swatch eco-swatch-delegate"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Delegate</div><div class="eco-theme-desc">Staking Dashboard</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="arcade">
+                <div class="eco-theme-swatch eco-swatch-arcade"></div>
+                <div class="eco-theme-info"><div class="eco-theme-name">Arcade</div><div class="eco-theme-desc">Ignition Games</div></div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+        </div>
+    </aside>
+
     <!-- ============================================
-         NAVIGATION
+         GAMES INTERNAL NAVIGATION (Hub tabs)
          ============================================ -->
-    <nav class="nav" role="navigation" aria-label="Main navigation">
+    <nav class="nav eco-page" role="navigation" aria-label="Games navigation">
         <div class="nav-content">
-            <a href="index.html" class="nav-logo">
-                <span style="font-size: 20px;">🔥</span>
-                <span class="nav-logo-text">ASDF Games</span>
-            </a>
+            <span class="nav-logo">
+                <span style="font-size: 20px;">&#128293;</span>
+                <span class="nav-logo-text">Ignition</span>
+            </span>
 
             <div class="nav-tabs">
                 <a href="#hub" class="nav-tab active" data-hub-view="hub" style="text-decoration: none;">Hub</a>
@@ -773,5 +840,14 @@
     <!-- Cosmetics Button Handler -->
     <script src="js/games/cosmetics-btn.js"></script>
 
+    <!-- Ecosystem Shell -->
+    <script src="js/ecosystem.js" defer></script>
+
+    <!-- Variant Switcher -->
+    <div class="variant-switcher">
+        <button class="variant-dot active" data-variant="1" style="--dot-color: #ea580c" aria-label="Arcade theme"></button>
+        <button class="variant-dot" data-variant="2" style="--dot-color: #e879f9" aria-label="Neon theme"></button>
+        <button class="variant-dot" data-variant="3" style="--dot-color: #22c55e" aria-label="Pixel theme"></button>
+    </div>
 </body>
 </html>

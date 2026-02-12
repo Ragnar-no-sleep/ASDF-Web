@@ -1159,6 +1159,175 @@ body.modal-open {
 }
 
 /* ============================================
+           VARIANT 2: NEON — Magenta + Cyan cyberpunk
+           ============================================ */
+[data-variant='2'] {
+  --accent-fire: #e879f9;
+  --accent-bright: #f0abfc;
+  --accent-ember: #d946ef;
+  --bg-charred: #1a0025;
+  --bg-burnt: #2d004a;
+  --border-rust: #7e22ce;
+  --border-orange: #a855f7;
+  --gold: #06b6d4;
+  --neon-cyan: #06b6d4;
+  --neon-pink: #e879f9;
+}
+
+[data-variant='2'] html {
+  background: #0a0012;
+}
+
+[data-variant='2'] .hero::before {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232, 121, 249, 0.2), transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.15), transparent 40%);
+}
+
+[data-variant='2'] .gotw-badge {
+  border-color: #e879f9;
+  color: #f0abfc;
+  background: #2d004a;
+}
+
+[data-variant='2'] .game-card {
+  background: rgba(15, 0, 25, 0.7);
+}
+
+[data-variant='2'] .game-card:hover {
+  border-color: rgba(232, 121, 249, 0.4);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(232, 121, 249, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-variant='2'] .game-card:hover .game-name {
+  text-shadow: 0 0 20px rgba(232, 121, 249, 0.5);
+}
+
+[data-variant='2'] .game-type {
+  color: rgba(6, 182, 212, 0.8);
+}
+
+[data-variant='2'] .game-play-btn {
+  background: linear-gradient(135deg, rgba(232, 121, 249, 0.2), rgba(6, 182, 212, 0.1));
+  border-color: rgba(232, 121, 249, 0.4);
+  color: #e879f9;
+}
+
+[data-variant='2'] .game-play-btn:hover {
+  background: linear-gradient(135deg, rgba(232, 121, 249, 0.4), rgba(6, 182, 212, 0.2));
+  border-color: rgba(232, 121, 249, 0.8);
+  box-shadow: 0 0 20px rgba(232, 121, 249, 0.3);
+}
+
+[data-variant='2'] .section-title {
+  text-shadow: 0 0 30px rgba(232, 121, 249, 0.4);
+}
+
+[data-variant='2'] .leaderboard-section {
+  border-color: #e879f9;
+}
+
+[data-variant='2'] .leaderboard-tab.active {
+  background: linear-gradient(135deg, #e879f9, #d946ef);
+  border-color: #f0abfc;
+}
+
+/* ============================================
+           VARIANT 3: PIXEL — Green + White retro 8-bit
+           ============================================ */
+[data-variant='3'] {
+  --accent-fire: #22c55e;
+  --accent-bright: #4ade80;
+  --accent-ember: #16a34a;
+  --bg-charred: #0a0a0a;
+  --bg-burnt: #111111;
+  --border-rust: #1a1a1a;
+  --border-orange: #22c55e;
+  --gold: #ffffff;
+  --neon-cyan: #22c55e;
+  --neon-pink: #22c55e;
+}
+
+[data-variant='3'] html {
+  background: #0a0a0a;
+}
+
+[data-variant='3'] .hero::before {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.15), transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(34, 197, 94, 0.08), transparent 40%);
+}
+
+[data-variant='3'] .gotw-badge {
+  border-color: #22c55e;
+  color: #4ade80;
+  background: #111111;
+}
+
+[data-variant='3'] .hero h1 {
+  text-shadow: 3px 3px 0 #22c55e;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+[data-variant='3'] .game-card {
+  background: rgba(10, 10, 10, 0.8);
+  border-color: rgba(34, 197, 94, 0.15);
+  border-radius: 4px;
+}
+
+[data-variant='3'] .game-card:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+[data-variant='3'] .game-card:hover .game-name {
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+[data-variant='3'] .game-type {
+  color: rgba(34, 197, 94, 0.7);
+}
+
+[data-variant='3'] .game-play-btn {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #22c55e;
+  border-radius: 2px;
+}
+
+[data-variant='3'] .game-play-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+[data-variant='3'] .section-title {
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+[data-variant='3'] .leaderboard-section {
+  border-color: #22c55e;
+  border-radius: 4px;
+}
+
+[data-variant='3'] .leaderboard-tab.active {
+  background: #22c55e;
+  border-color: #4ade80;
+  color: #000;
+}
+
+[data-variant='3'] .countdown-value {
+  border-color: #22c55e;
+  color: #4ade80;
+}
+
+/* ============================================
            ANIMATIONS
            ============================================ */
 
