@@ -8,6 +8,12 @@
 // Extend Jest matchers if needed
 // require('@testing-library/jest-dom');
 
+// Skip browser mocks when running in node environment
+if (typeof window === 'undefined') {
+  // Node environment (API tests) — no browser mocks needed
+  return;
+}
+
 // Mock browser APIs not available in jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
