@@ -743,6 +743,10 @@ app.use('/api/shop/purchase', purchaseLimiter);
 // MODULAR ROUTES (extracted from this file)
 // ============================================
 app.use('/', routes.probes); // /livez, /readyz, /startupz
+app.use('/api/auth', routes.auth); // auth challenge, verify, refresh, logout
+app.use('/api/user', routes.user); // user profile
+app.use('/api', routes.shop); // shop v1 + v2, csrf, currency
+app.use('/api', routes.ecosystem); // ecosystem stats, leaderboard, burns, batch, config
 
 // ============================================
 // HEALTH CHECK
@@ -952,27 +956,12 @@ app.get('/health', healthLimiter, async (req, res) => {
 });
 
 // ============================================
-// AUTHENTICATION ROUTES
+// EXTRACTED ROUTES (see routes/ directory)
+// Auth: routes/auth.js → mounted at /api/auth
+// User: routes/auth.js → mounted at /api/user
+// Shop V1+V2: routes/shop.js → mounted at /api
+// Ecosystem+Leaderboard: routes/ecosystem.js → mounted at /api
 // ============================================
-
-/**
- * Request authentication challenge
- * POST /api/auth/challenge
- */
-app.post('/api/auth/challenge', (req, res) => {
-  try {
-    const { wallet } = req.body;
-
-    if (!wallet || !isValidAddress(wallet)) {
-      return res.status(400).json({ error: 'Invalid wallet address' });
-    }
-
-    const challenge = generateChallenge(wallet);
-    res.json(challenge);
-  } catch (error) {
-    res.status(500).json({ error: sanitizeError(error, 'challenge') });
-  }
-});
 
 /**
  * Verify signature and get JWT
