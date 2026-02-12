@@ -133,7 +133,7 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - var(--eco-nav-height, 56px));
 }
 
 /* Header - Device Top Bar */
@@ -212,23 +212,7 @@ body {
   margin-left: var(--space-3xl);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-}
-
-.logo-asdf {
-  color: var(--accent);
-}
-
-.logo-sep {
-  color: var(--text-muted);
-  font-weight: 400;
-}
+/* .logo, .logo-asdf, .logo-sep removed — navigation handled by ecosystem.css */
 
 .logo-page {
   color: var(--text-primary);
@@ -279,22 +263,7 @@ body {
     0 0 12px rgba(74, 222, 128, 0.2);
 }
 
-.nav {
-  display: flex;
-  gap: var(--space-lg);
-}
-
-.nav a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  transition: color var(--duration-fast) ease;
-}
-
-.nav a:hover {
-  color: var(--text-primary);
-}
+/* .nav links removed — navigation handled by ecosystem.css */
 
 /* ============================================
    Main Layout
@@ -964,6 +933,103 @@ body {
 }
 
 /* ============================================
+   VARIANT 2: CRYSTAL — Ice blue, modern glass
+   ============================================ */
+[data-variant='2'] {
+  --bg-primary: #0c1222;
+  --bg-secondary: #101828;
+  --bg-elevated: #1a2332;
+  --bg-hover: #22303e;
+  --bg-device: #121d2b;
+  --screen-bg: #0a1520;
+  --screen-text: #38bdf8;
+  --screen-text-dim: rgba(56, 189, 248, 0.5);
+  --border-device: rgba(56, 189, 248, 0.2);
+  --border-accent: rgba(56, 189, 248, 0.4);
+  --accent: #38bdf8;
+  --accent-light: #7dd3fc;
+  --accent-glow: rgba(56, 189, 248, 0.15);
+  --led-blue: #38bdf8;
+  --led-green: #67e8f9;
+}
+
+[data-variant='2'] .bg-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(56, 189, 248, 0.03) 0%, transparent 50%);
+}
+
+[data-variant='2'] .bg-glow {
+  background: radial-gradient(ellipse, rgba(56, 189, 248, 0.05) 0%, transparent 60%);
+}
+
+[data-variant='2'] .kscore-progress {
+  stroke: #38bdf8;
+  filter: drop-shadow(0 0 8px #38bdf8);
+}
+
+[data-variant='2'] .token-icon {
+  background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+}
+
+/* ============================================
+   VARIANT 3: VINTAGE — Amber warm, stock ticker
+   ============================================ */
+[data-variant='3'] {
+  --bg-primary: #1c1917;
+  --bg-secondary: #211f1b;
+  --bg-elevated: #292524;
+  --bg-hover: #332e2b;
+  --bg-device: #1f1c18;
+  --screen-bg: #1a1610;
+  --screen-text: #f59e0b;
+  --screen-text-dim: rgba(245, 158, 11, 0.5);
+  --border-device: rgba(245, 158, 11, 0.2);
+  --border-accent: rgba(245, 158, 11, 0.4);
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --accent-glow: rgba(245, 158, 11, 0.15);
+  --led-blue: #f59e0b;
+  --led-green: #d97706;
+}
+
+[data-variant='3'] .bg-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 50%);
+}
+
+[data-variant='3'] .bg-glow {
+  background: radial-gradient(ellipse, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+}
+
+[data-variant='3'] .bg-grid {
+  background-image:
+    linear-gradient(rgba(245, 158, 11, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.04) 1px, transparent 1px);
+}
+
+[data-variant='3'] .kscore-progress {
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 8px #f59e0b);
+}
+
+[data-variant='3'] .token-icon {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+[data-variant='3'] .search-input {
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+[data-variant='3'] .search-input:focus {
+  border-color: #f59e0b;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.3),
+    0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+/* ============================================
    Responsive
    ============================================ */
 @media (max-width: 1200px) {
@@ -978,10 +1044,6 @@ body {
   }
 
   .sidebar {
-    display: none;
-  }
-
-  .nav {
     display: none;
   }
 
