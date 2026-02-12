@@ -1,0 +1,762 @@
+/**
+ * ASDF Ecosystem Shell
+ * Unified navigation, theme system, and View Transitions
+ * Shared across: Burns, Forecast, HolDex, Staking, Ignition
+ */
+
+/* ============================================
+   VIEW TRANSITIONS (Cross-document MPA)
+   ============================================ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: eco-slide-out 300ms var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) both;
+}
+
+::view-transition-new(root) {
+  animation: eco-slide-in 300ms var(--ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) both;
+}
+
+/* Direction-aware slides — set by JS via class on html */
+html[data-eco-dir='left'] ::view-transition-old(root) {
+  animation-name: eco-slide-out-left;
+}
+html[data-eco-dir='left'] ::view-transition-new(root) {
+  animation-name: eco-slide-in-left;
+}
+html[data-eco-dir='right'] ::view-transition-old(root) {
+  animation-name: eco-slide-out-right;
+}
+html[data-eco-dir='right'] ::view-transition-new(root) {
+  animation-name: eco-slide-in-right;
+}
+
+@keyframes eco-slide-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-8%);
+  }
+}
+@keyframes eco-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(8%);
+  }
+}
+@keyframes eco-slide-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(8%);
+  }
+}
+@keyframes eco-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-8%);
+  }
+}
+
+/* Fallback entrance for browsers without View Transitions */
+@keyframes eco-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   THEME VARIABLES
+   ============================================ */
+:root {
+  /* Default ecosystem shell colors (overridden by themes) */
+  --eco-accent: #ea580c;
+  --eco-accent-glow: rgba(234, 88, 12, 0.35);
+  --eco-accent-soft: rgba(234, 88, 12, 0.12);
+  --eco-bg: #020812;
+  --eco-nav-bg: rgba(2, 8, 18, 0.82);
+  --eco-nav-border: rgba(255, 255, 255, 0.06);
+  --eco-nav-height: 56px;
+}
+
+/* --- Ember (Burns) --- */
+[data-theme='ember'] {
+  --eco-accent: #c9a227;
+  --eco-accent-glow: rgba(201, 162, 39, 0.35);
+  --eco-accent-soft: rgba(201, 162, 39, 0.1);
+  --eco-bg: #000000;
+  --eco-nav-bg: rgba(0, 0, 0, 0.82);
+  --eco-nav-border: rgba(201, 162, 39, 0.12);
+}
+
+/* --- Matrix (Forecast) --- */
+[data-theme='matrix'] {
+  --eco-accent: #00ff41;
+  --eco-accent-glow: rgba(0, 255, 65, 0.3);
+  --eco-accent-soft: rgba(0, 255, 65, 0.08);
+  --eco-bg: #000000;
+  --eco-nav-bg: rgba(0, 0, 0, 0.85);
+  --eco-nav-border: rgba(0, 255, 65, 0.1);
+}
+
+/* --- HolDex --- */
+[data-theme='holdex'] {
+  --eco-accent: #4ade80;
+  --eco-accent-glow: rgba(74, 222, 128, 0.3);
+  --eco-accent-soft: rgba(74, 222, 128, 0.08);
+  --eco-bg: #0a0a0f;
+  --eco-nav-bg: rgba(10, 10, 15, 0.85);
+  --eco-nav-border: rgba(74, 222, 128, 0.1);
+}
+
+/* --- Delegate (Staking) --- */
+[data-theme='delegate'] {
+  --eco-accent: #7b93ff;
+  --eco-accent-glow: rgba(123, 147, 255, 0.3);
+  --eco-accent-soft: rgba(123, 147, 255, 0.08);
+  --eco-bg: #06080f;
+  --eco-nav-bg: rgba(6, 8, 15, 0.85);
+  --eco-nav-border: rgba(123, 147, 255, 0.1);
+}
+
+/* --- Arcade (Ignition/Games) --- */
+[data-theme='arcade'] {
+  --eco-accent: #ea580c;
+  --eco-accent-glow: rgba(234, 88, 12, 0.35);
+  --eco-accent-soft: rgba(234, 88, 12, 0.1);
+  --eco-bg: #020812;
+  --eco-nav-bg: rgba(2, 8, 18, 0.82);
+  --eco-nav-border: rgba(234, 88, 12, 0.1);
+}
+
+/* ============================================
+   UNIFIED NAVIGATION
+   ============================================ */
+.eco-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--eco-nav-height);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--eco-nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--eco-nav-border);
+  transition:
+    background 300ms ease,
+    border-color 300ms ease;
+}
+
+.eco-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.eco-nav-logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--eco-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  transition: background 300ms ease;
+}
+
+/* Center links container */
+.eco-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.eco-nav-link {
+  position: relative;
+  padding: 8px 16px;
+  font-family:
+    'Inter',
+    -apple-system,
+    sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  border-radius: 8px;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.eco-nav-link:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.eco-nav-link.active {
+  color: #fff;
+}
+
+/* Sliding pill indicator */
+.eco-nav-pill {
+  position: absolute;
+  height: calc(100% - 8px);
+  top: 4px;
+  border-radius: 8px;
+  background: var(--eco-accent-soft);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    left 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    background 300ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Right side */
+.eco-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.eco-nav-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-size: 16px;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+}
+
+.eco-nav-home:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================
+   STYLE DRAWER BUTTON
+   ============================================ */
+.eco-style-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 800;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  background: var(--eco-nav-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--eco-nav-border);
+  border-left: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.eco-style-btn:hover {
+  color: var(--eco-accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.eco-style-btn .eco-style-icon {
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.eco-style-btn:hover .eco-style-icon {
+  transform: rotate(30deg);
+}
+
+/* Hide button when drawer is open */
+.eco-drawer-open .eco-style-btn {
+  transform: translateY(-50%) translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================
+   THEME DRAWER
+   ============================================ */
+.eco-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 850;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.eco-drawer-open .eco-drawer-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.eco-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  z-index: 860;
+  background: var(--eco-nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid var(--eco-nav-border);
+  transform: translateX(-100%);
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.eco-drawer-open .eco-drawer {
+  transform: translateX(0);
+}
+
+.eco-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--eco-nav-border);
+}
+
+.eco-drawer-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.eco-drawer-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+}
+
+.eco-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.eco-drawer-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Theme card */
+.eco-theme-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.eco-theme-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.eco-theme-card.active {
+  border-color: var(--eco-accent);
+  background: var(--eco-accent-soft);
+}
+
+.eco-theme-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.eco-theme-swatch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.eco-theme-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.eco-theme-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.eco-theme-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 2px;
+}
+
+.eco-theme-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: transparent;
+  transition: all 200ms ease;
+}
+
+.eco-theme-card.active .eco-theme-check {
+  border-color: var(--eco-accent);
+  background: var(--eco-accent);
+  color: #000;
+}
+
+/* Theme swatch colors */
+.eco-swatch-ember {
+  background: linear-gradient(135deg, #000 40%, #c9a227);
+}
+.eco-swatch-matrix {
+  background: linear-gradient(135deg, #000 40%, #00ff41);
+}
+.eco-swatch-holdex {
+  background: linear-gradient(135deg, #0a0a0f 40%, #4ade80);
+}
+.eco-swatch-delegate {
+  background: linear-gradient(135deg, #06080f 40%, #7b93ff);
+}
+.eco-swatch-arcade {
+  background: linear-gradient(135deg, #020812 40%, #ea580c);
+}
+
+/* ============================================
+   PAGE BODY OFFSET (for fixed nav)
+   ============================================ */
+.eco-page {
+  padding-top: var(--eco-nav-height);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .eco-nav {
+    padding: 0 12px;
+  }
+
+  .eco-nav-logo span {
+    display: none;
+  }
+
+  .eco-nav-links {
+    gap: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: 65vw;
+    padding: 3px;
+  }
+
+  .eco-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .eco-nav-link {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .eco-drawer {
+    width: 260px;
+  }
+
+  .eco-style-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .eco-nav-link {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ============================================
+   VARIANT SWITCHER WIDGET
+   ============================================ */
+.variant-switcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 800;
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  transition: opacity 200ms ease;
+}
+
+.variant-switcher:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.variant-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--dot-color);
+  cursor: pointer;
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+  padding: 0;
+}
+
+.variant-dot:hover {
+  transform: scale(1.15);
+}
+
+.variant-dot.active {
+  border-color: #fff;
+  box-shadow: 0 0 8px var(--dot-color);
+  transform: scale(1.1);
+}
+
+/* Mobile: slightly larger touch targets */
+@media (max-width: 768px) {
+  .variant-switcher {
+    bottom: 16px;
+    right: 16px;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .variant-dot {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ============================================
+   PAGE-ADAPTED NAVIGATION
+   ============================================ */
+
+/* --- Burns nav --- */
+.eco-nav--burns {
+  border-bottom-color: rgba(201, 162, 39, 0.15);
+}
+.eco-nav--burns .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.25);
+}
+
+/* Burns variant 2: Inferno */
+[data-variant='2'] .eco-nav--burns {
+  border-bottom-color: rgba(220, 38, 38, 0.18);
+}
+[data-variant='2'] .eco-nav--burns .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+}
+
+/* Burns variant 3: Ash */
+[data-variant='3'] .eco-nav--burns {
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+[data-variant='3'] .eco-nav--burns .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(148, 163, 184, 0.2);
+}
+
+/* --- Forecast nav --- */
+.eco-nav--forecast {
+  border-bottom-color: rgba(0, 255, 65, 0.12);
+}
+.eco-nav--forecast .eco-nav-logo-mark {
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+}
+
+/* Forecast variant 2: Bloomberg */
+[data-variant='2'] .eco-nav--forecast {
+  border-bottom-color: rgba(59, 130, 246, 0.15);
+}
+[data-variant='2'] .eco-nav--forecast .eco-nav-logo-mark {
+  text-shadow: none;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Forecast variant 3: Synthwave */
+[data-variant='3'] .eco-nav--forecast {
+  border-bottom-color: rgba(244, 114, 182, 0.15);
+}
+[data-variant='3'] .eco-nav--forecast .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.3);
+}
+
+/* --- HolDex nav --- */
+.eco-nav--holdex {
+  border-bottom: 2px solid rgba(74, 222, 128, 0.15);
+}
+.eco-nav--holdex .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+}
+
+/* HolDex variant 2: Crystal */
+[data-variant='2'] .eco-nav--holdex {
+  border-bottom-color: rgba(56, 189, 248, 0.15);
+}
+[data-variant='2'] .eco-nav--holdex .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+/* HolDex variant 3: Vintage */
+[data-variant='3'] .eco-nav--holdex {
+  border-bottom-color: rgba(245, 158, 11, 0.15);
+}
+[data-variant='3'] .eco-nav--holdex .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+/* --- Staking nav --- */
+.eco-nav--staking {
+  border-bottom-color: rgba(123, 147, 255, 0.12);
+}
+.eco-nav--staking .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(123, 147, 255, 0.2);
+}
+
+/* Staking variant 2: Vault */
+[data-variant='2'] .eco-nav--staking {
+  border-bottom-color: rgba(100, 116, 139, 0.15);
+}
+[data-variant='2'] .eco-nav--staking .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
+}
+
+/* Staking variant 3: Aurora */
+[data-variant='3'] .eco-nav--staking {
+  border-bottom-color: rgba(45, 212, 191, 0.12);
+}
+[data-variant='3'] .eco-nav--staking .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.25);
+}
+
+/* --- Ignition nav --- */
+.eco-nav--ignition {
+  border-bottom-color: rgba(234, 88, 12, 0.12);
+}
+.eco-nav--ignition .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(234, 88, 12, 0.25);
+}
+
+/* Ignition variant 2: Neon */
+[data-variant='2'] .eco-nav--ignition {
+  border-bottom-color: rgba(232, 121, 249, 0.15);
+}
+[data-variant='2'] .eco-nav--ignition .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(232, 121, 249, 0.3);
+}
+
+/* Ignition variant 3: Pixel */
+[data-variant='3'] .eco-nav--ignition {
+  border-bottom-color: rgba(34, 197, 94, 0.12);
+}
+[data-variant='3'] .eco-nav--ignition .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .eco-nav-pill {
+    transition: none;
+  }
+  .eco-drawer {
+    transition: none;
+  }
+  .eco-drawer-backdrop {
+    transition: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
