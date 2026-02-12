@@ -26,8 +26,8 @@ const DB_CONFIG = {
   type: process.env.DATABASE_URL ? 'postgres' : 'memory',
   connectionString: process.env.DATABASE_URL,
   pool: {
-    min: 2,
-    max: 10,
+    min: 5,
+    max: 20,
   },
 };
 
