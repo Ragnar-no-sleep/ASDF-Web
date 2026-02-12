@@ -386,7 +386,7 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - var(--eco-nav-height, 56px));
   position: relative;
   z-index: 1;
 }
@@ -408,14 +408,7 @@ body {
   gap: var(--space-lg);
 }
 
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  text-decoration: none;
-  color: var(--matrix-green);
-  font-size: var(--text-xs);
-}
+/* .nav-logo removed — navigation handled by ecosystem.css */
 
 .status-led {
   width: var(--space-xs);
@@ -469,22 +462,7 @@ body {
   gap: var(--space-lg);
 }
 
-.nav-links {
-  display: flex;
-  gap: var(--space-md);
-}
-
-.nav-links a {
-  color: rgba(255, 255, 255, 0.4);
-  text-decoration: none;
-  font-size: var(--text-2xs);
-  transition: color var(--duration-normal);
-}
-
-.nav-links a:hover {
-  color: var(--matrix-green);
-  text-shadow: 0 0 5px var(--matrix-green-glow);
-}
+/* .nav-links removed — navigation handled by ecosystem.css */
 
 .btn-connect {
   padding: var(--space-2xs) var(--space-xs);
@@ -966,6 +944,166 @@ body {
 }
 
 /* ============================================
+   VARIANT 2: BLOOMBERG — Blue finance pro
+   ============================================ */
+[data-variant='2'] {
+  --matrix-green: #3b82f6;
+  --matrix-green-light: #60a5fa;
+  --matrix-green-dim: rgba(59, 130, 246, 0.15);
+  --matrix-green-glow: rgba(59, 130, 246, 0.4);
+  --black-soft: #0f172a;
+  --green: #22c55e;
+  --red: #ef4444;
+}
+
+[data-variant='2'] .cosmic-bg {
+  background: #0f172a;
+}
+
+[data-variant='2'] .cosmic-bg::before {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+[data-variant='2'] .cosmic-bg::after {
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+}
+
+[data-variant='2'] .data-column {
+  color: #3b82f6;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+}
+
+[data-variant='2'] .data-node {
+  background: #3b82f6;
+  box-shadow: 0 0 10px #3b82f6;
+}
+
+[data-variant='2'] .grid-overlay {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+}
+
+[data-variant='2'] .scan-line {
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  box-shadow: 0 0 15px #3b82f6;
+}
+
+[data-variant='2'] .panel {
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+[data-variant='2'] .panel-center {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+}
+
+[data-variant='2'] .dashboard-header {
+  border-bottom-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-variant='2'] .dashboard-footer {
+  border-top-color: rgba(59, 130, 246, 0.2);
+}
+
+/* ============================================
+   VARIANT 3: SYNTHWAVE — Pink + Cyan retro neon
+   ============================================ */
+[data-variant='3'] {
+  --matrix-green: #f472b6;
+  --matrix-green-light: #f9a8d4;
+  --matrix-green-dim: rgba(244, 114, 182, 0.15);
+  --matrix-green-glow: rgba(244, 114, 182, 0.4);
+  --black-soft: #0c0015;
+}
+
+[data-variant='3'] .cosmic-bg {
+  background: #0c0015;
+}
+
+[data-variant='3'] .cosmic-bg::after {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(244, 114, 182, 0.04) 0%,
+    rgba(34, 211, 238, 0.02) 50%,
+    transparent 70%
+  );
+}
+
+[data-variant='3'] .data-column {
+  color: #22d3ee;
+  text-shadow: 0 0 6px rgba(34, 211, 238, 0.5);
+}
+
+[data-variant='3'] .data-column:nth-child(odd) {
+  color: #f472b6;
+  text-shadow: 0 0 6px rgba(244, 114, 182, 0.5);
+}
+
+[data-variant='3'] .data-node {
+  background: #f472b6;
+  box-shadow: 0 0 10px #f472b6;
+}
+
+[data-variant='3'] .data-node:nth-of-type(even) {
+  background: #22d3ee;
+  box-shadow: 0 0 10px #22d3ee;
+}
+
+[data-variant='3'] .grid-overlay {
+  background-image:
+    linear-gradient(rgba(244, 114, 182, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+}
+
+[data-variant='3'] .scan-line {
+  background: linear-gradient(90deg, transparent, #f472b6, #22d3ee, transparent);
+  box-shadow: 0 0 15px #f472b6;
+}
+
+[data-variant='3'] .panel {
+  border-color: rgba(244, 114, 182, 0.15);
+}
+
+[data-variant='3'] .panel-center {
+  border-color: rgba(244, 114, 182, 0.3);
+  box-shadow:
+    0 0 20px rgba(244, 114, 182, 0.1),
+    0 0 40px rgba(34, 211, 238, 0.05);
+}
+
+[data-variant='3'] .dashboard-header {
+  border-bottom-color: rgba(244, 114, 182, 0.2);
+}
+
+[data-variant='3'] .dashboard-footer {
+  border-top-color: rgba(244, 114, 182, 0.2);
+}
+
+[data-variant='3'] .prediction-btn.up {
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+[data-variant='3'] .prediction-btn.up:hover,
+[data-variant='3'] .prediction-btn.up.selected {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: #22d3ee;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+}
+
+[data-variant='3'] .prediction-btn.up .prediction-icon,
+[data-variant='3'] .prediction-btn.up .prediction-label {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
@@ -973,10 +1111,6 @@ body {
     grid-template-columns: 180px 1fr 180px;
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space-md);
-  }
-
-  .nav-links {
-    display: none;
   }
 }
 
