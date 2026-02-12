@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#06080f">
+<head>
+    <style>html,body{background:#06080f!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <title>ASDF Staking - Token Lock Dashboard | ASDF Ecosystem</title>
+    <meta name="description" content="View ASDF token locks, vesting schedules, and delegation stats. Powered by Streamflow.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="ASDF Staking - Token Lock Dashboard">
+    <meta property="og:description" content="Track ASDF token locks and vesting schedules. Powered by Streamflow.">
+    <meta property="og:image" content="https://alonisthe.dev/og-staking.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://unpkg.com https://esm.sh;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://*.solana.com https://*.helius-rpc.com https://asdf-api.onrender.com;
+    ">
+
+    <link rel="stylesheet" href="css/ecosystem.css">
+    <link rel="stylesheet" href="css/staking.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
+</head>
+<body class="eco-page">
+    <!-- Ambient Background -->
+    <div class="staking-bg">
+        <div class="staking-orb staking-orb-1"></div>
+        <div class="staking-orb staking-orb-2"></div>
+        <div class="staking-grid-floor"></div>
+    </div>
+
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--staking">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/asdforecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link active">Staking</a>
+            <a href="/ignition" class="eco-nav-link">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">Theme</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <div class="eco-theme-card" data-theme="ember">
+                <div class="eco-theme-swatch eco-swatch-ember"></div>
+                <div class="eco-theme-info">
+                    <div class="eco-theme-name">Ember</div>
+                    <div class="eco-theme-desc">Hall of Flames</div>
+                </div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="matrix">
+                <div class="eco-theme-swatch eco-swatch-matrix"></div>
+                <div class="eco-theme-info">
+                    <div class="eco-theme-name">Matrix</div>
+                    <div class="eco-theme-desc">Prediction Terminal</div>
+                </div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="holdex">
+                <div class="eco-theme-swatch eco-swatch-holdex"></div>
+                <div class="eco-theme-info">
+                    <div class="eco-theme-name">HolDex</div>
+                    <div class="eco-theme-desc">Token Tracker</div>
+                </div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="delegate">
+                <div class="eco-theme-swatch eco-swatch-delegate"></div>
+                <div class="eco-theme-info">
+                    <div class="eco-theme-name">Delegate</div>
+                    <div class="eco-theme-desc">Staking Dashboard</div>
+                </div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+            <div class="eco-theme-card" data-theme="arcade">
+                <div class="eco-theme-swatch eco-swatch-arcade"></div>
+                <div class="eco-theme-info">
+                    <div class="eco-theme-name">Arcade</div>
+                    <div class="eco-theme-desc">Ignition Games</div>
+                </div>
+                <div class="eco-theme-check">&#10003;</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="staking-main">
+        <!-- Header Stats -->
+        <section class="staking-stats">
+            <div class="staking-stat-card">
+                <div class="staking-stat-label">Total Locked</div>
+                <div class="staking-stat-value" id="stat-total-locked">--</div>
+                <div class="staking-stat-sub">ASDF tokens</div>
+            </div>
+            <div class="staking-stat-card">
+                <div class="staking-stat-label">Total Deposited</div>
+                <div class="staking-stat-value" id="stat-deposited">--</div>
+                <div class="staking-stat-sub">across all locks</div>
+            </div>
+            <div class="staking-stat-card">
+                <div class="staking-stat-label">Active Locks</div>
+                <div class="staking-stat-value" id="stat-active-locks">--</div>
+                <div class="staking-stat-sub">currently vesting</div>
+            </div>
+            <div class="staking-stat-card">
+                <div class="staking-stat-label">Next Unlock</div>
+                <div class="staking-stat-value" id="stat-next-unlock">--</div>
+                <div class="staking-stat-sub">countdown</div>
+            </div>
+        </section>
+
+        <!-- Lock Browser -->
+        <section class="staking-browser">
+            <div class="staking-browser-header">
+                <h2 class="staking-section-title">Lock Browser</h2>
+                <div class="staking-filters">
+                    <button class="staking-filter active" data-filter="all">All</button>
+                    <button class="staking-filter" data-filter="active">Active</button>
+                    <button class="staking-filter" data-filter="completed">Completed</button>
+                </div>
+            </div>
+            <div class="staking-locks" id="locks-list">
+                <div class="staking-loading">
+                    <div class="staking-spinner"></div>
+                    <span>Loading locks from Streamflow...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Unlock Timeline -->
+        <section class="staking-timeline-section">
+            <h2 class="staking-section-title">Unlock Timeline</h2>
+            <div class="staking-timeline" id="unlock-timeline">
+                <div class="staking-loading">
+                    <div class="staking-spinner"></div>
+                    <span>Building timeline...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wallet Connect CTA -->
+        <section class="staking-cta" id="staking-cta">
+            <div class="staking-cta-inner">
+                <h2 class="staking-cta-title">Connect Wallet</h2>
+                <p class="staking-cta-text">View your personal lock positions and delegation status.</p>
+                <button class="staking-cta-btn" id="connect-wallet">Connect Phantom</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="staking-footer">
+        <span>ASDF Staking</span>
+        <span class="staking-footer-sep">&middot;</span>
+        <span>Powered by <a href="https://streamflow.finance" target="_blank" rel="noopener">Streamflow</a></span>
+        <span class="staking-footer-right">Data updates every 60s</span>
+    </footer>
+
+    <!-- Variant Switcher -->
+    <div class="variant-switcher">
+        <button class="variant-dot active" data-variant="1" style="--dot-color: #7b93ff" aria-label="Delegate theme"></button>
+        <button class="variant-dot" data-variant="2" style="--dot-color: #eab308" aria-label="Vault theme"></button>
+        <button class="variant-dot" data-variant="3" style="--dot-color: #2dd4bf" aria-label="Aurora theme"></button>
+    </div>
+
+    <script src="js/staking.js"></script>
+    <script src="js/ecosystem.js" defer></script>
+</body>
+</html>

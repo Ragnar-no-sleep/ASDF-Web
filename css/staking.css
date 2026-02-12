@@ -1,0 +1,696 @@
+/**
+ * ASDF Staking - Token Lock Dashboard
+ * Theme: Navy / Purple / Glass (ASDelegate inspired)
+ */
+
+/* ============================================
+   AMBIENT BACKGROUND
+   ============================================ */
+.staking-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #06080f;
+}
+
+.staking-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  animation: staking-orb-float 20s ease-in-out infinite;
+}
+
+.staking-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(123, 147, 255, 0.4), transparent 70%);
+  top: -10%;
+  right: -5%;
+}
+
+.staking-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 70%);
+  bottom: -10%;
+  left: -5%;
+  animation-delay: -10s;
+}
+
+.staking-grid-floor {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(123, 147, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123, 147, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+@keyframes staking-orb-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 15px) scale(0.95);
+  }
+}
+
+/* ============================================
+   MAIN LAYOUT
+   ============================================ */
+.staking-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+/* ============================================
+   HEADER STATS
+   ============================================ */
+.staking-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.staking-stat-card {
+  padding: 24px;
+  border-radius: 16px;
+  background: rgba(123, 147, 255, 0.04);
+  border: 1px solid rgba(123, 147, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    border-color 300ms ease,
+    background 300ms ease;
+}
+
+.staking-stat-card:hover {
+  border-color: rgba(123, 147, 255, 0.18);
+  background: rgba(123, 147, 255, 0.07);
+}
+
+.staking-stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.staking-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.staking-stat-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 6px;
+}
+
+/* ============================================
+   LOCK BROWSER
+   ============================================ */
+.staking-browser {
+  margin-bottom: 40px;
+}
+
+.staking-browser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.staking-section-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.staking-filters {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+}
+
+.staking-filter {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+}
+
+.staking-filter:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.staking-filter.active {
+  color: #fff;
+  background: rgba(123, 147, 255, 0.15);
+}
+
+/* Lock list */
+.staking-locks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Individual lock row */
+.staking-lock {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.staking-lock:hover {
+  border-color: rgba(123, 147, 255, 0.15);
+  background: rgba(123, 147, 255, 0.04);
+}
+
+.staking-lock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.staking-lock-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.staking-lock-wallet {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.staking-lock-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: #7b93ff;
+  text-align: right;
+}
+
+.staking-lock-progress {
+  width: 120px;
+}
+
+.staking-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.staking-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7b93ff, #a78bfa);
+  transition: width 600ms ease;
+}
+
+.staking-lock-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.staking-lock-status {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.staking-lock-status.active {
+  color: #7b93ff;
+  background: rgba(123, 147, 255, 0.12);
+}
+
+.staking-lock-status.completed {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+.staking-lock-status.cancelled {
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================
+   UNLOCK TIMELINE
+   ============================================ */
+.staking-timeline-section {
+  margin-bottom: 40px;
+}
+
+.staking-timeline-section .staking-section-title {
+  margin-bottom: 20px;
+}
+
+.staking-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+.staking-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(123, 147, 255, 0.3), rgba(123, 147, 255, 0.05));
+  border-radius: 1px;
+}
+
+.staking-timeline-item {
+  position: relative;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.staking-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 22px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #7b93ff;
+  border: 2px solid #06080f;
+  z-index: 1;
+}
+
+.staking-timeline-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 6px;
+}
+
+.staking-timeline-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.staking-timeline-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7b93ff;
+  margin-top: 4px;
+}
+
+/* ============================================
+   WALLET CTA
+   ============================================ */
+.staking-cta {
+  margin-bottom: 40px;
+}
+
+.staking-cta-inner {
+  text-align: center;
+  padding: 48px 32px;
+  border-radius: 20px;
+  background: rgba(123, 147, 255, 0.04);
+  border: 1px solid rgba(123, 147, 255, 0.1);
+}
+
+.staking-cta-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.staking-cta-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 24px;
+}
+
+.staking-cta-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7b93ff, #a78bfa);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.staking-cta-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.staking-cta-btn:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+.staking-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+}
+
+.staking-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(123, 147, 255, 0.15);
+  border-top-color: #7b93ff;
+  border-radius: 50%;
+  animation: staking-spin 800ms linear infinite;
+}
+
+@keyframes staking-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.staking-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.staking-footer a {
+  color: #7b93ff;
+  text-decoration: none;
+}
+
+.staking-footer a:hover {
+  text-decoration: underline;
+}
+
+.staking-footer-sep {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.staking-footer-right {
+  margin-left: auto;
+}
+
+/* ============================================
+   VARIANT 2: VAULT — Steel + Gold, metallic secure
+   ============================================ */
+[data-variant='2'] .staking-bg {
+  background: #0f0f14;
+}
+
+[data-variant='2'] .staking-orb-1 {
+  background: radial-gradient(circle, rgba(100, 116, 139, 0.4), transparent 70%);
+}
+
+[data-variant='2'] .staking-orb-2 {
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.25), transparent 70%);
+}
+
+[data-variant='2'] .staking-grid-floor {
+  background-image:
+    linear-gradient(rgba(100, 116, 139, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 116, 139, 0.04) 1px, transparent 1px);
+}
+
+[data-variant='2'] .staking-stat-card {
+  background: rgba(100, 116, 139, 0.05);
+  border-color: rgba(100, 116, 139, 0.1);
+}
+
+[data-variant='2'] .staking-stat-card:hover {
+  border-color: rgba(234, 179, 8, 0.2);
+  background: rgba(100, 116, 139, 0.08);
+}
+
+[data-variant='2'] .staking-lock-amount {
+  color: #eab308;
+}
+
+[data-variant='2'] .staking-progress-fill {
+  background: linear-gradient(90deg, #64748b, #eab308);
+}
+
+[data-variant='2'] .staking-lock-status.active {
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.12);
+}
+
+[data-variant='2'] .staking-timeline::before {
+  background: linear-gradient(180deg, rgba(100, 116, 139, 0.3), rgba(234, 179, 8, 0.1));
+}
+
+[data-variant='2'] .staking-timeline-item::before {
+  background: #eab308;
+  border-color: #0f0f14;
+}
+
+[data-variant='2'] .staking-timeline-amount {
+  color: #eab308;
+}
+
+[data-variant='2'] .staking-cta-inner {
+  background: rgba(100, 116, 139, 0.04);
+  border-color: rgba(100, 116, 139, 0.12);
+}
+
+[data-variant='2'] .staking-cta-btn {
+  background: linear-gradient(135deg, #64748b, #eab308);
+}
+
+[data-variant='2'] .staking-filter.active {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+[data-variant='2'] .staking-lock:hover {
+  border-color: rgba(234, 179, 8, 0.18);
+  background: rgba(100, 116, 139, 0.04);
+}
+
+[data-variant='2'] .staking-footer a {
+  color: #eab308;
+}
+
+/* ============================================
+   VARIANT 3: AURORA — Teal + Violet, ethereal
+   ============================================ */
+[data-variant='3'] .staking-bg {
+  background: #030712;
+}
+
+[data-variant='3'] .staking-orb-1 {
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.35), transparent 70%);
+}
+
+[data-variant='3'] .staking-orb-2 {
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.3), transparent 70%);
+}
+
+[data-variant='3'] .staking-grid-floor {
+  background-image:
+    linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px);
+}
+
+[data-variant='3'] .staking-stat-card {
+  background: rgba(45, 212, 191, 0.04);
+  border-color: rgba(45, 212, 191, 0.08);
+}
+
+[data-variant='3'] .staking-stat-card:hover {
+  border-color: rgba(45, 212, 191, 0.18);
+  background: rgba(45, 212, 191, 0.07);
+}
+
+[data-variant='3'] .staking-lock-amount {
+  color: #2dd4bf;
+}
+
+[data-variant='3'] .staking-progress-fill {
+  background: linear-gradient(90deg, #2dd4bf, #a78bfa);
+}
+
+[data-variant='3'] .staking-lock-status.active {
+  color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+}
+
+[data-variant='3'] .staking-timeline::before {
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.3), rgba(167, 139, 250, 0.1));
+}
+
+[data-variant='3'] .staking-timeline-item::before {
+  background: #2dd4bf;
+  border-color: #030712;
+}
+
+[data-variant='3'] .staking-timeline-amount {
+  color: #2dd4bf;
+}
+
+[data-variant='3'] .staking-cta-inner {
+  background: rgba(45, 212, 191, 0.04);
+  border-color: rgba(45, 212, 191, 0.1);
+}
+
+[data-variant='3'] .staking-cta-btn {
+  background: linear-gradient(135deg, #2dd4bf, #a78bfa);
+}
+
+[data-variant='3'] .staking-filter.active {
+  background: rgba(45, 212, 191, 0.15);
+  color: #2dd4bf;
+}
+
+[data-variant='3'] .staking-lock:hover {
+  border-color: rgba(45, 212, 191, 0.15);
+  background: rgba(45, 212, 191, 0.04);
+}
+
+[data-variant='3'] .staking-footer a {
+  color: #2dd4bf;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .staking-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .staking-stat-card {
+    padding: 18px;
+  }
+
+  .staking-stat-value {
+    font-size: 22px;
+  }
+
+  .staking-lock {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .staking-lock-amount {
+    text-align: left;
+  }
+
+  .staking-lock-progress {
+    width: 100%;
+  }
+
+  .staking-browser-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .staking-footer {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .staking-footer-right {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .staking-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .staking-main {
+    padding: 20px 14px 60px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .staking-orb {
+    animation: none;
+  }
+  .staking-spinner {
+    animation: none;
+  }
+}
