@@ -376,6 +376,9 @@ const {
 // Phase 15: Storage Abstraction (Redis/Memory)
 const { getStorage, isStorageReady, BACKENDS: _BACKENDS } = require('./services/storage');
 
+// Phase 16: Modular Routes (extracted from index.js)
+const routes = require('./routes');
+
 const app = express();
 const PORT = process.env.API_PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -735,6 +738,11 @@ setInterval(() => {
 app.use('/api', generalLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api/shop/purchase', purchaseLimiter);
+
+// ============================================
+// MODULAR ROUTES (extracted from this file)
+// ============================================
+app.use('/', routes.probes); // /livez, /readyz, /startupz
 
 // ============================================
 // HEALTH CHECK
@@ -4001,46 +4009,8 @@ app.post('/api/admin/tracing/sample-rate', authMiddleware, requireAdmin, async (
   }
 });
 
-// ============================================
-// HEALTH CHECK PROBES
-// ============================================
-
-/**
- * Liveness probe
- * GET /livez
- */
-app.get('/livez', (req, res) => {
-  const result = livenessProbe();
-  res.json(result);
-});
-
-/**
- * Readiness probe
- * GET /readyz
- */
-app.get('/readyz', async (req, res) => {
-  try {
-    const result = await readinessProbe();
-    const status = result.ready ? 200 : 503;
-    res.status(status).json(result);
-  } catch (error) {
-    res.status(503).json({ ready: false, error: error.message });
-  }
-});
-
-/**
- * Startup probe
- * GET /startupz
- */
-app.get('/startupz', async (req, res) => {
-  try {
-    const result = await startupProbe();
-    const status = result.started ? 200 : 503;
-    res.status(status).json(result);
-  } catch (error) {
-    res.status(503).json({ started: false, error: error.message });
-  }
-});
+// HEALTH CHECK PROBES: Extracted to routes/probes.js
+// Mounted at app.use('/', routes.probes) above
 
 /**
  * Detailed health (admin only)
