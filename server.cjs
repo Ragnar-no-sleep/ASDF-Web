@@ -384,6 +384,11 @@ app.get('/holdex', (req, res) => {
   res.sendFile(path.join(__dirname, 'holdex.html'));
 });
 
+// Route /staking to staking.html (Token Lock Dashboard)
+app.get('/staking', (req, res) => {
+  res.sendFile(path.join(__dirname, 'staking.html'));
+});
+
 // Route /quick-start to learn.html (5-step Quick Start Guide)
 app.get('/quick-start', (req, res) => {
   res.sendFile(path.join(__dirname, 'learn.html'));
