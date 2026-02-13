@@ -78,16 +78,30 @@ function sanitizeError(error, context = 'unknown') {
     if (lowerMessage.includes(pattern)) return message;
   }
 
-  if (lowerMessage.includes('jwt') || lowerMessage.includes('token')) return 'Authentication error';
-  if (lowerMessage.includes('database') || lowerMessage.includes('sql')) return 'Database error';
+  if (lowerMessage.includes('jwt') || lowerMessage.includes('token')) {
+    return 'Session expired. Please reconnect your wallet.';
+  }
+  if (lowerMessage.includes('database') || lowerMessage.includes('sql')) {
+    return 'Something went wrong. Please try again in a moment.';
+  }
+  if (lowerMessage.includes('timeout')) {
+    return 'The request took too long. Please try again.';
+  }
   if (
     lowerMessage.includes('network') ||
     lowerMessage.includes('fetch') ||
     lowerMessage.includes('helius')
-  )
-    return 'Network error';
+  ) {
+    return 'Could not reach the server. Check your connection and retry.';
+  }
+  if (lowerMessage.includes('rate') || lowerMessage.includes('limit')) {
+    return 'Too many requests. Please wait a moment before trying again.';
+  }
+  if (lowerMessage.includes('permission') || lowerMessage.includes('forbidden')) {
+    return 'You do not have permission to perform this action.';
+  }
 
-  return 'Internal server error';
+  return 'Something went wrong. Please try again.';
 }
 
 module.exports = {
