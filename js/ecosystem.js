@@ -25,13 +25,58 @@
     ignition: 'arcade',
   };
 
-  // Variant config per page: name, dot colors
+  // Variant config per page: name, dot colors, drawer metadata
   const PAGE_VARIANTS = {
-    burns: { key: 'asdf-variant-burns', dots: ['#c9a227', '#dc2626', '#94a3b8'] },
-    asdforecast: { key: 'asdf-variant-forecast', dots: ['#00ff41', '#3b82f6', '#f472b6'] },
-    holdex: { key: 'asdf-variant-holdex', dots: ['#4ade80', '#38bdf8', '#f59e0b'] },
-    staking: { key: 'asdf-variant-staking', dots: ['#7b93ff', '#eab308', '#2dd4bf'] },
-    ignition: { key: 'asdf-variant-ignition', dots: ['#ea580c', '#e879f9', '#22c55e'] },
+    burns: {
+      key: 'asdf-variant-burns',
+      dots: ['#c9a227', '#dc2626', '#94a3b8'],
+      names: ['Gold', 'Inferno', 'Ash'],
+      swatches: [
+        'eco-variant-swatch--gold',
+        'eco-variant-swatch--inferno',
+        'eco-variant-swatch--ash',
+      ],
+    },
+    asdforecast: {
+      key: 'asdf-variant-forecast',
+      dots: ['#00ff41', '#3b82f6', '#f472b6'],
+      names: ['Matrix', 'Bloomberg', 'Synthwave'],
+      swatches: [
+        'eco-variant-swatch--matrix',
+        'eco-variant-swatch--bloomberg',
+        'eco-variant-swatch--synthwave',
+      ],
+    },
+    holdex: {
+      key: 'asdf-variant-holdex',
+      dots: ['#4ade80', '#38bdf8', '#f59e0b'],
+      names: ['Emerald', 'Crystal', 'Vintage'],
+      swatches: [
+        'eco-variant-swatch--emerald',
+        'eco-variant-swatch--crystal',
+        'eco-variant-swatch--vintage',
+      ],
+    },
+    staking: {
+      key: 'asdf-variant-staking',
+      dots: ['#7b93ff', '#eab308', '#2dd4bf'],
+      names: ['Cosmos', 'Vault', 'Aurora'],
+      swatches: [
+        'eco-variant-swatch--cosmos',
+        'eco-variant-swatch--vault',
+        'eco-variant-swatch--aurora',
+      ],
+    },
+    ignition: {
+      key: 'asdf-variant-ignition',
+      dots: ['#ea580c', '#e879f9', '#22c55e'],
+      names: ['Ember', 'Neon', 'Pixel'],
+      swatches: [
+        'eco-variant-swatch--ember-ig',
+        'eco-variant-swatch--neon',
+        'eco-variant-swatch--pixel',
+      ],
+    },
   };
 
   const THEME_KEY = 'asdf-theme';
@@ -131,6 +176,7 @@
     localStorage.setItem(cfg.key, variant);
     document.documentElement.setAttribute('data-variant', variant);
     updateVariantDots(variant);
+    updateVariantCards(variant);
   }
 
   function applyVariant() {
@@ -161,6 +207,73 @@
       var dot = e.target.closest('.variant-dot');
       if (!dot) return;
       var v = dot.getAttribute('data-variant');
+      if (v) setVariant(page, v);
+    });
+  }
+
+  // ============================================
+  // VARIANT DRAWER (in-drawer picker)
+  // ============================================
+
+  function updateVariantCards(activeVariant) {
+    document.querySelectorAll('.eco-variant-card').forEach(function (card) {
+      card.classList.toggle('active', card.getAttribute('data-variant') === activeVariant);
+    });
+  }
+
+  function initVariantDrawer() {
+    var picker = document.querySelector('.eco-variant-picker');
+    if (!picker) return;
+
+    var page = getCurrentPage();
+    var cfg = PAGE_VARIANTS[page];
+    if (!cfg || !cfg.names) return;
+
+    var variant = getVariant(page);
+
+    // Render variant cards
+    picker.innerHTML = '';
+    cfg.names.forEach(function (name, i) {
+      var v = String(i + 1);
+      var card = document.createElement('div');
+      card.className = 'eco-variant-card' + (v === variant ? ' active' : '');
+      card.setAttribute('data-variant', v);
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', name + ' style');
+
+      var swatch = document.createElement('div');
+      swatch.className = 'eco-variant-swatch ' + (cfg.swatches[i] || '');
+
+      var label = document.createElement('div');
+      label.className = 'eco-variant-name';
+      label.textContent = name;
+
+      var check = document.createElement('div');
+      check.className = 'eco-variant-check';
+      check.innerHTML = '&#10003;';
+
+      card.appendChild(swatch);
+      card.appendChild(label);
+      card.appendChild(check);
+      picker.appendChild(card);
+    });
+
+    // Click handler
+    picker.addEventListener('click', function (e) {
+      var card = e.target.closest('.eco-variant-card');
+      if (!card) return;
+      var v = card.getAttribute('data-variant');
+      if (v) setVariant(page, v);
+    });
+
+    // Keyboard handler (Enter/Space)
+    picker.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var card = e.target.closest('.eco-variant-card');
+      if (!card) return;
+      e.preventDefault();
+      var v = card.getAttribute('data-variant');
       if (v) setVariant(page, v);
     });
   }
@@ -255,8 +368,11 @@
     // Update active states
     updateThemeCards(activeTheme);
 
-    // Variant switcher
+    // Variant switcher (floating dots — backward compat)
     initVariantSwitcher();
+
+    // Variant drawer (in-drawer picker)
+    initVariantDrawer();
 
     // Escape key closes drawer
     document.addEventListener('keydown', function (e) {

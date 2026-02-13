@@ -730,11 +730,11 @@ a:hover {
    ============================================ */
 .burns-hero {
   position: relative;
-  min-height: 70vh;
+  min-height: 35vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3xl) var(--space-lg);
+  padding: var(--space-2xl) var(--space-lg);
   text-align: center;
   z-index: 1;
 }
@@ -1358,7 +1358,123 @@ a:hover {
   }
 
   .burns-hero {
-    min-height: 60vh;
-    padding: var(--space-2xl) var(--space-md);
+    min-height: 30vh;
+    padding: var(--space-xl) var(--space-md);
+  }
+}
+
+/* ============================================
+   VARIANT SWATCHES (drawer preview)
+   ============================================ */
+.eco-variant-swatch--gold {
+  background: linear-gradient(135deg, #000 30%, #c9a227);
+}
+.eco-variant-swatch--inferno {
+  background: linear-gradient(135deg, #0a0000 30%, #dc2626);
+}
+.eco-variant-swatch--ash {
+  background: linear-gradient(135deg, #0f172a 30%, #94a3b8);
+}
+
+/* ============================================
+   VARIANT 2: INFERNO — Enhanced intensity
+   ============================================ */
+
+/* Faster, brighter embers */
+[data-variant='2'] .ember {
+  animation-duration: 4s;
+}
+
+/* Brighter, faster flames */
+[data-variant='2'] .flame {
+  opacity: 0.9;
+  animation-duration: 0.5s;
+  background: linear-gradient(to top, rgba(220, 38, 38, 0.6), rgba(255, 59, 59, 0.35), transparent);
+}
+
+/* More intense glow circles */
+[data-variant='2'] .glow-circle {
+  opacity: 0.3;
+  animation-duration: 4s;
+}
+
+/* Full heat haze */
+[data-variant='2'] .heat-haze {
+  opacity: 1;
+}
+
+/* Hero accent glow */
+[data-variant='2'] .hero-title-accent {
+  text-shadow:
+    0 0 30px rgba(220, 38, 38, 0.5),
+    0 0 60px rgba(220, 38, 38, 0.2);
+}
+
+/* Spark intensity */
+[data-variant='2'] .spark {
+  box-shadow:
+    0 0 8px #dc2626,
+    0 0 16px rgba(255, 59, 59, 0.8);
+}
+
+/* ============================================
+   VARIANT 3: ASH — Post-burn silence
+   ============================================ */
+
+/* Slow, dim embers */
+[data-variant='3'] .ember {
+  animation-duration: 12s;
+  max-width: 5px;
+  max-height: 5px;
+}
+
+/* Near-invisible flames */
+[data-variant='3'] .flame {
+  opacity: 0.2;
+  animation-duration: 2s;
+  filter: blur(12px);
+}
+
+/* Reduced glow */
+[data-variant='3'] .glow-circle {
+  opacity: 0.1;
+  animation-duration: 10s;
+}
+
+/* Hide sparks and smoke */
+[data-variant='3'] .spark,
+[data-variant='3'] .smoke {
+  display: none;
+}
+
+/* Dim heat haze */
+[data-variant='3'] .heat-haze {
+  opacity: 0.3;
+}
+
+/* Extra breathing room on cards */
+[data-variant='3'] .stat-card {
+  padding: var(--space-xl);
+}
+
+/* Muted hero */
+[data-variant='3'] .hero-title-accent {
+  text-shadow: 0 0 20px rgba(148, 163, 184, 0.2);
+}
+
+/* ============================================
+   REDUCED MOTION — Burns-specific
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .ember,
+  .flame,
+  .smoke,
+  .spark,
+  .ash,
+  .glow-circle,
+  .heat-haze,
+  .cosmic-bg::before,
+  .cosmic-bg::after {
+    animation: none !important;
   }
 }
