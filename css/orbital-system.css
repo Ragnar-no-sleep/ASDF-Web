@@ -1,0 +1,479 @@
+/* ============================================
+   ASDF ORBITAL SYSTEM
+   Mathematical harmony: Fibonacci sequences + Golden ratio
+   9 elements orbiting the center (4 nodes + 5 tools)
+   ============================================ */
+
+:root {
+  /* === FIBONACCI RADII === */
+  --orbit-radius-f10: 55px; /* F10 - inner orbit */
+  --orbit-radius-f11: 89px; /* F11 - middle orbit */
+  --orbit-radius-f12: 144px; /* F12 - main orbit (used) */
+  --orbit-radius-f13: 233px; /* F13 - outer orbit */
+
+  /* Main orbital parameters */
+  --orbit-radius: var(--orbit-radius-f12);
+  --orbit-duration: 34s; /* F9 - organic timing */
+  --orbit-item-size: 48px; /* Touch-friendly */
+
+  /* === FIBONACCI TIMING === */
+  --time-f3: 2s;
+  --time-f4: 3s;
+  --time-f5: 5s;
+  --time-f6: 8s;
+  --time-f7: 13s;
+  --time-f8: 21s;
+  --time-f9: 34s;
+
+  /* === ANGULAR DISTRIBUTION === */
+  /* 9 elements = 360° / 9 = 40° spacing */
+  --angle-step: 40deg;
+
+  /* Individual angles (clockwise from top) */
+  --angle-0: 0deg; /* Learn */
+  --angle-1: 40deg; /* Build */
+  --angle-2: 80deg; /* Analytics */
+  --angle-3: 120deg; /* Play */
+  --angle-4: 160deg; /* Burns */
+  --angle-5: 200deg; /* Forecast */
+  --angle-6: 240deg; /* Holdex */
+  --angle-7: 280deg; /* Staking */
+  --angle-8: 320deg; /* Ignition */
+
+  /* === ORBITAL DELAYS (Fibonacci distribution) === */
+  /* Offset delays to create harmonious phasing */
+  --delay-0: 0s; /* Learn - start */
+  --delay-1: -3s; /* Build - F4 offset */
+  --delay-2: -8s; /* Analytics - F6 offset */
+  --delay-3: -13s; /* Play - F7 offset */
+  --delay-4: -5s; /* Burns - F5 offset */
+  --delay-5: -8s; /* Forecast - F6 offset */
+  --delay-6: -13s; /* Holdex - F7 offset */
+  --delay-7: -21s; /* Staking - F8 offset */
+  --delay-8: -34s; /* Ignition - F9 offset (full cycle) */
+
+  /* === GLOW PROGRESSION (Easter egg) === */
+  /* Fibonacci sequence for progressive feedback */
+  --glow-1: 3px; /* F4 */
+  --glow-2: 5px; /* F5 */
+  --glow-3: 8px; /* F6 */
+  --glow-4: 13px; /* F7 */
+  --glow-5: 21px; /* F8 */
+  --glow-6: 34px; /* F9 */
+  --glow-7: 55px; /* F10 */
+
+  /* === PHI-BASED EASING === */
+  --ease-phi: cubic-bezier(0.618, 0, 0.382, 1);
+  --ease-phi-in: cubic-bezier(0.618, 0, 1, 1);
+  --ease-phi-out: cubic-bezier(0, 0, 0.382, 1);
+}
+
+/* ============================================
+   KEYFRAMES - ORBITAL ROTATION
+   ============================================ */
+
+@keyframes orbit-phi {
+  from {
+    transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
+  }
+}
+
+/* Counter-rotation to keep items upright */
+@keyframes orbit-counter-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Scale animation on hover (φ ratio) */
+@keyframes orbit-hover-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08); /* 1 + φ/20 ≈ 1.08 */
+  }
+}
+
+/* ============================================
+   ORBITAL CONTAINER
+   ============================================ */
+
+.hub-orbit-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   ORBITAL CENTER (Tools label + portal)
+   ============================================ */
+
+.hub-orbit-center {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* F6 */
+
+  font-size: 24px; /* --text-2xl */
+  font-weight: 600;
+  color: var(--gold);
+  text-align: center;
+
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+
+  z-index: var(--z-elevated);
+  pointer-events: none; /* Let clicks pass through to orbiting items */
+}
+
+.hub-orbit-center > * {
+  pointer-events: auto; /* Re-enable for portal link */
+}
+
+/* ============================================
+   ORBITAL ITEMS (9 elements)
+   ============================================ */
+
+.hub-orbit-item {
+  position: absolute;
+  width: var(--orbit-item-size);
+  height: var(--orbit-item-size);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px; /* F4 */
+
+  /* Start at center, positioned by transform */
+  left: 50%;
+  top: 50%;
+  margin-left: calc(var(--orbit-item-size) / -2);
+  margin-top: calc(var(--orbit-item-size) / -2);
+
+  /* Initial transform uses static angle (set via inline style) */
+  transform: rotate(var(--static-angle, 0deg)) translateX(var(--orbit-radius))
+    rotate(calc(var(--static-angle, 0deg) * -1));
+
+  /* Visual styling */
+  background: rgba(26, 18, 13, 0.7);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 12px; /* Slightly rounded */
+  backdrop-filter: blur(8px);
+
+  color: var(--text-primary);
+  font-size: 13px; /* --text-sm */
+  font-weight: 500;
+  text-decoration: none;
+  text-align: center;
+
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-phi),
+    border-color var(--duration-fast) var(--ease-phi),
+    transform var(--duration-normal) var(--ease-phi),
+    box-shadow var(--duration-fast) var(--ease-phi);
+
+  /* Apply orbital animation */
+  animation:
+    orbit-phi var(--orbit-duration) linear infinite,
+    orbit-counter-rotate var(--orbit-duration) linear infinite;
+
+  /* Individual delays set via inline styles or data attributes */
+  animation-delay: var(--orbit-delay, 0s);
+
+  z-index: var(--z-base);
+}
+
+/* Hover state */
+.hub-orbit-item:hover {
+  background: rgba(26, 18, 13, 0.9);
+  border-color: var(--gold);
+  transform: scale(1.08);
+  box-shadow: 0 0 13px rgba(234, 179, 8, 0.4);
+  z-index: var(--z-elevated);
+  animation-play-state: paused; /* Pause orbit on hover */
+}
+
+/* Focus state (keyboard navigation) */
+.hub-orbit-item:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  z-index: var(--z-elevated);
+}
+
+/* Active state */
+.hub-orbit-item:active {
+  transform: scale(0.95);
+}
+
+/* Icon within item */
+.hub-orbit-item-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Label within item */
+.hub-orbit-item-label {
+  font-size: 11px; /* --text-xs */
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* ============================================
+   EASTER EGG STATES
+   ============================================ */
+
+/* Items that count for easter egg */
+.hub-orbit-item[data-easter-egg='true'] {
+  position: relative;
+}
+
+/* Glow progression on click (Fibonacci) */
+.hub-orbit-item[data-easter-egg='true']::after {
+  content: '';
+  position: absolute;
+  inset: -3px; /* Default glow */
+  border-radius: 14px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.3) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-phi);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Apply glow when clicked (set via JS) */
+.hub-orbit-item[data-easter-clicked='true']::after {
+  opacity: 1;
+  inset: calc(var(--easter-glow, 3px) * -1);
+}
+
+/* ============================================
+   TERRIER UNLOCK ANIMATION
+   ============================================ */
+
+.hub-orbit-center.terrier-unlocked {
+  animation: terrier-unlock 2s var(--ease-phi) forwards;
+}
+
+@keyframes terrier-unlock {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: blur(0);
+    box-shadow: 0 0 0 rgba(234, 179, 8, 0);
+  }
+  50% {
+    transform: scale(2) rotate(360deg);
+    filter: blur(10px);
+    box-shadow: 0 0 34px rgba(234, 179, 8, 0.8);
+  }
+  75% {
+    transform: scale(0.8) rotate(540deg);
+    filter: blur(5px);
+  }
+  100% {
+    transform: scale(1) rotate(720deg);
+    filter: blur(0);
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
+  }
+}
+
+/* Terrier portal (revealed after unlock) */
+.terrier-portal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px; /* F5 */
+
+  padding: 13px 21px; /* F7, F8 */
+  background: rgba(234, 179, 8, 0.15);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+
+  color: var(--gold);
+  font-size: 15px; /* --text-base */
+  font-weight: 600;
+  text-decoration: none;
+
+  cursor: pointer;
+  animation: portal-pulse 2s ease-in-out infinite;
+  transition: all 0.3s var(--ease-phi);
+}
+
+.terrier-portal:hover {
+  background: rgba(234, 179, 8, 0.25);
+  transform: scale(1.05);
+}
+
+@keyframes portal-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 21px rgba(234, 179, 8, 0.9);
+  }
+}
+
+/* ============================================
+   F11 HINT TOAST
+   ============================================ */
+
+.f11-hint {
+  position: fixed;
+  top: 21px; /* Fibonacci F8 */
+  right: 21px;
+
+  padding: 13px 21px; /* Fibonacci F7, F8 */
+  background: rgba(10, 10, 10, 0.9);
+  border: 1px solid var(--gold);
+  border-radius: 8px; /* Fibonacci F6 */
+
+  backdrop-filter: blur(8px);
+
+  font-size: 14px;
+  color: var(--gold);
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  animation: f11-slide-in 0.5s var(--ease-phi);
+  z-index: 9999;
+}
+
+@keyframes f11-slide-in {
+  from {
+    transform: translateX(150%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.f11-hint-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Fibonacci F5 */
+}
+
+.f11-hint-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.f11-hint-subtitle {
+  font-size: 13px;
+  color: rgba(234, 179, 8, 0.8);
+}
+
+.f11-hint-retry {
+  padding: 8px 13px;
+  background: var(--gold);
+  color: #0d0906; /* Dark bg */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: transform 0.2s var(--ease-phi);
+}
+
+.f11-hint-retry:hover {
+  transform: scale(1.05);
+}
+
+.f11-hint-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s var(--ease-phi);
+}
+
+.f11-hint-close:hover {
+  opacity: 0.7;
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --orbit-radius: var(--orbit-radius-f11); /* Smaller orbit on mobile */
+    --orbit-item-size: 44px;
+  }
+
+  .hub-orbit-center {
+    width: 100px;
+    height: 100px;
+    font-size: 20px;
+  }
+
+  .hub-orbit-item-icon {
+    font-size: 18px;
+  }
+
+  .hub-orbit-item-label {
+    font-size: 10px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-orbit-item {
+    animation: none;
+    /* Static positioning in a circle */
+    transform: rotate(var(--static-angle, 0deg)) translateX(var(--orbit-radius))
+      rotate(calc(var(--static-angle, 0deg) * -1));
+  }
+
+  @keyframes terrier-unlock {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes portal-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+}

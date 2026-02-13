@@ -21,6 +21,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <!-- Orbital system CSS -->
+    <link rel="stylesheet" href="css/orbital-system.css">
+
     <style>
         :root {
             --bg: #050508;
@@ -314,10 +317,63 @@
             }
         }
 
+        /* --- View toggle button --- */
+        .view-toggle {
+            margin-top: 21px;
+            padding: 13px 21px;
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.25);
+            border-radius: 8px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.618, 0, 0.382, 1);
+        }
+
+        .view-toggle:hover {
+            background: rgba(234, 179, 8, 0.18);
+            transform: scale(1.05);
+        }
+
+        .view-toggle-icon {
+            font-size: 16px;
+            animation: rotate-slow 8s linear infinite;
+        }
+
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Orbital view mode */
+        .page[data-view="orbital"] .tools-grid {
+            display: none;
+        }
+
+        .tools-orbital {
+            display: none;
+            position: fixed;
+            inset: 0;
+            top: 56px; /* Below nav */
+            background: var(--bg);
+        }
+
+        .page[data-view="orbital"] .tools-orbital {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* --- Reduced motion --- */
         @media (prefers-reduced-motion: reduce) {
             .tool-card { transition: none; }
             .page-badge-dot { animation: none; }
+            .view-toggle-icon { animation: none; }
         }
     </style>
 </head>
@@ -340,6 +396,12 @@
                 Burn. Track. Predict. Stake. Play.<br>
                 Don't trust. Verify.
             </p>
+
+            <!-- View toggle -->
+            <button class="view-toggle" id="viewToggle" aria-label="Toggle orbital view">
+                <span class="view-toggle-icon">🌀</span>
+                <span class="view-toggle-text">Orbital View</span>
+            </button>
         </header>
 
         <div class="tools-grid">
@@ -410,5 +472,64 @@
             </p>
         </footer>
     </div>
+
+    <!-- Orbital View Container -->
+    <div class="tools-orbital" aria-hidden="true">
+        <div class="hub-orbit-container" style="--orbit-radius: 233px;">
+            <!-- Center -->
+            <div class="hub-orbit-center" style="pointer-events: auto;">
+                <span>Choose</span>
+            </div>
+
+            <!-- 5 Tools in orbit -->
+            <a href="/burns" class="hub-orbit-item" data-orbit-id="burns" style="--orbit-delay: 0s;">
+                <span class="hub-orbit-item-icon">&#128293;</span>
+                <span class="hub-orbit-item-label">Burns</span>
+            </a>
+
+            <a href="/forecast" class="hub-orbit-item" data-orbit-id="forecast" style="--orbit-delay: -6.8s;">
+                <span class="hub-orbit-item-icon">&#127919;</span>
+                <span class="hub-orbit-item-label">Forecast</span>
+            </a>
+
+            <a href="/holdex" class="hub-orbit-item" data-orbit-id="holdex" style="--orbit-delay: -13.6s;">
+                <span class="hub-orbit-item-icon">&#128200;</span>
+                <span class="hub-orbit-item-label">HolDex</span>
+            </a>
+
+            <a href="/staking" class="hub-orbit-item" data-orbit-id="staking" style="--orbit-delay: -20.4s;">
+                <span class="hub-orbit-item-icon">&#128274;</span>
+                <span class="hub-orbit-item-label">Staking</span>
+            </a>
+
+            <a href="/ignition" class="hub-orbit-item" data-orbit-id="ignition" style="--orbit-delay: -27.2s;">
+                <span class="hub-orbit-item-icon">&#128640;</span>
+                <span class="hub-orbit-item-label">Ignition</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // View toggle
+        const toggle = document.getElementById('viewToggle');
+        const page = document.querySelector('.page');
+        const orbitalContainer = document.querySelector('.tools-orbital');
+
+        if (toggle) {
+            toggle.addEventListener('click', () => {
+                const current = page.dataset.view;
+                const newView = current === 'orbital' ? 'grid' : 'orbital';
+                page.dataset.view = newView;
+
+                if (newView === 'orbital') {
+                    toggle.querySelector('.view-toggle-text').textContent = 'Grid View';
+                    orbitalContainer.setAttribute('aria-hidden', 'false');
+                } else {
+                    toggle.querySelector('.view-toggle-text').textContent = 'Orbital View';
+                    orbitalContainer.setAttribute('aria-hidden', 'true');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

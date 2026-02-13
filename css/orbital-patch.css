@@ -1,0 +1,56 @@
+/* ============================================
+   ORBITAL PATCH - Disable old hub-node styles
+   This file overrides legacy hub-majestic.css
+   to let orbital-system.css take control
+   ============================================ */
+
+/* Hide old hub-node class (replaced by hub-orbit-item) */
+.hub-node {
+  display: none !important;
+}
+
+/* Hide old hub-tools expandable system */
+.hub-tools {
+  display: none !important;
+}
+
+/* Ensure orbital container is visible and centered */
+.hub-orbit-container {
+  display: flex !important;
+}
+
+/* Make sure hub main container doesn't interfere */
+.hub {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Orbital rings stay decorative in background */
+.hub-orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 179, 8, 0.06);
+  pointer-events: none;
+}
+
+.hub-orbit--inner {
+  width: calc(var(--orbit-radius) * 1.5);
+  height: calc(var(--orbit-radius) * 1.5);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hub-orbit--outer {
+  width: calc(var(--orbit-radius) * 2.5);
+  height: calc(var(--orbit-radius) * 2.5);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-color: rgba(234, 179, 8, 0.04);
+}

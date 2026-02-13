@@ -42,6 +42,8 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/hub-majestic.css">
+    <link rel="stylesheet" href="css/orbital-system.css">
+    <link rel="stylesheet" href="css/orbital-patch.css">
 
     <style>
         html, body { background: #0d0906; }
@@ -79,65 +81,126 @@
     <!-- Main Hub -->
     <main id="main-hub" class="hub">
 
-        <!-- Orbital Rings (organic, not perfect circles) -->
+        <!-- Orbital Rings (decorative background) -->
         <div class="hub-orbit hub-orbit--inner"></div>
         <div class="hub-orbit hub-orbit--outer"></div>
 
-        <!-- Nodes - Organic chaotic positions -->
-        <a href="/quick-start" class="hub-node" data-pos="learn">
-            <span class="hub-node-icon">&#128218;</span>
-            <span class="hub-node-label">Learn</span>
-        </a>
+        <!-- Orbital Container - All elements orbit the center -->
+        <div class="hub-orbit-container">
 
-        <a href="/build" class="hub-node" data-pos="build">
-            <span class="hub-node-icon">&#128736;</span>
-            <span class="hub-node-label">Build</span>
-        </a>
-
-        <a href="analytics.html" class="hub-node" data-pos="analytics">
-            <span class="hub-node-icon">&#128200;</span>
-            <span class="hub-node-label">Analytics</span>
-        </a>
-
-        <a href="/ignition" class="hub-node" data-pos="play">
-            <span class="hub-node-icon">&#127918;</span>
-            <span class="hub-node-label">Play</span>
-        </a>
-
-        <!-- Tools - Interactive expandable -->
-        <div class="hub-tools" id="hubTools">
-            <button class="hub-tools-trigger" id="toolsTrigger" aria-expanded="false" aria-controls="toolsMenu" aria-label="Toggle tools menu">
-                <span class="hub-tools-icon" aria-hidden="true">&#128295;</span>
-                <span class="hub-tools-label">Tools</span>
-            </button>
-
-            <!-- Expandable tools -->
-            <div id="toolsMenu" role="menu" aria-label="Tools menu">
-            <a href="/burns" class="hub-tools-item" data-tool="burns" role="menuitem">
-                <span aria-hidden="true">&#128293;</span>
-                <span>Burns</span>
-            </a>
-            <a href="/forecast" class="hub-tools-item" data-tool="forecast" role="menuitem">
-                <span aria-hidden="true">&#127919;</span>
-                <span>Forecast</span>
-            </a>
-            <a href="/holdex" class="hub-tools-item" data-tool="holdex" role="menuitem">
-                <span aria-hidden="true">&#128200;</span>
-                <span>HolDex</span>
-            </a>
-            <a href="/staking" class="hub-tools-item" data-tool="staking" role="menuitem">
-                <span aria-hidden="true">&#128274;</span>
-                <span>Staking</span>
-            </a>
-            <a href="/ignition" class="hub-tools-item" data-tool="ignition" role="menuitem">
-                <span aria-hidden="true">&#128640;</span>
-                <span>Ignition</span>
-            </a>
-            <a href="/tools" class="hub-tools-item" data-tool="all" role="menuitem" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 4px; padding-top: 8px;">
-                <span aria-hidden="true">&#8594;</span>
-                <span>See All</span>
-            </a>
+            <!-- Center - Tools label + Terrier portal (when unlocked) -->
+            <div class="hub-orbit-center" id="orbitCenter">
+                <span>Tools</span>
             </div>
+
+            <!-- Orbital Items - 9 elements (4 nodes + 5 tools) -->
+
+            <!-- Learn - 0° (not easter egg) -->
+            <a href="/quick-start"
+               class="hub-orbit-item"
+               data-orbit-id="learn"
+               data-angle="0"
+               style="--orbit-delay: 0s; --static-angle: 0deg;"
+               aria-label="Learn about ASDF">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128218;</span>
+                <span class="hub-orbit-item-label">Learn</span>
+            </a>
+
+            <!-- Build - 40° (easter egg #1) -->
+            <a href="/build"
+               class="hub-orbit-item"
+               data-orbit-id="build"
+               data-angle="40"
+               data-easter-egg="true"
+               style="--orbit-delay: -3s; --static-angle: 40deg;"
+               aria-label="Build with ASDF">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128736;</span>
+                <span class="hub-orbit-item-label">Build</span>
+            </a>
+
+            <!-- Analytics - 80° (not easter egg) -->
+            <a href="/analytics"
+               class="hub-orbit-item"
+               data-orbit-id="analytics"
+               data-angle="80"
+               style="--orbit-delay: -8s; --static-angle: 80deg;"
+               aria-label="Analytics dashboard">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128200;</span>
+                <span class="hub-orbit-item-label">Analytics</span>
+            </a>
+
+            <!-- Play - 120° (easter egg #2) -->
+            <a href="/ignition"
+               class="hub-orbit-item"
+               data-orbit-id="play"
+               data-angle="120"
+               data-easter-egg="true"
+               style="--orbit-delay: -13s; --static-angle: 120deg;"
+               aria-label="Play games">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#127918;</span>
+                <span class="hub-orbit-item-label">Play</span>
+            </a>
+
+            <!-- Burns - 160° (easter egg #3) -->
+            <a href="/burns"
+               class="hub-orbit-item"
+               data-orbit-id="burns"
+               data-angle="160"
+               data-easter-egg="true"
+               style="--orbit-delay: -5s; --static-angle: 160deg;"
+               aria-label="Burns tracker">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128293;</span>
+                <span class="hub-orbit-item-label">Burns</span>
+            </a>
+
+            <!-- Forecast - 200° (easter egg #4) -->
+            <a href="/forecast"
+               class="hub-orbit-item"
+               data-orbit-id="forecast"
+               data-angle="200"
+               data-easter-egg="true"
+               style="--orbit-delay: -8s; --static-angle: 200deg;"
+               aria-label="Forecast tool">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#127919;</span>
+                <span class="hub-orbit-item-label">Forecast</span>
+            </a>
+
+            <!-- Holdex - 240° (easter egg #5) -->
+            <a href="/holdex"
+               class="hub-orbit-item"
+               data-orbit-id="holdex"
+               data-angle="240"
+               data-easter-egg="true"
+               style="--orbit-delay: -13s; --static-angle: 240deg;"
+               aria-label="HolDex tracker">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128200;</span>
+                <span class="hub-orbit-item-label">HolDex</span>
+            </a>
+
+            <!-- Staking - 280° (easter egg #6) -->
+            <a href="/staking"
+               class="hub-orbit-item"
+               data-orbit-id="staking"
+               data-angle="280"
+               data-easter-egg="true"
+               style="--orbit-delay: -21s; --static-angle: 280deg;"
+               aria-label="Staking platform">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128274;</span>
+                <span class="hub-orbit-item-label">Staking</span>
+            </a>
+
+            <!-- Ignition - 320° (easter egg #7) -->
+            <a href="/ignition"
+               class="hub-orbit-item"
+               data-orbit-id="ignition"
+               data-angle="320"
+               data-easter-egg="true"
+               style="--orbit-delay: -34s; --static-angle: 320deg;"
+               aria-label="Ignition launchpad">
+                <span class="hub-orbit-item-icon" aria-hidden="true">&#128640;</span>
+                <span class="hub-orbit-item-label">Ignition</span>
+            </a>
+
         </div>
 
     </main>

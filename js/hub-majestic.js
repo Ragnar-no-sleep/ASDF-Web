@@ -117,12 +117,165 @@
     }
   };
 
+  // --- Fullscreen prompt (2 attempts max) ---
+  const initFullscreenPrompt = async () => {
+    const STORAGE_KEY = 'asdf_fullscreen_prompted';
+    const MAX_ATTEMPTS = 2;
+
+    const attempts = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+    if (attempts >= MAX_ATTEMPTS) return; // Stop after 2 refusals
+
+    // Wait for first user interaction (required by browsers)
+    const waitForInteraction = () =>
+      new Promise(resolve => {
+        const handler = () => {
+          document.removeEventListener('click', handler);
+          document.removeEventListener('keydown', handler);
+          resolve();
+        };
+        document.addEventListener('click', handler, { once: true });
+        document.addEventListener('keydown', handler, { once: true });
+      });
+
+    await waitForInteraction();
+
+    try {
+      await document.documentElement.requestFullscreen();
+      // Success - reset attempts
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (err) {
+      // User refused or browser blocked
+      const newAttempts = attempts + 1;
+      localStorage.setItem(STORAGE_KEY, newAttempts.toString());
+
+      if (newAttempts === 1) {
+        // Show F11 hint after first refusal
+        showF11Hint();
+      }
+      // After 2nd refusal, never ask again
+    }
+  };
+
+  // --- F11 hint toast ---
+  const showF11Hint = () => {
+    const hint = document.createElement('div');
+    hint.id = 'f11Hint';
+    hint.className = 'f11-hint';
+    hint.innerHTML = `
+      <div class="f11-hint-text">
+        <span class="f11-hint-title">Chill! This is fine.</span>
+        <span class="f11-hint-subtitle">Press F11 for full immersion</span>
+      </div>
+      <button class="f11-hint-retry" id="f11Retry">Try again</button>
+      <button class="f11-hint-close" id="f11Close" aria-label="Close">×</button>
+    `;
+    document.body.appendChild(hint);
+
+    // Retry button
+    document.getElementById('f11Retry').addEventListener('click', async () => {
+      hint.remove();
+      try {
+        await document.documentElement.requestFullscreen();
+        localStorage.removeItem('asdf_fullscreen_prompted');
+      } catch (err) {
+        localStorage.setItem('asdf_fullscreen_prompted', '2'); // Max reached
+      }
+    });
+
+    // Close button
+    document.getElementById('f11Close').addEventListener('click', () => {
+      hint.remove();
+    });
+
+    // Auto-dismiss after 8s (Fibonacci F6)
+    setTimeout(() => hint.remove(), 8000);
+  };
+
+  // --- Easter Egg tracker (7 clics → unlock /terrier) ---
+  const initEasterEgg = () => {
+    const STORAGE_KEY = 'asdf_easter_clicks';
+    const UNLOCK_KEY = 'asdf_terrier_unlocked';
+    const TARGET_IDS = ['build', 'play', 'burns', 'forecast', 'holdex', 'staking', 'ignition'];
+    const GLOW_PROGRESSION = [3, 5, 8, 13, 21, 34, 55]; // Fibonacci
+
+    // Load progress
+    let clicked = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    const unlocked = localStorage.getItem(UNLOCK_KEY) === 'true';
+
+    if (unlocked) {
+      showTerrierEntry();
+      return;
+    }
+
+    // Apply existing glow to already-clicked items
+    clicked.forEach((id, index) => {
+      const item = document.querySelector(`[data-orbit-id="${id}"]`);
+      if (item) {
+        item.dataset.easterClicked = 'true';
+        item.style.setProperty('--easter-glow', `${GLOW_PROGRESSION[clicked.size - 1]}px`);
+      }
+    });
+
+    // Listen to clicks on easter-egg items
+    document.querySelectorAll('[data-easter-egg="true"]').forEach(item => {
+      item.addEventListener('click', e => {
+        const id = item.dataset.orbitId;
+        if (!TARGET_IDS.includes(id)) return;
+        if (clicked.has(id)) return; // Already clicked
+
+        // Track click
+        clicked.add(id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...clicked]));
+
+        // Visual feedback (glow Fibonacci progression)
+        const step = clicked.size;
+        const glowSize = GLOW_PROGRESSION[step - 1];
+        item.dataset.easterClicked = 'true';
+        item.style.setProperty('--easter-glow', `${glowSize}px`);
+
+        // Check unlock condition
+        if (clicked.size === 7) {
+          e.preventDefault(); // Don't navigate yet
+          unlockTerrier();
+        }
+      });
+    });
+  };
+
+  const unlockTerrier = () => {
+    localStorage.setItem('asdf_terrier_unlocked', 'true');
+
+    // Animation unlock (explosion 34px → collapse)
+    const center = document.getElementById('orbitCenter');
+    if (center) {
+      center.classList.add('terrier-unlocked');
+
+      setTimeout(() => {
+        showTerrierEntry();
+      }, 2000); // 2s for animation
+    }
+  };
+
+  const showTerrierEntry = () => {
+    // Add clickable portal to center
+    const center = document.getElementById('orbitCenter');
+    if (!center || center.querySelector('.terrier-portal')) return; // Already added
+
+    const portal = document.createElement('a');
+    portal.href = '/terrier';
+    portal.className = 'terrier-portal';
+    portal.innerHTML = '<span aria-hidden="true">🐕</span><span>Enter the Burrow</span>';
+    center.appendChild(portal);
+  };
+
   // --- Init ---
   const init = () => {
     checkReducedMotion();
     initParallax();
     initNodeGlow();
     initTools();
+    initFullscreenPrompt();
+    initEasterEgg();
   };
 
   if (document.readyState === 'loading') {
