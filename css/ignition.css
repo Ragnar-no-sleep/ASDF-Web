@@ -1,0 +1,1693 @@
+/**
+ * ASDF Ignition Page - Solana Airdrop Platform
+ * Orange/fire palette with 3 variant color schemes
+ * Fibonacci spacing: 8, 13, 21, 34, 55, 89, 144px
+ */
+
+@import url('./design-tokens.css');
+
+/* ============================================
+   CSS VARIABLES
+   ============================================ */
+:root {
+  /* Ignition Core Palette */
+  --ig-accent: #ea580c;
+  --ig-accent-light: #f97316;
+  --ig-accent-dim: #9a3412;
+  --ig-accent-glow: rgba(234, 88, 12, 0.2);
+
+  /* Backgrounds */
+  --ig-black: #000000;
+  --ig-void: #050508;
+  --ig-obsidian: #0a0a0f;
+  --ig-charcoal: #111118;
+  --ig-slate: #1a1a24;
+  --ig-ash: #2a2a38;
+
+  /* Text */
+  --ig-text-primary: rgba(255, 255, 255, 0.95);
+  --ig-text-secondary: rgba(255, 255, 255, 0.7);
+  --ig-text-muted: rgba(255, 255, 255, 0.5);
+  --ig-text-dim: rgba(255, 255, 255, 0.3);
+
+  /* Functional */
+  --ig-success: #22c55e;
+  --ig-warning: #eab308;
+  --ig-danger: #ef4444;
+
+  /* Fibonacci Spacing */
+  --space-xs: 8px;
+  --space-sm: 13px;
+  --space-md: 21px;
+  --space-lg: 34px;
+  --space-xl: 55px;
+  --space-2xl: 89px;
+  --space-3xl: 144px;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* Effects */
+  --ig-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --ig-glow: 0 0 40px rgba(234, 88, 12, 0.2);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 17px;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  background: var(--ig-black);
+  color: var(--ig-text-primary);
+  line-height: 1.8;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+a {
+  color: var(--ig-accent);
+  text-decoration: none;
+  transition: var(--ig-transition);
+}
+
+a:hover {
+  color: var(--ig-accent-light);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ig-accent);
+  color: #000;
+  font-weight: 600;
+  border-radius: var(--radius-md, 10px);
+  z-index: 9999;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: var(--space-sm);
+}
+
+/* ============================================
+   ANIMATED BACKGROUND
+   ============================================ */
+.ig-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--ig-black);
+  overflow: hidden;
+}
+
+.ig-bg::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.08) 0%, transparent 70%);
+  animation: ig-float 22s ease-in-out infinite;
+}
+
+.ig-bg::after {
+  content: '';
+  position: absolute;
+  bottom: 10%;
+  right: -10%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.05) 0%, transparent 70%);
+  animation: ig-float 28s ease-in-out infinite reverse;
+}
+
+@keyframes ig-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(25px, -15px) scale(1.08);
+  }
+  66% {
+    transform: translate(-15px, 15px) scale(0.92);
+  }
+}
+
+/* Glowing orbs */
+.ig-glow {
+  position: absolute;
+  border-radius: 50%;
+  animation: ig-glow-pulse 7s ease-in-out infinite;
+}
+
+.ig-glow--1 {
+  width: 280px;
+  height: 280px;
+  top: 20%;
+  left: 10%;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.1), transparent 70%);
+}
+
+.ig-glow--2 {
+  width: 200px;
+  height: 200px;
+  top: 55%;
+  right: 15%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.08), transparent 70%);
+  animation-delay: 2.5s;
+}
+
+.ig-glow--3 {
+  width: 240px;
+  height: 240px;
+  bottom: 20%;
+  left: 35%;
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.06), transparent 70%);
+  animation-delay: 4.5s;
+}
+
+@keyframes ig-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+
+/* Rising particles */
+.ig-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--ig-accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ig-rise 7s ease-out infinite;
+  box-shadow:
+    0 0 12px var(--ig-accent),
+    0 0 24px rgba(249, 115, 22, 0.6);
+}
+
+.ig-particle:nth-child(4) {
+  left: 8%;
+  animation-delay: 0s;
+}
+.ig-particle:nth-child(5) {
+  left: 20%;
+  animation-delay: 1.2s;
+}
+.ig-particle:nth-child(6) {
+  left: 35%;
+  animation-delay: 2.4s;
+}
+.ig-particle:nth-child(7) {
+  left: 48%;
+  animation-delay: 0.6s;
+}
+.ig-particle:nth-child(8) {
+  left: 60%;
+  animation-delay: 1.8s;
+}
+.ig-particle:nth-child(9) {
+  left: 72%;
+  animation-delay: 3.6s;
+}
+.ig-particle:nth-child(10) {
+  left: 82%;
+  animation-delay: 0.9s;
+}
+.ig-particle:nth-child(11) {
+  left: 55%;
+  animation-delay: 4.2s;
+}
+.ig-particle:nth-child(12) {
+  left: 90%;
+  animation-delay: 2.8s;
+}
+.ig-particle:nth-child(13) {
+  left: 15%;
+  animation-delay: 5s;
+}
+
+@keyframes ig-rise {
+  0% {
+    bottom: -8px;
+    opacity: 0;
+    transform: translateX(0) scale(1);
+  }
+  10% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.7;
+  }
+  100% {
+    bottom: 100%;
+    opacity: 0;
+    transform: translateX(30px) scale(0.3);
+  }
+}
+
+/* Heat haze at bottom */
+.ig-heat {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(
+    to top,
+    rgba(234, 88, 12, 0.1),
+    rgba(249, 115, 22, 0.04),
+    transparent
+  );
+  animation: ig-heat-pulse 4s ease-in-out infinite;
+}
+
+@keyframes ig-heat-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.ig-hero {
+  position: relative;
+  min-height: 30vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  text-align: center;
+  z-index: 1;
+}
+
+.ig-hero-content {
+  max-width: 700px;
+}
+
+.ig-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background: var(--ig-accent-glow);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  border-radius: 100px;
+  font-size: var(--text-xs, 11px);
+  font-weight: 500;
+  color: var(--ig-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-lg);
+}
+
+.ig-hero-badge-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ig-accent);
+  border-radius: 50%;
+  animation: ig-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ig-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.ig-hero-title {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: var(--space-md);
+}
+
+.ig-hero-title-accent {
+  color: var(--ig-accent);
+  text-shadow: 0 0 40px rgba(234, 88, 12, 0.3);
+}
+
+.ig-hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--ig-text-secondary);
+  font-weight: 300;
+  max-width: 500px;
+  margin: 0 auto var(--space-lg);
+}
+
+/* Wallet Connect Button */
+.ig-wallet-area {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-md);
+}
+
+.ig-wallet-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--ig-accent);
+  color: #000;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm, 13px);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md, 10px);
+  cursor: pointer;
+  transition: var(--ig-transition);
+}
+
+.ig-wallet-btn:hover {
+  background: var(--ig-accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--ig-glow);
+}
+
+.ig-wallet-btn.connected {
+  background: var(--ig-charcoal);
+  color: var(--ig-accent);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.ig-wallet-icon {
+  font-size: 1rem;
+}
+
+/* ============================================
+   SECTION TABS
+   ============================================ */
+.ig-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  padding: var(--space-xs) var(--space-lg);
+  max-width: 1100px;
+  margin: 0 auto var(--space-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.ig-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ig-tab {
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md, 10px);
+  color: var(--ig-text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm, 13px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--ig-transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ig-tab:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--ig-text-primary);
+}
+
+.ig-tab.active {
+  background: var(--ig-accent);
+  border-color: var(--ig-accent);
+  color: #000;
+  font-weight: 600;
+}
+
+/* ============================================
+   SECTIONS (show/hide)
+   ============================================ */
+.ig-section {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-xl) 0 var(--space-2xl);
+  display: none;
+}
+
+.ig-section--active {
+  display: block;
+  animation: ig-fade-in 0.3s ease-out;
+}
+
+@keyframes ig-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ig-section-header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.ig-section-title {
+  font-size: var(--text-2xl, 24px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-sm);
+}
+
+.ig-section-subtitle {
+  color: var(--ig-text-muted);
+  font-size: 0.95rem;
+}
+
+.ig-subsection-title {
+  font-size: var(--text-lg, 17px);
+  font-weight: 500;
+  margin: var(--space-xl) 0 var(--space-md);
+  color: var(--ig-text-secondary);
+}
+
+/* ============================================
+   DASHBOARD - Pool + Countdown
+   ============================================ */
+.ig-dashboard-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.ig-pool-card,
+.ig-countdown-card {
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.06), transparent);
+  border: 1px solid rgba(234, 88, 12, 0.15);
+  border-radius: var(--radius-xl, 24px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ig-pool-card::before,
+.ig-countdown-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ig-accent), transparent);
+  opacity: 0.5;
+}
+
+.ig-pool-label,
+.ig-countdown-label {
+  font-size: var(--text-xs, 11px);
+  font-weight: 500;
+  color: var(--ig-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-md);
+}
+
+.ig-pool-value {
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-xs);
+}
+
+.ig-pool-amount {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 500;
+  color: var(--ig-accent);
+}
+
+.ig-pool-unit {
+  font-size: 1rem;
+  color: var(--ig-text-muted);
+  margin-left: var(--space-xs);
+}
+
+.ig-pool-usd {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-dim);
+  font-family: var(--font-mono);
+}
+
+/* Countdown */
+.ig-countdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ig-countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ig-countdown-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 600;
+  color: var(--ig-accent);
+  line-height: 1;
+  min-width: 2.5ch;
+}
+
+.ig-countdown-text {
+  font-size: var(--text-2xs, 10px);
+  color: var(--ig-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.ig-countdown-sep {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: var(--ig-text-dim);
+  margin-bottom: 1rem;
+}
+
+/* Holdings Grid */
+.ig-holdings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+.ig-holding-card {
+  padding: var(--space-lg);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg, 16px);
+  text-align: center;
+  transition: var(--ig-transition);
+}
+
+.ig-holding-card:hover {
+  border-color: rgba(234, 88, 12, 0.3);
+  background: var(--ig-slate);
+}
+
+.ig-holding-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-sm);
+  opacity: 0.8;
+}
+
+.ig-holding-value {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--ig-text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.ig-holding-label {
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   KOTH (King of the Pill)
+   ============================================ */
+.ig-koth-card {
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(234, 88, 12, 0.02));
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  border-radius: var(--radius-xl, 24px);
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.ig-koth-crown {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.ig-koth-info {
+  flex: 1;
+}
+
+.ig-koth-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl, 24px);
+  font-weight: 600;
+  color: var(--ig-accent);
+  margin-bottom: 2px;
+}
+
+.ig-koth-ticker {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.ig-koth-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+.ig-koth-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.ig-koth-stat-label {
+  font-size: var(--text-2xs, 10px);
+  color: var(--ig-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-koth-stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base, 15px);
+  font-weight: 500;
+  color: var(--ig-text-primary);
+}
+
+.ig-koth-stat-value--accent {
+  color: var(--ig-accent);
+}
+
+.ig-koth-badge {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  padding: 4px var(--space-sm);
+  background: var(--ig-accent-glow);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  border-radius: 100px;
+  font-size: var(--text-2xs, 10px);
+  font-weight: 600;
+  color: var(--ig-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* KOTH History */
+.ig-koth-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.ig-koth-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 100px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md, 10px);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  align-items: center;
+}
+
+.ig-koth-row-date {
+  color: var(--ig-text-dim);
+}
+
+.ig-koth-row-name {
+  color: var(--ig-text-secondary);
+  font-weight: 500;
+}
+
+.ig-koth-row-vol {
+  color: var(--ig-text-muted);
+  text-align: right;
+}
+
+/* ============================================
+   LEADERBOARD TABLE
+   ============================================ */
+.ig-leaderboard-table {
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+}
+
+.ig-table-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 100px 100px 80px;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--ig-slate);
+  font-size: var(--text-2xs, 10px);
+  font-weight: 500;
+  color: var(--ig-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-table-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.ig-table-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 100px 100px 80px;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  align-items: center;
+  transition: var(--ig-transition);
+}
+
+.ig-table-row:hover {
+  background: rgba(234, 88, 12, 0.04);
+}
+
+.ig-table-row:last-child {
+  border-bottom: none;
+}
+
+.ig-col-rank {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--ig-text-muted);
+}
+
+.ig-col-token {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--ig-text-primary);
+}
+
+.ig-col-volume {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-secondary);
+}
+
+.ig-col-mcap {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-muted);
+}
+
+.ig-col-multi {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-sm, 13px);
+  text-align: center;
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.ig-multi--5x {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.ig-multi--3x {
+  color: var(--ig-accent);
+  background: var(--ig-accent-glow);
+}
+
+.ig-multi--2x {
+  color: var(--ig-accent-light);
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.ig-multi--1x {
+  color: var(--ig-text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ig-multi--low {
+  color: var(--ig-text-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ============================================
+   FORMS (Launcher, Register, PAGS)
+   ============================================ */
+.ig-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.ig-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.ig-form-group--full {
+  grid-column: 1 / -1;
+}
+
+.ig-label {
+  font-size: var(--text-xs, 11px);
+  font-weight: 500;
+  color: var(--ig-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-input,
+.ig-textarea {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md, 10px);
+  color: var(--ig-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base, 15px);
+  transition: var(--ig-transition);
+  outline: none;
+}
+
+.ig-input:focus,
+.ig-textarea:focus {
+  border-color: var(--ig-accent);
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.15);
+}
+
+.ig-input::placeholder,
+.ig-textarea::placeholder {
+  color: var(--ig-text-dim);
+}
+
+.ig-input--mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+}
+
+.ig-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.ig-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ig-form-fee {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ig-form-fee-label {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-muted);
+}
+
+.ig-form-fee-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base, 15px);
+  font-weight: 600;
+  color: var(--ig-accent);
+}
+
+.ig-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-xl);
+  background: var(--ig-accent);
+  color: #000;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm, 13px);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md, 10px);
+  cursor: pointer;
+  transition: var(--ig-transition);
+}
+
+.ig-submit-btn:hover:not(:disabled) {
+  background: var(--ig-accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--ig-glow);
+}
+
+.ig-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   REGISTER PREVIEW
+   ============================================ */
+.ig-register-preview {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg, 16px);
+}
+
+.ig-register-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.ig-register-row:last-child {
+  border-bottom: none;
+}
+
+.ig-register-key {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-muted);
+}
+
+.ig-register-val {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-primary);
+}
+
+.ig-register-val--status {
+  color: var(--ig-warning);
+}
+
+/* ============================================
+   ROBINHOOD CARDS
+   ============================================ */
+.ig-robinhood-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.ig-robinhood-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg, 16px);
+  transition: var(--ig-transition);
+}
+
+.ig-robinhood-card:hover {
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.ig-robinhood-token {
+  flex: 1;
+}
+
+.ig-robinhood-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg, 17px);
+  font-weight: 600;
+  color: var(--ig-text-primary);
+}
+
+.ig-robinhood-creator {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-dim);
+  margin-top: 2px;
+}
+
+.ig-robinhood-fees {
+  text-align: right;
+}
+
+.ig-robinhood-fees-label {
+  display: block;
+  font-size: var(--text-2xs, 10px);
+  color: var(--ig-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-robinhood-fees-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base, 15px);
+  font-weight: 500;
+  color: var(--ig-accent);
+}
+
+.ig-robinhood-badge {
+  padding: 4px var(--space-sm);
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 100px;
+  font-size: var(--text-2xs, 10px);
+  font-weight: 600;
+  color: var(--ig-success);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.ig-robinhood-badge--pending {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: var(--ig-warning);
+}
+
+/* ============================================
+   PAGS
+   ============================================ */
+.ig-pags-list {
+  margin-top: var(--space-xl);
+}
+
+.ig-pags-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 100px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md, 10px);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.ig-pags-handle {
+  color: var(--ig-accent);
+  font-weight: 500;
+}
+
+.ig-pags-wallet-display {
+  color: var(--ig-text-dim);
+}
+
+.ig-pags-earned {
+  color: var(--ig-text-secondary);
+  text-align: right;
+  font-weight: 500;
+}
+
+/* ============================================
+   FEE MECHANICS
+   ============================================ */
+.ig-fees-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.ig-fee-card {
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl, 24px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ig-fee-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+}
+
+.ig-fee-card--primary {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.02));
+  border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+.ig-fee-card--primary::before {
+  background: linear-gradient(90deg, transparent, var(--ig-accent), transparent);
+}
+
+.ig-fee-card--burn {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.ig-fee-card--burn::before {
+  background: linear-gradient(90deg, transparent, var(--ig-danger), transparent);
+}
+
+.ig-fee-card--reserve {
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ig-fee-card--reserve::before {
+  background: linear-gradient(90deg, transparent, var(--ig-text-dim), transparent);
+}
+
+.ig-fee-percent {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+}
+
+.ig-fee-card--primary .ig-fee-percent {
+  color: var(--ig-accent);
+}
+
+.ig-fee-card--burn .ig-fee-percent {
+  color: var(--ig-danger);
+}
+
+.ig-fee-card--reserve .ig-fee-percent {
+  color: var(--ig-text-muted);
+}
+
+.ig-fee-label {
+  font-size: var(--text-base, 15px);
+  font-weight: 500;
+  color: var(--ig-text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.ig-fee-desc {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-dim);
+  line-height: 1.5;
+}
+
+/* Fee Flow Steps */
+.ig-fees-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg, 16px);
+  flex-wrap: wrap;
+}
+
+.ig-flow-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+  min-width: 200px;
+}
+
+.ig-flow-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ig-accent-glow);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm, 13px);
+  font-weight: 600;
+  color: var(--ig-accent);
+  flex-shrink: 0;
+}
+
+.ig-flow-text {
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-text-secondary);
+  line-height: 1.4;
+}
+
+.ig-flow-arrow {
+  font-size: 1.2rem;
+  color: var(--ig-text-dim);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.ig-footer {
+  padding: var(--space-xl) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 1;
+}
+
+.ig-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.ig-footer-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.ig-footer-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--ig-success);
+  border-radius: 50%;
+  animation: ig-pulse 2s ease-in-out infinite;
+}
+
+.ig-footer-status-text {
+  font-size: var(--text-xs, 11px);
+  font-weight: 500;
+  color: var(--ig-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ig-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.ig-footer-links a {
+  color: var(--ig-text-muted);
+  font-size: var(--text-sm, 13px);
+}
+
+.ig-footer-links a:hover {
+  color: var(--ig-accent);
+}
+
+.ig-footer-text {
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-dim);
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ig-charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ig-ash);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ig-accent-dim);
+}
+
+/* ============================================
+   DENSITY: DETAILED — More context & guides
+   ============================================ */
+.density-detailed {
+  display: none;
+}
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
+}
+
+.density-full {
+  display: none;
+}
+[data-density='full'] .density-full {
+  display: block;
+}
+
+/* Context info panels */
+.ig-context {
+  background: rgba(234, 88, 12, 0.04);
+  border: 1px solid rgba(234, 88, 12, 0.1);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+}
+
+.ig-context strong {
+  color: var(--ig-accent);
+}
+
+/* Full mode — enhanced effects */
+[data-density='full'] .ig-glow {
+  opacity: 0.5;
+}
+
+[data-density='full'] .ig-hero {
+  min-height: 50vh;
+}
+
+[data-density='full'] .ig-pool-card {
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.08);
+}
+
+/* ============================================
+   VARIANT 2: NEON — Magenta/Cyan Cyberpunk
+   ============================================ */
+[data-variant='2'] {
+  --ig-accent: #e879f9;
+  --ig-accent-light: #f0abfc;
+  --ig-accent-dim: #a21caf;
+  --ig-accent-glow: rgba(232, 121, 249, 0.2);
+  --ig-glow: 0 0 40px rgba(232, 121, 249, 0.25);
+}
+
+[data-variant='2'] .ig-bg {
+  background: #080010;
+}
+
+[data-variant='2'] .ig-bg::before {
+  background: radial-gradient(circle, rgba(232, 121, 249, 0.1) 0%, transparent 70%);
+}
+
+[data-variant='2'] .ig-bg::after {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.06) 0%, transparent 70%);
+}
+
+[data-variant='2'] .ig-glow--1 {
+  background: radial-gradient(circle, rgba(232, 121, 249, 0.1), transparent 70%);
+}
+
+[data-variant='2'] .ig-glow--2 {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.08), transparent 70%);
+}
+
+[data-variant='2'] .ig-glow--3 {
+  background: radial-gradient(circle, rgba(232, 121, 249, 0.06), transparent 70%);
+}
+
+[data-variant='2'] .ig-particle {
+  background: #e879f9;
+  box-shadow:
+    0 0 12px #e879f9,
+    0 0 24px rgba(232, 121, 249, 0.6);
+}
+
+[data-variant='2'] .ig-heat {
+  background: linear-gradient(
+    to top,
+    rgba(232, 121, 249, 0.1),
+    rgba(34, 211, 238, 0.04),
+    transparent
+  );
+}
+
+[data-variant='2'] .ig-hero-title-accent {
+  text-shadow: 0 0 40px rgba(232, 121, 249, 0.4);
+}
+
+[data-variant='2'] .ig-fee-card--primary {
+  background: linear-gradient(135deg, rgba(232, 121, 249, 0.1), rgba(232, 121, 249, 0.02));
+  border-color: rgba(232, 121, 249, 0.2);
+}
+
+[data-variant='2'] .ig-fee-card--primary::before {
+  background: linear-gradient(90deg, transparent, #e879f9, transparent);
+}
+
+[data-variant='2'] .ig-fee-card--primary .ig-fee-percent {
+  color: #e879f9;
+}
+
+/* ============================================
+   VARIANT 3: PIXEL — Green Retro
+   ============================================ */
+[data-variant='3'] {
+  --ig-accent: #22c55e;
+  --ig-accent-light: #4ade80;
+  --ig-accent-dim: #15803d;
+  --ig-accent-glow: rgba(34, 197, 94, 0.15);
+  --ig-glow: 0 0 30px rgba(34, 197, 94, 0.2);
+  --ig-black: #020a05;
+  --ig-void: #030d07;
+  --ig-obsidian: #051208;
+  --ig-charcoal: #0a1a0f;
+  --ig-slate: #132818;
+  --ig-ash: #1e3826;
+}
+
+[data-variant='3'] .ig-bg {
+  background: #020a05;
+}
+
+[data-variant='3'] .ig-bg::before {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.06) 0%, transparent 70%);
+}
+
+[data-variant='3'] .ig-bg::after {
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.04) 0%, transparent 70%);
+}
+
+[data-variant='3'] .ig-glow--1 {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.08), transparent 70%);
+}
+
+[data-variant='3'] .ig-glow--2 {
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.06), transparent 70%);
+}
+
+[data-variant='3'] .ig-glow--3 {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.04), transparent 70%);
+}
+
+[data-variant='3'] .ig-particle {
+  background: #22c55e;
+  box-shadow:
+    0 0 10px #22c55e,
+    0 0 20px rgba(34, 197, 94, 0.5);
+  animation-duration: 10s;
+}
+
+[data-variant='3'] .ig-heat {
+  background: linear-gradient(
+    to top,
+    rgba(34, 197, 94, 0.06),
+    rgba(74, 222, 128, 0.03),
+    transparent
+  );
+  opacity: 0.4;
+}
+
+[data-variant='3'] .ig-hero-title-accent {
+  text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+}
+
+[data-variant='3'] .ig-tab.active {
+  font-family: var(--font-mono);
+}
+
+[data-variant='3'] .ig-fee-card--primary {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.02));
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+[data-variant='3'] .ig-fee-card--primary::before {
+  background: linear-gradient(90deg, transparent, #22c55e, transparent);
+}
+
+[data-variant='3'] .ig-fee-card--primary .ig-fee-percent {
+  color: #22c55e;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+  .ig-koth-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ig-fees-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ig-table-header,
+  .ig-table-row {
+    grid-template-columns: 40px 1fr 90px 80px;
+  }
+
+  .ig-col-mcap {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .ig-dashboard-top {
+    grid-template-columns: 1fr;
+  }
+
+  .ig-holdings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ig-koth-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ig-koth-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ig-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ig-form-group--full {
+    grid-column: auto;
+  }
+
+  .ig-form-footer {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .ig-pags-row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs);
+  }
+
+  .ig-pags-wallet-display {
+    display: none;
+  }
+
+  .ig-robinhood-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ig-robinhood-fees {
+    text-align: center;
+  }
+
+  .ig-table-header,
+  .ig-table-row {
+    grid-template-columns: 40px 1fr 80px 60px;
+  }
+
+  .ig-flow-arrow {
+    display: none;
+  }
+
+  .ig-fees-flow {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .ig-flow-step {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .ig-hero {
+    min-height: 25vh;
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ig-holdings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ig-tabs {
+    padding: var(--space-xs) var(--space-md);
+  }
+
+  .ig-tab {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-xs, 11px);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .ig-particle,
+  .ig-glow,
+  .ig-heat,
+  .ig-bg::before,
+  .ig-bg::after,
+  .ig-hero-badge-dot,
+  .ig-footer-dot {
+    animation: none !important;
+  }
+
+  .ig-section--active {
+    animation: none;
+  }
+}

@@ -344,7 +344,7 @@ app.get('/widget', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route /games and /ignition to games page
+// Route /games — mini-games hub
 // Serves SSR for bots/crawlers, static file for browsers
 async function serveGamesPage(req, res) {
   if (isBot(req)) {
@@ -362,7 +362,11 @@ async function serveGamesPage(req, res) {
 }
 
 app.get('/games', serveGamesPage);
-app.get('/ignition', serveGamesPage);
+
+// Route /ignition — airdrop platform (separate from games)
+app.get('/ignition', (req, res) => {
+  res.sendFile(path.join(__dirname, 'ignition.html'));
+});
 
 // Route /privacy to privacy.html (for Play Store requirement)
 app.get('/privacy', (req, res) => {

@@ -140,41 +140,11 @@
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
         <div class="eco-drawer-header">
-            <span class="eco-drawer-title">Theme</span>
+            <span class="eco-drawer-title">ASDF Tools</span>
             <button class="eco-drawer-close" aria-label="Close">&times;</button>
         </div>
         <div class="eco-drawer-body">
-            <div class="eco-theme-card" data-theme="ember">
-                <div class="eco-theme-swatch eco-swatch-ember"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Ember</div><div class="eco-theme-desc">Hall of Flames</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="matrix">
-                <div class="eco-theme-swatch eco-swatch-matrix"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Matrix</div><div class="eco-theme-desc">Prediction Terminal</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="holdex">
-                <div class="eco-theme-swatch eco-swatch-holdex"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">HolDex</div><div class="eco-theme-desc">Token Tracker</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="delegate">
-                <div class="eco-theme-swatch eco-swatch-delegate"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Delegate</div><div class="eco-theme-desc">Staking Dashboard</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="arcade">
-                <div class="eco-theme-swatch eco-swatch-arcade"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Arcade</div><div class="eco-theme-desc">Ignition Games</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-        </div>
-        <div class="eco-drawer-section">
-            <div class="eco-drawer-section-title">Style</div>
-            <div class="eco-variant-picker">
-                <!-- Dynamically populated by ecosystem.js -->
-            </div>
+            <!-- Dynamically populated by ecosystem.js -->
         </div>
     </aside>
 
@@ -191,6 +161,10 @@
             </h1>
             <p class="hero-subtitle">
                 Watch tokens return to the void. Supply reduction in real-time.
+            </p>
+            <p class="hero-description density-detailed">
+                Every burn permanently removes ASDF tokens from circulation, reducing total supply.
+                Burns are verified on-chain via Solana. No trust needed &mdash; verify everything.
             </p>
         </div>
     </section>
@@ -222,26 +196,35 @@
     <!-- Stats Grid -->
     <section class="stats-section">
         <div class="container">
+            <div class="density-context density-detailed">
+                <strong>How burning works:</strong> Anyone can send ASDF tokens to the burn address.
+                Once burned, tokens are permanently removed from the total supply. Each burn
+                is recorded on Solana and reflected here in real-time.
+            </div>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon">*</div>
                     <div class="stat-value" id="burns-today">0</div>
                     <div class="stat-label">Burned Today</div>
+                    <div class="stat-desc density-detailed">Tokens burned in the last 24h</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">@</div>
                     <div class="stat-value" id="total-burners">0</div>
                     <div class="stat-label">Unique Burners</div>
+                    <div class="stat-desc density-detailed">Distinct wallets that have burned</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">$</div>
                     <div class="stat-value" id="remaining-supply">0</div>
                     <div class="stat-label">Circulating Supply</div>
+                    <div class="stat-desc density-detailed">Tokens still in circulation</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">#</div>
                     <div class="stat-value" id="biggest-burn">0</div>
                     <div class="stat-label">Largest Burn</div>
+                    <div class="stat-desc density-detailed">Single largest burn transaction</div>
                 </div>
             </div>
         </div>
@@ -250,6 +233,10 @@
     <!-- Leaderboard -->
     <section class="leaderboard-section">
         <div class="container">
+            <div class="density-context density-detailed">
+                <strong>Leaderboard:</strong> Rankings are based on total tokens burned.
+                Filter by time period to see who's been most active. Top 3 get the podium.
+            </div>
             <div class="section-header">
                 <h2 class="section-title">Top Burners</h2>
                 <p class="section-subtitle">Wallets that sacrificed the most</p>

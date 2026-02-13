@@ -116,42 +116,11 @@
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
         <div class="eco-drawer-header">
-            <span class="eco-drawer-title">Theme</span>
+            <span class="eco-drawer-title">ASDF Tools</span>
             <button class="eco-drawer-close" aria-label="Close">&times;</button>
         </div>
         <div class="eco-drawer-body">
-            <div class="eco-theme-card" data-theme="ember">
-                <div class="eco-theme-swatch eco-swatch-ember"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Ember</div><div class="eco-theme-desc">Hall of Flames</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="matrix">
-                <div class="eco-theme-swatch eco-swatch-matrix"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Matrix</div><div class="eco-theme-desc">Prediction Terminal</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="holdex">
-                <div class="eco-theme-swatch eco-swatch-holdex"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">HolDex</div><div class="eco-theme-desc">Token Tracker</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="delegate">
-                <div class="eco-theme-swatch eco-swatch-delegate"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Delegate</div><div class="eco-theme-desc">Staking Dashboard</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-            <div class="eco-theme-card" data-theme="arcade">
-                <div class="eco-theme-swatch eco-swatch-arcade"></div>
-                <div class="eco-theme-info"><div class="eco-theme-name">Arcade</div><div class="eco-theme-desc">Ignition Games</div></div>
-                <div class="eco-theme-check">&#10003;</div>
-            </div>
-        </div>
-
-        <div class="eco-drawer-section">
-            <div class="eco-drawer-section-title">Style</div>
-            <div class="eco-variant-picker">
-                <!-- Dynamically populated by ecosystem.js -->
-            </div>
+            <!-- Dynamically populated by ecosystem.js -->
         </div>
     </aside>
 
@@ -176,6 +145,11 @@
         <main class="dashboard-main" id="main-content">
             <!-- Left Panel - Stats -->
             <aside class="panel panel-left">
+                <div class="forecast-context density-detailed">
+                    <strong>// HOW_IT_WORKS</strong><br>
+                    Predict SOL price direction (up/down) over 15min intervals.
+                    Winners split the pool. Fees fuel the ASDF burn.
+                </div>
                 <div class="panel-title">// SYSTEM_METRICS</div>
                 <div class="stats-compact">
                     <div class="stat-item">
@@ -200,6 +174,10 @@
                     </div>
                 </div>
 
+                <div class="forecast-context density-detailed">
+                    <strong>// RESOLUTION</strong><br>
+                    Each frame resolves after 15 minutes. If SOL moves in your predicted direction, you win a proportional share of the pool.
+                </div>
                 <div class="panel-title">// LEADERBOARD</div>
                 <div class="leaderboard-compact" id="leaderboard-body">
                     <div class="loading-skeleton">

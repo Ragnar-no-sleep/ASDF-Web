@@ -5,6 +5,11 @@
  */
 
 /* ============================================
+   FONTS — Console Terminal
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+
+/* ============================================
    VIEW TRANSITIONS (Cross-document MPA)
    ============================================ */
 @view-transition {
@@ -132,6 +137,88 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   --eco-bg: #020812;
   --eco-nav-bg: rgba(2, 8, 18, 0.82);
   --eco-nav-border: rgba(234, 88, 12, 0.1);
+}
+
+/* --- Console (Terminal/CRT Retro) --- */
+[data-theme='console'] {
+  --eco-accent: #00ff00;
+  --eco-accent-glow: rgba(0, 255, 0, 0.4);
+  --eco-accent-soft: rgba(0, 255, 0, 0.08);
+  --eco-bg: #1d2617;
+  --eco-nav-bg: rgba(29, 38, 23, 0.9);
+  --eco-nav-border: rgba(0, 255, 0, 0.15);
+
+  /* Console-specific */
+  --console-text: #00ff00;
+  --console-text-dim: rgba(0, 255, 0, 0.6);
+  --console-prompt: #ea4e33;
+  --console-bg-dark: #151a13;
+}
+
+/* Console typography */
+[data-theme='console'] body,
+[data-theme='console'] .eco-nav,
+[data-theme='console'] .eco-drawer {
+  font-family: 'VT323', 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Console CRT scanlines overlay */
+[data-theme='console']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.3;
+}
+
+/* Console screen glow/vignette */
+[data-theme='console']::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* Console text glow */
+[data-theme='console'] * {
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+/* Disable glow on icons/special elements */
+[data-theme='console'] .eco-nav-logo-mark,
+[data-theme='console'] .eco-style-icon {
+  text-shadow: none;
+}
+
+/* Console nav styling */
+[data-theme='console'] .eco-nav {
+  border-bottom-color: rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+[data-theme='console'] .eco-nav-link {
+  color: var(--console-text-dim);
+}
+
+[data-theme='console'] .eco-nav-link:hover,
+[data-theme='console'] .eco-nav-link.active {
+  color: var(--console-text);
+}
+
+[data-theme='console'] .eco-nav-pill {
+  background: rgba(0, 255, 0, 0.12);
+  border-color: rgba(0, 255, 0, 0.2);
 }
 
 /* ============================================
@@ -402,113 +489,47 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   gap: 10px;
 }
 
-/* Theme card */
-.eco-theme-card {
+/* ============================================
+   TOOL DRAWER — Global Theme Toggle
+   ============================================ */
+.eco-theme-toggle {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.eco-theme-toggle-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition:
-    background 200ms ease,
-    border-color 200ms ease;
+    background 150ms ease,
+    color 150ms ease;
 }
 
-.eco-theme-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+.eco-theme-toggle-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.eco-theme-card.active {
-  border-color: var(--eco-accent);
+.eco-theme-toggle-btn.active {
   background: var(--eco-accent-soft);
-}
-
-.eco-theme-swatch {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.eco-theme-swatch::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.eco-theme-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.eco-theme-name {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
   color: #fff;
 }
 
-.eco-theme-desc {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 2px;
-}
-
-.eco-theme-check {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 12px;
-  color: transparent;
-  transition: all 200ms ease;
-}
-
-.eco-theme-card.active .eco-theme-check {
-  border-color: var(--eco-accent);
-  background: var(--eco-accent);
-  color: #000;
-}
-
-/* Theme swatch colors */
-.eco-swatch-ember {
-  background: linear-gradient(135deg, #000 40%, #c9a227);
-}
-.eco-swatch-matrix {
-  background: linear-gradient(135deg, #000 40%, #00ff41);
-}
-.eco-swatch-holdex {
-  background: linear-gradient(135deg, #0a0a0f 40%, #4ade80);
-}
-.eco-swatch-delegate {
-  background: linear-gradient(135deg, #06080f 40%, #7b93ff);
-}
-.eco-swatch-arcade {
-  background: linear-gradient(135deg, #020812 40%, #ea580c);
-}
-
 /* ============================================
-   VARIANT PICKER (in drawer)
+   TOOL DRAWER — Section titles
    ============================================ */
-.eco-drawer-section {
-  padding: 0 16px 16px;
-  border-top: 1px solid var(--eco-nav-border);
-  margin-top: 6px;
-}
-
 .eco-drawer-section-title {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
@@ -516,49 +537,180 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 14px 0 10px;
+  padding: 0 0 10px;
 }
 
-.eco-variant-picker {
+/* ============================================
+   TOOL DRAWER — Tool cards (accordion)
+   ============================================ */
+.eco-tools-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.eco-variant-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+.eco-tool-card {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
+  overflow: hidden;
   transition:
-    background 200ms ease,
-    border-color 200ms ease;
+    border-color 200ms ease,
+    background 200ms ease;
 }
 
-.eco-variant-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+.eco-tool-card:hover {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-.eco-variant-card.active {
+.eco-tool-card.current {
   border-color: var(--eco-accent);
   background: var(--eco-accent-soft);
 }
 
-.eco-variant-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
+.eco-tool-card.expanded {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.eco-variant-swatch::after {
+/* — Header row (always visible) */
+.eco-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.eco-tool-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.eco-tool-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+.eco-tool-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  flex: 1;
+  min-width: 0;
+}
+
+.eco-tool-badge {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.eco-tool-chevron {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.eco-tool-card.expanded .eco-tool-chevron {
+  transform: rotate(180deg);
+}
+
+/* — Expandable content (hidden by default) */
+.eco-tool-expand {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 12px;
+}
+
+.eco-tool-card.expanded .eco-tool-expand {
+  max-height: 260px;
+  padding: 0 12px 12px;
+}
+
+.eco-expand-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 8px 0 6px;
+}
+
+.eco-expand-label:first-child {
+  margin-top: 0;
+}
+
+/* — Density picker (3 pills) */
+.eco-density-picker {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.eco-density-option {
+  flex: 1;
+  padding: 5px 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.eco-density-option:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.eco-density-option.active {
+  background: var(--eco-accent-soft);
+  color: #fff;
+}
+
+/* — Color picker (3 swatches) */
+.eco-color-picker {
+  display: flex;
+  gap: 8px;
+}
+
+.eco-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+  padding: 0;
+}
+
+.eco-color-swatch::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -566,32 +718,191 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.eco-variant-name {
+.eco-color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.eco-color-swatch.active {
+  border-color: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* — Actions (go / stay) */
+.eco-tool-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.eco-tool-go {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 0;
+  border-radius: 8px;
+  background: var(--eco-accent-soft);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.eco-tool-go:hover {
+  background: var(--eco-accent-glow);
+  border-color: var(--eco-accent);
+}
+
+.eco-tool-stay {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.eco-tool-stay:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ============================================
+   TOOL DRAWER — Universe section
+   ============================================ */
+.eco-universe-title {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--eco-nav-border);
+}
+
+.eco-universe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eco-universe-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #fff;
+  transition: background 150ms ease;
+}
+
+.eco-universe-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.eco-universe-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+.eco-universe-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.eco-universe-label {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  flex: 1;
 }
 
-.eco-variant-check {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.eco-universe-desc {
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
-  color: transparent;
-  transition: all 200ms ease;
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.eco-variant-card.active .eco-variant-check {
-  border-color: var(--eco-accent);
-  background: var(--eco-accent);
-  color: #000;
+.eco-universe-arrow {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  transition: color 150ms ease;
+}
+
+.eco-universe-link:hover .eco-universe-arrow {
+  color: var(--eco-accent);
+}
+
+/* ============================================
+   VARIANT SWATCH COLORS (used in drawer color picker)
+   ============================================ */
+/* Burns */
+.eco-variant-swatch--gold {
+  background: linear-gradient(135deg, #000 30%, #c9a227);
+}
+.eco-variant-swatch--inferno {
+  background: linear-gradient(135deg, #0a0000 30%, #dc2626);
+}
+.eco-variant-swatch--ash {
+  background: linear-gradient(135deg, #0f172a 30%, #94a3b8);
+}
+
+/* Forecast */
+.eco-variant-swatch--matrix {
+  background: linear-gradient(135deg, #000 30%, #00ff41);
+}
+.eco-variant-swatch--bloomberg {
+  background: linear-gradient(135deg, #000 30%, #3b82f6);
+}
+.eco-variant-swatch--synthwave {
+  background: linear-gradient(135deg, #0a000f 30%, #f472b6);
+}
+
+/* HolDex */
+.eco-variant-swatch--emerald {
+  background: linear-gradient(135deg, #0a0a0f 30%, #4ade80);
+}
+.eco-variant-swatch--crystal {
+  background: linear-gradient(135deg, #0a0a0f 30%, #38bdf8);
+}
+.eco-variant-swatch--vintage {
+  background: linear-gradient(135deg, #0a0a0f 30%, #f59e0b);
+}
+
+/* Staking */
+.eco-variant-swatch--cosmos {
+  background: linear-gradient(135deg, #06080f 30%, #7b93ff);
+}
+.eco-variant-swatch--vault {
+  background: linear-gradient(135deg, #06080f 30%, #eab308);
+}
+.eco-variant-swatch--aurora {
+  background: linear-gradient(135deg, #06080f 30%, #2dd4bf);
+}
+
+/* Ignition */
+.eco-variant-swatch--ember-ig {
+  background: linear-gradient(135deg, #020812 30%, #ea580c);
+}
+.eco-variant-swatch--neon {
+  background: linear-gradient(135deg, #020812 30%, #e879f9);
+}
+.eco-variant-swatch--pixel {
+  background: linear-gradient(135deg, #020812 30%, #22c55e);
 }
 
 /* ============================================
@@ -641,14 +952,17 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
     font-size: 16px;
   }
 
-  .eco-variant-card {
+  .eco-tool-header {
     padding: 12px;
-    gap: 14px;
   }
 
-  .eco-variant-swatch {
-    width: 36px;
-    height: 36px;
+  .eco-color-swatch {
+    width: 32px;
+    height: 32px;
+  }
+
+  .eco-universe-link {
+    padding: 12px;
   }
 }
 
@@ -656,68 +970,6 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   .eco-nav-link {
     padding: 6px 10px;
     font-size: 11px;
-  }
-}
-
-/* ============================================
-   VARIANT SWITCHER WIDGET
-   ============================================ */
-.variant-switcher {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 800;
-  display: flex;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  transition: opacity 200ms ease;
-}
-
-.variant-switcher:hover {
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-.variant-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  background: var(--dot-color);
-  cursor: pointer;
-  transition:
-    transform 200ms ease,
-    border-color 200ms ease,
-    box-shadow 200ms ease;
-  padding: 0;
-}
-
-.variant-dot:hover {
-  transform: scale(1.15);
-}
-
-.variant-dot.active {
-  border-color: #fff;
-  box-shadow: 0 0 8px var(--dot-color);
-  transform: scale(1.1);
-}
-
-/* Mobile: slightly larger touch targets */
-@media (max-width: 768px) {
-  .variant-switcher {
-    bottom: 16px;
-    right: 16px;
-    gap: 10px;
-    padding: 10px 14px;
-  }
-
-  .variant-dot {
-    width: 20px;
-    height: 20px;
   }
 }
 

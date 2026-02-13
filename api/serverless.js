@@ -230,7 +230,7 @@ async function serveGamesPage(req, res) {
 }
 
 app.get('/games', serveGamesPage);
-app.get('/ignition', serveGamesPage);
+app.get('/ignition', (req, res) => res.sendFile(path.join(rootDir, 'ignition.html')));
 
 // SPA fallback
 app.get('*', (req, res) => {

@@ -933,16 +933,51 @@ body {
 }
 
 /* ============================================
-   VARIANT SWATCHES (drawer preview)
+   DENSITY: DETAILED — More context & guides
    ============================================ */
-.eco-variant-swatch--emerald {
-  background: linear-gradient(135deg, #021a0a 30%, #4ade80);
+.density-detailed {
+  display: none;
 }
-.eco-variant-swatch--crystal {
-  background: linear-gradient(135deg, #0c1222 30%, #38bdf8);
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
 }
-.eco-variant-swatch--vintage {
-  background: linear-gradient(135deg, #1a1400 30%, #f59e0b);
+
+.density-full {
+  display: none;
+}
+[data-density='full'] .density-full {
+  display: block;
+}
+
+/* Context info panels */
+.holdex-context {
+  background: rgba(74, 222, 128, 0.04);
+  border: 1px solid rgba(74, 222, 128, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.holdex-context strong {
+  color: var(--accent);
+}
+
+/* Full mode — enhanced effects */
+[data-density='full'] .bg-glow {
+  opacity: 0.4;
+}
+
+[data-density='full'] .widget {
+  border-color: rgba(74, 222, 128, 0.12);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.04);
+}
+
+[data-density='full'] .kscore-ring {
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.2));
 }
 
 /* ============================================

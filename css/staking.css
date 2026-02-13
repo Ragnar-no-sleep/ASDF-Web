@@ -466,16 +466,51 @@
 }
 
 /* ============================================
-   VARIANT SWATCHES (drawer preview)
+   DENSITY: DETAILED — More context & guides
    ============================================ */
-.eco-variant-swatch--cosmos {
-  background: linear-gradient(135deg, #0a0a1a 30%, #7b93ff);
+.density-detailed {
+  display: none;
 }
-.eco-variant-swatch--vault {
-  background: linear-gradient(135deg, #0f0f14 30%, #eab308);
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
 }
-.eco-variant-swatch--aurora {
-  background: linear-gradient(135deg, #021a1a 30%, #2dd4bf);
+
+.density-full {
+  display: none;
+}
+[data-density='full'] .density-full {
+  display: block;
+}
+
+/* Context info panels */
+.staking-context {
+  background: rgba(123, 147, 255, 0.04);
+  border: 1px solid rgba(123, 147, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+}
+
+.staking-context strong {
+  color: rgb(123, 147, 255);
+}
+
+/* Full mode — enhanced effects */
+[data-density='full'] .staking-orb {
+  opacity: 0.4;
+}
+
+[data-density='full'] .staking-stat-card {
+  border-color: rgba(123, 147, 255, 0.12);
+  box-shadow: 0 0 20px rgba(123, 147, 255, 0.05);
+}
+
+[data-density='full'] .staking-cta-inner {
+  box-shadow: 0 0 30px rgba(123, 147, 255, 0.08);
 }
 
 /* ============================================

@@ -1364,19 +1364,6 @@ a:hover {
 }
 
 /* ============================================
-   VARIANT SWATCHES (drawer preview)
-   ============================================ */
-.eco-variant-swatch--gold {
-  background: linear-gradient(135deg, #000 30%, #c9a227);
-}
-.eco-variant-swatch--inferno {
-  background: linear-gradient(135deg, #0a0000 30%, #dc2626);
-}
-.eco-variant-swatch--ash {
-  background: linear-gradient(135deg, #0f172a 30%, #94a3b8);
-}
-
-/* ============================================
    VARIANT 2: INFERNO — Enhanced intensity
    ============================================ */
 
@@ -1460,6 +1447,119 @@ a:hover {
 /* Muted hero */
 [data-variant='3'] .hero-title-accent {
   text-shadow: 0 0 20px rgba(148, 163, 184, 0.2);
+}
+
+/* ============================================
+   DENSITY: DETAILED — More context & guides
+   ============================================ */
+
+/* Hidden by default, shown in detailed + full */
+.density-detailed {
+  display: none;
+}
+
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
+}
+
+/* Taller hero with more breathing room */
+[data-density='detailed'] .burns-hero,
+[data-density='full'] .burns-hero {
+  min-height: 45vh;
+  padding: var(--space-3xl) var(--space-lg);
+}
+
+/* Description under hero subtitle */
+.hero-description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 550px;
+  margin: var(--space-md) auto 0;
+  line-height: 1.7;
+}
+
+/* Context boxes within sections */
+.density-context {
+  background: rgba(201, 162, 39, 0.04);
+  border: 1px solid rgba(201, 162, 39, 0.1);
+  border-radius: 12px;
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.density-context strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* Stat card descriptions */
+.stat-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ============================================
+   DENSITY: FULL — Maximum visual experience
+   ============================================ */
+
+/* Hidden by default, shown only in full */
+.density-full {
+  display: none;
+}
+
+[data-density='full'] .density-full {
+  display: block;
+}
+
+/* Full hero — biggest version */
+[data-density='full'] .burns-hero {
+  min-height: 55vh;
+}
+
+/* Faster, more intense background effects */
+[data-density='full'] .ember {
+  opacity: 0.9;
+}
+
+[data-density='full'] .glow-circle {
+  opacity: 0.25;
+}
+
+[data-density='full'] .flame {
+  opacity: 0.7;
+}
+
+[data-density='full'] .heat-haze {
+  opacity: 0.8;
+}
+
+/* Hero title glow in full mode */
+[data-density='full'] .hero-title-accent {
+  text-shadow:
+    0 0 30px rgba(201, 162, 39, 0.4),
+    0 0 60px rgba(201, 162, 39, 0.15);
+}
+
+/* Stat cards with subtle glow */
+[data-density='full'] .stat-card {
+  border-color: rgba(201, 162, 39, 0.15);
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.05);
+}
+
+/* Podium glow */
+[data-density='full'] .podium-place.first {
+  box-shadow: 0 0 30px rgba(201, 162, 39, 0.15);
+}
+
+/* CTA section glow */
+[data-density='full'] .cta-inner {
+  border-color: rgba(201, 162, 39, 0.2);
+  box-shadow: 0 0 40px rgba(201, 162, 39, 0.08);
 }
 
 /* ============================================

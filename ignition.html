@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#000">
+<head>
+    <style>html,body{background:#000!important}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <title>ASDF Ignition - Solana Airdrop Platform</title>
+    <meta name="description" content="ASDF Ignition: PumpFun airdrop platform. Launch tokens, earn airdrops, track KOTH champions, and burn fees on Solana.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="ASDF Ignition - Solana Airdrop Platform">
+    <meta property="og:description" content="Launch tokens, earn airdrops, track KOTH champions on Solana.">
+    <meta property="og:image" content="https://alonisthe.dev/og-ignition.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- CSP -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://asdf-api.onrender.com https://*.solana.com https://*.helius-rpc.com;
+    ">
+
+    <link rel="stylesheet" href="css/ecosystem.css">
+    <link rel="stylesheet" href="css/ignition.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
+</head>
+<body class="eco-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Animated Background - Fire/Ignition Theme -->
+    <div class="ig-bg" aria-hidden="true">
+        <div class="ig-glow ig-glow--1"></div>
+        <div class="ig-glow ig-glow--2"></div>
+        <div class="ig-glow ig-glow--3"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-particle"></div>
+        <div class="ig-heat"></div>
+    </div>
+
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--ignition">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/forecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link active">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">ASDF Tools</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <!-- Dynamically populated by ecosystem.js -->
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content">
+
+    <!-- Hero / Dashboard Header -->
+    <section class="ig-hero">
+        <div class="ig-hero-content">
+            <div class="ig-hero-badge">
+                <span class="ig-hero-badge-dot"></span>
+                <span>Solana Airdrop Platform</span>
+            </div>
+            <h1 class="ig-hero-title">
+                <span class="ig-hero-title-accent">Ignition</span>
+            </h1>
+            <p class="ig-hero-subtitle">
+                Launch tokens. Earn airdrops. Fuel the burn.
+            </p>
+            <p class="ig-context density-detailed" style="max-width:500px;margin:12px auto 0;text-align:center">
+                <strong>Ignition</strong> is the ASDF airdrop platform. Create tokens, compete for KOTH,
+                climb the leaderboard, and earn airdrops. All fees are burned.
+            </p>
+            <div class="ig-wallet-area">
+                <button class="ig-wallet-btn" id="wallet-connect" aria-label="Connect Solana wallet">
+                    <span class="ig-wallet-icon">&#9899;</span>
+                    <span class="ig-wallet-label">Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Navigation Tabs -->
+    <div class="ig-tabs" role="tablist" aria-label="Ignition sections">
+        <button class="ig-tab active" role="tab" aria-selected="true" data-section="dashboard">Dashboard</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="koth">KOTH</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="leaderboard">Leaderboard</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="launcher">Launcher</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="register">Register</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="robinhood">Robinhood</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="pags">PAGS</button>
+        <button class="ig-tab" role="tab" aria-selected="false" data-section="fees">Fees</button>
+    </div>
+
+    <!-- ============================================
+         SECTION 1: DASHBOARD
+         ============================================ -->
+    <section class="ig-section ig-section--active" id="section-dashboard" role="tabpanel" aria-label="Dashboard">
+        <div class="container">
+            <!-- Airdrop Pool + Countdown -->
+            <div class="ig-dashboard-top">
+                <div class="ig-pool-card">
+                    <div class="ig-pool-label">Airdrop Pool Balance</div>
+                    <div class="ig-pool-value" id="pool-balance">
+                        <span class="ig-pool-amount">12.847</span>
+                        <span class="ig-pool-unit">SOL</span>
+                    </div>
+                    <div class="ig-pool-usd">~ $2,441.00 USD</div>
+                </div>
+                <div class="ig-countdown-card">
+                    <div class="ig-countdown-label">Next Airdrop In</div>
+                    <div class="ig-countdown" id="airdrop-countdown" aria-live="polite">
+                        <div class="ig-countdown-unit">
+                            <span class="ig-countdown-num" id="countdown-days">02</span>
+                            <span class="ig-countdown-text">Days</span>
+                        </div>
+                        <span class="ig-countdown-sep">:</span>
+                        <div class="ig-countdown-unit">
+                            <span class="ig-countdown-num" id="countdown-hours">14</span>
+                            <span class="ig-countdown-text">Hours</span>
+                        </div>
+                        <span class="ig-countdown-sep">:</span>
+                        <div class="ig-countdown-unit">
+                            <span class="ig-countdown-num" id="countdown-mins">37</span>
+                            <span class="ig-countdown-text">Mins</span>
+                        </div>
+                        <span class="ig-countdown-sep">:</span>
+                        <div class="ig-countdown-unit">
+                            <span class="ig-countdown-num" id="countdown-secs">52</span>
+                            <span class="ig-countdown-text">Secs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Holdings Grid -->
+            <h2 class="ig-section-title">Your Holdings</h2>
+            <div class="ig-holdings-grid">
+                <div class="ig-holding-card">
+                    <div class="ig-holding-icon">&#9678;</div>
+                    <div class="ig-holding-value" id="holding-sol">0.000</div>
+                    <div class="ig-holding-label">SOL Balance</div>
+                </div>
+                <div class="ig-holding-card">
+                    <div class="ig-holding-icon">&#9733;</div>
+                    <div class="ig-holding-value" id="holding-status">--</div>
+                    <div class="ig-holding-label">Holder Status</div>
+                </div>
+                <div class="ig-holding-card">
+                    <div class="ig-holding-icon">&#9830;</div>
+                    <div class="ig-holding-value" id="holding-tokens">0</div>
+                    <div class="ig-holding-label">Registered Tokens</div>
+                </div>
+                <div class="ig-holding-card">
+                    <div class="ig-holding-icon">&#128293;</div>
+                    <div class="ig-holding-value" id="holding-asdf">0</div>
+                    <div class="ig-holding-label">ASDF Holdings</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 2: KOTH (King of the Pill)
+         ============================================ -->
+    <section class="ig-section" id="section-koth" role="tabpanel" aria-label="King of the Pill" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">King of the Pill</h2>
+                <p class="ig-section-subtitle">AI-selected champion token receiving 10% of airdrop distribution</p>
+            </div>
+            <div class="ig-koth-card">
+                <div class="ig-koth-crown">&#128081;</div>
+                <div class="ig-koth-info">
+                    <div class="ig-koth-name" id="koth-name">$PUMP</div>
+                    <div class="ig-koth-ticker" id="koth-ticker">PumpKing Token</div>
+                    <div class="ig-koth-stats">
+                        <div class="ig-koth-stat">
+                            <span class="ig-koth-stat-label">24h Volume</span>
+                            <span class="ig-koth-stat-value" id="koth-volume">$1.2M</span>
+                        </div>
+                        <div class="ig-koth-stat">
+                            <span class="ig-koth-stat-label">Market Cap</span>
+                            <span class="ig-koth-stat-value" id="koth-mcap">$4.8M</span>
+                        </div>
+                        <div class="ig-koth-stat">
+                            <span class="ig-koth-stat-label">Holders</span>
+                            <span class="ig-koth-stat-value" id="koth-holders">2,847</span>
+                        </div>
+                        <div class="ig-koth-stat">
+                            <span class="ig-koth-stat-label">Airdrop Share</span>
+                            <span class="ig-koth-stat-value ig-koth-stat-value--accent" id="koth-share">10%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ig-koth-badge">
+                    <span>AI Selected</span>
+                </div>
+            </div>
+            <div class="ig-koth-history">
+                <h3 class="ig-subsection-title">Previous Champions</h3>
+                <div class="ig-koth-list" id="koth-history">
+                    <div class="ig-koth-row">
+                        <span class="ig-koth-row-date">Feb 10</span>
+                        <span class="ig-koth-row-name">$DOGE2</span>
+                        <span class="ig-koth-row-vol">$890K</span>
+                    </div>
+                    <div class="ig-koth-row">
+                        <span class="ig-koth-row-date">Feb 9</span>
+                        <span class="ig-koth-row-name">$MOON</span>
+                        <span class="ig-koth-row-vol">$1.1M</span>
+                    </div>
+                    <div class="ig-koth-row">
+                        <span class="ig-koth-row-date">Feb 8</span>
+                        <span class="ig-koth-row-name">$FIRE</span>
+                        <span class="ig-koth-row-vol">$720K</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 3: TOP TOKENS LEADERBOARD
+         ============================================ -->
+    <section class="ig-section" id="section-leaderboard" role="tabpanel" aria-label="Top Tokens Leaderboard" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">Top Tokens</h2>
+                <p class="ig-section-subtitle">Top 10 by 24h volume with multiplier bonuses (0.1x - 5.0x)</p>
+            </div>
+            <div class="ig-leaderboard-table">
+                <div class="ig-table-header">
+                    <span class="ig-col-rank">#</span>
+                    <span class="ig-col-token">Token</span>
+                    <span class="ig-col-volume">24h Vol</span>
+                    <span class="ig-col-mcap">MCap</span>
+                    <span class="ig-col-multi">Multi</span>
+                </div>
+                <div class="ig-table-body" id="leaderboard-body">
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">1</span>
+                        <span class="ig-col-token">$PUMP</span>
+                        <span class="ig-col-volume">$1.2M</span>
+                        <span class="ig-col-mcap">$4.8M</span>
+                        <span class="ig-col-multi ig-multi--5x">5.0x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">2</span>
+                        <span class="ig-col-token">$BLAZE</span>
+                        <span class="ig-col-volume">$980K</span>
+                        <span class="ig-col-mcap">$3.2M</span>
+                        <span class="ig-col-multi ig-multi--3x">3.0x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">3</span>
+                        <span class="ig-col-token">$ROCKET</span>
+                        <span class="ig-col-volume">$750K</span>
+                        <span class="ig-col-mcap">$2.1M</span>
+                        <span class="ig-col-multi ig-multi--2x">2.0x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">4</span>
+                        <span class="ig-col-token">$DEGEN</span>
+                        <span class="ig-col-volume">$620K</span>
+                        <span class="ig-col-mcap">$1.8M</span>
+                        <span class="ig-col-multi ig-multi--1x">1.5x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">5</span>
+                        <span class="ig-col-token">$MOON</span>
+                        <span class="ig-col-volume">$510K</span>
+                        <span class="ig-col-mcap">$1.4M</span>
+                        <span class="ig-col-multi ig-multi--1x">1.0x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">6</span>
+                        <span class="ig-col-token">$FIRE</span>
+                        <span class="ig-col-volume">$430K</span>
+                        <span class="ig-col-mcap">$900K</span>
+                        <span class="ig-col-multi ig-multi--1x">1.0x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">7</span>
+                        <span class="ig-col-token">$COPE</span>
+                        <span class="ig-col-volume">$320K</span>
+                        <span class="ig-col-mcap">$780K</span>
+                        <span class="ig-col-multi ig-multi--low">0.5x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">8</span>
+                        <span class="ig-col-token">$APEX</span>
+                        <span class="ig-col-volume">$280K</span>
+                        <span class="ig-col-mcap">$650K</span>
+                        <span class="ig-col-multi ig-multi--low">0.5x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">9</span>
+                        <span class="ig-col-token">$ZAP</span>
+                        <span class="ig-col-volume">$190K</span>
+                        <span class="ig-col-mcap">$420K</span>
+                        <span class="ig-col-multi ig-multi--low">0.2x</span>
+                    </div>
+                    <div class="ig-table-row">
+                        <span class="ig-col-rank">10</span>
+                        <span class="ig-col-token">$TINY</span>
+                        <span class="ig-col-volume">$120K</span>
+                        <span class="ig-col-mcap">$310K</span>
+                        <span class="ig-col-multi ig-multi--low">0.1x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 4: TOKEN LAUNCHER
+         ============================================ -->
+    <section class="ig-section" id="section-launcher" role="tabpanel" aria-label="Token Launcher" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">Token Launcher</h2>
+                <p class="ig-section-subtitle">Create and deploy a new PumpFun token. Fee: 0.02 SOL</p>
+            </div>
+            <form class="ig-launcher-form" id="launcher-form" novalidate>
+                <div class="ig-form-grid">
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="token-name">Token Name</label>
+                        <input class="ig-input" type="text" id="token-name" placeholder="e.g. PumpKing" maxlength="32" required>
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="token-ticker">Ticker Symbol</label>
+                        <input class="ig-input" type="text" id="token-ticker" placeholder="e.g. $PUMP" maxlength="10" required>
+                    </div>
+                    <div class="ig-form-group ig-form-group--full">
+                        <label class="ig-label" for="token-description">Description</label>
+                        <textarea class="ig-textarea" id="token-description" placeholder="Describe your token..." rows="3" maxlength="280"></textarea>
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="token-twitter">Twitter / X</label>
+                        <input class="ig-input" type="url" id="token-twitter" placeholder="https://x.com/...">
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="token-website">Website</label>
+                        <input class="ig-input" type="url" id="token-website" placeholder="https://...">
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="token-telegram">Telegram</label>
+                        <input class="ig-input" type="url" id="token-telegram" placeholder="https://t.me/...">
+                    </div>
+                </div>
+                <div class="ig-form-footer">
+                    <div class="ig-form-fee">
+                        <span class="ig-form-fee-label">Launch Fee:</span>
+                        <span class="ig-form-fee-value">0.02 SOL</span>
+                    </div>
+                    <button class="ig-submit-btn" type="submit" id="launch-token-btn" disabled>
+                        <span>Launch Token</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 5: TOKEN REGISTRATION
+         ============================================ -->
+    <section class="ig-section" id="section-register" role="tabpanel" aria-label="Token Registration" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">Token Registration</h2>
+                <p class="ig-section-subtitle">Register an existing Pump.fun token and verify fee-sharing eligibility</p>
+            </div>
+            <form class="ig-register-form" id="register-form" novalidate>
+                <div class="ig-form-group">
+                    <label class="ig-label" for="register-mint">Token Mint Address</label>
+                    <input class="ig-input ig-input--mono" type="text" id="register-mint" placeholder="Enter Solana mint address..." maxlength="44" required>
+                </div>
+                <div class="ig-register-preview" id="register-preview" hidden>
+                    <div class="ig-register-info">
+                        <div class="ig-register-row">
+                            <span class="ig-register-key">Name</span>
+                            <span class="ig-register-val" id="reg-name">--</span>
+                        </div>
+                        <div class="ig-register-row">
+                            <span class="ig-register-key">Symbol</span>
+                            <span class="ig-register-val" id="reg-symbol">--</span>
+                        </div>
+                        <div class="ig-register-row">
+                            <span class="ig-register-key">Creator</span>
+                            <span class="ig-register-val" id="reg-creator">--</span>
+                        </div>
+                        <div class="ig-register-row">
+                            <span class="ig-register-key">Fee Sharing</span>
+                            <span class="ig-register-val ig-register-val--status" id="reg-fee-status">Pending Verification</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="ig-submit-btn" type="submit" id="register-token-btn" disabled>
+                    <span>Register Token</span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 6: ROBINHOOD PARTNERSHIP
+         ============================================ -->
+    <section class="ig-section" id="section-robinhood" role="tabpanel" aria-label="Robinhood Partnership" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">Robinhood Partnership</h2>
+                <p class="ig-section-subtitle">External tokens sharing creator fees with the ASDF airdrop pool</p>
+            </div>
+            <div class="ig-robinhood-grid" id="robinhood-list">
+                <div class="ig-robinhood-card">
+                    <div class="ig-robinhood-token">
+                        <div class="ig-robinhood-name">$ALPHA</div>
+                        <div class="ig-robinhood-creator">Creator: 7xK2...m9Fq</div>
+                    </div>
+                    <div class="ig-robinhood-fees">
+                        <span class="ig-robinhood-fees-label">Fees Shared</span>
+                        <span class="ig-robinhood-fees-value">2.14 SOL</span>
+                    </div>
+                    <div class="ig-robinhood-badge">Active</div>
+                </div>
+                <div class="ig-robinhood-card">
+                    <div class="ig-robinhood-token">
+                        <div class="ig-robinhood-name">$BETA</div>
+                        <div class="ig-robinhood-creator">Creator: 3dP8...wK2r</div>
+                    </div>
+                    <div class="ig-robinhood-fees">
+                        <span class="ig-robinhood-fees-label">Fees Shared</span>
+                        <span class="ig-robinhood-fees-value">0.87 SOL</span>
+                    </div>
+                    <div class="ig-robinhood-badge">Active</div>
+                </div>
+                <div class="ig-robinhood-card">
+                    <div class="ig-robinhood-token">
+                        <div class="ig-robinhood-name">$GAMMA</div>
+                        <div class="ig-robinhood-creator">Creator: 9fR4...tX1a</div>
+                    </div>
+                    <div class="ig-robinhood-fees">
+                        <span class="ig-robinhood-fees-label">Fees Shared</span>
+                        <span class="ig-robinhood-fees-value">0.43 SOL</span>
+                    </div>
+                    <div class="ig-robinhood-badge ig-robinhood-badge--pending">Pending</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 7: PAGS (Pay-to-Twitter/X)
+         ============================================ -->
+    <section class="ig-section" id="section-pags" role="tabpanel" aria-label="PAGS" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">PAGS</h2>
+                <p class="ig-section-subtitle">Pay-to-Twitter/X: Designate Twitter users as fee beneficiaries</p>
+            </div>
+            <form class="ig-pags-form" id="pags-form" novalidate>
+                <div class="ig-form-grid">
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="pags-handle">Twitter / X Handle</label>
+                        <input class="ig-input" type="text" id="pags-handle" placeholder="@username" maxlength="15" required>
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-label" for="pags-wallet">Beneficiary Wallet</label>
+                        <input class="ig-input ig-input--mono" type="text" id="pags-wallet" placeholder="Solana wallet address..." maxlength="44" required>
+                    </div>
+                </div>
+                <button class="ig-submit-btn" type="submit" id="pags-submit-btn" disabled>
+                    <span>Designate Beneficiary</span>
+                </button>
+            </form>
+            <div class="ig-pags-list" id="pags-list">
+                <h3 class="ig-subsection-title">Active Designations</h3>
+                <div class="ig-pags-row">
+                    <span class="ig-pags-handle">@asikisFINE</span>
+                    <span class="ig-pags-wallet-display">4rK8...m2Vx</span>
+                    <span class="ig-pags-earned">0.32 SOL</span>
+                </div>
+                <div class="ig-pags-row">
+                    <span class="ig-pags-handle">@solana_whale</span>
+                    <span class="ig-pags-wallet-display">7xP2...n9Fq</span>
+                    <span class="ig-pags-earned">0.18 SOL</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 8: FEE MECHANICS
+         ============================================ -->
+    <section class="ig-section" id="section-fees" role="tabpanel" aria-label="Fee Mechanics" hidden>
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">Fee Mechanics</h2>
+                <p class="ig-section-subtitle">How fees flow through the Ignition ecosystem</p>
+            </div>
+            <div class="ig-fees-grid">
+                <div class="ig-fee-card ig-fee-card--primary">
+                    <div class="ig-fee-percent">95%</div>
+                    <div class="ig-fee-label">Airdrop Pool</div>
+                    <div class="ig-fee-desc">Distributed to token holders based on volume and multiplier tiers</div>
+                </div>
+                <div class="ig-fee-card ig-fee-card--burn">
+                    <div class="ig-fee-percent">4.5%</div>
+                    <div class="ig-fee-label">ASDF Burns</div>
+                    <div class="ig-fee-desc">Permanently removed from supply, fueling deflation</div>
+                </div>
+                <div class="ig-fee-card ig-fee-card--reserve">
+                    <div class="ig-fee-percent">0.5%</div>
+                    <div class="ig-fee-label">Reserves</div>
+                    <div class="ig-fee-desc">Operational reserves for platform maintenance and development</div>
+                </div>
+            </div>
+            <div class="ig-fees-flow">
+                <div class="ig-flow-step">
+                    <div class="ig-flow-num">1</div>
+                    <div class="ig-flow-text">Creator fees collected from Pump.fun token trades</div>
+                </div>
+                <div class="ig-flow-arrow">&#8594;</div>
+                <div class="ig-flow-step">
+                    <div class="ig-flow-num">2</div>
+                    <div class="ig-flow-text">Fees split: 95% pool, 4.5% burn, 0.5% reserve</div>
+                </div>
+                <div class="ig-flow-arrow">&#8594;</div>
+                <div class="ig-flow-step">
+                    <div class="ig-flow-num">3</div>
+                    <div class="ig-flow-text">Airdrop distributed weekly to qualifying holders</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="ig-footer" role="contentinfo">
+        <div class="container">
+            <div class="ig-footer-inner">
+                <div class="ig-footer-status">
+                    <span class="ig-footer-dot" id="status-dot"></span>
+                    <span class="ig-footer-status-text" id="status-text">Platform Active</span>
+                </div>
+                <div class="ig-footer-links">
+                    <a href="https://twitter.com/asikisFINE" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank" rel="noopener">Solscan</a>
+                    <a href="/burns" rel="noopener">Burns</a>
+                </div>
+                <p class="ig-footer-text">Powered by Solana. Verifiable on-chain.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/shared/security.js"></script>
+    <script src="js/ignition.js"></script>
+    <script src="js/ecosystem.js" defer></script>
+    <script src="js/consent/index.js"></script>
+</body>
+</html>

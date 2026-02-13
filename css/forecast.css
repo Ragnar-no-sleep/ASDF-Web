@@ -950,16 +950,59 @@ body {
 }
 
 /* ============================================
-   VARIANT SWATCHES (drawer preview)
+   DENSITY: DETAILED — More context & guides
    ============================================ */
-.eco-variant-swatch--matrix {
-  background: linear-gradient(135deg, #000 30%, #00ff41);
+.density-detailed {
+  display: none;
 }
-.eco-variant-swatch--bloomberg {
-  background: linear-gradient(135deg, #0f172a 30%, #3b82f6);
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
 }
-.eco-variant-swatch--synthwave {
-  background: linear-gradient(135deg, #0a0012 30%, #f472b6);
+
+.density-full {
+  display: none;
+}
+[data-density='full'] .density-full {
+  display: block;
+}
+
+/* Context info panels */
+.forecast-context {
+  background: rgba(0, 255, 65, 0.04);
+  border: 1px solid rgba(0, 255, 65, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: rgba(0, 255, 65, 0.6);
+  line-height: 1.6;
+}
+
+.forecast-context strong {
+  color: rgba(0, 255, 65, 0.9);
+}
+
+/* Full mode — enhanced matrix effects */
+[data-density='full'] .data-column {
+  opacity: 0.6;
+}
+
+[data-density='full'] .data-node {
+  opacity: 0.5;
+}
+
+[data-density='full'] .scan-line {
+  opacity: 0.4;
+}
+
+[data-density='full'] .grid-overlay {
+  opacity: 0.15;
+}
+
+[data-density='full'] .terminal-header {
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.05);
 }
 
 /* ============================================

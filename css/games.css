@@ -1159,16 +1159,21 @@ body.modal-open {
 }
 
 /* ============================================
-           VARIANT SWATCHES (drawer preview)
+           DENSITY: DETAILED — More context & guides
            ============================================ */
-.eco-variant-swatch--ember-ig {
-  background: linear-gradient(135deg, #1a0800 30%, #ea580c);
+.density-detailed {
+  display: none;
 }
-.eco-variant-swatch--neon {
-  background: linear-gradient(135deg, #0a0012 30%, #e879f9);
+[data-density='detailed'] .density-detailed,
+[data-density='full'] .density-detailed {
+  display: block;
 }
-.eco-variant-swatch--pixel {
-  background: linear-gradient(135deg, #001a0a 30%, #22c55e);
+
+.density-full {
+  display: none;
+}
+[data-density='full'] .density-full {
+  display: block;
 }
 
 /* ============================================
