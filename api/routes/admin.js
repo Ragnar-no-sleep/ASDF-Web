@@ -18,7 +18,7 @@ const express = require('express');
 const router = express.Router();
 
 // Helpers
-const { sanitizeError } = require('./helpers');
+const { sanitizeError, paginate } = require('./helpers');
 
 // Auth & Security
 const { authMiddleware, optionalAuthMiddleware } = require('../services/auth');
@@ -152,15 +152,15 @@ router.get('/admin/metrics', authMiddleware, requireAdmin, async (req, res) => {
  */
 router.get('/admin/audit', authMiddleware, requireAdmin, async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
     const action = req.query.action || null;
-
-    const logs = getAuditLog(limit, action);
+    const allLogs = getAuditLog(500, action);
+    const { items, pagination } = paginate(allLogs, req);
 
     res.json({
-      logs,
-      count: logs.length,
+      logs: items,
+      count: items.length,
       filter: action,
+      pagination,
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'admin-audit') });
@@ -269,10 +269,10 @@ router.get('/admin/queue', authMiddleware, requireAdmin, async (req, res) => {
 router.get('/admin/queue/jobs', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const status = req.query.status || 'pending';
-    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const allJobs = getJobsByStatus(status, 100);
+    const { items, pagination } = paginate(allJobs, req);
 
-    const jobs = getJobsByStatus(status, limit);
-    res.json({ jobs, count: jobs.length });
+    res.json({ jobs: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'queue-jobs') });
   }
@@ -373,10 +373,10 @@ router.get('/admin/scheduler', authMiddleware, requireAdmin, async (req, res) =>
 router.get('/admin/scheduler/history', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const taskId = req.query.taskId || null;
-    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const allHistory = getTaskHistory(taskId, 100);
+    const { items, pagination } = paginate(allHistory, req);
 
-    const history = getTaskHistory(taskId, limit);
-    res.json({ history, count: history.length });
+    res.json({ history: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'scheduler-history') });
   }
@@ -393,9 +393,10 @@ router.get('/admin/scheduler/history', authMiddleware, requireAdmin, async (req,
 router.get('/admin/ratelimit', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const stats = getRateLimitStats();
-    const banned = getBannedList();
+    const allBanned = getBannedList();
+    const { items: banned, pagination } = paginate(allBanned, req);
 
-    res.json({ stats, banned });
+    res.json({ stats, banned, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'ratelimit-stats') });
   }
@@ -578,10 +579,10 @@ router.post('/admin/flags/:key/percentage', authMiddleware, requireAdmin, async 
 router.get('/admin/flags/history', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const key = req.query.key || null;
-    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const allHistory = getFlagHistory(key, 100);
+    const { items, pagination } = paginate(allHistory, req);
 
-    const history = getFlagHistory(key, limit);
-    res.json({ history, count: history.length });
+    res.json({ history: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'flag-history') });
   }
@@ -711,8 +712,10 @@ router.get('/admin/audit/export', authMiddleware, requireAdmin, async (req, res)
  */
 router.get('/admin/audit/alerts', authMiddleware, requireAdmin, async (req, res) => {
   try {
-    const alerts = getActiveAlerts();
-    res.json({ alerts, count: alerts.length });
+    const allAlerts = getActiveAlerts();
+    const { items, pagination } = paginate(allAlerts, req);
+
+    res.json({ alerts: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'audit-alerts') });
   }
@@ -873,10 +876,10 @@ router.get('/admin/tracing/search', authMiddleware, requireAdmin, async (req, re
 router.get('/admin/tracing/slow', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const threshold = parseInt(req.query.threshold) || 1000;
-    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const allTraces = getSlowTraces(threshold, 100);
+    const { items, pagination } = paginate(allTraces, req);
 
-    const traces = getSlowTraces(threshold, limit);
-    res.json({ traces, count: traces.length, threshold });
+    res.json({ traces: items, count: items.length, threshold, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'slow-traces') });
   }
@@ -888,10 +891,10 @@ router.get('/admin/tracing/slow', authMiddleware, requireAdmin, async (req, res)
  */
 router.get('/admin/tracing/errors', authMiddleware, requireAdmin, async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const traces = getErrorTraces(limit);
+    const allTraces = getErrorTraces(100);
+    const { items, pagination } = paginate(allTraces, req);
 
-    res.json({ traces, count: traces.length });
+    res.json({ traces: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'error-traces') });
   }
@@ -951,11 +954,11 @@ router.get('/admin/health', authMiddleware, requireAdmin, async (req, res) => {
  */
 router.get('/admin/health/history', authMiddleware, requireAdmin, async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-    const history = getHealthHistory(limit);
+    const allHistory = getHealthHistory(100);
+    const { items, pagination } = paginate(allHistory, req);
     const trend = getHealthTrend(60);
 
-    res.json({ history, trend });
+    res.json({ history: items, trend, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'health-history') });
   }
@@ -1046,10 +1049,10 @@ router.put('/admin/config/:key', authMiddleware, requireAdmin, async (req, res) 
 router.get('/admin/config/history', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const key = req.query.key || null;
-    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const allHistory = getConfigHistory(key, 100);
+    const { items, pagination } = paginate(allHistory, req);
 
-    const history = getConfigHistory(key, limit);
-    res.json({ history, count: history.length });
+    res.json({ history: items, count: items.length, pagination });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'config-history') });
   }

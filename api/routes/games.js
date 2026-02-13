@@ -369,12 +369,15 @@ router.get('/achievements', authMiddleware, async (req, res) => {
  */
 router.get('/achievements/leaderboard', async (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const leaderboard = getAchievementLeaderboard(limit);
+    const allEntries = getAchievementLeaderboard(offset + limit);
+    const entries = allEntries.slice(offset);
 
     res.json({
-      entries: leaderboard,
-      count: leaderboard.length,
+      entries,
+      count: entries.length,
+      pagination: { offset, limit, total: allEntries.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'achievement-leaderboard') });
@@ -530,12 +533,23 @@ router.get('/progression/xp-table', (req, res) => {
  */
 router.get('/progression/leaderboard', (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const { limit = 100, sortBy = 'totalXP' } = req.query;
+    const parsedLimit = Math.min(parseInt(limit) || 100, 500);
     const leaderboard = getProgression().getLeaderboard({
-      limit: Math.min(parseInt(limit) || 100, 500),
+      limit: offset + parsedLimit,
       sortBy,
     });
-    res.json(leaderboard);
+    const entries = Array.isArray(leaderboard) ? leaderboard.slice(offset) : leaderboard;
+    res.json({
+      entries,
+      count: Array.isArray(entries) ? entries.length : 0,
+      pagination: {
+        offset,
+        limit: parsedLimit,
+        total: Array.isArray(leaderboard) ? leaderboard.length : 0,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'progression-leaderboard') });
   }
@@ -585,9 +599,16 @@ router.get('/admin/anticheat/stats', authMiddleware, requireAdmin, (req, res) =>
  */
 router.get('/admin/anticheat/detections', authMiddleware, requireAdmin, (req, res) => {
   try {
-    const { limit = 50 } = req.query;
-    const detections = getAntiCheat().getRecentDetections(parseInt(limit) || 50);
-    res.json(detections);
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const allDetections = getAntiCheat().getRecentDetections(offset + limit);
+    const entries = Array.isArray(allDetections) ? allDetections.slice(offset) : allDetections;
+
+    res.json({
+      detections: entries,
+      count: Array.isArray(entries) ? entries.length : 0,
+      pagination: { offset, limit, total: Array.isArray(allDetections) ? allDetections.length : 0 },
+    });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'anticheat-detections') });
   }

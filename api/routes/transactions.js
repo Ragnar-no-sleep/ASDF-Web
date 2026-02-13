@@ -186,10 +186,16 @@ router.get('/transactions/status/:signature', async (req, res) => {
  */
 router.get('/transactions/history', authMiddleware, async (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-    const history = getTxWalletHistory(req.user.wallet, limit);
+    const allHistory = getTxWalletHistory(req.user.wallet, offset + limit);
+    const history = allHistory.slice(offset);
 
-    res.json({ history, count: history.length });
+    res.json({
+      history,
+      count: history.length,
+      pagination: { offset, limit, total: allHistory.length },
+    });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'tx-history') });
   }

@@ -104,6 +104,24 @@ function sanitizeError(error, context = 'unknown') {
   return 'Something went wrong. Please try again.';
 }
 
+// ============================================
+// PAGINATION
+// ============================================
+
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
+const MAX_OFFSET = 10000;
+
+function paginate(array, req) {
+  const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, MAX_OFFSET));
+  const limit = Math.max(1, Math.min(parseInt(req.query.limit) || DEFAULT_LIMIT, MAX_LIMIT));
+  const total = array.length;
+  return {
+    items: array.slice(offset, offset + limit),
+    pagination: { offset, limit, total },
+  };
+}
+
 module.exports = {
   JWT_COOKIE_NAME,
   setAuthCookie,
@@ -111,4 +129,5 @@ module.exports = {
   getAuthToken,
   sanitizeError,
   isProduction,
+  paginate,
 };

@@ -223,17 +223,20 @@ router.get('/config/public', async (req, res) => {
  */
 router.get('/leaderboard/burns', async (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const timeframe = ['all', 'month', 'week', 'day'].includes(req.query.timeframe)
       ? req.query.timeframe
       : 'all';
 
-    const leaderboard = getTopBurners(limit, timeframe);
+    const allEntries = getTopBurners(offset + limit, timeframe);
+    const entries = allEntries.slice(offset);
 
     res.json({
       timeframe,
-      entries: leaderboard,
-      count: leaderboard.length,
+      entries,
+      count: entries.length,
+      pagination: { offset, limit, total: allEntries.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'leaderboard-burns') });
@@ -246,12 +249,15 @@ router.get('/leaderboard/burns', async (req, res) => {
  */
 router.get('/leaderboard/xp', async (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const leaderboard = getXPLeaderboard(limit);
+    const allEntries = getXPLeaderboard(offset + limit);
+    const entries = allEntries.slice(offset);
 
     res.json({
-      entries: leaderboard,
-      count: leaderboard.length,
+      entries,
+      count: entries.length,
+      pagination: { offset, limit, total: allEntries.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'leaderboard-xp') });

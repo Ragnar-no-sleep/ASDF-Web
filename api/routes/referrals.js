@@ -121,12 +121,15 @@ router.get('/referrals/validate/:code', async (req, res) => {
  */
 router.get('/referrals/leaderboard', async (req, res) => {
   try {
+    const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const leaderboard = getReferralLeaderboard(limit);
+    const allEntries = getReferralLeaderboard(offset + limit);
+    const entries = allEntries.slice(offset);
 
     res.json({
-      entries: leaderboard,
-      count: leaderboard.length,
+      entries,
+      count: entries.length,
+      pagination: { offset, limit, total: allEntries.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'referral-leaderboard') });
