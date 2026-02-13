@@ -131,7 +131,9 @@ function renderJourneyModules() {
   container.innerHTML = html;
 
   // Re-attach event listeners after rendering
-  var moduleElements = container.querySelectorAll('.journey-module.unlocked, .journey-module.completed');
+  var moduleElements = container.querySelectorAll(
+    '.journey-module.unlocked, .journey-module.completed'
+  );
   moduleElements.forEach(function (el) {
     el.addEventListener('click', function () {
       var moduleId = this.dataset.module;
@@ -582,10 +584,22 @@ function simpleMarkdown(text) {
     var cells = content.split('|').map(function (c) {
       return c.trim();
     });
-    if (cells.every(function (c) { return /^[-:]+$/.test(c); })) {
+    if (
+      cells.every(function (c) {
+        return /^[-:]+$/.test(c);
+      })
+    ) {
       return ''; // Skip separator row
     }
-    return '<tr>' + cells.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';
+    return (
+      '<tr>' +
+      cells
+        .map(function (c) {
+          return '<td>' + c + '</td>';
+        })
+        .join('') +
+      '</tr>'
+    );
   });
   html = html.replace(/(<tr>.*<\/tr>\n?)+/g, '<table>$&</table>');
 
@@ -611,17 +625,7 @@ function simpleMarkdown(text) {
   return html;
 }
 
-/**
- * Escape HTML special characters
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+// escapeHtml loaded from js/shared/security.js
 
 // ============================================
 // INITIALIZE ON DOM READY

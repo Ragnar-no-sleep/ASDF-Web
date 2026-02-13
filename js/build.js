@@ -6,26 +6,7 @@
 
 'use strict';
 
-// ============================================
-// SECURITY UTILITIES - XSS Protection
-// ============================================
-
-/**
- * Escape HTML special characters to prevent XSS
- */
-function escapeHtml(text) {
-  if (typeof text !== 'string') return '';
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  };
-  return text.replace(/[&<>"']/g, function (m) {
-    return map[m];
-  });
-}
+// escapeHtml loaded from js/shared/security.js
 
 /**
  * Sanitize HTML content using DOMPurify

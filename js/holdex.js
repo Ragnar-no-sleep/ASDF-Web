@@ -7,15 +7,7 @@
 
 const HOLDEX_API = 'https://holdex.onrender.com/api';
 
-/**
- * Escape HTML entities to prevent XSS
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
-function escapeHtml(text) {
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-  return String(text).replace(/[&<>"']/g, m => map[m]);
-}
+// escapeHtml loaded from js/shared/security.js
 
 // ============================================
 // STATE

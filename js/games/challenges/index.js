@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const GameChallenges = (function() {
+const GameChallenges = (function () {
   // Cache
   let currentChallenges = [];
   let challengeProgress = {};
@@ -20,7 +20,7 @@ const GameChallenges = (function() {
    */
   async function fetchChallenges(forceRefresh = false) {
     const now = Date.now();
-    if (!forceRefresh && currentChallenges.length > 0 && (now - lastFetch) < CACHE_DURATION) {
+    if (!forceRefresh && currentChallenges.length > 0 && now - lastFetch < CACHE_DURATION) {
       return currentChallenges;
     }
 
@@ -30,8 +30,8 @@ const GameChallenges = (function() {
 
       const response = await fetch('/api/games/challenges', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) throw new Error('Failed to fetch challenges');
@@ -142,12 +142,13 @@ const GameChallenges = (function() {
     const percentage = Math.min(100, Math.round((progress.current / challenge.target) * 100));
     const isComplete = progress.completed || percentage >= 100;
 
-    const difficultyClass = {
-      'easy': 'badge-success',
-      'medium': 'badge-warning',
-      'hard': 'badge-danger',
-      'legendary': 'badge-legendary'
-    }[challenge.difficulty] || 'badge-secondary';
+    const difficultyClass =
+      {
+        easy: 'badge-success',
+        medium: 'badge-warning',
+        hard: 'badge-danger',
+        legendary: 'badge-legendary',
+      }[challenge.difficulty] || 'badge-secondary';
 
     const timeLeft = getTimeRemaining(challenge.expiresAt);
 
@@ -172,11 +173,15 @@ const GameChallenges = (function() {
             ${timeLeft.text}
           </span>
         </div>
-        ${isComplete && !challenge.claimed ? `
+        ${
+          isComplete && !challenge.claimed
+            ? `
           <button class="btn btn-sm btn-gold claim-reward-btn" data-challenge-id="${challenge.id}">
             Claim Reward
           </button>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }
@@ -219,9 +224,9 @@ const GameChallenges = (function() {
       const response = await fetch(`/api/games/challenges/${challengeId}/claim`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) throw new Error('Failed to claim reward');
@@ -246,21 +251,14 @@ const GameChallenges = (function() {
     }
   }
 
-  /**
-   * Escape HTML to prevent XSS
-   */
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+  // escapeHtml loaded from js/shared/security.js
 
   /**
    * Initialize event listeners
    */
   function init() {
     // Delegate click handler for claim buttons
-    document.addEventListener('click', async (e) => {
+    document.addEventListener('click', async e => {
       if (e.target.classList.contains('claim-reward-btn')) {
         const challengeId = e.target.dataset.challengeId;
         e.target.disabled = true;
@@ -292,7 +290,7 @@ const GameChallenges = (function() {
     getProgress,
     updateLocalProgress,
     renderChallengesWidget,
-    claimReward
+    claimReward,
   };
 })();
 
