@@ -25,7 +25,7 @@ import {
   delegate,
   getData,
   setStyles,
-  createElement
+  createElement,
 } from '../utils/dom.js';
 
 // ============================================
@@ -36,30 +36,38 @@ import {
  * Tree node positions (mapped from SVG)
  */
 const NODE_POSITIONS = {
-  'burn-engine': { x: 400, y: 300 },  // Heart/center
+  'burn-engine': { x: 400, y: 300 }, // Heart/center
   'burn-tracker': { x: 80, y: 150 },
   'token-launcher': { x: 720, y: 150 },
   'learn-platform': { x: 150, y: 110 },
   'games-platform': { x: 650, y: 110 },
-  'holdex': { x: 120, y: 200 },
-  'forecast': { x: 680, y: 200 },
-  'ignition': { x: 365, y: 140 },
-  'oracle': { x: 700, y: 270 },
+  holdex: { x: 120, y: 200 },
+  forecast: { x: 680, y: 200 },
+  ignition: { x: 365, y: 140 },
+  oracle: { x: 700, y: 270 },
   'rpc-monitor': { x: 90, y: 350 },
   'community-hub': { x: 710, y: 350 },
   'deploy-pipeline': { x: 400, y: 520 },
   'ambassador-program': { x: 680, y: 490 },
   'security-audit': { x: 120, y: 490 },
-  'content-factory': { x: 550, y: 450 }
+  'content-factory': { x: 550, y: 450 },
 };
 
 /**
  * Branch categories
  */
 const BRANCH_CATEGORIES = {
-  canopy: ['burn-tracker', 'token-launcher', 'learn-platform', 'games-platform', 'holdex', 'forecast', 'ignition'],
+  canopy: [
+    'burn-tracker',
+    'token-launcher',
+    'learn-platform',
+    'games-platform',
+    'holdex',
+    'forecast',
+    'ignition',
+  ],
   trunk: ['oracle', 'rpc-monitor', 'community-hub'],
-  roots: ['deploy-pipeline', 'ambassador-program', 'security-audit', 'content-factory']
+  roots: ['deploy-pipeline', 'ambassador-program', 'security-audit', 'content-factory'],
 };
 
 // ============================================
@@ -67,11 +75,11 @@ const BRANCH_CATEGORIES = {
 // ============================================
 
 const BURN_PULSE_CONFIG = {
-  updateInterval: 30000,  // Update burn data every 30s
+  updateInterval: 30000, // Update burn data every 30s
   pulseMinDuration: 2000, // Minimum pulse animation duration (ms)
-  pulseMaxDuration: 800,  // Maximum pulse animation duration (ms) - faster = more intense
+  pulseMaxDuration: 800, // Maximum pulse animation duration (ms) - faster = more intense
   glowMinOpacity: 0.4,
-  glowMaxOpacity: 1.0
+  glowMaxOpacity: 1.0,
 };
 
 // ============================================
@@ -111,7 +119,7 @@ const TreeComponent = {
     this.bindEvents();
 
     // Subscribe to state changes
-    BuildState.subscribe(EVENTS.PROJECT_SELECT, (data) => {
+    BuildState.subscribe(EVENTS.PROJECT_SELECT, data => {
       this.highlightNode(data.projectId);
     });
 
@@ -232,7 +240,10 @@ const TreeComponent = {
     this.clearHighlight();
 
     // Find and highlight node
-    const node = $(`.tree-node[data-project="${projectId}"], .realm[data-project="${projectId}"]`, treeContainer);
+    const node = $(
+      `.tree-node[data-project="${projectId}"], .realm[data-project="${projectId}"]`,
+      treeContainer
+    );
     if (node) {
       selectedNode = projectId;
       addClass(node, 'highlighted', 'selected');
@@ -250,7 +261,10 @@ const TreeComponent = {
    */
   clearHighlight() {
     if (selectedNode) {
-      const node = $(`.tree-node[data-project="${selectedNode}"], .realm[data-project="${selectedNode}"]`, treeContainer);
+      const node = $(
+        `.tree-node[data-project="${selectedNode}"], .realm[data-project="${selectedNode}"]`,
+        treeContainer
+      );
       if (node) {
         removeClass(node, 'highlighted', 'selected');
       }
@@ -341,7 +355,7 @@ const TreeComponent = {
       left: `${left}px`,
       top: `${top}px`,
       opacity: '1',
-      visibility: 'visible'
+      visibility: 'visible',
     });
   },
 
@@ -353,7 +367,7 @@ const TreeComponent = {
     if (tooltip) {
       setStyles(tooltip, {
         opacity: '0',
-        visibility: 'hidden'
+        visibility: 'hidden',
       });
     }
   },
@@ -372,11 +386,14 @@ const TreeComponent = {
    * @param {string} projectId
    */
   animateToNode(projectId) {
-    const node = $(`.tree-node[data-project="${projectId}"], .realm[data-project="${projectId}"]`, treeContainer);
+    const node = $(
+      `.tree-node[data-project="${projectId}"], .realm[data-project="${projectId}"]`,
+      treeContainer
+    );
     if (node) {
       node.scrollIntoView({
         behavior: 'smooth',
-        block: 'center'
+        block: 'center',
       });
     }
   },
@@ -415,7 +432,10 @@ const TreeComponent = {
 
     // Update node statuses if needed
     Object.entries(projects).forEach(([id, project]) => {
-      const node = $(`.tree-node[data-project="${id}"], .realm[data-project="${id}"]`, treeContainer);
+      const node = $(
+        `.tree-node[data-project="${id}"], .realm[data-project="${id}"]`,
+        treeContainer
+      );
       if (node) {
         node.dataset.status = project.status;
       }
@@ -468,7 +488,7 @@ const TreeComponent = {
       // Emit event for other components
       BuildState.emit('burn:update', {
         stats: burnStats,
-        intensity: currentBurnIntensity
+        intensity: currentBurnIntensity,
       });
 
       // Update visual
@@ -492,9 +512,11 @@ const TreeComponent = {
     if (!nordicSun && !treeHeart) return;
 
     // Calculate pulse duration based on intensity (higher = faster pulse)
-    const { pulseMinDuration, pulseMaxDuration, glowMinOpacity, glowMaxOpacity } = BURN_PULSE_CONFIG;
-    const pulseDuration = pulseMinDuration - ((pulseMinDuration - pulseMaxDuration) * currentBurnIntensity);
-    const glowOpacity = glowMinOpacity + ((glowMaxOpacity - glowMinOpacity) * currentBurnIntensity);
+    const { pulseMinDuration, pulseMaxDuration, glowMinOpacity, glowMaxOpacity } =
+      BURN_PULSE_CONFIG;
+    const pulseDuration =
+      pulseMinDuration - (pulseMinDuration - pulseMaxDuration) * currentBurnIntensity;
+    const glowOpacity = glowMinOpacity + (glowMaxOpacity - glowMinOpacity) * currentBurnIntensity;
 
     // Apply CSS custom properties for animation
     const pulseTarget = nordicSun || treeHeart;
@@ -512,7 +534,7 @@ const TreeComponent = {
 
     // Update heart glow
     if (treeHeart) {
-      const glowSize = 20 + (currentBurnIntensity * 30); // 20-50px glow
+      const glowSize = 20 + currentBurnIntensity * 30; // 20-50px glow
       treeHeart.style.setProperty('--heart-glow-size', `${glowSize}px`);
     }
   },
@@ -603,7 +625,7 @@ const TreeComponent = {
       return renderer.getNodePosition(projectId);
     }
     return null;
-  }
+  },
 };
 
 // Export for ES modules
@@ -612,5 +634,7 @@ export default TreeComponent;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.TreeComponent = TreeComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.TreeComponent = TreeComponent;
+  window.TreeComponent = window.ASDF.TreeComponent;
 }

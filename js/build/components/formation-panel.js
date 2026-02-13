@@ -8,7 +8,14 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { TRACKS, MODULES, getTrack, getTrackModules, calculateTrackProgress, getNextModule } from '../data/formations-data.js';
+import {
+  TRACKS,
+  MODULES,
+  getTrack,
+  getTrackModules,
+  calculateTrackProgress,
+  getNextModule,
+} from '../data/formations-data.js';
 import { $, $$, addClass, removeClass, on, delegate, safeInnerHTML } from '../utils/dom.js';
 import { sanitizeText } from '../utils/security.js';
 import { phiDelays } from '../utils/phi.js';
@@ -20,11 +27,11 @@ import { phiDelays } from '../utils/phi.js';
 const PANEL_CONFIG = {
   // Animation (Fibonacci-based)
   animation: {
-    slideDuration: 500,  // fib(5) * 100
-    stagger: 50          // fib(5) * 10
+    slideDuration: 500, // fib(5) * 100
+    stagger: 50, // fib(5) * 10
   },
   // Storage key for progress
-  storageKey: 'asdf_formation_progress'
+  storageKey: 'asdf_formation_progress',
 };
 
 // ============================================
@@ -62,9 +69,8 @@ const FormationPanel = {
    * @param {string|Element} containerSelector - Parent container
    */
   init(containerSelector = 'body') {
-    const container = typeof containerSelector === 'string'
-      ? $(containerSelector)
-      : containerSelector;
+    const container =
+      typeof containerSelector === 'string' ? $(containerSelector) : containerSelector;
 
     if (!container) {
       console.warn('[FormationPanel] Container not found');
@@ -108,7 +114,9 @@ const FormationPanel = {
         </div>
 
         <div class="formation-tracks">
-          ${Object.values(TRACKS).map(track => this.renderTrackCard(track)).join('')}
+          ${Object.values(TRACKS)
+            .map(track => this.renderTrackCard(track))
+            .join('')}
         </div>
 
         <div class="formation-detail" style="display: none;">
@@ -203,19 +211,19 @@ const FormationPanel = {
     });
 
     // Listen for panel open
-    BuildState.subscribe('formation:open', (data) => {
+    BuildState.subscribe('formation:open', data => {
       this.open(data?.trackId);
     });
 
     // Listen for quiz complete
-    BuildState.subscribe('quiz:complete', (data) => {
+    BuildState.subscribe('quiz:complete', data => {
       if (data.result) {
         this.open(data.result);
       }
     });
 
     // Keyboard
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
@@ -308,12 +316,14 @@ const FormationPanel = {
 
       <div class="modules-list">
         <h4 class="modules-title">Modules</h4>
-        ${modules.map((module, index) => {
-          const isCompleted = completedModules.includes(module.id);
-          const isLocked = !isCompleted && module.prerequisites.some(p => !completedModules.includes(p));
-          const isNext = nextModule?.id === module.id;
+        ${modules
+          .map((module, index) => {
+            const isCompleted = completedModules.includes(module.id);
+            const isLocked =
+              !isCompleted && module.prerequisites.some(p => !completedModules.includes(p));
+            const isNext = nextModule?.id === module.id;
 
-          return `
+            return `
             <div
               class="module-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${isNext ? 'next' : ''}"
               data-module="${module.id}"
@@ -336,7 +346,8 @@ const FormationPanel = {
               </div>
             </div>
           `;
-        }).join('')}
+          })
+          .join('')}
       </div>
     `;
 
@@ -388,7 +399,7 @@ const FormationPanel = {
     BuildState.emit('formation:moduleOpen', {
       moduleId,
       module,
-      trackId: module.track
+      trackId: module.track,
     });
 
     // Navigate to deep-learn with module
@@ -417,9 +428,7 @@ const FormationPanel = {
 
       // Check if track completed
       const track = getTrack(trackId);
-      const allComplete = track.modules.every(m =>
-        this.progress[trackId].completed.includes(m)
-      );
+      const allComplete = track.modules.every(m => this.progress[trackId].completed.includes(m));
 
       if (allComplete) {
         BuildState.emit('formation:trackComplete', { trackId });
@@ -484,7 +493,7 @@ const FormationPanel = {
     this.backdrop = null;
     this.currentTrack = null;
     this.isOpen = false;
-  }
+  },
 };
 
 // ============================================
@@ -496,5 +505,7 @@ export default FormationPanel;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.FormationPanel = FormationPanel;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.FormationPanel = FormationPanel;
+  window.FormationPanel = window.ASDF.FormationPanel;
 }

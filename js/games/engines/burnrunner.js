@@ -1199,5 +1199,7 @@ const BurnRunner = {
 
 // Export
 if (typeof window !== 'undefined') {
-  window.BurnRunner = BurnRunner;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BurnRunner = BurnRunner;
+  window.BurnRunner = window.ASDF.BurnRunner;
 }

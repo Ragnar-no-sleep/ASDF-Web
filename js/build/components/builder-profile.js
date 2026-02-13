@@ -469,5 +469,7 @@ export default BuilderProfile;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.BuilderProfile = BuilderProfile;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuilderProfile = BuilderProfile;
+  window.BuilderProfile = window.ASDF.BuilderProfile;
 }

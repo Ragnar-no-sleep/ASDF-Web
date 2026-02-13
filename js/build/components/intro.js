@@ -23,7 +23,7 @@ import {
   createElement,
   setStyles,
   waitForTransition,
-  nextFrame
+  nextFrame,
 } from '../utils/dom.js';
 
 // ============================================
@@ -38,7 +38,7 @@ const INTRO_SLIDES = [
     icon: '&#128293;', // 🔥 as HTML entity
     title: 'The Burn Engine',
     description: 'Live burns power the ecosystem. Watch the pulse - faster means more activity.',
-    cta: 'Next'
+    cta: 'Next',
   },
   {
     id: 'projects',
@@ -47,7 +47,7 @@ const INTRO_SLIDES = [
     icon: '&#127793;', // 🌱 as HTML entity
     title: 'Explore Projects',
     description: 'Click any stone island to see skills, builders, and progress.',
-    cta: 'Next'
+    cta: 'Next',
   },
   {
     id: 'find-path',
@@ -56,16 +56,16 @@ const INTRO_SLIDES = [
     icon: '&#129517;', // 🧭 as HTML entity
     title: 'Find Your Path',
     description: 'Take the quiz to discover your builder track and start your journey.',
-    cta: 'Start Exploring'
-  }
+    cta: 'Start Exploring',
+  },
 ];
 
 // Tooltip positioning config
 const TOOLTIP_CONFIG = {
-  offset: 16,        // Distance from target
-  arrowSize: 12,     // Arrow/pointer size
-  maxWidth: 320,     // Maximum tooltip width
-  padding: 20        // Screen edge padding
+  offset: 16, // Distance from target
+  arrowSize: 12, // Arrow/pointer size
+  maxWidth: 320, // Maximum tooltip width
+  padding: 20, // Screen edge padding
 };
 
 // ============================================
@@ -117,7 +117,7 @@ const IntroComponent = {
   createContainer() {
     introContainer = createElement('div', {
       id: 'intro-container',
-      className: 'intro-overlay'
+      className: 'intro-overlay',
     });
     document.body.appendChild(introContainer);
   },
@@ -188,7 +188,7 @@ const IntroComponent = {
         position: 'fixed',
         top: '50%',
         left: '50%',
-        transform: 'translate(-50%, -50%)'
+        transform: 'translate(-50%, -50%)',
       });
       if (spotlight) hide(spotlight);
       return;
@@ -241,7 +241,8 @@ const IntroComponent = {
 
     // Clamp horizontal position
     if (left < padding + maxWidth / 2) left = padding + maxWidth / 2;
-    if (left > viewportWidth - padding - maxWidth / 2) left = viewportWidth - padding - maxWidth / 2;
+    if (left > viewportWidth - padding - maxWidth / 2)
+      left = viewportWidth - padding - maxWidth / 2;
 
     // Clamp vertical position
     if (top < padding) top = padding;
@@ -252,7 +253,7 @@ const IntroComponent = {
       top: `${top}px`,
       left: `${left}px`,
       transform: transform,
-      maxWidth: `${maxWidth}px`
+      maxWidth: `${maxWidth}px`,
     });
 
     // Position spotlight over target
@@ -264,7 +265,7 @@ const IntroComponent = {
         left: `${targetRect.left - spotlightPadding}px`,
         width: `${targetRect.width + spotlightPadding * 2}px`,
         height: `${targetRect.height + spotlightPadding * 2}px`,
-        borderRadius: '12px'
+        borderRadius: '12px',
       });
       show(spotlight);
     }
@@ -287,7 +288,7 @@ const IntroComponent = {
       currentTargetElement.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
-        inline: 'center'
+        inline: 'center',
       });
     }
   },
@@ -308,28 +309,28 @@ const IntroComponent = {
    */
   bindEvents() {
     // CTA button
-    on(introContainer, 'click', (e) => {
+    on(introContainer, 'click', e => {
       if (e.target.matches('.intro-cta')) {
         this.nextSlide();
       }
     });
 
     // Skip button
-    on(introContainer, 'click', (e) => {
+    on(introContainer, 'click', e => {
       if (e.target.matches('.intro-skip')) {
         this.complete();
       }
     });
 
     // Backdrop click to advance
-    on(introContainer, 'click', (e) => {
+    on(introContainer, 'click', e => {
       if (e.target.matches('.intro-backdrop')) {
         this.nextSlide();
       }
     });
 
     // Dot clicks
-    on(introContainer, 'click', (e) => {
+    on(introContainer, 'click', e => {
       if (e.target.matches('.intro-dot')) {
         const slideIndex = parseInt(e.target.dataset.slide, 10);
         this.goToSlide(slideIndex);
@@ -337,7 +338,7 @@ const IntroComponent = {
     });
 
     // Keyboard navigation
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       if (!introContainer || !introContainer.classList.contains('active')) return;
 
       if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
@@ -511,7 +512,7 @@ const IntroComponent = {
    */
   getCurrentSlide() {
     return currentSlide;
-  }
+  },
 };
 
 // Export for ES modules
@@ -520,5 +521,7 @@ export default IntroComponent;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.IntroComponent = IntroComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.IntroComponent = IntroComponent;
+  window.IntroComponent = window.ASDF.IntroComponent;
 }

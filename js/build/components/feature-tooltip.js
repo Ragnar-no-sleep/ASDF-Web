@@ -295,5 +295,7 @@ export default FeatureTooltip;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.FeatureTooltip = FeatureTooltip;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.FeatureTooltip = FeatureTooltip;
+  window.FeatureTooltip = window.ASDF.FeatureTooltip;
 }

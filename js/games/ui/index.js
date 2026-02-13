@@ -79,5 +79,7 @@ const GameUI = {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GameUI = GameUI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameUI = GameUI;
+  window.GameUI = window.ASDF.GameUI;
 }

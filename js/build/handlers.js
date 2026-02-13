@@ -94,7 +94,7 @@ const ViewSwitchHandler = {
     BuildState.emit('view:changed', { view });
 
     return true;
-  }
+  },
 };
 
 // ============================================
@@ -154,7 +154,7 @@ const FilterHandler = {
     }
 
     return false;
-  }
+  },
 };
 
 // ============================================
@@ -197,7 +197,7 @@ const ModalHandler = {
     }
 
     return false;
-  }
+  },
 };
 
 // ============================================
@@ -214,7 +214,12 @@ const NavigationHandler = {
       const { target } = data;
 
       // Handle internal navigation
-      if (target === 'yggdrasil' || target === 'marketplace' || target === 'path' || target === 'journey') {
+      if (
+        target === 'yggdrasil' ||
+        target === 'marketplace' ||
+        target === 'path' ||
+        target === 'journey'
+      ) {
         processEvent('view:switch', { view: target });
         return true;
       }
@@ -240,7 +245,7 @@ const NavigationHandler = {
     }
 
     return false;
-  }
+  },
 };
 
 // ============================================
@@ -280,7 +285,7 @@ const KeyboardHandler = {
     }
 
     return false;
-  }
+  },
 };
 
 // ============================================
@@ -317,7 +322,7 @@ const DeepLinkHandler = {
     }
 
     return false;
-  }
+  },
 };
 
 // ============================================
@@ -359,13 +364,13 @@ const EventHandlers = {
     });
 
     // Keyboard events
-    on(document, 'keydown', (e) => {
+    on(document, 'keydown', e => {
       processEvent('keyboard', {
         key: e.key,
         ctrlKey: e.ctrlKey,
         shiftKey: e.shiftKey,
         altKey: e.altKey,
-        metaKey: e.metaKey
+        metaKey: e.metaKey,
       });
     });
 
@@ -392,7 +397,7 @@ const EventHandlers = {
    * Register a custom handler
    * @param {Object} handler
    */
-  register: registerHandler
+  register: registerHandler,
 };
 
 // Export for ES modules
@@ -401,5 +406,7 @@ export default EventHandlers;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.EventHandlers = EventHandlers;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.EventHandlers = EventHandlers;
+  window.EventHandlers = window.ASDF.EventHandlers;
 }

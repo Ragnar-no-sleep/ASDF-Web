@@ -109,5 +109,7 @@ function updateFeaturedGame() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GameRotation = GameRotation;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameRotation = GameRotation;
+  window.GameRotation = window.ASDF.GameRotation;
 }

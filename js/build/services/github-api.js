@@ -658,5 +658,7 @@ export default GitHubApiService;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.GitHubApiService = GitHubApiService;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GitHubApiService = GitHubApiService;
+  window.GitHubApiService = window.ASDF.GitHubApiService;
 }

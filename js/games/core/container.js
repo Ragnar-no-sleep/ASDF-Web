@@ -159,7 +159,9 @@ Object.freeze(GameServices);
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GameServices = GameServices;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameServices = GameServices;
+  window.GameServices = window.ASDF.GameServices;
 }
 
 // Export for testing

@@ -3247,5 +3247,7 @@ export default YggdrasilCosmos;
 
 // Global
 if (typeof window !== 'undefined') {
-  window.YggdrasilCosmos = YggdrasilCosmos;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.YggdrasilCosmos = YggdrasilCosmos;
+  window.YggdrasilCosmos = window.ASDF.YggdrasilCosmos;
 }

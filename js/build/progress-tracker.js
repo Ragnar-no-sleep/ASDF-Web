@@ -767,5 +767,7 @@ export default ProgressTracker;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.ProgressTracker = ProgressTracker;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ProgressTracker = ProgressTracker;
+  window.ProgressTracker = window.ASDF.ProgressTracker;
 }

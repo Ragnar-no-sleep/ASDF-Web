@@ -848,5 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.Profile = Profile;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.Profile = Profile;
+  window.Profile = window.ASDF.Profile;
 }

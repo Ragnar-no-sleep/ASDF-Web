@@ -19,13 +19,13 @@ const ANIM_CONFIG = {
   // fib sequence: 1,1,2,3,5,8,13,21 * 0.1
   durations: {
     instant: 0,
-    veryFast: 0.1,  // fib(1)
-    fast: 0.2,      // fib(2)
-    quick: 0.3,     // fib(3)
-    normal: 0.5,    // fib(5)
-    medium: 0.8,    // fib(8)
-    slow: 1.3,      // fib(13)
-    verySlow: 2.1   // fib(21)
+    veryFast: 0.1, // fib(1)
+    fast: 0.2, // fib(2)
+    quick: 0.3, // fib(3)
+    normal: 0.5, // fib(5)
+    medium: 0.8, // fib(8)
+    slow: 1.3, // fib(13)
+    verySlow: 2.1, // fib(21)
   },
   // Easing presets
   easings: {
@@ -40,16 +40,16 @@ const ANIM_CONFIG = {
     // Phi-based (golden ratio curve)
     phiOut: `power${PHI}.out`,
     phiIn: `power${PHI}.in`,
-    phiInOut: `power${PHI}.inOut`
+    phiInOut: `power${PHI}.inOut`,
   },
   // Stagger presets (phi-based)
   stagger: {
-    fast: 0.03,           // ~fib(3) * 0.01
-    normal: 0.05,         // fib(5) * 0.01
+    fast: 0.03, // ~fib(3) * 0.01
+    normal: 0.05, // fib(5) * 0.01
     phi: PHI_INVERSE / 10, // 0.0618 (golden)
-    slow: 0.08,           // fib(8) * 0.01
-    verySlow: 0.13        // fib(13) * 0.01
-  }
+    slow: 0.08, // fib(8) * 0.01
+    verySlow: 0.13, // fib(13) * 0.01
+  },
 };
 
 // ============================================
@@ -76,7 +76,7 @@ async function loadGSAP() {
   }
 
   // Load via script tag (GSAP is IIFE, not ES module)
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/gsap@3.12.4/dist/gsap.min.js';
     script.async = true;
@@ -150,15 +150,15 @@ const CSSAnimations = {
    */
   mapEasing(gsapEase) {
     const map = {
-      'none': 'linear',
+      none: 'linear',
       'power2.out': 'ease-out',
       'power2.in': 'ease-in',
       'power2.inOut': 'ease-in-out',
       'bounce.out': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-      'elastic.out(1, 0.3)': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+      'elastic.out(1, 0.3)': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     };
     return map[gsapEase] || 'ease-out';
-  }
+  },
 };
 
 // ============================================
@@ -178,7 +178,7 @@ const Animations = {
 
     console.log('[Animations] Initialized', {
       gsap: !!gsap,
-      reducedMotion: this.reducedMotion
+      reducedMotion: this.reducedMotion,
     });
   },
 
@@ -211,12 +211,13 @@ const Animations = {
         ease: options.ease || ANIM_CONFIG.easings.easeOut,
         stagger: options.stagger,
         delay: options.delay,
-        onComplete: options.onComplete
+        onComplete: options.onComplete,
       });
     }
 
     // CSS fallback
-    const elements = typeof target === 'string' ? document.querySelectorAll(target) : [target].flat();
+    const elements =
+      typeof target === 'string' ? document.querySelectorAll(target) : [target].flat();
     return Promise.all(elements.map(el => CSSAnimations.to(el, props, options)));
   },
 
@@ -239,12 +240,13 @@ const Animations = {
         ease: options.ease || ANIM_CONFIG.easings.easeOut,
         stagger: options.stagger,
         delay: options.delay,
-        onComplete: options.onComplete
+        onComplete: options.onComplete,
       });
     }
 
     // CSS fallback - set initial then animate
-    const elements = typeof target === 'string' ? document.querySelectorAll(target) : [target].flat();
+    const elements =
+      typeof target === 'string' ? document.querySelectorAll(target) : [target].flat();
     elements.forEach(el => CSSAnimations.to(el, props, { duration: 0 }));
     return this.to(target, {}, options);
   },
@@ -287,7 +289,7 @@ const Animations = {
         for (const item of this.queue) {
           await CSSAnimations.to(item.target, item.props);
         }
-      }
+      },
     };
   },
 
@@ -312,7 +314,7 @@ const Animations = {
         duration: duration / 2,
         ease: 'sine.inOut',
         yoyo: true,
-        repeat: -1
+        repeat: -1,
       });
     } else {
       element.style.animation = `burnPulse ${duration}s ease-in-out infinite`;
@@ -348,7 +350,7 @@ const Animations = {
 
     this.to(element, props, {
       duration: ANIM_CONFIG.durations.fast,
-      ease: isHovering ? ANIM_CONFIG.easings.elastic : ANIM_CONFIG.easings.easeOut
+      ease: isHovering ? ANIM_CONFIG.easings.elastic : ANIM_CONFIG.easings.easeOut,
     });
   },
 
@@ -365,7 +367,7 @@ const Animations = {
       left: { x: '-100%', y: 0 },
       right: { x: '100%', y: 0 },
       up: { x: 0, y: '-100%' },
-      down: { x: 0, y: '100%' }
+      down: { x: 0, y: '100%' },
     };
 
     const offset = offsets[direction] || offsets.right;
@@ -374,23 +376,31 @@ const Animations = {
       this.set(panel, { x: offset.x, y: offset.y, opacity: 0 });
       panel.style.display = 'flex';
 
-      await this.to(panel, {
-        x: 0,
-        y: 0,
-        opacity: 1
-      }, {
-        duration: ANIM_CONFIG.durations.normal,
-        ease: ANIM_CONFIG.easings.easeOut
-      });
+      await this.to(
+        panel,
+        {
+          x: 0,
+          y: 0,
+          opacity: 1,
+        },
+        {
+          duration: ANIM_CONFIG.durations.normal,
+          ease: ANIM_CONFIG.easings.easeOut,
+        }
+      );
     } else {
-      await this.to(panel, {
-        x: offset.x,
-        y: offset.y,
-        opacity: 0
-      }, {
-        duration: ANIM_CONFIG.durations.fast,
-        ease: ANIM_CONFIG.easings.easeIn
-      });
+      await this.to(
+        panel,
+        {
+          x: offset.x,
+          y: offset.y,
+          opacity: 0,
+        },
+        {
+          duration: ANIM_CONFIG.durations.fast,
+          ease: ANIM_CONFIG.easings.easeIn,
+        }
+      );
 
       panel.style.display = 'none';
     }
@@ -407,25 +417,33 @@ const Animations = {
     // Fade in with scale
     this.set(tooltip, { opacity: 0, scale: 0.9, y: 20 });
 
-    await this.to(tooltip, {
-      opacity: 1,
-      scale: 1,
-      y: 0
-    }, {
-      duration: ANIM_CONFIG.durations.slow,
-      ease: ANIM_CONFIG.easings.easeOut
-    });
+    await this.to(
+      tooltip,
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+      },
+      {
+        duration: ANIM_CONFIG.durations.slow,
+        ease: ANIM_CONFIG.easings.easeOut,
+      }
+    );
 
     // Pulse target highlight if exists
     if (target) {
-      this.to(target, {
-        boxShadow: '0 0 20px rgba(255, 107, 53, 0.5)'
-      }, {
-        duration: ANIM_CONFIG.durations.slow,
-        ease: ANIM_CONFIG.easings.easeInOut,
-        yoyo: true,
-        repeat: 2
-      });
+      this.to(
+        target,
+        {
+          boxShadow: '0 0 20px rgba(255, 107, 53, 0.5)',
+        },
+        {
+          duration: ANIM_CONFIG.durations.slow,
+          ease: ANIM_CONFIG.easings.easeInOut,
+          yoyo: true,
+          repeat: 2,
+        }
+      );
     }
   },
 
@@ -440,13 +458,13 @@ const Animations = {
     const fromProps = {
       opacity: 0,
       y: options.direction === 'up' ? 20 : -20,
-      ...options.from
+      ...options.from,
     };
 
     const toProps = {
       opacity: 1,
       y: 0,
-      ...options.to
+      ...options.to,
     };
 
     this.set(elements, fromProps);
@@ -454,7 +472,7 @@ const Animations = {
     await this.to(elements, toProps, {
       duration: options.duration || ANIM_CONFIG.durations.normal,
       stagger: options.stagger || ANIM_CONFIG.stagger.phi,
-      ease: options.ease || ANIM_CONFIG.easings.easeOut
+      ease: options.ease || ANIM_CONFIG.easings.easeOut,
     });
   },
 
@@ -474,14 +492,14 @@ const Animations = {
       opacity: 0,
       y: options.direction === 'up' ? 20 : -20,
       scale: options.scale ? 0.9 : 1,
-      ...options.from
+      ...options.from,
     };
 
     const toProps = {
       opacity: 1,
       y: 0,
       scale: 1,
-      ...options.to
+      ...options.to,
     };
 
     // Set initial state
@@ -492,7 +510,7 @@ const Animations = {
       return this.to(el, toProps, {
         duration: options.duration || ANIM_CONFIG.durations.normal,
         delay: delays[i] / 1000, // Convert ms to seconds
-        ease: options.ease || ANIM_CONFIG.easings.phiOut
+        ease: options.ease || ANIM_CONFIG.easings.phiOut,
       });
     });
 
@@ -517,7 +535,7 @@ const Animations = {
         duration: duration,
         ease: 'sine.inOut',
         yoyo: true,
-        repeat: -1
+        repeat: -1,
       });
     } else {
       element.style.animation = `particleFloat ${duration}s ease-in-out infinite`;
@@ -543,13 +561,17 @@ const Animations = {
         z: target.z || camera.position.z,
         duration: duration,
         ease: ANIM_CONFIG.easings.easeInOut,
-        onUpdate: options.onUpdate
+        onUpdate: options.onUpdate,
       });
     } else if (camera.style) {
       // CSS perspective element
-      return this.to(camera, {
-        perspective: target.z || 1000
-      }, { duration });
+      return this.to(
+        camera,
+        {
+          perspective: target.z || 1000,
+        },
+        { duration }
+      );
     }
   },
 
@@ -591,7 +613,7 @@ const Animations = {
    */
   getConfig() {
     return { ...ANIM_CONFIG };
-  }
+  },
 };
 
 // ============================================
@@ -635,5 +657,7 @@ export default Animations;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.Animations = Animations;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.Animations = Animations;
+  window.Animations = window.ASDF.Animations;
 }

@@ -896,5 +896,7 @@ export default ModalFactory;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.ModalFactory = ModalFactory;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ModalFactory = ModalFactory;
+  window.ModalFactory = window.ASDF.ModalFactory;
 }

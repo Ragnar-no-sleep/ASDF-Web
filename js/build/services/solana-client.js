@@ -44,13 +44,13 @@ const MOCK_BUILDER = {
   tracksProgress: {
     dev: 0,
     games: 0,
-    content: 0
+    content: 0,
   },
   skillsCompleted: [],
   totalBurned: 0,
   streak: 0,
   joinedAt: null,
-  lastActive: null
+  lastActive: null,
 };
 
 // ============================================
@@ -62,7 +62,7 @@ const STORAGE_KEYS = {
   PROGRESS: 'asdf_build_progress',
   COMPLETED_LESSONS: 'asdf_completed_lessons',
   XP: 'asdf_xp',
-  STREAK: 'asdf_streak'
+  STREAK: 'asdf_streak',
 };
 
 // ============================================
@@ -169,7 +169,7 @@ const SolanaClient = {
       ...MOCK_BUILDER,
       wallet,
       joinedAt: Date.now(),
-      lastActive: Date.now()
+      lastActive: Date.now(),
     };
 
     this._saveLocalBuilderData(wallet, builder);
@@ -186,11 +186,11 @@ const SolanaClient = {
     // Future: Write to on-chain PDA
     console.log('[SolanaClient] updateProgress not implemented (stub)');
 
-    const builder = await this.getBuilderPDA(wallet) || { ...MOCK_BUILDER, wallet };
+    const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
     const updated = {
       ...builder,
       ...progress,
-      lastActive: Date.now()
+      lastActive: Date.now(),
     };
 
     this._saveLocalBuilderData(wallet, updated);
@@ -205,7 +205,7 @@ const SolanaClient = {
    * @returns {Promise<number>} - New total XP
    */
   async addXP(wallet, amount, source = 'unknown') {
-    const builder = await this.getBuilderPDA(wallet) || { ...MOCK_BUILDER, wallet };
+    const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
 
     // Apply streak bonus
     const streakBonus = this._calculateStreakBonus(builder.streak);
@@ -215,11 +215,13 @@ const SolanaClient = {
       ...builder,
       xpTotal: builder.xpTotal + finalXP,
       xpAvailable: builder.xpAvailable + finalXP,
-      lastActive: Date.now()
+      lastActive: Date.now(),
     };
 
     this._saveLocalBuilderData(wallet, updated);
-    console.log(`[SolanaClient] Added ${finalXP} XP (${amount} base + ${Math.floor(streakBonus * 100)}% streak bonus)`);
+    console.log(
+      `[SolanaClient] Added ${finalXP} XP (${amount} base + ${Math.floor(streakBonus * 100)}% streak bonus)`
+    );
 
     return updated.xpTotal;
   },
@@ -234,7 +236,7 @@ const SolanaClient = {
    * @returns {Promise<boolean>}
    */
   async completeLesson(wallet, trackId, moduleId, lessonId, xpReward) {
-    const builder = await this.getBuilderPDA(wallet) || { ...MOCK_BUILDER, wallet };
+    const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
 
     // Check if already completed
     const completedKey = `${trackId}:${moduleId}:${lessonId}`;
@@ -277,7 +279,7 @@ const SolanaClient = {
    * @returns {Promise<number>} - New streak value
    */
   async updateStreak(wallet) {
-    const builder = await this.getBuilderPDA(wallet) || { ...MOCK_BUILDER, wallet };
+    const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
 
     const now = Date.now();
     const lastActive = builder.lastActive || 0;
@@ -298,7 +300,7 @@ const SolanaClient = {
     const updated = {
       ...builder,
       streak: newStreak,
-      lastActive: now
+      lastActive: now,
     };
 
     this._saveLocalBuilderData(wallet, updated);
@@ -382,7 +384,7 @@ const SolanaClient = {
     // Future: Read localStorage, write to PDA, clear localStorage
     console.log('[SolanaClient] migrateToOnChain not implemented (stub)');
     return false;
-  }
+  },
 };
 
 // Export
@@ -391,5 +393,7 @@ export default SolanaClient;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.SolanaClient = SolanaClient;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.SolanaClient = SolanaClient;
+  window.SolanaClient = window.ASDF.SolanaClient;
 }

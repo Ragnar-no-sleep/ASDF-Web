@@ -20,14 +20,14 @@ const TIMELINE_CONFIG = {
   // Display limits
   limits: {
     commits: 10,
-    contributors: 5
+    contributors: 5,
   },
   // Refresh interval (5 minutes)
   refreshInterval: 300000,
   // Animation
   animation: {
-    stagger: 50
-  }
+    stagger: 50,
+  },
 };
 
 // ============================================
@@ -60,9 +60,8 @@ const GitHubTimeline = {
    * @param {string|Element} containerSelector
    */
   init(containerSelector) {
-    this.container = typeof containerSelector === 'string'
-      ? $(containerSelector)
-      : containerSelector;
+    this.container =
+      typeof containerSelector === 'string' ? $(containerSelector) : containerSelector;
 
     if (!this.container) {
       console.warn('[GitHubTimeline] Container not found');
@@ -140,14 +139,14 @@ const GitHubTimeline = {
    */
   bindEvents() {
     // Listen for project selection
-    BuildState.subscribe('project:select', (data) => {
+    BuildState.subscribe('project:select', data => {
       if (data.projectId) {
         this.loadForProject(data.projectId);
       }
     });
 
     // Listen for timeline open
-    BuildState.subscribe('timeline:open', (data) => {
+    BuildState.subscribe('timeline:open', data => {
       if (data.projectId) {
         this.loadForProject(data.projectId);
       }
@@ -204,12 +203,14 @@ const GitHubTimeline = {
       return;
     }
 
-    const html = commits.slice(0, TIMELINE_CONFIG.limits.commits).map((commit, index) => {
-      const timeAgo = GitHubApiService.formatTimeAgo(commit.date);
-      const message = sanitizeText(commit.message);
-      const author = sanitizeText(commit.author);
+    const html = commits
+      .slice(0, TIMELINE_CONFIG.limits.commits)
+      .map((commit, index) => {
+        const timeAgo = GitHubApiService.formatTimeAgo(commit.date);
+        const message = sanitizeText(commit.message);
+        const author = sanitizeText(commit.author);
 
-      return `
+        return `
         <li class="commit-item" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
           <div class="commit-sha">
             <a href="${commit.url}" target="_blank" rel="noopener">${commit.sha}</a>
@@ -221,7 +222,8 @@ const GitHubTimeline = {
           </div>
         </li>
       `;
-    }).join('');
+      })
+      .join('');
 
     safeInnerHTML(this.commitsList, html);
   },
@@ -238,10 +240,12 @@ const GitHubTimeline = {
       return;
     }
 
-    const html = contributors.slice(0, TIMELINE_CONFIG.limits.contributors).map((contrib, index) => {
-      const login = sanitizeText(contrib.login);
+    const html = contributors
+      .slice(0, TIMELINE_CONFIG.limits.contributors)
+      .map((contrib, index) => {
+        const login = sanitizeText(contrib.login);
 
-      return `
+        return `
         <div class="contributor-card" data-login="${login}" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
           <div class="contributor-link" role="button" tabindex="0">
             <img
@@ -261,7 +265,8 @@ const GitHubTimeline = {
           </a>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     safeInnerHTML(this.contributorsGrid, html);
 
@@ -269,7 +274,7 @@ const GitHubTimeline = {
     $$('.contributor-card', this.contributorsGrid).forEach(card => {
       const contributorLink = $('.contributor-link', card);
       if (contributorLink) {
-        const handler = (e) => {
+        const handler = e => {
           e.preventDefault();
           e.stopPropagation();
           const login = card.dataset.login;
@@ -279,7 +284,7 @@ const GitHubTimeline = {
         };
 
         on(contributorLink, 'click', handler);
-        on(contributorLink, 'keydown', (e) => {
+        on(contributorLink, 'keydown', e => {
           if (e.key === 'Enter' || e.key === ' ') {
             handler(e);
           }
@@ -408,7 +413,7 @@ const GitHubTimeline = {
     this.container = null;
     this.currentProject = null;
     this.isLoading = false;
-  }
+  },
 };
 
 // ============================================
@@ -420,5 +425,7 @@ export default GitHubTimeline;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.GitHubTimeline = GitHubTimeline;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GitHubTimeline = GitHubTimeline;
+  window.GitHubTimeline = window.ASDF.GitHubTimeline;
 }

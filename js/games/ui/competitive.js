@@ -143,5 +143,7 @@ function updateAllCompetitiveTimers() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.CompetitiveUI = CompetitiveUI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.CompetitiveUI = CompetitiveUI;
+  window.CompetitiveUI = window.ASDF.CompetitiveUI;
 }

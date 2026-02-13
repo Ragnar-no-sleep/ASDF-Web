@@ -169,5 +169,7 @@ export default XPFlyup;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.XPFlyup = XPFlyup;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.XPFlyup = XPFlyup;
+  window.XPFlyup = window.ASDF.XPFlyup;
 }

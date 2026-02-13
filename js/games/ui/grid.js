@@ -46,5 +46,7 @@ function renderGamesGrid() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GridUI = GridUI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GridUI = GridUI;
+  window.GridUI = window.ASDF.GridUI;
 }

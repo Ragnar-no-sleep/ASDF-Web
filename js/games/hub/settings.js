@@ -729,5 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.Settings = Settings;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.Settings = Settings;
+  window.Settings = window.ASDF.Settings;
 }

@@ -298,7 +298,7 @@ export function delegate(container, event, selector, handler) {
     return () => {};
   }
 
-  const delegateHandler = (e) => {
+  const delegateHandler = e => {
     const target = e.target.closest(selector);
     if (target && container.contains(target)) {
       handler.call(target, e, target);
@@ -359,7 +359,7 @@ export function scrollIntoView(el, options = {}) {
   el.scrollIntoView({
     behavior: 'smooth',
     block: 'start',
-    ...options
+    ...options,
   });
 }
 
@@ -410,7 +410,8 @@ export function throttle(fn, limit = 100) {
 // ============================================
 
 if (typeof window !== 'undefined') {
-  window.BuildDOM = {
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuildDOM = {
     $,
     $$,
     byId,
@@ -437,6 +438,7 @@ if (typeof window !== 'undefined') {
     scrollIntoView,
     scrollToTop,
     debounce,
-    throttle
+    throttle,
   };
+  window.BuildDOM = window.ASDF.BuildDOM;
 }

@@ -906,5 +906,7 @@ const ScamBlaster = {
 
 // Export
 if (typeof window !== 'undefined') {
-  window.ScamBlaster = ScamBlaster;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ScamBlaster = ScamBlaster;
+  window.ScamBlaster = window.ASDF.ScamBlaster;
 }

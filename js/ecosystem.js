@@ -10,7 +10,7 @@
   // Page order for direction-aware sliding
   const PAGE_ORDER = {
     burns: 0,
-    asdforecast: 1,
+    forecast: 1,
     holdex: 2,
     staking: 3,
     ignition: 4,
@@ -19,7 +19,7 @@
   // Default theme per page (applied if no user preference)
   const PAGE_THEMES = {
     burns: 'ember',
-    asdforecast: 'matrix',
+    forecast: 'matrix',
     holdex: 'holdex',
     staking: 'delegate',
     ignition: 'arcade',
@@ -37,7 +37,7 @@
         'eco-variant-swatch--ash',
       ],
     },
-    asdforecast: {
+    forecast: {
       key: 'asdf-variant-forecast',
       dots: ['#00ff41', '#3b82f6', '#f472b6'],
       names: ['Matrix', 'Bloomberg', 'Synthwave'],

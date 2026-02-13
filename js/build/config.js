@@ -275,7 +275,8 @@ export const DEFAULTS = {
 
 // Export for non-module environments
 if (typeof window !== 'undefined') {
-  window.BuildConfig = {
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuildConfig = {
     STORAGE_KEY,
     STORAGE_VERSION,
     TRACKS,
@@ -288,4 +289,5 @@ if (typeof window !== 'undefined') {
     SELECTORS,
     DEFAULTS,
   };
+  window.BuildConfig = window.ASDF.BuildConfig;
 }

@@ -276,8 +276,11 @@ function initializeWithDI() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.bootstrapServices = bootstrapServices;
-  window.initializeWithDI = initializeWithDI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.bootstrapServices = bootstrapServices;
+  window.bootstrapServices = window.ASDF.bootstrapServices;
+  window.ASDF.initializeWithDI = initializeWithDI;
+  window.initializeWithDI = window.ASDF.initializeWithDI;
 }
 
 // Export for testing

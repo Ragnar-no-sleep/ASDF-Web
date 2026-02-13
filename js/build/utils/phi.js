@@ -50,7 +50,7 @@ export function calculatePhiPositions(items, centerX, centerY, baseRadius = 40, 
   }
   return items.map((item, index) => {
     const angle = index * GOLDEN_ANGLE;
-    const radius = baseRadius + (index * radiusStep);
+    const radius = baseRadius + index * radiusStep;
 
     return {
       x: centerX + Math.cos(angle) * radius,
@@ -58,7 +58,7 @@ export function calculatePhiPositions(items, centerX, centerY, baseRadius = 40, 
       item,
       angle,
       radius,
-      index
+      index,
     };
   });
 }
@@ -90,7 +90,7 @@ export function calculateFermatSpiral(items, centerX, centerY, scale = 10) {
       item,
       angle,
       radius,
-      index
+      index,
     };
   });
 }
@@ -106,7 +106,13 @@ export function calculateFermatSpiral(items, centerX, centerY, scale = 10) {
  * @param {number} outerRadius - Outer ring radius
  * @returns {Array} Array of {x, y, item, ring, angle}
  */
-export function calculateOrbitalPositions(items, centerX, centerY, innerRadius = 60, outerRadius = 120) {
+export function calculateOrbitalPositions(
+  items,
+  centerX,
+  centerY,
+  innerRadius = 60,
+  outerRadius = 120
+) {
   const count = items.length;
   const rings = Math.ceil(Math.sqrt(count / PHI));
   const radiusStep = (outerRadius - innerRadius) / Math.max(1, rings - 1);
@@ -115,11 +121,11 @@ export function calculateOrbitalPositions(items, centerX, centerY, innerRadius =
   let itemIndex = 0;
 
   for (let ring = 0; ring < rings && itemIndex < count; ring++) {
-    const radius = innerRadius + (ring * radiusStep);
+    const radius = innerRadius + ring * radiusStep;
     const itemsInRing = Math.ceil(count / rings);
 
     for (let i = 0; i < itemsInRing && itemIndex < count; i++) {
-      const angle = (i * GOLDEN_ANGLE) + (ring * Math.PI / 6); // Offset each ring
+      const angle = i * GOLDEN_ANGLE + (ring * Math.PI) / 6; // Offset each ring
 
       positions.push({
         x: centerX + Math.cos(angle) * radius,
@@ -128,7 +134,7 @@ export function calculateOrbitalPositions(items, centerX, centerY, innerRadius =
         ring,
         angle,
         radius,
-        index: itemIndex
+        index: itemIndex,
       });
 
       itemIndex++;
@@ -174,7 +180,7 @@ export function phiSpacing(totalSpace, count) {
 
   return {
     primary: unit,
-    secondary: unit * PHI_INVERSE
+    secondary: unit * PHI_INVERSE,
   };
 }
 
@@ -230,9 +236,7 @@ export function phiEaseIn(t) {
  * @returns {number} Eased value
  */
 export function phiEaseInOut(t) {
-  return t < 0.5
-    ? Math.pow(2 * t, PHI) / 2
-    : 1 - Math.pow(2 * (1 - t), PHI) / 2;
+  return t < 0.5 ? Math.pow(2 * t, PHI) / 2 : 1 - Math.pow(2 * (1 - t), PHI) / 2;
 }
 
 // ============================================
@@ -295,7 +299,7 @@ const PhiUtils = {
   phiEaseIn,
   phiEaseInOut,
   phiRound,
-  isPhiRatio
+  isPhiRatio,
 };
 
 export { PhiUtils };
@@ -303,5 +307,7 @@ export default PhiUtils;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.PhiUtils = PhiUtils;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.PhiUtils = PhiUtils;
+  window.PhiUtils = window.ASDF.PhiUtils;
 }

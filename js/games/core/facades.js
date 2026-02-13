@@ -154,9 +154,14 @@ function installFacades() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.createFacade = createFacade;
-  window.createReadOnlyFacade = createReadOnlyFacade;
-  window.installFacades = installFacades;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.createFacade = createFacade;
+  window.createFacade = window.ASDF.createFacade;
+  window.ASDF.createReadOnlyFacade = createReadOnlyFacade;
+  window.createReadOnlyFacade = window.ASDF.createReadOnlyFacade;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.installFacades = installFacades;
+  window.installFacades = window.ASDF.installFacades;
 }
 
 // Export for testing

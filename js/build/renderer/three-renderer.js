@@ -1093,5 +1093,7 @@ export default ThreeRenderer;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.ThreeRenderer = ThreeRenderer;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ThreeRenderer = ThreeRenderer;
+  window.ThreeRenderer = window.ASDF.ThreeRenderer;
 }

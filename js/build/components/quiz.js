@@ -22,7 +22,7 @@ import {
   delegate,
   setStyles,
   waitForTransition,
-  nextFrame
+  nextFrame,
 } from '../utils/dom.js';
 
 // ============================================
@@ -102,16 +102,18 @@ const QuizComponent = {
     // Generate questions HTML
     const questionsHtml = QUIZ_QUESTIONS.map((q, qIndex) => {
       const activeClass = qIndex === currentQuestion ? 'active' : '';
-      const optionsHtml = q.options.map(opt => {
-        const icon = sanitizeText(opt.icon || '');
-        const text = sanitizeText(opt.text);
-        return `
+      const optionsHtml = q.options
+        .map(opt => {
+          const icon = sanitizeText(opt.icon || '');
+          const text = sanitizeText(opt.text);
+          return `
           <button class="path-option" data-track="${sanitizeText(opt.track)}">
             <span class="option-icon">${icon}</span>
             <span class="option-text">${text}</span>
           </button>
         `;
-      }).join('');
+        })
+        .join('');
 
       return `
         <div class="path-question ${activeClass}" data-question="${qIndex}">
@@ -295,7 +297,7 @@ const QuizComponent = {
       iconEl.textContent = track.icon;
       setStyles(iconEl, {
         color: track.color,
-        background: `${track.color}20`
+        background: `${track.color}20`,
       });
     }
     if (trackNameEl) {
@@ -388,7 +390,7 @@ const QuizComponent = {
    */
   isCompleted() {
     return BuildState.data.quizResult !== null;
-  }
+  },
 };
 
 // Export for ES modules
@@ -397,5 +399,7 @@ export default QuizComponent;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.QuizComponent = QuizComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.QuizComponent = QuizComponent;
+  window.QuizComponent = window.ASDF.QuizComponent;
 }

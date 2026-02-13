@@ -605,10 +605,12 @@ export default BuildApp;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.BuildApp = BuildApp;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuildApp = BuildApp;
+  window.BuildApp = window.ASDF.BuildApp;
 
   // Also expose components globally for debugging
-  window.Build = {
+  window.ASDF.Build = {
     App: BuildApp,
     State: BuildState,
     Data: DataAdapter,
@@ -627,4 +629,5 @@ if (typeof window !== 'undefined') {
     Animations: Animations,
     Handlers: EventHandlers,
   };
+  window.Build = window.ASDF.Build;
 }

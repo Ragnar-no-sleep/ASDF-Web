@@ -573,5 +573,7 @@ const ValhallaAudio = {
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.ValhallaAudio = ValhallaAudio;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ValhallaAudio = ValhallaAudio;
+  window.ValhallaAudio = window.ASDF.ValhallaAudio;
 }

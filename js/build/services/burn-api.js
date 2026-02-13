@@ -12,9 +12,7 @@
 // ============================================
 
 // Use relative URL in dev (proxied by Vite), full URL in production
-const API_BASE = import.meta.env.DEV
-  ? '/api'
-  : 'https://asdf-api.onrender.com/api';
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://asdf-api.onrender.com/api';
 const CACHE_TTL = 30000; // 30 seconds
 const FETCH_TIMEOUT = 5000; // 5 seconds
 
@@ -28,13 +26,13 @@ const MOCK_STATS = {
   circulatingSupply: 992606700,
   uniqueBurners: 23,
   burnedToday: 12500,
-  largestBurn: 3046567
+  largestBurn: 3046567,
 };
 
 const MOCK_RECENT_BURNS = [
   { wallet: '7xKXtg...3mPq', amount: 50000, timestamp: Date.now() - 300000 },
   { wallet: '9pLmNk...8vRs', amount: 25000, timestamp: Date.now() - 900000 },
-  { wallet: '3hYjKl...2wXz', amount: 100000, timestamp: Date.now() - 1800000 }
+  { wallet: '3hYjKl...2wXz', amount: 100000, timestamp: Date.now() - 1800000 },
 ];
 
 // ============================================
@@ -47,7 +45,7 @@ const BurnApiService = {
    */
   cache: {
     stats: { data: null, lastFetch: 0 },
-    recentBurns: { data: null, lastFetch: 0 }
+    recentBurns: { data: null, lastFetch: 0 },
   },
 
   /**
@@ -57,7 +55,7 @@ const BurnApiService = {
    */
   isCacheValid(key) {
     const cached = this.cache[key];
-    return cached.data !== null && (Date.now() - cached.lastFetch) < CACHE_TTL;
+    return cached.data !== null && Date.now() - cached.lastFetch < CACHE_TTL;
   },
 
   /**
@@ -101,7 +99,7 @@ const BurnApiService = {
       // Update cache
       this.cache.stats = {
         data: data,
-        lastFetch: Date.now()
+        lastFetch: Date.now(),
       };
 
       return data;
@@ -135,7 +133,7 @@ const BurnApiService = {
       // Update cache
       this.cache.recentBurns = {
         data: burns,
-        lastFetch: Date.now()
+        lastFetch: Date.now(),
       };
 
       return burns.slice(0, limit);
@@ -197,7 +195,7 @@ const BurnApiService = {
   clearCache() {
     this.cache.stats = { data: null, lastFetch: 0 };
     this.cache.recentBurns = { data: null, lastFetch: 0 };
-  }
+  },
 };
 
 // ============================================
@@ -209,5 +207,7 @@ export default BurnApiService;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.BurnApiService = BurnApiService;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BurnApiService = BurnApiService;
+  window.BurnApiService = window.ASDF.BurnApiService;
 }

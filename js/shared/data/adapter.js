@@ -379,5 +379,7 @@ export default DataAdapter;
 
 // Browser global (for non-module usage)
 if (typeof window !== 'undefined') {
-  window.DataAdapter = DataAdapter;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.DataAdapter = DataAdapter;
+  window.DataAdapter = window.ASDF.DataAdapter;
 }

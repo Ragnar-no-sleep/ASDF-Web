@@ -443,5 +443,7 @@ export default SVGRenderer;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.SVGRenderer = SVGRenderer;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.SVGRenderer = SVGRenderer;
+  window.SVGRenderer = window.ASDF.SVGRenderer;
 }

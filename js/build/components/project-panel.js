@@ -486,5 +486,7 @@ export default ProjectPanelComponent;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.ProjectPanelComponent = ProjectPanelComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ProjectPanelComponent = ProjectPanelComponent;
+  window.ProjectPanelComponent = window.ASDF.ProjectPanelComponent;
 }

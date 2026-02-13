@@ -235,5 +235,7 @@ async function loadMiniLeaderboard(gameId) {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.LeaderboardUI = LeaderboardUI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.LeaderboardUI = LeaderboardUI;
+  window.LeaderboardUI = window.ASDF.LeaderboardUI;
 }

@@ -8,7 +8,12 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { SKILLS, SKILL_CATEGORIES, getProjectSkills, getSkillPrerequisites } from '../data/skills-data.js';
+import {
+  SKILLS,
+  SKILL_CATEGORIES,
+  getProjectSkills,
+  getSkillPrerequisites,
+} from '../data/skills-data.js';
 import { PHI, GOLDEN_ANGLE, calculateFermatSpiral, phiDelays } from '../utils/phi.js';
 import { $, $$, addClass, removeClass, on, setStyles } from '../utils/dom.js';
 
@@ -23,20 +28,20 @@ const SKILL_TREE_CONFIG = {
     centerY: 200,
     baseRadius: 30,
     scale: 12,
-    nodeSize: 24
+    nodeSize: 24,
   },
   // Animation
   animation: {
     enterDuration: 800,
     stagger: 50,
-    hoverScale: 1.2
+    hoverScale: 1.2,
   },
   // Visual
   visual: {
     lineWidth: 2,
     lineOpacity: 0.3,
-    glowIntensity: 0.6
-  }
+    glowIntensity: 0.6,
+  },
 };
 
 // ============================================
@@ -69,9 +74,8 @@ const SkillTreeView = {
    * @param {string|Element} containerSelector
    */
   init(containerSelector) {
-    this.container = typeof containerSelector === 'string'
-      ? $(containerSelector)
-      : containerSelector;
+    this.container =
+      typeof containerSelector === 'string' ? $(containerSelector) : containerSelector;
 
     if (!this.container) {
       console.warn('[SkillTreeView] Container not found');
@@ -132,14 +136,14 @@ const SkillTreeView = {
    */
   bindEvents() {
     // Listen for project selection
-    BuildState.subscribe('project:select', (data) => {
+    BuildState.subscribe('project:select', data => {
       if (data.projectId) {
         this.showForProject(data.projectId);
       }
     });
 
     // Listen for skill tree open
-    BuildState.subscribe('skillTree:open', (data) => {
+    BuildState.subscribe('skillTree:open', data => {
       if (data.projectId) {
         this.showForProject(data.projectId);
       }
@@ -164,7 +168,7 @@ const SkillTreeView = {
     const allSkills = [
       ...projectSkills.primary,
       ...projectSkills.secondary,
-      ...projectSkills.teaches
+      ...projectSkills.teaches,
     ];
 
     // Remove duplicates
@@ -183,12 +187,7 @@ const SkillTreeView = {
     const { layout } = SKILL_TREE_CONFIG;
 
     // Calculate positions using Fermat spiral
-    const positions = calculateFermatSpiral(
-      skills,
-      layout.centerX,
-      layout.centerY,
-      layout.scale
-    );
+    const positions = calculateFermatSpiral(skills, layout.centerX, layout.centerY, layout.scale);
 
     // Draw connections first (prerequisites)
     this.drawConnections(positions, skills);
@@ -205,7 +204,7 @@ const SkillTreeView = {
         this.createSkillNode(skill, pos.x, pos.y, {
           isPrimary,
           isTeaches,
-          index
+          index,
         });
       }, delays[index]);
     });
@@ -278,7 +277,10 @@ const SkillTreeView = {
 
     // Create group
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    group.setAttribute('class', `skill-node ${options.isPrimary ? 'primary' : ''} ${options.isTeaches ? 'teaches' : ''}`);
+    group.setAttribute(
+      'class',
+      `skill-node ${options.isPrimary ? 'primary' : ''} ${options.isTeaches ? 'teaches' : ''}`
+    );
     group.setAttribute('data-skill-id', skill.id);
     group.setAttribute('transform', `translate(${x}, ${y})`);
     group.style.opacity = '0';
@@ -380,7 +382,7 @@ const SkillTreeView = {
     // Show tooltip
     BuildState.emit('skillTree:nodeHover', {
       skill,
-      element: group
+      element: group,
     });
   },
 
@@ -404,7 +406,7 @@ const SkillTreeView = {
   onNodeClick(skill) {
     BuildState.emit('skillTree:nodeClick', {
       skill,
-      prerequisites: getSkillPrerequisites(skill.id)
+      prerequisites: getSkillPrerequisites(skill.id),
     });
   },
 
@@ -452,7 +454,7 @@ const SkillTreeView = {
     }
     this.svg = null;
     this.container = null;
-  }
+  },
 };
 
 // ============================================
@@ -464,5 +466,7 @@ export default SkillTreeView;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.SkillTreeView = SkillTreeView;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.SkillTreeView = SkillTreeView;
+  window.SkillTreeView = window.ASDF.SkillTreeView;
 }

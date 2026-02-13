@@ -342,7 +342,8 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // Export for browser usage
-window.ASFConsent = {
+window.ASDF = window.ASDF || {};
+window.ASDF.ASFConsent = {
   CATEGORIES: CONSENT_CATEGORIES,
   hasConsent,
   hasGivenConsent,
@@ -351,3 +352,4 @@ window.ASFConsent = {
   acceptSelected,
   revokeConsent,
 };
+window.ASFConsent = window.ASDF.ASFConsent;

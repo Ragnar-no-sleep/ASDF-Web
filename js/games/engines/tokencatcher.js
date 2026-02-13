@@ -1174,5 +1174,7 @@ const TokenCatcher = {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.TokenCatcher = TokenCatcher;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.TokenCatcher = TokenCatcher;
+  window.TokenCatcher = window.ASDF.TokenCatcher;
 }

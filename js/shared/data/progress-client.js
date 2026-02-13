@@ -488,5 +488,7 @@ export default ProgressClient;
 
 // Browser global
 if (typeof window !== 'undefined') {
-  window.ProgressClient = ProgressClient;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ProgressClient = ProgressClient;
+  window.ProgressClient = window.ASDF.ProgressClient;
 }

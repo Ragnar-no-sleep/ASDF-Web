@@ -19,7 +19,7 @@ import {
   on,
   delegate,
   setStyles,
-  createElement
+  createElement,
 } from '../utils/dom.js';
 
 // ============================================
@@ -49,7 +49,7 @@ const TRACK_MODULES = {
     { name: 'Metaplex & NFTs', status: 'locked', xp: 250 },
     { name: 'DeFi Protocols', status: 'locked', xp: 350 },
     { name: 'Governance Programs', status: 'locked', xp: 300 },
-    { name: 'Advanced Optimizations', status: 'locked', xp: 400 }
+    { name: 'Advanced Optimizations', status: 'locked', xp: 400 },
   ],
   gaming: [
     { name: 'Game Design Basics', status: 'available', xp: 100 },
@@ -59,7 +59,7 @@ const TRACK_MODULES = {
     { name: 'Reward Systems', status: 'locked', xp: 250 },
     { name: 'Leaderboards', status: 'locked', xp: 200 },
     { name: 'Wallet Integration', status: 'locked', xp: 250 },
-    { name: 'Anti-cheat Systems', status: 'locked', xp: 300 }
+    { name: 'Anti-cheat Systems', status: 'locked', xp: 300 },
   ],
   content: [
     // Content creation
@@ -81,8 +81,8 @@ const TRACK_MODULES = {
     { name: 'Partnerships', status: 'locked', xp: 250 },
     { name: 'Tokenomics Design', status: 'locked', xp: 300 },
     { name: 'Launch Strategy', status: 'locked', xp: 350 },
-    { name: 'Analytics & Metrics', status: 'locked', xp: 300 }
-  ]
+    { name: 'Analytics & Metrics', status: 'locked', xp: 300 },
+  ],
 };
 
 // ============================================
@@ -123,18 +123,20 @@ const TracksComponent = {
    */
   createPanel() {
     tracksPanel = createElement('div', {
-      className: 'tracks-panel'
+      className: 'tracks-panel',
     });
 
     // Generate track buttons
-    const trackButtonsHtml = Object.entries(TRACKS).map(([id, track]) => {
-      return `
+    const trackButtonsHtml = Object.entries(TRACKS)
+      .map(([id, track]) => {
+        return `
         <button class="journey-track" data-track="${sanitizeText(id)}">
           <span class="track-icon" style="color: ${track.color}; background: ${track.color}20">${sanitizeText(track.icon)}</span>
           <span class="track-name">${sanitizeText(track.name)}</span>
         </button>
       `;
-    }).join('');
+      })
+      .join('');
 
     tracksPanel.innerHTML = `
       <div class="tracks-header">
@@ -178,7 +180,7 @@ const TracksComponent = {
     });
 
     // Subscribe to state changes
-    BuildState.subscribe(EVENTS.TRACK_SELECT, (data) => {
+    BuildState.subscribe(EVENTS.TRACK_SELECT, data => {
       this.updateDisplay(data.trackId);
     });
   },
@@ -232,7 +234,7 @@ const TracksComponent = {
       trackIcon.textContent = track.icon;
       setStyles(trackIcon, {
         color: track.color,
-        background: `${track.color}20`
+        background: `${track.color}20`,
       });
     }
 
@@ -253,22 +255,28 @@ const TracksComponent = {
    */
   renderModules(trackId) {
     const modules = TRACK_MODULES[trackId] || [];
-    const modulesContainer = $('.journey-modules', tracksContainer) ||
-                            this.createModulesContainer();
+    const modulesContainer =
+      $('.journey-modules', tracksContainer) || this.createModulesContainer();
 
-    const modulesHtml = modules.map((module, i) => {
-      const statusIcon = module.status === 'available' ? '\u2705' :
-                        module.status === 'completed' ? '\u2713' : '\uD83D\uDD12';
-      const statusClass = module.status;
+    const modulesHtml = modules
+      .map((module, i) => {
+        const statusIcon =
+          module.status === 'available'
+            ? '\u2705'
+            : module.status === 'completed'
+              ? '\u2713'
+              : '\uD83D\uDD12';
+        const statusClass = module.status;
 
-      return `
+        return `
         <div class="module-item ${statusClass}" data-module-index="${i}">
           <span class="module-status">${statusIcon}</span>
           <span class="module-name">${sanitizeText(module.name)}</span>
           <span class="module-xp">${module.xp} XP</span>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     modulesContainer.innerHTML = `
       <h4>Modules</h4>
@@ -283,7 +291,7 @@ const TracksComponent = {
    */
   createModulesContainer() {
     const container = createElement('div', {
-      className: 'journey-modules'
+      className: 'journey-modules',
     });
 
     const progressCard = $('.journey-progress', tracksContainer);
@@ -318,7 +326,7 @@ const TracksComponent = {
     BuildState.emit('track:module:click', {
       trackId: currentTrack,
       moduleIndex,
-      module
+      module,
     });
 
     // TODO: Navigate to module content
@@ -404,7 +412,7 @@ const TracksComponent = {
     BuildState.emit('track:module:complete', {
       trackId,
       moduleIndex,
-      module: modules[moduleIndex]
+      module: modules[moduleIndex],
     });
   },
 
@@ -420,7 +428,7 @@ const TracksComponent = {
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return { completed, total, percent };
-  }
+  },
 };
 
 // Export for ES modules
@@ -429,5 +437,7 @@ export default TracksComponent;
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.TracksComponent = TracksComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.TracksComponent = TracksComponent;
+  window.TracksComponent = window.ASDF.TracksComponent;
 }

@@ -22,7 +22,7 @@ const HTML_ENTITY_MAP = {
   "'": '&#039;',
   '/': '&#x2F;',
   '`': '&#x60;',
-  '=': '&#x3D;'
+  '=': '&#x3D;',
 };
 
 /**
@@ -53,31 +53,116 @@ export function escapeRegex(text) {
  * Allowed HTML tags for sanitization
  */
 const ALLOWED_TAGS = [
-  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'div',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-  'a', 'img', 'figure', 'figcaption',
-  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
-  'pre', 'code', 'blockquote', 'hr',
-  'svg', 'path', 'circle', 'rect', 'line', 'g', 'defs',
-  'linearGradient', 'radialGradient', 'stop', 'marker',
-  'polygon', 'text', 'textPath', 'use', 'tspan', 'ellipse'
+  'p',
+  'br',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'u',
+  'span',
+  'div',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'ul',
+  'ol',
+  'li',
+  'dl',
+  'dt',
+  'dd',
+  'a',
+  'img',
+  'figure',
+  'figcaption',
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
+  'pre',
+  'code',
+  'blockquote',
+  'hr',
+  'svg',
+  'path',
+  'circle',
+  'rect',
+  'line',
+  'g',
+  'defs',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'marker',
+  'polygon',
+  'text',
+  'textPath',
+  'use',
+  'tspan',
+  'ellipse',
 ];
 
 /**
  * Allowed HTML attributes for sanitization
  */
 const ALLOWED_ATTR = [
-  'href', 'src', 'alt', 'title', 'class', 'id', 'style',
-  'data-*', 'type', 'value', 'placeholder', 'disabled',
-  'target', 'rel', 'width', 'height', 'viewBox', 'd',
-  'fill', 'stroke', 'stroke-width', 'stroke-linecap',
-  'stroke-dasharray', 'opacity', 'transform', 'preserveAspectRatio',
-  'cx', 'cy', 'r', 'x', 'y', 'x1', 'y1', 'x2', 'y2',
-  'font-family', 'font-size', 'font-weight', 'text-anchor',
-  'startOffset', 'offset', 'stop-color', 'stop-opacity',
-  'markerWidth', 'markerHeight', 'refX', 'refY', 'orient',
-  'points', 'rx', 'ry'
+  'href',
+  'src',
+  'alt',
+  'title',
+  'class',
+  'id',
+  'style',
+  'data-*',
+  'type',
+  'value',
+  'placeholder',
+  'disabled',
+  'target',
+  'rel',
+  'width',
+  'height',
+  'viewBox',
+  'd',
+  'fill',
+  'stroke',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-dasharray',
+  'opacity',
+  'transform',
+  'preserveAspectRatio',
+  'cx',
+  'cy',
+  'r',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'font-family',
+  'font-size',
+  'font-weight',
+  'text-anchor',
+  'startOffset',
+  'offset',
+  'stop-color',
+  'stop-opacity',
+  'markerWidth',
+  'markerHeight',
+  'refX',
+  'refY',
+  'orient',
+  'points',
+  'rx',
+  'ry',
 ];
 
 /**
@@ -106,7 +191,7 @@ export function sanitizeHtml(html) {
       ALLOW_DATA_ATTR: true,
       ADD_ATTR: ['target'],
       FORBID_TAGS,
-      FORBID_ATTR
+      FORBID_ATTR,
     });
   }
 
@@ -247,7 +332,8 @@ export function isValidTrackId(id) {
 // ============================================
 
 if (typeof window !== 'undefined') {
-  window.BuildSecurity = {
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuildSecurity = {
     escapeHtml,
     escapeRegex,
     sanitizeHtml,
@@ -259,6 +345,7 @@ if (typeof window !== 'undefined') {
     isAllowedDomain,
     isValidId,
     isValidProjectId,
-    isValidTrackId
+    isValidTrackId,
   };
+  window.BuildSecurity = window.ASDF.BuildSecurity;
 }

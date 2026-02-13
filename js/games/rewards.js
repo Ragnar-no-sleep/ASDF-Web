@@ -18,9 +18,9 @@ const REWARD_FIB = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
  * @returns {number}
  */
 function getFib(n) {
-    if (n < 0) return 0;
-    if (n < REWARD_FIB.length) return REWARD_FIB[n];
-    return REWARD_FIB[REWARD_FIB.length - 1];
+  if (n < 0) return 0;
+  if (n < REWARD_FIB.length) return REWARD_FIB[n];
+  return REWARD_FIB[REWARD_FIB.length - 1];
 }
 
 // ============================================
@@ -28,36 +28,36 @@ function getFib(n) {
 // ============================================
 
 const RARITY_CONFIG = {
-    common: {
-        color: '#9CA3AF',
-        glow: 'rgba(156, 163, 175, 0.4)',
-        label: 'Common',
-        icon: ''
-    },
-    uncommon: {
-        color: '#22C55E',
-        glow: 'rgba(34, 197, 94, 0.4)',
-        label: 'Uncommon',
-        icon: ''
-    },
-    rare: {
-        color: '#3B82F6',
-        glow: 'rgba(59, 130, 246, 0.5)',
-        label: 'Rare',
-        icon: ''
-    },
-    epic: {
-        color: '#A855F7',
-        glow: 'rgba(168, 85, 247, 0.5)',
-        label: 'Epic',
-        icon: ''
-    },
-    legendary: {
-        color: '#F59E0B',
-        glow: 'rgba(245, 158, 11, 0.6)',
-        label: 'Legendary',
-        icon: ''
-    }
+  common: {
+    color: '#9CA3AF',
+    glow: 'rgba(156, 163, 175, 0.4)',
+    label: 'Common',
+    icon: '',
+  },
+  uncommon: {
+    color: '#22C55E',
+    glow: 'rgba(34, 197, 94, 0.4)',
+    label: 'Uncommon',
+    icon: '',
+  },
+  rare: {
+    color: '#3B82F6',
+    glow: 'rgba(59, 130, 246, 0.5)',
+    label: 'Rare',
+    icon: '',
+  },
+  epic: {
+    color: '#A855F7',
+    glow: 'rgba(168, 85, 247, 0.5)',
+    label: 'Epic',
+    icon: '',
+  },
+  legendary: {
+    color: '#F59E0B',
+    glow: 'rgba(245, 158, 11, 0.6)',
+    label: 'Legendary',
+    icon: '',
+  },
 };
 
 // ============================================
@@ -72,30 +72,30 @@ let isShowingAchievement = false;
  * @param {Object} achievement - Achievement data
  */
 function showAchievementNotification(achievement) {
-    achievementQueue.push(achievement);
+  achievementQueue.push(achievement);
 
-    if (!isShowingAchievement) {
-        processAchievementQueue();
-    }
+  if (!isShowingAchievement) {
+    processAchievementQueue();
+  }
 }
 
 /**
  * Process achievement notification queue
  */
 function processAchievementQueue() {
-    if (achievementQueue.length === 0) {
-        isShowingAchievement = false;
-        return;
-    }
+  if (achievementQueue.length === 0) {
+    isShowingAchievement = false;
+    return;
+  }
 
-    isShowingAchievement = true;
-    const achievement = achievementQueue.shift();
-    const rarity = RARITY_CONFIG[achievement.rarity] || RARITY_CONFIG.common;
+  isShowingAchievement = true;
+  const achievement = achievementQueue.shift();
+  const rarity = RARITY_CONFIG[achievement.rarity] || RARITY_CONFIG.common;
 
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = 'achievement-notification';
-    notification.style.cssText = `
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'achievement-notification';
+  notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -112,7 +112,7 @@ function processAchievementQueue() {
         font-family: 'Inter', sans-serif;
     `;
 
-    notification.innerHTML = `
+  notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="
                 width: 50px;
@@ -153,7 +153,9 @@ function processAchievementQueue() {
                     ${achievement.description || ''}
                 </div>
             </div>
-            ${achievement.xpReward ? `
+            ${
+              achievement.xpReward
+                ? `
                 <div style="
                     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
                     color: #000;
@@ -164,32 +166,38 @@ function processAchievementQueue() {
                 ">
                     +${achievement.xpReward} XP
                 </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
     `;
 
-    document.body.appendChild(notification);
+  document.body.appendChild(notification);
 
-    // Animate in
-    requestAnimationFrame(() => {
-        notification.style.transform = 'translateX(0)';
-    });
+  // Animate in
+  requestAnimationFrame(() => {
+    notification.style.transform = 'translateX(0)';
+  });
 
-    // Play sound if available
-    if (typeof GameJuice !== 'undefined' && GameJuice.playSound) {
-        const soundType = achievement.rarity === 'legendary' ? 'levelUp' :
-                         achievement.rarity === 'epic' ? 'combo' : 'collect';
-        GameJuice.playSound(soundType);
-    }
+  // Play sound if available
+  if (typeof GameJuice !== 'undefined' && GameJuice.playSound) {
+    const soundType =
+      achievement.rarity === 'legendary'
+        ? 'levelUp'
+        : achievement.rarity === 'epic'
+          ? 'combo'
+          : 'collect';
+    GameJuice.playSound(soundType);
+  }
 
-    // Remove after delay (Fibonacci: 3.4 seconds)
+  // Remove after delay (Fibonacci: 3.4 seconds)
+  setTimeout(() => {
+    notification.style.transform = 'translateX(120%)';
     setTimeout(() => {
-        notification.style.transform = 'translateX(120%)';
-        setTimeout(() => {
-            notification.remove();
-            processAchievementQueue();
-        }, 500);
-    }, 3400);
+      notification.remove();
+      processAchievementQueue();
+    }, 500);
+  }, 3400);
 }
 
 /**
@@ -198,50 +206,50 @@ function processAchievementQueue() {
  * @returns {string} Emoji/icon
  */
 function getAchievementIcon(iconType) {
-    const icons = {
-        // Burn icons
-        flame: '',
-        fire: '',
-        bonfire: '',
-        inferno: '',
-        phoenix: '',
-        diamond_flame: '',
-        mega_flame: '',
-        legendary_flame: '',
+  const icons = {
+    // Burn icons
+    flame: '',
+    fire: '',
+    bonfire: '',
+    inferno: '',
+    phoenix: '',
+    diamond_flame: '',
+    mega_flame: '',
+    legendary_flame: '',
 
-        // Game icons
-        controller: '',
-        gamepad: '',
-        arcade: '',
-        trophy: '',
-        star: '',
-        star_gold: '',
-        crown: '',
+    // Game icons
+    controller: '',
+    gamepad: '',
+    arcade: '',
+    trophy: '',
+    star: '',
+    star_gold: '',
+    crown: '',
 
-        // Streak icons
-        calendar: '',
-        calendar_week: '',
-        calendar_fire: '',
-        eternal_flame: '',
+    // Streak icons
+    calendar: '',
+    calendar_week: '',
+    calendar_fire: '',
+    eternal_flame: '',
 
-        // Tier icons
-        tier_spark: '',
-        tier_flame: '',
-        tier_blaze: '',
-        tier_inferno: '',
-        tier_phoenix: '',
+    // Tier icons
+    tier_spark: '',
+    tier_flame: '',
+    tier_blaze: '',
+    tier_inferno: '',
+    tier_phoenix: '',
 
-        // Special icons
-        badge_early: '',
-        badge_og: '',
-        shopping_bag: '',
-        collection: '',
+    // Special icons
+    badge_early: '',
+    badge_og: '',
+    shopping_bag: '',
+    collection: '',
 
-        // Default
-        default: ''
-    };
+    // Default
+    default: '',
+  };
 
-    return icons[iconType] || icons.default;
+  return icons[iconType] || icons.default;
 }
 
 // ============================================
@@ -255,11 +263,11 @@ function getAchievementIcon(iconType) {
  * @param {Object} options - Additional options
  */
 function showXpNotification(xpGained, gameId = null, options = {}) {
-    if (xpGained <= 0) return;
+  if (xpGained <= 0) return;
 
-    const notification = document.createElement('div');
-    notification.className = 'xp-notification';
-    notification.style.cssText = `
+  const notification = document.createElement('div');
+  notification.className = 'xp-notification';
+  notification.style.cssText = `
         position: fixed;
         top: 80px;
         right: 20px;
@@ -273,7 +281,7 @@ function showXpNotification(xpGained, gameId = null, options = {}) {
         font-family: 'Inter', sans-serif;
     `;
 
-    notification.innerHTML = `
+  notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 18px;"></span>
             <span style="
@@ -281,7 +289,9 @@ function showXpNotification(xpGained, gameId = null, options = {}) {
                 font-weight: 700;
                 font-size: 16px;
             ">+${xpGained} XP</span>
-            ${options.multiplier ? `
+            ${
+              options.multiplier
+                ? `
                 <span style="
                     background: rgba(255,215,0,0.2);
                     color: #FFD700;
@@ -290,23 +300,25 @@ function showXpNotification(xpGained, gameId = null, options = {}) {
                     font-size: 11px;
                     font-weight: 600;
                 ">${options.multiplier}x</span>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
     `;
 
-    document.body.appendChild(notification);
+  document.body.appendChild(notification);
 
-    // Animate in
-    requestAnimationFrame(() => {
-        notification.style.transform = 'translateX(0)';
-    });
+  // Animate in
+  requestAnimationFrame(() => {
+    notification.style.transform = 'translateX(0)';
+  });
 
-    // Float up and fade out after 2.1 seconds (Fibonacci)
-    setTimeout(() => {
-        notification.style.transform = 'translateX(120%)';
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 400);
-    }, 2100);
+  // Float up and fade out after 2.1 seconds (Fibonacci)
+  setTimeout(() => {
+    notification.style.transform = 'translateX(120%)';
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 400);
+  }, 2100);
 }
 
 // ============================================
@@ -319,15 +331,15 @@ function showXpNotification(xpGained, gameId = null, options = {}) {
  * @param {number} multiplier - Combo multiplier
  */
 function showComboNotification(combo, multiplier) {
-    // Remove existing combo notification
-    const existing = document.querySelector('.combo-notification');
-    if (existing) existing.remove();
+  // Remove existing combo notification
+  const existing = document.querySelector('.combo-notification');
+  if (existing) existing.remove();
 
-    if (combo < 3) return;
+  if (combo < 3) return;
 
-    const notification = document.createElement('div');
-    notification.className = 'combo-notification';
-    notification.style.cssText = `
+  const notification = document.createElement('div');
+  notification.className = 'combo-notification';
+  notification.style.cssText = `
         position: fixed;
         bottom: 100px;
         left: 50%;
@@ -342,7 +354,7 @@ function showComboNotification(combo, multiplier) {
         text-align: center;
     `;
 
-    notification.innerHTML = `
+  notification.innerHTML = `
         <div style="
             font-size: 24px;
             font-weight: 900;
@@ -360,20 +372,20 @@ function showComboNotification(combo, multiplier) {
         </div>
     `;
 
-    document.body.appendChild(notification);
+  document.body.appendChild(notification);
 
-    // Animate in
-    requestAnimationFrame(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(-50%) scale(1)';
-    });
+  // Animate in
+  requestAnimationFrame(() => {
+    notification.style.opacity = '1';
+    notification.style.transform = 'translateX(-50%) scale(1)';
+  });
 
-    // Remove after 1.3 seconds (Fibonacci)
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(-50%) scale(0.8)';
-        setTimeout(() => notification.remove(), 300);
-    }, 1300);
+  // Remove after 1.3 seconds (Fibonacci)
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(-50%) scale(0.8)';
+    setTimeout(() => notification.remove(), 300);
+  }, 1300);
 }
 
 // ============================================
@@ -386,11 +398,11 @@ function showComboNotification(combo, multiplier) {
  * @returns {HTMLElement}
  */
 function createGameOverAchievements(achievements) {
-    if (!achievements || achievements.length === 0) return null;
+  if (!achievements || achievements.length === 0) return null;
 
-    const container = document.createElement('div');
-    container.className = 'game-over-achievements';
-    container.style.cssText = `
+  const container = document.createElement('div');
+  container.className = 'game-over-achievements';
+  container.style.cssText = `
         margin-top: 16px;
         padding: 12px;
         background: rgba(255,215,0,0.1);
@@ -398,7 +410,7 @@ function createGameOverAchievements(achievements) {
         border-radius: 8px;
     `;
 
-    container.innerHTML = `
+  container.innerHTML = `
         <div style="
             font-size: 12px;
             font-weight: 600;
@@ -409,7 +421,8 @@ function createGameOverAchievements(achievements) {
         ">
              Achievements Unlocked
         </div>
-        ${achievements.map(a => {
+        ${achievements
+          .map(a => {
             const rarity = RARITY_CONFIG[a.rarity] || RARITY_CONFIG.common;
             return `
                 <div style="
@@ -427,19 +440,24 @@ function createGameOverAchievements(achievements) {
                             color: ${rarity.color};
                         ">${a.name}</div>
                     </div>
-                    ${a.xpReward ? `
+                    ${
+                      a.xpReward
+                        ? `
                         <span style="
                             color: #FFD700;
                             font-weight: 600;
                             font-size: 12px;
                         ">+${a.xpReward} XP</span>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                 </div>
             `;
-        }).join('')}
+          })
+          .join('')}
     `;
 
-    return container;
+  return container;
 }
 
 // ============================================
@@ -453,18 +471,21 @@ function createGameOverAchievements(achievements) {
  * @param {string} gameId - Game ID
  */
 function processScoreResponse(response, gameId) {
-    // Show achievement notifications
-    if (response.newAchievements && response.newAchievements.length > 0) {
-        response.newAchievements.forEach((achievement, index) => {
-            // Stagger notifications with Fibonacci delay
-            setTimeout(() => {
-                showAchievementNotification(achievement);
-            }, index * getFib(7) * 100); // 1300ms between each
-        });
-    }
+  // Show achievement notifications
+  if (response.newAchievements && response.newAchievements.length > 0) {
+    response.newAchievements.forEach((achievement, index) => {
+      // Stagger notifications with Fibonacci delay
+      setTimeout(
+        () => {
+          showAchievementNotification(achievement);
+        },
+        index * getFib(7) * 100
+      ); // 1300ms between each
+    });
+  }
 
-    // Return achievements for game over screen
-    return response.newAchievements || [];
+  // Return achievements for game over screen
+  return response.newAchievements || [];
 }
 
 // ============================================
@@ -472,11 +493,11 @@ function processScoreResponse(response, gameId) {
 // ============================================
 
 function injectRewardStyles() {
-    if (document.getElementById('reward-styles')) return;
+  if (document.getElementById('reward-styles')) return;
 
-    const style = document.createElement('style');
-    style.id = 'reward-styles';
-    style.textContent = `
+  const style = document.createElement('style');
+  style.id = 'reward-styles';
+  style.textContent = `
         @keyframes achievementPulse {
             0%, 100% { box-shadow: 0 0 20px var(--glow-color, rgba(255,215,0,0.3)); }
             50% { box-shadow: 0 0 40px var(--glow-color, rgba(255,215,0,0.5)); }
@@ -501,16 +522,16 @@ function injectRewardStyles() {
         }
     `;
 
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 }
 
 // Initialize styles on load
 if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectRewardStyles);
-    } else {
-        injectRewardStyles();
-    }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectRewardStyles);
+  } else {
+    injectRewardStyles();
+  }
 }
 
 // ============================================
@@ -518,23 +539,25 @@ if (typeof document !== 'undefined') {
 // ============================================
 
 if (typeof window !== 'undefined') {
-    window.GameRewards = {
-        // Notifications
-        showAchievementNotification,
-        showXpNotification,
-        showComboNotification,
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameRewards = {
+    // Notifications
+    showAchievementNotification,
+    showXpNotification,
+    showComboNotification,
 
-        // Game over
-        createGameOverAchievements,
+    // Game over
+    createGameOverAchievements,
 
-        // Processing
-        processScoreResponse,
+    // Processing
+    processScoreResponse,
 
-        // Utilities
-        getAchievementIcon,
-        getFib,
+    // Utilities
+    getAchievementIcon,
+    getFib,
 
-        // Config
-        RARITY_CONFIG
-    };
+    // Config
+    RARITY_CONFIG,
+  };
+  window.GameRewards = window.ASDF.GameRewards;
 }

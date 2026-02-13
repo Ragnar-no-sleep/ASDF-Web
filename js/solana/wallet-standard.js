@@ -62,7 +62,7 @@ const WalletStandard = {
     const start = Date.now();
     while (Date.now() - start < maxWait) {
       if (this._hasAnyWallet()) break;
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 100));
     }
   },
 
@@ -179,7 +179,7 @@ const WalletStandard = {
    * @returns {Array<{name: string, icon: string}>}
    */
   getWallets() {
-    return Array.from(this.wallets.values()).map((w) => ({
+    return Array.from(this.wallets.values()).map(w => ({
       name: w.name,
       icon: w.icon,
     }));
@@ -315,9 +315,7 @@ const WalletStandard = {
    * Remove event listener
    */
   off(event, callback) {
-    this.listeners = this.listeners.filter(
-      (l) => !(l.event === event && l.callback === callback)
-    );
+    this.listeners = this.listeners.filter(l => !(l.event === event && l.callback === callback));
   },
 
   /**
@@ -343,7 +341,9 @@ const WalletStandard = {
 
 // Expose globally
 if (typeof window !== 'undefined') {
-  window.WalletStandard = WalletStandard;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.WalletStandard = WalletStandard;
+  window.WalletStandard = window.ASDF.WalletStandard;
 }
 
 export { WalletStandard };

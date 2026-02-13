@@ -443,5 +443,7 @@ export { EventBus, StateMachine, OnboardingManager, QuizManager, PersistenceMana
 
 // Global export for browser (non-module)
 if (typeof window !== 'undefined') {
-  window.BuildState = BuildState;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.BuildState = BuildState;
+  window.BuildState = window.ASDF.BuildState;
 }

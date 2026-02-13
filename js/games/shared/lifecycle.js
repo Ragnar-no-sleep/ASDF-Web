@@ -274,5 +274,7 @@ async function endGame(gameId, finalScore) {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GameLifecycle = GameLifecycle;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameLifecycle = GameLifecycle;
+  window.GameLifecycle = window.ASDF.GameLifecycle;
 }

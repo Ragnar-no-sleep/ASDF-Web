@@ -389,5 +389,7 @@ export default StreakCounter;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.StreakCounter = StreakCounter;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.StreakCounter = StreakCounter;
+  window.StreakCounter = window.ASDF.StreakCounter;
 }

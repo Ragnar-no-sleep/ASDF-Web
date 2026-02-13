@@ -21,7 +21,7 @@ import {
   off,
   createElement,
   setStyles,
-  waitForTransition
+  waitForTransition,
 } from '../utils/dom.js';
 
 // ============================================
@@ -31,41 +31,161 @@ import {
 // Note: Growth track merged into Content as of 2026-01-21
 const TRACK_MODULES = {
   dev: [
-    { id: 'solana-basics', name: 'Solana Fundamentals', icon: '&#9883;', duration: '2h', status: 'available' },
-    { id: 'rust-intro', name: 'Rust for Solana', icon: '&#128296;', duration: '4h', status: 'available' },
-    { id: 'anchor-framework', name: 'Anchor Framework', icon: '&#9875;', duration: '3h', status: 'available' },
-    { id: 'token-program', name: 'Token Programs', icon: '&#128176;', duration: '2h', status: 'locked' },
-    { id: 'pda-accounts', name: 'PDAs & Accounts', icon: '&#128273;', duration: '3h', status: 'locked' },
-    { id: 'testing-programs', name: 'Testing Programs', icon: '&#128269;', duration: '2h', status: 'locked' }
+    {
+      id: 'solana-basics',
+      name: 'Solana Fundamentals',
+      icon: '&#9883;',
+      duration: '2h',
+      status: 'available',
+    },
+    {
+      id: 'rust-intro',
+      name: 'Rust for Solana',
+      icon: '&#128296;',
+      duration: '4h',
+      status: 'available',
+    },
+    {
+      id: 'anchor-framework',
+      name: 'Anchor Framework',
+      icon: '&#9875;',
+      duration: '3h',
+      status: 'available',
+    },
+    {
+      id: 'token-program',
+      name: 'Token Programs',
+      icon: '&#128176;',
+      duration: '2h',
+      status: 'locked',
+    },
+    {
+      id: 'pda-accounts',
+      name: 'PDAs & Accounts',
+      icon: '&#128273;',
+      duration: '3h',
+      status: 'locked',
+    },
+    {
+      id: 'testing-programs',
+      name: 'Testing Programs',
+      icon: '&#128269;',
+      duration: '2h',
+      status: 'locked',
+    },
   ],
   gaming: [
-    { id: 'game-design', name: 'Game Design Basics', icon: '&#127922;', duration: '2h', status: 'available' },
-    { id: 'unity-solana', name: 'Unity + Solana', icon: '&#127918;', duration: '4h', status: 'available' },
-    { id: 'nft-integration', name: 'NFT Game Assets', icon: '&#128444;', duration: '2h', status: 'available' },
-    { id: 'game-economy', name: 'Game Economy', icon: '&#128176;', duration: '2h', status: 'locked' },
-    { id: 'multiplayer', name: 'Multiplayer Systems', icon: '&#128101;', duration: '3h', status: 'locked' }
+    {
+      id: 'game-design',
+      name: 'Game Design Basics',
+      icon: '&#127922;',
+      duration: '2h',
+      status: 'available',
+    },
+    {
+      id: 'unity-solana',
+      name: 'Unity + Solana',
+      icon: '&#127918;',
+      duration: '4h',
+      status: 'available',
+    },
+    {
+      id: 'nft-integration',
+      name: 'NFT Game Assets',
+      icon: '&#128444;',
+      duration: '2h',
+      status: 'available',
+    },
+    {
+      id: 'game-economy',
+      name: 'Game Economy',
+      icon: '&#128176;',
+      duration: '2h',
+      status: 'locked',
+    },
+    {
+      id: 'multiplayer',
+      name: 'Multiplayer Systems',
+      icon: '&#128101;',
+      duration: '3h',
+      status: 'locked',
+    },
   ],
   content: [
     // Content creation
-    { id: 'crypto-writing', name: 'Crypto Writing', icon: '&#128221;', duration: '1h', status: 'available' },
-    { id: 'video-production', name: 'Video Production', icon: '&#127909;', duration: '2h', status: 'available' },
-    { id: 'thread-mastery', name: 'Thread Mastery', icon: '&#128172;', duration: '1h', status: 'available' },
-    { id: 'brand-building', name: 'Personal Branding', icon: '&#127775;', duration: '2h', status: 'locked' },
-    { id: 'monetization', name: 'Creator Monetization', icon: '&#128176;', duration: '1.5h', status: 'locked' },
+    {
+      id: 'crypto-writing',
+      name: 'Crypto Writing',
+      icon: '&#128221;',
+      duration: '1h',
+      status: 'available',
+    },
+    {
+      id: 'video-production',
+      name: 'Video Production',
+      icon: '&#127909;',
+      duration: '2h',
+      status: 'available',
+    },
+    {
+      id: 'thread-mastery',
+      name: 'Thread Mastery',
+      icon: '&#128172;',
+      duration: '1h',
+      status: 'available',
+    },
+    {
+      id: 'brand-building',
+      name: 'Personal Branding',
+      icon: '&#127775;',
+      duration: '2h',
+      status: 'locked',
+    },
+    {
+      id: 'monetization',
+      name: 'Creator Monetization',
+      icon: '&#128176;',
+      duration: '1.5h',
+      status: 'locked',
+    },
     // Growth (merged)
-    { id: 'crypto-marketing', name: 'Crypto Marketing 101', icon: '&#128200;', duration: '1.5h', status: 'available' },
-    { id: 'community-building', name: 'Community Building', icon: '&#128101;', duration: '2h', status: 'available' },
+    {
+      id: 'crypto-marketing',
+      name: 'Crypto Marketing 101',
+      icon: '&#128200;',
+      duration: '1.5h',
+      status: 'available',
+    },
+    {
+      id: 'community-building',
+      name: 'Community Building',
+      icon: '&#128101;',
+      duration: '2h',
+      status: 'available',
+    },
     { id: 'viral-hooks', name: 'Viral Hooks', icon: '&#128293;', duration: '1h', status: 'locked' },
-    { id: 'tokenomics', name: 'Tokenomics Design', icon: '&#128178;', duration: '2h', status: 'locked' },
-    { id: 'analytics', name: 'On-Chain Analytics', icon: '&#128202;', duration: '2h', status: 'locked' }
-  ]
+    {
+      id: 'tokenomics',
+      name: 'Tokenomics Design',
+      icon: '&#128178;',
+      duration: '2h',
+      status: 'locked',
+    },
+    {
+      id: 'analytics',
+      name: 'On-Chain Analytics',
+      icon: '&#128202;',
+      duration: '2h',
+      status: 'locked',
+    },
+  ],
 };
 
 // Project recommendations by track (Growth merged into Content)
 const TRACK_PROJECTS = {
   dev: ['burn-tracker', 'token-launcher', 'oracle', 'rpc-monitor'],
   gaming: ['games-platform', 'holdex', 'forecast'],
-  content: ['learn-platform', 'community-hub', 'ambassador-program', 'games-platform']
+  content: ['learn-platform', 'community-hub', 'ambassador-program', 'games-platform'],
 };
 
 // ============================================
@@ -91,7 +211,7 @@ const FactoryPanelComponent = {
     this.bindEvents();
 
     // Subscribe to quiz completion
-    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, (data) => {
+    BuildState.subscribe(EVENTS.QUIZ_COMPLETE, data => {
       if (data.result) {
         // Small delay to let quiz animation complete
         setTimeout(() => {
@@ -109,7 +229,7 @@ const FactoryPanelComponent = {
   createPanel() {
     // Create backdrop
     backdropElement = createElement('div', {
-      className: 'factory-panel-backdrop'
+      className: 'factory-panel-backdrop',
     });
 
     // Create panel
@@ -117,7 +237,7 @@ const FactoryPanelComponent = {
       className: 'factory-panel',
       'aria-hidden': 'true',
       role: 'dialog',
-      'aria-label': 'Your Builder Track'
+      'aria-label': 'Your Builder Track',
     });
 
     panelElement.innerHTML = `
@@ -221,7 +341,7 @@ const FactoryPanelComponent = {
     }
 
     // Module clicks
-    on(panelElement, 'click', (e) => {
+    on(panelElement, 'click', e => {
       const moduleItem = e.target.closest('.module-item:not(.locked)');
       if (moduleItem) {
         const moduleId = moduleItem.dataset.module;
@@ -232,7 +352,7 @@ const FactoryPanelComponent = {
     });
 
     // Project clicks
-    on(panelElement, 'click', (e) => {
+    on(panelElement, 'click', e => {
       const projectCard = e.target.closest('.recommended-project');
       if (projectCard) {
         const projectId = projectCard.dataset.project;
@@ -273,7 +393,7 @@ const FactoryPanelComponent = {
     isOpen = true;
 
     // Bind escape key
-    escapeHandler = (e) => {
+    escapeHandler = e => {
       if (e.key === 'Escape') this.close();
     };
     on(document, 'keydown', escapeHandler);
@@ -343,7 +463,9 @@ const FactoryPanelComponent = {
 
     const modules = TRACK_MODULES[trackId] || [];
 
-    list.innerHTML = modules.map(mod => `
+    list.innerHTML = modules
+      .map(
+        mod => `
       <div class="module-item ${mod.status === 'locked' ? 'locked' : ''}" data-module="${escapeHtml(mod.id)}">
         <span class="module-icon">${mod.icon}</span>
         <div class="module-info">
@@ -354,7 +476,9 @@ const FactoryPanelComponent = {
           ${mod.status === 'locked' ? '&#128274;' : '&#9654;'}
         </span>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   },
 
   /**
@@ -369,7 +493,7 @@ const FactoryPanelComponent = {
 
     // Fetch project data
     const projectsHtml = await Promise.all(
-      projectIds.slice(0, 3).map(async (projectId) => {
+      projectIds.slice(0, 3).map(async projectId => {
         const project = await DataAdapter.getProject(projectId);
         if (!project) return '';
 
@@ -396,14 +520,12 @@ const FactoryPanelComponent = {
     // Get saved progress from state
     const progress = BuildState.data.trackProgress?.[trackId] || {
       completed: 0,
-      hoursSpent: 0
+      hoursSpent: 0,
     };
 
     const modules = TRACK_MODULES[trackId] || [];
     const totalModules = modules.length;
-    const percentage = totalModules > 0
-      ? Math.round((progress.completed / totalModules) * 100)
-      : 0;
+    const percentage = totalModules > 0 ? Math.round((progress.completed / totalModules) * 100) : 0;
 
     // Update ring
     const ringFill = $('.progress-ring-fill', panelElement);
@@ -412,7 +534,7 @@ const FactoryPanelComponent = {
     if (ringFill) {
       // Circumference = 2 * PI * r = 2 * 3.14159 * 32 ≈ 201
       const circumference = 201;
-      const offset = circumference - (percentage / 100 * circumference);
+      const offset = circumference - (percentage / 100) * circumference;
       ringFill.style.strokeDasharray = `${circumference}`;
       ringFill.style.strokeDashoffset = offset;
     }
@@ -443,7 +565,7 @@ const FactoryPanelComponent = {
    */
   getCurrentTrack() {
     return currentTrack;
-  }
+  },
 };
 
 // ============================================
@@ -455,5 +577,7 @@ export default FactoryPanelComponent;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.FactoryPanelComponent = FactoryPanelComponent;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.FactoryPanelComponent = FactoryPanelComponent;
+  window.FactoryPanelComponent = window.ASDF.FactoryPanelComponent;
 }

@@ -258,5 +258,7 @@ function scrollToGames() {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.ModalUI = ModalUI;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ModalUI = ModalUI;
+  window.ModalUI = window.ASDF.ModalUI;
 }

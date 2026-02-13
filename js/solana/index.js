@@ -27,7 +27,15 @@
 // ============================================
 
 // Kit modules
-import { SolanaClient, ASDF_TOKEN_MINT, TOKEN_DECIMALS, solToLamports, lamportsToSol, isValidAddress, address } from './kit/client.js';
+import {
+  SolanaClient,
+  ASDF_TOKEN_MINT,
+  TOKEN_DECIMALS,
+  solToLamports,
+  lamportsToSol,
+  isValidAddress,
+  address,
+} from './kit/client.js';
 import { WalletManager, WALLET_STANDARD_FEATURES } from './kit/wallet-manager.js';
 import {
   buildSolTransfer,
@@ -39,7 +47,7 @@ import {
   hasSufficientSol,
   hasSufficientAsdf,
   TREASURY_WALLET,
-  ESCROW_WALLET
+  ESCROW_WALLET,
 } from './kit/transactions.js';
 
 // Legacy adapter (for backwards compatibility)
@@ -70,7 +78,7 @@ const ASDFSolana = {
     // Initialize RPC client
     await SolanaClient.init({
       cluster: options.cluster || 'mainnet',
-      apiKey
+      apiKey,
     });
 
     // Initialize wallet manager
@@ -79,7 +87,9 @@ const ASDFSolana = {
     console.log('[ASDFSolana] Ready');
 
     // Expose legacy API for backwards compat
-    window.SolanaPayment = LegacySolanaPayment;
+    window.ASDF = window.ASDF || {};
+    window.ASDF.SolanaPayment = LegacySolanaPayment;
+    window.SolanaPayment = window.ASDF.SolanaPayment;
   },
 
   // ============================================
@@ -281,7 +291,7 @@ const ASDFSolana = {
   ASDF_TOKEN_MINT,
   TOKEN_DECIMALS,
   TREASURY_WALLET,
-  ESCROW_WALLET
+  ESCROW_WALLET,
 };
 
 // ============================================
@@ -307,7 +317,7 @@ export {
   // Legacy compat
   LegacySolanaPayment,
   toAddress,
-  toPublicKeyLike
+  toPublicKeyLike,
 };
 
 // Default export
@@ -315,7 +325,9 @@ export default ASDFSolana;
 
 // Expose on window for non-module scripts
 if (typeof window !== 'undefined') {
-  window.ASDFSolana = ASDFSolana;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ASDFSolana = ASDFSolana;
+  window.ASDFSolana = window.ASDF.ASDFSolana;
 
   // Auto-init if CONFIG exists
   if (window.CONFIG?.HELIUS_API_KEY) {

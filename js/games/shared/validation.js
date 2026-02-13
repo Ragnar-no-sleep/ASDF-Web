@@ -65,5 +65,7 @@ function isValidGameId(gameId) {
 
 // Export for module systems
 if (typeof window !== 'undefined') {
-  window.GameValidation = GameValidation;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.GameValidation = GameValidation;
+  window.GameValidation = window.ASDF.GameValidation;
 }

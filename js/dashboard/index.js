@@ -323,5 +323,7 @@ export default Dashboard;
 
 // Global
 if (typeof window !== 'undefined') {
-  window.YggdrasilDashboard = Dashboard;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.YggdrasilDashboard = Dashboard;
+  window.YggdrasilDashboard = window.ASDF.YggdrasilDashboard;
 }

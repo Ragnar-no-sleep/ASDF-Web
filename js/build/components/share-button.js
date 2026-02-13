@@ -320,5 +320,7 @@ export default ShareButton;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.ShareButton = ShareButton;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.ShareButton = ShareButton;
+  window.ShareButton = window.ASDF.ShareButton;
 }

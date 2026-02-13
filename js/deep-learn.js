@@ -78,7 +78,7 @@ function setupEventListeners() {
   // Glossary Search
   const glossarySearch = document.getElementById('glossary-search');
   if (glossarySearch) {
-    glossarySearch.addEventListener('input', (e) => {
+    glossarySearch.addEventListener('input', e => {
       const query = e.target.value.toLowerCase();
       document.querySelectorAll('.glossary-item').forEach(item => {
         const term = item.querySelector('.glossary-term').textContent.toLowerCase();
@@ -148,4 +148,6 @@ if (document.readyState === 'loading') {
 }
 
 // Export for potential external use
-window.switchView = switchView;
+window.ASDF = window.ASDF || {};
+window.ASDF.switchView = switchView;
+window.switchView = window.ASDF.switchView;

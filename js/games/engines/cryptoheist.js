@@ -1029,5 +1029,7 @@ const CryptoHeist = {
 
 // Export
 if (typeof window !== 'undefined') {
-  window.CryptoHeist = CryptoHeist;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.CryptoHeist = CryptoHeist;
+  window.CryptoHeist = window.ASDF.CryptoHeist;
 }

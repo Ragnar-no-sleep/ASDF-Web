@@ -149,5 +149,7 @@ export default OnboardingProgress;
 
 // Global export
 if (typeof window !== 'undefined') {
-  window.OnboardingProgress = OnboardingProgress;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.OnboardingProgress = OnboardingProgress;
+  window.OnboardingProgress = window.ASDF.OnboardingProgress;
 }

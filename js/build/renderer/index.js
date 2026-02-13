@@ -394,5 +394,7 @@ export default RendererFactory;
 
 // Global export for browser
 if (typeof window !== 'undefined') {
-  window.RendererFactory = RendererFactory;
+  window.ASDF = window.ASDF || {};
+  window.ASDF.RendererFactory = RendererFactory;
+  window.RendererFactory = window.ASDF.RendererFactory;
 }
