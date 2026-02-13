@@ -389,6 +389,16 @@ app.get('/staking', (req, res) => {
   res.sendFile(path.join(__dirname, 'staking.html'));
 });
 
+// Route /tools to tools.html (Ecosystem Tools Hub)
+app.get('/tools', (req, res) => {
+  res.sendFile(path.join(__dirname, 'tools.html'));
+});
+
+// Route /build to build.html (Builder Hub)
+app.get('/build', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build.html'));
+});
+
 // Route /quick-start to learn.html (5-step Quick Start Guide)
 app.get('/quick-start', (req, res) => {
   res.sendFile(path.join(__dirname, 'learn.html'));

@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tools | $ASDFASDFA Ecosystem</title>
-    <meta name="description" content="Community-built tools for the $asdfasdfa ecosystem.">
+    <meta name="description" content="Five live tools for the $asdfasdfa ecosystem. Burns, Forecast, HolDex, Staking, Ignition.">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://alonisthe.dev/tools">
     <meta property="og:title" content="Tools - ASDF Ecosystem">
-    <meta property="og:description" content="Community-built tools for tracking, analyzing, and engaging with the ecosystem.">
+    <meta property="og:description" content="Five live tools for tracking, analyzing, and engaging with the ecosystem.">
 
     <link rel="icon" type="image/png" href="/favicon.png">
 
@@ -19,249 +19,396 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #0d0906;
-            --surface: #1a1410;
+            --bg: #050508;
+            --surface: #0a0a0f;
+            --surface-2: #111118;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
             --text: #faf8f5;
-            --text-muted: #c9b89a;
-            --text-ghost: #5a4d40;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.45);
             --accent: #eab308;
-            --accent-soft: rgba(234, 179, 8, 0.15);
+            --accent-soft: rgba(234, 179, 8, 0.12);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 80px 24px 40px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .back {
+        /* --- Back nav --- */
+        .back-nav {
             position: fixed;
-            top: 24px;
-            left: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            color: var(--text-ghost);
-            text-decoration: none;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            background: rgba(5, 5, 8, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
             z-index: 100;
         }
-        .back:hover { color: var(--accent); }
 
-        .container {
-            max-width: 640px;
-            margin: 0 auto;
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 200ms ease;
         }
 
-        .header {
+        .back-link:hover { color: var(--accent); }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* --- Main --- */
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 100px 24px 60px;
+        }
+
+        /* --- Header --- */
+        .page-header {
             text-align: center;
             margin-bottom: 48px;
         }
 
-        .badge {
-            display: inline-block;
+        .page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             padding: 6px 14px;
             background: var(--accent-soft);
-            border: 1px solid rgba(234, 179, 8, 0.3);
+            border: 1px solid rgba(234, 179, 8, 0.25);
             border-radius: 100px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
+            font-weight: 500;
             color: var(--accent);
-            margin-bottom: 16px;
-            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 20px;
         }
 
-        h1 {
-            font-size: clamp(28px, 5vw, 38px);
+        .page-badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .page-title {
+            font-size: clamp(32px, 6vw, 44px);
             font-weight: 300;
+            letter-spacing: -0.02em;
             margin-bottom: 12px;
-            color: #ffffff;
         }
 
-        .subtitle {
+        .page-subtitle {
             font-size: 15px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             line-height: 1.6;
+            max-width: 480px;
+            margin: 0 auto;
         }
 
+        /* --- Tools grid --- */
         .tools-grid {
             display: grid;
-            gap: 16px;
+            gap: 12px;
         }
 
+        /* --- Tool card --- */
         .tool-card {
-            display: block;
-            padding: 24px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .tool-card:hover {
-            border-color: rgba(234, 179, 8, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .tool-header {
-            display: flex;
+            display: grid;
+            grid-template-columns: 56px 1fr auto;
             align-items: center;
             gap: 16px;
-            margin-bottom: 12px;
+            padding: 20px 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .tool-icon {
-            font-size: 32px;
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 250ms ease;
+            pointer-events: none;
         }
 
+        .tool-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Card accent colors */
+        .tool-card[data-tool="burns"]    { --card-accent: rgba(201, 162, 39, 0.06); --tool-color: #c9a227; }
+        .tool-card[data-tool="forecast"] { --card-accent: rgba(0, 255, 65, 0.04); --tool-color: #00ff41; }
+        .tool-card[data-tool="holdex"]   { --card-accent: rgba(74, 222, 128, 0.05); --tool-color: #4ade80; }
+        .tool-card[data-tool="staking"]  { --card-accent: rgba(123, 147, 255, 0.05); --tool-color: #7b93ff; }
+        .tool-card[data-tool="ignition"] { --card-accent: rgba(234, 88, 12, 0.06); --tool-color: #ea580c; }
+
+        .tool-card:hover {
+            border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 30%, transparent);
+        }
+
+        /* Icon */
+        .tool-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            transition: border-color 200ms ease, background 200ms ease;
+        }
+
+        .tool-card:hover .tool-icon-wrap {
+            border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 40%, transparent);
+            background: color-mix(in srgb, var(--tool-color, var(--accent)) 8%, var(--surface-2));
+        }
+
+        /* Info */
         .tool-info {
-            flex: 1;
+            min-width: 0;
         }
 
         .tool-name {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             color: var(--text);
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .tool-status {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 7px;
             border-radius: 4px;
-            display: inline-block;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
         }
-        .tool-status.live {
+
+        .tool-status--live {
             background: rgba(34, 197, 94, 0.15);
             color: #22c55e;
         }
-        .tool-status.beta {
-            background: rgba(234, 179, 8, 0.15);
-            color: var(--accent);
-        }
-
-        .tool-arrow {
-            font-size: 18px;
-            color: var(--text-ghost);
-            transition: transform 0.2s ease;
-        }
-        .tool-card:hover .tool-arrow {
-            transform: translateX(4px);
-            color: var(--accent);
-        }
 
         .tool-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
             line-height: 1.5;
         }
 
-        .divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.05);
-            margin: 32px 0;
+        /* Arrow */
+        .tool-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: all 200ms ease;
         }
 
-        .footer-text {
+        .tool-card:hover .tool-arrow {
+            color: var(--tool-color, var(--accent));
+            transform: translateX(3px);
+        }
+
+        /* --- Footer --- */
+        .page-footer {
             text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .page-footer-text {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
-            color: var(--text-ghost);
+            color: var(--text-muted);
         }
-        .footer-text a {
+
+        .page-footer-text a {
             color: var(--accent);
             text-decoration: none;
+            transition: color 200ms ease;
         }
-        .footer-text a:hover { text-decoration: underline; }
+
+        .page-footer-text a:hover {
+            color: #fbbf24;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            .tool-card {
+                grid-template-columns: 44px 1fr auto;
+                padding: 16px 18px;
+                gap: 12px;
+            }
+
+            .tool-icon-wrap {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .tool-name {
+                font-size: 14px;
+            }
+        }
+
+        /* --- Reduced motion --- */
+        @media (prefers-reduced-motion: reduce) {
+            .tool-card { transition: none; }
+            .page-badge-dot { animation: none; }
+        }
     </style>
 </head>
 <body>
-    <a href="/" class="back">&#8592; Hub</a>
+    <nav class="back-nav">
+        <a href="/" class="back-link">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Hub
+        </a>
+    </nav>
 
-    <div class="container">
-        <div class="header">
-            <span class="badge">ECOSYSTEM TOOLS</span>
-            <h1>Tools</h1>
-            <p class="subtitle">
-                Community-built utilities for the $asdfasdfa ecosystem.<br>
+    <div class="page">
+        <header class="page-header">
+            <span class="page-badge">
+                <span class="page-badge-dot"></span>
+                5 LIVE TOOLS
+            </span>
+            <h1 class="page-title">Ecosystem Tools</h1>
+            <p class="page-subtitle">
+                Burn. Track. Predict. Stake. Play.<br>
                 Don't trust. Verify.
             </p>
-        </div>
+        </header>
 
         <div class="tools-grid">
-            <!-- Burns Tracker -->
-            <a href="burns.html" class="tool-card">
-                <div class="tool-header">
-                    <span class="tool-icon">&#128293;</span>
-                    <div class="tool-info">
-                        <div class="tool-name">Burns Tracker</div>
-                        <span class="tool-status live">LIVE</span>
+            <a href="/burns" class="tool-card" data-tool="burns">
+                <div class="tool-icon-wrap">&#128293;</div>
+                <div class="tool-info">
+                    <div class="tool-name">
+                        Burns
+                        <span class="tool-status tool-status--live">LIVE</span>
                     </div>
-                    <span class="tool-arrow">&#8594;</span>
+                    <p class="tool-desc">Hall of Flames. Real-time burn analytics, leaderboard, and supply tracking.</p>
                 </div>
-                <p class="tool-desc">
-                    Track every ASDF token burned forever. Real-time burn feed with transaction links.
-                </p>
+                <span class="tool-arrow">&#8594;</span>
             </a>
 
-            <!-- HolDex -->
-            <a href="holdex.html" class="tool-card">
-                <div class="tool-header">
-                    <span class="tool-icon">&#128200;</span>
-                    <div class="tool-info">
-                        <div class="tool-name">HolDex</div>
-                        <span class="tool-status live">LIVE</span>
+            <a href="/asdforecast" class="tool-card" data-tool="forecast">
+                <div class="tool-icon-wrap">&#127919;</div>
+                <div class="tool-info">
+                    <div class="tool-name">
+                        Forecast
+                        <span class="tool-status tool-status--live">LIVE</span>
                     </div>
-                    <span class="tool-arrow">&#8594;</span>
+                    <p class="tool-desc">Prediction market. Forecast burn amounts and prove conviction on-chain.</p>
                 </div>
-                <p class="tool-desc">
-                    K-Score holder quality index. Diamond hands detection and conviction metrics.
-                </p>
+                <span class="tool-arrow">&#8594;</span>
             </a>
 
-            <!-- Forecast -->
-            <a href="forecast.html" class="tool-card">
-                <div class="tool-header">
-                    <span class="tool-icon">&#127919;</span>
-                    <div class="tool-info">
-                        <div class="tool-name">Forecast</div>
-                        <span class="tool-status beta">BETA</span>
+            <a href="/holdex" class="tool-card" data-tool="holdex">
+                <div class="tool-icon-wrap">&#128200;</div>
+                <div class="tool-info">
+                    <div class="tool-name">
+                        HolDex
+                        <span class="tool-status tool-status--live">LIVE</span>
                     </div>
-                    <span class="tool-arrow">&#8594;</span>
+                    <p class="tool-desc">K-Score holder quality index. Diamond hands detection and conviction metrics.</p>
                 </div>
-                <p class="tool-desc">
-                    Predict burn amounts and prove conviction. Community prediction market.
-                </p>
+                <span class="tool-arrow">&#8594;</span>
             </a>
 
-            <!-- Ignition - Coming Soon -->
-            <div class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
-                <div class="tool-header">
-                    <span class="tool-icon">&#128640;</span>
-                    <div class="tool-info">
-                        <div class="tool-name">Ignition</div>
-                        <span class="tool-status" style="background: rgba(255,255,255,0.05); color: var(--text-ghost);">SOON</span>
+            <a href="/staking" class="tool-card" data-tool="staking">
+                <div class="tool-icon-wrap">&#128274;</div>
+                <div class="tool-info">
+                    <div class="tool-name">
+                        Staking
+                        <span class="tool-status tool-status--live">LIVE</span>
                     </div>
+                    <p class="tool-desc">Token lock dashboard. Delegate, earn rewards, and track validator performance.</p>
                 </div>
-                <p class="tool-desc">
-                    Token launcher with built-in burn mechanism. Create tokens that feed the fire.
-                </p>
-            </div>
+                <span class="tool-arrow">&#8594;</span>
+            </a>
+
+            <a href="/ignition" class="tool-card" data-tool="ignition">
+                <div class="tool-icon-wrap">&#128640;</div>
+                <div class="tool-info">
+                    <div class="tool-name">
+                        Ignition
+                        <span class="tool-status tool-status--live">LIVE</span>
+                    </div>
+                    <p class="tool-desc">9 mini-games. Compete, earn XP, climb the leaderboard. Gamified engagement.</p>
+                </div>
+                <span class="tool-arrow">&#8594;</span>
+            </a>
         </div>
 
-        <div class="divider"></div>
-
-        <p class="footer-text">
-            Want to build a tool? <a href="build.html">Join the builders</a>
-        </p>
+        <footer class="page-footer">
+            <p class="page-footer-text">
+                Want to build a tool? <a href="/build">Join the builders</a>
+            </p>
+        </footer>
     </div>
 </body>
 </html>
