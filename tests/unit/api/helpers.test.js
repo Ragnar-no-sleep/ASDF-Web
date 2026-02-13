@@ -104,4 +104,64 @@ describe('Route Helpers', () => {
       expect(typeof isProduction).toBe('boolean');
     });
   });
+
+  describe('paginate()', () => {
+    const { paginate } = require('../../../api/routes/helpers');
+    const items = Array.from({ length: 50 }, (_, i) => ({ id: i + 1 }));
+
+    it('should return default page (offset=0, limit=20)', () => {
+      const req = { query: {} };
+      const result = paginate(items, req);
+      expect(result.items).toHaveLength(20);
+      expect(result.items[0].id).toBe(1);
+      expect(result.pagination).toEqual({ offset: 0, limit: 20, total: 50 });
+    });
+
+    it('should respect offset and limit params', () => {
+      const req = { query: { offset: '10', limit: '5' } };
+      const result = paginate(items, req);
+      expect(result.items).toHaveLength(5);
+      expect(result.items[0].id).toBe(11);
+      expect(result.pagination).toEqual({ offset: 10, limit: 5, total: 50 });
+    });
+
+    it('should cap limit at 100', () => {
+      const req = { query: { limit: '999' } };
+      const result = paginate(items, req);
+      expect(result.pagination.limit).toBe(100);
+    });
+
+    it('should cap offset at 10000', () => {
+      const req = { query: { offset: '99999' } };
+      const result = paginate(items, req);
+      expect(result.pagination.offset).toBe(10000);
+      expect(result.items).toHaveLength(0);
+    });
+
+    it('should handle negative offset', () => {
+      const req = { query: { offset: '-5' } };
+      const result = paginate(items, req);
+      expect(result.pagination.offset).toBe(0);
+    });
+
+    it('should handle empty array', () => {
+      const req = { query: {} };
+      const result = paginate([], req);
+      expect(result.items).toHaveLength(0);
+      expect(result.pagination.total).toBe(0);
+    });
+
+    it('should handle offset beyond array length', () => {
+      const req = { query: { offset: '100' } };
+      const result = paginate(items, req);
+      expect(result.items).toHaveLength(0);
+    });
+
+    it('should handle non-numeric query params', () => {
+      const req = { query: { offset: 'abc', limit: 'xyz' } };
+      const result = paginate(items, req);
+      expect(result.pagination.offset).toBe(0);
+      expect(result.pagination.limit).toBe(20);
+    });
+  });
 });
