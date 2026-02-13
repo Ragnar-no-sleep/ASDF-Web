@@ -68,11 +68,13 @@
     </script>
 </head>
 <body>
+    <a href="#yggdrasil-cosmos" class="skip-link">Skip to main content</a>
+
     <!-- Yggdrasil Viking Background -->
-    <div class="yggdrasil-bg"></div>
-    <div class="nordic-mist"></div>
-    <div class="viking-symbols"></div>
-    <div class="viking-spirits">
+    <div class="yggdrasil-bg" aria-hidden="true"></div>
+    <div class="nordic-mist" aria-hidden="true"></div>
+    <div class="viking-symbols" aria-hidden="true"></div>
+    <div class="viking-spirits" aria-hidden="true">
         <div class="spirit-cyan"></div>
         <div class="spirit-gold"></div>
         <div class="spirit-pink"></div>
@@ -96,7 +98,9 @@
                 <div class="yggdrasil-canonical">
 
                     <!-- SVG Tree Structure - Simple Yggdrasil Style -->
-                    <svg class="tree-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                    <svg class="tree-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ygg-title ygg-desc">
+                        <title id="ygg-title">Yggdrasil Project Tree</title>
+                        <desc id="ygg-desc">Interactive visualization of ASDF ecosystem projects. Live projects in green canopy, building projects in amber trunk, planned projects in purple roots.</desc>
                         <defs>
                             <!-- Gradients -->
                             <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">

@@ -40,8 +40,10 @@
     </script>
 </head>
 <body class="eco-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Animated Background - Ember Theme -->
-    <div class="cosmic-bg">
+    <div class="cosmic-bg" aria-hidden="true">
         <!-- Glow circles -->
         <div class="glow-circle"></div>
         <div class="glow-circle"></div>
@@ -171,6 +173,7 @@
     </aside>
 
     <!-- Hero Section -->
+    <main id="main-content">
     <section class="burns-hero">
         <div class="hero-content">
             <div class="hero-badge">
@@ -298,7 +301,7 @@
                 <h2 class="section-title">Recent Burns</h2>
                 <p class="section-subtitle">Real-time burn activity</p>
             </div>
-            <div class="burns-feed" id="burns-feed">
+            <div class="burns-feed" id="burns-feed" role="log" aria-live="polite" aria-atomic="false" aria-label="Recent burn transactions">
                 <div class="feed-empty">
                     <span>Waiting for burns...</span>
                 </div>
@@ -317,8 +320,10 @@
         </div>
     </section>
 
+    </main>
+
     <!-- Footer -->
-    <footer class="burns-footer">
+    <footer class="burns-footer" role="contentinfo">
         <div class="container">
             <div class="footer-inner">
                 <div class="footer-links">

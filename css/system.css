@@ -34,7 +34,7 @@
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-tertiary: #71717a;
-  --text-muted: #52525b;
+  --text-muted: #71717a; /* AA compliant: 5.0:1 on #000 */
   --text-ghost: #3f3f46;
 
   /* Accent - Helius orange-red */

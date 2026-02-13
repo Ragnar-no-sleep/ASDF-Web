@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="css/learn.css">
 </head>
 <body>
-    <div class="progress" role="progressbar" aria-label="Learning progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill" id="progress"></div></div>
+    <a href="#container" class="skip-link">Skip to main content</a>
+    <div class="progress" role="progressbar" aria-label="Learning progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="0 percent complete"><div class="progress-fill" id="progress"></div></div>
 
     <header class="header">
         <a href="/" class="back" aria-label="Return to Hub">&#8592; Hub</a>
@@ -119,7 +120,8 @@
                     <p>Don't panic. Hold.</p>
                 </div>
                 <div class="type-wrap" id="type-wrap">
-                    <input type="text" class="type-input" id="type-input" placeholder="Type the phrase..." autocomplete="off" spellcheck="false">
+                    <label for="type-input" class="sr-only">Type the verification phrase</label>
+                    <input type="text" class="type-input" id="type-input" placeholder="Type the phrase..." autocomplete="off" spellcheck="false" aria-describedby="type-hint">
                     <p class="type-hint">Hint: <span id="type-hint"></span></p>
                     <div class="type-done">
                         <p class="type-done-text">This is fine.</p>

@@ -40,8 +40,10 @@
     </script>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Subtle Background -->
-    <div class="bg-ambient">
+    <div class="bg-ambient" aria-hidden="true">
         <div class="bg-gradient"></div>
         <div class="bg-grid"></div>
         <div class="bg-glow"></div>
@@ -129,7 +131,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="main">
+        <main class="main" id="main-content">
             <!-- Left Sidebar - Stats & K-Score Info -->
             <aside class="sidebar sidebar-left">
                 <div class="widget">
