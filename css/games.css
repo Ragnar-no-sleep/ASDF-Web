@@ -1159,6 +1159,19 @@ body.modal-open {
 }
 
 /* ============================================
+           VARIANT SWATCHES (drawer preview)
+           ============================================ */
+.eco-variant-swatch--ember-ig {
+  background: linear-gradient(135deg, #1a0800 30%, #ea580c);
+}
+.eco-variant-swatch--neon {
+  background: linear-gradient(135deg, #0a0012 30%, #e879f9);
+}
+.eco-variant-swatch--pixel {
+  background: linear-gradient(135deg, #001a0a 30%, #22c55e);
+}
+
+/* ============================================
            VARIANT 2: NEON — Magenta + Cyan cyberpunk
            ============================================ */
 [data-variant='2'] {

@@ -933,6 +933,19 @@ body {
 }
 
 /* ============================================
+   VARIANT SWATCHES (drawer preview)
+   ============================================ */
+.eco-variant-swatch--emerald {
+  background: linear-gradient(135deg, #021a0a 30%, #4ade80);
+}
+.eco-variant-swatch--crystal {
+  background: linear-gradient(135deg, #0c1222 30%, #38bdf8);
+}
+.eco-variant-swatch--vintage {
+  background: linear-gradient(135deg, #1a1400 30%, #f59e0b);
+}
+
+/* ============================================
    VARIANT 2: CRYSTAL — Ice blue, modern glass
    ============================================ */
 [data-variant='2'] {

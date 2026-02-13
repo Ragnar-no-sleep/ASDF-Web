@@ -121,8 +121,14 @@ function updateStats(stats) {
   const tokensEl = document.getElementById('stat-tokens');
   const volumeEl = document.getElementById('stat-volume');
 
-  if (tokensEl) tokensEl.textContent = formatHolders(stats.totalTokens || 0);
-  if (volumeEl) volumeEl.textContent = formatNumber(stats.volume24h || 0);
+  if (tokensEl) {
+    tokensEl.textContent = formatHolders(stats.totalTokens || 0);
+    tokensEl.classList.remove('is-loading');
+  }
+  if (volumeEl) {
+    volumeEl.textContent = formatNumber(stats.volume24h || 0);
+    volumeEl.classList.remove('is-loading');
+  }
 }
 
 function renderTokenList(tokens) {

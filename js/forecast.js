@@ -111,10 +111,22 @@ function updateStats(stats) {
   const usersEl = document.getElementById('stat-users');
   const burnedEl = document.getElementById('stat-burned');
 
-  if (volumeEl) volumeEl.textContent = formatNumber(stats.totalVolume || 0) + ' SOL';
-  if (framesEl) framesEl.textContent = formatNumber(stats.framesCompleted || 0);
-  if (usersEl) usersEl.textContent = formatNumber(stats.uniqueUsers || 0);
-  if (burnedEl) burnedEl.textContent = formatNumber(stats.asdfBurned || 0);
+  if (volumeEl) {
+    volumeEl.textContent = formatNumber(stats.totalVolume || 0) + ' SOL';
+    volumeEl.classList.remove('is-loading');
+  }
+  if (framesEl) {
+    framesEl.textContent = formatNumber(stats.framesCompleted || 0);
+    framesEl.classList.remove('is-loading');
+  }
+  if (usersEl) {
+    usersEl.textContent = formatNumber(stats.uniqueUsers || 0);
+    usersEl.classList.remove('is-loading');
+  }
+  if (burnedEl) {
+    burnedEl.textContent = formatNumber(stats.asdfBurned || 0);
+    burnedEl.classList.remove('is-loading');
+  }
 }
 
 function updateLeaderboard(data) {

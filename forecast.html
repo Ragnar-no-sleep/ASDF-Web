@@ -146,6 +146,13 @@
                 <div class="eco-theme-check">&#10003;</div>
             </div>
         </div>
+
+        <div class="eco-drawer-section">
+            <div class="eco-drawer-section-title">Style</div>
+            <div class="eco-variant-picker">
+                <!-- Dynamically populated by ecosystem.js -->
+            </div>
+        </div>
     </aside>
 
     <!-- Full Page Dashboard -->
@@ -173,42 +180,32 @@
                 <div class="stats-compact">
                     <div class="stat-item">
                         <span class="stat-icon">$</span>
-                        <span class="stat-value" id="stat-volume">0</span>
+                        <span class="stat-value is-loading" id="stat-volume">0</span>
                         <span class="stat-label">total_volume</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-icon">#</span>
-                        <span class="stat-value" id="stat-frames">0</span>
+                        <span class="stat-value is-loading" id="stat-frames">0</span>
                         <span class="stat-label">frames_completed</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-icon">@</span>
-                        <span class="stat-value" id="stat-users">0</span>
+                        <span class="stat-value is-loading" id="stat-users">0</span>
                         <span class="stat-label">unique_predictors</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-icon">~</span>
-                        <span class="stat-value" id="stat-burned">0</span>
+                        <span class="stat-value is-loading" id="stat-burned">0</span>
                         <span class="stat-label">asdf_burned</span>
                     </div>
                 </div>
 
                 <div class="panel-title">// LEADERBOARD</div>
                 <div class="leaderboard-compact" id="leaderboard-body">
-                    <div class="leader-row">
-                        <span class="rank gold">#1</span>
-                        <span class="wallet">---</span>
-                        <span class="winrate">--%</span>
-                    </div>
-                    <div class="leader-row">
-                        <span class="rank silver">#2</span>
-                        <span class="wallet">---</span>
-                        <span class="winrate">--%</span>
-                    </div>
-                    <div class="leader-row">
-                        <span class="rank bronze">#3</span>
-                        <span class="wallet">---</span>
-                        <span class="winrate">--%</span>
+                    <div class="loading-skeleton">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
                     </div>
                 </div>
             </aside>
@@ -273,30 +270,12 @@
             <aside class="panel panel-right">
                 <div class="panel-title">// RECENT_FRAMES</div>
                 <div class="history-compact" id="history-list">
-                    <div class="history-row">
-                        <span class="result win">+</span>
-                        <span class="frame">Frame #---</span>
-                        <span class="amount">-- SOL</span>
-                    </div>
-                    <div class="history-row">
-                        <span class="result loss">-</span>
-                        <span class="frame">Frame #---</span>
-                        <span class="amount">-- SOL</span>
-                    </div>
-                    <div class="history-row">
-                        <span class="result win">+</span>
-                        <span class="frame">Frame #---</span>
-                        <span class="amount">-- SOL</span>
-                    </div>
-                    <div class="history-row">
-                        <span class="result win">+</span>
-                        <span class="frame">Frame #---</span>
-                        <span class="amount">-- SOL</span>
-                    </div>
-                    <div class="history-row">
-                        <span class="result loss">-</span>
-                        <span class="frame">Frame #---</span>
-                        <span class="amount">-- SOL</span>
+                    <div class="loading-skeleton">
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
+                        <div class="skeleton-row"></div>
                     </div>
                 </div>
             </aside>
@@ -311,12 +290,6 @@
         </footer>
     </div>
 
-    <!-- Variant Switcher -->
-    <div class="variant-switcher">
-        <button class="variant-dot active" data-variant="1" style="--dot-color: #00ff41" aria-label="Matrix theme"></button>
-        <button class="variant-dot" data-variant="2" style="--dot-color: #3b82f6" aria-label="Bloomberg theme"></button>
-        <button class="variant-dot" data-variant="3" style="--dot-color: #f472b6" aria-label="Synthwave theme"></button>
-    </div>
 
     <script src="js/forecast.js"></script>
     <script src="js/ecosystem.js" defer></script>

@@ -944,6 +944,19 @@ body {
 }
 
 /* ============================================
+   VARIANT SWATCHES (drawer preview)
+   ============================================ */
+.eco-variant-swatch--matrix {
+  background: linear-gradient(135deg, #000 30%, #00ff41);
+}
+.eco-variant-swatch--bloomberg {
+  background: linear-gradient(135deg, #0f172a 30%, #3b82f6);
+}
+.eco-variant-swatch--synthwave {
+  background: linear-gradient(135deg, #0a0012 30%, #f472b6);
+}
+
+/* ============================================
    VARIANT 2: BLOOMBERG — Blue finance pro
    ============================================ */
 [data-variant='2'] {

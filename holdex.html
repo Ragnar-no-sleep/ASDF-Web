@@ -107,6 +107,13 @@
                 <div class="eco-theme-check">&#10003;</div>
             </div>
         </div>
+
+        <div class="eco-drawer-section">
+            <div class="eco-drawer-section-title">Style</div>
+            <div class="eco-variant-picker">
+                <!-- Dynamically populated by ecosystem.js -->
+            </div>
+        </div>
     </aside>
 
     <!-- Dashboard -->
@@ -140,11 +147,11 @@
                     </div>
                     <div class="stats-grid">
                         <div class="stat">
-                            <span class="stat-value" id="stat-tokens">847</span>
+                            <span class="stat-value is-loading" id="stat-tokens">847</span>
                             <span class="stat-label">Tokens</span>
                         </div>
                         <div class="stat">
-                            <span class="stat-value" id="stat-volume">$24.7M</span>
+                            <span class="stat-value is-loading" id="stat-volume">$24.7M</span>
                             <span class="stat-label">24h Volume</span>
                         </div>
                     </div>
@@ -224,111 +231,11 @@
                             </tr>
                         </thead>
                         <tbody id="token-list">
-                            <tr class="token-row" data-token="asdf">
-                                <td class="rank">1</td>
-                                <td class="token-info">
-                                    <div class="token-icon">A</div>
-                                    <div class="token-details">
-                                        <span class="token-name">ASDFASDFA</span>
-                                        <span class="token-symbol">$ASDF</span>
-                                    </div>
-                                </td>
-                                <td class="price">$0.0042</td>
-                                <td class="change positive">+12.5%</td>
-                                <td class="volume">$1.2M</td>
-                                <td class="mcap">$4.2M</td>
-                                <td class="holders">2,847</td>
-                                <td class="kscore">
-                                    <div class="kscore-mini">
-                                        <span>87</span>
-                                        <div class="kscore-bar-mini"><div style="width:87%"></div></div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="token-row" data-token="sample1">
-                                <td class="rank">2</td>
-                                <td class="token-info">
-                                    <div class="token-icon">S</div>
-                                    <div class="token-details">
-                                        <span class="token-name">Sample Token</span>
-                                        <span class="token-symbol">$SMPL</span>
-                                    </div>
-                                </td>
-                                <td class="price">$0.0015</td>
-                                <td class="change negative">-3.2%</td>
-                                <td class="volume">$450K</td>
-                                <td class="mcap">$1.5M</td>
-                                <td class="holders">1,234</td>
-                                <td class="kscore">
-                                    <div class="kscore-mini">
-                                        <span>72</span>
-                                        <div class="kscore-bar-mini"><div style="width:72%"></div></div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="token-row" data-token="sample2">
-                                <td class="rank">3</td>
-                                <td class="token-info">
-                                    <div class="token-icon">T</div>
-                                    <div class="token-details">
-                                        <span class="token-name">Test Token</span>
-                                        <span class="token-symbol">$TEST</span>
-                                    </div>
-                                </td>
-                                <td class="price">$0.00089</td>
-                                <td class="change positive">+45.8%</td>
-                                <td class="volume">$890K</td>
-                                <td class="mcap">$890K</td>
-                                <td class="holders">567</td>
-                                <td class="kscore">
-                                    <div class="kscore-mini">
-                                        <span>65</span>
-                                        <div class="kscore-bar-mini"><div style="width:65%"></div></div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="token-row" data-token="sample3">
-                                <td class="rank">4</td>
-                                <td class="token-info">
-                                    <div class="token-icon">M</div>
-                                    <div class="token-details">
-                                        <span class="token-name">Moon Token</span>
-                                        <span class="token-symbol">$MOON</span>
-                                    </div>
-                                </td>
-                                <td class="price">$0.0028</td>
-                                <td class="change positive">+8.3%</td>
-                                <td class="volume">$2.1M</td>
-                                <td class="mcap">$3.8M</td>
-                                <td class="holders">4,521</td>
-                                <td class="kscore">
-                                    <div class="kscore-mini">
-                                        <span>79</span>
-                                        <div class="kscore-bar-mini"><div style="width:79%"></div></div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="token-row" data-token="sample4">
-                                <td class="rank">5</td>
-                                <td class="token-info">
-                                    <div class="token-icon">D</div>
-                                    <div class="token-details">
-                                        <span class="token-name">Diamond Hands</span>
-                                        <span class="token-symbol">$DIAM</span>
-                                    </div>
-                                </td>
-                                <td class="price">$0.0067</td>
-                                <td class="change negative">-1.8%</td>
-                                <td class="volume">$780K</td>
-                                <td class="mcap">$2.1M</td>
-                                <td class="holders">1,892</td>
-                                <td class="kscore">
-                                    <div class="kscore-mini">
-                                        <span>82</span>
-                                        <div class="kscore-bar-mini"><div style="width:82%"></div></div>
-                                    </div>
-                                </td>
-                            </tr>
+                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
+                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
+                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
+                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
+                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -416,12 +323,6 @@
         </div>
     </div>
 
-    <!-- Variant Switcher -->
-    <div class="variant-switcher">
-        <button class="variant-dot active" data-variant="1" style="--dot-color: #4ade80" aria-label="LCD theme"></button>
-        <button class="variant-dot" data-variant="2" style="--dot-color: #38bdf8" aria-label="Crystal theme"></button>
-        <button class="variant-dot" data-variant="3" style="--dot-color: #f59e0b" aria-label="Vintage theme"></button>
-    </div>
 
     <script src="js/shared/security.js"></script>
     <script src="js/holdex.js"></script>

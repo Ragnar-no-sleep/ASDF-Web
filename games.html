@@ -162,6 +162,13 @@
                 <div class="eco-theme-check">&#10003;</div>
             </div>
         </div>
+
+        <div class="eco-drawer-section">
+            <div class="eco-drawer-section-title">Style</div>
+            <div class="eco-variant-picker">
+                <!-- Dynamically populated by ecosystem.js -->
+            </div>
+        </div>
     </aside>
 
     <!-- ============================================
@@ -234,7 +241,7 @@
                 </div>
 
                 <div id="featured-game-icon" class="hero-game-icon"></div>
-                <h1 id="featured-game-name">Loading...</h1>
+                <h1 id="featured-game-name" class="is-loading">Loading...</h1>
                 <p class="hero-description" id="featured-game-desc">The featured game rotates every Monday at 00:00 UTC</p>
 
                 <div class="hero-countdown">
@@ -288,7 +295,12 @@
                 </div>
 
                 <div class="games-grid" id="games-grid">
-                    <!-- Games will be rendered by JavaScript -->
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
+                    <div class="loading-skeleton"><div class="skeleton-card"></div></div>
                 </div>
             </div>
         </section>
@@ -844,11 +856,5 @@
     <!-- Ecosystem Shell -->
     <script src="js/ecosystem.js" defer></script>
 
-    <!-- Variant Switcher -->
-    <div class="variant-switcher">
-        <button class="variant-dot active" data-variant="1" style="--dot-color: #ea580c" aria-label="Arcade theme"></button>
-        <button class="variant-dot" data-variant="2" style="--dot-color: #e879f9" aria-label="Neon theme"></button>
-        <button class="variant-dot" data-variant="3" style="--dot-color: #22c55e" aria-label="Pixel theme"></button>
-    </div>
 </body>
 </html>

@@ -78,7 +78,10 @@ const GameRotation = {
     const descEl = document.getElementById('featured-game-desc');
 
     if (iconEl) iconEl.textContent = game.icon;
-    if (nameEl) nameEl.textContent = game.name;
+    if (nameEl) {
+      nameEl.textContent = game.name;
+      nameEl.classList.remove('is-loading');
+    }
     if (descEl) descEl.textContent = game.description;
   },
 };
