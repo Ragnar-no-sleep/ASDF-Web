@@ -16,6 +16,7 @@
 'use strict';
 
 const { getRecentBurns, getWalletBurnHistory, ASDF_TOKEN_MINT } = require('./helius');
+const { logAudit, getAuditLog } = require('./audit');
 
 // Fibonacci sequence for tier thresholds
 const FIB = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
@@ -355,60 +356,6 @@ function getTierDistribution() {
   }
 
   return distribution;
-}
-
-// ============================================
-// AUDIT LOGGING
-// ============================================
-
-const auditLog = [];
-const MAX_AUDIT_LOG = 1000;
-
-/**
- * Log an audit event
- * @param {string} action - Action type
- * @param {Object} details - Event details
- */
-function logAudit(action, details) {
-  const event = {
-    timestamp: Date.now(),
-    action,
-    ...details,
-  };
-
-  auditLog.push(event);
-
-  // Keep log bounded
-  if (auditLog.length > MAX_AUDIT_LOG) {
-    auditLog.splice(0, auditLog.length - MAX_AUDIT_LOG);
-  }
-
-  // Security-sensitive actions get extra logging
-  const sensitiveActions = [
-    'purchase_confirmed',
-    'auth_failed',
-    'rate_limited',
-    'signature_reused',
-  ];
-  if (sensitiveActions.includes(action)) {
-    console.warn(`[Audit] ${action}:`, JSON.stringify(details));
-  }
-}
-
-/**
- * Get recent audit events
- * @param {number} limit - Max events
- * @param {string} action - Filter by action type
- * @returns {Array}
- */
-function getAuditLog(limit = 100, action = null) {
-  let filtered = auditLog;
-
-  if (action) {
-    filtered = auditLog.filter(e => e.action === action);
-  }
-
-  return filtered.slice(-limit).reverse();
 }
 
 // ============================================

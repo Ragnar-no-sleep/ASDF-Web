@@ -32,7 +32,7 @@ const {
   LAMPORTS_PER_SOL,
 } = require('@solana/web3.js');
 
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 
 // ============================================
 // CONFIGURATION

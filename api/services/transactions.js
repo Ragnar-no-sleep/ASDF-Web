@@ -17,7 +17,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 const { getPriorityFeeEstimate } = require('./helius');
 
 // ============================================
@@ -25,39 +25,39 @@ const { getPriorityFeeEstimate } = require('./helius');
 // ============================================
 
 const TX_CONFIG = {
-    // Priority fee settings (microLamports per compute unit)
-    priorityFee: {
-        default: 50000,
-        min: 10000,
-        max: 1000000,
-        burnMultiplier: 1.5  // Higher priority for burns
-    },
+  // Priority fee settings (microLamports per compute unit)
+  priorityFee: {
+    default: 50000,
+    min: 10000,
+    max: 1000000,
+    burnMultiplier: 1.5, // Higher priority for burns
+  },
 
-    // Compute budget
-    computeUnits: {
-        transfer: 200000,
-        burn: 150000,
-        nftTransfer: 400000,
-        swap: 600000,
-        default: 300000
-    },
+  // Compute budget
+  computeUnits: {
+    transfer: 200000,
+    burn: 150000,
+    nftTransfer: 400000,
+    swap: 600000,
+    default: 300000,
+  },
 
-    // Transaction settings
-    maxAge: 5 * 60 * 1000,  // 5 minutes max transaction age
-    simulationRetries: 2,
+  // Transaction settings
+  maxAge: 5 * 60 * 1000, // 5 minutes max transaction age
+  simulationRetries: 2,
 
-    // Token program IDs
-    programs: {
-        token: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-        token2022: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
-        associatedToken: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-        systemProgram: '11111111111111111111111111111111',
-        computeBudget: 'ComputeBudget111111111111111111111111111111'
-    },
+  // Token program IDs
+  programs: {
+    token: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    token2022: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+    associatedToken: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+    systemProgram: '11111111111111111111111111111111',
+    computeBudget: 'ComputeBudget111111111111111111111111111111',
+  },
 
-    // ASDF token
-    asdfMint: process.env.ASDF_TOKEN_MINT || '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
-    burnAddress: process.env.BURN_ADDRESS || 'deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead'
+  // ASDF token
+  asdfMint: process.env.ASDF_TOKEN_MINT || '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+  burnAddress: process.env.BURN_ADDRESS || 'deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead',
 };
 
 // Pending transactions (for verification)
@@ -75,60 +75,55 @@ const pendingTransactions = new Map();
  * @returns {Promise<Object>}
  */
 async function buildBurnTransaction(wallet, amount, options = {}) {
-    const txId = generateTransactionId();
+  const txId = generateTransactionId();
 
-    // Get priority fee
-    const priorityFee = await calculatePriorityFee('burn', options.priorityLevel);
+  // Get priority fee
+  const priorityFee = await calculatePriorityFee('burn', options.priorityLevel);
 
-    // Build instruction set
-    const instructions = [
-        // 1. Set compute budget
-        buildComputeBudgetInstruction(TX_CONFIG.computeUnits.burn),
+  // Build instruction set
+  const instructions = [
+    // 1. Set compute budget
+    buildComputeBudgetInstruction(TX_CONFIG.computeUnits.burn),
 
-        // 2. Set priority fee
-        buildPriorityFeeInstruction(priorityFee),
+    // 2. Set priority fee
+    buildPriorityFeeInstruction(priorityFee),
 
-        // 3. Transfer to burn address (SPL Token transfer)
-        buildTokenTransferInstruction(
-            wallet,
-            TX_CONFIG.burnAddress,
-            TX_CONFIG.asdfMint,
-            amount
-        )
-    ];
+    // 3. Transfer to burn address (SPL Token transfer)
+    buildTokenTransferInstruction(wallet, TX_CONFIG.burnAddress, TX_CONFIG.asdfMint, amount),
+  ];
 
-    const transaction = {
-        id: txId,
-        type: 'burn',
-        wallet,
-        amount,
-        instructions,
-        priorityFee,
-        computeUnits: TX_CONFIG.computeUnits.burn,
-        estimatedFee: calculateEstimatedFee(priorityFee, TX_CONFIG.computeUnits.burn),
-        createdAt: Date.now(),
-        expiresAt: Date.now() + TX_CONFIG.maxAge,
-        status: 'pending'
-    };
+  const transaction = {
+    id: txId,
+    type: 'burn',
+    wallet,
+    amount,
+    instructions,
+    priorityFee,
+    computeUnits: TX_CONFIG.computeUnits.burn,
+    estimatedFee: calculateEstimatedFee(priorityFee, TX_CONFIG.computeUnits.burn),
+    createdAt: Date.now(),
+    expiresAt: Date.now() + TX_CONFIG.maxAge,
+    status: 'pending',
+  };
 
-    // Store for verification
-    pendingTransactions.set(txId, transaction);
+  // Store for verification
+  pendingTransactions.set(txId, transaction);
 
-    logAudit('transaction_built', {
-        txId,
-        type: 'burn',
-        wallet: wallet.slice(0, 8) + '...',
-        amount
-    });
+  logAudit('transaction_built', {
+    txId,
+    type: 'burn',
+    wallet: wallet.slice(0, 8) + '...',
+    amount,
+  });
 
-    return {
-        transactionId: txId,
-        instructions: serializeInstructions(instructions),
-        message: buildTransactionMessage(instructions, wallet),
-        priorityFee,
-        estimatedFee: transaction.estimatedFee,
-        expiresAt: transaction.expiresAt
-    };
+  return {
+    transactionId: txId,
+    instructions: serializeInstructions(instructions),
+    message: buildTransactionMessage(instructions, wallet),
+    priorityFee,
+    estimatedFee: transaction.estimatedFee,
+    expiresAt: transaction.expiresAt,
+  };
 }
 
 /**
@@ -141,41 +136,41 @@ async function buildBurnTransaction(wallet, amount, options = {}) {
  * @returns {Promise<Object>}
  */
 async function buildTransferTransaction(fromWallet, toWallet, mint, amount, options = {}) {
-    const txId = generateTransactionId();
-    const priorityFee = await calculatePriorityFee('transfer', options.priorityLevel);
+  const txId = generateTransactionId();
+  const priorityFee = await calculatePriorityFee('transfer', options.priorityLevel);
 
-    const instructions = [
-        buildComputeBudgetInstruction(TX_CONFIG.computeUnits.transfer),
-        buildPriorityFeeInstruction(priorityFee),
-        buildTokenTransferInstruction(fromWallet, toWallet, mint, amount)
-    ];
+  const instructions = [
+    buildComputeBudgetInstruction(TX_CONFIG.computeUnits.transfer),
+    buildPriorityFeeInstruction(priorityFee),
+    buildTokenTransferInstruction(fromWallet, toWallet, mint, amount),
+  ];
 
-    const transaction = {
-        id: txId,
-        type: 'transfer',
-        wallet: fromWallet,
-        toWallet,
-        mint,
-        amount,
-        instructions,
-        priorityFee,
-        computeUnits: TX_CONFIG.computeUnits.transfer,
-        estimatedFee: calculateEstimatedFee(priorityFee, TX_CONFIG.computeUnits.transfer),
-        createdAt: Date.now(),
-        expiresAt: Date.now() + TX_CONFIG.maxAge,
-        status: 'pending'
-    };
+  const transaction = {
+    id: txId,
+    type: 'transfer',
+    wallet: fromWallet,
+    toWallet,
+    mint,
+    amount,
+    instructions,
+    priorityFee,
+    computeUnits: TX_CONFIG.computeUnits.transfer,
+    estimatedFee: calculateEstimatedFee(priorityFee, TX_CONFIG.computeUnits.transfer),
+    createdAt: Date.now(),
+    expiresAt: Date.now() + TX_CONFIG.maxAge,
+    status: 'pending',
+  };
 
-    pendingTransactions.set(txId, transaction);
+  pendingTransactions.set(txId, transaction);
 
-    return {
-        transactionId: txId,
-        instructions: serializeInstructions(instructions),
-        message: buildTransactionMessage(instructions, fromWallet),
-        priorityFee,
-        estimatedFee: transaction.estimatedFee,
-        expiresAt: transaction.expiresAt
-    };
+  return {
+    transactionId: txId,
+    instructions: serializeInstructions(instructions),
+    message: buildTransactionMessage(instructions, fromWallet),
+    priorityFee,
+    estimatedFee: transaction.estimatedFee,
+    expiresAt: transaction.expiresAt,
+  };
 }
 
 // ============================================
@@ -188,13 +183,13 @@ async function buildTransferTransaction(fromWallet, toWallet, mint, amount, opti
  * @returns {Object}
  */
 function buildComputeBudgetInstruction(units) {
-    return {
-        programId: TX_CONFIG.programs.computeBudget,
-        type: 'setComputeUnitLimit',
-        data: {
-            units: Math.min(units, 1400000)  // Max 1.4M units
-        }
-    };
+  return {
+    programId: TX_CONFIG.programs.computeBudget,
+    type: 'setComputeUnitLimit',
+    data: {
+      units: Math.min(units, 1400000), // Max 1.4M units
+    },
+  };
 }
 
 /**
@@ -203,13 +198,13 @@ function buildComputeBudgetInstruction(units) {
  * @returns {Object}
  */
 function buildPriorityFeeInstruction(microLamports) {
-    return {
-        programId: TX_CONFIG.programs.computeBudget,
-        type: 'setComputeUnitPrice',
-        data: {
-            microLamports: Math.min(microLamports, TX_CONFIG.priorityFee.max)
-        }
-    };
+  return {
+    programId: TX_CONFIG.programs.computeBudget,
+    type: 'setComputeUnitPrice',
+    data: {
+      microLamports: Math.min(microLamports, TX_CONFIG.priorityFee.max),
+    },
+  };
 }
 
 /**
@@ -221,18 +216,18 @@ function buildPriorityFeeInstruction(microLamports) {
  * @returns {Object}
  */
 function buildTokenTransferInstruction(from, to, mint, amount) {
-    return {
-        programId: TX_CONFIG.programs.token,
-        type: 'transferChecked',
-        data: {
-            source: from,
-            destination: to,
-            mint,
-            amount,
-            decimals: 6,  // ASDF has 6 decimals
-            authority: from
-        }
-    };
+  return {
+    programId: TX_CONFIG.programs.token,
+    type: 'transferChecked',
+    data: {
+      source: from,
+      destination: to,
+      mint,
+      amount,
+      decimals: 6, // ASDF has 6 decimals
+      authority: from,
+    },
+  };
 }
 
 // ============================================
@@ -246,48 +241,45 @@ function buildTokenTransferInstruction(from, to, mint, amount) {
  * @returns {Promise<number>}
  */
 async function calculatePriorityFee(txType, priorityLevel = 'medium') {
-    try {
-        // Get network estimate from Helius
-        const networkFee = await getPriorityFeeEstimate();
+  try {
+    // Get network estimate from Helius
+    const networkFee = await getPriorityFeeEstimate();
 
-        // Apply transaction type multiplier
-        let multiplier = 1;
-        switch (txType) {
-            case 'burn':
-                multiplier = TX_CONFIG.priorityFee.burnMultiplier;
-                break;
-            case 'swap':
-                multiplier = 2;
-                break;
-            case 'nftTransfer':
-                multiplier = 1.5;
-                break;
-        }
-
-        // Apply priority level multiplier
-        switch (priorityLevel) {
-            case 'low':
-                multiplier *= 0.5;
-                break;
-            case 'high':
-                multiplier *= 2;
-                break;
-            case 'urgent':
-                multiplier *= 3;
-                break;
-        }
-
-        const fee = Math.floor(networkFee * multiplier);
-
-        // Clamp to min/max
-        return Math.max(
-            TX_CONFIG.priorityFee.min,
-            Math.min(fee, TX_CONFIG.priorityFee.max)
-        );
-    } catch (error) {
-        console.warn('[Transactions] Priority fee estimation failed:', error.message);
-        return TX_CONFIG.priorityFee.default;
+    // Apply transaction type multiplier
+    let multiplier = 1;
+    switch (txType) {
+      case 'burn':
+        multiplier = TX_CONFIG.priorityFee.burnMultiplier;
+        break;
+      case 'swap':
+        multiplier = 2;
+        break;
+      case 'nftTransfer':
+        multiplier = 1.5;
+        break;
     }
+
+    // Apply priority level multiplier
+    switch (priorityLevel) {
+      case 'low':
+        multiplier *= 0.5;
+        break;
+      case 'high':
+        multiplier *= 2;
+        break;
+      case 'urgent':
+        multiplier *= 3;
+        break;
+    }
+
+    const fee = Math.floor(networkFee * multiplier);
+
+    // Clamp to min/max
+    return Math.max(TX_CONFIG.priorityFee.min, Math.min(fee, TX_CONFIG.priorityFee.max));
+  } catch (error) {
+    console.warn('[Transactions] Priority fee estimation failed:', error.message);
+    return TX_CONFIG.priorityFee.default;
+  }
 }
 
 /**
@@ -297,20 +289,20 @@ async function calculatePriorityFee(txType, priorityLevel = 'medium') {
  * @returns {Object}
  */
 function calculateEstimatedFee(priorityFee, computeUnits) {
-    // Priority fee cost
-    const priorityCost = (priorityFee * computeUnits) / 1e15;  // Convert to SOL
+  // Priority fee cost
+  const priorityCost = (priorityFee * computeUnits) / 1e15; // Convert to SOL
 
-    // Base fee (5000 lamports per signature)
-    const baseFee = 5000 / 1e9;
+  // Base fee (5000 lamports per signature)
+  const baseFee = 5000 / 1e9;
 
-    const total = priorityCost + baseFee;
+  const total = priorityCost + baseFee;
 
-    return {
-        priorityFeeSol: priorityCost.toFixed(9),
-        baseFeeSol: baseFee.toFixed(9),
-        totalSol: total.toFixed(9),
-        totalLamports: Math.ceil(total * 1e9)
-    };
+  return {
+    priorityFeeSol: priorityCost.toFixed(9),
+    baseFeeSol: baseFee.toFixed(9),
+    totalSol: total.toFixed(9),
+    totalLamports: Math.ceil(total * 1e9),
+  };
 }
 
 // ============================================
@@ -325,51 +317,51 @@ function calculateEstimatedFee(priorityFee, computeUnits) {
  * @returns {{valid: boolean, error?: string}}
  */
 function verifyTransaction(transactionId, signature, wallet) {
-    const pending = pendingTransactions.get(transactionId);
+  const pending = pendingTransactions.get(transactionId);
 
-    if (!pending) {
-        return { valid: false, error: 'Transaction not found or expired' };
-    }
+  if (!pending) {
+    return { valid: false, error: 'Transaction not found or expired' };
+  }
 
-    if (pending.wallet !== wallet) {
-        logAudit('transaction_wallet_mismatch', {
-            txId: transactionId,
-            expected: pending.wallet.slice(0, 8) + '...',
-            received: wallet.slice(0, 8) + '...'
-        });
-        return { valid: false, error: 'Wallet mismatch' };
-    }
-
-    if (Date.now() > pending.expiresAt) {
-        pendingTransactions.delete(transactionId);
-        return { valid: false, error: 'Transaction expired' };
-    }
-
-    // Validate signature format (base58, 64+ chars)
-    if (!signature || !/^[1-9A-HJ-NP-Za-km-z]{64,}$/.test(signature)) {
-        return { valid: false, error: 'Invalid signature format' };
-    }
-
-    // Mark as verified
-    pending.status = 'verified';
-    pending.signature = signature;
-    pending.verifiedAt = Date.now();
-
-    logAudit('transaction_verified', {
-        txId: transactionId,
-        type: pending.type,
-        signature: signature.slice(0, 16) + '...'
+  if (pending.wallet !== wallet) {
+    logAudit('transaction_wallet_mismatch', {
+      txId: transactionId,
+      expected: pending.wallet.slice(0, 8) + '...',
+      received: wallet.slice(0, 8) + '...',
     });
+    return { valid: false, error: 'Wallet mismatch' };
+  }
 
-    return {
-        valid: true,
-        transaction: {
-            id: transactionId,
-            type: pending.type,
-            amount: pending.amount,
-            signature
-        }
-    };
+  if (Date.now() > pending.expiresAt) {
+    pendingTransactions.delete(transactionId);
+    return { valid: false, error: 'Transaction expired' };
+  }
+
+  // Validate signature format (base58, 64+ chars)
+  if (!signature || !/^[1-9A-HJ-NP-Za-km-z]{64,}$/.test(signature)) {
+    return { valid: false, error: 'Invalid signature format' };
+  }
+
+  // Mark as verified
+  pending.status = 'verified';
+  pending.signature = signature;
+  pending.verifiedAt = Date.now();
+
+  logAudit('transaction_verified', {
+    txId: transactionId,
+    type: pending.type,
+    signature: signature.slice(0, 16) + '...',
+  });
+
+  return {
+    valid: true,
+    transaction: {
+      id: transactionId,
+      type: pending.type,
+      amount: pending.amount,
+      signature,
+    },
+  };
 }
 
 /**
@@ -379,37 +371,37 @@ function verifyTransaction(transactionId, signature, wallet) {
  * @returns {Object}
  */
 function completeTransaction(transactionId, confirmationData) {
-    const pending = pendingTransactions.get(transactionId);
+  const pending = pendingTransactions.get(transactionId);
 
-    if (!pending) {
-        return { success: false, error: 'Transaction not found' };
-    }
+  if (!pending) {
+    return { success: false, error: 'Transaction not found' };
+  }
 
-    pending.status = 'completed';
-    pending.completedAt = Date.now();
-    pending.confirmation = confirmationData;
+  pending.status = 'completed';
+  pending.completedAt = Date.now();
+  pending.confirmation = confirmationData;
 
-    logAudit('transaction_completed', {
-        txId: transactionId,
-        type: pending.type,
-        slot: confirmationData.slot
-    });
+  logAudit('transaction_completed', {
+    txId: transactionId,
+    type: pending.type,
+    slot: confirmationData.slot,
+  });
 
-    // Keep for a short time for reference, then cleanup
-    setTimeout(() => {
-        pendingTransactions.delete(transactionId);
-    }, 60 * 1000);
+  // Keep for a short time for reference, then cleanup
+  setTimeout(() => {
+    pendingTransactions.delete(transactionId);
+  }, 60 * 1000);
 
-    return {
-        success: true,
-        transaction: {
-            id: transactionId,
-            type: pending.type,
-            amount: pending.amount,
-            signature: pending.signature,
-            confirmation: confirmationData
-        }
-    };
+  return {
+    success: true,
+    transaction: {
+      id: transactionId,
+      type: pending.type,
+      amount: pending.amount,
+      signature: pending.signature,
+      confirmation: confirmationData,
+    },
+  };
 }
 
 // ============================================
@@ -421,7 +413,7 @@ function completeTransaction(transactionId, confirmationData) {
  * @returns {string}
  */
 function generateTransactionId() {
-    return `tx_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+  return `tx_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 }
 
 /**
@@ -430,11 +422,11 @@ function generateTransactionId() {
  * @returns {Array}
  */
 function serializeInstructions(instructions) {
-    return instructions.map(ix => ({
-        programId: ix.programId,
-        type: ix.type,
-        data: ix.data
-    }));
+  return instructions.map(ix => ({
+    programId: ix.programId,
+    type: ix.type,
+    data: ix.data,
+  }));
 }
 
 /**
@@ -444,12 +436,12 @@ function serializeInstructions(instructions) {
  * @returns {Object}
  */
 function buildTransactionMessage(instructions, feePayer) {
-    return {
-        feePayer,
-        instructions: serializeInstructions(instructions),
-        recentBlockhash: null,  // Client must fetch this
-        signers: [feePayer]
-    };
+  return {
+    feePayer,
+    instructions: serializeInstructions(instructions),
+    recentBlockhash: null, // Client must fetch this
+    signers: [feePayer],
+  };
 }
 
 /**
@@ -458,20 +450,20 @@ function buildTransactionMessage(instructions, feePayer) {
  * @returns {Object|null}
  */
 function getPendingTransaction(transactionId) {
-    const pending = pendingTransactions.get(transactionId);
-    if (!pending) return null;
+  const pending = pendingTransactions.get(transactionId);
+  if (!pending) return null;
 
-    // Don't expose sensitive data
-    return {
-        id: pending.id,
-        type: pending.type,
-        wallet: pending.wallet.slice(0, 4) + '...' + pending.wallet.slice(-4),
-        amount: pending.amount,
-        status: pending.status,
-        createdAt: pending.createdAt,
-        expiresAt: pending.expiresAt,
-        estimatedFee: pending.estimatedFee
-    };
+  // Don't expose sensitive data
+  return {
+    id: pending.id,
+    type: pending.type,
+    wallet: pending.wallet.slice(0, 4) + '...' + pending.wallet.slice(-4),
+    amount: pending.amount,
+    status: pending.status,
+    createdAt: pending.createdAt,
+    expiresAt: pending.expiresAt,
+    estimatedFee: pending.estimatedFee,
+  };
 }
 
 // ============================================
@@ -480,19 +472,19 @@ function getPendingTransaction(transactionId) {
 
 // Cleanup expired pending transactions every minute
 setInterval(() => {
-    const now = Date.now();
-    let cleaned = 0;
+  const now = Date.now();
+  let cleaned = 0;
 
-    for (const [txId, tx] of pendingTransactions.entries()) {
-        if (now > tx.expiresAt && tx.status === 'pending') {
-            pendingTransactions.delete(txId);
-            cleaned++;
-        }
+  for (const [txId, tx] of pendingTransactions.entries()) {
+    if (now > tx.expiresAt && tx.status === 'pending') {
+      pendingTransactions.delete(txId);
+      cleaned++;
     }
+  }
 
-    if (cleaned > 0) {
-        console.log(`[Transactions] Cleaned ${cleaned} expired transactions`);
-    }
+  if (cleaned > 0) {
+    console.log(`[Transactions] Cleaned ${cleaned} expired transactions`);
+  }
 }, 60 * 1000);
 
 // ============================================
@@ -504,44 +496,44 @@ setInterval(() => {
  * @returns {Object}
  */
 function getTransactionMetrics() {
-    const pending = Array.from(pendingTransactions.values());
+  const pending = Array.from(pendingTransactions.values());
 
-    const byType = {};
-    const byStatus = {};
+  const byType = {};
+  const byStatus = {};
 
-    for (const tx of pending) {
-        byType[tx.type] = (byType[tx.type] || 0) + 1;
-        byStatus[tx.status] = (byStatus[tx.status] || 0) + 1;
-    }
+  for (const tx of pending) {
+    byType[tx.type] = (byType[tx.type] || 0) + 1;
+    byStatus[tx.status] = (byStatus[tx.status] || 0) + 1;
+  }
 
-    return {
-        pendingCount: pending.length,
-        byType,
-        byStatus,
-        config: {
-            maxAge: TX_CONFIG.maxAge,
-            priorityFee: TX_CONFIG.priorityFee
-        }
-    };
+  return {
+    pendingCount: pending.length,
+    byType,
+    byStatus,
+    config: {
+      maxAge: TX_CONFIG.maxAge,
+      priorityFee: TX_CONFIG.priorityFee,
+    },
+  };
 }
 
 module.exports = {
-    // Transaction builders
-    buildBurnTransaction,
-    buildTransferTransaction,
+  // Transaction builders
+  buildBurnTransaction,
+  buildTransferTransaction,
 
-    // Priority fees
-    calculatePriorityFee,
-    calculateEstimatedFee,
+  // Priority fees
+  calculatePriorityFee,
+  calculateEstimatedFee,
 
-    // Verification
-    verifyTransaction,
-    completeTransaction,
-    getPendingTransaction,
+  // Verification
+  verifyTransaction,
+  completeTransaction,
+  getPendingTransaction,
 
-    // Metrics
-    getTransactionMetrics,
+  // Metrics
+  getTransactionMetrics,
 
-    // Config
-    TX_CONFIG
+  // Config
+  TX_CONFIG,
 };

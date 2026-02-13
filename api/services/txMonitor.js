@@ -21,58 +21,58 @@
 'use strict';
 
 const crypto = require('crypto');
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 const MONITOR_CONFIG = {
-    // Confirmation settings
-    defaultCommitment: 'confirmed',
-    finalizedCommitment: 'finalized',
+  // Confirmation settings
+  defaultCommitment: 'confirmed',
+  finalizedCommitment: 'finalized',
 
-    // Polling intervals
-    pollInterval: 2000,              // 2 seconds
-    maxPollDuration: 120000,         // 2 minutes max polling
+  // Polling intervals
+  pollInterval: 2000, // 2 seconds
+  maxPollDuration: 120000, // 2 minutes max polling
 
-    // Retry settings
-    maxRetries: 3,
-    retryDelay: 1000,
+  // Retry settings
+  maxRetries: 3,
+  retryDelay: 1000,
 
-    // Transaction expiry
-    transactionTTL: 300000,          // 5 minutes
-    blockhashTTL: 150,               // ~150 slots (~1 minute)
+  // Transaction expiry
+  transactionTTL: 300000, // 5 minutes
+  blockhashTTL: 150, // ~150 slots (~1 minute)
 
-    // History retention
-    historySize: 1000,
-    historyRetention: 24 * 60 * 60 * 1000,  // 24 hours
+  // History retention
+  historySize: 1000,
+  historyRetention: 24 * 60 * 60 * 1000, // 24 hours
 
-    // Batch settings
-    maxBatchSize: 100
+  // Batch settings
+  maxBatchSize: 100,
 };
 
 // Transaction states
 const TX_STATES = {
-    PENDING: 'pending',
-    SUBMITTED: 'submitted',
-    CONFIRMING: 'confirming',
-    CONFIRMED: 'confirmed',
-    FINALIZED: 'finalized',
-    FAILED: 'failed',
-    EXPIRED: 'expired',
-    CANCELLED: 'cancelled'
+  PENDING: 'pending',
+  SUBMITTED: 'submitted',
+  CONFIRMING: 'confirming',
+  CONFIRMED: 'confirmed',
+  FINALIZED: 'finalized',
+  FAILED: 'failed',
+  EXPIRED: 'expired',
+  CANCELLED: 'cancelled',
 };
 
 // Transaction types
 const TX_TYPES = {
-    TRANSFER: 'transfer',
-    BURN: 'burn',
-    SWAP: 'swap',
-    NFT_TRANSFER: 'nft_transfer',
-    STAKE: 'stake',
-    UNSTAKE: 'unstake',
-    CUSTOM: 'custom'
+  TRANSFER: 'transfer',
+  BURN: 'burn',
+  SWAP: 'swap',
+  NFT_TRANSFER: 'nft_transfer',
+  STAKE: 'stake',
+  UNSTAKE: 'unstake',
+  CUSTOM: 'custom',
 };
 
 // ============================================
@@ -90,13 +90,13 @@ const transactionWatchers = new Map();
 
 // Global stats
 const monitorStats = {
-    totalTracked: 0,
-    confirmed: 0,
-    finalized: 0,
-    failed: 0,
-    expired: 0,
-    avgConfirmTime: 0,
-    totalConfirmTime: 0
+  totalTracked: 0,
+  confirmed: 0,
+  finalized: 0,
+  failed: 0,
+  expired: 0,
+  avgConfirmTime: 0,
+  totalConfirmTime: 0,
 };
 
 // Cleanup timer
@@ -113,69 +113,69 @@ let cleanupTimer = null;
  * @returns {Object} Transaction tracker
  */
 function trackTransaction(signature, options = {}) {
-    const {
-        wallet,
-        type = TX_TYPES.CUSTOM,
-        amount = null,
-        metadata = {},
-        onConfirmed = null,
-        onFinalized = null,
-        onFailed = null,
-        commitment = MONITOR_CONFIG.defaultCommitment
-    } = options;
+  const {
+    wallet,
+    type = TX_TYPES.CUSTOM,
+    amount = null,
+    metadata = {},
+    onConfirmed = null,
+    onFinalized = null,
+    onFailed = null,
+    commitment = MONITOR_CONFIG.defaultCommitment,
+  } = options;
 
-    // Validate signature format (base58, 87-88 chars)
-    if (!isValidSignature(signature)) {
-        throw new Error('Invalid transaction signature format');
-    }
+  // Validate signature format (base58, 87-88 chars)
+  if (!isValidSignature(signature)) {
+    throw new Error('Invalid transaction signature format');
+  }
 
-    // Check if already tracking
-    if (activeTransactions.has(signature)) {
-        return activeTransactions.get(signature);
-    }
+  // Check if already tracking
+  if (activeTransactions.has(signature)) {
+    return activeTransactions.get(signature);
+  }
 
-    const tracker = {
-        signature,
-        wallet,
-        type,
-        amount,
-        metadata,
-        state: TX_STATES.SUBMITTED,
-        commitment,
-        createdAt: Date.now(),
-        submittedAt: Date.now(),
-        confirmedAt: null,
-        finalizedAt: null,
-        slot: null,
-        blockTime: null,
-        fee: null,
-        error: null,
-        attempts: 0,
-        lastCheck: null
-    };
+  const tracker = {
+    signature,
+    wallet,
+    type,
+    amount,
+    metadata,
+    state: TX_STATES.SUBMITTED,
+    commitment,
+    createdAt: Date.now(),
+    submittedAt: Date.now(),
+    confirmedAt: null,
+    finalizedAt: null,
+    slot: null,
+    blockTime: null,
+    fee: null,
+    error: null,
+    attempts: 0,
+    lastCheck: null,
+  };
 
-    activeTransactions.set(signature, tracker);
-    monitorStats.totalTracked++;
+  activeTransactions.set(signature, tracker);
+  monitorStats.totalTracked++;
 
-    // Register callbacks
-    if (onConfirmed || onFinalized || onFailed) {
-        transactionWatchers.set(signature, {
-            onConfirmed,
-            onFinalized,
-            onFailed
-        });
-    }
-
-    logAudit('tx_tracking_started', {
-        signature: signature.slice(0, 16) + '...',
-        type,
-        wallet: wallet?.slice(0, 8) + '...'
+  // Register callbacks
+  if (onConfirmed || onFinalized || onFailed) {
+    transactionWatchers.set(signature, {
+      onConfirmed,
+      onFinalized,
+      onFailed,
     });
+  }
 
-    // Start polling
-    pollTransaction(signature);
+  logAudit('tx_tracking_started', {
+    signature: signature.slice(0, 16) + '...',
+    type,
+    wallet: wallet?.slice(0, 8) + '...',
+  });
 
-    return tracker;
+  // Start polling
+  pollTransaction(signature);
+
+  return tracker;
 }
 
 /**
@@ -184,16 +184,16 @@ function trackTransaction(signature, options = {}) {
  * @returns {boolean}
  */
 function stopTracking(signature) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return false;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return false;
 
-    // Move to history
-    addToHistory(tracker);
+  // Move to history
+  addToHistory(tracker);
 
-    activeTransactions.delete(signature);
-    transactionWatchers.delete(signature);
+  activeTransactions.delete(signature);
+  transactionWatchers.delete(signature);
 
-    return true;
+  return true;
 }
 
 /**
@@ -202,25 +202,25 @@ function stopTracking(signature) {
  * @returns {Object|null}
  */
 function getTransactionStatus(signature) {
-    // Check active first
-    const active = activeTransactions.get(signature);
-    if (active) {
-        return {
-            ...active,
-            active: true
-        };
-    }
+  // Check active first
+  const active = activeTransactions.get(signature);
+  if (active) {
+    return {
+      ...active,
+      active: true,
+    };
+  }
 
-    // Check history
-    const historical = transactionHistory.find(tx => tx.signature === signature);
-    if (historical) {
-        return {
-            ...historical,
-            active: false
-        };
-    }
+  // Check history
+  const historical = transactionHistory.find(tx => tx.signature === signature);
+  if (historical) {
+    return {
+      ...historical,
+      active: false,
+    };
+  }
 
-    return null;
+  return null;
 }
 
 // ============================================
@@ -232,58 +232,58 @@ function getTransactionStatus(signature) {
  * @param {string} signature - Transaction signature
  */
 async function pollTransaction(signature) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return;
 
-    const startTime = Date.now();
+  const startTime = Date.now();
 
-    while (activeTransactions.has(signature)) {
-        try {
-            tracker.attempts++;
-            tracker.lastCheck = Date.now();
+  while (activeTransactions.has(signature)) {
+    try {
+      tracker.attempts++;
+      tracker.lastCheck = Date.now();
 
-            // Check if expired
-            if (Date.now() - tracker.createdAt > MONITOR_CONFIG.maxPollDuration) {
-                await handleTransactionExpired(signature);
-                return;
-            }
+      // Check if expired
+      if (Date.now() - tracker.createdAt > MONITOR_CONFIG.maxPollDuration) {
+        await handleTransactionExpired(signature);
+        return;
+      }
 
-            // Fetch transaction status
-            const status = await fetchTransactionStatus(signature, tracker.commitment);
+      // Fetch transaction status
+      const status = await fetchTransactionStatus(signature, tracker.commitment);
 
-            if (status.confirmed) {
-                await handleTransactionConfirmed(signature, status);
+      if (status.confirmed) {
+        await handleTransactionConfirmed(signature, status);
 
-                // If we need finalized, continue polling
-                if (tracker.commitment === MONITOR_CONFIG.finalizedCommitment ||
-                    transactionWatchers.get(signature)?.onFinalized) {
-
-                    // Poll for finalized
-                    await pollForFinalized(signature);
-                }
-
-                return;
-            }
-
-            if (status.error) {
-                await handleTransactionFailed(signature, status.error);
-                return;
-            }
-
-            // Wait before next poll
-            await sleep(MONITOR_CONFIG.pollInterval);
-
-        } catch (error) {
-            console.error(`[TxMonitor] Poll error for ${signature.slice(0, 16)}:`, error.message);
-
-            if (tracker.attempts >= MONITOR_CONFIG.maxRetries * 10) {
-                await handleTransactionFailed(signature, error.message);
-                return;
-            }
-
-            await sleep(MONITOR_CONFIG.pollInterval * 2);
+        // If we need finalized, continue polling
+        if (
+          tracker.commitment === MONITOR_CONFIG.finalizedCommitment ||
+          transactionWatchers.get(signature)?.onFinalized
+        ) {
+          // Poll for finalized
+          await pollForFinalized(signature);
         }
+
+        return;
+      }
+
+      if (status.error) {
+        await handleTransactionFailed(signature, status.error);
+        return;
+      }
+
+      // Wait before next poll
+      await sleep(MONITOR_CONFIG.pollInterval);
+    } catch (error) {
+      console.error(`[TxMonitor] Poll error for ${signature.slice(0, 16)}:`, error.message);
+
+      if (tracker.attempts >= MONITOR_CONFIG.maxRetries * 10) {
+        await handleTransactionFailed(signature, error.message);
+        return;
+      }
+
+      await sleep(MONITOR_CONFIG.pollInterval * 2);
     }
+  }
 }
 
 /**
@@ -291,29 +291,28 @@ async function pollTransaction(signature) {
  * @param {string} signature - Transaction signature
  */
 async function pollForFinalized(signature) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker || tracker.state === TX_STATES.FINALIZED) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker || tracker.state === TX_STATES.FINALIZED) return;
 
-    const maxAttempts = 30;  // ~60 seconds
-    let attempts = 0;
+  const maxAttempts = 30; // ~60 seconds
+  let attempts = 0;
 
-    while (attempts < maxAttempts && activeTransactions.has(signature)) {
-        try {
-            const status = await fetchTransactionStatus(signature, 'finalized');
+  while (attempts < maxAttempts && activeTransactions.has(signature)) {
+    try {
+      const status = await fetchTransactionStatus(signature, 'finalized');
 
-            if (status.confirmed) {
-                await handleTransactionFinalized(signature, status);
-                return;
-            }
+      if (status.confirmed) {
+        await handleTransactionFinalized(signature, status);
+        return;
+      }
 
-            attempts++;
-            await sleep(MONITOR_CONFIG.pollInterval);
-
-        } catch (error) {
-            attempts++;
-            await sleep(MONITOR_CONFIG.pollInterval);
-        }
+      attempts++;
+      await sleep(MONITOR_CONFIG.pollInterval);
+    } catch (error) {
+      attempts++;
+      await sleep(MONITOR_CONFIG.pollInterval);
     }
+  }
 }
 
 /**
@@ -323,61 +322,61 @@ async function pollForFinalized(signature) {
  * @returns {Promise<Object>}
  */
 async function fetchTransactionStatus(signature, commitment = 'confirmed') {
-    // Use circuit breaker for resilience
-    let circuitWrap;
-    try {
-        const circuitBreaker = require('./circuitbreaker');
-        circuitWrap = circuitBreaker.wrap;
-    } catch {
-        circuitWrap = (name, fn) => fn();
+  // Use circuit breaker for resilience
+  let circuitWrap;
+  try {
+    const circuitBreaker = require('./circuitbreaker');
+    circuitWrap = circuitBreaker.wrap;
+  } catch {
+    circuitWrap = (name, fn) => fn();
+  }
+
+  return circuitWrap('solana-rpc', async () => {
+    const rpcUrl = process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
+
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getSignatureStatuses',
+        params: [[signature], { searchTransactionHistory: true }],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`RPC error: ${response.status}`);
     }
 
-    return circuitWrap('solana-rpc', async () => {
-        const rpcUrl = process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
+    const data = await response.json();
 
-        const response = await fetch(rpcUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'getSignatureStatuses',
-                params: [[signature], { searchTransactionHistory: true }]
-            })
-        });
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
 
-        if (!response.ok) {
-            throw new Error(`RPC error: ${response.status}`);
-        }
+    const status = data.result?.value?.[0];
 
-        const data = await response.json();
+    if (!status) {
+      return { confirmed: false, pending: true };
+    }
 
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
+    if (status.err) {
+      return {
+        confirmed: false,
+        error: JSON.stringify(status.err),
+      };
+    }
 
-        const status = data.result?.value?.[0];
+    const confirmationStatus = status.confirmationStatus;
 
-        if (!status) {
-            return { confirmed: false, pending: true };
-        }
-
-        if (status.err) {
-            return {
-                confirmed: false,
-                error: JSON.stringify(status.err)
-            };
-        }
-
-        const confirmationStatus = status.confirmationStatus;
-
-        return {
-            confirmed: confirmationStatus === 'confirmed' || confirmationStatus === 'finalized',
-            finalized: confirmationStatus === 'finalized',
-            slot: status.slot,
-            confirmations: status.confirmations
-        };
-    });
+    return {
+      confirmed: confirmationStatus === 'confirmed' || confirmationStatus === 'finalized',
+      finalized: confirmationStatus === 'finalized',
+      slot: status.slot,
+      confirmations: status.confirmations,
+    };
+  });
 }
 
 // ============================================
@@ -390,36 +389,36 @@ async function fetchTransactionStatus(signature, commitment = 'confirmed') {
  * @param {Object} status - Transaction status
  */
 async function handleTransactionConfirmed(signature, status) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return;
 
-    tracker.state = TX_STATES.CONFIRMED;
-    tracker.confirmedAt = Date.now();
-    tracker.slot = status.slot;
+  tracker.state = TX_STATES.CONFIRMED;
+  tracker.confirmedAt = Date.now();
+  tracker.slot = status.slot;
 
-    const confirmTime = tracker.confirmedAt - tracker.submittedAt;
-    monitorStats.confirmed++;
-    monitorStats.totalConfirmTime += confirmTime;
-    monitorStats.avgConfirmTime = monitorStats.totalConfirmTime / monitorStats.confirmed;
+  const confirmTime = tracker.confirmedAt - tracker.submittedAt;
+  monitorStats.confirmed++;
+  monitorStats.totalConfirmTime += confirmTime;
+  monitorStats.avgConfirmTime = monitorStats.totalConfirmTime / monitorStats.confirmed;
 
-    logAudit('tx_confirmed', {
-        signature: signature.slice(0, 16) + '...',
-        slot: status.slot,
-        confirmTime
-    });
+  logAudit('tx_confirmed', {
+    signature: signature.slice(0, 16) + '...',
+    slot: status.slot,
+    confirmTime,
+  });
 
-    // Call watcher
-    const watcher = transactionWatchers.get(signature);
-    if (watcher?.onConfirmed) {
-        try {
-            await watcher.onConfirmed(tracker);
-        } catch (error) {
-            console.error('[TxMonitor] onConfirmed callback error:', error.message);
-        }
+  // Call watcher
+  const watcher = transactionWatchers.get(signature);
+  if (watcher?.onConfirmed) {
+    try {
+      await watcher.onConfirmed(tracker);
+    } catch (error) {
+      console.error('[TxMonitor] onConfirmed callback error:', error.message);
     }
+  }
 
-    // Emit event
-    emitTransactionEvent('confirmed', tracker);
+  // Emit event
+  emitTransactionEvent('confirmed', tracker);
 }
 
 /**
@@ -428,34 +427,34 @@ async function handleTransactionConfirmed(signature, status) {
  * @param {Object} status - Transaction status
  */
 async function handleTransactionFinalized(signature, status) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return;
 
-    tracker.state = TX_STATES.FINALIZED;
-    tracker.finalizedAt = Date.now();
+  tracker.state = TX_STATES.FINALIZED;
+  tracker.finalizedAt = Date.now();
 
-    monitorStats.finalized++;
+  monitorStats.finalized++;
 
-    logAudit('tx_finalized', {
-        signature: signature.slice(0, 16) + '...',
-        slot: status.slot
-    });
+  logAudit('tx_finalized', {
+    signature: signature.slice(0, 16) + '...',
+    slot: status.slot,
+  });
 
-    // Call watcher
-    const watcher = transactionWatchers.get(signature);
-    if (watcher?.onFinalized) {
-        try {
-            await watcher.onFinalized(tracker);
-        } catch (error) {
-            console.error('[TxMonitor] onFinalized callback error:', error.message);
-        }
+  // Call watcher
+  const watcher = transactionWatchers.get(signature);
+  if (watcher?.onFinalized) {
+    try {
+      await watcher.onFinalized(tracker);
+    } catch (error) {
+      console.error('[TxMonitor] onFinalized callback error:', error.message);
     }
+  }
 
-    // Move to history
-    stopTracking(signature);
+  // Move to history
+  stopTracking(signature);
 
-    // Emit event
-    emitTransactionEvent('finalized', tracker);
+  // Emit event
+  emitTransactionEvent('finalized', tracker);
 }
 
 /**
@@ -464,34 +463,34 @@ async function handleTransactionFinalized(signature, status) {
  * @param {string} error - Error message
  */
 async function handleTransactionFailed(signature, error) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return;
 
-    tracker.state = TX_STATES.FAILED;
-    tracker.error = error;
+  tracker.state = TX_STATES.FAILED;
+  tracker.error = error;
 
-    monitorStats.failed++;
+  monitorStats.failed++;
 
-    logAudit('tx_failed', {
-        signature: signature.slice(0, 16) + '...',
-        error
-    });
+  logAudit('tx_failed', {
+    signature: signature.slice(0, 16) + '...',
+    error,
+  });
 
-    // Call watcher
-    const watcher = transactionWatchers.get(signature);
-    if (watcher?.onFailed) {
-        try {
-            await watcher.onFailed(tracker, error);
-        } catch (err) {
-            console.error('[TxMonitor] onFailed callback error:', err.message);
-        }
+  // Call watcher
+  const watcher = transactionWatchers.get(signature);
+  if (watcher?.onFailed) {
+    try {
+      await watcher.onFailed(tracker, error);
+    } catch (err) {
+      console.error('[TxMonitor] onFailed callback error:', err.message);
     }
+  }
 
-    // Move to history
-    stopTracking(signature);
+  // Move to history
+  stopTracking(signature);
 
-    // Emit event
-    emitTransactionEvent('failed', tracker);
+  // Emit event
+  emitTransactionEvent('failed', tracker);
 }
 
 /**
@@ -499,33 +498,33 @@ async function handleTransactionFailed(signature, error) {
  * @param {string} signature - Transaction signature
  */
 async function handleTransactionExpired(signature) {
-    const tracker = activeTransactions.get(signature);
-    if (!tracker) return;
+  const tracker = activeTransactions.get(signature);
+  if (!tracker) return;
 
-    tracker.state = TX_STATES.EXPIRED;
-    tracker.error = 'Transaction monitoring timeout';
+  tracker.state = TX_STATES.EXPIRED;
+  tracker.error = 'Transaction monitoring timeout';
 
-    monitorStats.expired++;
+  monitorStats.expired++;
 
-    logAudit('tx_expired', {
-        signature: signature.slice(0, 16) + '...'
-    });
+  logAudit('tx_expired', {
+    signature: signature.slice(0, 16) + '...',
+  });
 
-    // Call watcher with failed
-    const watcher = transactionWatchers.get(signature);
-    if (watcher?.onFailed) {
-        try {
-            await watcher.onFailed(tracker, 'Monitoring timeout');
-        } catch (err) {
-            console.error('[TxMonitor] onFailed callback error:', err.message);
-        }
+  // Call watcher with failed
+  const watcher = transactionWatchers.get(signature);
+  if (watcher?.onFailed) {
+    try {
+      await watcher.onFailed(tracker, 'Monitoring timeout');
+    } catch (err) {
+      console.error('[TxMonitor] onFailed callback error:', err.message);
     }
+  }
 
-    // Move to history
-    stopTracking(signature);
+  // Move to history
+  stopTracking(signature);
 
-    // Emit event
-    emitTransactionEvent('expired', tracker);
+  // Emit event
+  emitTransactionEvent('expired', tracker);
 }
 
 // ============================================
@@ -538,58 +537,55 @@ async function handleTransactionExpired(signature) {
  * @returns {Promise<Map>}
  */
 async function getBatchStatus(signatures) {
-    const results = new Map();
+  const results = new Map();
 
-    // Limit batch size
-    const batch = signatures.slice(0, MONITOR_CONFIG.maxBatchSize);
+  // Limit batch size
+  const batch = signatures.slice(0, MONITOR_CONFIG.maxBatchSize);
 
-    // Check active and history first
-    for (const sig of batch) {
-        const status = getTransactionStatus(sig);
-        if (status) {
-            results.set(sig, status);
-        }
+  // Check active and history first
+  for (const sig of batch) {
+    const status = getTransactionStatus(sig);
+    if (status) {
+      results.set(sig, status);
     }
+  }
 
-    // Fetch unknown from RPC
-    const unknown = batch.filter(sig => !results.has(sig));
+  // Fetch unknown from RPC
+  const unknown = batch.filter(sig => !results.has(sig));
 
-    if (unknown.length > 0) {
-        try {
-            const rpcUrl = process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
+  if (unknown.length > 0) {
+    try {
+      const rpcUrl = process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
 
-            const response = await fetch(rpcUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getSignatureStatuses',
-                    params: [unknown, { searchTransactionHistory: true }]
-                })
-            });
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getSignatureStatuses',
+          params: [unknown, { searchTransactionHistory: true }],
+        }),
+      });
 
-            const data = await response.json();
-            const statuses = data.result?.value || [];
+      const data = await response.json();
+      const statuses = data.result?.value || [];
 
-            for (let i = 0; i < unknown.length; i++) {
-                const status = statuses[i];
-                results.set(unknown[i], {
-                    signature: unknown[i],
-                    state: status
-                        ? (status.err ? TX_STATES.FAILED : TX_STATES.CONFIRMED)
-                        : TX_STATES.PENDING,
-                    slot: status?.slot,
-                    error: status?.err ? JSON.stringify(status.err) : null
-                });
-            }
-
-        } catch (error) {
-            console.error('[TxMonitor] Batch status error:', error.message);
-        }
+      for (let i = 0; i < unknown.length; i++) {
+        const status = statuses[i];
+        results.set(unknown[i], {
+          signature: unknown[i],
+          state: status ? (status.err ? TX_STATES.FAILED : TX_STATES.CONFIRMED) : TX_STATES.PENDING,
+          slot: status?.slot,
+          error: status?.err ? JSON.stringify(status.err) : null,
+        });
+      }
+    } catch (error) {
+      console.error('[TxMonitor] Batch status error:', error.message);
     }
+  }
 
-    return results;
+  return results;
 }
 
 /**
@@ -598,13 +594,13 @@ async function getBatchStatus(signatures) {
  * @returns {Array<Object>}
  */
 function trackBatch(transactions) {
-    return transactions.slice(0, MONITOR_CONFIG.maxBatchSize).map(({ signature, options }) => {
-        try {
-            return trackTransaction(signature, options);
-        } catch (error) {
-            return { signature, error: error.message };
-        }
-    });
+  return transactions.slice(0, MONITOR_CONFIG.maxBatchSize).map(({ signature, options }) => {
+    try {
+      return trackTransaction(signature, options);
+    } catch (error) {
+      return { signature, error: error.message };
+    }
+  });
 }
 
 // ============================================
@@ -616,15 +612,15 @@ function trackBatch(transactions) {
  * @param {Object} tracker - Transaction tracker
  */
 function addToHistory(tracker) {
-    transactionHistory.push({
-        ...tracker,
-        archivedAt: Date.now()
-    });
+  transactionHistory.push({
+    ...tracker,
+    archivedAt: Date.now(),
+  });
 
-    // Trim history
-    while (transactionHistory.length > MONITOR_CONFIG.historySize) {
-        transactionHistory.shift();
-    }
+  // Trim history
+  while (transactionHistory.length > MONITOR_CONFIG.historySize) {
+    transactionHistory.shift();
+  }
 }
 
 /**
@@ -633,31 +629,23 @@ function addToHistory(tracker) {
  * @returns {Array}
  */
 function getHistory(options = {}) {
-    const {
-        wallet = null,
-        type = null,
-        state = null,
-        limit = 50,
-        offset = 0
-    } = options;
+  const { wallet = null, type = null, state = null, limit = 50, offset = 0 } = options;
 
-    let filtered = transactionHistory;
+  let filtered = transactionHistory;
 
-    if (wallet) {
-        filtered = filtered.filter(tx => tx.wallet === wallet);
-    }
+  if (wallet) {
+    filtered = filtered.filter(tx => tx.wallet === wallet);
+  }
 
-    if (type) {
-        filtered = filtered.filter(tx => tx.type === type);
-    }
+  if (type) {
+    filtered = filtered.filter(tx => tx.type === type);
+  }
 
-    if (state) {
-        filtered = filtered.filter(tx => tx.state === state);
-    }
+  if (state) {
+    filtered = filtered.filter(tx => tx.state === state);
+  }
 
-    return filtered
-        .slice(-limit - offset, filtered.length - offset)
-        .reverse();
+  return filtered.slice(-limit - offset, filtered.length - offset).reverse();
 }
 
 /**
@@ -667,7 +655,7 @@ function getHistory(options = {}) {
  * @returns {Array}
  */
 function getWalletHistory(wallet, limit = 50) {
-    return getHistory({ wallet, limit });
+  return getHistory({ wallet, limit });
 }
 
 // ============================================
@@ -680,18 +668,18 @@ function getWalletHistory(wallet, limit = 50) {
  * @param {Object} tracker - Transaction tracker
  */
 function emitTransactionEvent(event, tracker) {
-    try {
-        const eventBus = require('./eventBus');
-        eventBus.publish(`transaction.${event}`, {
-            signature: tracker.signature,
-            wallet: tracker.wallet,
-            type: tracker.type,
-            amount: tracker.amount,
-            state: tracker.state
-        });
-    } catch {
-        // Event bus not available
-    }
+  try {
+    const eventBus = require('./eventBus');
+    eventBus.publish(`transaction.${event}`, {
+      signature: tracker.signature,
+      wallet: tracker.wallet,
+      type: tracker.type,
+      amount: tracker.amount,
+      state: tracker.state,
+    });
+  } catch {
+    // Event bus not available
+  }
 }
 
 // ============================================
@@ -704,13 +692,13 @@ function emitTransactionEvent(event, tracker) {
  * @returns {boolean}
  */
 function isValidSignature(signature) {
-    if (!signature || typeof signature !== 'string') {
-        return false;
-    }
+  if (!signature || typeof signature !== 'string') {
+    return false;
+  }
 
-    // Base58 characters, typically 87-88 characters
-    const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
-    return base58Regex.test(signature);
+  // Base58 characters, typically 87-88 characters
+  const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
+  return base58Regex.test(signature);
 }
 
 /**
@@ -719,7 +707,7 @@ function isValidSignature(signature) {
  * @returns {Promise<void>}
  */
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ============================================
@@ -730,41 +718,41 @@ function sleep(ms) {
  * Cleanup expired transactions and old history
  */
 function cleanup() {
-    const now = Date.now();
+  const now = Date.now();
 
-    // Cleanup old history
-    const cutoff = now - MONITOR_CONFIG.historyRetention;
-    const initialLength = transactionHistory.length;
+  // Cleanup old history
+  const cutoff = now - MONITOR_CONFIG.historyRetention;
+  const initialLength = transactionHistory.length;
 
-    while (transactionHistory.length > 0 && transactionHistory[0].archivedAt < cutoff) {
-        transactionHistory.shift();
-    }
+  while (transactionHistory.length > 0 && transactionHistory[0].archivedAt < cutoff) {
+    transactionHistory.shift();
+  }
 
-    const removed = initialLength - transactionHistory.length;
-    if (removed > 0) {
-        console.log(`[TxMonitor] Cleaned up ${removed} old history entries`);
-    }
+  const removed = initialLength - transactionHistory.length;
+  if (removed > 0) {
+    console.log(`[TxMonitor] Cleaned up ${removed} old history entries`);
+  }
 }
 
 /**
  * Start cleanup timer
  */
 function startCleanup() {
-    if (cleanupTimer) {
-        clearInterval(cleanupTimer);
-    }
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+  }
 
-    cleanupTimer = setInterval(cleanup, 60000);  // Every minute
+  cleanupTimer = setInterval(cleanup, 60000); // Every minute
 }
 
 /**
  * Stop cleanup timer
  */
 function stopCleanup() {
-    if (cleanupTimer) {
-        clearInterval(cleanupTimer);
-        cleanupTimer = null;
-    }
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = null;
+  }
 }
 
 // ============================================
@@ -776,13 +764,13 @@ function stopCleanup() {
  * @returns {Array}
  */
 function getActiveTransactions() {
-    return Array.from(activeTransactions.values()).map(tx => ({
-        signature: tx.signature.slice(0, 16) + '...',
-        type: tx.type,
-        state: tx.state,
-        age: Date.now() - tx.createdAt,
-        attempts: tx.attempts
-    }));
+  return Array.from(activeTransactions.values()).map(tx => ({
+    signature: tx.signature.slice(0, 16) + '...',
+    type: tx.type,
+    state: tx.state,
+    age: Date.now() - tx.createdAt,
+    attempts: tx.attempts,
+  }));
 }
 
 /**
@@ -790,23 +778,27 @@ function getActiveTransactions() {
  * @returns {Object}
  */
 function getStats() {
-    const stateDistribution = {};
-    for (const state of Object.values(TX_STATES)) {
-        stateDistribution[state] = transactionHistory.filter(tx => tx.state === state).length;
-    }
+  const stateDistribution = {};
+  for (const state of Object.values(TX_STATES)) {
+    stateDistribution[state] = transactionHistory.filter(tx => tx.state === state).length;
+  }
 
-    return {
-        ...monitorStats,
-        active: activeTransactions.size,
-        historySize: transactionHistory.length,
-        avgConfirmTime: monitorStats.avgConfirmTime
-            ? `${(monitorStats.avgConfirmTime / 1000).toFixed(2)}s`
-            : null,
-        successRate: monitorStats.totalTracked > 0
-            ? (((monitorStats.confirmed + monitorStats.finalized) / monitorStats.totalTracked) * 100).toFixed(2) + '%'
-            : '100%',
-        stateDistribution
-    };
+  return {
+    ...monitorStats,
+    active: activeTransactions.size,
+    historySize: transactionHistory.length,
+    avgConfirmTime: monitorStats.avgConfirmTime
+      ? `${(monitorStats.avgConfirmTime / 1000).toFixed(2)}s`
+      : null,
+    successRate:
+      monitorStats.totalTracked > 0
+        ? (
+            ((monitorStats.confirmed + monitorStats.finalized) / monitorStats.totalTracked) *
+            100
+          ).toFixed(2) + '%'
+        : '100%',
+    stateDistribution,
+  };
 }
 
 // ============================================
@@ -817,34 +809,34 @@ function getStats() {
 startCleanup();
 
 module.exports = {
-    // Constants
-    TX_STATES,
-    TX_TYPES,
-    MONITOR_CONFIG,
+  // Constants
+  TX_STATES,
+  TX_TYPES,
+  MONITOR_CONFIG,
 
-    // Tracking
-    trackTransaction,
-    stopTracking,
-    getTransactionStatus,
+  // Tracking
+  trackTransaction,
+  stopTracking,
+  getTransactionStatus,
 
-    // Batch
-    getBatchStatus,
-    trackBatch,
+  // Batch
+  getBatchStatus,
+  trackBatch,
 
-    // History
-    getHistory,
-    getWalletHistory,
+  // History
+  getHistory,
+  getWalletHistory,
 
-    // Active
-    getActiveTransactions,
+  // Active
+  getActiveTransactions,
 
-    // Utilities
-    isValidSignature,
+  // Utilities
+  isValidSignature,
 
-    // Cleanup
-    startCleanup,
-    stopCleanup,
+  // Cleanup
+  startCleanup,
+  stopCleanup,
 
-    // Stats
-    getStats
+  // Stats
+  getStats,
 };

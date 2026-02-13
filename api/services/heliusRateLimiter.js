@@ -20,54 +20,54 @@
 
 'use strict';
 
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 const RATE_LIMIT_CONFIG = {
-    // Helius tier limits (requests per second)
-    tiers: {
-        free: { rps: 10, burst: 20 },
-        developer: { rps: 50, burst: 100 },
-        business: { rps: 200, burst: 500 },
-        enterprise: { rps: 1000, burst: 2000 }
-    },
+  // Helius tier limits (requests per second)
+  tiers: {
+    free: { rps: 10, burst: 20 },
+    developer: { rps: 50, burst: 100 },
+    business: { rps: 200, burst: 500 },
+    enterprise: { rps: 1000, burst: 2000 },
+  },
 
-    // Current tier (from env or default)
-    currentTier: process.env.HELIUS_TIER || 'developer',
+  // Current tier (from env or default)
+  currentTier: process.env.HELIUS_TIER || 'developer',
 
-    // Window settings
-    slidingWindowMs: 1000,     // 1 second window
-    windowCount: 60,           // Track 60 windows (1 minute history)
+  // Window settings
+  slidingWindowMs: 1000, // 1 second window
+  windowCount: 60, // Track 60 windows (1 minute history)
 
-    // Per-wallet limits (fraction of total)
-    walletQuotaFraction: 0.1,  // Each wallet gets 10% max
-    maxConcurrentPerWallet: 5,
+  // Per-wallet limits (fraction of total)
+  walletQuotaFraction: 0.1, // Each wallet gets 10% max
+  maxConcurrentPerWallet: 5,
 
-    // Endpoint weights (some endpoints cost more)
-    endpointWeights: {
-        'getAsset': 1,
-        'getAssetsByOwner': 2,
-        'getAssetBatch': 3,
-        'getSignatureStatuses': 1,
-        'getBalance': 1,
-        'getMultipleAccounts': 2,
-        'simulateTransaction': 3,
-        'sendTransaction': 5,
-        'default': 1
-    },
+  // Endpoint weights (some endpoints cost more)
+  endpointWeights: {
+    getAsset: 1,
+    getAssetsByOwner: 2,
+    getAssetBatch: 3,
+    getSignatureStatuses: 1,
+    getBalance: 1,
+    getMultipleAccounts: 2,
+    simulateTransaction: 3,
+    sendTransaction: 5,
+    default: 1,
+  },
 
-    // Backpressure settings
-    backpressure: {
-        softThreshold: 0.7,    // Start slowing at 70%
-        hardThreshold: 0.9,    // Start rejecting at 90%
-        cooldownMs: 5000       // Cooldown after hard limit
-    },
+  // Backpressure settings
+  backpressure: {
+    softThreshold: 0.7, // Start slowing at 70%
+    hardThreshold: 0.9, // Start rejecting at 90%
+    cooldownMs: 5000, // Cooldown after hard limit
+  },
 
-    // Retry settings (Fibonacci-based)
-    retryDelaysMs: [55, 89, 144, 233, 377, 610]
+  // Retry settings (Fibonacci-based)
+  retryDelaysMs: [55, 89, 144, 233, 377, 610],
 };
 
 // ============================================
@@ -85,7 +85,7 @@ const walletUsage = new Map();
 const endpointUsage = new Map();
 
 // Concurrent request tracking
-const activeRequests = new Map();  // requestId -> {wallet, endpoint, startTime}
+const activeRequests = new Map(); // requestId -> {wallet, endpoint, startTime}
 
 // Backpressure state
 let backpressureActive = false;
@@ -97,16 +97,16 @@ let lastHeaderUpdate = 0;
 
 // Statistics
 const stats = {
-    totalRequests: 0,
-    allowedRequests: 0,
-    throttledRequests: 0,
-    backpressureEvents: 0,
-    adaptiveAdjustments: 0
+  totalRequests: 0,
+  allowedRequests: 0,
+  throttledRequests: 0,
+  backpressureEvents: 0,
+  adaptiveAdjustments: 0,
 };
 
 // Initialize windows
 for (let i = 0; i < RATE_LIMIT_CONFIG.windowCount; i++) {
-    windows.push({ timestamp: 0, count: 0, weight: 0 });
+  windows.push({ timestamp: 0, count: 0, weight: 0 });
 }
 
 // ============================================
@@ -119,89 +119,85 @@ for (let i = 0; i < RATE_LIMIT_CONFIG.windowCount; i++) {
  * @returns {{allowed: boolean, waitMs?: number, reason?: string}}
  */
 function checkLimit(options = {}) {
-    const {
-        wallet = 'anonymous',
-        endpoint = 'default',
-        weight = null
-    } = options;
+  const { wallet = 'anonymous', endpoint = 'default', weight = null } = options;
 
-    stats.totalRequests++;
+  stats.totalRequests++;
 
-    // Get effective weight
-    const effectiveWeight = weight || getEndpointWeight(endpoint);
+  // Get effective weight
+  const effectiveWeight = weight || getEndpointWeight(endpoint);
 
-    // Get current tier limits
-    const tierConfig = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier];
-    const effectiveLimit = adaptiveLimit || tierConfig.rps;
-    const burstLimit = tierConfig.burst;
+  // Get current tier limits
+  const tierConfig = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier];
+  const effectiveLimit = adaptiveLimit || tierConfig.rps;
+  const burstLimit = tierConfig.burst;
 
-    // Rotate window if needed
-    rotateWindow();
+  // Rotate window if needed
+  rotateWindow();
 
-    // Calculate current usage
-    const usage = calculateUsage();
-    const usageRatio = usage.weightedCount / effectiveLimit;
+  // Calculate current usage
+  const usage = calculateUsage();
+  const usageRatio = usage.weightedCount / effectiveLimit;
 
-    // Check backpressure cooldown
-    if (Date.now() < backpressureCooldownUntil) {
-        stats.throttledRequests++;
-        return {
-            allowed: false,
-            waitMs: backpressureCooldownUntil - Date.now(),
-            reason: 'backpressure_cooldown'
-        };
-    }
+  // Check backpressure cooldown
+  if (Date.now() < backpressureCooldownUntil) {
+    stats.throttledRequests++;
+    return {
+      allowed: false,
+      waitMs: backpressureCooldownUntil - Date.now(),
+      reason: 'backpressure_cooldown',
+    };
+  }
 
-    // Check hard limit
-    if (usageRatio >= RATE_LIMIT_CONFIG.backpressure.hardThreshold) {
-        triggerBackpressure();
-        stats.throttledRequests++;
-        return {
-            allowed: false,
-            waitMs: RATE_LIMIT_CONFIG.backpressure.cooldownMs,
-            reason: 'hard_limit'
-        };
-    }
+  // Check hard limit
+  if (usageRatio >= RATE_LIMIT_CONFIG.backpressure.hardThreshold) {
+    triggerBackpressure();
+    stats.throttledRequests++;
+    return {
+      allowed: false,
+      waitMs: RATE_LIMIT_CONFIG.backpressure.cooldownMs,
+      reason: 'hard_limit',
+    };
+  }
 
-    // Check burst limit
-    const currentWindow = windows[currentWindowIndex];
-    if (currentWindow.count >= burstLimit) {
-        stats.throttledRequests++;
-        return {
-            allowed: false,
-            waitMs: RATE_LIMIT_CONFIG.slidingWindowMs - (Date.now() - currentWindow.timestamp),
-            reason: 'burst_limit'
-        };
-    }
+  // Check burst limit
+  const currentWindow = windows[currentWindowIndex];
+  if (currentWindow.count >= burstLimit) {
+    stats.throttledRequests++;
+    return {
+      allowed: false,
+      waitMs: RATE_LIMIT_CONFIG.slidingWindowMs - (Date.now() - currentWindow.timestamp),
+      reason: 'burst_limit',
+    };
+  }
 
-    // Check per-wallet limit
-    const walletCheck = checkWalletLimit(wallet, effectiveWeight, effectiveLimit);
-    if (!walletCheck.allowed) {
-        stats.throttledRequests++;
-        return walletCheck;
-    }
+  // Check per-wallet limit
+  const walletCheck = checkWalletLimit(wallet, effectiveWeight, effectiveLimit);
+  if (!walletCheck.allowed) {
+    stats.throttledRequests++;
+    return walletCheck;
+  }
 
-    // Check concurrent limit per wallet
-    const concurrentCheck = checkConcurrentLimit(wallet);
-    if (!concurrentCheck.allowed) {
-        stats.throttledRequests++;
-        return concurrentCheck;
-    }
+  // Check concurrent limit per wallet
+  const concurrentCheck = checkConcurrentLimit(wallet);
+  if (!concurrentCheck.allowed) {
+    stats.throttledRequests++;
+    return concurrentCheck;
+  }
 
-    // Allowed - record usage
-    recordUsage(wallet, endpoint, effectiveWeight);
-    stats.allowedRequests++;
+  // Allowed - record usage
+  recordUsage(wallet, endpoint, effectiveWeight);
+  stats.allowedRequests++;
 
-    // Return with soft limit warning
-    if (usageRatio >= RATE_LIMIT_CONFIG.backpressure.softThreshold) {
-        return {
-            allowed: true,
-            warning: 'approaching_limit',
-            usageRatio: usageRatio.toFixed(2)
-        };
-    }
+  // Return with soft limit warning
+  if (usageRatio >= RATE_LIMIT_CONFIG.backpressure.softThreshold) {
+    return {
+      allowed: true,
+      warning: 'approaching_limit',
+      usageRatio: usageRatio.toFixed(2),
+    };
+  }
 
-    return { allowed: true };
+  return { allowed: true };
 }
 
 /**
@@ -210,32 +206,32 @@ function checkLimit(options = {}) {
  * @returns {Promise<{requestId: string, release: Function}>}
  */
 async function acquire(options = {}) {
-    const check = checkLimit(options);
+  const check = checkLimit(options);
 
-    if (!check.allowed) {
-        if (check.waitMs && check.waitMs < 5000) {
-            // Wait and retry
-            await sleep(check.waitMs);
-            return acquire(options);
-        }
-        throw new Error(`Rate limited: ${check.reason}`);
+  if (!check.allowed) {
+    if (check.waitMs && check.waitMs < 5000) {
+      // Wait and retry
+      await sleep(check.waitMs);
+      return acquire(options);
     }
+    throw new Error(`Rate limited: ${check.reason}`);
+  }
 
-    const requestId = generateRequestId();
-    const { wallet = 'anonymous', endpoint = 'default' } = options;
+  const requestId = generateRequestId();
+  const { wallet = 'anonymous', endpoint = 'default' } = options;
 
-    activeRequests.set(requestId, {
-        wallet,
-        endpoint,
-        startTime: Date.now()
-    });
+  activeRequests.set(requestId, {
+    wallet,
+    endpoint,
+    startTime: Date.now(),
+  });
 
-    const release = () => {
-        activeRequests.delete(requestId);
-        releaseWalletConcurrent(wallet);
-    };
+  const release = () => {
+    activeRequests.delete(requestId);
+    releaseWalletConcurrent(wallet);
+  };
 
-    return { requestId, release };
+  return { requestId, release };
 }
 
 /**
@@ -244,40 +240,40 @@ async function acquire(options = {}) {
  * @returns {Function}
  */
 function middleware(options = {}) {
-    return (req, res, next) => {
-        const wallet = req.wallet || 'anonymous';
-        const endpoint = req.path.split('/').pop() || 'default';
+  return (req, res, next) => {
+    const wallet = req.wallet || 'anonymous';
+    const endpoint = req.path.split('/').pop() || 'default';
 
-        const check = checkLimit({ wallet, endpoint });
+    const check = checkLimit({ wallet, endpoint });
 
-        if (!check.allowed) {
-            // Set retry-after header
-            if (check.waitMs) {
-                res.set('Retry-After', Math.ceil(check.waitMs / 1000));
-            }
+    if (!check.allowed) {
+      // Set retry-after header
+      if (check.waitMs) {
+        res.set('Retry-After', Math.ceil(check.waitMs / 1000));
+      }
 
-            res.set('X-RateLimit-Limit', getTierLimit());
-            res.set('X-RateLimit-Remaining', Math.max(0, getRemainingQuota()));
-            res.set('X-RateLimit-Reset', getResetTime());
+      res.set('X-RateLimit-Limit', getTierLimit());
+      res.set('X-RateLimit-Remaining', Math.max(0, getRemainingQuota()));
+      res.set('X-RateLimit-Reset', getResetTime());
 
-            return res.status(429).json({
-                error: 'Rate Limited',
-                reason: check.reason,
-                retryAfter: check.waitMs
-            });
-        }
+      return res.status(429).json({
+        error: 'Rate Limited',
+        reason: check.reason,
+        retryAfter: check.waitMs,
+      });
+    }
 
-        // Add rate limit headers
-        res.set('X-RateLimit-Limit', getTierLimit());
-        res.set('X-RateLimit-Remaining', getRemainingQuota());
-        res.set('X-RateLimit-Reset', getResetTime());
+    // Add rate limit headers
+    res.set('X-RateLimit-Limit', getTierLimit());
+    res.set('X-RateLimit-Remaining', getRemainingQuota());
+    res.set('X-RateLimit-Reset', getResetTime());
 
-        if (check.warning) {
-            res.set('X-RateLimit-Warning', check.warning);
-        }
+    if (check.warning) {
+      res.set('X-RateLimit-Warning', check.warning);
+    }
 
-        next();
-    };
+    next();
+  };
 }
 
 // ============================================
@@ -288,19 +284,19 @@ function middleware(options = {}) {
  * Rotate to new window if needed
  */
 function rotateWindow() {
-    const now = Date.now();
-    const windowMs = RATE_LIMIT_CONFIG.slidingWindowMs;
-    const currentWindow = windows[currentWindowIndex];
+  const now = Date.now();
+  const windowMs = RATE_LIMIT_CONFIG.slidingWindowMs;
+  const currentWindow = windows[currentWindowIndex];
 
-    if (now - currentWindow.timestamp >= windowMs) {
-        // Move to next window
-        currentWindowIndex = (currentWindowIndex + 1) % RATE_LIMIT_CONFIG.windowCount;
-        windows[currentWindowIndex] = {
-            timestamp: now,
-            count: 0,
-            weight: 0
-        };
-    }
+  if (now - currentWindow.timestamp >= windowMs) {
+    // Move to next window
+    currentWindowIndex = (currentWindowIndex + 1) % RATE_LIMIT_CONFIG.windowCount;
+    windows[currentWindowIndex] = {
+      timestamp: now,
+      count: 0,
+      weight: 0,
+    };
+  }
 }
 
 /**
@@ -308,24 +304,24 @@ function rotateWindow() {
  * @returns {{count: number, weightedCount: number}}
  */
 function calculateUsage() {
-    const now = Date.now();
-    const windowMs = RATE_LIMIT_CONFIG.slidingWindowMs;
-    let count = 0;
-    let weightedCount = 0;
+  const now = Date.now();
+  const windowMs = RATE_LIMIT_CONFIG.slidingWindowMs;
+  let count = 0;
+  let weightedCount = 0;
 
-    for (const window of windows) {
-        if (now - window.timestamp < windowMs * RATE_LIMIT_CONFIG.windowCount) {
-            count += window.count;
-            weightedCount += window.weight;
-        }
+  for (const window of windows) {
+    if (now - window.timestamp < windowMs * RATE_LIMIT_CONFIG.windowCount) {
+      count += window.count;
+      weightedCount += window.weight;
     }
+  }
 
-    // Normalize to per-second
-    const seconds = (RATE_LIMIT_CONFIG.windowCount * windowMs) / 1000;
-    return {
-        count,
-        weightedCount: weightedCount / seconds
-    };
+  // Normalize to per-second
+  const seconds = (RATE_LIMIT_CONFIG.windowCount * windowMs) / 1000;
+  return {
+    count,
+    weightedCount: weightedCount / seconds,
+  };
 }
 
 /**
@@ -335,27 +331,27 @@ function calculateUsage() {
  * @param {number} weight - Request weight
  */
 function recordUsage(wallet, endpoint, weight) {
-    const window = windows[currentWindowIndex];
-    window.count++;
-    window.weight += weight;
+  const window = windows[currentWindowIndex];
+  window.count++;
+  window.weight += weight;
 
-    // Update wallet usage
-    const walletData = walletUsage.get(wallet) || {
-        count: 0,
-        weight: 0,
-        concurrent: 0,
-        lastRequest: 0
-    };
-    walletData.count++;
-    walletData.weight += weight;
-    walletData.concurrent++;
-    walletData.lastRequest = Date.now();
-    walletUsage.set(wallet, walletData);
+  // Update wallet usage
+  const walletData = walletUsage.get(wallet) || {
+    count: 0,
+    weight: 0,
+    concurrent: 0,
+    lastRequest: 0,
+  };
+  walletData.count++;
+  walletData.weight += weight;
+  walletData.concurrent++;
+  walletData.lastRequest = Date.now();
+  walletUsage.set(wallet, walletData);
 
-    // Update endpoint usage
-    const endpointData = endpointUsage.get(endpoint) || { count: 0 };
-    endpointData.count++;
-    endpointUsage.set(endpoint, endpointData);
+  // Update endpoint usage
+  const endpointData = endpointUsage.get(endpoint) || { count: 0 };
+  endpointData.count++;
+  endpointUsage.set(endpoint, endpointData);
 }
 
 // ============================================
@@ -370,28 +366,28 @@ function recordUsage(wallet, endpoint, weight) {
  * @returns {{allowed: boolean, waitMs?: number, reason?: string}}
  */
 function checkWalletLimit(wallet, weight, totalLimit) {
-    const walletData = walletUsage.get(wallet);
-    if (!walletData) return { allowed: true };
+  const walletData = walletUsage.get(wallet);
+  if (!walletData) return { allowed: true };
 
-    const walletLimit = totalLimit * RATE_LIMIT_CONFIG.walletQuotaFraction;
-    const now = Date.now();
+  const walletLimit = totalLimit * RATE_LIMIT_CONFIG.walletQuotaFraction;
+  const now = Date.now();
 
-    // Calculate wallet's recent usage
-    if (now - walletData.lastRequest < 1000) {
-        if (walletData.weight > walletLimit) {
-            return {
-                allowed: false,
-                waitMs: 1000 - (now - walletData.lastRequest),
-                reason: 'wallet_quota_exceeded'
-            };
-        }
-    } else {
-        // Reset wallet counters after 1 second
-        walletData.weight = 0;
-        walletData.count = 0;
+  // Calculate wallet's recent usage
+  if (now - walletData.lastRequest < 1000) {
+    if (walletData.weight > walletLimit) {
+      return {
+        allowed: false,
+        waitMs: 1000 - (now - walletData.lastRequest),
+        reason: 'wallet_quota_exceeded',
+      };
     }
+  } else {
+    // Reset wallet counters after 1 second
+    walletData.weight = 0;
+    walletData.count = 0;
+  }
 
-    return { allowed: true };
+  return { allowed: true };
 }
 
 /**
@@ -400,17 +396,17 @@ function checkWalletLimit(wallet, weight, totalLimit) {
  * @returns {{allowed: boolean, reason?: string}}
  */
 function checkConcurrentLimit(wallet) {
-    const walletData = walletUsage.get(wallet);
-    if (!walletData) return { allowed: true };
+  const walletData = walletUsage.get(wallet);
+  if (!walletData) return { allowed: true };
 
-    if (walletData.concurrent >= RATE_LIMIT_CONFIG.maxConcurrentPerWallet) {
-        return {
-            allowed: false,
-            reason: 'concurrent_limit_exceeded'
-        };
-    }
+  if (walletData.concurrent >= RATE_LIMIT_CONFIG.maxConcurrentPerWallet) {
+    return {
+      allowed: false,
+      reason: 'concurrent_limit_exceeded',
+    };
+  }
 
-    return { allowed: true };
+  return { allowed: true };
 }
 
 /**
@@ -418,10 +414,10 @@ function checkConcurrentLimit(wallet) {
  * @param {string} wallet - Wallet address
  */
 function releaseWalletConcurrent(wallet) {
-    const walletData = walletUsage.get(wallet);
-    if (walletData && walletData.concurrent > 0) {
-        walletData.concurrent--;
-    }
+  const walletData = walletUsage.get(wallet);
+  if (walletData && walletData.concurrent > 0) {
+    walletData.concurrent--;
+  }
 }
 
 // ============================================
@@ -433,32 +429,32 @@ function releaseWalletConcurrent(wallet) {
  * @param {Object} headers - Response headers
  */
 function updateFromHeaders(headers) {
-    const rateLimit = headers['x-ratelimit-limit'];
-    const remaining = headers['x-ratelimit-remaining'];
-    const reset = headers['x-ratelimit-reset'];
+  const rateLimit = headers['x-ratelimit-limit'];
+  const remaining = headers['x-ratelimit-remaining'];
+  const reset = headers['x-ratelimit-reset'];
 
-    if (rateLimit) {
-        const newLimit = parseInt(rateLimit, 10);
-        if (newLimit !== adaptiveLimit) {
-            adaptiveLimit = newLimit;
-            stats.adaptiveAdjustments++;
-            lastHeaderUpdate = Date.now();
+  if (rateLimit) {
+    const newLimit = parseInt(rateLimit, 10);
+    if (newLimit !== adaptiveLimit) {
+      adaptiveLimit = newLimit;
+      stats.adaptiveAdjustments++;
+      lastHeaderUpdate = Date.now();
 
-            logAudit('rate_limit_adjusted', {
-                previousLimit: adaptiveLimit,
-                newLimit,
-                source: 'headers'
-            });
-        }
+      logAudit('rate_limit_adjusted', {
+        previousLimit: adaptiveLimit,
+        newLimit,
+        source: 'headers',
+      });
     }
+  }
 
-    // If we're running low, back off
-    if (remaining !== undefined) {
-        const remainingCount = parseInt(remaining, 10);
-        if (remainingCount < 10) {
-            triggerSoftBackpressure();
-        }
+  // If we're running low, back off
+  if (remaining !== undefined) {
+    const remainingCount = parseInt(remaining, 10);
+    if (remainingCount < 10) {
+      triggerSoftBackpressure();
     }
+  }
 }
 
 /**
@@ -466,21 +462,21 @@ function updateFromHeaders(headers) {
  * @param {Object} response - Error response
  */
 function handleRateLimitResponse(response) {
-    const retryAfter = response.headers?.['retry-after'];
+  const retryAfter = response.headers?.['retry-after'];
 
-    if (retryAfter) {
-        const waitMs = parseInt(retryAfter, 10) * 1000;
-        backpressureCooldownUntil = Date.now() + waitMs;
-    } else {
-        triggerBackpressure();
-    }
+  if (retryAfter) {
+    const waitMs = parseInt(retryAfter, 10) * 1000;
+    backpressureCooldownUntil = Date.now() + waitMs;
+  } else {
+    triggerBackpressure();
+  }
 
-    stats.backpressureEvents++;
+  stats.backpressureEvents++;
 
-    logAudit('rate_limit_hit', {
-        retryAfter,
-        adaptiveLimit
-    });
+  logAudit('rate_limit_hit', {
+    retryAfter,
+    adaptiveLimit,
+  });
 }
 
 // ============================================
@@ -491,43 +487,43 @@ function handleRateLimitResponse(response) {
  * Trigger hard backpressure
  */
 function triggerBackpressure() {
-    backpressureActive = true;
-    backpressureCooldownUntil = Date.now() + RATE_LIMIT_CONFIG.backpressure.cooldownMs;
-    stats.backpressureEvents++;
+  backpressureActive = true;
+  backpressureCooldownUntil = Date.now() + RATE_LIMIT_CONFIG.backpressure.cooldownMs;
+  stats.backpressureEvents++;
 
-    // Reduce adaptive limit
-    if (adaptiveLimit) {
-        adaptiveLimit = Math.floor(adaptiveLimit * 0.8);
-    }
+  // Reduce adaptive limit
+  if (adaptiveLimit) {
+    adaptiveLimit = Math.floor(adaptiveLimit * 0.8);
+  }
 
-    logAudit('backpressure_triggered', {
-        cooldownMs: RATE_LIMIT_CONFIG.backpressure.cooldownMs
-    });
+  logAudit('backpressure_triggered', {
+    cooldownMs: RATE_LIMIT_CONFIG.backpressure.cooldownMs,
+  });
 }
 
 /**
  * Trigger soft backpressure (slow down)
  */
 function triggerSoftBackpressure() {
-    backpressureActive = true;
+  backpressureActive = true;
 
-    // Reduce adaptive limit slightly
-    if (adaptiveLimit) {
-        adaptiveLimit = Math.floor(adaptiveLimit * 0.95);
-    }
+  // Reduce adaptive limit slightly
+  if (adaptiveLimit) {
+    adaptiveLimit = Math.floor(adaptiveLimit * 0.95);
+  }
 }
 
 /**
  * Release backpressure
  */
 function releaseBackpressure() {
-    backpressureActive = false;
+  backpressureActive = false;
 
-    // Gradually restore limit
-    const tierLimit = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier].rps;
-    if (adaptiveLimit && adaptiveLimit < tierLimit) {
-        adaptiveLimit = Math.min(adaptiveLimit * 1.1, tierLimit);
-    }
+  // Gradually restore limit
+  const tierLimit = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier].rps;
+  if (adaptiveLimit && adaptiveLimit < tierLimit) {
+    adaptiveLimit = Math.min(adaptiveLimit * 1.1, tierLimit);
+  }
 }
 
 // ============================================
@@ -540,8 +536,7 @@ function releaseBackpressure() {
  * @returns {number}
  */
 function getEndpointWeight(endpoint) {
-    return RATE_LIMIT_CONFIG.endpointWeights[endpoint] ||
-           RATE_LIMIT_CONFIG.endpointWeights.default;
+  return RATE_LIMIT_CONFIG.endpointWeights[endpoint] || RATE_LIMIT_CONFIG.endpointWeights.default;
 }
 
 /**
@@ -549,8 +544,7 @@ function getEndpointWeight(endpoint) {
  * @returns {number}
  */
 function getTierLimit() {
-    return adaptiveLimit ||
-           RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier].rps;
+  return adaptiveLimit || RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier].rps;
 }
 
 /**
@@ -558,9 +552,9 @@ function getTierLimit() {
  * @returns {number}
  */
 function getRemainingQuota() {
-    const usage = calculateUsage();
-    const limit = getTierLimit();
-    return Math.max(0, Math.floor(limit - usage.weightedCount));
+  const usage = calculateUsage();
+  const limit = getTierLimit();
+  return Math.max(0, Math.floor(limit - usage.weightedCount));
 }
 
 /**
@@ -568,7 +562,7 @@ function getRemainingQuota() {
  * @returns {number}
  */
 function getResetTime() {
-    return Math.ceil(Date.now() / 1000) + 1;
+  return Math.ceil(Date.now() / 1000) + 1;
 }
 
 /**
@@ -576,7 +570,7 @@ function getResetTime() {
  * @returns {string}
  */
 function generateRequestId() {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
 }
 
 /**
@@ -585,7 +579,7 @@ function generateRequestId() {
  * @returns {Promise<void>}
  */
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ============================================
@@ -597,29 +591,31 @@ function sleep(ms) {
  * @returns {Object}
  */
 function getStats() {
-    const usage = calculateUsage();
-    const tierConfig = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier];
+  const usage = calculateUsage();
+  const tierConfig = RATE_LIMIT_CONFIG.tiers[RATE_LIMIT_CONFIG.currentTier];
 
-    return {
-        ...stats,
-        currentTier: RATE_LIMIT_CONFIG.currentTier,
-        tierLimit: tierConfig.rps,
-        adaptiveLimit,
-        currentUsage: {
-            count: usage.count,
-            weightedRps: usage.weightedCount.toFixed(2)
-        },
-        usageRatio: ((usage.weightedCount / getTierLimit()) * 100).toFixed(2) + '%',
-        backpressureActive,
-        backpressureCooldownUntil: backpressureCooldownUntil > Date.now()
-            ? new Date(backpressureCooldownUntil).toISOString()
-            : null,
-        activeRequests: activeRequests.size,
-        uniqueWallets: walletUsage.size,
-        throttleRate: stats.totalRequests > 0
-            ? ((stats.throttledRequests / stats.totalRequests) * 100).toFixed(2) + '%'
-            : '0%'
-    };
+  return {
+    ...stats,
+    currentTier: RATE_LIMIT_CONFIG.currentTier,
+    tierLimit: tierConfig.rps,
+    adaptiveLimit,
+    currentUsage: {
+      count: usage.count,
+      weightedRps: usage.weightedCount.toFixed(2),
+    },
+    usageRatio: ((usage.weightedCount / getTierLimit()) * 100).toFixed(2) + '%',
+    backpressureActive,
+    backpressureCooldownUntil:
+      backpressureCooldownUntil > Date.now()
+        ? new Date(backpressureCooldownUntil).toISOString()
+        : null,
+    activeRequests: activeRequests.size,
+    uniqueWallets: walletUsage.size,
+    throttleRate:
+      stats.totalRequests > 0
+        ? ((stats.throttledRequests / stats.totalRequests) * 100).toFixed(2) + '%'
+        : '0%',
+  };
 }
 
 /**
@@ -628,30 +624,30 @@ function getStats() {
  * @returns {Object}
  */
 function getWalletStats(wallet) {
-    const data = walletUsage.get(wallet);
-    if (!data) {
-        return { found: false };
-    }
+  const data = walletUsage.get(wallet);
+  if (!data) {
+    return { found: false };
+  }
 
-    return {
-        found: true,
-        requestCount: data.count,
-        weightedUsage: data.weight,
-        concurrent: data.concurrent,
-        lastRequest: new Date(data.lastRequest).toISOString()
-    };
+  return {
+    found: true,
+    requestCount: data.count,
+    weightedUsage: data.weight,
+    concurrent: data.concurrent,
+    lastRequest: new Date(data.lastRequest).toISOString(),
+  };
 }
 
 /**
  * Reset statistics
  */
 function resetStats() {
-    stats.totalRequests = 0;
-    stats.allowedRequests = 0;
-    stats.throttledRequests = 0;
-    stats.backpressureEvents = 0;
-    walletUsage.clear();
-    endpointUsage.clear();
+  stats.totalRequests = 0;
+  stats.allowedRequests = 0;
+  stats.throttledRequests = 0;
+  stats.backpressureEvents = 0;
+  walletUsage.clear();
+  endpointUsage.clear();
 }
 
 // ============================================
@@ -660,19 +656,19 @@ function resetStats() {
 
 // Clean up stale wallet entries every minute
 setInterval(() => {
-    const now = Date.now();
-    const staleThreshold = 60000; // 1 minute
+  const now = Date.now();
+  const staleThreshold = 60000; // 1 minute
 
-    for (const [wallet, data] of walletUsage.entries()) {
-        if (now - data.lastRequest > staleThreshold) {
-            walletUsage.delete(wallet);
-        }
+  for (const [wallet, data] of walletUsage.entries()) {
+    if (now - data.lastRequest > staleThreshold) {
+      walletUsage.delete(wallet);
     }
+  }
 
-    // Gradually release backpressure
-    if (backpressureActive && Date.now() > backpressureCooldownUntil) {
-        releaseBackpressure();
-    }
+  // Gradually release backpressure
+  if (backpressureActive && Date.now() > backpressureCooldownUntil) {
+    releaseBackpressure();
+  }
 }, 60000);
 
 // ============================================
@@ -680,27 +676,27 @@ setInterval(() => {
 // ============================================
 
 module.exports = {
-    // Core
-    checkLimit,
-    acquire,
-    middleware,
+  // Core
+  checkLimit,
+  acquire,
+  middleware,
 
-    // Adaptive
-    updateFromHeaders,
-    handleRateLimitResponse,
+  // Adaptive
+  updateFromHeaders,
+  handleRateLimitResponse,
 
-    // Backpressure
-    triggerBackpressure,
-    releaseBackpressure,
+  // Backpressure
+  triggerBackpressure,
+  releaseBackpressure,
 
-    // Stats
-    getStats,
-    getWalletStats,
-    resetStats,
+  // Stats
+  getStats,
+  getWalletStats,
+  resetStats,
 
-    // Config
-    RATE_LIMIT_CONFIG,
-    getEndpointWeight,
-    getTierLimit,
-    getRemainingQuota
+  // Config
+  RATE_LIMIT_CONFIG,
+  getEndpointWeight,
+  getTierLimit,
+  getRemainingQuota,
 };

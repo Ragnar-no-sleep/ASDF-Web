@@ -16,7 +16,7 @@
 
 'use strict';
 
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 
 // ============================================
 // CONFIGURATION

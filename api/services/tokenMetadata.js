@@ -19,7 +19,7 @@
 
 'use strict';
 
-const { logAudit } = require('./leaderboard');
+const { logAudit } = require('./audit');
 
 // ============================================
 // CONFIGURATION
@@ -28,26 +28,25 @@ const { logAudit } = require('./leaderboard');
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
 
 const METADATA_CONFIG = {
-    // API endpoints
-    apiBase: 'https://api.helius.xyz',
-    rpcUrl: process.env.HELIUS_RPC_URL ||
-        `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+  // API endpoints
+  apiBase: 'https://api.helius.xyz',
+  rpcUrl: process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
 
-    // Cache TTLs (Fibonacci-based in ms)
-    cacheTTL: {
-        metadata: 5 * 60 * 1000,     // 5 minutes
-        holders: 2 * 60 * 1000,       // 2 minutes
-        price: 30 * 1000,             // 30 seconds
-        transfers: 60 * 1000          // 1 minute
-    },
+  // Cache TTLs (Fibonacci-based in ms)
+  cacheTTL: {
+    metadata: 5 * 60 * 1000, // 5 minutes
+    holders: 2 * 60 * 1000, // 2 minutes
+    price: 30 * 1000, // 30 seconds
+    transfers: 60 * 1000, // 1 minute
+  },
 
-    // Request settings
-    timeout: 15000,
-    maxRetries: 3,
+  // Request settings
+  timeout: 15000,
+  maxRetries: 3,
 
-    // Holder analysis
-    maxHolders: 1000,
-    holderPageSize: 100
+  // Holder analysis
+  maxHolders: 1000,
+  holderPageSize: 100,
 };
 
 // ============================================
@@ -57,31 +56,34 @@ const METADATA_CONFIG = {
 const cache = new Map();
 
 function getCached(key) {
-    const item = cache.get(key);
-    if (!item) return null;
-    if (Date.now() > item.expiresAt) {
-        cache.delete(key);
-        return null;
-    }
-    return item.value;
+  const item = cache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expiresAt) {
+    cache.delete(key);
+    return null;
+  }
+  return item.value;
 }
 
 function setCache(key, value, ttl) {
-    cache.set(key, {
-        value,
-        expiresAt: Date.now() + ttl
-    });
+  cache.set(key, {
+    value,
+    expiresAt: Date.now() + ttl,
+  });
 }
 
 // Cleanup every 5 minutes
-setInterval(() => {
+setInterval(
+  () => {
     const now = Date.now();
     for (const [key, item] of cache.entries()) {
-        if (now > item.expiresAt) {
-            cache.delete(key);
-        }
+      if (now > item.expiresAt) {
+        cache.delete(key);
+      }
     }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000
+);
 
 // ============================================
 // TOKEN METADATA
@@ -93,43 +95,42 @@ setInterval(() => {
  * @returns {Promise<Object>}
  */
 async function getTokenMetadata(mintAddress) {
-    const cacheKey = `metadata:${mintAddress}`;
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
+  const cacheKey = `metadata:${mintAddress}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
 
-    try {
-        // Use DAS API for comprehensive metadata
-        const response = await fetch(METADATA_CONFIG.rpcUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 'token-metadata',
-                method: 'getAsset',
-                params: { id: mintAddress }
-            }),
-            timeout: METADATA_CONFIG.timeout
-        });
+  try {
+    // Use DAS API for comprehensive metadata
+    const response = await fetch(METADATA_CONFIG.rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'token-metadata',
+        method: 'getAsset',
+        params: { id: mintAddress },
+      }),
+      timeout: METADATA_CONFIG.timeout,
+    });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        const result = formatTokenMetadata(data.result);
-        setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.metadata);
-
-        return result;
-
-    } catch (error) {
-        console.error('[TokenMetadata] Get metadata error:', error.message);
-        return null;
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+
+    const result = formatTokenMetadata(data.result);
+    setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.metadata);
+
+    return result;
+  } catch (error) {
+    console.error('[TokenMetadata] Get metadata error:', error.message);
+    return null;
+  }
 }
 
 /**
@@ -138,24 +139,24 @@ async function getTokenMetadata(mintAddress) {
  * @returns {Object}
  */
 function formatTokenMetadata(asset) {
-    if (!asset) return null;
+  if (!asset) return null;
 
-    return {
-        mint: asset.id,
-        name: asset.content?.metadata?.name || 'Unknown',
-        symbol: asset.content?.metadata?.symbol || '',
-        description: asset.content?.metadata?.description || '',
-        image: asset.content?.links?.image || asset.content?.files?.[0]?.uri || null,
-        decimals: asset.token_info?.decimals || 0,
-        supply: asset.token_info?.supply || '0',
-        tokenStandard: asset.interface || 'FungibleToken',
-        creators: asset.creators || [],
-        royalty: asset.royalty?.percent || 0,
-        mutable: asset.mutable ?? true,
-        burnt: asset.burnt ?? false,
-        attributes: asset.content?.metadata?.attributes || [],
-        externalUrl: asset.content?.links?.external_url || null
-    };
+  return {
+    mint: asset.id,
+    name: asset.content?.metadata?.name || 'Unknown',
+    symbol: asset.content?.metadata?.symbol || '',
+    description: asset.content?.metadata?.description || '',
+    image: asset.content?.links?.image || asset.content?.files?.[0]?.uri || null,
+    decimals: asset.token_info?.decimals || 0,
+    supply: asset.token_info?.supply || '0',
+    tokenStandard: asset.interface || 'FungibleToken',
+    creators: asset.creators || [],
+    royalty: asset.royalty?.percent || 0,
+    mutable: asset.mutable ?? true,
+    burnt: asset.burnt ?? false,
+    attributes: asset.content?.metadata?.attributes || [],
+    externalUrl: asset.content?.links?.external_url || null,
+  };
 }
 
 /**
@@ -164,58 +165,57 @@ function formatTokenMetadata(asset) {
  * @returns {Promise<Map<string, Object>>}
  */
 async function getBatchTokenMetadata(mintAddresses) {
-    const results = new Map();
-    const uncached = [];
+  const results = new Map();
+  const uncached = [];
 
-    // Check cache first
-    for (const mint of mintAddresses) {
-        const cached = getCached(`metadata:${mint}`);
-        if (cached) {
-            results.set(mint, cached);
-        } else {
-            uncached.push(mint);
-        }
+  // Check cache first
+  for (const mint of mintAddresses) {
+    const cached = getCached(`metadata:${mint}`);
+    if (cached) {
+      results.set(mint, cached);
+    } else {
+      uncached.push(mint);
     }
+  }
 
-    if (uncached.length === 0) {
-        return results;
-    }
-
-    // Batch fetch via DAS
-    try {
-        const response = await fetch(METADATA_CONFIG.rpcUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 'batch-metadata',
-                method: 'getAssetBatch',
-                params: { ids: uncached }
-            }),
-            timeout: METADATA_CONFIG.timeout * 2
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.result) {
-            for (const asset of data.result) {
-                if (asset) {
-                    const formatted = formatTokenMetadata(asset);
-                    results.set(asset.id, formatted);
-                    setCache(`metadata:${asset.id}`, formatted, METADATA_CONFIG.cacheTTL.metadata);
-                }
-            }
-        }
-
-    } catch (error) {
-        console.error('[TokenMetadata] Batch metadata error:', error.message);
-    }
-
+  if (uncached.length === 0) {
     return results;
+  }
+
+  // Batch fetch via DAS
+  try {
+    const response = await fetch(METADATA_CONFIG.rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'batch-metadata',
+        method: 'getAssetBatch',
+        params: { ids: uncached },
+      }),
+      timeout: METADATA_CONFIG.timeout * 2,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.result) {
+      for (const asset of data.result) {
+        if (asset) {
+          const formatted = formatTokenMetadata(asset);
+          results.set(asset.id, formatted);
+          setCache(`metadata:${asset.id}`, formatted, METADATA_CONFIG.cacheTTL.metadata);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[TokenMetadata] Batch metadata error:', error.message);
+  }
+
+  return results;
 }
 
 // ============================================
@@ -229,47 +229,43 @@ async function getBatchTokenMetadata(mintAddresses) {
  * @returns {Promise<Object>}
  */
 async function getTokenHolders(mintAddress, options = {}) {
-    const {
-        limit = 100,
-        cursor = null
-    } = options;
+  const { limit = 100, cursor = null } = options;
 
-    const cacheKey = `holders:${mintAddress}:${limit}:${cursor || 'start'}`;
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
+  const cacheKey = `holders:${mintAddress}:${limit}:${cursor || 'start'}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
 
-    try {
-        let url = `${METADATA_CONFIG.apiBase}/v0/token-metadata/holders?api-key=${HELIUS_API_KEY}&mint=${mintAddress}&limit=${limit}`;
+  try {
+    let url = `${METADATA_CONFIG.apiBase}/v0/token-metadata/holders?api-key=${HELIUS_API_KEY}&mint=${mintAddress}&limit=${limit}`;
 
-        if (cursor) {
-            url += `&cursor=${cursor}`;
-        }
-
-        const response = await fetch(url, {
-            timeout: METADATA_CONFIG.timeout
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        const result = {
-            holders: data.result || [],
-            total: data.total || 0,
-            cursor: data.cursor || null,
-            hasMore: !!data.cursor
-        };
-
-        setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.holders);
-
-        return result;
-
-    } catch (error) {
-        console.error('[TokenMetadata] Get holders error:', error.message);
-        return { holders: [], total: 0, cursor: null, hasMore: false };
+    if (cursor) {
+      url += `&cursor=${cursor}`;
     }
+
+    const response = await fetch(url, {
+      timeout: METADATA_CONFIG.timeout,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const result = {
+      holders: data.result || [],
+      total: data.total || 0,
+      cursor: data.cursor || null,
+      hasMore: !!data.cursor,
+    };
+
+    setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.holders);
+
+    return result;
+  } catch (error) {
+    console.error('[TokenMetadata] Get holders error:', error.message);
+    return { holders: [], total: 0, cursor: null, hasMore: false };
+  }
 }
 
 /**
@@ -278,91 +274,89 @@ async function getTokenHolders(mintAddress, options = {}) {
  * @returns {Promise<Object>}
  */
 async function analyzeHolderDistribution(mintAddress) {
-    const cacheKey = `distribution:${mintAddress}`;
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
+  const cacheKey = `distribution:${mintAddress}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
 
-    try {
-        // Get all holders (paginated)
-        const allHolders = [];
-        let cursor = null;
-        let pages = 0;
-        const maxPages = METADATA_CONFIG.maxHolders / METADATA_CONFIG.holderPageSize;
+  try {
+    // Get all holders (paginated)
+    const allHolders = [];
+    let cursor = null;
+    let pages = 0;
+    const maxPages = METADATA_CONFIG.maxHolders / METADATA_CONFIG.holderPageSize;
 
-        do {
-            const result = await getTokenHolders(mintAddress, {
-                limit: METADATA_CONFIG.holderPageSize,
-                cursor
-            });
+    do {
+      const result = await getTokenHolders(mintAddress, {
+        limit: METADATA_CONFIG.holderPageSize,
+        cursor,
+      });
 
-            allHolders.push(...result.holders);
-            cursor = result.cursor;
-            pages++;
+      allHolders.push(...result.holders);
+      cursor = result.cursor;
+      pages++;
+    } while (cursor && pages < maxPages);
 
-        } while (cursor && pages < maxPages);
+    // Calculate distribution
+    const totalSupply = allHolders.reduce((sum, h) => sum + (h.amount || 0), 0);
+    const sortedHolders = allHolders.sort((a, b) => (b.amount || 0) - (a.amount || 0));
 
-        // Calculate distribution
-        const totalSupply = allHolders.reduce((sum, h) => sum + (h.amount || 0), 0);
-        const sortedHolders = allHolders.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+    // Distribution tiers
+    const distribution = {
+      total: allHolders.length,
+      totalSupplyHeld: totalSupply,
+      top10: calculateTopNPercentage(sortedHolders, 10, totalSupply),
+      top50: calculateTopNPercentage(sortedHolders, 50, totalSupply),
+      top100: calculateTopNPercentage(sortedHolders, 100, totalSupply),
+      tiers: calculateTiers(sortedHolders),
+      giniCoefficient: calculateGiniCoefficient(sortedHolders.map(h => h.amount || 0)),
+    };
 
-        // Distribution tiers
-        const distribution = {
-            total: allHolders.length,
-            totalSupplyHeld: totalSupply,
-            top10: calculateTopNPercentage(sortedHolders, 10, totalSupply),
-            top50: calculateTopNPercentage(sortedHolders, 50, totalSupply),
-            top100: calculateTopNPercentage(sortedHolders, 100, totalSupply),
-            tiers: calculateTiers(sortedHolders),
-            giniCoefficient: calculateGiniCoefficient(sortedHolders.map(h => h.amount || 0))
-        };
+    setCache(cacheKey, distribution, METADATA_CONFIG.cacheTTL.holders);
 
-        setCache(cacheKey, distribution, METADATA_CONFIG.cacheTTL.holders);
-
-        return distribution;
-
-    } catch (error) {
-        console.error('[TokenMetadata] Holder distribution error:', error.message);
-        return null;
-    }
+    return distribution;
+  } catch (error) {
+    console.error('[TokenMetadata] Holder distribution error:', error.message);
+    return null;
+  }
 }
 
 /**
  * Calculate top N holders percentage
  */
 function calculateTopNPercentage(holders, n, total) {
-    if (total === 0) return 0;
-    const topN = holders.slice(0, n);
-    const topNTotal = topN.reduce((sum, h) => sum + (h.amount || 0), 0);
-    return (topNTotal / total) * 100;
+  if (total === 0) return 0;
+  const topN = holders.slice(0, n);
+  const topNTotal = topN.reduce((sum, h) => sum + (h.amount || 0), 0);
+  return (topNTotal / total) * 100;
 }
 
 /**
  * Calculate holder tiers
  */
 function calculateTiers(holders) {
-    const tiers = {
-        whale: { min: 1000000, count: 0, percentage: 0 },     // 1M+
-        dolphin: { min: 100000, count: 0, percentage: 0 },    // 100k-1M
-        fish: { min: 10000, count: 0, percentage: 0 },        // 10k-100k
-        shrimp: { min: 1000, count: 0, percentage: 0 },       // 1k-10k
-        plankton: { min: 0, count: 0, percentage: 0 }         // <1k
-    };
+  const tiers = {
+    whale: { min: 1000000, count: 0, percentage: 0 }, // 1M+
+    dolphin: { min: 100000, count: 0, percentage: 0 }, // 100k-1M
+    fish: { min: 10000, count: 0, percentage: 0 }, // 10k-100k
+    shrimp: { min: 1000, count: 0, percentage: 0 }, // 1k-10k
+    plankton: { min: 0, count: 0, percentage: 0 }, // <1k
+  };
 
-    for (const holder of holders) {
-        const amount = holder.amount || 0;
-        if (amount >= 1000000) tiers.whale.count++;
-        else if (amount >= 100000) tiers.dolphin.count++;
-        else if (amount >= 10000) tiers.fish.count++;
-        else if (amount >= 1000) tiers.shrimp.count++;
-        else tiers.plankton.count++;
-    }
+  for (const holder of holders) {
+    const amount = holder.amount || 0;
+    if (amount >= 1000000) tiers.whale.count++;
+    else if (amount >= 100000) tiers.dolphin.count++;
+    else if (amount >= 10000) tiers.fish.count++;
+    else if (amount >= 1000) tiers.shrimp.count++;
+    else tiers.plankton.count++;
+  }
 
-    const total = holders.length;
-    for (const tier of Object.values(tiers)) {
-        tier.percentage = total > 0 ? (tier.count / total) * 100 : 0;
-    }
+  const total = holders.length;
+  for (const tier of Object.values(tiers)) {
+    tier.percentage = total > 0 ? (tier.count / total) * 100 : 0;
+  }
 
-    return tiers;
+  return tiers;
 }
 
 /**
@@ -370,20 +364,20 @@ function calculateTiers(holders) {
  * 0 = perfect equality, 1 = perfect inequality
  */
 function calculateGiniCoefficient(values) {
-    if (values.length === 0) return 0;
+  if (values.length === 0) return 0;
 
-    const sorted = values.slice().sort((a, b) => a - b);
-    const n = sorted.length;
-    const sum = sorted.reduce((a, b) => a + b, 0);
+  const sorted = values.slice().sort((a, b) => a - b);
+  const n = sorted.length;
+  const sum = sorted.reduce((a, b) => a + b, 0);
 
-    if (sum === 0) return 0;
+  if (sum === 0) return 0;
 
-    let numerator = 0;
-    for (let i = 0; i < n; i++) {
-        numerator += (2 * (i + 1) - n - 1) * sorted[i];
-    }
+  let numerator = 0;
+  for (let i = 0; i < n; i++) {
+    numerator += (2 * (i + 1) - n - 1) * sorted[i];
+  }
 
-    return numerator / (n * sum);
+  return numerator / (n * sum);
 }
 
 // ============================================
@@ -397,52 +391,52 @@ function calculateGiniCoefficient(values) {
  * @returns {Promise<Object[]>}
  */
 async function getTokenTransfers(mintAddress, options = {}) {
-    const { limit = 100, before = '' } = options;
+  const { limit = 100, before = '' } = options;
 
-    const cacheKey = `transfers:${mintAddress}:${limit}:${before || 'latest'}`;
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
+  const cacheKey = `transfers:${mintAddress}:${limit}:${before || 'latest'}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
 
-    try {
-        let url = `${METADATA_CONFIG.apiBase}/v0/addresses/${mintAddress}/transactions?api-key=${HELIUS_API_KEY}&type=TRANSFER&limit=${limit}`;
+  try {
+    let url = `${METADATA_CONFIG.apiBase}/v0/addresses/${mintAddress}/transactions?api-key=${HELIUS_API_KEY}&type=TRANSFER&limit=${limit}`;
 
-        if (before) {
-            url += `&before=${before}`;
-        }
-
-        const response = await fetch(url, {
-            timeout: METADATA_CONFIG.timeout
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const transactions = await response.json();
-
-        // Filter and format token transfers
-        const transfers = transactions
-            .filter(tx => tx.tokenTransfers?.length > 0)
-            .flatMap(tx => tx.tokenTransfers
-                .filter(t => t.mint === mintAddress)
-                .map(t => ({
-                    signature: tx.signature,
-                    timestamp: tx.timestamp,
-                    from: t.fromUserAccount,
-                    to: t.toUserAccount,
-                    amount: t.tokenAmount,
-                    slot: tx.slot
-                }))
-            );
-
-        setCache(cacheKey, transfers, METADATA_CONFIG.cacheTTL.transfers);
-
-        return transfers;
-
-    } catch (error) {
-        console.error('[TokenMetadata] Get transfers error:', error.message);
-        return [];
+    if (before) {
+      url += `&before=${before}`;
     }
+
+    const response = await fetch(url, {
+      timeout: METADATA_CONFIG.timeout,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const transactions = await response.json();
+
+    // Filter and format token transfers
+    const transfers = transactions
+      .filter(tx => tx.tokenTransfers?.length > 0)
+      .flatMap(tx =>
+        tx.tokenTransfers
+          .filter(t => t.mint === mintAddress)
+          .map(t => ({
+            signature: tx.signature,
+            timestamp: tx.timestamp,
+            from: t.fromUserAccount,
+            to: t.toUserAccount,
+            amount: t.tokenAmount,
+            slot: tx.slot,
+          }))
+      );
+
+    setCache(cacheKey, transfers, METADATA_CONFIG.cacheTTL.transfers);
+
+    return transfers;
+  } catch (error) {
+    console.error('[TokenMetadata] Get transfers error:', error.message);
+    return [];
+  }
 }
 
 /**
@@ -452,36 +446,35 @@ async function getTokenTransfers(mintAddress, options = {}) {
  * @returns {Promise<Object[]>}
  */
 async function getTokenBurns(mintAddress, options = {}) {
-    const { limit = 100 } = options;
+  const { limit = 100 } = options;
 
-    try {
-        const url = `${METADATA_CONFIG.apiBase}/v0/addresses/${mintAddress}/transactions?api-key=${HELIUS_API_KEY}&type=BURN&limit=${limit}`;
+  try {
+    const url = `${METADATA_CONFIG.apiBase}/v0/addresses/${mintAddress}/transactions?api-key=${HELIUS_API_KEY}&type=BURN&limit=${limit}`;
 
-        const response = await fetch(url, {
-            timeout: METADATA_CONFIG.timeout
-        });
+    const response = await fetch(url, {
+      timeout: METADATA_CONFIG.timeout,
+    });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const transactions = await response.json();
-
-        return transactions.map(tx => {
-            const burn = tx.tokenTransfers?.find(t => t.mint === mintAddress);
-            return {
-                signature: tx.signature,
-                timestamp: tx.timestamp,
-                wallet: tx.feePayer,
-                amount: burn?.tokenAmount || 0,
-                slot: tx.slot
-            };
-        });
-
-    } catch (error) {
-        console.error('[TokenMetadata] Get burns error:', error.message);
-        return [];
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
+
+    const transactions = await response.json();
+
+    return transactions.map(tx => {
+      const burn = tx.tokenTransfers?.find(t => t.mint === mintAddress);
+      return {
+        signature: tx.signature,
+        timestamp: tx.timestamp,
+        wallet: tx.feePayer,
+        amount: burn?.tokenAmount || 0,
+        slot: tx.slot,
+      };
+    });
+  } catch (error) {
+    console.error('[TokenMetadata] Get burns error:', error.message);
+    return [];
+  }
 }
 
 // ============================================
@@ -494,45 +487,43 @@ async function getTokenBurns(mintAddress, options = {}) {
  * @returns {Promise<Object>}
  */
 async function getTokenPrice(mintAddress) {
-    const cacheKey = `price:${mintAddress}`;
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
+  const cacheKey = `price:${mintAddress}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
 
-    try {
-        // Use Jupiter Price API
-        const response = await fetch(
-            `https://price.jup.ag/v6/price?ids=${mintAddress}`,
-            { timeout: 10000 }
-        );
+  try {
+    // Use Jupiter Price API
+    const response = await fetch(`https://price.jup.ag/v6/price?ids=${mintAddress}`, {
+      timeout: 10000,
+    });
 
-        if (!response.ok) {
-            throw new Error(`Price API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const priceData = data.data?.[mintAddress];
-
-        if (!priceData) {
-            return { price: 0, source: 'none' };
-        }
-
-        const result = {
-            price: priceData.price || 0,
-            mintSymbol: priceData.mintSymbol || '',
-            vsToken: priceData.vsToken || 'USDC',
-            vsTokenSymbol: priceData.vsTokenSymbol || 'USDC',
-            confidence: priceData.confidence || 'low',
-            source: 'jupiter'
-        };
-
-        setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.price);
-
-        return result;
-
-    } catch (error) {
-        console.error('[TokenMetadata] Get price error:', error.message);
-        return { price: 0, source: 'error' };
+    if (!response.ok) {
+      throw new Error(`Price API error: ${response.status}`);
     }
+
+    const data = await response.json();
+    const priceData = data.data?.[mintAddress];
+
+    if (!priceData) {
+      return { price: 0, source: 'none' };
+    }
+
+    const result = {
+      price: priceData.price || 0,
+      mintSymbol: priceData.mintSymbol || '',
+      vsToken: priceData.vsToken || 'USDC',
+      vsTokenSymbol: priceData.vsTokenSymbol || 'USDC',
+      confidence: priceData.confidence || 'low',
+      source: 'jupiter',
+    };
+
+    setCache(cacheKey, result, METADATA_CONFIG.cacheTTL.price);
+
+    return result;
+  } catch (error) {
+    console.error('[TokenMetadata] Get price error:', error.message);
+    return { price: 0, source: 'error' };
+  }
 }
 
 // ============================================
@@ -544,24 +535,24 @@ async function getTokenPrice(mintAddress) {
  * @returns {Promise<Object>}
  */
 async function healthCheck() {
-    const start = Date.now();
+  const start = Date.now();
 
-    try {
-        // Test metadata endpoint
-        await getTokenMetadata('So11111111111111111111111111111111111111112');
+  try {
+    // Test metadata endpoint
+    await getTokenMetadata('So11111111111111111111111111111111111111112');
 
-        return {
-            healthy: true,
-            latency: Date.now() - start,
-            cacheSize: cache.size
-        };
-    } catch (error) {
-        return {
-            healthy: false,
-            error: error.message,
-            latency: Date.now() - start
-        };
-    }
+    return {
+      healthy: true,
+      latency: Date.now() - start,
+      cacheSize: cache.size,
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error.message,
+      latency: Date.now() - start,
+    };
+  }
 }
 
 /**
@@ -569,10 +560,10 @@ async function healthCheck() {
  * @returns {Object}
  */
 function getMetrics() {
-    return {
-        cacheSize: cache.size,
-        apiKeyConfigured: !!HELIUS_API_KEY
-    };
+  return {
+    cacheSize: cache.size,
+    apiKeyConfigured: !!HELIUS_API_KEY,
+  };
 }
 
 /**
@@ -580,15 +571,15 @@ function getMetrics() {
  * @param {string} pattern - Optional pattern to match
  */
 function clearCache(pattern = null) {
-    if (!pattern) {
-        cache.clear();
-        return;
+  if (!pattern) {
+    cache.clear();
+    return;
+  }
+  for (const key of cache.keys()) {
+    if (key.includes(pattern)) {
+      cache.delete(key);
     }
-    for (const key of cache.keys()) {
-        if (key.includes(pattern)) {
-            cache.delete(key);
-        }
-    }
+  }
 }
 
 // ============================================
@@ -596,26 +587,26 @@ function clearCache(pattern = null) {
 // ============================================
 
 module.exports = {
-    // Token metadata
-    getTokenMetadata,
-    getBatchTokenMetadata,
+  // Token metadata
+  getTokenMetadata,
+  getBatchTokenMetadata,
 
-    // Holders
-    getTokenHolders,
-    analyzeHolderDistribution,
+  // Holders
+  getTokenHolders,
+  analyzeHolderDistribution,
 
-    // Transfers
-    getTokenTransfers,
-    getTokenBurns,
+  // Transfers
+  getTokenTransfers,
+  getTokenBurns,
 
-    // Price
-    getTokenPrice,
+  // Price
+  getTokenPrice,
 
-    // Utilities
-    healthCheck,
-    getMetrics,
-    clearCache,
+  // Utilities
+  healthCheck,
+  getMetrics,
+  clearCache,
 
-    // Configuration
-    METADATA_CONFIG
+  // Configuration
+  METADATA_CONFIG,
 };
