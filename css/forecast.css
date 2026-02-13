@@ -689,6 +689,8 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-xs);
   padding: var(--space-sm) var(--space-md);
+  flex: 1;
+  min-height: 120px;
 }
 
 .prediction-btn {
@@ -698,6 +700,10 @@ body {
   cursor: pointer;
   transition: all var(--duration-normal);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .prediction-btn.up {

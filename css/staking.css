@@ -466,6 +466,19 @@
 }
 
 /* ============================================
+   VARIANT SWATCHES (drawer preview)
+   ============================================ */
+.eco-variant-swatch--cosmos {
+  background: linear-gradient(135deg, #0a0a1a 30%, #7b93ff);
+}
+.eco-variant-swatch--vault {
+  background: linear-gradient(135deg, #0f0f14 30%, #eab308);
+}
+.eco-variant-swatch--aurora {
+  background: linear-gradient(135deg, #021a1a 30%, #2dd4bf);
+}
+
+/* ============================================
    VARIANT 2: VAULT — Steel + Gold, metallic secure
    ============================================ */
 [data-variant='2'] .staking-bg {

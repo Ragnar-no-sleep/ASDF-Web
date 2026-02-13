@@ -374,9 +374,14 @@ app.get('/burns', (req, res) => {
   res.sendFile(path.join(__dirname, 'burns.html'));
 });
 
-// Route /asdforecast to forecast.html (Prediction Market)
-app.get('/asdforecast', (req, res) => {
+// Route /forecast to forecast.html (Prediction Market)
+app.get('/forecast', (req, res) => {
   res.sendFile(path.join(__dirname, 'forecast.html'));
+});
+
+// Backward compat redirect
+app.get('/asdforecast', (req, res) => {
+  res.redirect(301, '/forecast');
 });
 
 // Route /holdex to holdex.html (Token Tracker)
