@@ -532,7 +532,7 @@ function showLessonComplete(lesson, xpReward) {
       .join('') +
     '</ul>' +
     '</div>' +
-    '<button class="btn btn-primary journey-complete-btn" onclick="closeJourneyModal()">Continue</button>' +
+    '<button class="btn btn-primary journey-complete-btn" data-action="close-journey-modal">Continue</button>' +
     '</div>';
 
   // Hide navigation
@@ -630,6 +630,12 @@ function simpleMarkdown(text) {
 // ============================================
 // INITIALIZE ON DOM READY
 // ============================================
+
+// Event delegation for dynamically generated buttons
+document.addEventListener('click', function (e) {
+  var target = e.target.closest('[data-action="close-journey-modal"]');
+  if (target) closeJourneyModal();
+});
 
 document.addEventListener('DOMContentLoaded', function () {
   // Only init if we're on a page with journey elements

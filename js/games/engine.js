@@ -8292,10 +8292,3 @@ function closePumpArena() {
     }
   }
 }
-
-// Export functions to window for main.js access
-window.openPumpArena = openPumpArena;
-window.closePumpArena = closePumpArena;
-window.startGame = startGame;
-window.openGame = openGame;
-window.closeGame = closeGame;

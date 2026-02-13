@@ -628,39 +628,3 @@ if (typeof window !== 'undefined') {
     Handlers: EventHandlers,
   };
 }
-
-// ============================================
-// LEGACY COMPATIBILITY
-// ============================================
-
-/**
- * Legacy function exports for backwards compatibility
- * These will be gradually deprecated
- */
-if (typeof window !== 'undefined') {
-  // Legacy openDocModal
-  window.openDocModal = projectId => {
-    console.warn('[Legacy] openDocModal is deprecated, use BuildApp.openProject()');
-    ModalFactory.openDoc(projectId);
-  };
-
-  // Legacy openFeatureModal
-  window.openFeatureModal = (projectId, featureIndex) => {
-    console.warn('[Legacy] openFeatureModal is deprecated, use ModalFactory.openFeature()');
-    ModalFactory.openFeature(projectId, featureIndex);
-  };
-
-  // Legacy openComponentModal
-  window.openComponentModal = (projectId, componentIndex) => {
-    console.warn('[Legacy] openComponentModal is deprecated, use ModalFactory.openComponent()');
-    ModalFactory.openComponent(projectId, componentIndex);
-  };
-
-  // Legacy projectsData access
-  Object.defineProperty(window, 'projectsData', {
-    get() {
-      console.warn('[Legacy] projectsData is deprecated, use DataAdapter.getProjects()');
-      return DataAdapter.getProjects();
-    },
-  });
-}

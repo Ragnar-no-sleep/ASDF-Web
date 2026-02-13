@@ -21,7 +21,7 @@ import {
   off,
   createElement,
   setStyles,
-  waitForTransition
+  waitForTransition,
 } from '../utils/dom.js';
 
 // ============================================
@@ -31,7 +31,7 @@ import {
 const PANEL_CONFIG = {
   width: '400px',
   maxWidth: '90vw',
-  animationDuration: 300
+  animationDuration: 300,
 };
 
 // ============================================
@@ -57,7 +57,7 @@ const ProjectPanelComponent = {
     this.bindEvents();
 
     // Subscribe to project selection events
-    BuildState.subscribe(EVENTS.TREE_NODE_CLICK, (data) => {
+    BuildState.subscribe(EVENTS.TREE_NODE_CLICK, data => {
       // Panel opens via explicit call, not auto on tree click
       // This allows the modal system to work alongside
     });
@@ -71,7 +71,7 @@ const ProjectPanelComponent = {
   createPanel() {
     // Create backdrop
     backdropElement = createElement('div', {
-      className: 'project-panel-backdrop'
+      className: 'project-panel-backdrop',
     });
 
     // Create panel
@@ -79,7 +79,7 @@ const ProjectPanelComponent = {
       className: 'project-panel',
       'aria-hidden': 'true',
       role: 'dialog',
-      'aria-label': 'Project Details'
+      'aria-label': 'Project Details',
     });
 
     panelElement.innerHTML = `
@@ -200,7 +200,7 @@ const ProjectPanelComponent = {
     isOpen = true;
 
     // Bind escape key
-    escapeHandler = (e) => {
+    escapeHandler = e => {
       if (e.key === 'Escape') this.close();
     };
     on(document, 'keydown', escapeHandler);
@@ -357,9 +357,13 @@ const ProjectPanelComponent = {
       return;
     }
 
-    grid.innerHTML = skills.map(skill => `
+    grid.innerHTML = skills
+      .map(
+        skill => `
       <span class="skill-tag">${escapeHtml(skill)}</span>
-    `).join('');
+    `
+      )
+      .join('');
   },
 
   /**
@@ -375,13 +379,17 @@ const ProjectPanelComponent = {
       return;
     }
 
-    list.innerHTML = commits.map(commit => `
+    list.innerHTML = commits
+      .map(
+        commit => `
       <div class="commit-item">
         <span class="commit-sha">${escapeHtml(commit.sha)}</span>
         <span class="commit-message">${escapeHtml(commit.message)}</span>
         <span class="commit-time">${GitHubApiService.formatTimeAgo(commit.date)}</span>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   },
 
   /**
@@ -403,12 +411,17 @@ const ProjectPanelComponent = {
       return;
     }
 
-    grid.innerHTML = contributors.slice(0, 5).map(contrib => `
+    grid.innerHTML = contributors
+      .slice(0, 5)
+      .map(
+        contrib => `
       <a href="${escapeHtml(contrib.url)}" class="builder-badge" target="_blank" rel="noopener" title="${escapeHtml(contrib.login)}">
         <img src="${escapeHtml(contrib.avatar)}" alt="${escapeHtml(contrib.login)}" class="builder-avatar" loading="lazy" />
         <span class="builder-commits">${contrib.contributions}</span>
       </a>
-    `).join('');
+    `
+      )
+      .join('');
   },
 
   /**
@@ -434,7 +447,7 @@ const ProjectPanelComponent = {
         <div class="panel-error">
           <span class="error-icon">&#9888;</span>
           <p>${sanitizeText(message)}</p>
-          <button class="panel-btn panel-btn-secondary" onclick="ProjectPanelComponent.close()">Close</button>
+          <button class="panel-btn panel-btn-secondary" data-action="close-panel">Close</button>
         </div>
       `;
     }
@@ -455,8 +468,14 @@ const ProjectPanelComponent = {
    */
   getCurrentProject() {
     return currentProjectId;
-  }
+  },
 };
+
+// Event delegation for dynamically generated buttons
+document.addEventListener('click', e => {
+  const target = e.target.closest('[data-action="close-panel"]');
+  if (target) ProjectPanelComponent.close();
+});
 
 // ============================================
 // EXPORTS

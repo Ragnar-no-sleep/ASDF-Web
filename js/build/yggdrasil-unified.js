@@ -1276,7 +1276,7 @@ const YggdrasilCosmos = {
       }
 
       <div class="ygg-skill-actions">
-        <button class="ygg-btn ygg-btn-primary" onclick="YggdrasilCosmos.startSkillLearning('${skillId}')">
+        <button class="ygg-btn ygg-btn-primary" data-action="start-skill-learning" data-skill="${skillId}">
           Start Learning
         </button>
       </div>
@@ -3070,7 +3070,7 @@ const YggdrasilCosmos = {
       </div>
 
       <div class="component-modal-actions">
-        <button class="ygg-btn ygg-btn-primary" onclick="YggdrasilCosmos.openProjectModal('${projectId}')">
+        <button class="ygg-btn ygg-btn-primary" data-action="open-project-modal" data-project="${projectId}">
           View Full Project
         </button>
         ${
@@ -3227,6 +3227,19 @@ const YggdrasilCosmos = {
     this.initialized = false;
   },
 };
+
+// Event delegation for dynamically generated buttons
+document.addEventListener('click', e => {
+  const skillBtn = e.target.closest('[data-action="start-skill-learning"]');
+  if (skillBtn) {
+    YggdrasilCosmos.startSkillLearning(skillBtn.dataset.skill);
+    return;
+  }
+  const projectBtn = e.target.closest('[data-action="open-project-modal"]');
+  if (projectBtn) {
+    YggdrasilCosmos.openProjectModal(projectBtn.dataset.project);
+  }
+});
 
 // Export
 export { YggdrasilCosmos };

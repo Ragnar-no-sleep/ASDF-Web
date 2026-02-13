@@ -147,7 +147,7 @@ function renderTokenList(tokens) {
   container.innerHTML = tokens
     .map(
       (token, index) => `
-        <div class="token-row" data-token="${escapeHtml(token.address || '')}" onclick="openTokenModal('${escapeHtml(token.address || '')}')">
+        <div class="token-row" data-token="${escapeHtml(token.address || '')}" data-action="open-token-modal">
             <span class="token-rank">${index + 1}</span>
             <div class="token-info">
                 <div class="token-icon">${escapeHtml(token.symbol?.[0] || '?')}</div>
@@ -314,8 +314,11 @@ async function init() {
   console.log('[HolDEX] Initialized');
 }
 
-// Expose modal function globally for onclick
-window.openTokenModal = openTokenModal;
+// Event delegation for token rows (replaces inline onclick)
+document.addEventListener('click', e => {
+  const row = e.target.closest('[data-action="open-token-modal"]');
+  if (row) openTokenModal(row.dataset.token);
+});
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);

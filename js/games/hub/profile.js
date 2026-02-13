@@ -550,7 +550,7 @@ const Profile = {
                 <div class="profile-inventory-empty">
                     <div class="empty-icon">🎨</div>
                     <div class="empty-text">${this.inventoryFilter === 'all' ? 'No cosmetics yet' : 'No items in this category'}</div>
-                    <button class="btn-valhalla-secondary" onclick="Profile.openShop()">
+                    <button class="btn-valhalla-secondary" data-action="open-shop">
                         Browse Shop
                     </button>
                 </div>
@@ -831,6 +831,12 @@ const Profile = {
     this.renderHistory();
   },
 };
+
+// Event delegation for dynamically generated buttons
+document.addEventListener('click', e => {
+  const target = e.target.closest('[data-action="open-shop"]');
+  if (target) Profile.openShop();
+});
 
 // ============================================
 // AUTO INIT
