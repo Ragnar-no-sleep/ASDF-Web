@@ -3,6 +3,8 @@
  * Philosophy: Controlled chaos. Natural feel. Consumer-grade polish.
  */
 
+import { initInteractions, hapticFeedback, animateCounter } from './utils/interactions.js';
+
 (() => {
   'use strict';
 
@@ -276,6 +278,19 @@
     initTools();
     initFullscreenPrompt();
     initEasterEgg();
+
+    // Init micro-interactions system
+    initInteractions({
+      ripples: true,
+      haptics: true,
+      hoverScale: true,
+      parallax: false, // Using custom parallax above
+      glowHover: true,
+      ripplesSelector: '.hub-orbit-item, button, .terrier-portal',
+      hapticsSelector: '.hub-orbit-item, button',
+      hoverScaleSelector: '.hub-orbit-item, .terrier-portal',
+      glowHoverSelector: '.hub-orbit-item',
+    });
   };
 
   if (document.readyState === 'loading') {

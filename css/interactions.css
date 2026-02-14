@@ -1,0 +1,378 @@
+/**
+ * ASDF Interactions CSS
+ * Visual styles for micro-interactions
+ *
+ * Requires: design-tokens.css
+ *
+ * Usage:
+ *   @import url('./interactions.css');
+ */
+
+/* ============================================
+   RIPPLE EFFECT
+   ============================================ */
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-expand 600ms var(--ease-out);
+}
+
+@keyframes ripple-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.6;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   HOVER SCALE
+   ============================================ */
+
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-out);
+  will-change: transform;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* Variants */
+.hover-scale-sm:hover {
+  transform: scale(1.01);
+}
+
+.hover-scale-lg:hover {
+  transform: scale(1.05);
+}
+
+/* ============================================
+   GLOW EFFECTS
+   ============================================ */
+
+.glow-hover {
+  position: relative;
+  transition:
+    box-shadow var(--duration-normal) var(--ease-out),
+    filter var(--duration-normal) var(--ease-out);
+}
+
+.glow-hover.glow-active,
+.glow-hover:hover {
+  box-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+  filter: brightness(1.1);
+}
+
+/* Fire glow */
+.glow-fire {
+  box-shadow: var(--shadow-glow-fire);
+  animation: glow-pulse-fire 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-fire {
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--color-fire-glow);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--color-fire-glow);
+  }
+}
+
+/* Ice glow */
+.glow-ice {
+  box-shadow: var(--shadow-glow-ice);
+  animation: glow-pulse-ice 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-ice {
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--color-ice-glow);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--color-ice-glow);
+  }
+}
+
+/* ============================================
+   BUTTON INTERACTIONS
+   ============================================ */
+
+button,
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-all);
+}
+
+button:hover,
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Loading state */
+.btn-loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================
+   CARD INTERACTIONS
+   ============================================ */
+
+.card {
+  transition: var(--transition-all);
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   FOCUS STATES
+   ============================================ */
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-fire);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 69, 0, 0.2);
+}
+
+/* ============================================
+   ENTRANCE ANIMATIONS
+   ============================================ */
+
+.fade-in {
+  animation: fade-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-up {
+  animation: slide-up var(--duration-normal) var(--ease-out);
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-down {
+  animation: slide-down var(--duration-normal) var(--ease-out);
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scale-in {
+  animation: scale-in var(--duration-normal) var(--ease-spring);
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   LOADING INDICATORS
+   ============================================ */
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-fire);
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulsing dot */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-fire);
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* ============================================
+   PARTICLE EFFECTS (for burns, stakes)
+   ============================================ */
+
+.particles {
+  position: relative;
+  overflow: visible;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--color-fire);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle-rise 1.5s ease-out forwards;
+}
+
+@keyframes particle-rise {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.5);
+  }
+}
+
+/* ============================================
+   COUNTER ANIMATIONS
+   ============================================ */
+
+.counter {
+  font-variant-numeric: tabular-nums;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.counter.increment {
+  color: var(--color-success);
+  animation: counter-bump var(--duration-normal) var(--ease-spring);
+}
+
+.counter.decrement {
+  color: var(--color-error);
+  animation: counter-bump var(--duration-normal) var(--ease-spring);
+}
+
+@keyframes counter-bump {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ============================================
+   PARALLAX
+   ============================================ */
+
+.parallax {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .ripple,
+  .glow-fire,
+  .glow-ice,
+  .parallax {
+    animation: none !important;
+    transition: none !important;
+  }
+}
