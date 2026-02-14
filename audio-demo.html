@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Feedback Demo - ASDF</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+        color: #e0e6ed;
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ea4e33 0%, #ff8c42 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        color: #8b92a7;
+        font-size: 1.1rem;
+      }
+
+      .controls {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .control-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .control-row:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        font-weight: 600;
+        min-width: 100px;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .toggle-switch.active {
+        background: #ea4e33;
+      }
+
+      .toggle-switch::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+
+      .toggle-switch.active::after {
+        transform: translateX(24px);
+      }
+
+      .volume-control {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      input[type='range'] {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        outline: none;
+      }
+
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #ea4e33;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      input[type='range']::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      input[type='range']::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: #ea4e33;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      input[type='range']::-moz-range-thumb:hover {
+        transform: scale(1.2);
+      }
+
+      .volume-value {
+        font-weight: 700;
+        color: #ea4e33;
+        min-width: 45px;
+        text-align: right;
+      }
+
+      .section {
+        margin-bottom: 2rem;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #ea4e33;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .sound-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .sound-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(234, 78, 51, 0.3);
+        border-radius: 8px;
+        padding: 1.5rem 1rem;
+        color: #e0e6ed;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+
+      .sound-btn:hover {
+        background: rgba(234, 78, 51, 0.1);
+        border-color: rgba(234, 78, 51, 0.6);
+        transform: translateY(-2px);
+      }
+
+      .sound-btn:active {
+        transform: translateY(0);
+      }
+
+      .sound-btn .icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      .sound-btn .label {
+        font-size: 0.9rem;
+        color: #8b92a7;
+      }
+
+      .info-box {
+        background: rgba(234, 78, 51, 0.1);
+        border: 1px solid rgba(234, 78, 51, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 2rem;
+      }
+
+      .info-box h3 {
+        color: #ea4e33;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      .info-box p {
+        color: #b0b7c3;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .info-box ul {
+        margin-top: 0.5rem;
+        padding-left: 1.5rem;
+        color: #b0b7c3;
+        line-height: 1.8;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        .sound-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🔊 Audio Feedback System</h1>
+        <p class="subtitle">Phase 1: Visceral Feedback - Audio Component</p>
+      </header>
+
+      <div class="controls">
+        <div class="control-row">
+          <label for="toggle">Audio Enabled:</label>
+          <div class="toggle-switch active" id="toggle"></div>
+        </div>
+        <div class="control-row">
+          <label for="volume">Volume:</label>
+          <div class="volume-control">
+            <input type="range" id="volume" min="0" max="100" value="70" />
+            <span class="volume-value" id="volumeValue">70%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">
+          <span>🎵</span>
+          <span>Mechanical Sounds</span>
+        </h2>
+        <div class="sound-grid">
+          <button class="sound-btn" data-sound="click">
+            <span class="icon">🖱️</span>
+            <div class="label">Click</div>
+          </button>
+          <button class="sound-btn" data-sound="hover">
+            <span class="icon">👆</span>
+            <div class="label">Hover</div>
+          </button>
+          <button class="sound-btn" data-sound="whoosh">
+            <span class="icon">💨</span>
+            <div class="label">Whoosh</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">
+          <span>🔔</span>
+          <span>Feedback Chimes</span>
+        </h2>
+        <div class="sound-grid">
+          <button class="sound-btn" data-sound="success">
+            <span class="icon">✅</span>
+            <div class="label">Success</div>
+          </button>
+          <button class="sound-btn" data-sound="error">
+            <span class="icon">❌</span>
+            <div class="label">Error</div>
+          </button>
+          <button class="sound-btn" data-sound="warning">
+            <span class="icon">⚠️</span>
+            <div class="label">Warning</div>
+          </button>
+          <button class="sound-btn" data-sound="burn">
+            <span class="icon">🔥</span>
+            <div class="label">Burn</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h3>💡 About Audio Feedback</h3>
+        <p>
+          This audio system uses the Web Audio API to generate sounds procedurally (no external
+          files needed). All sounds are synthesized in real-time using oscillators, filters, and
+          noise generators.
+        </p>
+        <ul>
+          <li><strong>Click:</strong> Sharp white noise burst with bandpass filter</li>
+          <li><strong>Hover:</strong> Soft sine wave descending sweep</li>
+          <li><strong>Whoosh:</strong> Sawtooth sweep with lowpass filter</li>
+          <li><strong>Success:</strong> Ascending three-note chord (C-E-G)</li>
+          <li><strong>Error:</strong> Descending two-note interval (G-D)</li>
+          <li><strong>Warning:</strong> Sustained note with vibrato</li>
+          <li><strong>Burn:</strong> Crackling noise with bandpass filter</li>
+        </ul>
+      </div>
+    </div>
+
+    <script type="module">
+      import { AudioFeedback } from './js/utils/audio-feedback.js';
+
+      // Initialize on first user interaction
+      document.addEventListener(
+        'click',
+        () => {
+          AudioFeedback.init();
+        },
+        { once: true }
+      );
+
+      // Load saved settings
+      const toggle = document.getElementById('toggle');
+      const volumeSlider = document.getElementById('volume');
+      const volumeValue = document.getElementById('volumeValue');
+
+      // Set initial states from AudioFeedback
+      toggle.classList.toggle('active', AudioFeedback.isEnabled());
+      volumeSlider.value = AudioFeedback.getVolume();
+      volumeValue.textContent = AudioFeedback.getVolume() + '%';
+
+      // Toggle audio on/off
+      toggle.addEventListener('click', () => {
+        const enabled = !AudioFeedback.isEnabled();
+        AudioFeedback.toggle(enabled);
+        toggle.classList.toggle('active', enabled);
+      });
+
+      // Volume control
+      volumeSlider.addEventListener('input', e => {
+        const volume = parseInt(e.target.value);
+        AudioFeedback.setVolume(volume);
+        volumeValue.textContent = volume + '%';
+      });
+
+      // Sound buttons
+      document.querySelectorAll('.sound-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sound = btn.dataset.sound;
+          AudioFeedback.play(sound);
+
+          // Visual feedback
+          btn.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            btn.style.transform = '';
+          }, 100);
+        });
+      });
+    </script>
+  </body>
+</html>
