@@ -12,6 +12,7 @@ import { ProgressTracker, GENERALIST_TRACKS } from './progress-tracker.js';
 import { DURATION, DELAY, NOTIFICATION } from './config/timing.js';
 import { DataAdapter } from './data/adapter.js';
 import { BurnApiService } from './services/burn-api.js';
+import { YggdrasilQuiz, QUIZ_QUESTIONS } from './yggdrasil-quiz.js';
 
 /**
  * Promise with timeout wrapper
@@ -85,36 +86,8 @@ const YggdrasilCosmos = {
   burnPollInterval: null,
   burnIsLive: false,
 
-  // Quiz questions (from config)
-  quizQuestions: [
-    {
-      id: 'q1',
-      text: 'What excites you most?',
-      options: [
-        { track: 'dev', text: 'Building systems that scale', icon: '🔧' },
-        { track: 'games', text: 'Creating immersive experiences', icon: '🎮' },
-        { track: 'content', text: 'Growing communities & stories', icon: '📈' },
-      ],
-    },
-    {
-      id: 'q2',
-      text: 'Your ideal Friday night?',
-      options: [
-        { track: 'dev', text: 'Debugging a tricky issue', icon: '🐛' },
-        { track: 'games', text: 'Playtesting new mechanics', icon: '🎲' },
-        { track: 'content', text: 'Editing content & metrics', icon: '🎥' },
-      ],
-    },
-    {
-      id: 'q3',
-      text: 'Pick your superpower',
-      options: [
-        { track: 'dev', text: 'Read any codebase instantly', icon: '⚡' },
-        { track: 'games', text: 'Design perfect game loops', icon: '🔄' },
-        { track: 'content', text: 'Predict viral content', icon: '🔮' },
-      ],
-    },
-  ],
+  // Quiz questions (imported from yggdrasil-quiz.js)
+  quizQuestions: QUIZ_QUESTIONS,
 
   // Track data (from formations.json)
   tracksData: {
@@ -1551,53 +1524,10 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Render Quiz section (Find Your Path)
+   * Render Quiz section (delegated to YggdrasilQuiz module)
    */
   renderQuizSection() {
-    if (this.quizState.completed && this.quizState.result) {
-      const track = this.tracksData[this.quizState.result];
-      return `
-                <div class="ygg-quiz-result">
-                    <div class="ygg-quiz-result-header">
-                        <span class="ygg-quiz-result-icon" style="color: ${track.color}">${track.icon}</span>
-                        <div class="ygg-quiz-result-text">
-                            <span class="ygg-quiz-result-label">Your Path</span>
-                            <span class="ygg-quiz-result-track" style="color: ${track.color}">${track.name}</span>
-                        </div>
-                    </div>
-                    <p class="ygg-quiz-result-desc">Focus on ${track.name} to maximize your builder potential.</p>
-                    <button class="ygg-quiz-retake">Retake Quiz</button>
-                </div>
-            `;
-    }
-
-    const q = this.quizQuestions[this.quizState.currentQuestion];
-    const progress = (this.quizState.currentQuestion / this.quizQuestions.length) * 100;
-
-    return `
-            <div class="ygg-quiz-section">
-                <div class="ygg-quiz-header">
-                    <span class="ygg-quiz-title">🧭 Find Your Path</span>
-                    <span class="ygg-quiz-step">${this.quizState.currentQuestion + 1}/${this.quizQuestions.length}</span>
-                </div>
-                <div class="ygg-quiz-progress">
-                    <div class="ygg-quiz-progress-fill" style="width: ${progress}%"></div>
-                </div>
-                <p class="ygg-quiz-question">${q.text}</p>
-                <div class="ygg-quiz-options">
-                    ${q.options
-                      .map(
-                        opt => `
-                        <button class="ygg-quiz-option" data-track="${opt.track}">
-                            <span class="ygg-quiz-option-icon">${opt.icon}</span>
-                            <span class="ygg-quiz-option-text">${opt.text}</span>
-                        </button>
-                    `
-                      )
-                      .join('')}
-                </div>
-            </div>
-        `;
+    return YggdrasilQuiz.renderQuizSection(this.quizState, this.tracksData);
   },
 
   /**
@@ -1652,38 +1582,18 @@ const YggdrasilCosmos = {
   },
 
   /**
-   * Answer quiz question
+   * Answer quiz question (delegated to YggdrasilQuiz module)
    */
   answerQuiz(track) {
-    this.quizState.answers.push(track);
-
-    if (this.quizState.currentQuestion < this.quizQuestions.length - 1) {
-      this.quizState.currentQuestion++;
-      this.updateQuizUI();
-    } else {
-      // Quiz complete - calculate result
-      const counts = { dev: 0, games: 0, content: 0 };
-      this.quizState.answers.forEach(t => counts[t]++);
-      const result = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-
-      this.quizState.completed = true;
-      this.quizState.result = result;
-      this.saveState();
-      this.updateQuizUI();
-    }
+    YggdrasilQuiz.answerQuiz(this.quizState, track, () => this.saveState());
+    this.updateQuizUI();
   },
 
   /**
-   * Reset quiz
+   * Reset quiz (delegated to YggdrasilQuiz module)
    */
   resetQuiz() {
-    this.quizState = {
-      currentQuestion: 0,
-      answers: [],
-      completed: false,
-      result: null,
-    };
-    this.saveState();
+    YggdrasilQuiz.resetQuiz(this.quizState, () => this.saveState());
     this.updateQuizUI();
   },
 
