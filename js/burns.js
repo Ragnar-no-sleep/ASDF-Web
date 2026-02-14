@@ -5,6 +5,11 @@
 
 'use strict';
 
+// Phase 1 Visceral Feedback - Import modules
+import { interactions } from './utils/interactions.js';
+import { contextualAnimations } from './utils/contextual-animations.js';
+import { AudioFeedback } from './utils/audio-feedback.js';
+
 // Use relative URL in dev (proxied by Vite), full URL in production
 const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
@@ -97,6 +102,13 @@ function animateCounter(element, target, duration = 2000) {
   const increment = target / (duration / 16);
   let current = start;
 
+  // Trigger burn particles on the mega stat
+  const megaStatValue = document.getElementById('total-burned');
+  if (megaStatValue && element.closest('#total-burned')) {
+    contextualAnimations.burnParticles(megaStatValue, target);
+    AudioFeedback.play('burn');
+  }
+
   const timer = setInterval(() => {
     current += increment;
     if (current >= target) {
@@ -109,7 +121,13 @@ function animateCounter(element, target, duration = 2000) {
 
 async function updateStats() {
   const stats = await fetchBurnStats();
-  if (!stats) return;
+  if (!stats) {
+    AudioFeedback.play('error');
+    return;
+  }
+
+  // Success chime on data load
+  AudioFeedback.play('success');
 
   // Total burned
   const totalBurnedEl = document.querySelector('#total-burned .counter-number');
@@ -235,7 +253,11 @@ async function updateRecentBurns() {
 function setupTabListeners() {
   const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', e => {
+      // Visceral feedback: click sound + ripple
+      AudioFeedback.play('click');
+      interactions.ripple(tab, e);
+
       // Update active state
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
@@ -243,6 +265,42 @@ function setupTabListeners() {
       // Fetch new data
       const period = tab.dataset.period;
       updateLeaderboard(period);
+    });
+  });
+}
+
+// ============================================
+// VISCERAL FEEDBACK SETUP
+// ============================================
+
+function setupViscernalFeedback() {
+  // Initialize audio system
+  AudioFeedback.init();
+
+  // Add hover effects to stat cards
+  const statCards = document.querySelectorAll('.stat-card');
+  statCards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      AudioFeedback.play('hover');
+      interactions.glow(card);
+    });
+  });
+
+  // Add click effects to CTA button
+  const ctaBtn = document.querySelector('.cta-btn');
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', e => {
+      AudioFeedback.play('click');
+      interactions.ripple(ctaBtn, e);
+    });
+  }
+
+  // Add ripple to podium places on click
+  const podiumPlaces = document.querySelectorAll('.podium-place');
+  podiumPlaces.forEach(place => {
+    place.addEventListener('click', e => {
+      AudioFeedback.play('click');
+      interactions.ripple(place, e);
     });
   });
 }
@@ -256,6 +314,9 @@ async function init() {
 
   // Setup event listeners
   setupTabListeners();
+
+  // Setup visceral feedback
+  setupViscernalFeedback();
 
   // Load initial data
   await Promise.all([updateStats(), updateLeaderboard('all'), updateRecentBurns()]);
