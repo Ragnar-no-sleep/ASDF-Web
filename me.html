@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - ASDF</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/interactions.css">
+    <link rel="stylesheet" href="css/ecosystem.css">
+
+    <style>
+        body {
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-2xl);
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: var(--space-3xl);
+        }
+
+        .dashboard-title {
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, var(--color-fire), var(--color-ice));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-subtitle {
+            color: var(--color-text-secondary);
+            font-size: var(--text-base);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: var(--glass-blur);
+            transition: var(--transition-all);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--space-lg);
+            color: var(--color-fire);
+        }
+
+        /* K-Score Widget */
+        .kscore-display {
+            text-align: center;
+            padding: var(--space-lg);
+        }
+
+        .kscore-value {
+            font-size: 72px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-fire), var(--color-fire-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-md);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kscore-breakdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: var(--space-lg);
+            gap: var(--space-md);
+        }
+
+        .kscore-component {
+            text-align: center;
+            flex: 1;
+        }
+
+        .kscore-component-value {
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .kscore-component-label {
+            font-size: var(--text-sm);
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Streak Widget */
+        .streak-display {
+            text-align: center;
+            padding: var(--space-lg);
+        }
+
+        .streak-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-fire);
+            margin-bottom: var(--space-sm);
+        }
+
+        .streak-label {
+            font-size: var(--text-base);
+            color: var(--color-text-secondary);
+        }
+
+        .streak-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: var(--space-lg);
+        }
+
+        .streak-day {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            transition: all 200ms ease;
+        }
+
+        .streak-day.active {
+            background: var(--color-fire);
+        }
+
+        .streak-day.today {
+            border: 2px solid var(--color-fire);
+        }
+
+        /* Progress Widget */
+        .progress-item {
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-label {
+            font-weight: 500;
+        }
+
+        .progress-value {
+            color: var(--color-fire);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-fire), var(--color-fire-light));
+            transition: width 600ms ease-out;
+        }
+
+        /* Activity Heatmap */
+        .heatmap {
+            margin-top: var(--space-lg);
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(53, 1fr);
+            gap: 3px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            transition: all 200ms ease;
+        }
+
+        .heatmap-cell[data-level="1"] { background: rgba(255, 69, 0, 0.2); }
+        .heatmap-cell[data-level="2"] { background: rgba(255, 69, 0, 0.4); }
+        .heatmap-cell[data-level="3"] { background: rgba(255, 69, 0, 0.6); }
+        .heatmap-cell[data-level="4"] { background: rgba(255, 69, 0, 0.8); }
+        .heatmap-cell[data-level="5"] { background: rgba(255, 69, 0, 1); }
+
+        .heatmap-cell:hover {
+            transform: scale(1.5);
+            z-index: 10;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            font-size: var(--text-xs);
+            color: var(--color-text-tertiary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: var(--space-md);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-md);
+        }
+
+        .stat-value {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--color-fire);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--color-text-tertiary);
+        }
+
+        /* Achievements Showcase */
+        .achievement-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .achievement-badge {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--color-border-default);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+            transition: all 300ms ease;
+        }
+
+        .achievement-badge:hover {
+            transform: scale(1.05);
+            border-color: var(--color-fire);
+        }
+
+        .achievement-badge.unlocked {
+            border-color: var(--color-fire);
+            background: rgba(255, 69, 0, 0.1);
+        }
+
+        .achievement-badge.locked {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .achievement-name {
+            font-size: var(--text-xs);
+            text-align: center;
+            color: var(--color-text-secondary);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: var(--space-md) var(--space-lg);
+            background: var(--color-fire);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--color-fire-light);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">My Dashboard</h1>
+            <p class="dashboard-subtitle">Your ASDF journey at a glance</p>
+        </div>
+
+        <!-- Top Row: K-Score + Streak -->
+        <div class="dashboard-grid">
+            <!-- K-Score -->
+            <div class="card">
+                <h2 class="card-title">K-Score</h2>
+                <div class="kscore-display">
+                    <div class="kscore-value" id="kScoreValue">0</div>
+                    <div class="kscore-breakdown">
+                        <div class="kscore-component">
+                            <div class="kscore-component-value" id="depthValue">0</div>
+                            <div class="kscore-component-label">Depth</div>
+                        </div>
+                        <div class="kscore-component">
+                            <div class="kscore-component-value" id="ownershipValue">0</div>
+                            <div class="kscore-component-label">Ownership</div>
+                        </div>
+                        <div class="kscore-component">
+                            <div class="kscore-component-value" id="loyaltyValue">0</div>
+                            <div class="kscore-component-label">Loyalty</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Streak -->
+            <div class="card">
+                <h2 class="card-title">Daily Streak 🔥</h2>
+                <div class="streak-display">
+                    <div class="streak-value" id="streakValue">0</div>
+                    <div class="streak-label">days in a row</div>
+                </div>
+                <div class="streak-calendar" id="streakCalendar"></div>
+            </div>
+        </div>
+
+        <!-- Middle Row: Progress + Stats -->
+        <div class="dashboard-grid">
+            <!-- Exploration Progress -->
+            <div class="card">
+                <h2 class="card-title">Exploration Progress</h2>
+
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">Features Discovered</span>
+                        <span class="progress-value" id="featuresProgress">0/42</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="featuresBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">Achievements Unlocked</span>
+                        <span class="progress-value" id="achievementsProgress">0/20</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="achievementsBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">Pages Explored</span>
+                        <span class="progress-value" id="pagesProgress">0/10</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="pagesBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <h2 class="card-title">Quick Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalBurns">0</div>
+                        <div class="stat-label">Total Burns</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalStakes">0</div>
+                        <div class="stat-label">Stakes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="gamesPlayed">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="secretsFound">0</div>
+                        <div class="stat-label">Secrets Found</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Heatmap -->
+        <div class="card">
+            <h2 class="card-title">Activity Heatmap</h2>
+            <p style="font-size: var(--text-sm); color: var(--color-text-tertiary); margin-bottom: var(--space-lg);">
+                Your contribution to the ASDF ecosystem over the past year
+            </p>
+            <div class="heatmap">
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+                <div class="heatmap-legend">
+                    <span>Less</span>
+                    <div class="heatmap-cell" data-level="0"></div>
+                    <div class="heatmap-cell" data-level="1"></div>
+                    <div class="heatmap-cell" data-level="2"></div>
+                    <div class="heatmap-cell" data-level="3"></div>
+                    <div class="heatmap-cell" data-level="4"></div>
+                    <div class="heatmap-cell" data-level="5"></div>
+                    <span>More</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Achievements -->
+        <div class="card">
+            <h2 class="card-title">Recent Achievements</h2>
+            <div class="achievement-showcase" id="achievementShowcase"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <h2 class="card-title">Quick Actions</h2>
+            <div class="quick-actions">
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/burns.html'">
+                    🔥 Burn Tokens
+                </button>
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/staking.html'">
+                    💎 Stake Tokens
+                </button>
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/games.html'">
+                    🎮 Play Games
+                </button>
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/build.html'">
+                    🏗️ Learn & Build
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/me.js"></script>
+
+</body>
+</html>
