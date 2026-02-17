@@ -290,4 +290,99 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// ============================================
+// RENDER STATUS (Command Center)
+// ============================================
+
+// Cache: 30s TTL to avoid hammering Render API
+let _renderStatusCache = null;
+let _renderStatusTs = 0;
+const RENDER_CACHE_TTL = 30_000;
+
+/**
+ * Map Render service status to ecosystem-map status
+ * Render statuses: live, not_found, build_in_progress, update_in_progress, suspended, ...
+ */
+function mapRenderStatus(renderStatus) {
+  if (!renderStatus) return 'down';
+  if (renderStatus === 'live') return 'live';
+  if (renderStatus.includes('progress') || renderStatus === 'created') return 'deploying';
+  if (renderStatus === 'suspended' || renderStatus === 'not_found') return 'down';
+  return 'down';
+}
+
+/**
+ * GET /api/ecosystem/render-status
+ * Returns current ASDF-Web Render deployment status.
+ * Requires env: RENDER_API_KEY, RENDER_SERVICE_ID (or falls back to name search)
+ */
+router.get('/ecosystem/render-status', async (req, res) => {
+  const apiKey = process.env.RENDER_API_KEY;
+  const serviceId = process.env.RENDER_SERVICE_ID;
+
+  if (!apiKey) {
+    return res.json({ status: 'unknown', error: 'RENDER_API_KEY not configured' });
+  }
+
+  // Serve from cache if fresh
+  if (_renderStatusCache && Date.now() - _renderStatusTs < RENDER_CACHE_TTL) {
+    return res.json(_renderStatusCache);
+  }
+
+  try {
+    let targetId = serviceId;
+
+    // If no explicit service ID — search by name
+    if (!targetId) {
+      const listRes = await fetch('https://api.render.com/v1/services?name=asdf-api&limit=5', {
+        headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!listRes.ok) throw new Error(`Render API list: ${listRes.status}`);
+      const listData = await listRes.json();
+      const match = listData.find?.(item => item?.service?.name === 'asdf-api');
+      targetId = match?.service?.id;
+    }
+
+    if (!targetId) {
+      return res.json({ status: 'unknown', error: 'Service asdf-api not found on Render' });
+    }
+
+    // Get service details
+    const svcRes = await fetch(`https://api.render.com/v1/services/${targetId}`, {
+      headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!svcRes.ok) throw new Error(`Render API service: ${svcRes.status}`);
+    const svcData = await svcRes.json();
+
+    // Get latest deploy
+    const deployRes = await fetch(
+      `https://api.render.com/v1/services/${targetId}/deploys?limit=1`,
+      {
+        headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      }
+    );
+    const deployData = deployRes.ok ? await deployRes.json() : [];
+    const lastDeploy = deployData[0]?.deploy ?? null;
+
+    const result = {
+      status: mapRenderStatus(svcData.serviceDetails?.status),
+      serviceId: targetId,
+      serviceName: svcData.name,
+      serviceUrl: svcData.serviceDetails?.url,
+      lastDeploy: lastDeploy?.finishedAt ?? lastDeploy?.createdAt ?? null,
+      lastDeployStatus: lastDeploy?.status ?? null,
+    };
+
+    _renderStatusCache = result;
+    _renderStatusTs = Date.now();
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: sanitizeError(error, 'render-status') });
+  }
+});
+
 module.exports = router;

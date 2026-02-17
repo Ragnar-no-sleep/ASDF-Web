@@ -22,7 +22,9 @@
     "format:check": "prettier --check .",
     "audit": "npm audit --audit-level=high",
     "validate": "npm run lint && npm run test && npm run audit",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "scan": "node scripts/scan-ecosystem.cjs",
+    "prebuild": "node scripts/scan-ecosystem.cjs"
   },
   "dependencies": {
     "compression": "^1.7.4",
