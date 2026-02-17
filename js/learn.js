@@ -9,7 +9,7 @@
 const state = {
   currentPhase: 1,
   completedPhases: [],
-  exploreClicked: new Set()
+  exploreClicked: new Set(),
 };
 
 // DOM Elements
@@ -39,7 +39,7 @@ function init() {
     typeHint: document.getElementById('type-hint'),
     explore: document.getElementById('explore'),
     exploreItems: document.querySelectorAll('.explore-item'),
-    final: document.getElementById('final')
+    final: document.getElementById('final'),
   };
 
   // Show the page
@@ -69,13 +69,13 @@ function setupSwipeMasks() {
     let isDragging = false;
     const width = mask.offsetWidth;
 
-    const onStart = (e) => {
+    const onStart = e => {
       isDragging = true;
       startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
       mask.classList.add('dragging');
     };
 
-    const onMove = (e) => {
+    const onMove = e => {
       if (!isDragging) return;
       const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
       currentX = Math.max(0, clientX - startX);
@@ -119,14 +119,14 @@ function setupDragSlider() {
   const handleWidth = dragHandle.offsetWidth;
   const maxDrag = sliderWidth - handleWidth - 8;
 
-  const onStart = (e) => {
+  const onStart = e => {
     isDragging = true;
     startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
     dragHandle.classList.add('dragging');
     e.preventDefault();
   };
 
-  const onMove = (e) => {
+  const onMove = e => {
     if (!isDragging) return;
     const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
     const delta = clientX - startX;
@@ -171,7 +171,7 @@ function setupBurnBox() {
   let clicks = 0;
   const target = 5;
 
-  burnBox.addEventListener('click', (e) => {
+  burnBox.addEventListener('click', e => {
     if (burnBox.classList.contains('done')) return;
 
     clicks++;
@@ -255,7 +255,7 @@ function setupExplore() {
         state.exploreClicked.delete(tool);
       }
 
-      // Check if all 4 explored
+      // 4 out of 5 explored is enough — quick process
       if (state.exploreClicked.size >= 4) {
         explore.classList.add('done');
         completePhaseInteraction(5, 'explore');
@@ -351,7 +351,7 @@ function updateLevel(phaseNum) {
     2: 'Initiate',
     3: 'Initiate',
     4: 'Believer',
-    5: 'Believer'
+    5: 'Believer',
   };
 
   level.textContent = levels[phaseNum] || 'Newcomer';
@@ -365,28 +365,31 @@ function setupScrollObserver() {
   const { container, phases } = elements;
   if (!container || !phases.length) return;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-        const phaseId = entry.target.id;
-        const phaseNum = parseInt(phaseId.replace('phase-', ''));
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+          const phaseId = entry.target.id;
+          const phaseNum = parseInt(phaseId.replace('phase-', ''));
 
-        // Phase 1 completion: scroll to phase 2 unlocks it (no other interaction in phase 1)
-        if (phaseNum === 2 && state.currentPhase === 1 && !state.completedPhases.includes(1)) {
-          completePhaseInteraction(1, 'scroll');
-        }
+          // Phase 1 completion: scroll to phase 2 unlocks it (no other interaction in phase 1)
+          if (phaseNum === 2 && state.currentPhase === 1 && !state.completedPhases.includes(1)) {
+            completePhaseInteraction(1, 'scroll');
+          }
 
-        // Only auto-activate if it's already unlocked
-        if (!entry.target.classList.contains('locked') && phaseNum !== state.currentPhase) {
-          state.currentPhase = phaseNum;
-          updateLevel(phaseNum);
+          // Only auto-activate if it's already unlocked
+          if (!entry.target.classList.contains('locked') && phaseNum !== state.currentPhase) {
+            state.currentPhase = phaseNum;
+            updateLevel(phaseNum);
+          }
         }
-      }
-    });
-  }, {
-    root: container,
-    threshold: 0.5
-  });
+      });
+    },
+    {
+      root: container,
+      threshold: 0.5,
+    }
+  );
 
   phases.forEach(phase => observer.observe(phase));
 }

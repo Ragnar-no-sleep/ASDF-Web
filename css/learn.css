@@ -454,12 +454,17 @@ body.ready {
   color: var(--text-muted);
 }
 
-/* Explore Grid */
+/* Explore Grid — 5 items: 2+2+1 */
 .explore {
   margin-top: var(--space-lg);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-sm);
+}
+
+/* 5th item spans full width */
+.explore-item:nth-child(5) {
+  grid-column: 1 / -1;
 }
 .explore-item {
   padding: var(--space-sm);
@@ -610,5 +615,24 @@ body.ready {
   }
   .explore {
     grid-template-columns: 1fr;
+  }
+  /* On mobile, 5th item is just normal 1-column */
+  .explore-item:nth-child(5) {
+    grid-column: auto;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .phase {
+    transition: opacity var(--duration-fast);
+  }
+  .swipe-arrow,
+  .final-icon {
+    animation: none;
+  }
+  .burn-emoji {
+    animation: none;
+    opacity: 0;
   }
 }
