@@ -81,16 +81,6 @@
   }
 }
 
-/* Counter-rotation to keep items upright */
-@keyframes orbit-counter-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
 /* Scale animation on hover (φ ratio) */
 @keyframes orbit-hover-pulse {
   0%,
@@ -116,33 +106,278 @@
 }
 
 /* ============================================
-   ORBITAL CENTER (Tools label + portal)
+   FIERY PLANET CENTER
+   CSS pure: glow orange/red animated + CSS sparks
    ============================================ */
 
-.hub-orbit-center {
+/* Hub perspective zoom on planet hover */
+.hub:has(.hub-planet:hover) {
+  transform: scale(1.22);
+  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
+}
+
+.hub {
+  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
+  transform-origin: center center;
+}
+
+/* Planet container */
+.hub-planet {
   position: absolute;
   width: 120px;
   height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px; /* F6 */
-
-  font-size: 24px; /* --text-2xl */
-  font-weight: 600;
-  color: var(--gold);
-  text-align: center;
-
-  background: radial-gradient(circle, rgba(234, 179, 8, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-
   z-index: var(--z-elevated);
-  pointer-events: none; /* Let clicks pass through to orbiting items */
+  cursor: zoom-in;
 }
 
-.hub-orbit-center > * {
-  pointer-events: auto; /* Re-enable for portal link */
+/* Outer atmosphere — large soft glow */
+.planet-atmosphere {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(239, 68, 68, 0.18) 0%,
+    rgba(249, 115, 22, 0.12) 35%,
+    transparent 70%
+  );
+  animation: atmo-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes atmo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* Corona — medium ring */
+.planet-corona {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(249, 115, 22, 0.35) 0%,
+    rgba(239, 68, 68, 0.25) 45%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 30px rgba(249, 115, 22, 0.5),
+    0 0 60px rgba(239, 68, 68, 0.25);
+  animation: corona-breathe 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes corona-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  38.2% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  61.8% {
+    transform: scale(1.04);
+    opacity: 0.9;
+  }
+}
+
+/* Core sphere — the planet surface */
+.planet-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 35%,
+    #fff5e0 0%,
+    #fbbf24 10%,
+    #f97316 28%,
+    #ef4444 55%,
+    #991b1b 78%,
+    #450a0a 100%
+  );
+  box-shadow:
+    0 0 20px rgba(249, 115, 22, 0.9),
+    0 0 40px rgba(239, 68, 68, 0.6),
+    0 0 80px rgba(239, 68, 68, 0.3),
+    inset 0 -15px 30px rgba(0, 0, 0, 0.4);
+  animation: core-pulse 3s ease-in-out infinite;
+}
+
+@keyframes core-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(249, 115, 22, 0.9),
+      0 0 40px rgba(239, 68, 68, 0.6),
+      0 0 80px rgba(239, 68, 68, 0.3),
+      inset 0 -15px 30px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(249, 115, 22, 1),
+      0 0 60px rgba(239, 68, 68, 0.8),
+      0 0 100px rgba(239, 68, 68, 0.4),
+      0 0 140px rgba(239, 68, 68, 0.15),
+      inset 0 -15px 30px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Surface shimmer — moving fire bands */
+.planet-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-linear-gradient(
+    -30deg,
+    transparent 0%,
+    rgba(251, 191, 36, 0.06) 8%,
+    transparent 16%
+  );
+  animation: surface-rotate 12s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes surface-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Planet label */
+.planet-label {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(251, 191, 36, 0.7);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* CSS Sparks — fire particles rising from the planet */
+.planet-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.planet-sparks i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  bottom: 50%;
+  opacity: 0;
+}
+
+/* Phi-distributed spark origins */
+.planet-sparks i:nth-child(1) {
+  left: 30%;
+  background: #fbbf24;
+  animation: spark-rise 2s ease-out infinite 0s;
+}
+.planet-sparks i:nth-child(2) {
+  left: 50%;
+  background: #f97316;
+  animation: spark-rise 2.5s ease-out infinite 0.3s;
+}
+.planet-sparks i:nth-child(3) {
+  left: 70%;
+  background: #ef4444;
+  animation: spark-rise 1.8s ease-out infinite 0.6s;
+}
+.planet-sparks i:nth-child(4) {
+  left: 40%;
+  background: #fbbf24;
+  animation: spark-rise 2.2s ease-out infinite 1s;
+}
+.planet-sparks i:nth-child(5) {
+  left: 60%;
+  background: #f97316;
+  animation: spark-rise 3s ease-out infinite 0.4s;
+}
+.planet-sparks i:nth-child(6) {
+  left: 35%;
+  background: #ef4444;
+  animation: spark-rise 1.6s ease-out infinite 1.3s;
+}
+.planet-sparks i:nth-child(7) {
+  left: 55%;
+  background: #fbbf24;
+  animation: spark-rise 2.8s ease-out infinite 0.8s;
+}
+.planet-sparks i:nth-child(8) {
+  left: 45%;
+  background: #f97316;
+  animation: spark-rise 2s ease-out infinite 1.5s;
+}
+.planet-sparks i:nth-child(9) {
+  left: 25%;
+  background: #fbbf24;
+  animation: spark-rise 1.5s ease-out infinite 0.2s;
+}
+.planet-sparks i:nth-child(10) {
+  left: 75%;
+  background: #ef4444;
+  animation: spark-rise 2.3s ease-out infinite 1.1s;
+}
+.planet-sparks i:nth-child(11) {
+  left: 48%;
+  background: #fef3c7;
+  animation: spark-rise 1.9s ease-out infinite 0.7s;
+}
+.planet-sparks i:nth-child(12) {
+  left: 58%;
+  background: #f97316;
+  animation: spark-rise 2.6s ease-out infinite 1.8s;
+}
+
+@keyframes spark-rise {
+  0% {
+    opacity: 0;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(calc((var(--spark-dx, 8px)))) translateY(-55px) scale(0.3);
+  }
+}
+
+/* Varied drift directions for each spark */
+.planet-sparks i:nth-child(odd) {
+  --spark-dx: 12px;
+}
+.planet-sparks i:nth-child(even) {
+  --spark-dx: -10px;
+}
+.planet-sparks i:nth-child(3n) {
+  --spark-dx: 5px;
+}
+.planet-sparks i:nth-child(4n) {
+  --spark-dx: -14px;
 }
 
 /* ============================================
@@ -189,12 +424,8 @@
     transform var(--duration-normal) var(--ease-phi),
     box-shadow var(--duration-fast) var(--ease-phi);
 
-  /* Apply orbital animation */
-  animation:
-    orbit-phi var(--orbit-duration) linear infinite,
-    orbit-counter-rotate var(--orbit-duration) linear infinite;
-
-  /* Individual delays set via inline styles or data attributes */
+  /* Apply orbital animation (single animation, --static-angle used as start position) */
+  animation: orbit-phi var(--orbit-duration) linear infinite;
   animation-delay: var(--orbit-delay, 0s);
 
   z-index: var(--z-base);

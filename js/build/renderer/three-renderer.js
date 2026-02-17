@@ -109,6 +109,8 @@ let performanceSettings = null;
 let hoveredIsland = null;
 let selectedIsland = null;
 let raycastTargets = [];
+let pointerDownPos = { x: 0, y: 0 };
+let isDragging = false;
 
 // Animation state
 let time = 0;
@@ -118,6 +120,7 @@ let burnIntensity = 0.7;
 let boundHandlers = {
   onMouseMove: null,
   onClick: null,
+  onPointerDown: null,
   onKeyDown: null,
   onResize: null,
   onVisibilityChange: null,
@@ -172,7 +175,7 @@ const ThreeRenderer = {
 
     // Setup camera controller
     cameraController = new CameraController(this.THREE, camera, renderer.domElement, {
-      orbit: { autoRotate: true, autoRotateSpeed: 0.15 },
+      orbit: { enabled: true, autoRotate: true, autoRotateSpeed: 0.15 },
     });
 
     // Initialize performance manager
@@ -420,6 +423,10 @@ const ThreeRenderer = {
     // Store handler references for cleanup
     boundHandlers.onMouseMove = e => this.onMouseMove(e);
     boundHandlers.onClick = e => this.onClick(e);
+    boundHandlers.onPointerDown = e => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+      isDragging = false;
+    };
     boundHandlers.onResize = () => this.resize();
     boundHandlers.onVisibilityChange = () => {
       if (document.hidden) {
@@ -429,7 +436,10 @@ const ThreeRenderer = {
       }
     };
 
-    // Mouse move for raycasting
+    // Track pointer down to detect drag vs click
+    renderer.domElement.addEventListener('pointerdown', boundHandlers.onPointerDown);
+
+    // Mouse move for raycasting (also tracks drag distance)
     renderer.domElement.addEventListener('mousemove', boundHandlers.onMouseMove);
 
     // Click for selection
@@ -451,6 +461,7 @@ const ThreeRenderer = {
    */
   unbindEvents() {
     if (renderer && renderer.domElement) {
+      renderer.domElement.removeEventListener('pointerdown', boundHandlers.onPointerDown);
       renderer.domElement.removeEventListener('mousemove', boundHandlers.onMouseMove);
       renderer.domElement.removeEventListener('click', boundHandlers.onClick);
     }
@@ -462,6 +473,7 @@ const ThreeRenderer = {
     boundHandlers = {
       onMouseMove: null,
       onClick: null,
+      onPointerDown: null,
       onKeyDown: null,
       onResize: null,
       onVisibilityChange: null,
@@ -485,6 +497,11 @@ const ThreeRenderer = {
    * @param {MouseEvent} e
    */
   onMouseMove(e) {
+    // Track drag distance
+    const dx = e.clientX - pointerDownPos.x;
+    const dy = e.clientY - pointerDownPos.y;
+    if (Math.sqrt(dx * dx + dy * dy) > 5) isDragging = true;
+
     const rect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -568,12 +585,12 @@ const ThreeRenderer = {
    * @param {MouseEvent} e
    */
   onClick(e) {
-    console.log(
-      '[ThreeRenderer] Click detected, viewLevel:',
-      currentViewLevel,
-      'hoveredIsland:',
-      hoveredIsland?.getProjectId()
-    );
+    // Ignore click if it was a drag
+    if (isDragging) {
+      isDragging = false;
+      return;
+    }
+    isDragging = false;
 
     // Handle clicks based on current view level
     if (currentViewLevel === 'PROJECT_TREE' && projectTreeScene) {

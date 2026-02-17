@@ -306,6 +306,20 @@
       });
     });
 
+    // Live theme preview on the actual page: hover = temp apply, click = save
+    themeToggle.addEventListener('mouseover', function (e) {
+      var btn = e.target.closest('.eco-theme-toggle-btn');
+      if (!btn) return;
+      var themeId = btn.getAttribute('data-theme-id');
+      var resolved =
+        themeId === 'auto' ? (PAGE_TOOLS[getCurrentPage()] || {}).defaultTheme || 'ember' : themeId;
+      document.documentElement.setAttribute('data-theme', resolved);
+    });
+
+    themeToggle.addEventListener('mouseleave', function () {
+      applyTheme(); // Restore saved theme
+    });
+
     // Tools section
     var toolsTitle = document.createElement('div');
     toolsTitle.className = 'eco-drawer-section-title';
@@ -373,6 +387,42 @@
     header.appendChild(badge);
     header.appendChild(chevron);
     card.appendChild(header);
+
+    // Preview on click: show floating panel with this tool's page
+    card.addEventListener('click', function (e) {
+      // Don't intercept link clicks inside the card
+      if (e.target.closest('a')) return;
+      var panel = document.getElementById('ecoPagePreview');
+      if (!panel) return;
+      var iframe = panel.querySelector('.eco-page-preview-iframe');
+      var toolPath = '/' + key;
+      // Toggle: if same tool already showing, hide
+      if (panel.classList.contains('visible') && iframe.dataset.lastSrc === toolPath) {
+        panel.classList.remove('visible');
+        return;
+      }
+      // Load tool page in iframe
+      var onLoad = function () {
+        try {
+          var doc = iframe.contentDocument;
+          if (!doc) return;
+          var theme = getGlobalTheme();
+          var resolved = theme === 'auto' ? (PAGE_TOOLS[key] || {}).defaultTheme || 'ember' : theme;
+          doc.documentElement.setAttribute('data-theme', resolved);
+          var iframeDrawer = doc.querySelector('.eco-drawer');
+          if (iframeDrawer) iframeDrawer.style.display = 'none';
+          var iframeBtn = doc.querySelector('.eco-style-btn');
+          if (iframeBtn) iframeBtn.style.display = 'none';
+        } catch (err) {}
+        iframe.removeEventListener('load', onLoad);
+      };
+      if (iframe.dataset.lastSrc !== toolPath) {
+        iframe.addEventListener('load', onLoad);
+        iframe.src = toolPath;
+        iframe.dataset.lastSrc = toolPath;
+      }
+      panel.classList.add('visible');
+    });
 
     // Expandable content
     var expand = document.createElement('div');
@@ -570,9 +620,23 @@
     // Render tool drawer
     initToolDrawer();
 
-    // Escape closes drawer
+    // Create floating page preview panel (right of drawer)
+    if (!document.getElementById('ecoPagePreview')) {
+      var panel = document.createElement('div');
+      panel.id = 'ecoPagePreview';
+      panel.className = 'eco-page-preview';
+      panel.innerHTML =
+        '<iframe class="eco-page-preview-iframe" src="" sandbox="allow-scripts allow-same-origin" title="Page preview"></iframe>';
+      document.body.appendChild(panel);
+    }
+
+    // Escape closes drawer AND preview panel
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeDrawer();
+      if (e.key === 'Escape') {
+        closeDrawer();
+        var preview = document.getElementById('ecoPagePreview');
+        if (preview) preview.classList.remove('visible');
+      }
     });
   }
 

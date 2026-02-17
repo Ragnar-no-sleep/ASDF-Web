@@ -528,6 +528,40 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
 }
 
 /* ============================================
+   FLOATING PAGE PREVIEW PANEL
+   Appears right of the drawer (left: 280px) on tool card hover
+   ============================================ */
+
+.eco-page-preview {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  bottom: 0;
+  z-index: 859; /* Just below drawer (860) */
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(8px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+  background: var(--eco-nav-bg, rgba(5, 5, 8, 0.95));
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.eco-page-preview.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.eco-page-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ============================================
    TOOL DRAWER — Section titles
    ============================================ */
 .eco-drawer-section-title {

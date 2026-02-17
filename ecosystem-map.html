@@ -391,9 +391,10 @@
 
     .item-meta {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
       font-size: 0.75rem;
       color: var(--gray-500);
+      flex-wrap: wrap;
     }
 
     .meta-item {
@@ -405,6 +406,47 @@
     .meta-item strong {
       color: var(--asdf-orange);
     }
+
+    /* Freshness heatmap border */
+    .item-card[data-fresh="hot"]   { border-left: 3px solid var(--term-green); }
+    .item-card[data-fresh="warm"]  { border-left: 3px solid var(--term-yellow); }
+    .item-card[data-fresh="old"]   { border-left: 3px solid var(--asdf-orange); }
+    .item-card[data-fresh="stale"] { border-left: 3px solid var(--term-red); }
+
+    /* Inline badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.4rem;
+      border-radius: 2px;
+      font-size: 0.65rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-complexity { background: rgba(0,212,255,0.15); color: var(--term-blue); }
+    .badge-complexity.high { background: rgba(255,51,102,0.2); color: var(--term-red); }
+    .badge-cov-good  { background: rgba(74,222,128,0.15); color: var(--term-green); }
+    .badge-cov-mid   { background: rgba(255,204,0,0.15); color: var(--term-yellow); }
+    .badge-cov-bad   { background: rgba(255,51,102,0.15); color: var(--term-red); }
+    .badge-unresolved { background: rgba(255,51,102,0.2); color: var(--term-red); }
+
+    /* Git footer on cards */
+    .item-git {
+      margin-top: 0.5rem;
+      font-size: 0.65rem;
+      color: var(--gray-400);
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .item-git .git-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--term-green); flex-shrink: 0;
+    }
+    .item-git.old .git-dot { background: var(--term-yellow); }
+    .item-git.stale .git-dot { background: var(--term-red); }
 
     /* ============================================
        MODAL
@@ -857,7 +899,12 @@
     <div class="stat-card">
       <div class="stat-value" id="stat-god" style="color: var(--term-red); text-shadow: 0 0 15px rgba(255,51,102,0.5);">—</div>
       <div class="stat-label">God Files</div>
-      <div class="stat-detail">Refactoring needed</div>
+      <div class="stat-detail">Score ≥ 4 (multi-critères)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-complex" style="color: var(--term-yellow); text-shadow: 0 0 10px rgba(255,204,0,0.4);">—</div>
+      <div class="stat-label">Complexes</div>
+      <div class="stat-detail">Score 2-3 — à surveiller</div>
     </div>
 
     <!-- TOKEN STATS (live) -->
@@ -1172,6 +1219,42 @@
       const githubUrl = GITHUB_BASE + item.path;
       const vscodeUrl = `vscode://file/${LOCAL_ROOT.replace(/\/$/, '')}/${item.path}`;
 
+      // Freshness
+      const days = item.git?.daysOld ?? null;
+      const fresh = days === null ? '' : days < 7 ? 'hot' : days < 30 ? 'warm' : days < 90 ? 'old' : 'stale';
+      if (fresh) card.dataset.fresh = fresh;
+
+      // Complexity badge
+      const cx = item.complexity;
+      const cxBadge = cx !== null
+        ? `<span class="badge badge-complexity${cx > 150 ? ' high' : ''}" title="Complexité cyclomatique">⑇ ${cx}</span>`
+        : '';
+
+      // Coverage badge
+      const cov = item.coverage;
+      let covBadge = '';
+      if (cov) {
+        const pct = cov.lines;
+        const cls = pct >= 80 ? 'badge-cov-good' : pct >= 50 ? 'badge-cov-mid' : 'badge-cov-bad';
+        covBadge = `<span class="badge ${cls}" title="Coverage lignes">🧪 ${pct}%</span>`;
+      }
+
+      // Unresolved deps warning
+      const unresolved = item.unresolvedDeps?.length ?? 0;
+      const unresBadge = unresolved > 0
+        ? `<span class="badge badge-unresolved" title="${item.unresolvedDeps.join(', ')}">⚠ ${unresolved} unresolved</span>`
+        : '';
+
+      // Git footer
+      const gitHtml = item.git
+        ? `<div class="item-git${days > 90 ? ' stale' : days > 30 ? ' old' : ''}">
+            <span class="git-dot"></span>
+            <span>${item.git.date}</span>
+            <span>${item.git.author}</span>
+            <span style="color:var(--gray-500)">#${item.git.hash}</span>
+           </div>`
+        : '';
+
       card.innerHTML = `
         <div class="item-header">
           <h3 class="item-name">${item.name.split('/').pop()}</h3>
@@ -1180,13 +1263,12 @@
         <div class="item-category ${categoryClass}">${item.category.toUpperCase()}</div>
         <p class="item-description">${item.description}</p>
         <div class="item-meta">
-          <div class="meta-item">
-            <strong>${item.loc}</strong> LOC
-          </div>
-          <div class="meta-item">
-            <strong>${item.dependencies.length}</strong> deps
-          </div>
+          <div class="meta-item"><strong>${item.loc}</strong> LOC</div>
+          <div class="meta-item"><strong>${item.dependencies.length}</strong> deps</div>
+          ${item.bytes ? `<div class="meta-item"><strong>${(item.bytes/1024).toFixed(1)}</strong> kB</div>` : ''}
+          ${cxBadge}${covBadge}${unresBadge}
         </div>
+        ${gitHtml}
         <div class="card-actions" onclick="event.stopPropagation()">
           ${IS_LOCAL ? `<a class="btn-open vscode" href="${vscodeUrl}" title="Ouvrir dans VSCode">⬡ VSCode</a>` : ''}
           <a class="btn-open github" href="${githubUrl}" target="_blank" rel="noopener" title="Voir sur GitHub">⎇ GitHub</a>
@@ -1222,12 +1304,13 @@
       document.getElementById('stat-api').textContent = api;
       document.getElementById('stat-services').textContent = all;
 
-      // If scan data available — show real LOC total + god file count
+      // If scan data available — show real stats
       if (window.ECOSYSTEM_STATS) {
-        const locEl = document.getElementById('stat-loc');
-        if (locEl) locEl.textContent = (window.ECOSYSTEM_STATS.totalLOC / 1000).toFixed(1) + 'k';
-        const godEl = document.getElementById('stat-god');
-        if (godEl) godEl.textContent = godFiles;
+        const S = window.ECOSYSTEM_STATS;
+        const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        setEl('stat-loc', (S.totalLOC / 1000).toFixed(1) + 'k');
+        setEl('stat-god', S.godFiles);
+        setEl('stat-complex', S.complexFiles);
       }
     }
 
@@ -1272,11 +1355,53 @@
           </div>
         </div>
 
+        ${item.git ? `
+          <div class="modal-section">
+            <div class="modal-section-title">Git</div>
+            <div class="modal-section-content">
+              <strong>Dernier commit :</strong> ${item.git.date} par ${item.git.author}<br>
+              <strong>Hash :</strong> #${item.git.hash}<br>
+              <strong>Fraîcheur :</strong> ${item.git.daysOld}j
+              ${item.git.daysOld > 90 ? ' ⚠ fichier potentiellement abandonné' : item.git.daysOld < 7 ? ' 🟢 actif récemment' : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        ${item.complexity !== null ? `
+          <div class="modal-section">
+            <div class="modal-section-title">Complexité Cyclomatique</div>
+            <div class="modal-section-content">
+              <strong>${item.complexity}</strong>
+              ${item.complexity > 300 ? ' 🔴 Extrême — refactoring urgent' :
+                item.complexity > 150 ? ' 🟡 Élevée — surveiller' :
+                item.complexity > 80  ? ' 🟠 Modérée' : ' 🟢 Acceptable'}<br>
+              <strong>God Score :</strong> ${item.godScore}/6
+              ${item.godScore >= 4 ? ' 🔴 GOD FILE' : item.godScore >= 2 ? ' 🟡 Complex' : ' ✓'}
+            </div>
+          </div>
+        ` : ''}
+
+        ${item.coverage ? `
+          <div class="modal-section">
+            <div class="modal-section-title">Couverture Tests</div>
+            <div class="modal-section-content">
+              Lignes: <strong>${item.coverage.lines}%</strong> ·
+              Branches: <strong>${item.coverage.branches}%</strong> ·
+              Fonctions: <strong>${item.coverage.functions}%</strong>
+            </div>
+          </div>
+        ` : ''}
+
         ${item.dependencies.length > 0 ? `
           <div class="modal-section">
-            <div class="modal-section-title">Dependencies</div>
+            <div class="modal-section-title">Dependencies (${item.dependencies.length})</div>
             <ul class="dependency-list">
-              ${item.dependencies.map(dep => `<li class="dependency-item">${dep}</li>`).join('')}
+              ${item.dependencies.map(dep => {
+                const isUnresolved = item.unresolvedDeps?.includes(dep);
+                return `<li class="dependency-item" style="${isUnresolved ? 'color:var(--term-red)' : ''}">
+                  ${isUnresolved ? '⚠ ' : ''}${dep}
+                </li>`;
+              }).join('')}
             </ul>
           </div>
         ` : ''}
