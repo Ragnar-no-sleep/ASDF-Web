@@ -174,8 +174,15 @@
         <a href="https://x.com/i/communities/1942343109159051272" target="_blank" rel="noopener noreferrer">Community</a>
     </footer>
 
+    <script src="js/achievements.js"></script>
+    <script src="js/achievement-toast.js"></script>
     <script type="module" src="js/hub-majestic.js"></script>
     <script src="js/consent/index.js"></script>
+    <script>
+      // Achievement init on hub
+      if (window.AchievementToast) AchievementToast.init();
+      if (window.AchievementEngine) AchievementEngine.autoArrival();
+    </script>
 
 </body>
 </html>

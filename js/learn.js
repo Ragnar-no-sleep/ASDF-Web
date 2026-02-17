@@ -45,6 +45,10 @@ function init() {
   // Show the page
   elements.body.classList.add('ready');
 
+  // Achievements — init toast + auto-unlock ARRIVAL on any page visit
+  if (window.AchievementToast) AchievementToast.init();
+  if (window.AchievementEngine) AchievementEngine.autoArrival();
+
   // Setup interactions
   setupSwipeMasks();
   setupDragSlider();
@@ -318,14 +322,16 @@ function completePhaseInteraction(phaseNum, type) {
 }
 
 function showFinal() {
-  const { final, phases } = elements;
+  const { final } = elements;
   if (final) {
     final.classList.add('show');
-    // Scroll to final
     setTimeout(() => {
       final.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 300);
   }
+
+  // Unlock LEARNED — user completed all 5 phases
+  if (window.AchievementEngine) AchievementEngine.unlock('LEARNED');
 }
 
 // ============================================
