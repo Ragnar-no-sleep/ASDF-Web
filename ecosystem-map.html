@@ -848,6 +848,247 @@
 
     .btn-open.vscode:hover { border-color: #007acc; color: #007acc; }
     .btn-open.github:hover { border-color: #6e40c9; color: #a371f7; }
+
+    /* ============================================
+       LAYER VIEW (3-panel hierarchical)
+       ============================================ */
+    .view-layers {
+      display: flex;
+      height: calc(100vh - 360px);
+      min-height: 520px;
+      border-top: 1px solid var(--gray-300);
+    }
+
+    /* LEFT: category sidebar */
+    .layer-cats {
+      width: 160px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--gray-300);
+      overflow-y: auto;
+      padding: 0.5rem 0;
+      background: var(--asdf-elevated);
+    }
+
+    .layer-cat-item {
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .layer-cat-item:hover { background: var(--gray-100); border-left-color: var(--gray-400); }
+    .layer-cat-item.active { background: var(--gray-100); border-left-color: var(--asdf-orange); }
+
+    .layer-cat-name {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .layer-cat-meta { font-size: 0.62rem; color: var(--gray-500); }
+
+    /* MIDDLE: file list */
+    .layer-files {
+      flex: 1;
+      overflow-y: auto;
+      border-right: 1px solid var(--gray-300);
+      min-width: 0;
+    }
+
+    .layer-files-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--gray-100);
+      border-bottom: 1px solid var(--gray-300);
+      padding: 0.4rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-500);
+    }
+
+    .layer-sort-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--gray-500);
+      cursor: pointer;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.15rem 0.35rem;
+      font-family: 'Courier New', monospace;
+      transition: all 0.12s ease;
+      border-radius: 2px;
+    }
+
+    .layer-sort-btn:hover { color: var(--asdf-orange); border-color: var(--asdf-orange); }
+    .layer-sort-btn.active { color: var(--asdf-orange); border-color: var(--asdf-orange); background: rgba(234,78,51,0.08); }
+
+    .layer-file-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.035);
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+
+    .layer-file-row:hover { background: var(--gray-100); }
+    .layer-file-row.active { background: var(--gray-200); border-left: 2px solid var(--asdf-orange); padding-left: calc(0.75rem - 2px); }
+
+    .fresh-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .fresh-dot[data-fresh="hot"]   { background: var(--term-green); box-shadow: 0 0 4px var(--term-green); }
+    .fresh-dot[data-fresh="warm"]  { background: var(--term-yellow); }
+    .fresh-dot[data-fresh="old"]   { background: var(--asdf-orange); }
+    .fresh-dot[data-fresh="stale"] { background: var(--term-red); }
+    .fresh-dot[data-fresh=""]      { background: var(--gray-400); }
+
+    .layer-file-name {
+      flex: 1;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .layer-file-dir {
+      font-size: 0.6rem;
+      color: var(--gray-500);
+      white-space: nowrap;
+    }
+
+    .layer-loc-bar {
+      width: 50px;
+      height: 3px;
+      background: var(--gray-300);
+      border-radius: 2px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .layer-loc-fill {
+      height: 100%;
+      background: var(--term-blue);
+      border-radius: 2px;
+    }
+
+    .god-indicator {
+      font-size: 0.6rem;
+      width: 14px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .layer-cx {
+      font-size: 0.62rem;
+      color: var(--gray-500);
+      width: 30px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .layer-cx.cx-high { color: var(--term-red); }
+
+    /* RIGHT: detail panel */
+    .layer-detail {
+      width: 320px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 1.25rem;
+      background: var(--gray-100);
+      border-left: 1px solid var(--gray-300);
+    }
+
+    .layer-detail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 0.5rem;
+      color: var(--gray-400);
+      font-size: 0.78rem;
+    }
+
+    .layer-detail-path {
+      font-size: 0.6rem;
+      color: var(--gray-500);
+      margin-bottom: 0.4rem;
+      word-break: break-all;
+    }
+
+    .layer-detail-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    /* ============================================
+       TABLE VIEW (dense data)
+       ============================================ */
+    .view-table-container {
+      overflow-x: auto;
+      border-top: 1px solid var(--gray-300);
+    }
+
+    .eco-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.74rem;
+    }
+
+    .eco-table th {
+      position: sticky;
+      top: 0;
+      background: var(--gray-100);
+      border-bottom: 2px solid var(--gray-300);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-500);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      transition: color 0.12s ease;
+    }
+
+    .eco-table th:hover { color: var(--asdf-orange); }
+    .eco-table th.sort-asc::after  { content: ' ↑'; color: var(--asdf-orange); }
+    .eco-table th.sort-desc::after { content: ' ↓'; color: var(--asdf-orange); }
+
+    .eco-table td {
+      padding: 0.35rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      white-space: nowrap;
+    }
+
+    .eco-table tr { cursor: pointer; transition: background 0.08s ease; }
+    .eco-table tr:hover td { background: var(--gray-100); }
+    .eco-table tr.row-god td:first-child  { border-left: 3px solid var(--term-red); }
+    .eco-table tr.row-complex td:first-child { border-left: 3px solid var(--term-yellow); }
+
+    .td-file { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    .td-file-dir { font-size: 0.6rem; color: var(--gray-500); }
+    .td-loc  { color: var(--term-blue); text-align: right; font-variant-numeric: tabular-nums; }
+    .td-cx   { text-align: right; font-variant-numeric: tabular-nums; }
+    .td-cx.cx-high { color: var(--term-red); }
+    .td-right { text-align: right; color: var(--gray-500); }
   </style>
 </head>
 <body>
@@ -986,7 +1227,9 @@
 
     <!-- VIEW TOGGLE -->
     <div class="view-toggle" id="view-toggle">
+      <button class="view-btn" data-view="layers" title="Couches hiérarchiques">⣤ Couches</button>
       <button class="view-btn active" data-view="cards" title="Vue cartes">▦ Cartes</button>
+      <button class="view-btn" data-view="table" title="Table dense">≡ Table</button>
       <button class="view-btn" data-view="graph" title="Graphe de dépendances">⬡ Graphe</button>
     </div>
   </section>
@@ -1008,6 +1251,16 @@
     </div>
     <svg id="graph-svg"></svg>
   </div>
+
+  <!-- LAYER VIEW (3-panel hierarchical) -->
+  <div class="view-layers" id="view-layers" style="display:none">
+    <aside class="layer-cats" id="layer-cats"></aside>
+    <div class="layer-files" id="layer-files"></div>
+    <aside class="layer-detail" id="layer-detail"></aside>
+  </div>
+
+  <!-- TABLE VIEW (dense data) -->
+  <div class="view-table-container" id="view-table" style="display:none"></div>
 
   <!-- EMPTY STATE -->
   <div class="empty-state" id="empty-state">
@@ -1435,6 +1688,8 @@
 
         // Re-render active view
         if (currentView === 'graph') renderGraph();
+        else if (currentView === 'table') renderTable();
+        else if (currentView === 'layers') renderLayers();
         else renderCards();
       }
     });
@@ -1443,6 +1698,8 @@
     document.getElementById('search').addEventListener('input', (e) => {
       searchQuery = e.target.value;
       if (currentView === 'graph') renderGraph();
+      else if (currentView === 'table') renderTable();
+      else if (currentView === 'layers') { renderLayerFiles(); renderLayerDetail(selectedLayerItem); }
       else renderCards();
     });
 
@@ -1475,28 +1732,42 @@
     // ============================================
     // VIEW TOGGLE
     // ============================================
-    let currentView = 'cards';
+    let currentView = 'layers';
 
     function switchView(view) {
       currentView = view;
-      const grid = document.getElementById('ecosystem-grid');
+      localStorage.setItem('asdf-eco-view', view);
+
+      const grid          = document.getElementById('ecosystem-grid');
       const graphContainer = document.getElementById('graph-container');
-      const emptyState = document.getElementById('empty-state');
+      const layersContainer = document.getElementById('view-layers');
+      const tableContainer  = document.getElementById('view-table');
+      const emptyState    = document.getElementById('empty-state');
+
+      // Hide all panels
+      grid.style.display          = 'none';
+      graphContainer.style.display = 'none';
+      layersContainer.style.display = 'none';
+      tableContainer.style.display  = 'none';
+      emptyState.style.display    = 'none';
 
       document.querySelectorAll('.view-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.view === view);
       });
 
       if (view === 'cards') {
-        grid.style.display = '';
-        graphContainer.style.display = 'none';
+        grid.style.display       = '';
         emptyState.style.display = '';
         renderCards();
-      } else {
-        grid.style.display = 'none';
-        emptyState.style.display = 'none';
+      } else if (view === 'graph') {
         graphContainer.style.display = '';
         renderGraph();
+      } else if (view === 'layers') {
+        layersContainer.style.display = 'flex';
+        renderLayers();
+      } else if (view === 'table') {
+        tableContainer.style.display = '';
+        renderTable();
       }
     }
 
@@ -1759,9 +2030,314 @@
     }
 
     // ============================================
+    // LAYER VIEW
+    // ============================================
+    let selectedLayerCat = 'all';
+    let selectedLayerItem = null;
+    let layerSortBy = 'loc';
+    let layerSortDir = -1; // -1 = desc
+
+    let tableSortBy = 'loc';
+    let tableSortDir = -1;
+
+    const CAT_META = {
+      all:   { label: 'All',   icon: '⬛' },
+      pages: { label: 'Pages', icon: '📄' },
+      css:   { label: 'CSS',   icon: '🎨' },
+      js:    { label: 'JS',    icon: '📦' },
+      games: { label: 'Games', icon: '🎮' },
+      api:   { label: 'API',   icon: '🔌' },
+    };
+
+    function filterLayer() {
+      let data = selectedLayerCat === 'all'
+        ? ecosystemData
+        : ecosystemData.filter(i => i.category === selectedLayerCat);
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        data = data.filter(i =>
+          i.name.toLowerCase().includes(q) ||
+          i.description.toLowerCase().includes(q)
+        );
+      }
+      return [...data].sort((a, b) => {
+        switch (layerSortBy) {
+          case 'loc':      return (a.loc - b.loc) * layerSortDir;
+          case 'cx':       return ((a.complexity ?? -1) - (b.complexity ?? -1)) * layerSortDir;
+          case 'fresh':    return ((a.git?.daysOld ?? 9999) - (b.git?.daysOld ?? 9999)) * layerSortDir;
+          case 'godScore': return ((a.godScore ?? 0) - (b.godScore ?? 0)) * layerSortDir;
+          case 'name':     return a.name.localeCompare(b.name) * layerSortDir;
+        }
+        return 0;
+      });
+    }
+
+    function renderLayerCats() {
+      const el = document.getElementById('layer-cats');
+      if (!el) return;
+      const cats = ['all', 'pages', 'css', 'js', 'games', 'api'];
+      el.innerHTML = cats.map(cat => {
+        const items = cat === 'all' ? ecosystemData : ecosystemData.filter(i => i.category === cat);
+        const godCount = items.filter(i => i.status === 'god').length;
+        const m = CAT_META[cat];
+        return `<div class="layer-cat-item${selectedLayerCat === cat ? ' active' : ''}" data-cat="${cat}">
+          <div class="layer-cat-name">${m.icon} ${m.label}</div>
+          <div class="layer-cat-meta">${items.length} fichiers${godCount > 0 ? ` · <span style="color:var(--term-red)">🔴${godCount}</span>` : ''}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderLayerFiles() {
+      const el = document.getElementById('layer-files');
+      if (!el) return;
+      const data = filterLayer();
+      const maxLoc = data.reduce((m, i) => Math.max(m, i.loc), 1);
+      el._filteredData = data;
+
+      const sorts = [
+        { key: 'loc',   label: 'LOC' },
+        { key: 'cx',    label: 'CX' },
+        { key: 'fresh', label: 'Fresh' },
+        { key: 'name',  label: 'A-Z' },
+      ];
+
+      const header = `<div class="layer-files-header">
+        <span style="flex:1">${data.length} items</span>
+        ${sorts.map(s => `<button class="layer-sort-btn${layerSortBy === s.key ? ' active' : ''}" data-sort="${s.key}">${s.label}${layerSortBy === s.key ? (layerSortDir < 0 ? ' ↓' : ' ↑') : ''}</button>`).join('')}
+      </div>`;
+
+      const rows = data.map((item, idx) => {
+        const fname = item.name.split('/').pop();
+        const fdir = item.name.includes('/') ? item.name.replace(/\/[^/]+$/, '') : '';
+        const days = item.git?.daysOld ?? null;
+        const fresh = days === null ? '' : days < 7 ? 'hot' : days < 30 ? 'warm' : days < 90 ? 'old' : 'stale';
+        const locPct = Math.min(100, (item.loc / maxLoc) * 100);
+        const godIcon = item.godScore >= 4 ? '🔴' : item.godScore >= 2 ? '🟡' : '';
+        const isActive = selectedLayerItem?.name === item.name;
+        return `<div class="layer-file-row${isActive ? ' active' : ''}" data-idx="${idx}" title="${item.description}">
+          <span class="fresh-dot" data-fresh="${fresh}"></span>
+          <div style="flex:1;min-width:0">
+            <div class="layer-file-name">${fname}</div>
+            ${fdir ? `<div class="layer-file-dir">${fdir}/</div>` : ''}
+          </div>
+          <div class="layer-loc-bar"><div class="layer-loc-fill" style="width:${locPct.toFixed(1)}%"></div></div>
+          <span class="layer-cx${(item.complexity ?? 0) > 150 ? ' cx-high' : ''}">${item.complexity ?? '—'}</span>
+          <span class="god-indicator">${godIcon}</span>
+        </div>`;
+      }).join('');
+
+      el.innerHTML = header + rows;
+    }
+
+    function renderLayerDetail(item) {
+      const el = document.getElementById('layer-detail');
+      if (!el) return;
+      if (!item) {
+        el.innerHTML = `<div class="layer-detail-empty"><span style="font-size:2rem;opacity:0.4">←</span><span>Sélectionner un fichier</span></div>`;
+        return;
+      }
+      const statusLabels = { prod: '🟢 PROD', dev: '🟡 DEV', demo: '🔵 DEMO', god: '🔴 GOD' };
+      const githubUrl = GITHUB_BASE + item.path;
+      const vscodeUrl = `vscode://file/${LOCAL_ROOT.replace(/\/$/, '')}/${item.path}`;
+      const days = item.git?.daysOld ?? null;
+
+      el.innerHTML = `
+        <div class="layer-detail-path">${item.path}</div>
+        <div class="layer-detail-title">${item.name.split('/').pop()}</div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Status</div>
+          <div class="modal-section-content">${statusLabels[item.status] || item.status} · ${item.category.toUpperCase()}</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Description</div>
+          <div class="modal-section-content">${item.description}</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Métriques</div>
+          <div class="modal-section-content">
+            <strong>${item.loc.toLocaleString()}</strong> LOC ·
+            <strong>${item.dependencies.length}</strong> deps
+            ${item.bytes ? ` · <strong>${(item.bytes/1024).toFixed(1)}</strong> kB` : ''}
+          </div>
+        </div>
+
+        ${item.git ? `<div class="modal-section">
+          <div class="modal-section-title">Git</div>
+          <div class="modal-section-content">
+            ${item.git.date} · ${item.git.author}<br>
+            <span style="color:var(--gray-500)">#${item.git.hash}</span> · ${days}j
+            ${days > 90 ? ' ⚠ stale' : days < 7 ? ' 🟢 actif' : ''}
+          </div>
+        </div>` : ''}
+
+        ${item.complexity !== null ? `<div class="modal-section">
+          <div class="modal-section-title">Complexité / GodScore</div>
+          <div class="modal-section-content">
+            CX: <strong style="color:${(item.complexity ?? 0) > 150 ? 'var(--term-red)' : '#fff'}">${item.complexity}</strong>
+            · Score: <strong style="color:${item.godScore >= 4 ? 'var(--term-red)' : item.godScore >= 2 ? 'var(--term-yellow)' : '#fff'}">${item.godScore ?? 0}/6</strong>
+          </div>
+        </div>` : ''}
+
+        ${item.coverage ? `<div class="modal-section">
+          <div class="modal-section-title">Coverage</div>
+          <div class="modal-section-content">L: <strong>${item.coverage.lines}%</strong> · B: <strong>${item.coverage.branches}%</strong> · F: <strong>${item.coverage.functions}%</strong></div>
+        </div>` : ''}
+
+        ${item.unresolvedDeps?.length > 0 ? `<div class="modal-section">
+          <div class="modal-section-title" style="color:var(--term-red)">⚠ Unresolved (${item.unresolvedDeps.length})</div>
+          <div class="modal-section-content" style="color:var(--term-red);font-size:0.72rem">${item.unresolvedDeps.join(', ')}</div>
+        </div>` : ''}
+
+        ${item.dependencies.length > 0 ? `<div class="modal-section">
+          <div class="modal-section-title">Deps (${item.dependencies.length})</div>
+          <div class="modal-section-content" style="font-size:0.7rem;line-height:1.8">
+            ${item.dependencies.map(d => {
+              const unres = item.unresolvedDeps?.includes(d);
+              return `<span style="color:${unres ? 'var(--term-red)' : 'var(--gray-500)'};margin-right:0.4rem">${d}</span>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        <div style="margin-top:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+          ${IS_LOCAL ? `<a class="btn-open vscode" href="${vscodeUrl}">⬡ VSCode</a>` : ''}
+          <a class="btn-open github" href="${githubUrl}" target="_blank" rel="noopener">⎇ GitHub</a>
+        </div>
+      `;
+    }
+
+    function renderLayers() {
+      renderLayerCats();
+      renderLayerFiles();
+      renderLayerDetail(selectedLayerItem);
+    }
+
+    // ============================================
+    // TABLE VIEW
+    // ============================================
+    function filterTable() {
+      let data = currentFilter === 'god'
+        ? ecosystemData.filter(i => i.status === 'god')
+        : currentFilter !== 'all'
+          ? ecosystemData.filter(i => i.category === currentFilter)
+          : ecosystemData;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        data = data.filter(i =>
+          i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q)
+        );
+      }
+      return [...data].sort((a, b) => {
+        switch (tableSortBy) {
+          case 'name':      return a.name.localeCompare(b.name) * tableSortDir;
+          case 'loc':       return (a.loc - b.loc) * tableSortDir;
+          case 'cx':        return ((a.complexity ?? -1) - (b.complexity ?? -1)) * tableSortDir;
+          case 'godScore':  return ((a.godScore ?? 0) - (b.godScore ?? 0)) * tableSortDir;
+          case 'deps':      return (a.dependencies.length - b.dependencies.length) * tableSortDir;
+          case 'fresh':     return ((a.git?.daysOld ?? 9999) - (b.git?.daysOld ?? 9999)) * tableSortDir;
+        }
+        return 0;
+      });
+    }
+
+    function renderTable() {
+      const container = document.getElementById('view-table');
+      if (!container) return;
+      const data = filterTable();
+      container._filteredData = data;
+
+      const cols = [
+        { key: 'name',     label: 'Fichier' },
+        { key: 'loc',      label: 'LOC' },
+        { key: 'cx',       label: 'CX' },
+        { key: 'godScore', label: 'Score' },
+        { key: 'fresh',    label: 'Freshness' },
+        { key: 'deps',     label: 'Deps' },
+      ];
+
+      const thead = `<thead><tr>${cols.map(c => {
+        const cls = tableSortBy === c.key ? (tableSortDir < 0 ? 'sort-desc' : 'sort-asc') : '';
+        return `<th class="${cls}" data-col="${c.key}">${c.label}</th>`;
+      }).join('')}</tr></thead>`;
+
+      const tbody = `<tbody>${data.map((item, idx) => {
+        const days = item.git?.daysOld ?? null;
+        const fresh = days === null ? '' : days < 7 ? 'hot' : days < 30 ? 'warm' : days < 90 ? 'old' : 'stale';
+        const fname = item.name.split('/').pop();
+        const fdir  = item.name.includes('/') ? item.name.replace(/\/[^/]+$/, '') : '';
+        const godClass = item.godScore >= 4 ? 'row-god' : item.godScore >= 2 ? 'row-complex' : '';
+        const cxHigh = (item.complexity ?? 0) > 150;
+        return `<tr class="${godClass}" data-idx="${idx}" title="${item.description}">
+          <td class="td-file">
+            <span class="fresh-dot" data-fresh="${fresh}" style="display:inline-block;vertical-align:middle;margin-right:5px"></span>${fname}
+            ${fdir ? `<div class="td-file-dir">${fdir}/</div>` : ''}
+          </td>
+          <td class="td-loc">${item.loc.toLocaleString()}</td>
+          <td class="td-cx${cxHigh ? ' cx-high' : ''}">${item.complexity ?? '—'}</td>
+          <td class="td-right">${item.godScore >= 4 ? '🔴' : item.godScore >= 2 ? '🟡' : '·'} ${item.godScore ?? 0}</td>
+          <td class="td-right">${days !== null ? days + 'd' : '—'}</td>
+          <td class="td-right">${item.dependencies.length}</td>
+        </tr>`;
+      }).join('')}</tbody>`;
+
+      container.innerHTML = `<table class="eco-table">${thead}${tbody}</table>`;
+    }
+
+    // Layer view event handlers (set up once)
+    document.getElementById('layer-cats').addEventListener('click', (e) => {
+      const catEl = e.target.closest('[data-cat]');
+      if (catEl) {
+        selectedLayerCat = catEl.dataset.cat;
+        selectedLayerItem = null;
+        renderLayerCats();
+        renderLayerFiles();
+        renderLayerDetail(null);
+      }
+    });
+
+    document.getElementById('layer-files').addEventListener('click', (e) => {
+      const sortBtn = e.target.closest('.layer-sort-btn');
+      if (sortBtn) {
+        const key = sortBtn.dataset.sort;
+        if (layerSortBy === key) layerSortDir *= -1;
+        else { layerSortBy = key; layerSortDir = -1; }
+        renderLayerFiles();
+        return;
+      }
+      const row = e.target.closest('.layer-file-row[data-idx]');
+      if (row) {
+        const data = document.getElementById('layer-files')._filteredData;
+        if (data) {
+          selectedLayerItem = data[parseInt(row.dataset.idx)];
+          document.querySelectorAll('.layer-file-row').forEach(r => r.classList.remove('active'));
+          row.classList.add('active');
+          renderLayerDetail(selectedLayerItem);
+        }
+      }
+    });
+
+    document.getElementById('view-table').addEventListener('click', (e) => {
+      const th = e.target.closest('th[data-col]');
+      if (th) {
+        const key = th.dataset.col;
+        if (tableSortBy === key) tableSortDir *= -1;
+        else { tableSortBy = key; tableSortDir = -1; }
+        renderTable();
+        return;
+      }
+      const row = e.target.closest('tr[data-idx]');
+      if (row) {
+        const data = document.getElementById('view-table')._filteredData;
+        if (data) openModal(data[parseInt(row.dataset.idx)]);
+      }
+    });
+
+    // ============================================
     // INIT
     // ============================================
-    renderCards();
+    switchView(localStorage.getItem('asdf-eco-view') || 'layers');
     startTokenRefresh();
   </script>
 </body>
