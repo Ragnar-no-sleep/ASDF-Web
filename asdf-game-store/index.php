@@ -4,15 +4,15 @@ $page_title = 'Accueil - ASDF Store';
 include 'includes/header.php';
 ?>
 
-<div class="card" style="text-align: center; padding: 3rem;">
-    <h1 style="font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        ▲ ASDF Store
+<div class="card" style="text-align: center; padding: 4rem;">
+    <h1 class="hero-title">
+        ASDF Store
     </h1>
-    <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem;">
-        Verify. Burn. Hold. — Dark terminal vibes.
+    <p class="hero-subtitle">
+        Verify. Burn. Hold. — Terminal Phosphor Luxe.
     </p>
-    <a href="articles.php" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
-        Parcourir le catalogue →
+    <a href="articles.php" class="btn btn-primary">
+        Parcourir le catalogue <span style="margin-left: 0.5rem;">→</span>
     </a>
 </div>
 
