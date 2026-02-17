@@ -1,0 +1,20 @@
+# Environment
+.env
+.env.local
+
+# Uploads
+assets/img/uploads/*
+!assets/img/uploads/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+error_log
