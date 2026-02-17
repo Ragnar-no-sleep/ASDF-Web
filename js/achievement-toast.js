@@ -138,8 +138,28 @@
     var def = detail.definition;
     var progress = detail.progress;
 
-    // Special case: ARRIVAL is silent (too common, not surprising)
-    if (detail.id === 'ARRIVAL') return;
+    // ARRIVAL: show brief "welcome" toast on first visit only
+    // (achievement-toast.js called once per session — if it triggers, it's genuinely first)
+    if (detail.id === 'ARRIVAL') {
+      if (!toastEl) toastEl = createToast();
+      toastEl.querySelector('.asdf-toast-icon').textContent = '🌑';
+      toastEl.querySelector('.asdf-toast-label').textContent = 'You found the cosmos.';
+      toastEl.querySelector('.asdf-toast-sub').textContent = 'This is fine.';
+      toastEl.querySelector('.asdf-toast-progress-fill').style.width = '0%';
+      toastEl.querySelector('.asdf-toast-title').textContent = 'Welcome';
+      toastEl.classList.add('visible');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        toastEl.classList.remove('visible');
+        setTimeout(function () {
+          toastEl.querySelector('.asdf-toast-title').textContent = 'Achievement Unlocked';
+          toastEl.querySelector('.asdf-toast-progress-fill').style.width = '0%';
+          showing = false;
+          processQueue();
+        }, 600);
+      }, 3000);
+      return;
+    }
 
     toastEl.querySelector('.asdf-toast-icon').textContent = def.icon;
     toastEl.querySelector('.asdf-toast-label').textContent = def.label;

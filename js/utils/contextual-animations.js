@@ -505,3 +505,15 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// ============================================
+// ALIASES — compatibility shims
+// ============================================
+
+/**
+ * burnParticles — alias for triggerBurnAnimation
+ * Called from burns.js as contextualAnimations.burnParticles(sourceEl, targetEl)
+ */
+export function burnParticles(element, _targetEl, options = {}) {
+  return triggerBurnAnimation(element, 100, options);
+}

@@ -626,7 +626,7 @@
       panel.id = 'ecoPagePreview';
       panel.className = 'eco-page-preview';
       panel.innerHTML =
-        '<iframe class="eco-page-preview-iframe" src="" sandbox="allow-scripts allow-same-origin" title="Page preview"></iframe>';
+        '<iframe class="eco-page-preview-iframe" src="" sandbox="allow-scripts" title="Page preview"></iframe>';
       document.body.appendChild(panel);
     }
 

@@ -7,7 +7,7 @@
 
 // Phase 1 Visceral Feedback - Import modules
 import { interactions } from './utils/interactions.js';
-import { contextualAnimations } from './utils/contextual-animations.js';
+import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 
 // Use relative URL in dev (proxied by Vite), full URL in production
