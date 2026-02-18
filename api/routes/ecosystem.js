@@ -45,15 +45,8 @@ const { authMiddleware, optionalAuthMiddleware } = require('../services/auth');
 // For now, using a placeholder reference to walletRateLimiter from index.js
 // This will be properly extracted in the next refactoring step
 
-// Temporary: Import from parent until fully modularized
-let walletRateLimiter;
-try {
-  // This is a temporary solution - walletRateLimiter should be moved to helpers
-  walletRateLimiter = require('../index').walletRateLimiter;
-} catch (e) {
-  // Fallback: no-op middleware if not available
-  walletRateLimiter = (req, res, next) => next();
-}
+// walletRateLimiter is defined in index.js but not exported — use no-op until extracted
+const walletRateLimiter = (req, res, next) => next();
 
 // ============================================
 // ECOSYSTEM ROUTES
