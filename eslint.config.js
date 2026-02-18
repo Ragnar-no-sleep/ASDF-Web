@@ -13,6 +13,7 @@ export default [
       '**/*.min.js',
       '.next/**',
       'src-react-backup/**',
+      '_archive/**',
     ],
   },
 
@@ -44,6 +45,7 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       eqeqeq: ['error', 'always'],

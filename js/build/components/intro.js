@@ -241,8 +241,9 @@ const IntroComponent = {
 
     // Clamp horizontal position
     if (left < padding + maxWidth / 2) left = padding + maxWidth / 2;
-    if (left > viewportWidth - padding - maxWidth / 2)
+    if (left > viewportWidth - padding - maxWidth / 2) {
       left = viewportWidth - padding - maxWidth / 2;
+    }
 
     // Clamp vertical position
     if (top < padding) top = padding;
