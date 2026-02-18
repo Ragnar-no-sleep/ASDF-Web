@@ -53,4 +53,114 @@
   top: 50%;
   transform: translate(-50%, -50%);
   border-color: rgba(234, 179, 8, 0.04);
+  transition:
+    border-color 1.2s ease,
+    box-shadow 1.2s ease;
+}
+
+/* ============================================
+   HUB COSMOS — Achievement-driven satellite ring
+   data-stage on .hub controls progressive reveal
+   ============================================ */
+
+/* Satellite container: zero-size anchor at hub center */
+.hub-satellites {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Individual satellite: rotate by --sat-angle then push outward 233px (F13) */
+.hub-satellite {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.4);
+  transform: rotate(var(--sat-angle, 0deg)) translateY(-233px);
+  opacity: 0;
+  transition:
+    opacity 1s ease,
+    box-shadow 1s ease;
+}
+
+/* ---- Stage: void (default) — nothing visible ---- */
+.hub[data-stage='void'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.04);
+}
+
+/* ---- Stage: newcomer (LEARNED) — Learn star faintly appears ---- */
+.hub[data-stage='newcomer'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.1);
+}
+.hub[data-stage='newcomer'] .hub-satellite[data-sat='learn'] {
+  opacity: 0.45;
+}
+
+/* ---- Stage: curious (VERIFIED) — outer ring brighter, +analytics ---- */
+.hub[data-stage='curious'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.18);
+}
+.hub[data-stage='curious'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='curious'] .hub-satellite[data-sat='analytics'] {
+  opacity: 0.6;
+}
+
+/* ---- Stage: believer (BELIEVER) — ring glowing, +build ---- */
+.hub[data-stage='believer'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.28);
+  box-shadow: 0 0 18px rgba(234, 179, 8, 0.08);
+}
+.hub[data-stage='believer'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='believer'] .hub-satellite[data-sat='analytics'],
+.hub[data-stage='believer'] .hub-satellite[data-sat='build'] {
+  opacity: 0.75;
+}
+
+/* ---- Stage: builder (BUILDER) — full ring, +games ---- */
+.hub[data-stage='builder'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 28px rgba(234, 179, 8, 0.12);
+}
+.hub[data-stage='builder'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='analytics'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='build'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='games'] {
+  opacity: 0.88;
+}
+
+/* ---- Stage: transcendence (THE_UNNAMEABLE) — all 5 + pulsing gold ring ---- */
+.hub[data-stage='transcendence'] .hub-orbit--outer {
+  border-color: rgba(234, 179, 8, 0.62);
+  box-shadow: 0 0 40px rgba(234, 179, 8, 0.2);
+  animation: cosmos-pulse 3s ease-in-out infinite;
+}
+.hub[data-stage='transcendence'] .hub-satellite {
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.8);
+  animation: sat-pulse 3s ease-in-out infinite;
+}
+
+@keyframes cosmos-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 40px rgba(234, 179, 8, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(234, 179, 8, 0.35);
+  }
+}
+
+@keyframes sat-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(234, 179, 8, 1);
+  }
 }

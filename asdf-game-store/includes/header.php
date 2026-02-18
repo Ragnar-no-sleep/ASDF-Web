@@ -5,58 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $page_title ?? 'ASDF Store' ?></title>
 
-    <!-- Critical CSS inline to prevent FOUC -->
+    <!-- Critical CSS inline to prevent FOUC - MUST be first -->
     <style>
-        /* Preloader to hide unstyled content */
+        /* CRITICAL: Prevent FOUC by hiding everything until fully loaded */
+        html {
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        html.loaded {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Preloader to show during load */
         .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0e14;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: #0a0e14 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 999999 !important;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
         .preloader.hidden {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         .preloader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(0, 255, 136, 0.2);
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 255, 136, 0.15);
             border-top-color: #00ff88;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Prevent layout shift */
+        /* Base styles to prevent layout shift */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             background: #0a0e14;
             color: #e8edf4;
             overflow-x: hidden;
-        }
-
-        /* Hide body until loaded */
-        body:not(.loaded) {
-            visibility: hidden;
-        }
-
-        body.loaded {
-            visibility: visible;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
     </style>
+
+    <!-- Make HTML visible immediately after this script -->
+    <script>
+        // Mark HTML as loaded to make it visible
+        document.documentElement.classList.add('loaded');
+    </script>
 
     <!-- Preload critical CSS -->
     <link rel="preload" href="assets/css/style.css" as="style">
@@ -100,19 +117,38 @@
     <main class="container">
 
     <script>
-        // Remove preloader when page is loaded
-        window.addEventListener('load', function() {
-            const preloader = document.getElementById('preloader');
-            document.body.classList.add('loaded');
-            setTimeout(() => {
-                preloader.classList.add('hidden');
-            }, 100);
-        });
+        // Improved preloader removal with better error handling
+        (function() {
+            let preloaderRemoved = false;
 
-        // Fallback: remove preloader after 2s even if page isn't fully loaded
-        setTimeout(function() {
-            const preloader = document.getElementById('preloader');
-            document.body.classList.add('loaded');
-            preloader.classList.add('hidden');
-        }, 2000);
+            function removePreloader() {
+                if (preloaderRemoved) return;
+                preloaderRemoved = true;
+
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    // Small delay for smoother transition
+                    setTimeout(() => {
+                        preloader.classList.add('hidden');
+                    }, 150);
+                }
+            }
+
+            // Remove on full page load
+            if (document.readyState === 'complete') {
+                removePreloader();
+            } else {
+                window.addEventListener('load', removePreloader);
+            }
+
+            // Fallback: remove after 1.5s maximum
+            setTimeout(removePreloader, 1500);
+
+            // Remove on DOMContentLoaded as backup
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(removePreloader, 500);
+                });
+            }
+        })();
     </script>

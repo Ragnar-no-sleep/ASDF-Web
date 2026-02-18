@@ -161,6 +161,16 @@
                 <span class="hub-orbit-item-label">Ignition</span>
             </a>
 
+            <!-- Outer ring satellites — appear progressively per achievement stage -->
+            <!-- Satellites: 5 at 72° spacing on F13 orbit (233px) -->
+            <div class="hub-satellites" aria-hidden="true">
+                <i class="hub-satellite" data-sat="learn"      style="--sat-angle: 0deg;"></i>
+                <i class="hub-satellite" data-sat="analytics"  style="--sat-angle: 72deg;"></i>
+                <i class="hub-satellite" data-sat="build"      style="--sat-angle: 144deg;"></i>
+                <i class="hub-satellite" data-sat="games"      style="--sat-angle: 216deg;"></i>
+                <i class="hub-satellite" data-sat="deep-learn" style="--sat-angle: 288deg;"></i>
+            </div>
+
         </div>
 
     </main>
@@ -176,6 +186,7 @@
 
     <script src="js/achievements.js"></script>
     <script src="js/achievement-toast.js"></script>
+    <script src="js/hub-cosmos.js"></script>
     <script type="module" src="js/hub-majestic.js"></script>
     <script src="js/consent/index.js"></script>
     <script>
