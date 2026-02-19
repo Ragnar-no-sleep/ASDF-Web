@@ -35,8 +35,8 @@ test.describe('Homepage', () => {
   });
 
   test('should have working navigation', async ({ page }) => {
-    // Hub Majestic uses .hub-node links for navigation (not traditional nav/header)
-    const hubNodes = page.locator('.hub-node');
+    // Hub Majestic uses .hub-orbit-item links for navigation (not traditional nav/header)
+    const hubNodes = page.locator('.hub-orbit-item');
     await expect(hubNodes.first()).toBeVisible();
 
     // Verify navigation nodes exist
