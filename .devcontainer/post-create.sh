@@ -103,6 +103,47 @@ if command -v claude &> /dev/null; then
     claude mcp add claude-mem -s user -- npx -y @anthropic-ai/claude-mem 2>/dev/null || true
 fi
 
+# Configure Claude Code global settings (model, plugins)
+echo "  Configuring Claude Code settings..."
+mkdir -p ~/.claude
+cat > ~/.claude/settings.json << 'EOF'
+{
+  "model": "sonnet",
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true
+  }
+}
+EOF
+
+# Generate .mcp.json from Codespace secrets (never hardcoded in repo)
+echo "  Generating .mcp.json from secrets..."
+if [ -n "$RENDER_API_KEY" ]; then
+    cat > .mcp.json << MCPEOF
+{
+  "mcpServers": {
+    "render": {
+      "type": "http",
+      "url": "https://mcp.render.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RENDER_API_KEY}"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN:-}"
+      }
+    }
+  }
+}
+MCPEOF
+    echo "  .mcp.json created (Render + GitHub MCP)"
+else
+    echo "  RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
+fi
+
 # ==========================================
 # DONE
 # ==========================================
@@ -119,13 +160,16 @@ echo "  npm start           - Start ASDF-Web server (port 3000)"
 echo "  npm run dev         - Start Vite dev server (port 5173)"
 echo "  npm test            - Run 73 unit tests"
 echo "  npm run test:e2e    - Run Playwright E2E tests"
+echo "  npm run validate    - lint + test + audit (avant PR)"
 echo ""
 echo "CYNIC Commands:"
 echo "  cd ecosystem/CYNIC && pnpm dev  - Start CYNIC node"
+echo "  claude              - Start Claude Code (CYNIC identity loaded)"
 echo ""
-echo "Claude Commands:"
-echo "  claude              - Start Claude Code session"
-echo "  claude login        - Authenticate with Claude Max"
+echo "MCP actifs:"
+echo "  Render MCP   → https://mcp.render.com/mcp"
+echo "  GitHub MCP   → @modelcontextprotocol/server-github"
+echo "  claude-mem   → memoire persistante"
 echo ""
 echo "This is fine."
 echo ""
