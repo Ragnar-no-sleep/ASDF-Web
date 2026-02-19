@@ -421,7 +421,7 @@
   transition:
     background var(--duration-fast) var(--ease-phi),
     border-color var(--duration-fast) var(--ease-phi),
-    transform var(--duration-normal) var(--ease-phi),
+    scale var(--duration-normal) var(--ease-phi),
     box-shadow var(--duration-fast) var(--ease-phi);
 
   /* Apply orbital animation (single animation, --static-angle used as start position) */
@@ -431,11 +431,11 @@
   z-index: var(--z-base);
 }
 
-/* Hover state */
+/* Hover state — use `scale` property (not transform) so it composes with animation */
 .hub-orbit-item:hover {
   background: rgba(26, 18, 13, 0.9);
   border-color: var(--gold);
-  transform: scale(1.08);
+  scale: 1.08;
   box-shadow: 0 0 13px rgba(234, 179, 8, 0.4);
   z-index: var(--z-elevated);
   animation-play-state: paused; /* Pause orbit on hover */
@@ -450,7 +450,7 @@
 
 /* Active state */
 .hub-orbit-item:active {
-  transform: scale(0.95);
+  scale: 0.95;
 }
 
 /* Icon within item */
