@@ -1,18 +1,7 @@
 /* ============================================
-   ORBITAL PATCH - Disable old hub-node styles
-   This file overrides legacy hub-majestic.css
-   to let orbital-system.css take control
+   ORBITAL PATCH - Supplements orbital-system.css
+   Hub layout, orbit rings, satellites, cosmos stages
    ============================================ */
-
-/* Hide old hub-node class (replaced by hub-orbit-item) */
-.hub-node {
-  display: none !important;
-}
-
-/* Hide old hub-tools expandable system */
-.hub-tools {
-  display: none !important;
-}
 
 /* Ensure orbital container is visible and centered */
 .hub-orbit-container {
