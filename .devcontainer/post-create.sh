@@ -77,11 +77,19 @@ fi
 echo "[5/6] Installing git hooks & test tools..."
 
 # Initialize Husky
-npx husky install 2>/dev/null || true
-chmod +x .husky/pre-commit 2>/dev/null || true
+if npx husky install; then
+    chmod +x .husky/pre-commit 2>/dev/null || true
+    echo "  ✓ Husky hooks installed"
+else
+    echo "  ⚠ Husky install warning (optional)"
+fi
 
 # Install Playwright browsers
-npx playwright install chromium --with-deps 2>/dev/null || true
+if npx playwright install chromium --with-deps; then
+    echo "  ✓ Playwright browsers installed"
+else
+    echo "  ⚠ Playwright install warning (optional)"
+fi
 
 # ==========================================
 # 6. CLAUDE CLI SETUP
@@ -97,10 +105,14 @@ else
     npm install -g @anthropic-ai/claude-code
 fi
 
-# Install claude-mem plugin if available
+# Install claude-mem MCP if Claude CLI available
 if command -v claude &> /dev/null; then
-    echo "  Setting up claude-mem plugin..."
-    claude mcp add claude-mem -s user -- npx -y @anthropic-ai/claude-mem 2>/dev/null || true
+    echo "  Setting up claude-mem MCP..."
+    if claude mcp add claude-mem -s user -- npx -y @anthropic-ai/claude-mem 2>&1; then
+        echo "  ✓ claude-mem MCP installed"
+    else
+        echo "  ⚠ claude-mem MCP setup warning (will be available after npm install)"
+    fi
 fi
 
 # Configure Claude Code global settings (model, plugins)
@@ -135,13 +147,17 @@ if [ -n "$RENDER_API_KEY" ]; then
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN:-}"
       }
+    },
+    "claude-mem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/claude-mem"]
     }
   }
 }
 MCPEOF
-    echo "  .mcp.json created (Render + GitHub MCP)"
+    echo "  ✓ .mcp.json created (Render + GitHub + claude-mem)"
 else
-    echo "  RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
+    echo "  ⚠ RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
 fi
 
 # ==========================================
