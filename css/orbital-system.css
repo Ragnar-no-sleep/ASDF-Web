@@ -110,15 +110,15 @@
    CSS pure: glow orange/red animated + CSS sparks
    ============================================ */
 
-/* Hub perspective zoom on planet hover */
-.hub:has(.hub-planet:hover) {
-  transform: scale(1.22);
-  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
+/* Hub perspective zoom on planet hover — scoped to orbit container, desktop only */
+.hub-orbit-container {
+  transition: scale 1.4s cubic-bezier(0.618, 0, 0.382, 1);
 }
 
-.hub {
-  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
-  transform-origin: center center;
+@media (min-width: 769px) {
+  .hub:has(.hub-planet:hover) .hub-orbit-container {
+    scale: 1.12;
+  }
 }
 
 /* Planet container */

@@ -4,6 +4,22 @@
  */
 
 /* ============================================
+   RESET & TOKENS
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+/* ============================================
    AMBIENT BACKGROUND
    ============================================ */
 .staking-bg {
@@ -98,7 +114,7 @@
 }
 
 .staking-stat-label {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
@@ -108,7 +124,7 @@
 }
 
 .staking-stat-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 28px;
   font-weight: 600;
   color: #fff;
@@ -116,7 +132,7 @@
 }
 
 .staking-stat-sub {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   color: rgba(255, 255, 255, 0.35);
   margin-top: 6px;
@@ -137,7 +153,7 @@
 }
 
 .staking-section-title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 600;
   color: #fff;
@@ -156,7 +172,7 @@
   border: none;
   background: transparent;
   border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.5);
@@ -209,20 +225,20 @@
 }
 
 .staking-lock-title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   color: #fff;
 }
 
 .staking-lock-wallet {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
 }
 
 .staking-lock-amount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   color: #7b93ff;
@@ -248,7 +264,7 @@
 }
 
 .staking-lock-pct {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
   text-align: right;
@@ -258,7 +274,7 @@
 .staking-lock-status {
   padding: 5px 12px;
   border-radius: 6px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -330,20 +346,20 @@
 }
 
 .staking-timeline-date {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
   margin-bottom: 6px;
 }
 
 .staking-timeline-desc {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
 }
 
 .staking-timeline-amount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
   color: #7b93ff;
@@ -366,7 +382,7 @@
 }
 
 .staking-cta-title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 700;
   color: #fff;
@@ -374,7 +390,7 @@
 }
 
 .staking-cta-text {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 24px;
@@ -386,7 +402,7 @@
   border-radius: 12px;
   background: linear-gradient(135deg, #7b93ff, #a78bfa);
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -414,7 +430,7 @@
   gap: 12px;
   padding: 48px;
   color: rgba(255, 255, 255, 0.35);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
 }
 
@@ -442,7 +458,7 @@
   justify-content: center;
   gap: 8px;
   padding: 20px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   color: rgba(255, 255, 255, 0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.04);
