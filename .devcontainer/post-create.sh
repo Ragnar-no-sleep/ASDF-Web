@@ -105,15 +105,10 @@ else
     npm install -g @anthropic-ai/claude-code
 fi
 
-# Install claude-mem MCP if Claude CLI available
-if command -v claude &> /dev/null; then
-    echo "  Setting up claude-mem MCP..."
-    if claude mcp add claude-mem -s user -- npx -y @anthropic-ai/claude-mem 2>&1; then
-        echo "  ✓ claude-mem MCP installed"
-    else
-        echo "  ⚠ claude-mem MCP setup warning (will be available after npm install)"
-    fi
-fi
+# Note: claude-mem is a Claude Code plugin (not MCP), requires manual installation
+# Install via: /plugin marketplace add thedotmack/claude-mem
+echo "  ℹ claude-mem plugin available at: https://github.com/thedotmack/claude-mem"
+echo "    Install in Claude Code with: /plugin marketplace add thedotmack/claude-mem"
 
 # Configure Claude Code global settings (model, plugins)
 echo "  Configuring Claude Code settings..."
@@ -147,15 +142,11 @@ if [ -n "$RENDER_API_KEY" ]; then
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN:-}"
       }
-    },
-    "claude-mem": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/claude-mem"]
     }
   }
 }
 MCPEOF
-    echo "  ✓ .mcp.json created (Render + GitHub + claude-mem)"
+    echo "  ✓ .mcp.json created (Render + GitHub MCP)"
 else
     echo "  ⚠ RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
 fi
