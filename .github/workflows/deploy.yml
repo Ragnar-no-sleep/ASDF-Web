@@ -39,7 +39,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # npm install (not npm ci) to handle platform-specific optional deps
+        # package-lock.json generated on Windows omits @rollup/rollup-linux-x64-gnu
+        run: npm install
 
       - name: Run all tests
         run: npm test
