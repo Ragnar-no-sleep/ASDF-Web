@@ -133,6 +133,7 @@ app.use(
           'https://api.asdf-games.com',
           'https://asdf-web.onrender.com',
           'https://asdf-api.onrender.com',
+          'https://holdex.onrender.com',
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',
@@ -396,9 +397,9 @@ app.get('/staking', (req, res) => {
   res.sendFile(path.join(__dirname, 'staking.html'));
 });
 
-// Route /tools to tools.html (Ecosystem Tools Hub)
+// Route /tools — redirect to hub (tools are integrated into landing page)
 app.get('/tools', (req, res) => {
-  res.sendFile(path.join(__dirname, 'tools.html'));
+  res.redirect(301, '/');
 });
 
 // Route /build to build.html (Builder Hub)
