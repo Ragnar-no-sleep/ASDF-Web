@@ -30,9 +30,12 @@
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
-    <!-- Prefetch -->
-    <link rel="prefetch" href="burns.html">
-    <link rel="prefetch" href="holdex.html">
+    <!-- Prefetch tool pages via Express routes -->
+    <link rel="prefetch" href="/burns">
+    <link rel="prefetch" href="/holdex">
+    <link rel="prefetch" href="/asdforecast">
+    <link rel="prefetch" href="/staking">
+    <link rel="prefetch" href="/ignition">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,12 +166,12 @@
 
             <!-- Outer ring satellites — appear progressively per achievement stage -->
             <!-- Satellites: 5 at 72° spacing on F13 orbit (233px) -->
-            <div class="hub-satellites" aria-hidden="true">
-                <i class="hub-satellite" data-sat="learn"      style="--sat-angle: 0deg;"></i>
-                <i class="hub-satellite" data-sat="analytics"  style="--sat-angle: 72deg;"></i>
-                <i class="hub-satellite" data-sat="build"      style="--sat-angle: 144deg;"></i>
-                <i class="hub-satellite" data-sat="games"      style="--sat-angle: 216deg;"></i>
-                <i class="hub-satellite" data-sat="deep-learn" style="--sat-angle: 288deg;"></i>
+            <div class="hub-satellites">
+                <a href="/story"      class="hub-satellite" data-sat="learn"      style="--sat-angle: 0deg;"   aria-label="Learn"></a>
+                <a href="/build"      class="hub-satellite" data-sat="analytics"  style="--sat-angle: 72deg;"  aria-label="Analytics"></a>
+                <a href="/build"      class="hub-satellite" data-sat="build"      style="--sat-angle: 144deg;" aria-label="Build"></a>
+                <a href="/games"      class="hub-satellite" data-sat="games"      style="--sat-angle: 216deg;" aria-label="Games"></a>
+                <a href="/deep-learn" class="hub-satellite" data-sat="deep-learn" style="--sat-angle: 288deg;" aria-label="Deep Learn"></a>
             </div>
 
         </div>
@@ -177,11 +180,22 @@
 
     <!-- Footer -->
     <footer class="hub-footer">
-        <a href="https://github.com/Ragnar-no-sleep/ASDF-Web" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <span>&#183;</span>
-        <a href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank" rel="noopener noreferrer">Solscan</a>
-        <span>&#183;</span>
-        <a href="https://x.com/i/communities/1942343109159051272" target="_blank" rel="noopener noreferrer">Community</a>
+        <nav class="hub-footer-nav" aria-label="Content pages">
+            <a href="/story">Learn</a>
+            <span>&#183;</span>
+            <a href="/deep-learn">Deep Learn</a>
+            <span>&#183;</span>
+            <a href="/build">Build</a>
+            <span>&#183;</span>
+            <a href="/games">Games</a>
+        </nav>
+        <div class="hub-footer-links">
+            <a href="https://github.com/Ragnar-no-sleep/ASDF-Web" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <span>&#183;</span>
+            <a href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank" rel="noopener noreferrer">Solscan</a>
+            <span>&#183;</span>
+            <a href="https://x.com/i/communities/1942343109159051272" target="_blank" rel="noopener noreferrer">Community</a>
+        </div>
     </footer>
 
     <script src="js/achievements.js"></script>

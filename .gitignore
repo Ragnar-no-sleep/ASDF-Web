@@ -58,6 +58,7 @@ ecosystem/
 
 # Internal docs (never commit) - Security by Design
 CLAUDE.md
+!/CLAUDE.md
 DEV_STATE.md
 *ROADMAP*.md
 *roadmap*.md

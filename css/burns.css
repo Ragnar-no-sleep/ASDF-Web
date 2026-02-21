@@ -69,7 +69,7 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 17px;
+  font-size: 15px; /* Aligned with design-tokens --text-base */
 }
 
 body {
@@ -1116,28 +1116,7 @@ a:hover {
   text-align: center;
 }
 
-/* Loading */
-.loading-skeleton {
-  padding: var(--space-lg);
-}
-
-.skeleton-row {
-  height: 50px;
-  background: linear-gradient(90deg, var(--charcoal) 25%, var(--slate) 50%, var(--charcoal) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-sm);
-}
-
-@keyframes skeleton-pulse {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
+/* Loading skeletons defined in ecosystem.css→loading-states.css */
 
 /* ============================================
    FEED SECTION
@@ -1349,10 +1328,6 @@ a:hover {
 }
 
 @media (max-width: 600px) {
-  html {
-    font-size: 15px;
-  }
-
   .stats-grid {
     grid-template-columns: 1fr;
   }

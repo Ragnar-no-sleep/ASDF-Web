@@ -65,8 +65,7 @@
 
 html,
 body {
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
   background: var(--bg-primary);
 }
 
@@ -133,7 +132,7 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--eco-nav-height, 56px));
+  min-height: calc(100vh - var(--eco-nav-height, 56px));
 }
 
 /* Header - Device Top Bar */
@@ -1089,10 +1088,15 @@ body {
 @media (max-width: 1024px) {
   .main {
     grid-template-columns: 1fr;
+    overflow-y: auto;
   }
 
-  .sidebar {
-    display: none;
+  .sidebar-left {
+    order: -1; /* K-Score & stats above table */
+  }
+
+  .sidebar-right {
+    order: 1; /* Details below table */
   }
 
   .header-center {

@@ -39,8 +39,7 @@
 html,
 body {
   background: var(--black);
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
 }
 
 body {
@@ -386,7 +385,7 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--eco-nav-height, 56px));
+  min-height: calc(100vh - var(--eco-nav-height, 56px));
   position: relative;
   z-index: 1;
 }
@@ -1179,12 +1178,16 @@ body {
 @media (max-width: 768px) {
   .dashboard-main {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto;
+    overflow-y: auto;
   }
 
-  .panel-left,
-  .panel-right {
-    display: none;
+  .panel-center {
+    order: -1; /* Trade terminal first on mobile */
+  }
+
+  .panel {
+    overflow: visible;
   }
 
   .header-center {

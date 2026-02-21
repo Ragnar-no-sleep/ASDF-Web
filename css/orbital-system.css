@@ -110,15 +110,15 @@
    CSS pure: glow orange/red animated + CSS sparks
    ============================================ */
 
-/* Hub perspective zoom on planet hover */
-.hub:has(.hub-planet:hover) {
-  transform: scale(1.22);
-  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
+/* Hub perspective zoom on planet hover — scoped to orbit container, desktop only */
+.hub-orbit-container {
+  transition: scale 1.4s cubic-bezier(0.618, 0, 0.382, 1);
 }
 
-.hub {
-  transition: transform 1.4s cubic-bezier(0.618, 0, 0.382, 1);
-  transform-origin: center center;
+@media (min-width: 769px) {
+  .hub:has(.hub-planet:hover) .hub-orbit-container {
+    scale: 1.12;
+  }
 }
 
 /* Planet container */
@@ -421,7 +421,7 @@
   transition:
     background var(--duration-fast) var(--ease-phi),
     border-color var(--duration-fast) var(--ease-phi),
-    transform var(--duration-normal) var(--ease-phi),
+    scale var(--duration-normal) var(--ease-phi),
     box-shadow var(--duration-fast) var(--ease-phi);
 
   /* Apply orbital animation (single animation, --static-angle used as start position) */
@@ -431,11 +431,11 @@
   z-index: var(--z-base);
 }
 
-/* Hover state */
+/* Hover state — use `scale` property (not transform) so it composes with animation */
 .hub-orbit-item:hover {
   background: rgba(26, 18, 13, 0.9);
   border-color: var(--gold);
-  transform: scale(1.08);
+  scale: 1.08;
   box-shadow: 0 0 13px rgba(234, 179, 8, 0.4);
   z-index: var(--z-elevated);
   animation-play-state: paused; /* Pause orbit on hover */
@@ -450,7 +450,7 @@
 
 /* Active state */
 .hub-orbit-item:active {
-  transform: scale(0.95);
+  scale: 0.95;
 }
 
 /* Icon within item */
@@ -658,8 +658,8 @@
 
 @media (max-width: 768px) {
   :root {
-    --orbit-radius: var(--orbit-radius-f11); /* Smaller orbit on mobile */
-    --orbit-item-size: 44px;
+    --orbit-radius: var(--orbit-radius-f11); /* 89px - smaller orbit on mobile */
+    --orbit-item-size: 40px;
   }
 
   .hub-orbit-center {
@@ -669,11 +669,22 @@
   }
 
   .hub-orbit-item-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .hub-orbit-item-label {
-    font-size: 10px;
+    font-size: 9px;
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --orbit-item-size: 36px;
+  }
+
+  .hub-orbit-item-label {
+    display: none; /* Hide labels on small screens to prevent overlap */
   }
 }
 

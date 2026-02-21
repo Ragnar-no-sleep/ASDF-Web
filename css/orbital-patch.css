@@ -1,18 +1,7 @@
 /* ============================================
-   ORBITAL PATCH - Disable old hub-node styles
-   This file overrides legacy hub-majestic.css
-   to let orbital-system.css take control
+   ORBITAL PATCH - Supplements orbital-system.css
+   Hub layout, orbit rings, satellites, cosmos stages
    ============================================ */
-
-/* Hide old hub-node class (replaced by hub-orbit-item) */
-.hub-node {
-  display: none !important;
-}
-
-/* Hide old hub-tools expandable system */
-.hub-tools {
-  display: none !important;
-}
 
 /* Ensure orbital container is visible and centered */
 .hub-orbit-container {
@@ -70,22 +59,55 @@
   top: 50%;
   width: 0;
   height: 0;
-  pointer-events: none;
 }
 
 /* Individual satellite: rotate by --sat-angle then push outward 233px (F13) */
 .hub-satellite {
   position: absolute;
-  width: 7px;
-  height: 7px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: rgba(234, 179, 8, 0.5);
   box-shadow: 0 0 6px rgba(234, 179, 8, 0.4);
   transform: rotate(var(--sat-angle, 0deg)) translateY(-233px);
   opacity: 0;
+  pointer-events: none;
+  display: block;
+  text-decoration: none;
   transition:
     opacity 1s ease,
-    box-shadow 1s ease;
+    box-shadow 1s ease,
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+/* Make satellites clickable once visible (opacity set by stage) */
+.hub-satellite[style] {
+  /* Enlarge hit target beyond visual dot */
+  margin: -10px;
+  padding: 10px;
+  background-clip: content-box;
+}
+
+/* Enable pointer events on visible satellites */
+.hub[data-stage='newcomer'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='curious'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='curious'] .hub-satellite[data-sat='analytics'],
+.hub[data-stage='believer'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='believer'] .hub-satellite[data-sat='analytics'],
+.hub[data-stage='believer'] .hub-satellite[data-sat='build'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='learn'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='analytics'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='build'],
+.hub[data-stage='builder'] .hub-satellite[data-sat='games'],
+.hub[data-stage='transcendence'] .hub-satellite {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Hover: glow brighter */
+.hub-satellite:hover {
+  box-shadow: 0 0 16px rgba(234, 179, 8, 0.9);
 }
 
 /* ---- Stage: void (default) — nothing visible ---- */

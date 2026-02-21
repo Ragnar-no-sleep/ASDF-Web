@@ -77,11 +77,19 @@ fi
 echo "[5/6] Installing git hooks & test tools..."
 
 # Initialize Husky
-npx husky install 2>/dev/null || true
-chmod +x .husky/pre-commit 2>/dev/null || true
+if npx husky install; then
+    chmod +x .husky/pre-commit 2>/dev/null || true
+    echo "  ✓ Husky hooks installed"
+else
+    echo "  ⚠ Husky install warning (optional)"
+fi
 
 # Install Playwright browsers
-npx playwright install chromium --with-deps 2>/dev/null || true
+if npx playwright install chromium --with-deps; then
+    echo "  ✓ Playwright browsers installed"
+else
+    echo "  ⚠ Playwright install warning (optional)"
+fi
 
 # ==========================================
 # 6. CLAUDE CLI SETUP
@@ -97,11 +105,10 @@ else
     npm install -g @anthropic-ai/claude-code
 fi
 
-# Install claude-mem plugin if available
-if command -v claude &> /dev/null; then
-    echo "  Setting up claude-mem plugin..."
-    claude mcp add claude-mem -s user -- npx -y @anthropic-ai/claude-mem 2>/dev/null || true
-fi
+# Note: claude-mem is a Claude Code plugin (not MCP), requires manual installation
+# Install via: /plugin marketplace add thedotmack/claude-mem
+echo "  ℹ claude-mem plugin available at: https://github.com/thedotmack/claude-mem"
+echo "    Install in Claude Code with: /plugin marketplace add thedotmack/claude-mem"
 
 # Configure Claude Code global settings (model, plugins)
 echo "  Configuring Claude Code settings..."
@@ -139,9 +146,9 @@ if [ -n "$RENDER_API_KEY" ]; then
   }
 }
 MCPEOF
-    echo "  .mcp.json created (Render + GitHub MCP)"
+    echo "  ✓ .mcp.json created (Render + GitHub MCP)"
 else
-    echo "  RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
+    echo "  ⚠ RENDER_API_KEY not set — .mcp.json skipped (add Codespace secret)"
 fi
 
 # ==========================================

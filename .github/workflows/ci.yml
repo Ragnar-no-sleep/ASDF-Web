@@ -97,13 +97,12 @@ jobs:
           extra_args: --only-verified
 
   # ============================================
-  # E2E Tests (only on develop)
+  # E2E Tests (all PRs + develop pushes)
   # ============================================
   e2e:
     name: 🎭 E2E Tests
     runs-on: ubuntu-latest
-    needs: [lint, test]
-    if: github.base_ref == 'develop' || github.ref == 'refs/heads/develop'
+    needs: [lint, test, security]
 
     steps:
       - name: Checkout code
@@ -140,7 +139,7 @@ jobs:
   quality-gate:
     name: ✅ Quality Gate
     runs-on: ubuntu-latest
-    needs: [lint, test, security]
+    needs: [lint, test, security, e2e]
     if: always()
 
     steps:
@@ -148,11 +147,13 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
-             [[ "${{ needs.security.result }}" != "success" ]]; then
+             [[ "${{ needs.security.result }}" != "success" ]] || \
+             [[ "${{ needs.e2e.result }}" != "success" ]]; then
             echo "❌ Quality gate failed"
             echo "Lint: ${{ needs.lint.result }}"
             echo "Test: ${{ needs.test.result }}"
             echo "Security: ${{ needs.security.result }}"
+            echo "E2E: ${{ needs.e2e.result }}"
             exit 1
           fi
           echo "✅ Quality gate passed - This is fine 🐕‍🦺🔥"
