@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>My Dashboard - ASDF</title>
 
     <!-- Fonts -->
@@ -27,7 +28,7 @@
         .dashboard-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: var(--space-2xl);
+            padding: calc(var(--eco-nav-height, 56px) + var(--space-xl)) var(--space-2xl) var(--space-2xl);
         }
 
         .dashboard-header {
@@ -330,8 +331,49 @@
             transform: translateY(-2px);
         }
     </style>
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
 </head>
-<body>
+<body class="eco-page">
+
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--me">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/forecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">ASDF Tools</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <!-- Dynamically populated by ecosystem.js -->
+        </div>
+    </aside>
 
     <div class="dashboard-container">
         <!-- Header -->
@@ -467,23 +509,24 @@
         <div class="card">
             <h2 class="card-title">Quick Actions</h2>
             <div class="quick-actions">
-                <button class="quick-action-btn ripple-trigger" onclick="location.href='/burns.html'">
-                    🔥 Burn Tokens
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/burns'">
+                    &#128293; Burn Tokens
                 </button>
-                <button class="quick-action-btn ripple-trigger" onclick="location.href='/staking.html'">
-                    💎 Stake Tokens
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/staking'">
+                    &#128142; Stake Tokens
                 </button>
-                <button class="quick-action-btn ripple-trigger" onclick="location.href='/games.html'">
-                    🎮 Play Games
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/games'">
+                    &#127918; Play Games
                 </button>
-                <button class="quick-action-btn ripple-trigger" onclick="location.href='/build.html'">
-                    🏗️ Learn & Build
+                <button class="quick-action-btn ripple-trigger" onclick="location.href='/build'">
+                    &#127959; Learn &amp; Build
                 </button>
             </div>
         </div>
     </div>
 
     <script type="module" src="js/me.js"></script>
+    <script src="js/ecosystem.js" defer></script>
 
 </body>
 </html>

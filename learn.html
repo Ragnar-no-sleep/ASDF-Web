@@ -3,19 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>Learn $asdfasdfa &#8212; The Rabbit Hole</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/learn.css">
-</head>
-<body>
-    <a href="#container" class="skip-link">Skip to main content</a>
-    <div class="progress" role="progressbar" aria-label="Learning progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="0 percent complete"><div class="progress-fill" id="progress"></div></div>
 
-    <header class="header">
-        <a href="/" class="back" aria-label="Return to Hub">&#8592; Hub</a>
-        <span class="level" id="level" role="status" aria-live="polite">Newcomer</span>
-    </header>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/ecosystem.css">
+    <link rel="stylesheet" href="css/learn.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
+</head>
+<body class="eco-page">
+    <a href="#container" class="skip-link">Skip to main content</a>
+
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--learn">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/forecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <span class="level" id="level" role="status" aria-live="polite" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);">Newcomer</span>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">ASDF Tools</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <!-- Dynamically populated by ecosystem.js -->
+        </div>
+    </aside>
+
+    <div class="progress" role="progressbar" aria-label="Learning progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="0 percent complete"><div class="progress-fill" id="progress"></div></div>
 
     <main class="container" id="container">
         <!-- Phase 1 -->
@@ -198,6 +246,7 @@
     <script src="js/achievements.js"></script>
     <script src="js/achievement-toast.js"></script>
     <script src="js/learn.js"></script>
+    <script src="js/ecosystem.js" defer></script>
     <script src="js/consent/index.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>The Burrow - $ASDFASDFA</title>
     <meta name="description" content="You found the rabbit hole. Welcome to the Burrow.">
 
@@ -16,9 +17,51 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/terrier.css">
+
+    <!-- Theme anti-flash -->
+    <script>
+      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
+    </script>
 </head>
-<body class="terrier-page">
+<body class="terrier-page eco-page">
+
+    <!-- Ecosystem Navigation -->
+    <nav class="eco-nav eco-nav--terrier">
+        <a href="/" class="eco-nav-logo">
+            <div class="eco-nav-logo-mark">A</div>
+            <span>ASDF Tools</span>
+        </a>
+        <div class="eco-nav-links">
+            <div class="eco-nav-pill"></div>
+            <a href="/burns" class="eco-nav-link">Burns</a>
+            <a href="/forecast" class="eco-nav-link">Forecast</a>
+            <a href="/holdex" class="eco-nav-link">HolDex</a>
+            <a href="/staking" class="eco-nav-link">Staking</a>
+            <a href="/ignition" class="eco-nav-link">Ignition</a>
+        </div>
+        <div class="eco-nav-right">
+            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+        </div>
+    </nav>
+
+    <!-- Style Drawer Button -->
+    <button class="eco-style-btn" aria-label="Open theme drawer">
+        <span class="eco-style-icon">&#127912;</span>
+    </button>
+
+    <!-- Theme Drawer -->
+    <div class="eco-drawer-backdrop"></div>
+    <aside class="eco-drawer">
+        <div class="eco-drawer-header">
+            <span class="eco-drawer-title">ASDF Tools</span>
+            <button class="eco-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="eco-drawer-body">
+            <!-- Dynamically populated by ecosystem.js -->
+        </div>
+    </aside>
 
     <!-- Background -->
     <div class="terrier-bg" aria-hidden="true"></div>
@@ -94,8 +137,6 @@
 
         <!-- Footer -->
         <footer class="terrier-footer">
-            <a href="/" class="terrier-back">← Back to Hub</a>
-            <span>·</span>
             <span>You are 1 of the few who found this.</span>
         </footer>
 
@@ -103,6 +144,7 @@
 
     <!-- Scripts -->
     <script src="js/terrier.js"></script>
+    <script src="js/ecosystem.js" defer></script>
 
 </body>
 </html>
