@@ -222,14 +222,16 @@ router.get('/leaderboard/burns', async (req, res) => {
       ? req.query.timeframe
       : 'all';
 
-    const allEntries = getTopBurners(offset + limit, timeframe);
-    const entries = allEntries.slice(offset);
+    // Get paginated entries and total count
+    const entries = getTopBurners(offset, limit, timeframe);
+    // Get total count (fetch with high limit to get full list length)
+    const fullList = getTopBurners(0, 10000, timeframe);
 
     res.json({
       timeframe,
       entries,
       count: entries.length,
-      pagination: { offset, limit, total: allEntries.length },
+      pagination: { offset, limit, total: fullList.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'leaderboard-burns') });
@@ -244,13 +246,16 @@ router.get('/leaderboard/xp', async (req, res) => {
   try {
     const offset = Math.max(0, Math.min(parseInt(req.query.offset) || 0, 10000));
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const allEntries = getXPLeaderboard(offset + limit);
-    const entries = allEntries.slice(offset);
+
+    // Get paginated entries and total count
+    const entries = getXPLeaderboard(offset, limit);
+    // Get total count (fetch with high limit to get full list length)
+    const fullList = getXPLeaderboard(0, 10000);
 
     res.json({
       entries,
       count: entries.length,
-      pagination: { offset, limit, total: allEntries.length },
+      pagination: { offset, limit, total: fullList.length },
     });
   } catch (error) {
     res.status(500).json({ error: sanitizeError(error, 'leaderboard-xp') });

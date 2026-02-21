@@ -714,6 +714,10 @@ function walletRateLimiter(req, res, next) {
 
   let walletData = walletRateLimits.get(wallet);
   if (!walletData || now - walletData.windowStart > WALLET_RATE_CONFIG.windowMs) {
+    // Window expired or new wallet - delete old entry and reset
+    if (walletData) {
+      walletRateLimits.delete(wallet);
+    }
     walletData = { windowStart: now, count: 0 };
   }
 
