@@ -1,11 +1,17 @@
 # ASDF-Web: Scalability Roadmap
 
+> ⚠️ **HISTORICAL REFERENCE** — Performance analysis from Feb 2026 baseline.
+> Findings incorporated into **[UNIFIED-VISION.md](UNIFIED-VISION.md)** Phases P3-P6.
+>
+> This roadmap detailed infrastructure optimization (caching, CDN, read replicas).
+> All recommendations sequenced in UNIFIED-VISION.md with architectural dependencies.
+
 > **Performance by Design** — Optimize for growth, not crisis
 
 **Author:** CYNIC
 **Version:** 1.0
 **Date:** February 2026
-**Status:** Baseline Audit Complete | Optimization in Progress
+**Status:** CONSOLIDATED — See UNIFIED-VISION.md for implementation sequence
 
 ---
 
