@@ -3,26 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
     <title>Privacy Policy - ASDF Mobile</title>
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
-
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
-
     <style>
         :root {
             --bg: #0a0a0f;
@@ -37,11 +18,11 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            padding: calc(var(--eco-nav-height, 56px) + 20px) 20px 20px;
+            padding: 20px;
             max-width: 800px;
             margin: 0 auto;
         }
@@ -120,44 +101,7 @@
         }
     </style>
 </head>
-<body class="eco-page">
-
-    <!-- Ecosystem Navigation -->
-    <nav class="eco-nav eco-nav--privacy">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link">Burns</a>
-            <a href="/forecast" class="eco-nav-link">Forecast</a>
-            <a href="/holdex" class="eco-nav-link">HolDex</a>
-            <a href="/staking" class="eco-nav-link">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
-    </nav>
-
-    <!-- Style Drawer Button -->
-    <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
-    </button>
-
-    <!-- Theme Drawer -->
-    <div class="eco-drawer-backdrop"></div>
-    <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
-    </aside>
-
+<body>
     <h1>Privacy Policy</h1>
     <p class="updated"><strong>Last updated:</strong> January 2, 2026</p>
 
@@ -246,6 +190,6 @@
         <p><strong>Summary:</strong> ASDF does not access your private keys, does not collect personal information, and does not sell your data. We only interact with public blockchain data through your authorized wallet connections.</p>
     </div>
 
-    <script src="js/ecosystem.js" defer></script>
+    <a href="/" class="back-link">&#8592; Back to ASDF</a>
 </body>
 </html>

@@ -42,8 +42,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/games.css">
     <link rel="stylesheet" href="css/games-arcade.css">
     <link rel="stylesheet" href="css/viking-bg.css">
@@ -51,10 +49,6 @@
     <link rel="stylesheet" href="css/shop-animations.css">
     <link rel="stylesheet" href="css/valhalla.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
 </head>
 <body class="arcade-page">
     <!-- ============================================
@@ -86,42 +80,6 @@
 
     <!-- Skip to main content for accessibility -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
-
-    <!-- Ecosystem Navigation -->
-    <nav class="eco-nav eco-nav--games">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link">Burns</a>
-            <a href="/forecast" class="eco-nav-link">Forecast</a>
-            <a href="/holdex" class="eco-nav-link">HolDex</a>
-            <a href="/staking" class="eco-nav-link">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
-    </nav>
-
-    <!-- Style Drawer Button -->
-    <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
-    </button>
-
-    <!-- Theme Drawer -->
-    <div class="eco-drawer-backdrop"></div>
-    <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
-    </aside>
 
     <!-- ============================================
          GAMES INTERNAL NAVIGATION (Hub tabs)
@@ -776,8 +734,6 @@
     <!-- Cosmetics Button Handler -->
     <script src="js/games/cosmetics-btn.js"></script>
 
-    <!-- Ecosystem Shell -->
-    <script src="js/ecosystem.js" defer></script>
 
 </body>
 </html>
