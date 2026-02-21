@@ -159,6 +159,39 @@
                             <span class="factor-pct">20%</span>
                         </div>
                     </div>
+
+                    <!-- Credit Rating -->
+                    <div class="kscore-credit">
+                        <span class="kscore-credit-label">Credit Rating</span>
+                        <span class="credit-badge credit-badge--a1" id="credit-rating">A1</span>
+                    </div>
+                </div>
+
+                <!-- Metal Ranks Legend (density-detailed) -->
+                <div class="widget density-detailed">
+                    <div class="widget-header">
+                        <span class="widget-title">Metal Ranks</span>
+                        <span class="widget-badge">K-Score Tiers</span>
+                    </div>
+                    <div class="rank-legend">
+                        <div class="rank-row"><span class="rank-badge rank-badge--diamond">&#9670;</span><span class="rank-name">Diamond</span><span class="rank-range">90+</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--platinum">&#9670;</span><span class="rank-name">Platinum</span><span class="rank-range">80-89</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--gold">&#9670;</span><span class="rank-name">Gold</span><span class="rank-range">70-79</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--silver">&#9670;</span><span class="rank-name">Silver</span><span class="rank-range">60-69</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--bronze">&#9670;</span><span class="rank-name">Bronze</span><span class="rank-range">50-59</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--copper">&#9670;</span><span class="rank-name">Copper</span><span class="rank-range">40-49</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--iron">&#9670;</span><span class="rank-name">Iron</span><span class="rank-range">20-39</span></div>
+                        <div class="rank-row"><span class="rank-badge rank-badge--rust">&#9670;</span><span class="rank-name">Rust</span><span class="rank-range">&lt;20</span></div>
+                    </div>
+                </div>
+
+                <!-- K-Score Deep Dive (density-full) -->
+                <div class="holdex-context density-full">
+                    <strong>K-Score Methodology</strong>:
+                    Distribution measures how evenly tokens are spread across wallets (Gini coefficient).
+                    Velocity tracks trade frequency &mdash; lower is better for holders.
+                    Whale Risk flags top-10 wallet concentration.
+                    Activity scores recent on-chain engagement. All factors use EMA smoothing for stability.
                 </div>
             </aside>
 
@@ -239,6 +272,32 @@
                 </div>
             </aside>
         </main>
+
+        <!-- FAQ (density-detailed) -->
+        <section class="holdex-faq density-detailed">
+            <div class="faq-header">
+                <h2 class="faq-title">Understanding HolDex</h2>
+                <p class="faq-subtitle">How the token tracker works</p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h3 class="faq-question">What is K-Score?</h3>
+                    <p class="faq-answer">A conviction metric that scores tokens 0-100 based on holder distribution, trading velocity, whale concentration, and on-chain activity. Higher scores indicate stronger holder bases.</p>
+                </div>
+                <div class="faq-card">
+                    <h3 class="faq-question">What are Metal Ranks?</h3>
+                    <p class="faq-answer">8 tiers from Diamond (90+) to Rust (&lt;20) that categorize token holder quality at a glance. Ranks use EMA smoothing to prevent manipulation from short-term trading spikes.</p>
+                </div>
+                <div class="faq-card">
+                    <h3 class="faq-question">What are Credit Ratings?</h3>
+                    <p class="faq-answer">Grades from A1 (highest conviction) to D (lowest) that summarize a token&rsquo;s overall investment quality. Based on K-Score, liquidity depth, and holder retention metrics.</p>
+                </div>
+                <div class="faq-card density-full">
+                    <h3 class="faq-question">How are fees used?</h3>
+                    <p class="faq-answer">HolDex usage fees are routed to the ASDF burn address, permanently reducing token supply. Every search, every filter, every interaction fuels deflation.</p>
+                </div>
+            </div>
+        </section>
 
         <!-- Footer -->
         <footer class="footer">

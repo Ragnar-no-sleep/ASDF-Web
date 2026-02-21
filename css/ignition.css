@@ -1364,6 +1364,143 @@ a:hover {
 }
 
 /* ============================================
+   FAQ & ELIGIBILITY SECTION
+   ============================================ */
+.ig-faq-section {
+  padding-bottom: var(--space-xl);
+}
+
+[data-density='detailed'] .ig-faq-section,
+[data-density='full'] .ig-faq-section {
+  display: block;
+}
+
+.ig-eligibility {
+  margin-bottom: var(--space-xl);
+}
+
+.ig-eligibility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.ig-eligibility-item {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md, 10px);
+}
+
+.ig-eligibility-icon {
+  font-size: var(--text-xl, 20px);
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+
+.ig-eligibility-item strong {
+  display: block;
+  font-size: var(--text-sm, 13px);
+  color: var(--ig-accent);
+  margin-bottom: 4px;
+}
+
+.ig-eligibility-item p {
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-muted);
+  line-height: 1.5;
+}
+
+/* Multiplier Tiers */
+.ig-multiplier-tiers {
+  margin-bottom: var(--space-xl);
+}
+
+.ig-tier-table {
+  margin-top: var(--space-md);
+}
+
+.ig-tier-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px;
+  padding: var(--space-xs) var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  align-items: center;
+}
+
+.ig-tier-row--header {
+  color: var(--ig-text-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 9px;
+}
+
+.ig-tier-row span:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+/* FAQ Cards */
+.ig-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.ig-faq-card {
+  padding: var(--space-md);
+  background: var(--ig-charcoal);
+  border: 1px solid rgba(234, 88, 12, 0.08);
+  border-radius: var(--radius-md, 10px);
+  transition: border-color 200ms ease;
+}
+
+.ig-faq-card:hover {
+  border-color: rgba(234, 88, 12, 0.2);
+}
+
+.ig-faq-q {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm, 13px);
+  font-weight: 600;
+  color: var(--ig-accent);
+  margin-bottom: var(--space-xs);
+}
+
+.ig-faq-a {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs, 11px);
+  color: var(--ig-text-muted);
+  line-height: 1.7;
+}
+
+/* Variant-aware FAQ */
+[data-variant='2'] .ig-faq-card {
+  border-color: rgba(232, 121, 249, 0.08);
+}
+
+[data-variant='2'] .ig-faq-card:hover {
+  border-color: rgba(232, 121, 249, 0.2);
+}
+
+[data-variant='3'] .ig-faq-card {
+  border-color: rgba(34, 197, 94, 0.08);
+}
+
+[data-variant='3'] .ig-faq-card:hover {
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+/* ============================================
    DENSITY: DETAILED — More context & guides
    ============================================ */
 .density-detailed {

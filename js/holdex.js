@@ -21,6 +21,55 @@ const state = {
 };
 
 // ============================================
+// K-SCORE RANKS & CREDIT RATINGS
+// (Adapted from sollama58/HolDex calculator.js)
+// ============================================
+
+function getKRank(score) {
+  if (score >= 90) return { name: 'Diamond', css: 'diamond' };
+  if (score >= 80) return { name: 'Platinum', css: 'platinum' };
+  if (score >= 70) return { name: 'Gold', css: 'gold' };
+  if (score >= 60) return { name: 'Silver', css: 'silver' };
+  if (score >= 50) return { name: 'Bronze', css: 'bronze' };
+  if (score >= 40) return { name: 'Copper', css: 'copper' };
+  if (score >= 20) return { name: 'Iron', css: 'iron' };
+  return { name: 'Rust', css: 'rust' };
+}
+
+function getCreditRating(score) {
+  if (score >= 90) return { grade: 'A1', css: 'a1' };
+  if (score >= 75) return { grade: 'A2', css: 'a2' };
+  if (score >= 60) return { grade: 'B1', css: 'b1' };
+  if (score >= 45) return { grade: 'B2', css: 'b2' };
+  if (score >= 30) return { grade: 'C', css: 'c' };
+  return { grade: 'D', css: 'd' };
+}
+
+// ============================================
+// EXPONENTIAL BACKOFF FETCH
+// (Adapted from sollama58/ASDFBurnTracker)
+// ============================================
+
+async function fetchWithRetry(url, options, maxRetries) {
+  if (!options) options = {};
+  if (!maxRetries) maxRetries = 3;
+  var delay = 1000;
+  for (var i = 0; i <= maxRetries; i++) {
+    try {
+      var response = await fetch(url, options);
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response;
+    } catch (err) {
+      if (i === maxRetries) throw err;
+      await new Promise(function (resolve) {
+        setTimeout(resolve, delay);
+      });
+      delay *= 2;
+    }
+  }
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
@@ -67,8 +116,9 @@ function formatHolders(num) {
 
 async function fetchTokens() {
   try {
-    const response = await fetch(`${HOLDEX_API}/tokens?sort=${state.sort}&filter=${state.filter}`);
-    if (!response.ok) throw new Error('Failed to fetch tokens');
+    const response = await fetchWithRetry(
+      HOLDEX_API + '/tokens?sort=' + state.sort + '&filter=' + state.filter
+    );
     const data = await response.json();
     return data.tokens || [];
   } catch (error) {
@@ -79,8 +129,7 @@ async function fetchTokens() {
 
 async function fetchTokenDetail(address) {
   try {
-    const response = await fetch(`${HOLDEX_API}/token/${address}`);
-    if (!response.ok) throw new Error('Failed to fetch token detail');
+    const response = await fetchWithRetry(HOLDEX_API + '/token/' + address);
     return await response.json();
   } catch (error) {
     console.error('[HolDEX] Error fetching token detail:', error);
@@ -90,8 +139,7 @@ async function fetchTokenDetail(address) {
 
 async function fetchStats() {
   try {
-    const response = await fetch(`${HOLDEX_API}/stats`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
+    const response = await fetchWithRetry(HOLDEX_API + '/stats');
     return await response.json();
   } catch (error) {
     console.error('[HolDEX] Error fetching stats:', error);
@@ -101,8 +149,7 @@ async function fetchStats() {
 
 async function searchTokens(query) {
   try {
-    const response = await fetch(`${HOLDEX_API}/search?q=${encodeURIComponent(query)}`);
-    if (!response.ok) throw new Error('Search failed');
+    const response = await fetchWithRetry(HOLDEX_API + '/search?q=' + encodeURIComponent(query));
     const data = await response.json();
     return data.results || [];
   } catch (error) {
@@ -129,6 +176,15 @@ function updateStats(stats) {
     volumeEl.textContent = formatNumber(stats.volume24h || 0);
     volumeEl.classList.remove('is-loading');
   }
+
+  // Update credit rating badge from aggregate K-Score
+  var avgKScore = stats.averageKScore || 87;
+  var credit = getCreditRating(avgKScore);
+  var creditEl = document.getElementById('credit-rating');
+  if (creditEl) {
+    creditEl.textContent = credit.grade;
+    creditEl.className = 'credit-badge credit-badge--' + credit.css;
+  }
 }
 
 function renderTokenList(tokens) {
@@ -145,33 +201,64 @@ function renderTokenList(tokens) {
   }
 
   container.innerHTML = tokens
-    .map(
-      (token, index) => `
-        <div class="token-row" data-token="${escapeHtml(token.address || '')}" data-action="open-token-modal">
-            <span class="token-rank">${index + 1}</span>
-            <div class="token-info">
-                <div class="token-icon">${escapeHtml(token.symbol?.[0] || '?')}</div>
-                <div>
-                    <div class="token-name">${escapeHtml(token.name || 'Unknown')}</div>
-                    <div class="token-symbol">$${escapeHtml(token.symbol || '???')}</div>
-                </div>
-            </div>
-            <span class="token-price">${escapeHtml(formatPrice(token.price || 0))}</span>
-            <span class="token-change ${token.change24h >= 0 ? 'positive' : 'negative'}">
-                ${escapeHtml(formatPercent(token.change24h || 0))}
-            </span>
-            <span class="token-volume">${escapeHtml(formatNumber(token.volume24h || 0))}</span>
-            <span class="token-mcap">${escapeHtml(formatNumber(token.marketCap || 0))}</span>
-            <span class="token-holders">${escapeHtml(formatHolders(token.holders || 0))}</span>
-            <div class="token-kscore">
-                <span class="kscore-value">${escapeHtml(String(token.kscore || 0))}</span>
-                <div class="kscore-bar">
-                    <div class="kscore-fill" style="width: ${Math.min(100, Math.max(0, Number(token.kscore) || 0))}%"></div>
-                </div>
-            </div>
-        </div>
-    `
-    )
+    .map(function (token, index) {
+      var ks = Number(token.kscore) || 0;
+      var rank = getKRank(ks);
+      return (
+        '<div class="token-row" data-token="' +
+        escapeHtml(token.address || '') +
+        '" data-action="open-token-modal">' +
+        '<span class="token-rank">' +
+        (index + 1) +
+        '</span>' +
+        '<div class="token-info">' +
+        '<div class="token-icon">' +
+        escapeHtml((token.symbol || '?')[0]) +
+        '</div>' +
+        '<div>' +
+        '<div class="token-name">' +
+        escapeHtml(token.name || 'Unknown') +
+        '</div>' +
+        '<div class="token-symbol">$' +
+        escapeHtml(token.symbol || '???') +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<span class="token-price">' +
+        escapeHtml(formatPrice(token.price || 0)) +
+        '</span>' +
+        '<span class="token-change ' +
+        (token.change24h >= 0 ? 'positive' : 'negative') +
+        '">' +
+        escapeHtml(formatPercent(token.change24h || 0)) +
+        '</span>' +
+        '<span class="token-volume">' +
+        escapeHtml(formatNumber(token.volume24h || 0)) +
+        '</span>' +
+        '<span class="token-mcap">' +
+        escapeHtml(formatNumber(token.marketCap || 0)) +
+        '</span>' +
+        '<span class="token-holders">' +
+        escapeHtml(formatHolders(token.holders || 0)) +
+        '</span>' +
+        '<div class="token-kscore">' +
+        '<span class="rank-badge rank-badge--' +
+        rank.css +
+        '" title="' +
+        rank.name +
+        '">&#9670;</span>' +
+        '<span class="kscore-value">' +
+        escapeHtml(String(ks)) +
+        '</span>' +
+        '<div class="kscore-bar">' +
+        '<div class="kscore-fill" style="width: ' +
+        Math.min(100, Math.max(0, ks)) +
+        '%"></div>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+      );
+    })
     .join('');
 }
 

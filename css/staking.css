@@ -482,6 +482,184 @@
 }
 
 /* ============================================
+   GOVERNANCE THRESHOLDS (adapted from sollama58/TokenVotingUtil)
+   ============================================ */
+.staking-governance {
+  margin-bottom: 40px;
+}
+
+.governance-thresholds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.threshold-card {
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.threshold-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.threshold-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.threshold-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #7b93ff, #a78bfa);
+  transition: width 800ms ease;
+}
+
+.threshold-fill--success {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.threshold-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   VESTING GLOSSARY
+   ============================================ */
+.staking-glossary {
+  margin-bottom: 40px;
+}
+
+.staking-glossary .staking-section-title {
+  margin-bottom: 16px;
+}
+
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.glossary-item {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glossary-term {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: #7b93ff;
+  margin-bottom: 6px;
+}
+
+.glossary-def {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+}
+
+/* ============================================
+   FAQ SECTION
+   ============================================ */
+.staking-faq {
+  margin-bottom: 40px;
+}
+
+.staking-faq .staking-section-title {
+  margin-bottom: 16px;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.faq-card {
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(123, 147, 255, 0.03);
+  border: 1px solid rgba(123, 147, 255, 0.08);
+  transition: border-color 200ms ease;
+}
+
+.faq-card:hover {
+  border-color: rgba(123, 147, 255, 0.18);
+}
+
+.faq-question {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #7b93ff;
+  margin-bottom: 8px;
+}
+
+.faq-answer {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.7;
+}
+
+/* Variant-aware governance */
+[data-variant='2'] .threshold-fill {
+  background: linear-gradient(90deg, #64748b, #eab308);
+}
+
+[data-variant='2'] .glossary-term,
+[data-variant='2'] .faq-question {
+  color: #eab308;
+}
+
+[data-variant='2'] .faq-card {
+  background: rgba(100, 116, 139, 0.03);
+  border-color: rgba(100, 116, 139, 0.08);
+}
+
+[data-variant='2'] .faq-card:hover {
+  border-color: rgba(234, 179, 8, 0.18);
+}
+
+[data-variant='3'] .threshold-fill {
+  background: linear-gradient(90deg, #2dd4bf, #a78bfa);
+}
+
+[data-variant='3'] .glossary-term,
+[data-variant='3'] .faq-question {
+  color: #2dd4bf;
+}
+
+[data-variant='3'] .faq-card {
+  background: rgba(45, 212, 191, 0.03);
+  border-color: rgba(45, 212, 191, 0.08);
+}
+
+[data-variant='3'] .faq-card:hover {
+  border-color: rgba(45, 212, 191, 0.18);
+}
+
+/* ============================================
    DENSITY: DETAILED — More context & guides
    ============================================ */
 .density-detailed {
@@ -693,6 +871,10 @@
    MOBILE RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
+  .governance-thresholds {
+    grid-template-columns: 1fr;
+  }
+
   .staking-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;

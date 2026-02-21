@@ -949,6 +949,59 @@ body {
 }
 
 /* ============================================
+   MARQUEE TICKER (adapted from sollama58/ASDForecast)
+   ============================================ */
+.marquee-bar {
+  overflow: hidden;
+  background: rgba(0, 255, 65, 0.03);
+  border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-block;
+  padding: 4px 0;
+  animation: marquee-scroll 27s linear infinite;
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+
+.marquee-item {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.marquee-price {
+  color: var(--matrix-green);
+  text-shadow: 0 0 4px var(--matrix-green-glow);
+}
+
+.marquee-burn {
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.4);
+}
+
+.marquee-sep {
+  color: rgba(0, 255, 65, 0.15);
+  margin: 0 12px;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* ============================================
    DENSITY: DETAILED — More context & guides
    ============================================ */
 .density-detailed {
