@@ -10,6 +10,11 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
 /* ============================================
+   LOADING STATES - Shared skeletons & spinners
+   ============================================ */
+@import url('./loading-states.css');
+
+/* ============================================
    VIEW TRANSITIONS (Cross-document MPA)
    ============================================ */
 @view-transition {
