@@ -37,16 +37,22 @@ Typography: Inter (body), JetBrains Mono (code)
 
 ## Routes
 
-| Route                    | File            | Priority                                  |
+| Route                    | File            | Purpose                                   |
 | ------------------------ | --------------- | ----------------------------------------- |
-| `/`                      | index.html      | P1 — Landing                              |
-| `/story`, `/quick-start` | learn.html      | P2 — Philosophy intro                     |
+| `/`                      | index.html      | P1 — Landing hub (orbital system)         |
+| `/story`, `/quick-start` | learn.html      | P2 — Philosophy & intro                   |
 | `/deep-learn`            | deep-learn.html | P3 — Technical deep dive                  |
 | `/build`                 | build.html      | P4 — Builder hub (formations + ecosystem) |
-| `/ignition`              | games.html      | P5 — Arcade (9 mini-games)                |
-| `/burns`                 | burns.html      | P6 — Burn tracker                         |
-| `/asdforecast`           | forecast.html   | P6 — Predictions                          |
-| `/holdex`                | holdex.html     | P6 — Token tracker                        |
+| `/ignition`              | ignition.html   | P1 — Game arcade                          |
+| `/burns`                 | burns.html      | P1 — Burn tracker                         |
+| `/forecast`              | forecast.html   | P1 — Predictions terminal                 |
+| `/holdex`                | holdex.html     | P1 — Token holder dashboard               |
+| `/staking`               | staking.html    | P1 — Delegation interface                 |
+| `/games`                 | games.html      | P2 — Full game suite                      |
+| `/privacy`               | privacy.html    | Legal — Privacy policy                    |
+| `/me`                    | me.html         | User profile & settings                   |
+| `/tools`                 | tools.html      | Tools index & discovery                   |
+| `/terrier`               | terrier.html    | CYNIC companion chatbot                   |
 
 ## Git Workflow (CRITICAL — read before any push)
 
@@ -79,11 +85,23 @@ Types: feat | fix | refactor | docs | style | test | chore
 Scopes: hub | learn | build | games | burns | api | ecosystem
 ```
 
-## Priorities
+## Priorities (Current Sprint Focus)
 
-Landing → Learn → Deep-Learn → Build → Games (playable) → Analytics (later)
+**Phase 1**: Tool Pages Polish (fork-ready for sollama58)
 
-Build = hub des builders ASDF (formations pedagogiques + vue ecosysteme + contributions)
+- Burns, Forecast, HolDex, Staking, Ignition
+- Multi-theme support (3 visual variants per page)
+- Content levels (Précis, Expliqué, Complet)
+
+**Phase 2**: Main Pages (landing, learn, build, games)
+
+- Landing → Learn → Deep-Learn → Build → Games
+- Content enrichment, design refinement
+
+**Phase 3**: Backend Consolidation
+
+- Shop (v1/v2 merge), Helius, Game engines
+- DI container, service refactoring
 
 ## Rules
 
@@ -104,8 +122,11 @@ Build = hub des builders ASDF (formations pedagogiques + vue ecosysteme + contri
 
 - Philosophy: `docs/PHILOSOPHY.md`
 - Architecture: `docs/ARCHITECTURE.md`
-- Roadmap: `docs/ROADMAP.md`
+- Roadmap: `docs/ROADMAP-LIVE.md` (living doc, updated per sprint)
 - Audit findings: `docs/AUDIT.md`
+- Security: `docs/SECURITY-ASSESSMENT.md`
+- Privacy: `docs/PRIVACY-POLICY.md`
+- Archive: `_archive/` (historical docs dated by month)
 
 ## Agents
 
