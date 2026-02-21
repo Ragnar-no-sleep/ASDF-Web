@@ -658,8 +658,8 @@
 
 @media (max-width: 768px) {
   :root {
-    --orbit-radius: var(--orbit-radius-f11); /* Smaller orbit on mobile */
-    --orbit-item-size: 44px;
+    --orbit-radius: var(--orbit-radius-f11); /* 89px - smaller orbit on mobile */
+    --orbit-item-size: 40px;
   }
 
   .hub-orbit-center {
@@ -669,11 +669,22 @@
   }
 
   .hub-orbit-item-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .hub-orbit-item-label {
-    font-size: 10px;
+    font-size: 9px;
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --orbit-item-size: 36px;
+  }
+
+  .hub-orbit-item-label {
+    display: none; /* Hide labels on small screens to prevent overlap */
   }
 }
 

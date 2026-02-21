@@ -69,7 +69,7 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 17px;
+  font-size: 15px; /* Aligned with design-tokens --text-base */
 }
 
 body {
@@ -1349,10 +1349,6 @@ a:hover {
 }
 
 @media (max-width: 600px) {
-  html {
-    font-size: 15px;
-  }
-
   .stats-grid {
     grid-template-columns: 1fr;
   }

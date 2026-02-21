@@ -4,7 +4,7 @@
    "Don't trust. Verify. This is fine." 🔥
    ============================================ */
 
-@import url('./design-tokens.css');
+/* design-tokens.css loaded via HTML <link> — no @import needed */
 
 :root {
   /* === PHI SYSTEM === */
