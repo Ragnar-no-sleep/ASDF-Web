@@ -97,10 +97,10 @@ if (isProduction) {
   app.set('trust proxy', 1);
 }
 
-// Rate limiting - 100 requests per 15 minutes per IP
+// Rate limiting - 400 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 400,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests, please try again later.',
@@ -150,8 +150,6 @@ app.use(
         ],
         // Upgrade HTTP requests to HTTPS in production
         upgradeInsecureRequests: isProduction ? [] : null,
-        // Block mixed content
-        blockAllMixedContent: isProduction ? [] : null,
       },
     },
     // HSTS - Strict Transport Security (1 year, include subdomains, preload eligible)
