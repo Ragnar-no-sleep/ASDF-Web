@@ -38,39 +38,31 @@ Tool pages polish → Multi-theme system → Main pages → Backend refactoring
 Tool pages = Burns, Forecast, HolDex, Staking, Ignition (5 pages)
 Goal: Make them production-ready for fork to sollama58 (alonisthe.dev developer)
 
-### 1.1 Multi-Theme + Content Levels Architecture
+### 1.1 Multi-Theme + Content Levels Architecture &mdash; DONE
 
-**Visual System** (3 themes per page):
-```
-1. Default  — Current dark theme with page accent
-2. Light    — High contrast, readability focus
-3. Immersive— Particles, glow, animation-heavy
-```
+**Visual Variants** (3 color themes per page via `data-variant="1|2|3"`):
+| Page | Variant 1 | Variant 2 | Variant 3 |
+|------|-----------|-----------|-----------|
+| Burns | Gold (default) | Inferno (crimson) | Ash (silver) |
+| Forecast | Matrix (green) | Bloomberg (blue) | Synthwave (pink) |
+| HolDex | Emerald (green) | Crystal (ice blue) | Vintage (amber) |
+| Staking | Cosmos (blue/purple) | Vault (steel/gold) | Aurora (teal) |
+| Ignition | Ember (orange) | Neon (magenta) | Pixel (green retro) |
 
-**Content Depths** (3 levels per page):
-```
-1. Précis     — Dashboard view (stats, quick actions)
-2. Expliqué   — Guided experience (tutorials, context)
-3. Complet    — Full depth (all data, power user features)
-```
+**Content Density** (3 levels per page via `data-density="minimal|detailed|full"`):
+| Level | Label (FR) | Behavior |
+|-------|------------|----------|
+| `minimal` | &Eacute;pur&eacute; | Dashboard pure &mdash; stats and quick actions only |
+| `detailed` | Pr&eacute;cis | + context guides, descriptions, explanations |
+| `full` | Compl&egrave;te | + visual effects, animations, glows, expanded hero |
 
-**Implementation**:
-- Add `data-content="precis|expliqué|complet"` to `<html>`
-- Add `data-visual="default|light|immersive"` to `<html>`
-- Create `css/themes/` directory with content + visual variants
-- Extend ecosystem.js theme drawer to include both toggles
-- Store preferences in localStorage
-
-**Deliverables**:
-1. `css/themes/content-precis.css` (compact layouts)
-2. `css/themes/content-explique.css` (guided layouts)
-3. `css/themes/content-complet.css` (full layouts)
-4. `css/themes/visual-light.css` (light variant)
-5. `css/themes/visual-immersive.css` (particle effects)
-6. Update `js/ecosystem.js` — Add content/visual toggles
-7. Test all combinations on all 5 tool pages
-
-**Timeline**: Phase-based, not sprints
+**Implementation** (already shipped):
+- `data-variant` attribute on `<html>` &mdash; 3 color themes per page CSS
+- `data-density` attribute on `<html>` &mdash; `.density-detailed` and `.density-full` CSS classes
+- `ecosystem.js` theme drawer with density picker + color swatches
+- Per-tool localStorage keys: `asdf-density-{page}`, `asdf-variant-{page}`
+- Global theme override: `asdf-global-theme` (Auto or Console CRT mode)
+- All 5 tool page CSS files include variant + density selectors
 
 ### 1.2 Tool Page Quality Fixes
 

@@ -1300,11 +1300,56 @@ a:hover {
 }
 
 /* ============================================
+   FAQ / BURN MECHANICS SECTION
+   ============================================ */
+.burns-faq {
+  padding: var(--space-2xl) 0;
+  position: relative;
+  z-index: 1;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.faq-card {
+  padding: var(--space-lg);
+  background: var(--charcoal);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  transition: var(--transition);
+}
+
+.faq-card:hover {
+  border-color: rgba(201, 162, 39, 0.2);
+}
+
+.faq-question {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--gold);
+  margin-bottom: var(--space-xs);
+  letter-spacing: -0.01em;
+}
+
+.faq-answer {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 900px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .faq-grid {
+    grid-template-columns: 1fr;
   }
 
   .podium {
@@ -1325,6 +1370,13 @@ a:hover {
   .col-count {
     display: none;
   }
+
+  /* Reduce animated elements on tablet */
+  .ember:nth-child(n + 11),
+  .spark:nth-child(n + 6),
+  .smoke:nth-child(n + 4) {
+    display: none;
+  }
 }
 
 @media (max-width: 600px) {
@@ -1335,6 +1387,17 @@ a:hover {
   .burns-hero {
     min-height: 30vh;
     padding: var(--space-xl) var(--space-md);
+  }
+
+  /* Further reduce animations on mobile */
+  .ember:nth-child(n + 8),
+  .flame:nth-child(n + 6),
+  .ash:nth-child(n + 5) {
+    display: none;
+  }
+
+  .mega-stat-value {
+    font-size: clamp(2rem, 12vw, 3.5rem);
   }
 }
 
@@ -1538,6 +1601,60 @@ a:hover {
 }
 
 /* ============================================
+   GPU COMPOSITING HINTS
+   ============================================ */
+.ember,
+.flame,
+.spark,
+.ash,
+.smoke {
+  will-change: transform, opacity;
+}
+
+.glow-circle {
+  will-change: transform, opacity;
+}
+
+.burn-progress-fill {
+  will-change: width;
+}
+
+/* ============================================
+   ACCESSIBILITY — Focus States
+   ============================================ */
+.tab-btn:focus-visible,
+.cta-btn:focus-visible,
+.faq-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.stat-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-color: var(--gold);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--gold);
+  color: var(--black);
+  font-weight: var(--font-semibold);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  z-index: 9999;
+  transition: top 200ms ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ============================================
    REDUCED MOTION — Burns-specific
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -1550,6 +1667,14 @@ a:hover {
   .heat-haze,
   .cosmic-bg::before,
   .cosmic-bg::after {
+    animation: none !important;
+  }
+
+  .burn-progress-fill {
+    transition: none !important;
+  }
+
+  .hero-badge-dot {
     animation: none !important;
   }
 }
