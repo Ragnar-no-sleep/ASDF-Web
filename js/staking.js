@@ -6,8 +6,6 @@
 'use strict';
 
 // Phase 1 Visceral Feedback - Import modules
-import { interactions } from './utils/interactions.js';
-import { contextualAnimations } from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 
 // ASDF token mint on Solana
@@ -43,12 +41,9 @@ async function connectWallet() {
     const resp = await window.solana.connect();
     walletConnected = true;
 
-    // Visceral feedback: success chime + confetti
+    // Visceral feedback: success chime
     AudioFeedback.play('success');
     const btn = $('#connect-wallet');
-    if (btn) {
-      contextualAnimations.successConfetti(btn);
-    }
 
     const pubkey = resp.publicKey.toString();
     if (btn) {
@@ -245,20 +240,14 @@ function renderLocks() {
     lockCards.forEach(card => {
       const lockId = card.dataset.id;
       const lock = locks.find(l => l.id === lockId);
-      if (lock && lock.status === 'completed') {
-        contextualAnimations.stakeLock(card, true);
-      }
-
       // Add hover effects
       card.addEventListener('mouseenter', () => {
         AudioFeedback.play('hover');
-        interactions.glow(card);
       });
 
       // Add click ripple
       card.addEventListener('click', e => {
         AudioFeedback.play('click');
-        interactions.ripple(card, e);
       });
     });
   }, 100);
@@ -329,16 +318,12 @@ function updateStats() {
   el = $('#stat-next-unlock');
   if (el) el.textContent = getCountdown(nextUnlockDate);
 
-  // Visceral feedback: pulse stat cards
+  // Visceral feedback: hover on stat cards
   setTimeout(() => {
     const statCards = $$('.staking-stat-card');
     statCards.forEach(card => {
-      interactions.pulse(card);
-
-      // Add hover effects
       card.addEventListener('mouseenter', () => {
         AudioFeedback.play('hover');
-        interactions.glow(card);
       });
     });
   }, 200);
@@ -352,9 +337,8 @@ function handleFilterClick(e) {
   const btn = e.target.closest('.staking-filter');
   if (!btn) return;
 
-  // Visceral feedback: click sound + ripple
+  // Visceral feedback: click sound
   AudioFeedback.play('click');
-  interactions.ripple(btn, e);
 
   activeFilter = btn.getAttribute('data-filter') || 'all';
 

@@ -57,10 +57,16 @@ async function fetchWithRetry(url, options, maxRetries) {
   for (var i = 0; i <= maxRetries; i++) {
     try {
       var response = await fetch(url, options);
+      // Don't retry on rate-limit or service unavailable — bail immediately
+      if (response.status === 503 || response.status === 429) {
+        throw new Error('HTTP ' + response.status);
+      }
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response;
     } catch (err) {
-      if (i === maxRetries) throw err;
+      // CORS errors are TypeErrors — no point retrying (backend is unreachable)
+      var isCors = err instanceof TypeError;
+      if (i === maxRetries || isCors) throw err;
       await new Promise(function (resolve) {
         setTimeout(resolve, delay);
       });
