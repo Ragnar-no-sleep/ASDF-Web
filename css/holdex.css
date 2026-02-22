@@ -1147,6 +1147,82 @@ body {
 }
 
 /* ============================================
+   HERO INTRO — Compact data-style banner
+   ============================================ */
+.holdex-hero {
+  position: relative;
+  padding: calc(var(--eco-nav-height, 56px) + 20px) 24px 22px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, var(--accent-glow) 0%, transparent 100%);
+}
+
+.holdex-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.holdex-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.holdex-hero-title {
+  font-family: var(--font-sans);
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.holdex-hero-accent {
+  color: var(--accent-light);
+}
+
+.holdex-hero-sub {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.holdex-hero-detail {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin: 10px auto 0;
+  line-height: 1.6;
+  padding: 8px 14px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .holdex-hero {
+    padding: 20px 16px 16px;
+  }
+}
+
+/* ============================================
    DENSITY: DETAILED — More context & guides
    ============================================ */
 .density-detailed {

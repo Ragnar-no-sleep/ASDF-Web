@@ -1002,6 +1002,93 @@ body {
 }
 
 /* ============================================
+   HERO INTRO — Compact terminal-style banner
+   ============================================ */
+.forecast-hero {
+  position: relative;
+  padding: calc(var(--eco-nav-height, 56px) + 20px) 24px 22px;
+  text-align: center;
+  border-bottom: 1px solid var(--matrix-green-dim);
+  background: linear-gradient(180deg, rgba(0, 255, 65, 0.03) 0%, transparent 100%);
+}
+
+.forecast-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  background: var(--matrix-green-dim);
+  border: 1px solid rgba(0, 255, 65, 0.25);
+  border-radius: 100px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--matrix-green);
+  margin-bottom: 10px;
+}
+
+.forecast-hero-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--matrix-green);
+  box-shadow: 0 0 6px var(--matrix-green-glow);
+  animation: forecast-led-pulse 2s ease-in-out infinite;
+}
+
+@keyframes forecast-led-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.forecast-hero-title {
+  font-family: var(--font-mono);
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.forecast-hero-accent {
+  color: var(--matrix-green);
+  text-shadow: 0 0 20px var(--matrix-green-glow);
+}
+
+.forecast-hero-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white-muted);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.forecast-hero-detail {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--white-muted);
+  max-width: 440px;
+  margin: 10px auto 0;
+  line-height: 1.6;
+  padding: 8px 14px;
+  background: rgba(0, 255, 65, 0.04);
+  border: 1px solid rgba(0, 255, 65, 0.08);
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .forecast-hero {
+    padding: 20px 16px 16px;
+  }
+}
+
+/* ============================================
    DENSITY: DETAILED — More context & guides
    ============================================ */
 .density-detailed {
