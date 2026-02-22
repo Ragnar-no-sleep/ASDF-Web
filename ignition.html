@@ -34,10 +34,8 @@
     <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/ignition.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
+    <!-- Theme anti-flash (external for CSP compliance) -->
+    <script src="/js/anti-flash.js"></script>
 </head>
 <body class="eco-page">
     <a href="#main-content" class="skip-link">Skip to main content</a>

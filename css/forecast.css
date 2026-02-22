@@ -1006,7 +1006,7 @@ body {
    ============================================ */
 .forecast-hero {
   position: relative;
-  padding: calc(var(--eco-nav-height, 56px) + 20px) 24px 22px;
+  padding: 16px 24px 20px;
   text-align: center;
   border-bottom: 1px solid var(--matrix-green-dim);
   background: linear-gradient(180deg, rgba(0, 255, 65, 0.03) 0%, transparent 100%);

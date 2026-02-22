@@ -6,7 +6,6 @@
 'use strict';
 
 // Phase 1 Visceral Feedback - Import modules
-import { interactions } from './utils/interactions.js';
 import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 
@@ -300,9 +299,8 @@ function setupTabListeners() {
   const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(tab => {
     tab.addEventListener('click', e => {
-      // Visceral feedback: click sound + ripple
+      // Visceral feedback: click sound
       AudioFeedback.play('click');
-      interactions.ripple(tab, e);
 
       // Update active state
       tabs.forEach(t => t.classList.remove('active'));
@@ -328,7 +326,6 @@ function setupViscernalFeedback() {
   statCards.forEach(card => {
     card.addEventListener('mouseenter', () => {
       AudioFeedback.play('hover');
-      interactions.glow(card);
     });
   });
 
@@ -337,7 +334,6 @@ function setupViscernalFeedback() {
   if (ctaBtn) {
     ctaBtn.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(ctaBtn, e);
     });
   }
 
@@ -346,7 +342,6 @@ function setupViscernalFeedback() {
   podiumPlaces.forEach(place => {
     place.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(place, e);
     });
   });
 }

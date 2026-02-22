@@ -26,10 +26,8 @@
     <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/holdex.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
+    <!-- Theme anti-flash (external for CSP compliance) -->
+    <script src="/js/anti-flash.js"></script>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -77,22 +75,22 @@
         </div>
     </aside>
 
-    <!-- Hero Intro -->
-    <section class="holdex-hero">
-        <div class="holdex-hero-badge">
-            <span class="holdex-hero-dot"></span>
-            <span>Token Intelligence</span>
-        </div>
-        <h1 class="holdex-hero-title">Hol<span class="holdex-hero-accent">DEX</span></h1>
-        <p class="holdex-hero-sub">DEX screener built for holders. K-Score reveals conviction, not hype.</p>
-        <p class="holdex-hero-detail density-detailed">
-            Track Solana tokens with on-chain conviction metrics. Distribution, velocity,
-            whale risk &amp; activity &mdash; combined into one K-Score. Higher K = stronger holder base.
-        </p>
-    </section>
-
     <!-- Dashboard -->
     <div class="dashboard eco-page">
+        <!-- Hero Intro -->
+        <section class="holdex-hero">
+            <div class="holdex-hero-badge">
+                <span class="holdex-hero-dot"></span>
+                <span>Token Intelligence</span>
+            </div>
+            <h1 class="holdex-hero-title">Hol<span class="holdex-hero-accent">DEX</span></h1>
+            <p class="holdex-hero-sub">DEX screener built for holders. K-Score reveals conviction, not hype.</p>
+            <p class="holdex-hero-detail density-detailed">
+                Track Solana tokens with on-chain conviction metrics. Distribution, velocity,
+                whale risk &amp; activity &mdash; combined into one K-Score. Higher K = stronger holder base.
+            </p>
+        </section>
+
         <!-- Sub-Header (search bar) -->
         <header class="header">
             <div class="header-left">

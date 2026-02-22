@@ -1151,7 +1151,7 @@ body {
    ============================================ */
 .holdex-hero {
   position: relative;
-  padding: calc(var(--eco-nav-height, 56px) + 20px) 24px 22px;
+  padding: 16px 24px 20px;
   text-align: center;
   border-bottom: 1px solid var(--border-subtle);
   background: linear-gradient(180deg, var(--accent-glow) 0%, transparent 100%);
