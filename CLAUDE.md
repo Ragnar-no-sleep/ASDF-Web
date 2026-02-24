@@ -20,10 +20,45 @@ Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | Render deploy (paused)
 
 ## Structure
 
-- 1 JS file per HTML page, 1 CSS file per page
+- 1 primary JS controller per HTML page, shared utilities via ES modules
 - CSS variables in `:root` via `system.css` (design system)
 - No build step — direct serve
 - HTML entities instead of emojis in code
+- Shared modules in `js/utils/`, `js/config/`, `js/core/`
+
+## Tool Architecture (Shell Pattern)
+
+Tool pages (burns, forecast, holdex, staking, ignition) are **shell pages** — they present UI and delegate business logic to sollama58 repos deployed at `alonisthe.dev`:
+
+| Tool     | Frontend Shell | API Backend (sollama58)           |
+| -------- | -------------- | --------------------------------- |
+| Burns    | burns.html/js  | https://alonisthe.dev/burns       |
+| Forecast | forecast.html  | https://alonisthe.dev/asdforecast |
+| HolDex   | holdex.html/js | https://alonisthe.dev/holdex      |
+| Staking  | staking.html   | https://alonisthe.dev/staking     |
+| Ignition | ignition.html  | https://alonisthe.dev/ignition    |
+
+All tool endpoints centralized in **`/js/config/endpoints.js`** — single source of truth. Never hardcode API URLs in tool files.
+
+## Shared Utilities
+
+```
+js/config/endpoints.js     — ASDF_ENDPOINTS (all API URLs, frozen)
+js/utils/format.js         — formatNumber, formatWallet, formatTimeAgo, formatDuration
+js/core/PageLifecycle.js   — Timer/listener cleanup on beforeunload
+js/utils/sound-system.js   — Web Audio API synthesized sounds
+js/utils/audio-feedback.js — AudioFeedback wrapper
+```
+
+## Linked Repositories (sollama58)
+
+- `github.com/sollama58/ASDFBurnTracker` → burns
+- `github.com/sollama58/ASDForecast` → forecast
+- `github.com/sollama58/HolDex` → holdex
+- `github.com/sollama58/staking` → staking
+- `github.com/sollama58/ignition` → ignition
+
+**No bifurcation**: Do not refactor sollama58 flows without explicit coordination.
 
 ## Design System
 
@@ -108,8 +143,10 @@ Scopes: hub | learn | build | games | burns | api | ecosystem
 - Do NOT modify `server.cjs` without explicit review
 - Do NOT introduce frameworks/bundlers without validation
 - Use CSS variables from `system.css` — never hardcode colors
-- Respect the existing 1-file-per-page convention
+- Use `ASDF_ENDPOINTS` from `js/config/endpoints.js` — never hardcode API URLs
+- Respect the existing 1-controller-per-page convention
 - If approach fails 2x → STOP and ask
+- PHP legacy archived to `_archive/php-game-store-2025/` — do not restore
 
 ## Phi/Fibonacci Usage
 
