@@ -36,13 +36,15 @@
   padding: 0;
 }
 
-html,
-body {
-  background: var(--black);
+html {
   height: 100%;
 }
 
 body {
+  background: var(--black);
+  /* min-height allows content to grow + scroll on mobile (P0 fix) */
+  min-height: 100%;
+  overflow-y: auto;
   font-family: var(--font-mono);
   color: var(--white);
   -webkit-font-smoothing: antialiased;
