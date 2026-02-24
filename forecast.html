@@ -21,23 +21,13 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png">
 
-    <!-- CSP -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' https://unpkg.com;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https://asdforecast.onrender.com https://*.solana.com;
-    ">
+    <!-- CSP handled by server-side Helmet -->
 
     <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/forecast.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
+    <!-- Theme anti-flash (external for CSP compliance) -->
+    <script src="/js/anti-flash.js"></script>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -126,6 +116,20 @@
 
     <!-- Full Page Dashboard -->
     <div class="dashboard eco-page">
+        <!-- Hero Intro -->
+        <section class="forecast-hero">
+            <div class="forecast-hero-badge">
+                <span class="forecast-hero-led"></span>
+                <span>Prediction Market</span>
+            </div>
+            <h1 class="forecast-hero-title">ASD<span class="forecast-hero-accent">Forecast</span></h1>
+            <p class="forecast-hero-sub">Predict SOL price direction. Winners take the pool. Fees fuel the burn.</p>
+            <p class="forecast-hero-detail density-detailed">
+                15-minute prediction rounds &mdash; choose UP or DOWN. Correct calls split the pot.
+                All entry fees flow back into the ASDF burn mechanism. No house edge.
+            </p>
+        </section>
+
         <!-- Top Bar (sub-header for forecast-specific controls) -->
         <header class="dashboard-header">
             <div class="header-left">
@@ -140,6 +144,31 @@
                 <button class="btn-connect" id="connect-wallet">wallet.connect()</button>
             </div>
         </header>
+
+        <!-- Marquee Ticker (adapted from sollama58/ASDForecast) -->
+        <div class="marquee-bar" aria-hidden="true">
+            <div class="marquee-track">
+                <span class="marquee-item">SOL/USD <span class="marquee-price" id="ticker-sol">$189.42</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">Pool Volume <span class="marquee-price" id="ticker-volume">$48.2K</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">SOL/USD <span class="marquee-price">$189.42</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
+                <span class="marquee-sep">|</span>
+                <span class="marquee-item">Pool Volume <span class="marquee-price">$48.2K</span></span>
+            </div>
+        </div>
 
         <!-- Main Dashboard Grid -->
         <main class="dashboard-main" id="main-content">
@@ -177,6 +206,19 @@
                 <div class="forecast-context density-detailed">
                     <strong>// RESOLUTION</strong><br>
                     Each frame resolves after 15 minutes. If SOL moves in your predicted direction, you win a proportional share of the pool.
+                </div>
+                <div class="forecast-context density-detailed">
+                    <strong>// MULTIPLIERS</strong><br>
+                    Odds shift based on pool balance. If 70% bet UP, DOWN pays ~2.8x.
+                    The protocol takes no cut &mdash; all fees go to the ASDF burn.
+                </div>
+                <div class="forecast-context density-full">
+                    <strong>// FEE_FLOW</strong><br>
+                    1. User places prediction (SOL)<br>
+                    2. Frame resolves at T+15min<br>
+                    3. Winners split pool proportionally<br>
+                    4. Protocol fee &rarr; ASDF burn address<br>
+                    5. Burn verified on Solscan
                 </div>
                 <div class="panel-title">// LEADERBOARD</div>
                 <div class="leaderboard-compact" id="leaderboard-body">

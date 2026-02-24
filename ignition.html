@@ -34,10 +34,8 @@
     <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/ignition.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
+    <!-- Theme anti-flash (external for CSP compliance) -->
+    <script src="/js/anti-flash.js"></script>
 </head>
 <body class="eco-page">
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -575,6 +573,84 @@
                 <div class="ig-flow-step">
                     <div class="ig-flow-num">3</div>
                     <div class="ig-flow-text">Airdrop distributed weekly to qualifying holders</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SECTION 9: FAQ & ELIGIBILITY
+         ============================================ -->
+    <section class="ig-section ig-faq-section density-detailed" id="section-faq" aria-label="FAQ">
+        <div class="container">
+            <div class="ig-section-header">
+                <h2 class="ig-section-title">FAQ &amp; Airdrop Eligibility</h2>
+                <p class="ig-section-subtitle">How to qualify and maximize rewards</p>
+            </div>
+
+            <!-- Eligibility Criteria -->
+            <div class="ig-eligibility">
+                <h3 class="ig-subsection-title">Eligibility Requirements</h3>
+                <div class="ig-eligibility-grid">
+                    <div class="ig-eligibility-item">
+                        <span class="ig-eligibility-icon">&#9733;</span>
+                        <div>
+                            <strong>Hold ASDF</strong>
+                            <p>Must hold a minimum of 1,000 ASDF tokens at snapshot time</p>
+                        </div>
+                    </div>
+                    <div class="ig-eligibility-item">
+                        <span class="ig-eligibility-icon">&#9830;</span>
+                        <div>
+                            <strong>Register Token</strong>
+                            <p>Your Pump.fun token must be registered via the Register tab</p>
+                        </div>
+                    </div>
+                    <div class="ig-eligibility-item">
+                        <span class="ig-eligibility-icon">&#128293;</span>
+                        <div>
+                            <strong>Fee Sharing Active</strong>
+                            <p>Creator fees must be directed to the ASDF airdrop pool</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multiplier Tiers -->
+            <div class="ig-multiplier-tiers density-detailed">
+                <h3 class="ig-subsection-title">Multiplier Tiers</h3>
+                <div class="ig-tier-table">
+                    <div class="ig-tier-row ig-tier-row--header">
+                        <span>Rank</span>
+                        <span>24h Volume</span>
+                        <span>Multiplier</span>
+                    </div>
+                    <div class="ig-tier-row"><span>#1</span><span>Highest</span><span class="ig-multi--5x">5.0x</span></div>
+                    <div class="ig-tier-row"><span>#2-3</span><span>Top 3</span><span class="ig-multi--3x">3.0x</span></div>
+                    <div class="ig-tier-row"><span>#4-5</span><span>Top 5</span><span class="ig-multi--2x">2.0x</span></div>
+                    <div class="ig-tier-row"><span>#6-7</span><span>Top 7</span><span class="ig-multi--1x">1.5x</span></div>
+                    <div class="ig-tier-row"><span>#8-10</span><span>Top 10</span><span class="ig-multi--1x">1.0x</span></div>
+                    <div class="ig-tier-row"><span>#11+</span><span>Below</span><span class="ig-multi--low">0.1-0.5x</span></div>
+                </div>
+            </div>
+
+            <!-- FAQ Cards -->
+            <div class="ig-faq-grid">
+                <div class="ig-faq-card">
+                    <h3 class="ig-faq-q">How are airdrops distributed?</h3>
+                    <p class="ig-faq-a">Weekly airdrops are distributed proportionally based on your registered token&rsquo;s 24h volume and multiplier tier. Higher volume = bigger share.</p>
+                </div>
+                <div class="ig-faq-card">
+                    <h3 class="ig-faq-q">What is KOTH?</h3>
+                    <p class="ig-faq-a">King of the Pill &mdash; the AI-selected champion token receiving 10% of the airdrop pool. Selection is based on volume, holder growth, and community activity.</p>
+                </div>
+                <div class="ig-faq-card">
+                    <h3 class="ig-faq-q">What is Robinhood Partnership?</h3>
+                    <p class="ig-faq-a">External token creators can share their Pump.fun creator fees with the ASDF airdrop pool. In return, their token holders qualify for airdrops.</p>
+                </div>
+                <div class="ig-faq-card density-full">
+                    <h3 class="ig-faq-q">Can I create multiple tokens?</h3>
+                    <p class="ig-faq-a">Yes. Each token must be registered separately. Launch fee is 0.02 SOL per token. Each registered token earns its own multiplier based on volume.</p>
                 </div>
             </div>
         </div>

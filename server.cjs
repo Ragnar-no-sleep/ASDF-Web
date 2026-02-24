@@ -97,10 +97,10 @@ if (isProduction) {
   app.set('trust proxy', 1);
 }
 
-// Rate limiting - 100 requests per 15 minutes per IP
+// Rate limiting - 400 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 400,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests, please try again later.',
@@ -133,6 +133,7 @@ app.use(
           'https://api.asdf-games.com',
           'https://asdf-web.onrender.com',
           'https://asdf-api.onrender.com',
+          'https://holdex.onrender.com',
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',
@@ -150,8 +151,6 @@ app.use(
         ],
         // Upgrade HTTP requests to HTTPS in production
         upgradeInsecureRequests: isProduction ? [] : null,
-        // Block mixed content
-        blockAllMixedContent: isProduction ? [] : null,
       },
     },
     // HSTS - Strict Transport Security (1 year, include subdomains, preload eligible)
@@ -398,9 +397,9 @@ app.get('/staking', (req, res) => {
   res.sendFile(path.join(__dirname, 'staking.html'));
 });
 
-// Route /tools to tools.html (Ecosystem Tools Hub)
+// Route /tools — redirect to hub (tools are integrated into landing page)
 app.get('/tools', (req, res) => {
-  res.sendFile(path.join(__dirname, 'tools.html'));
+  res.redirect(301, '/');
 });
 
 // Route /build to build.html (Builder Hub)

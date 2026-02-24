@@ -21,23 +21,14 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png">
 
-    <!-- CSP -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' https://unpkg.com https://esm.sh;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https://*.solana.com https://*.helius-rpc.com https://asdf-api.onrender.com;
-    ">
+    <!-- CSP handled by server-side Helmet -->
 
+    <link rel="stylesheet" href="css/design-tokens.css">
     <link rel="stylesheet" href="css/ecosystem.css">
     <link rel="stylesheet" href="css/staking.css">
 
-    <!-- Theme anti-flash -->
-    <script>
-      (function(){var t=localStorage.getItem('asdf-theme');if(t)document.documentElement.setAttribute('data-theme',t)})();
-    </script>
+    <!-- Theme anti-flash (external for CSP compliance) -->
+    <script src="/js/anti-flash.js"></script>
 </head>
 <body class="eco-page">
     <!-- Ambient Background -->
@@ -82,6 +73,20 @@
             <!-- Dynamically populated by ecosystem.js -->
         </div>
     </aside>
+
+    <!-- Hero Intro -->
+    <section class="staking-hero">
+        <div class="staking-hero-badge">
+            <span class="staking-hero-dot"></span>
+            <span>Token Locks</span>
+        </div>
+        <h1 class="staking-hero-title">Staking</h1>
+        <p class="staking-hero-sub">Transparent vesting via Streamflow. Locked supply protects holders.</p>
+        <p class="staking-hero-detail density-detailed">
+            View active locks, vesting schedules &amp; delegation stats.
+            All lock data verified on-chain through Streamflow smart contracts.
+        </p>
+    </section>
 
     <!-- Main Content -->
     <main class="staking-main">
@@ -141,6 +146,84 @@
                 <div class="staking-loading">
                     <div class="staking-spinner"></div>
                     <span>Building timeline...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Governance Overview (adapted from sollama58/TokenVotingUtil) -->
+        <section class="staking-governance density-detailed">
+            <h2 class="staking-section-title">Governance &amp; Voting</h2>
+            <p class="staking-context" style="margin-top:12px">
+                <strong>Vote Weighting:</strong> Locked tokens carry more voting power.
+                Longer lock periods increase your governance weight using a time-multiplier.
+                This prevents short-term holders from influencing long-term decisions.
+            </p>
+            <div class="governance-thresholds">
+                <div class="threshold-card">
+                    <div class="threshold-label">Quorum</div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill" style="width:62%"></div>
+                    </div>
+                    <div class="threshold-meta">
+                        <span>62% reached</span>
+                        <span>Target: 67%</span>
+                    </div>
+                </div>
+                <div class="threshold-card">
+                    <div class="threshold-label">Approval</div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill threshold-fill--success" style="width:78%"></div>
+                    </div>
+                    <div class="threshold-meta">
+                        <span>78% in favor</span>
+                        <span>Target: 51%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vesting Glossary (density-detailed) -->
+        <section class="staking-glossary density-detailed">
+            <h2 class="staking-section-title">Vesting Glossary</h2>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <dt class="glossary-term">Cliff</dt>
+                    <dd class="glossary-def">Initial lockup period before any tokens unlock. No withdrawals until the cliff ends.</dd>
+                </div>
+                <div class="glossary-item">
+                    <dt class="glossary-term">Linear Vesting</dt>
+                    <dd class="glossary-def">Tokens unlock gradually over time at a constant rate after the cliff period.</dd>
+                </div>
+                <div class="glossary-item">
+                    <dt class="glossary-term">TGE Unlock</dt>
+                    <dd class="glossary-def">Token Generation Event &mdash; percentage released immediately at launch before vesting begins.</dd>
+                </div>
+                <div class="glossary-item density-full">
+                    <dt class="glossary-term">Streamflow</dt>
+                    <dd class="glossary-def">On-chain vesting protocol on Solana. All ASDF locks are verifiable via Streamflow&rsquo;s smart contracts. No custodial risk.</dd>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ (density-detailed) -->
+        <section class="staking-faq density-detailed">
+            <h2 class="staking-section-title">Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h3 class="faq-question">What is token locking?</h3>
+                    <p class="faq-answer">Tokens are deposited into a Streamflow smart contract with a defined vesting schedule. They cannot be withdrawn or sold until the schedule allows.</p>
+                </div>
+                <div class="faq-card">
+                    <h3 class="faq-question">Why lock tokens?</h3>
+                    <p class="faq-answer">Locking signals long-term commitment. It protects holders from sudden sell pressure and earns increased governance voting power.</p>
+                </div>
+                <div class="faq-card">
+                    <h3 class="faq-question">Can I cancel a lock?</h3>
+                    <p class="faq-answer">Only if the lock was created with cancellation enabled. Most ASDF locks are non-cancellable to maximize holder confidence.</p>
+                </div>
+                <div class="faq-card density-full">
+                    <h3 class="faq-question">How does vote weighting work?</h3>
+                    <p class="faq-answer">Governance power = locked tokens &times; time multiplier. A 2-year lock earns 4x the voting power of unlocked tokens, incentivizing long-term alignment.</p>
                 </div>
             </div>
         </section>

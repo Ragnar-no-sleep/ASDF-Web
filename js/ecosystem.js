@@ -104,9 +104,9 @@
   var DIR_KEY = 'eco-nav-direction';
 
   var DENSITY_LABELS = {
-    minimal: { label: '\u00C9pur\u00E9', desc: 'Dashboard pur' },
-    detailed: { label: 'Pr\u00E9cis', desc: '+ guides & contexte' },
-    full: { label: 'Compl\u00E8te', desc: '+ effets & animations' },
+    minimal: { label: 'Minimal', desc: 'Clean dashboard' },
+    detailed: { label: 'Detailed', desc: '+ guides & context' },
+    full: { label: 'Full', desc: '+ effects & animations' },
   };
 
   var GLOBAL_THEME_KEY = 'asdf-global-theme';
@@ -626,7 +626,7 @@
       panel.id = 'ecoPagePreview';
       panel.className = 'eco-page-preview';
       panel.innerHTML =
-        '<iframe class="eco-page-preview-iframe" src="" sandbox="allow-scripts" title="Page preview"></iframe>';
+        '<iframe class="eco-page-preview-iframe" src="" sandbox="allow-scripts allow-same-origin allow-forms" title="Page preview"></iframe>';
       document.body.appendChild(panel);
     }
 

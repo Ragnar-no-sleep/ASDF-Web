@@ -6,7 +6,6 @@
 'use strict';
 
 // Phase 1 Visceral Feedback - Import modules
-import { interactions } from './utils/interactions.js';
 import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 
@@ -17,13 +16,61 @@ const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
 // escapeHtml loaded from js/shared/security.js
 
 // ============================================
+// EXPONENTIAL BACKOFF FETCH
+// (Adapted from sollama58/ASDFBurnTracker)
+// ============================================
+
+async function fetchWithRetry(url, maxRetries) {
+  if (!maxRetries) maxRetries = 3;
+  var delay = 1000;
+  for (var i = 0; i <= maxRetries; i++) {
+    try {
+      var response = await fetch(url);
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      updateConnectionStatus(true);
+      return response;
+    } catch (err) {
+      if (i === maxRetries) {
+        updateConnectionStatus(false);
+        throw err;
+      }
+      console.warn('[Burns] Retry ' + (i + 1) + '/' + maxRetries + ' after ' + delay + 'ms');
+      await new Promise(function (resolve) {
+        setTimeout(resolve, delay);
+      });
+      delay *= 2;
+    }
+  }
+}
+
+// ============================================
+// API CONNECTION STATUS
+// (Adapted from sollama58/ASDFBurnTracker status monitor)
+// ============================================
+
+function updateConnectionStatus(connected) {
+  var badge = document.querySelector('.hero-badge');
+  var dot = document.querySelector('.hero-badge-dot');
+  if (!badge || !dot) return;
+
+  if (connected) {
+    dot.style.background = '#22c55e';
+    dot.style.boxShadow = '0 0 8px rgba(34, 197, 94, 0.6)';
+    badge.setAttribute('title', 'API connected');
+  } else {
+    dot.style.background = '#ef4444';
+    dot.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+    badge.setAttribute('title', 'API unreachable - showing cached data');
+  }
+}
+
+// ============================================
 // DATA FETCHING
 // ============================================
 
 async function fetchBurnStats() {
   try {
-    const response = await fetch(`${API_BASE}/ecosystem/burns`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
+    const response = await fetchWithRetry(`${API_BASE}/ecosystem/burns`);
     return await response.json();
   } catch (error) {
     console.error('[Burns] Error fetching stats:', error);
@@ -46,8 +93,7 @@ async function fetchLeaderboard(period = 'all') {
         ? `${API_BASE}/leaderboard/burns`
         : `${API_BASE}/scores/leaderboard/${period}/burns`;
 
-    const response = await fetch(endpoint);
-    if (!response.ok) throw new Error('Failed to fetch leaderboard');
+    const response = await fetchWithRetry(endpoint);
     const data = await response.json();
     return { leaderboard: data.leaderboard || data.topBurners || data };
   } catch (error) {
@@ -58,8 +104,7 @@ async function fetchLeaderboard(period = 'all') {
 
 async function fetchRecentBurns() {
   try {
-    const response = await fetch(`${API_BASE}/ecosystem/burns?recent=true`);
-    if (!response.ok) throw new Error('Failed to fetch recent burns');
+    const response = await fetchWithRetry(`${API_BASE}/ecosystem/burns?recent=true`);
     const data = await response.json();
     return { burns: data.recentBurns || [] };
   } catch (error) {
@@ -254,9 +299,8 @@ function setupTabListeners() {
   const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(tab => {
     tab.addEventListener('click', e => {
-      // Visceral feedback: click sound + ripple
+      // Visceral feedback: click sound
       AudioFeedback.play('click');
-      interactions.ripple(tab, e);
 
       // Update active state
       tabs.forEach(t => t.classList.remove('active'));
@@ -282,7 +326,6 @@ function setupViscernalFeedback() {
   statCards.forEach(card => {
     card.addEventListener('mouseenter', () => {
       AudioFeedback.play('hover');
-      interactions.glow(card);
     });
   });
 
@@ -291,7 +334,6 @@ function setupViscernalFeedback() {
   if (ctaBtn) {
     ctaBtn.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(ctaBtn, e);
     });
   }
 
@@ -300,7 +342,6 @@ function setupViscernalFeedback() {
   podiumPlaces.forEach(place => {
     place.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(place, e);
     });
   });
 }

@@ -4,6 +4,7 @@
     <style>html{background:#020812!important}body{background:transparent!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>Build | ASDF Ecosystem</title>
     <meta name="description" content="Yggdrasil - The World Tree of ASDF projects. Builders Marketplace.">
 
@@ -14,29 +15,7 @@
 
     <link rel="icon" type="image/png" href="/favicon.png">
 
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
-        script-src-attr 'unsafe-inline';
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com https://asdf-api.onrender.com https://api.github.com;
-        object-src 'none';
-        base-uri 'self';
-        form-action 'self';
-        upgrade-insecure-requests;
-    ">
-
-    <!-- Prefetch other pages for instant navigation -->
-    <link rel="prefetch" href="learn.html">
-    <link rel="prefetch" href="index.html">
+    <!-- CSP handled by server.cjs Helmet -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,6 +44,8 @@
             "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
     }
+    </script>
+
     </script>
 </head>
 <body>
@@ -868,7 +849,6 @@
         });
     </script>
 
-    <!-- Legacy scripts removed - cosmos is now the primary experience -->
     <script src="js/consent/index.js"></script>
 </body>
 </html>
