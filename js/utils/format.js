@@ -1,0 +1,66 @@
+/**
+ * ASDF-Web Formatting Utilities
+ * Shared across all tool pages (burns, forecast, holdex, staking, ignition)
+ *
+ * Eliminates 4 duplicate implementations previously scattered across tool files.
+ */
+
+/**
+ * Format large numbers with K/M/B suffix
+ * @param {number|null|undefined} n
+ * @param {number} decimals
+ * @returns {string}
+ * @example formatNumber(123456789) // "123.5M"
+ */
+export function formatNumber(n, decimals = 1) {
+  if (n === null || n === undefined || n === 0) return '0';
+  if (n < 1e3) return n.toString();
+  if (n < 1e6) return (n / 1e3).toFixed(decimals) + 'K';
+  if (n < 1e9) return (n / 1e6).toFixed(decimals) + 'M';
+  return (n / 1e9).toFixed(decimals) + 'B';
+}
+
+/**
+ * Truncate wallet address for display
+ * @param {string} address
+ * @param {number} start chars to show at start
+ * @param {number} end chars to show at end
+ * @returns {string}
+ * @example formatWallet("12345678901234567890") // "12345678...7890"
+ */
+export function formatWallet(address, start = 8, end = 4) {
+  if (!address || address.length <= start + end) return address;
+  return address.slice(0, start) + '...' + address.slice(-end);
+}
+
+/**
+ * Format a timestamp as a relative "time ago" string
+ * @param {number} timestamp Unix ms
+ * @returns {string}
+ * @example formatTimeAgo(Date.now() - 7200000) // "2h ago"
+ */
+export function formatTimeAgo(timestamp) {
+  const diff = Date.now() - timestamp;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return days + 'd ago';
+  if (hours > 0) return hours + 'h ago';
+  if (minutes > 0) return minutes + 'm ago';
+  return 'now';
+}
+
+/**
+ * Format a duration in milliseconds as MM:SS
+ * @param {number} ms
+ * @returns {string}
+ * @example formatDuration(305000) // "5:05"
+ */
+export function formatDuration(ms) {
+  const total = Math.floor(ms / 1000);
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}

@@ -8,10 +8,10 @@
 // Phase 1 Visceral Feedback - Import modules
 import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
 
-// Use relative URL in dev (proxied by Vite), full URL in production
-const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
+const API_BASE = ASDF_ENDPOINTS.burns;
 
 // escapeHtml loaded from js/shared/security.js
 
@@ -362,9 +362,9 @@ async function init() {
   // Load initial data
   await Promise.all([updateStats(), updateLeaderboard('all'), updateRecentBurns()]);
 
-  // Refresh data periodically
-  setInterval(updateStats, 30000);
-  setInterval(updateRecentBurns, 15000);
+  // Refresh data periodically (registered for cleanup on page unload)
+  PageLifecycle.registerTimer('burns-stats', setInterval(updateStats, 30000));
+  PageLifecycle.registerTimer('burns-feed', setInterval(updateRecentBurns, 15000));
 
   console.log('[Burns] Initialized');
 }

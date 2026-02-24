@@ -12,7 +12,8 @@
   // ============================================
 
   var isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  var API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
+  // API endpoint — mirrors ASDF_ENDPOINTS.ignition (see /js/config/endpoints.js)
+  var API_BASE = isDev ? '/api' : 'https://alonisthe.dev/ignition';
 
   // ============================================
   // MOCK DATA

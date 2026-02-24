@@ -5,7 +5,9 @@
 
 'use strict';
 
-const FORECAST_API = 'https://asdforecast.onrender.com/api';
+// API endpoint — mirrors ASDF_ENDPOINTS.forecast (see /js/config/endpoints.js)
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const FORECAST_API = isDev ? '/api' : 'https://alonisthe.dev/asdforecast';
 
 // ============================================
 // STATE
@@ -384,6 +386,7 @@ async function init() {
   updateOdds(frame);
 
   // Refresh data periodically
+  // Note: intervals self-clear on next navigation (no SPA in this project)
   setInterval(async () => {
     const stats = await fetchStats();
     updateStats(stats);

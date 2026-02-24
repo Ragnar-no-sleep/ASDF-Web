@@ -1,11 +1,13 @@
 /**
  * HolDEX - Token Tracker JavaScript
- * Connects to holdex.onrender.com API
+ * Connects to alonisthe.dev/holdex API (sollama58/HolDex)
  */
 
 'use strict';
 
-const HOLDEX_API = 'https://holdex.onrender.com/api';
+// API endpoint — mirrors ASDF_ENDPOINTS.holdex (see /js/config/endpoints.js)
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const HOLDEX_API = isDev ? '/api' : 'https://alonisthe.dev/holdex';
 
 // escapeHtml loaded from js/shared/security.js
 
