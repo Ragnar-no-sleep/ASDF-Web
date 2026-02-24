@@ -417,6 +417,11 @@ app.get('/deep-learn', (req, res) => {
   res.sendFile(path.join(__dirname, 'deep-learn.html'));
 });
 
+// Route /ecosystem-map — Dev dashboard (not in navbar, accessible by URL)
+app.get('/ecosystem-map', (req, res) => {
+  res.sendFile(path.join(__dirname, 'ecosystem-map.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
   // If it's a file request that doesn't exist, 404
