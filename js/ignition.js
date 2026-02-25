@@ -7,6 +7,17 @@
 (function () {
   'use strict';
 
+  function showNotice(msg) {
+    var el = document.createElement('div');
+    el.className = 'error-inline';
+    el.style.cssText = 'position:fixed;bottom:1rem;right:1rem;z-index:999;max-width:340px;';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function () {
+      el.remove();
+    }, 4000);
+  }
+
   // ============================================
   // CONFIG
   // ============================================
@@ -262,7 +273,7 @@
         // [API] TODO: Submit token launch transaction
         // Requires wallet connection + 0.02 SOL fee
         console.log('[Ignition] Token launch submitted (mock)');
-        alert('Token launch requires wallet connection and Solana integration. Coming soon.');
+        showNotice('Token launch\u00a0: wallet + int\u00e9gration Solana requise. Prochainement.');
       });
     }
 
@@ -273,7 +284,7 @@
         e.preventDefault();
         // [API] TODO: Verify mint address and register token
         console.log('[Ignition] Token registration submitted (mock)');
-        alert('Token registration requires API integration. Coming soon.');
+        showNotice('Token registration\u00a0: int\u00e9gration API requise. Prochainement.');
       });
     }
 
@@ -284,7 +295,7 @@
         e.preventDefault();
         // [API] TODO: Designate Twitter user as fee beneficiary
         console.log('[Ignition] PAGS designation submitted (mock)');
-        alert('PAGS designation requires API integration. Coming soon.');
+        showNotice('PAGS designation\u00a0: int\u00e9gration API requise. Prochainement.');
       });
     }
   }
