@@ -21,8 +21,8 @@
 'use strict';
 
 const crypto = require('crypto');
-const { getStorage } = require('./storage');
-const { trackError } = require('./monitoring');
+const { getStorage } = require('../storage');
+const { trackError } = require('../monitoring');
 
 // ============================================
 // CONFIGURATION

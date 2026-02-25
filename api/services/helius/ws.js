@@ -26,7 +26,7 @@
 
 const WebSocket = require('ws');
 const EventEmitter = require('events');
-const { logAudit } = require('./audit');
+const { logAudit } = require('../audit');
 
 // ============================================
 // CONFIGURATION

@@ -21,7 +21,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { logAudit } = require('./audit');
+const { logAudit } = require('../audit');
 
 // ============================================
 // CONFIGURATION

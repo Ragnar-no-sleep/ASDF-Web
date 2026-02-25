@@ -109,7 +109,7 @@ const {
   getAllEndpointsStatus,
   checkAllEndpointsHealth,
   getStats: getRpcStats,
-} = require('../services/rpcFailover');
+} = require('../services/helius/middleware/failover');
 const {
   getConnectionStatus: getWsStatus,
   getSubscriptions: getWsSubscriptions,

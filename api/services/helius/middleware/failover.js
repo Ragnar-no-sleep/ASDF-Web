@@ -20,7 +20,7 @@
 
 'use strict';
 
-const { logAudit } = require('./audit');
+const { logAudit } = require('../../audit');
 
 // ============================================
 // CONFIGURATION
