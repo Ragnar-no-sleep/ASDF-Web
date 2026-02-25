@@ -7,17 +7,6 @@
 (function () {
   'use strict';
 
-  function showNotice(msg) {
-    var el = document.createElement('div');
-    el.className = 'error-inline';
-    el.style.cssText = 'position:fixed;bottom:1rem;right:1rem;z-index:999;max-width:340px;';
-    el.textContent = msg;
-    document.body.appendChild(el);
-    setTimeout(function () {
-      el.remove();
-    }, 4000);
-  }
-
   // ============================================
   // CONFIG
   // ============================================
@@ -166,7 +155,7 @@
     walletConnected = true;
     btn.classList.add('connected');
     btn.querySelector('.ig-wallet-label').textContent = '7xK2...m9Fq';
-    btn.querySelector('.ig-wallet-icon').textContent = '\u2713';
+    btn.querySelector('.ig-wallet-icon').textContent = '✓';
 
     // Enable form buttons when wallet is connected
     enableFormButtons(true);
@@ -273,7 +262,7 @@
         // [API] TODO: Submit token launch transaction
         // Requires wallet connection + 0.02 SOL fee
         console.log('[Ignition] Token launch submitted (mock)');
-        showNotice('Token launch\u00a0: wallet + int\u00e9gration Solana requise. Prochainement.');
+        showNotice('Token launch requires wallet connection and Solana integration — coming soon.');
       });
     }
 
@@ -284,7 +273,7 @@
         e.preventDefault();
         // [API] TODO: Verify mint address and register token
         console.log('[Ignition] Token registration submitted (mock)');
-        showNotice('Token registration\u00a0: int\u00e9gration API requise. Prochainement.');
+        showNotice('Token registration requires API integration — coming soon.');
       });
     }
 
@@ -295,7 +284,7 @@
         e.preventDefault();
         // [API] TODO: Designate Twitter user as fee beneficiary
         console.log('[Ignition] PAGS designation submitted (mock)');
-        showNotice('PAGS designation\u00a0: int\u00e9gration API requise. Prochainement.');
+        showNotice('PAGS designation requires API integration — coming soon.');
       });
     }
   }

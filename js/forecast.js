@@ -8,14 +8,6 @@
 // API endpoint — mirrors ASDF_ENDPOINTS.forecast (see /js/config/endpoints.js)
 const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-function showNotice(msg) {
-  const el = document.createElement('div');
-  el.className = 'error-inline';
-  el.style.cssText = 'position:fixed;bottom:1rem;right:1rem;z-index:999;max-width:340px;';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 4000);
-}
 const FORECAST_API = isDev ? '/api' : 'https://alonisthe.dev/asdforecast';
 
 // ============================================
@@ -243,7 +235,7 @@ function updateOdds(frame) {
 async function connectWallet() {
   try {
     if (!window.solana || !window.solana.isPhantom) {
-      showNotice('Wallet requis\u00a0: installez Phantom pour utiliser ASDForecast');
+      showNotice('Wallet required — install Phantom to use ASDForecast');
       window.open('https://phantom.app/', '_blank');
       return;
     }
@@ -320,7 +312,7 @@ async function submitPrediction() {
 
   const amount = parseFloat(document.getElementById('bet-amount').value);
   if (!amount || amount <= 0) {
-    showNotice('Montant invalide\u00a0\u2014 veuillez entrer une valeur positive.');
+    showNotice('Invalid amount — enter a positive value.');
     return;
   }
 
@@ -331,9 +323,7 @@ async function submitPrediction() {
   });
 
   // In production, this would send a transaction
-  showNotice(
-    'Soumission requiert une transaction wallet\u00a0\u2014 fonctionnalit\u00e9 en d\u00e9veloppement.'
-  );
+  showNotice('Prediction submission requires a wallet transaction — feature in development.');
 }
 
 // ============================================
