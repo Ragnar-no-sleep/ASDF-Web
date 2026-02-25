@@ -14,6 +14,10 @@ export default [
       '.next/**',
       'src-react-backup/**',
       '_archive/**',
+      // Separate monorepos — have their own lint configs
+      'ecosystem/**',
+      // Archived build artifacts
+      'js/_archive_build.js',
     ],
   },
 
@@ -79,6 +83,14 @@ export default [
     files: ['js/**/*.js'],
     rules: {
       'no-undef': 'warn',
+    },
+  },
+
+  // CJS files (api/, services/, server) — use require/module.exports
+  {
+    files: ['api/**/*.js', 'services/**/*.js', 'server.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
     },
   },
 
