@@ -3,8 +3,9 @@
  * Lightweight toast for non-module pages (forecast, ignition).
  * Reuses .error-inline from system.css — no new CSS required.
  *
- * Usage (plain script):  showNotice('message')
- * Usage (ES module):     import { showNotice } from './utils/notice.js'
+ * Loaded as plain <script> — defines window.showNotice global.
+ * TODO(F1/I1): add `export function showNotice` once forecast + ignition
+ *              are converted to type="module".
  */
 
 function showNotice(msg) {
@@ -16,9 +17,4 @@ function showNotice(msg) {
   setTimeout(function () {
     el.remove();
   }, 4000);
-}
-
-// ES module export (for future module consumers)
-if (typeof module !== 'undefined') {
-  module.exports = { showNotice };
 }
