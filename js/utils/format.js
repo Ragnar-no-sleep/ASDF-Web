@@ -64,3 +64,33 @@ export function formatDuration(ms) {
   const secs = total % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
+
+/**
+ * Format seconds as "Xd Yh" period (e.g. vesting period)
+ * @param {number} seconds
+ * @returns {string}
+ * @example formatPeriod(90000) // "1d 1h"
+ */
+export function formatPeriod(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  if (days > 0) return days + 'd ' + hours + 'h';
+  if (hours > 0) return hours + 'h';
+  return Math.floor(seconds / 60) + 'm';
+}
+
+/**
+ * Format milliseconds as countdown "Xd Yh Zm" (e.g. time left until unlock)
+ * @param {number} ms
+ * @returns {string}
+ * @example formatTimeLeft(90061000) // "1d 1h 1m"
+ */
+export function formatTimeLeft(ms) {
+  if (ms <= 0) return 'Now';
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days > 0) return days + 'd ' + hours + 'h ' + mins + 'm';
+  if (hours > 0) return hours + 'h ' + mins + 'm';
+  return mins + 'm';
+}
