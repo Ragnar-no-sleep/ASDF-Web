@@ -7,6 +7,7 @@
 
 // Phase 1 Visceral Feedback - Import modules
 import { AudioFeedback } from './utils/audio-feedback.js';
+import { formatNumber } from './utils/format.js';
 
 // ASDF token mint on Solana
 const ASDF_MINT = '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump';
@@ -68,6 +69,11 @@ async function connectWallet() {
 // ============================================
 
 async function fetchLocks() {
+  const locksList = $('#locks-list');
+  if (locksList) {
+    locksList.innerHTML = '<div class="staking-loading"><span>Loading locks&hellip;</span></div>';
+  }
+
   try {
     // For now, display demo data structure
     // Real integration will use Streamflow JS SDK:
@@ -155,12 +161,6 @@ function getDemoLocks() {
 // ============================================
 // RENDERING
 // ============================================
-
-function formatNumber(n) {
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
-  return n.toLocaleString();
-}
 
 function formatDate(d) {
   if (!d) return '--';
