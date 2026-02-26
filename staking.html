@@ -125,10 +125,19 @@
         <section class="staking-browser">
             <div class="staking-browser-header">
                 <h2 class="staking-section-title">Lock Browser</h2>
-                <div class="staking-filters">
-                    <button class="staking-filter active" data-filter="all">All</button>
-                    <button class="staking-filter" data-filter="active">Active</button>
-                    <button class="staking-filter" data-filter="completed">Completed</button>
+                <div class="staking-browser-controls">
+                    <div class="staking-filters">
+                        <button class="staking-filter active" data-filter="all">All</button>
+                        <button class="staking-filter" data-filter="active">Active</button>
+                        <button class="staking-filter" data-filter="completed">Completed</button>
+                        <button class="staking-filter" data-filter="mine" id="filter-mine">Mine</button>
+                    </div>
+                    <select class="staking-sort" id="locks-sort" aria-label="Sort locks">
+                        <option value="default">Sort</option>
+                        <option value="amount">Amount &#8595;</option>
+                        <option value="date">End Date</option>
+                        <option value="status">Status</option>
+                    </select>
                 </div>
             </div>
             <div class="staking-locks" id="locks-list">
@@ -246,6 +255,56 @@
         <span class="staking-footer-right">Data updates every 60s</span>
     </footer>
 
+
+    <!-- Lock Detail Modal -->
+    <div class="lock-modal-overlay" id="lock-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="lock-modal-title">
+        <div class="lock-modal">
+            <button class="lock-modal-close" id="lock-modal-close" aria-label="Close modal">&times;</button>
+            <div class="lock-modal-header">
+                <h3 class="lock-modal-title" id="lock-modal-title">Lock Detail</h3>
+                <span class="lock-modal-status staking-lock-status" id="lock-modal-status"></span>
+            </div>
+            <div class="lock-modal-body">
+                <div class="lock-modal-progress-wrap">
+                    <div class="staking-progress-bar lock-modal-progress-bar">
+                        <div class="staking-progress-fill" id="lock-modal-fill"></div>
+                    </div>
+                    <span class="lock-modal-pct" id="lock-modal-pct"></span>
+                </div>
+                <div class="lock-modal-rows">
+                    <div class="lock-modal-row">
+                        <span class="lock-modal-label">Total Deposited</span>
+                        <span class="lock-modal-value" id="lock-modal-amount"></span>
+                    </div>
+                    <div class="lock-modal-row">
+                        <span class="lock-modal-label">Unlocked</span>
+                        <span class="lock-modal-value" id="lock-modal-unlocked"></span>
+                    </div>
+                    <div class="lock-modal-row">
+                        <span class="lock-modal-label">Recipient</span>
+                        <span class="lock-modal-value lock-modal-mono" id="lock-modal-wallet"></span>
+                    </div>
+                    <div class="lock-modal-row">
+                        <span class="lock-modal-label">Start</span>
+                        <span class="lock-modal-value" id="lock-modal-start"></span>
+                    </div>
+                    <div class="lock-modal-row">
+                        <span class="lock-modal-label">End</span>
+                        <span class="lock-modal-value" id="lock-modal-end"></span>
+                    </div>
+                    <div class="lock-modal-row" id="lock-modal-next-row">
+                        <span class="lock-modal-label">Next Unlock</span>
+                        <span class="lock-modal-value" id="lock-modal-next"></span>
+                    </div>
+                </div>
+                <div class="lock-modal-footer">
+                    <a class="lock-modal-solscan" id="lock-modal-solscan" href="#" target="_blank" rel="noopener noreferrer">
+                        View on Solscan &#8599;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="js/staking.js"></script>
     <script src="js/ecosystem.js" defer></script>

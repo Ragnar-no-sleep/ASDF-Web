@@ -7,11 +7,11 @@
  *   - PROD: alonisthe.dev/{tool} (sollama58 repos)
  *
  * Tool services (sollama58):
- *   - github.com/sollama58/burns    → alonisthe.dev/burns
- *   - github.com/sollama58/forecast → alonisthe.dev/asdforecast
- *   - github.com/sollama58/holdex   → alonisthe.dev/holdex
- *   - github.com/sollama58/staking  → alonisthe.dev/staking
- *   - github.com/sollama58/ignition → alonisthe.dev/ignition
+ *   - github.com/sollama58/ASDFBurnTracker → alonisthe.dev/burns
+ *   - github.com/sollama58/ASDForecast     → alonisthe.dev/asdforecast
+ *   - github.com/sollama58/HolDex          → alonisthe.dev/holdex
+ *   - github.com/sollama58/TokenVotingUtil → lock-verifier.onrender.com (TVU direct)
+ *   - github.com/sollama58/ignition        → alonisthe.dev/ignition
  */
 
 const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -21,7 +21,8 @@ export const ASDF_ENDPOINTS = {
   burns: isDev ? '/api' : 'https://alonisthe.dev/burns',
   forecast: isDev ? '/api' : 'https://alonisthe.dev/asdforecast',
   holdex: isDev ? '/api' : 'https://alonisthe.dev/holdex',
-  staking: isDev ? '/api' : 'https://alonisthe.dev/staking',
+  // Staking: TokenVotingUtil (lock-verifier.onrender.com) — direct until alonisthe.dev/staking proxies
+  staking: 'https://lock-verifier.onrender.com',
   ignition: isDev ? '/api' : 'https://alonisthe.dev/ignition',
 
   // Central API gateway (asdf-api on Render)
