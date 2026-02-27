@@ -1,15 +1,26 @@
 /**
  * HolDEX - Token Tracker JavaScript
- * Connects to alonisthe.dev/holdex API (sollama58/HolDex)
+ * Connects to sollama58/HolDex API
+ *
+ * Real endpoints (sollama58/HolDex):
+ *   GET /api/tokens?sort=&filter=&search=  — token list (field: kScore, mint, ticker, priceUsd)
+ *   GET /api/token/:mint                   — single token (wrapped in data.token)
+ *
+ * No /stats endpoint — stats derived from token list response
  */
 
 'use strict';
 
-// API endpoint — mirrors ASDF_ENDPOINTS.holdex (see /js/config/endpoints.js)
-const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const HOLDEX_API = isDev ? '/api' : 'https://alonisthe.dev/holdex';
+import { AudioFeedback } from './utils/audio-feedback.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
 
-// escapeHtml loaded from js/shared/security.js
+const API_BASE = ASDF_ENDPOINTS.holdex;
+
+function esc(s) {
+  if (typeof s !== 'string') return String(s ?? '');
+  return s.replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+}
 
 // ============================================
 // STATE
@@ -52,69 +63,54 @@ function getCreditRating(score) {
 // (Adapted from sollama58/ASDFBurnTracker)
 // ============================================
 
-async function fetchWithRetry(url, options, maxRetries) {
-  if (!options) options = {};
-  if (!maxRetries) maxRetries = 3;
-  var delay = 1000;
-  for (var i = 0; i <= maxRetries; i++) {
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  let delay = 1000;
+  for (let i = 0; i <= maxRetries; i++) {
     try {
-      var response = await fetch(url, options);
+      const response = await fetch(url, options || {});
       // Don't retry on rate-limit or service unavailable — bail immediately
-      if (response.status === 503 || response.status === 429) {
-        throw new Error('HTTP ' + response.status);
-      }
+      if (response.status === 503 || response.status === 429) throw new Error('HTTP ' + response.status);
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response;
     } catch (err) {
-      // CORS errors are TypeErrors — no point retrying (backend is unreachable)
-      var isCors = err instanceof TypeError;
-      if (i === maxRetries || isCors) throw err;
-      await new Promise(function (resolve) {
-        setTimeout(resolve, delay);
-      });
+      // CORS errors are TypeErrors — no point retrying
+      if (err instanceof TypeError || i === maxRetries) throw err;
+      await new Promise(resolve => setTimeout(resolve, delay));
       delay *= 2;
     }
   }
 }
 
 // ============================================
-// UTILITY FUNCTIONS
+// FORMAT UTILS
+// HolDex-specific — semantically different from format.js:
+//   formatUSD     → currency with K/M/B suffixes ($24.7M)
+//   formatPrice   → adaptive decimal precision ($0.0042)
+//   formatPercent → signed percentage (+12.5%)
+//   formatHolders → compact count (1.2K)
 // ============================================
 
-function formatNumber(num) {
-  if (num >= 1_000_000_000) {
-    return '$' + (num / 1_000_000_000).toFixed(2) + 'B';
-  } else if (num >= 1_000_000) {
-    return '$' + (num / 1_000_000).toFixed(2) + 'M';
-  } else if (num >= 1_000) {
-    return '$' + (num / 1_000).toFixed(2) + 'K';
-  }
+function formatUSD(num) {
+  if (num >= 1_000_000_000) return '$' + (num / 1_000_000_000).toFixed(2) + 'B';
+  if (num >= 1_000_000) return '$' + (num / 1_000_000).toFixed(2) + 'M';
+  if (num >= 1_000) return '$' + (num / 1_000).toFixed(2) + 'K';
   return '$' + num.toLocaleString();
 }
 
 function formatPrice(num) {
-  if (num < 0.0001) {
-    return '$' + num.toFixed(8);
-  } else if (num < 0.01) {
-    return '$' + num.toFixed(6);
-  } else if (num < 1) {
-    return '$' + num.toFixed(4);
-  }
+  if (num < 0.0001) return '$' + num.toFixed(8);
+  if (num < 0.01) return '$' + num.toFixed(6);
+  if (num < 1) return '$' + num.toFixed(4);
   return '$' + num.toFixed(2);
 }
 
 function formatPercent(num) {
-  const formatted = num.toFixed(2);
-  const sign = num >= 0 ? '+' : '';
-  return sign + formatted + '%';
+  return (num >= 0 ? '+' : '') + num.toFixed(2) + '%';
 }
 
 function formatHolders(num) {
-  if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(1) + 'M';
-  } else if (num >= 1_000) {
-    return (num / 1_000).toFixed(1) + 'K';
-  }
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
   return num.toLocaleString();
 }
 
@@ -125,7 +121,7 @@ function formatHolders(num) {
 async function fetchTokens() {
   try {
     const response = await fetchWithRetry(
-      HOLDEX_API + '/tokens?sort=' + state.sort + '&filter=' + state.filter
+      `${API_BASE}/api/tokens?sort=${state.sort}&filter=${state.filter}`
     );
     const data = await response.json();
     return data.tokens || [];
@@ -135,31 +131,24 @@ async function fetchTokens() {
   }
 }
 
-async function fetchTokenDetail(address) {
+async function fetchTokenDetail(mint) {
   try {
-    const response = await fetchWithRetry(HOLDEX_API + '/token/' + address);
-    return await response.json();
+    const response = await fetchWithRetry(`${API_BASE}/api/token/${mint}`);
+    const data = await response.json();
+    return data.token || null;
   } catch (error) {
     console.error('[HolDEX] Error fetching token detail:', error);
     return null;
   }
 }
 
-async function fetchStats() {
-  try {
-    const response = await fetchWithRetry(HOLDEX_API + '/stats');
-    return await response.json();
-  } catch (error) {
-    console.error('[HolDEX] Error fetching stats:', error);
-    return null;
-  }
-}
-
 async function searchTokens(query) {
   try {
-    const response = await fetchWithRetry(HOLDEX_API + '/search?q=' + encodeURIComponent(query));
+    const response = await fetchWithRetry(
+      `${API_BASE}/api/tokens?search=${encodeURIComponent(query)}`
+    );
     const data = await response.json();
-    return data.results || [];
+    return data.tokens || [];
   } catch (error) {
     console.error('[HolDEX] Search error:', error);
     return [];
@@ -170,28 +159,54 @@ async function searchTokens(query) {
 // UI UPDATES
 // ============================================
 
-function updateStats(stats) {
-  if (!stats) return;
-
+function updateSidebar(tokens) {
+  // Token count
   const tokensEl = document.getElementById('stat-tokens');
-  const volumeEl = document.getElementById('stat-volume');
-
   if (tokensEl) {
-    tokensEl.textContent = formatHolders(stats.totalTokens || 0);
+    tokensEl.textContent = tokens.length > 0 ? tokens.length.toLocaleString() : '\u2014';
     tokensEl.classList.remove('is-loading');
   }
+
+  // Aggregate volume — sum from list (no /stats endpoint)
+  const volumeEl = document.getElementById('stat-volume');
   if (volumeEl) {
-    volumeEl.textContent = formatNumber(stats.volume24h || 0);
+    const totalVolume = tokens.reduce((sum, t) => sum + (t.volume24h || 0), 0);
+    volumeEl.textContent = totalVolume > 0 ? formatUSD(totalVolume) : '\u2014';
     volumeEl.classList.remove('is-loading');
   }
 
-  // Update credit rating badge from aggregate K-Score
-  var avgKScore = stats.averageKScore || 87;
-  var credit = getCreditRating(avgKScore);
-  var creditEl = document.getElementById('credit-rating');
-  if (creditEl) {
-    creditEl.textContent = credit.grade;
-    creditEl.className = 'credit-badge credit-badge--' + credit.css;
+  // Credit rating — computed from average K-Score across loaded tokens
+  if (tokens.length > 0) {
+    const avgKScore = tokens.reduce((sum, t) => sum + (t.kScore || 0), 0) / tokens.length;
+    const credit = getCreditRating(avgKScore);
+    const creditEl = document.getElementById('credit-rating');
+    if (creditEl) {
+      creditEl.textContent = credit.grade;
+      creditEl.className = 'credit-badge credit-badge--' + credit.css;
+    }
+  }
+
+  // Top Gainers — top 3 by change24h (positive only)
+  const gainersEl = document.getElementById('gainers-list');
+  if (!gainersEl) return;
+
+  const gainers = [...tokens]
+    .filter(t => (t.change24h || 0) > 0)
+    .sort((a, b) => (b.change24h || 0) - (a.change24h || 0))
+    .slice(0, 3);
+
+  if (gainers.length > 0) {
+    gainersEl.innerHTML = gainers
+      .map(
+        t => `
+      <div class="gainer">
+        <span class="gainer-symbol">${esc('$' + (t.ticker || '???'))}</span>
+        <span class="gainer-change">${esc(formatPercent(t.change24h || 0))}</span>
+      </div>`
+      )
+      .join('');
+  } else {
+    gainersEl.innerHTML = '<div class="gainer"><span class="gainer-symbol">\u2014</span></div>';
   }
 }
 
@@ -200,72 +215,41 @@ function renderTokenList(tokens) {
   if (!container) return;
 
   if (tokens.length === 0) {
-    container.innerHTML = `
-            <div class="token-row" style="justify-content: center; padding: 40px;">
-                <span style="color: var(--white-muted);">No tokens found. Try a different filter.</span>
-            </div>
-        `;
+    container.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--white-muted)">No tokens found.</td></tr>`;
     return;
   }
 
   container.innerHTML = tokens
-    .map(function (token, index) {
-      var ks = Number(token.kscore) || 0;
-      var rank = getKRank(ks);
-      return (
-        '<div class="token-row" data-token="' +
-        escapeHtml(token.address || '') +
-        '" data-action="open-token-modal">' +
-        '<span class="token-rank">' +
-        (index + 1) +
-        '</span>' +
-        '<div class="token-info">' +
-        '<div class="token-icon">' +
-        escapeHtml((token.symbol || '?')[0]) +
-        '</div>' +
-        '<div>' +
-        '<div class="token-name">' +
-        escapeHtml(token.name || 'Unknown') +
-        '</div>' +
-        '<div class="token-symbol">$' +
-        escapeHtml(token.symbol || '???') +
-        '</div>' +
-        '</div>' +
-        '</div>' +
-        '<span class="token-price">' +
-        escapeHtml(formatPrice(token.price || 0)) +
-        '</span>' +
-        '<span class="token-change ' +
-        (token.change24h >= 0 ? 'positive' : 'negative') +
-        '">' +
-        escapeHtml(formatPercent(token.change24h || 0)) +
-        '</span>' +
-        '<span class="token-volume">' +
-        escapeHtml(formatNumber(token.volume24h || 0)) +
-        '</span>' +
-        '<span class="token-mcap">' +
-        escapeHtml(formatNumber(token.marketCap || 0)) +
-        '</span>' +
-        '<span class="token-holders">' +
-        escapeHtml(formatHolders(token.holders || 0)) +
-        '</span>' +
-        '<div class="token-kscore">' +
-        '<span class="rank-badge rank-badge--' +
-        rank.css +
-        '" title="' +
-        rank.name +
-        '">&#9670;</span>' +
-        '<span class="kscore-value">' +
-        escapeHtml(String(ks)) +
-        '</span>' +
-        '<div class="kscore-bar">' +
-        '<div class="kscore-fill" style="width: ' +
-        Math.min(100, Math.max(0, ks)) +
-        '%"></div>' +
-        '</div>' +
-        '</div>' +
-        '</div>'
-      );
+    .map((token, index) => {
+      const ks = Number(token.kScore) || 0;
+      const rank = getKRank(ks);
+      const changeClass = (token.change24h || 0) >= 0 ? 'positive' : 'negative';
+      return `<tr class="token-row" data-token="${esc(token.mint || '')}" data-action="open-token-modal">
+        <td class="col-rank">${index + 1}</td>
+        <td class="col-token">
+          <div class="token-info">
+            <div class="token-icon">${esc((token.ticker || '?')[0])}</div>
+            <div>
+              <div class="token-name">${esc(token.name || 'Unknown')}</div>
+              <div class="token-symbol">$${esc(token.ticker || '???')}</div>
+            </div>
+          </div>
+        </td>
+        <td class="col-price token-price">${esc(formatPrice(token.priceUsd || 0))}</td>
+        <td class="col-change token-change ${changeClass}">${esc(formatPercent(token.change24h || 0))}</td>
+        <td class="col-volume token-volume">${esc(formatUSD(token.volume24h || 0))}</td>
+        <td class="col-mcap token-mcap">${esc(formatUSD(token.marketCap || 0))}</td>
+        <td class="col-holders token-holders">${esc(formatHolders(token.holders || 0))}</td>
+        <td class="col-kscore">
+          <div class="token-kscore">
+            <span class="rank-badge rank-badge--${rank.css}" title="${rank.name}">&#9670;</span>
+            <span class="kscore-value">${esc(String(ks))}</span>
+            <div class="kscore-bar">
+              <div class="kscore-fill" style="width:${Math.min(100, Math.max(0, ks))}%"></div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
     })
     .join('');
 }
@@ -274,33 +258,33 @@ function renderTokenList(tokens) {
 // MODAL
 // ============================================
 
-function openTokenModal(address) {
+function openTokenModal(mint) {
   const modal = document.getElementById('token-modal');
   if (!modal) return;
 
+  AudioFeedback.play('click');
   modal.classList.add('active');
-  state.selectedToken = address;
+  state.selectedToken = mint;
 
-  // Fetch and display token details
-  fetchTokenDetail(address).then(token => {
+  fetchTokenDetail(mint).then(token => {
     if (!token) return;
-
-    document.getElementById('modal-icon').textContent = token.symbol?.[0] || '?';
+    document.getElementById('modal-icon').textContent = token.ticker?.[0] || '?';
     document.getElementById('modal-name').textContent = token.name || 'Unknown';
-    document.getElementById('modal-symbol').textContent = '$' + (token.symbol || '???');
-    document.getElementById('modal-price').textContent = formatPrice(token.price || 0);
-    document.getElementById('modal-mcap').textContent = formatNumber(token.marketCap || 0);
-    document.getElementById('modal-volume').textContent = formatNumber(token.volume24h || 0);
-    document.getElementById('modal-kscore').textContent = token.kscore || 0;
+    document.getElementById('modal-symbol').textContent = '$' + (token.ticker || '???');
+    document.getElementById('modal-price').textContent = formatPrice(token.priceUsd || 0);
+    document.getElementById('modal-mcap').textContent = formatUSD(token.marketCap || 0);
+    document.getElementById('modal-volume').textContent = formatUSD(token.volume24h || 0);
+    document.getElementById('modal-kscore').textContent = token.kScore || 0;
   });
 }
 
 function closeTokenModal() {
   const modal = document.getElementById('token-modal');
-  if (modal) {
-    modal.classList.remove('active');
-    state.selectedToken = null;
-  }
+  if (!modal) return;
+
+  AudioFeedback.play('click');
+  modal.classList.remove('active');
+  state.selectedToken = null;
 }
 
 // ============================================
@@ -311,12 +295,14 @@ function setupEventListeners() {
   // Filter buttons
   document.querySelectorAll('.filter').forEach(btn => {
     btn.addEventListener('click', async () => {
+      AudioFeedback.play('click');
       document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.filter = btn.dataset.filter;
-
       const tokens = await fetchTokens();
+      state.tokens = tokens;
       renderTokenList(tokens);
+      updateSidebar(tokens);
     });
   });
 
@@ -324,13 +310,16 @@ function setupEventListeners() {
   const sortSelect = document.getElementById('sort-select');
   if (sortSelect) {
     sortSelect.addEventListener('change', async e => {
+      AudioFeedback.play('click');
       state.sort = e.target.value;
       const tokens = await fetchTokens();
+      state.tokens = tokens;
       renderTokenList(tokens);
+      updateSidebar(tokens);
     });
   }
 
-  // Search input
+  // Search — debounced 300ms
   const searchInput = document.getElementById('search-input');
   let searchTimeout;
   if (searchInput) {
@@ -338,39 +327,21 @@ function setupEventListeners() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(async () => {
         const query = e.target.value.trim();
-        if (query.length < 2) {
-          const tokens = await fetchTokens();
-          renderTokenList(tokens);
-        } else {
-          const results = await searchTokens(query);
-          renderTokenList(results);
-        }
+        const tokens = query.length >= 2 ? await searchTokens(query) : await fetchTokens();
+        renderTokenList(tokens);
+        updateSidebar(tokens);
       }, 300);
     });
   }
 
   // Modal close
   const modalClose = document.getElementById('modal-close');
-  if (modalClose) {
-    modalClose.addEventListener('click', closeTokenModal);
-  }
+  if (modalClose) modalClose.addEventListener('click', closeTokenModal);
 
-  // Modal backdrop close
   const modal = document.getElementById('token-modal');
-  if (modal) {
-    modal.addEventListener('click', e => {
-      if (e.target === modal) {
-        closeTokenModal();
-      }
-    });
-  }
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeTokenModal(); });
 
-  // Keyboard close
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      closeTokenModal();
-    }
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTokenModal(); });
 }
 
 // ============================================
@@ -378,38 +349,26 @@ function setupEventListeners() {
 // ============================================
 
 async function init() {
-  console.log('[HolDEX] Initializing...');
-
-  // Setup event listeners
+  AudioFeedback.init();
   setupEventListeners();
 
-  // Load initial data
-  const [stats, tokens] = await Promise.all([fetchStats(), fetchTokens()]);
+  const tokens = await fetchTokens();
+  state.tokens = tokens;
+  renderTokenList(tokens);
+  updateSidebar(tokens);
 
-  updateStats(stats);
-
-  // If we have tokens from API, render them; otherwise keep sample data
-  if (tokens.length > 0) {
-    renderTokenList(tokens);
-  }
-
-  // Refresh data periodically
-  setInterval(async () => {
-    const stats = await fetchStats();
-    updateStats(stats);
-  }, 30000);
-
-  setInterval(async () => {
-    const tokens = await fetchTokens();
-    if (tokens.length > 0) {
+  PageLifecycle.registerTimer(
+    'holdex-tokens',
+    setInterval(async () => {
+      const tokens = await fetchTokens();
+      state.tokens = tokens;
       renderTokenList(tokens);
-    }
-  }, 60000);
-
-  console.log('[HolDEX] Initialized');
+      updateSidebar(tokens);
+    }, 60000)
+  );
 }
 
-// Event delegation for token rows (replaces inline onclick)
+// Event delegation for token rows
 document.addEventListener('click', e => {
   const row = e.target.closest('[data-action="open-token-modal"]');
   if (row) openTokenModal(row.dataset.token);
