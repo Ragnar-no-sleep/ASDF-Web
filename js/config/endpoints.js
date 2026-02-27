@@ -19,7 +19,7 @@ const isDev = window.location.hostname === 'localhost' || window.location.hostna
 export const ASDF_ENDPOINTS = {
   // Tool services (sollama58 repos, alonisthe.dev subpaths)
   burns: isDev ? '/api' : 'https://alonisthe.dev/burns',
-  forecast: isDev ? '/api' : 'https://alonisthe.dev/asdforecast',
+  forecast: isDev ? '/api' : 'https://asdforecast.onrender.com',
   holdex: isDev ? '/api' : 'https://alonisthe.dev/holdex',
   // Staking: TokenVotingUtil (lock-verifier.onrender.com) — direct until alonisthe.dev/staking proxies
   staking: 'https://lock-verifier.onrender.com',

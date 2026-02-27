@@ -1,14 +1,28 @@
 /**
  * ASDForecast - Prediction Market JavaScript
- * Connects to asdforecast.onrender.com API
+ * Connects to sollama58/ASDForecast API
+ *
+ * Real endpoints (asdforecast.onrender.com):
+ *   GET /api/state?user={pubkey} — full game state (market, leaderboard, history, msUntilClose)
+ *   GET /api/wallet              — price data (solPriceUsd, tokenPriceUsd)
+ *
+ * All game data comes from a single /api/state call.
+ * Removed phantom endpoints: /stats, /leaderboard, /frames/history, /frame/current
  */
 
 'use strict';
 
-// API endpoint — mirrors ASDF_ENDPOINTS.forecast (see /js/config/endpoints.js)
-const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+import { AudioFeedback } from './utils/audio-feedback.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
+import { formatWallet } from './utils/format.js';
 
-const FORECAST_API = isDev ? '/api' : 'https://alonisthe.dev/asdforecast';
+const API_BASE = ASDF_ENDPOINTS.forecast;
+
+function esc(s) {
+  if (typeof s !== 'string') return String(s ?? '');
+  return s.replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+}
 
 // ============================================
 // STATE
@@ -17,35 +31,31 @@ const FORECAST_API = isDev ? '/api' : 'https://alonisthe.dev/asdforecast';
 const state = {
   wallet: null,
   balance: 0,
-  selectedDirection: null, // 'up' or 'down'
-  currentFrame: null,
-  countdown: 0,
+  selectedDirection: null,
+  msUntilClose: 0,
 };
 
 // ============================================
-// UTILITY FUNCTIONS
+// FORMAT UTILS
+// Forecast-specific — semantically different from format.js:
+//   formatCompact  → K/M suffix, no $ (SOL amounts)
+//   formatTime     → MM:SS countdown display
+//   formatTimeAgo  → ISO timestamp → relative ("2m ago")
 // ============================================
 
-function formatNumber(num) {
-  if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(2) + 'M';
-  } else if (num >= 1_000) {
-    return (num / 1_000).toFixed(2) + 'K';
-  }
+function formatCompact(num) {
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(2) + 'K';
   return num.toLocaleString();
-}
-
-function formatWallet(wallet) {
-  if (!wallet || wallet.length < 8) return wallet || '---';
-  return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
 }
 
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
+// Local: ISO timestamp variant — format.js expects Unix ms, API returns ISO strings
 function formatTimeAgo(timestamp) {
   const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
   if (seconds < 60) return 'just now';
@@ -58,46 +68,27 @@ function formatTimeAgo(timestamp) {
 // API CALLS
 // ============================================
 
-async function fetchStats() {
+async function fetchState(userPubkey = null) {
   try {
-    const response = await fetch(`${FORECAST_API}/stats`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
+    const url = userPubkey
+      ? `${API_BASE}/api/state?user=${encodeURIComponent(userPubkey)}`
+      : `${API_BASE}/api/state`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
     return await response.json();
   } catch (error) {
-    console.error('[Forecast] Error fetching stats:', error);
+    console.error('[Forecast] Error fetching state:', error);
     return null;
   }
 }
 
-async function fetchLeaderboard() {
+async function fetchWallet() {
   try {
-    const response = await fetch(`${FORECAST_API}/leaderboard`);
-    if (!response.ok) throw new Error('Failed to fetch leaderboard');
+    const response = await fetch(`${API_BASE}/api/wallet`);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
     return await response.json();
   } catch (error) {
-    console.error('[Forecast] Error fetching leaderboard:', error);
-    return { leaderboard: [] };
-  }
-}
-
-async function fetchHistory() {
-  try {
-    const response = await fetch(`${FORECAST_API}/frames/history?limit=10`);
-    if (!response.ok) throw new Error('Failed to fetch history');
-    return await response.json();
-  } catch (error) {
-    console.error('[Forecast] Error fetching history:', error);
-    return { frames: [] };
-  }
-}
-
-async function fetchCurrentFrame() {
-  try {
-    const response = await fetch(`${FORECAST_API}/frame/current`);
-    if (!response.ok) throw new Error('Failed to fetch current frame');
-    return await response.json();
-  } catch (error) {
-    console.error('[Forecast] Error fetching current frame:', error);
+    console.error('[Forecast] Error fetching wallet data:', error);
     return null;
   }
 }
@@ -106,126 +97,175 @@ async function fetchCurrentFrame() {
 // UI UPDATES
 // ============================================
 
-function updateStats(stats) {
-  if (!stats) return;
+function updateStats(data) {
+  if (!data) return;
+
+  const ps = data.platformStats || {};
 
   const volumeEl = document.getElementById('stat-volume');
-  const framesEl = document.getElementById('stat-frames');
-  const usersEl = document.getElementById('stat-users');
-  const burnedEl = document.getElementById('stat-burned');
-
   if (volumeEl) {
-    volumeEl.textContent = formatNumber(stats.totalVolume || 0) + ' SOL';
+    volumeEl.textContent =
+      ps.totalVolume != null ? formatCompact(ps.totalVolume) + ' SOL' : '\u2014';
     volumeEl.classList.remove('is-loading');
   }
+
+  // framesCompleted — not in /api/state response
+  const framesEl = document.getElementById('stat-frames');
   if (framesEl) {
-    framesEl.textContent = formatNumber(stats.framesCompleted || 0);
+    framesEl.textContent = '\u2014';
     framesEl.classList.remove('is-loading');
   }
+
+  const usersEl = document.getElementById('stat-users');
   if (usersEl) {
-    usersEl.textContent = formatNumber(stats.uniqueUsers || 0);
+    const users = data.uniqueUsers ?? ps.totalLifetimeUsers;
+    usersEl.textContent = users != null ? formatCompact(users) : '\u2014';
     usersEl.classList.remove('is-loading');
   }
+
+  // burnedAmount — not in /api/state, would need /api/burn separately
+  const burnedEl = document.getElementById('stat-burned');
   if (burnedEl) {
-    burnedEl.textContent = formatNumber(stats.asdfBurned || 0);
+    burnedEl.textContent = '\u2014';
     burnedEl.classList.remove('is-loading');
   }
 }
 
-function updateLeaderboard(data) {
-  const body = document.getElementById('leaderboard-body');
-  if (!body || !data.leaderboard) return;
+function updateMarquee(stateData, walletData) {
+  if (walletData?.solPriceUsd) {
+    const solEl = document.getElementById('ticker-sol');
+    if (solEl) solEl.textContent = '$' + Number(walletData.solPriceUsd).toFixed(2);
+  }
 
-  if (data.leaderboard.length === 0) {
+  if (stateData?.currentVolume != null) {
+    const volEl = document.getElementById('ticker-volume');
+    if (volEl) volEl.textContent = formatCompact(stateData.currentVolume) + ' SOL';
+  }
+}
+
+function updateLeaderboard(leaderboard) {
+  const body = document.getElementById('leaderboard-body');
+  if (!body) return;
+
+  if (!leaderboard || leaderboard.length === 0) {
     body.innerHTML = `
-            <div class="table-row">
-                <span colspan="5" style="grid-column: 1 / -1; text-align: center; color: var(--white-muted);">
-                    No predictions yet. Be the first!
-                </span>
-            </div>
-        `;
+      <div class="table-row">
+        <span style="grid-column:1/-1;text-align:center;color:var(--white-muted)">
+          No predictions yet. Be the first!
+        </span>
+      </div>`;
     return;
   }
 
-  body.innerHTML = data.leaderboard
+  body.innerHTML = leaderboard
     .slice(0, 10)
     .map(
       (entry, index) => `
-        <div class="table-row">
-            <span class="rank ${index < 3 ? 'top-' + (index + 1) : ''}">#${index + 1}</span>
-            <span class="wallet">${formatWallet(entry.wallet)}</span>
-            <span class="winrate">${(entry.winRate * 100).toFixed(1)}%</span>
-            <span class="total-won">${entry.totalWon?.toFixed(2) || '0.00'} SOL</span>
-            <span class="bets-count">${entry.totalBets || 0}</span>
-        </div>
-    `
+      <div class="table-row">
+        <span class="rank ${index < 3 ? 'top-' + (index + 1) : ''}">#${index + 1}</span>
+        <span class="wallet">${esc(formatWallet(entry.wallet, 4, 4))}</span>
+        <span class="winrate">${entry.winRate != null ? (entry.winRate * 100).toFixed(1) + '%' : '\u2014'}</span>
+        <span class="total-won">${esc((entry.totalWon?.toFixed(2) ?? '0.00') + ' SOL')}</span>
+        <span class="bets-count">${esc(String(entry.totalBets || 0))}</span>
+      </div>`
     )
     .join('');
 }
 
-function updateHistory(data) {
+function updateHistory(history) {
   const list = document.getElementById('history-list');
-  if (!list || !data.frames) return;
+  if (!list) return;
 
-  if (data.frames.length === 0) {
+  if (!history || history.length === 0) {
     list.innerHTML = `
-            <div class="history-item">
-                <div class="history-result">?</div>
-                <div class="history-details">
-                    <div class="history-frame">No frames yet</div>
-                    <div class="history-time">Waiting for first prediction...</div>
-                </div>
-            </div>
-        `;
+      <div class="history-item">
+        <div class="history-result">?</div>
+        <div class="history-details">
+          <div class="history-frame">No frames yet</div>
+          <div class="history-time">Waiting for first prediction...</div>
+        </div>
+      </div>`;
     return;
   }
 
-  list.innerHTML = data.frames
-    .map(
-      frame => `
-        <div class="history-item">
-            <div class="history-result ${frame.result === 'up' ? 'win' : 'loss'}">
-                ${frame.result === 'up' ? '+' : '-'}
-            </div>
-            <div class="history-details">
-                <div class="history-frame">Frame #${frame.frameId}</div>
-                <div class="history-time">${formatTimeAgo(frame.resolvedAt)}</div>
-            </div>
-            <div class="history-amount">
-                <div class="history-bet">${frame.totalVolume?.toFixed(2) || '0.00'} SOL total</div>
-                <div class="history-payout ${frame.result === 'up' ? 'positive' : 'negative'}">
-                    ${frame.result === 'up' ? 'UP' : 'DOWN'}
-                </div>
-            </div>
+  list.innerHTML = history
+    .slice(0, 10)
+    .map(frame => {
+      const isUp = String(frame.result).toLowerCase() === 'up';
+      const timestamp = frame.resolvedAt ?? frame.endTime ?? null;
+      return `
+      <div class="history-item">
+        <div class="history-result ${isUp ? 'win' : 'loss'}">${isUp ? '+' : '-'}</div>
+        <div class="history-details">
+          <div class="history-frame">Frame #${esc(String(frame.frameId ?? '?'))}</div>
+          <div class="history-time">${esc(timestamp ? formatTimeAgo(timestamp) : '?')}</div>
         </div>
-    `
-    )
+        <div class="history-amount">
+          <div class="history-bet">${esc((frame.totalVolume?.toFixed(2) ?? '0.00') + ' SOL total')}</div>
+          <div class="history-payout ${isUp ? 'positive' : 'negative'}">${isUp ? 'UP' : 'DOWN'}</div>
+        </div>
+      </div>`;
+    })
     .join('');
 }
 
-function updateCountdown() {
-  const el = document.getElementById('countdown');
-  if (!el) return;
-
-  // Calculate seconds until next 15-minute mark
-  const now = new Date();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const nextMark = Math.ceil((minutes + 1) / 15) * 15;
-  const remaining = (nextMark - minutes - 1) * 60 + (60 - seconds);
-
-  state.countdown = remaining > 0 ? remaining : 0;
-  el.textContent = formatTime(state.countdown);
-}
-
-function updateOdds(frame) {
-  if (!frame) return;
-
+function updateOdds(market) {
   const upEl = document.getElementById('odds-up');
   const downEl = document.getElementById('odds-down');
 
-  if (upEl) upEl.textContent = `${(frame.oddsUp || 1.95).toFixed(2)}x`;
-  if (downEl) downEl.textContent = `${(frame.oddsDown || 1.95).toFixed(2)}x`;
+  if (!market) {
+    if (upEl) upEl.textContent = 'multiplier: --';
+    if (downEl) downEl.textContent = 'multiplier: --';
+    return;
+  }
+
+  // Binary AMM: payout = (opposing shares / own shares) * 0.94
+  const sharesUp = market.sharesUp || 50;
+  const sharesDown = market.sharesDown || 50;
+  const oddsUp = (sharesDown / sharesUp * 0.94).toFixed(2);
+  const oddsDown = (sharesUp / sharesDown * 0.94).toFixed(2);
+
+  if (upEl) upEl.textContent = `multiplier: ${oddsUp}x`;
+  if (downEl) downEl.textContent = `multiplier: ${oddsDown}x`;
+}
+
+let _countdownTimer = null;
+
+function startCountdown(msUntilClose) {
+  if (_countdownTimer) {
+    clearInterval(_countdownTimer);
+    _countdownTimer = null;
+  }
+
+  state.msUntilClose = msUntilClose;
+  const el = document.getElementById('countdown');
+  if (!el) return;
+
+  el.textContent = formatTime(Math.floor(state.msUntilClose / 1000));
+
+  _countdownTimer = setInterval(() => {
+    state.msUntilClose = Math.max(0, state.msUntilClose - 1000);
+    el.textContent = formatTime(Math.floor(state.msUntilClose / 1000));
+    if (state.msUntilClose <= 0) {
+      clearInterval(_countdownTimer);
+      _countdownTimer = null;
+    }
+  }, 1000);
+
+  PageLifecycle.registerTimer('forecast-countdown', _countdownTimer);
+}
+
+function updateFromState(data) {
+  if (!data) return;
+
+  updateStats(data);
+  updateLeaderboard(data.leaderboard);
+  updateHistory(data.history);
+  updateOdds(data.market);
+
+  if (data.msUntilClose != null) {
+    startCountdown(data.msUntilClose);
+  }
 }
 
 // ============================================
@@ -235,7 +275,7 @@ function updateOdds(frame) {
 async function connectWallet() {
   try {
     if (!window.solana || !window.solana.isPhantom) {
-      showNotice('Wallet required — install Phantom to use ASDForecast');
+      window.showNotice('Wallet required — install Phantom to use ASDForecast');
       window.open('https://phantom.app/', '_blank');
       return;
     }
@@ -243,33 +283,23 @@ async function connectWallet() {
     const resp = await window.solana.connect();
     state.wallet = resp.publicKey.toString();
 
-    // Update UI
     const btn = document.getElementById('connect-wallet');
-    btn.textContent = formatWallet(state.wallet);
-    btn.classList.add('connected');
+    if (btn) {
+      btn.textContent = formatWallet(state.wallet, 4, 4);
+      btn.classList.add('connected');
+    }
 
     const predictBtn = document.getElementById('btn-predict');
-    predictBtn.disabled = false;
-    predictBtn.textContent = 'Select UP or DOWN';
+    if (predictBtn) {
+      predictBtn.disabled = false;
+      predictBtn.textContent = 'Select UP or DOWN';
+    }
 
-    // Fetch balance
-    await updateBalance();
-
-    console.log('[Forecast] Wallet connected:', state.wallet);
+    // Refresh state with user pubkey to get activePosition
+    const data = await fetchState(state.wallet);
+    updateFromState(data);
   } catch (error) {
     console.error('[Forecast] Wallet connection error:', error);
-  }
-}
-
-async function updateBalance() {
-  if (!state.wallet) return;
-
-  try {
-    // This would require Solana web3.js in production
-    const balanceEl = document.getElementById('user-balance');
-    if (balanceEl) balanceEl.textContent = '0.00';
-  } catch (error) {
-    console.error('[Forecast] Balance fetch error:', error);
   }
 }
 
@@ -279,16 +309,12 @@ async function updateBalance() {
 
 function selectDirection(direction) {
   state.selectedDirection = direction;
+  AudioFeedback.play('click');
 
-  // Update UI
-  document.querySelectorAll('.prediction-btn').forEach(btn => {
-    btn.classList.remove('selected');
-  });
-
+  document.querySelectorAll('.prediction-btn').forEach(btn => btn.classList.remove('selected'));
   const selectedBtn = document.getElementById(`btn-${direction}`);
   if (selectedBtn) selectedBtn.classList.add('selected');
 
-  // Update predict button
   const predictBtn = document.getElementById('btn-predict');
   if (predictBtn && state.wallet) {
     predictBtn.disabled = false;
@@ -299,12 +325,7 @@ function selectDirection(direction) {
 function setAmount(amount) {
   const input = document.getElementById('bet-amount');
   if (!input) return;
-
-  if (amount === 'max') {
-    input.value = state.balance;
-  } else {
-    input.value = amount;
-  }
+  input.value = amount === 'max' ? state.balance : amount;
 }
 
 async function submitPrediction() {
@@ -312,18 +333,12 @@ async function submitPrediction() {
 
   const amount = parseFloat(document.getElementById('bet-amount').value);
   if (!amount || amount <= 0) {
-    showNotice('Invalid amount — enter a positive value.');
+    window.showNotice('Invalid amount — enter a positive value.');
     return;
   }
 
-  console.log('[Forecast] Submitting prediction:', {
-    wallet: state.wallet,
-    direction: state.selectedDirection,
-    amount,
-  });
-
-  // In production, this would send a transaction
-  showNotice('Prediction submission requires a wallet transaction — feature in development.');
+  // Wallet transaction required — pending Solana web3.js integration (POST /api/verify-bet)
+  window.showNotice('Prediction submission requires a wallet transaction — feature in development.');
 }
 
 // ============================================
@@ -331,32 +346,20 @@ async function submitPrediction() {
 // ============================================
 
 function setupEventListeners() {
-  // Connect wallet
   const connectBtn = document.getElementById('connect-wallet');
-  if (connectBtn) {
-    connectBtn.addEventListener('click', connectWallet);
-  }
+  if (connectBtn) connectBtn.addEventListener('click', connectWallet);
 
-  // Direction buttons
   const upBtn = document.getElementById('btn-up');
   const downBtn = document.getElementById('btn-down');
-
   if (upBtn) upBtn.addEventListener('click', () => selectDirection('up'));
   if (downBtn) downBtn.addEventListener('click', () => selectDirection('down'));
 
-  // Amount presets
   document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const amount = btn.dataset.amount;
-      setAmount(amount);
-    });
+    btn.addEventListener('click', () => setAmount(btn.dataset.amount));
   });
 
-  // Predict button
   const predictBtn = document.getElementById('btn-predict');
-  if (predictBtn) {
-    predictBtn.addEventListener('click', submitPrediction);
-  }
+  if (predictBtn) predictBtn.addEventListener('click', submitPrediction);
 }
 
 // ============================================
@@ -364,41 +367,31 @@ function setupEventListeners() {
 // ============================================
 
 async function init() {
-  console.log('[Forecast] Initializing...');
-
-  // Setup event listeners
+  AudioFeedback.init();
   setupEventListeners();
 
-  // Start countdown
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
+  const [data, walletData] = await Promise.all([fetchState(), fetchWallet()]);
 
-  // Load initial data
-  const [stats, leaderboard, history, frame] = await Promise.all([
-    fetchStats(),
-    fetchLeaderboard(),
-    fetchHistory(),
-    fetchCurrentFrame(),
-  ]);
+  updateFromState(data);
+  updateMarquee(data, walletData);
 
-  updateStats(stats);
-  updateLeaderboard(leaderboard);
-  updateHistory(history);
-  updateOdds(frame);
+  // Active prediction market — poll state every 10s
+  PageLifecycle.registerTimer(
+    'forecast-state',
+    setInterval(async () => {
+      const data = await fetchState(state.wallet || null);
+      updateFromState(data);
+    }, 10000)
+  );
 
-  // Refresh data periodically
-  // Note: intervals self-clear on next navigation (no SPA in this project)
-  setInterval(async () => {
-    const stats = await fetchStats();
-    updateStats(stats);
-  }, 30000);
-
-  setInterval(async () => {
-    const frame = await fetchCurrentFrame();
-    updateOdds(frame);
-  }, 10000);
-
-  console.log('[Forecast] Initialized');
+  // Price refresh every 30s
+  PageLifecycle.registerTimer(
+    'forecast-wallet',
+    setInterval(async () => {
+      const [data, walletData] = await Promise.all([fetchState(), fetchWallet()]);
+      updateMarquee(data, walletData);
+    }, 30000)
+  );
 }
 
 // Start when DOM is ready
