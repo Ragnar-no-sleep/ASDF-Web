@@ -730,11 +730,6 @@
   border-radius: 8px;
 }
 
-@media (max-width: 768px) {
-  .staking-hero {
-    padding: 20px 16px 16px;
-  }
-}
 
 /* ============================================
    DENSITY: DETAILED — More context & guides
@@ -990,6 +985,10 @@
    MOBILE RESPONSIVE
    ============================================ */
 @media (max-width: 900px) {
+  .staking-hero {
+    padding: 20px 16px 16px;
+  }
+
   .governance-thresholds {
     grid-template-columns: 1fr;
   }
