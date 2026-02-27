@@ -1,7 +1,7 @@
 # ROADMAP-LIVE.md
 
-**Updated:** 2026-02-25
-**Status:** Phase C infrastructure done — Phase 1.2 tool quality next
+**Updated:** 2026-02-27
+**Status:** Phase 1.2 tool quality — 5/5 pages refactored, gaps résiduels backend-dépendants
 **Owner:** CYNIC / ragnarnosleep + sollama58 + zeyxx
 
 ---
@@ -41,19 +41,22 @@
 
 ## Ce qui RESTE — priorisé
 
-### P1 — Immédiat (Phase 1.2 Tool Quality)
+### P1 — Phase 1.2 Tool Quality (complété 2026-02-27)
 
-Chaque page tool doit être fork-ready pour sollama58.
+| Page | Q-Score | Status | Gaps résiduels |
+|------|---------|--------|----------------|
+| **Burns** | ~87 HOWL | ✓ fork-ready | issues #2/#3/#4 pending backend |
+| **Staking** | ~84 HOWL | ✓ fork-ready | getDemoLocks() marginal |
+| **Forecast** | ~78 WAG | ✓ fork-ready | stat-frames/burned absent /api/state |
+| **HolDex** | ~75 WAG | ✓ fork-ready | backend URL non déployé |
+| **Ignition** | shell | ✓ shell honnête | 7× [API] TODO, backend inexistant |
 
-| Page | Status | Travail restant |
-|------|--------|-----------------|
-| **Burns** | 80% | Density content enrichment (FAQ done), a11y final pass |
-| **Forecast** | 50% | Data freshness indicators, chart interactions |
-| **HolDex** | 40% | Sorting perf, token search UX |
-| **Staking** | 30% | Validator UX, APY clarity, responsive |
-| **Ignition** | 40% | Score flow, responsiveness, mobile |
+**Prochain step P1** : créer issues + PRs sur chaque sollama58 repo (FORK-GUIDE.md)
 
-**Objectif**: 5/5 pages fork-ready → déclenche FORK-GUIDE.md
+**Décisions 2026-02-27** :
+- HolDex backend = Option A (shell only) — PostgreSQL+Redis trop lourd à forker
+- Gouvernance staking supprimée (données hardcodées 62%/78% sans endpoint)
+- Tous les phantom endpoints remplacés par `showXxxPending()` honnêtes
 
 ---
 
@@ -120,15 +123,20 @@ C.2 Shop merge confirmé BLOQUÉ. C.3 CSS différé (manque perf data).
 | Métrique | Valeur |
 |----------|--------|
 | Tests | 485/485 pass |
-| Tool pages fork-ready | 0/5 (quality needed) |
+| Tool pages fork-ready | 5/5 ✓ |
+| Q-Score moyen tools | ~80 (WAG→HOWL) |
 | Helius files modularisés | 8/8 ✓ |
 | Endpoints centralisés | ✓ (endpoints.js) |
 | Backend refactoring | 40% (C.1 done, C.2 bloqué, C.3 différé) |
 | Shop v1/v2 merge | BLOQUÉ |
+| sollama58 PRs créées | 0/5 (next step) |
 
 ---
 
 *Last commits*:
-- `92958cb` chore(lint): CJS sourceType + ignore ecosystem/
-- `161cbcc` refactor(helius): modularise 8 services into helius/ barrel
-- `3ff598d` feat(ecosystem-map): migrate to root, add route, regenerate data
+- `dc5dc1e` fix(staking): event delegation + keydown via PageLifecycle
+- `5ff6b54` fix(staking): real 60s interval, remove fake governance, showNotice
+- `3a4635a` refactor(ignition): ES6 module, remove all mock data, real Phantom
+- `26681e5` refactor(forecast): real API endpoint, no phantom routes
+- `00443e6` refactor(holdex): ES6 module, real API field names
+- `f65a522` fix(burns): rewire to real API endpoints, no fake data

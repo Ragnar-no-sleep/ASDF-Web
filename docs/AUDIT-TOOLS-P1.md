@@ -1,7 +1,7 @@
 # AUDIT EMPIRIQUE — Tool Pages P1
 ## Judge Mode + Meta-Thinking
 
-**Date** : 2026-02-25
+**Date** : 2026-02-25 → mis à jour 2026-02-27 (post-session refactor)
 **Méthode** : Lecture complète des 5 fichiers JS + CSS + HTML concernés
 **Objectif** : Corriger les suppositions de l'audit initial — données empiriques uniquement
 
@@ -200,7 +200,7 @@ Le lift est réel. 3 alert()s + IIFE + countdown cassé = PR non-envoyable en l'
 
 ---
 
-## Classement révisé
+## Classement révisé (audit initial 2026-02-25)
 
 | Page | Q-Score | Niveau | Blockers critiques |
 |------|---------|--------|-------------------|
@@ -209,6 +209,25 @@ Le lift est réel. 3 alert()s + IIFE + countdown cassé = PR non-envoyable en l'
 | **HolDex** | 55 | BARK | Bug filter + module conversion |
 | **Forecast** | 42 | BARK | 2 alert() + module conversion |
 | **Ignition** | 28 | GROWL | 3 alert() + IIFE + countdown cassé |
+
+## Classement post-session (2026-02-27)
+
+Tous les blockers critiques résolus. Q-Scores estimés après corrections.
+
+| Page | Q-Score | Niveau | Commits | Gaps résiduels |
+|------|---------|--------|---------|----------------|
+| **Burns** | ~87 | HOWL | f65a522 | issues #2/#3/#4 backend pending |
+| **Staking** | ~84 | HOWL | dc5dc1e | getDemoLocks() marginal |
+| **Forecast** | ~78 | WAG | 26681e5 | stat-frames + stat-burned absent API |
+| **HolDex** | ~75 | WAG | 00443e6 | backend URL non déployé |
+| **Ignition** | shell | — | 3a4635a | 7× [API] TODO, backend inexistant |
+
+### Ce qui a été fait (2026-02-27)
+- **Burns** : rewire → /api/burn + /api/wallet, no fake data, formatNumber/formatWallet importés
+- **HolDex** : ES6 module, ASDF_ENDPOINTS, champs réels (kScore/mint/ticker/priceUsd), event delegation, no fetchStats() phantom
+- **Forecast** : 4 phantom endpoints → 1 fetchState() + 1 fetchWallet(), countdown depuis msUntilClose, AMM odds
+- **Ignition** : IIFE → ES6 module, var MOCK supprimé, real Phantom wallet, showPending() honnêtes
+- **Staking** : 768px → 900px breakpoint, 60s interval réel (PageLifecycle), gouvernance hardcodée supprimée, keydown via registerListener, event delegation renderLocks
 
 ---
 
