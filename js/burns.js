@@ -5,15 +5,15 @@
 
 'use strict';
 
-// Phase 1 Visceral Feedback - Import modules
 import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
+import { formatNumber, formatWallet } from './utils/format.js';
 
 const API_BASE = ASDF_ENDPOINTS.burns;
 
-// escapeHtml loaded from js/shared/security.js
+// escapeHtml — window global, loaded via js/shared/security.js in burns.html
 
 // ============================================
 // EXPONENTIAL BACKOFF FETCH
@@ -117,22 +117,11 @@ async function fetchRecentBurns() {
 // UI UPDATES
 // ============================================
 
-function formatNumber(num) {
-  if (num >= 1_000_000_000) {
-    return (num / 1_000_000_000).toFixed(2) + 'B';
-  } else if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(2) + 'M';
-  } else if (num >= 1_000) {
-    return (num / 1_000).toFixed(2) + 'K';
-  }
-  return num.toLocaleString();
-}
+// formatNumber + formatWallet imported from ./utils/format.js
+// formatNumber called with decimals=2 throughout (burns show cents precision)
+// formatWallet called with (4, 4) to match ASDFBurnTracker display convention
 
-function formatWallet(wallet) {
-  if (!wallet || wallet.length < 8) return wallet || '---';
-  return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-}
-
+// Local: ISO timestamp variant — format.js expects Unix ms, API returns ISO strings
 function formatTimeAgo(timestamp) {
   const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
 
@@ -160,7 +149,7 @@ function animateCounter(element, target, duration = 2000) {
       current = target;
       clearInterval(timer);
     }
-    element.textContent = formatNumber(Math.floor(current));
+    element.textContent = formatNumber(Math.floor(current), 2);
   }, 16);
 }
 
@@ -191,7 +180,7 @@ async function updateStats() {
   // Burns today
   const burnsTodayEl = document.getElementById('burns-today');
   if (burnsTodayEl && stats.burnedToday !== undefined) {
-    burnsTodayEl.textContent = formatNumber(stats.burnedToday);
+    burnsTodayEl.textContent = formatNumber(stats.burnedToday, 2);
   }
 
   // Total burners
@@ -203,13 +192,13 @@ async function updateStats() {
   // Remaining supply
   const remainingEl = document.getElementById('remaining-supply');
   if (remainingEl && stats.circulatingSupply !== undefined) {
-    remainingEl.textContent = formatNumber(stats.circulatingSupply);
+    remainingEl.textContent = formatNumber(stats.circulatingSupply, 2);
   }
 
   // Biggest burn
   const biggestEl = document.getElementById('biggest-burn');
   if (biggestEl && stats.largestBurn !== undefined) {
-    biggestEl.textContent = formatNumber(stats.largestBurn);
+    biggestEl.textContent = formatNumber(stats.largestBurn, 2);
   }
 }
 
@@ -234,8 +223,8 @@ async function updateLeaderboard(period = 'all') {
       (entry, index) => `
         <div class="table-row">
             <span class="col-rank">#${index + 4}</span>
-            <span class="col-wallet">${escapeHtml(formatWallet(entry.wallet))}</span>
-            <span class="col-burned">${escapeHtml(formatNumber(entry.totalBurned))} ASDF</span>
+            <span class="col-wallet">${escapeHtml(formatWallet(entry.wallet, 4, 4))}</span>
+            <span class="col-burned">${escapeHtml(formatNumber(entry.totalBurned, 2))} ASDF</span>
             <span class="col-count">${escapeHtml(String(entry.burnCount || '-'))}</span>
         </div>
     `
@@ -251,8 +240,8 @@ function updatePodiumPlace(place, data) {
   const amountEl = el.querySelector('.place-amount');
 
   if (data) {
-    if (walletEl) walletEl.textContent = formatWallet(data.wallet);
-    if (amountEl) amountEl.textContent = `${formatNumber(data.totalBurned)} ASDF`;
+    if (walletEl) walletEl.textContent = formatWallet(data.wallet, 4, 4);
+    if (amountEl) amountEl.textContent = `${formatNumber(data.totalBurned, 2)} ASDF`;
   } else {
     if (walletEl) walletEl.textContent = '---';
     if (amountEl) amountEl.textContent = '0 ASDF';
@@ -281,10 +270,10 @@ async function updateRecentBurns() {
         <div class="feed-item">
             <div class="feed-icon">&#128293;</div>
             <div class="feed-content">
-                <div class="feed-wallet">${escapeHtml(formatWallet(burn.wallet))}</div>
+                <div class="feed-wallet">${escapeHtml(formatWallet(burn.wallet, 4, 4))}</div>
                 <div class="feed-time">${escapeHtml(formatTimeAgo(burn.timestamp))}</div>
             </div>
-            <div class="feed-amount">${escapeHtml(formatNumber(burn.amount))} ASDF</div>
+            <div class="feed-amount">${escapeHtml(formatNumber(burn.amount, 2))} ASDF</div>
         </div>
     `
     )
@@ -317,7 +306,7 @@ function setupTabListeners() {
 // VISCERAL FEEDBACK SETUP
 // ============================================
 
-function setupViscernalFeedback() {
+function setupVisceralFeedback() {
   // Initialize audio system
   AudioFeedback.init();
 
@@ -351,22 +340,13 @@ function setupViscernalFeedback() {
 // ============================================
 
 async function init() {
-  console.log('[Burns] Initializing...');
-
-  // Setup event listeners
   setupTabListeners();
+  setupVisceralFeedback();
 
-  // Setup visceral feedback
-  setupViscernalFeedback();
-
-  // Load initial data
   await Promise.all([updateStats(), updateLeaderboard('all'), updateRecentBurns()]);
 
-  // Refresh data periodically (registered for cleanup on page unload)
   PageLifecycle.registerTimer('burns-stats', setInterval(updateStats, 30000));
   PageLifecycle.registerTimer('burns-feed', setInterval(updateRecentBurns, 15000));
-
-  console.log('[Burns] Initialized');
 }
 
 // Start when DOM is ready
