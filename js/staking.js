@@ -3,6 +3,14 @@
  * Fetches live data from sollama58/TokenVotingUtil (lock-verifier.onrender.com)
  *
  * Tier 1: Real API, lock detail modal, mine filter, sort, localStorage cache
+ *
+ * TVU API actual format (empirically verified 2026-02-27):
+ *   GET /api/locks → { summary, locks[] }
+ *   lock fields: id, contractName, sender, recipient, totalAmount,
+ *     withdrawn, unlocked, locked, startDate (ISO), endDate (ISO),
+ *     status (pending|vesting|fully_unlocked|cancelled),
+ *     unlockSchedule: [{ date (ISO), amount, cumulative }]
+ *   amounts: already in display units (NO decimals divide needed)
  */
 
 'use strict';
@@ -12,21 +20,29 @@ import { formatNumber, formatWallet } from './utils/format.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 
 // ============================================
+// SECURITY — inline escape (ES module context)
+// ============================================
+
+function esc(s) {
+  if (typeof s !== 'string') return String(s ?? '');
+  return s.replace(/[&<>"'`=/]/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+    "'": '&#039;', '`': '&#x60;', '=': '&#x3D;', '/': '&#x2F;',
+  }[c]));
+}
+
+// ============================================
 // CONSTANTS
 // ============================================
 
-// Cache config
-const CACHE_KEY = 'asdf_locks_v1';
+const CACHE_KEY = 'asdf_locks_v2';
 const CACHE_TTL = 10 * 60 * 1000; // 10 min
 
-// ASDF pump.fun token = 6 decimals
-const ASDF_DECIMALS = 1e6;
-
-// TVU status → ASDF status mapping
+// TVU status → ASDF display status
 const STATUS_MAP = {
   vesting: 'active',
   fully_unlocked: 'completed',
-  pending: 'active',
+  pending: 'pending',     // future lock, not yet started
   cancelled: 'cancelled',
 };
 
@@ -56,14 +72,9 @@ function getCachedData() {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY); return null; }
     return data;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function setCachedData(data) {
@@ -96,42 +107,41 @@ async function fetchWithRetry(url, opts = {}, retries = 2) {
 }
 
 // ============================================
-// DATA NORMALIZATION (TVU fields → ASDF format)
+// DATA NORMALIZATION (TVU actual fields → ASDF)
 // ============================================
 
 function normalizeLock(raw) {
-  // TVU API: name, sender, recipient, depositedAmount, withdrawnAmount,
-  //          status (vesting/fully_unlocked/pending/cancelled),
-  //          startTime, endTime, nextUnlockTime (unix seconds), nextUnlockAmount
-  const deposited =
-    raw.depositedAmount != null
-      ? Number(raw.depositedAmount) / ASDF_DECIMALS
-      : raw.deposited || raw.amount || 0;
+  // Amounts come pre-formatted from TVU (no decimals divide needed)
+  const amount = raw.totalAmount || raw.amount || 0;
+  const unlocked = raw.unlocked != null ? raw.unlocked : (raw.withdrawn || 0);
 
-  const withdrawn =
-    raw.withdrawnAmount != null
-      ? Number(raw.withdrawnAmount) / ASDF_DECIMALS
-      : raw.unlocked || 0;
-
-  const nextUnlockAmt =
-    raw.nextUnlockAmount != null
-      ? Number(raw.nextUnlockAmount) / ASDF_DECIMALS
-      : raw.nextUnlockAmount || 0;
+  // Derive nextUnlock from unlockSchedule (first future entry)
+  let nextUnlock = null;
+  let nextUnlockAmount = 0;
+  if (Array.isArray(raw.unlockSchedule) && raw.unlockSchedule.length > 0) {
+    const now = Date.now();
+    const next = raw.unlockSchedule.find(e => new Date(e.date).getTime() > now);
+    if (next) {
+      nextUnlock = new Date(next.date);
+      nextUnlockAmount = next.amount;
+    }
+  }
 
   return {
-    id: raw.id || raw.pubkey || '',
-    title: raw.name || raw.title || 'Unnamed Lock',
+    id: raw.id || '',
+    title: raw.contractName || raw.name || raw.title || 'Unnamed Lock',
     wallet: raw.recipient || raw.wallet || '',
     sender: raw.sender || '',
-    amount: deposited,
-    deposited: deposited,
-    unlocked: withdrawn,
+    amount,
+    deposited: amount,
+    unlocked,
     status: STATUS_MAP[raw.status] || raw.status || 'active',
-    startDate: raw.startTime ? new Date(raw.startTime * 1000) : raw.startDate || null,
-    endDate: raw.endTime ? new Date(raw.endTime * 1000) : raw.endDate || null,
-    nextUnlock: raw.nextUnlockTime ? new Date(raw.nextUnlockTime * 1000) : raw.nextUnlock || null,
-    nextUnlockAmount: nextUnlockAmt,
+    startDate: raw.startDate ? new Date(raw.startDate) : null,
+    endDate: raw.endDate ? new Date(raw.endDate) : null,
+    nextUnlock,
+    nextUnlockAmount,
     period: raw.period || 0,
+    unlockSchedule: raw.unlockSchedule || [],
   };
 }
 
@@ -159,14 +169,13 @@ async function connectWallet() {
       btn.disabled = true;
     }
 
-    // Show "Mine" filter now that wallet is connected
+    // Reveal "Mine" filter
     const mineFilter = $('#filter-mine');
     if (mineFilter) mineFilter.style.display = '';
 
     const cta = $('#staking-cta');
     if (cta) cta.style.display = 'none';
 
-    // Re-render with mine filter available
     renderLocks();
   } catch (err) {
     console.error('[Staking] Wallet connect failed:', err);
@@ -195,7 +204,6 @@ async function fetchLocks() {
       '<div class="staking-loading"><div class="staking-spinner"></div><span>Loading locks&hellip;</span></div>';
   }
 
-  // Try cache first
   const cached = getCachedData();
   if (cached) {
     locks = cached;
@@ -209,7 +217,8 @@ async function fetchLocks() {
   try {
     const res = await fetchWithRetry(ASDF_ENDPOINTS.staking + '/api/locks');
     const json = await res.json();
-    const rawLocks = (json.data && json.data.locks) || json.locks || [];
+    // TVU response: { summary, locks } — no data wrapper
+    const rawLocks = json.locks || (json.data && json.data.locks) || [];
     locks = rawLocks.map(normalizeLock);
     setCachedData(locks);
     AudioFeedback.play('success');
@@ -228,70 +237,43 @@ async function fetchLocks() {
 }
 
 // ============================================
-// DEMO FALLBACK DATA
+// DEMO FALLBACK DATA (matches normalizeLock output shape)
 // ============================================
 
 function getDemoLocks() {
   return [
     {
-      id: 'lock-001',
+      id: 'demo-001',
       title: 'Team Vesting',
-      wallet: 'Bx7dkP4r1111111111111111111111111111111111',
-      sender: '',
-      amount: 50000000,
-      deposited: 50000000,
-      unlocked: 28750000,
+      wallet: 'FcTcbGqcTpXqcHZptzp7XmKN2LvhPgBMMuLbGiFe16nG',
+      sender: 'DF2DBPBnnTbkEgqWtRcEzT4ECMVFWwpQ63pz9Y8XDoJM',
+      amount: 10000000, deposited: 10000000, unlocked: 0,
       status: 'active',
-      startDate: new Date('2025-06-01'),
-      endDate: new Date('2027-06-01'),
-      nextUnlock: new Date('2026-03-01'),
-      nextUnlockAmount: 2083333,
-      period: 2592000,
+      startDate: new Date('2026-01-14'), endDate: new Date('2038-01-11'),
+      nextUnlock: new Date('2026-04-16'), nextUnlockAmount: 208333,
+      period: 7883982, unlockSchedule: [],
     },
     {
-      id: 'lock-002',
+      id: 'demo-002',
       title: 'Community Treasury',
-      wallet: '7mQvrT2x2222222222222222222222222222222222',
-      sender: '',
-      amount: 25000000,
-      deposited: 25000000,
-      unlocked: 18750000,
-      status: 'active',
-      startDate: new Date('2025-03-15'),
-      endDate: new Date('2026-09-15'),
-      nextUnlock: new Date('2026-02-15'),
-      nextUnlockAmount: 1388889,
-      period: 2592000,
+      wallet: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
+      sender: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
+      amount: 10000000, deposited: 10000000, unlocked: 0,
+      status: 'pending',
+      startDate: new Date('2026-06-19'), endDate: new Date('2026-06-19'),
+      nextUnlock: new Date('2026-06-19'), nextUnlockAmount: 9999999,
+      period: 1, unlockSchedule: [],
     },
     {
-      id: 'lock-003',
+      id: 'demo-003',
       title: 'Advisor Lock',
-      wallet: '4kNzyF8m3333333333333333333333333333333333',
-      sender: '',
-      amount: 10000000,
-      deposited: 10000000,
-      unlocked: 10000000,
-      status: 'completed',
-      startDate: new Date('2024-12-01'),
-      endDate: new Date('2025-12-01'),
-      nextUnlock: null,
-      nextUnlockAmount: 0,
-      period: 2592000,
-    },
-    {
-      id: 'lock-004',
-      title: 'LP Incentives',
-      wallet: '9pRxcW3j4444444444444444444444444444444444',
-      sender: '',
-      amount: 15000000,
-      deposited: 15000000,
-      unlocked: 5000000,
-      status: 'active',
-      startDate: new Date('2025-09-01'),
-      endDate: new Date('2027-03-01'),
-      nextUnlock: new Date('2026-02-28'),
-      nextUnlockAmount: 833333,
-      period: 2592000,
+      wallet: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
+      sender: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
+      amount: 5, deposited: 5, unlocked: 0,
+      status: 'pending',
+      startDate: new Date('2055-02-25'), endDate: new Date('2055-02-25'),
+      nextUnlock: new Date('2055-02-25'), nextUnlockAmount: 4.999999,
+      period: 1, unlockSchedule: [],
     },
   ];
 }
@@ -333,6 +315,9 @@ function getFilteredSortedLocks() {
   let filtered;
   if (activeFilter === 'mine') {
     filtered = locks.filter(isMyLock);
+  } else if (activeFilter === 'active') {
+    // 'active' includes both vesting + pending (not yet started)
+    filtered = locks.filter(l => l.status === 'active' || l.status === 'pending');
   } else if (activeFilter === 'all') {
     filtered = locks.slice();
   } else {
@@ -348,7 +333,7 @@ function getFilteredSortedLocks() {
       return ta - tb;
     });
   } else if (activeSort === 'status') {
-    const order = { active: 0, completed: 1, cancelled: 2 };
+    const order = { active: 0, pending: 1, completed: 2, cancelled: 3 };
     filtered.sort((a, b) => (order[a.status] || 0) - (order[b.status] || 0));
   }
 
@@ -370,43 +355,27 @@ function renderLocks() {
     return;
   }
 
+  // esc() applied to all API-sourced strings interpolated into innerHTML
   container.innerHTML = filtered
     .map(lock => {
       const pct = getProgress(lock);
       return (
-        '<div class="staking-lock staking-lock--clickable" data-id="' +
-        lock.id +
-        '">' +
+        '<div class="staking-lock staking-lock--clickable" data-id="' + esc(lock.id) + '">' +
         '<div class="staking-lock-info">' +
-        '<div class="staking-lock-title">' +
-        lock.title +
+        '<div class="staking-lock-title">' + esc(lock.title) + '</div>' +
+        '<div class="staking-lock-wallet">' + esc(formatWallet(lock.wallet, 8, 4)) + '</div>' +
         '</div>' +
-        '<div class="staking-lock-wallet">' +
-        formatWallet(lock.wallet, 8, 4) +
-        '</div>' +
-        '</div>' +
-        '<div class="staking-lock-amount">' +
-        formatNumber(lock.amount) +
-        ' ASDF</div>' +
+        '<div class="staking-lock-amount">' + formatNumber(lock.amount) + ' ASDF</div>' +
         '<div class="staking-lock-progress">' +
-        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' +
-        pct +
-        '%"></div></div>' +
-        '<div class="staking-lock-pct">' +
-        pct +
-        '% unlocked</div>' +
+        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="staking-lock-pct">' + pct + '% unlocked</div>' +
         '</div>' +
-        '<span class="staking-lock-status ' +
-        lock.status +
-        '">' +
-        lock.status +
-        '</span>' +
+        '<span class="staking-lock-status ' + esc(lock.status) + '">' + esc(lock.status) + '</span>' +
         '</div>'
       );
     })
     .join('');
 
-  // Attach click + hover events
   setTimeout(() => {
     $$('.staking-lock--clickable').forEach(card => {
       const lock = locks.find(l => l.id === card.dataset.id);
@@ -421,7 +390,7 @@ function renderLocks() {
 }
 
 // ============================================
-// LOCK DETAIL MODAL
+// LOCK DETAIL MODAL (uses textContent — XSS-safe)
 // ============================================
 
 function showLockDetail(lock) {
@@ -431,11 +400,7 @@ function showLockDetail(lock) {
   AudioFeedback.play('click');
 
   const pct = getProgress(lock);
-
-  const set = (id, val) => {
-    const el = modal.querySelector('#' + id);
-    if (el) el.textContent = val;
-  };
+  const set = (id, val) => { const e = modal.querySelector('#' + id); if (e) e.textContent = val; };
 
   set('lock-modal-title', lock.title);
 
@@ -458,12 +423,9 @@ function showLockDetail(lock) {
 
   const nextRow = modal.querySelector('#lock-modal-next-row');
   if (nextRow) {
-    if (lock.nextUnlock && lock.status === 'active') {
+    if (lock.nextUnlock) {
       nextRow.style.display = '';
-      set(
-        'lock-modal-next',
-        formatDate(lock.nextUnlock) + ' \u2014 ' + formatNumber(lock.nextUnlockAmount) + ' ASDF'
-      );
+      set('lock-modal-next', formatDate(lock.nextUnlock) + ' \u2014 ' + formatNumber(lock.nextUnlockAmount) + ' ASDF');
     } else {
       nextRow.style.display = 'none';
     }
@@ -471,9 +433,8 @@ function showLockDetail(lock) {
 
   const solscanEl = modal.querySelector('#lock-modal-solscan');
   if (solscanEl) {
-    // Only show Solscan link if id looks like a real pubkey (not demo)
-    if (lock.id && lock.id.length >= 32) {
-      solscanEl.href = 'https://solscan.io/account/' + lock.id;
+    if (lock.id && lock.id.length >= 32 && !lock.id.startsWith('demo-')) {
+      solscanEl.href = 'https://solscan.io/account/' + encodeURIComponent(lock.id);
       solscanEl.style.display = '';
     } else {
       solscanEl.style.display = 'none';
@@ -494,7 +455,7 @@ function closeLockModal() {
 }
 
 // ============================================
-// UNLOCK TIMELINE (HTML list — Chart.js deferred to Tier 2)
+// UNLOCK TIMELINE
 // ============================================
 
 function renderTimeline() {
@@ -502,7 +463,7 @@ function renderTimeline() {
   if (!container) return;
 
   const upcoming = locks
-    .filter(l => l.nextUnlock && l.status === 'active')
+    .filter(l => l.nextUnlock && (l.status === 'active' || l.status === 'pending'))
     .sort((a, b) => a.nextUnlock - b.nextUnlock);
 
   if (upcoming.length === 0) {
@@ -511,23 +472,13 @@ function renderTimeline() {
   }
 
   container.innerHTML = upcoming
-    .map(lock => {
-      return (
-        '<div class="staking-timeline-item">' +
-        '<div class="staking-timeline-date">' +
-        formatDate(lock.nextUnlock) +
-        ' (' +
-        getCountdown(lock.nextUnlock) +
-        ')</div>' +
-        '<div class="staking-timeline-desc">' +
-        lock.title +
-        '</div>' +
-        '<div class="staking-timeline-amount">' +
-        formatNumber(lock.nextUnlockAmount) +
-        ' ASDF</div>' +
-        '</div>'
-      );
-    })
+    .map(lock =>
+      '<div class="staking-timeline-item">' +
+      '<div class="staking-timeline-date">' + formatDate(lock.nextUnlock) + ' (' + getCountdown(lock.nextUnlock) + ')</div>' +
+      '<div class="staking-timeline-desc">' + esc(lock.title) + '</div>' +
+      '<div class="staking-timeline-amount">' + formatNumber(lock.nextUnlockAmount) + ' ASDF</div>' +
+      '</div>'
+    )
     .join('');
 }
 
@@ -544,16 +495,13 @@ function updateStats() {
   locks.forEach(lock => {
     totalLocked += lock.amount - lock.unlocked;
     totalDeposited += lock.deposited;
-    if (lock.status === 'active') activeLocks++;
-    if (lock.nextUnlock && lock.status === 'active') {
+    if (lock.status === 'active' || lock.status === 'pending') activeLocks++;
+    if (lock.nextUnlock) {
       if (!nextUnlockDate || lock.nextUnlock < nextUnlockDate) nextUnlockDate = lock.nextUnlock;
     }
   });
 
-  const el = (id, val) => {
-    const e = $(id);
-    if (e) e.textContent = val;
-  };
+  const el = (id, val) => { const e = $(id); if (e) e.textContent = val; };
   el('#stat-total-locked', formatNumber(totalLocked));
   el('#stat-deposited', formatNumber(totalDeposited));
   el('#stat-active-locks', activeLocks.toString());
@@ -567,10 +515,8 @@ function updateStats() {
 function handleFilterClick(e) {
   const btn = e.target.closest('.staking-filter');
   if (!btn) return;
-
   AudioFeedback.play('click');
   activeFilter = btn.getAttribute('data-filter') || 'all';
-
   $$('.staking-filter').forEach(f => f.classList.toggle('active', f === btn));
   renderLocks();
 }
@@ -582,12 +528,11 @@ function handleSortChange(e) {
 }
 
 // ============================================
-// VISCERAL FEEDBACK SETUP
+// VISCERAL FEEDBACK
 // ============================================
 
 function setupVisceralFeedback() {
   AudioFeedback.init();
-
   const ctaBtn = $('#connect-wallet');
   if (ctaBtn) ctaBtn.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
 }
@@ -597,34 +542,26 @@ function setupVisceralFeedback() {
 // ============================================
 
 function init() {
-  // Wallet connect
   const connectBtn = $('#connect-wallet');
   if (connectBtn) connectBtn.addEventListener('click', connectWallet);
 
-  // Filters (event delegation)
   const filtersEl = $('.staking-filters');
   if (filtersEl) filtersEl.addEventListener('click', handleFilterClick);
 
-  // Sort
   const sortEl = $('#locks-sort');
   if (sortEl) sortEl.addEventListener('change', handleSortChange);
 
-  // Modal close handlers
   const modalClose = $('#lock-modal-close');
   if (modalClose) modalClose.addEventListener('click', closeLockModal);
 
   const modalOverlay = $('#lock-modal');
   if (modalOverlay) {
-    modalOverlay.addEventListener('click', e => {
-      if (e.target === modalOverlay) closeLockModal();
-    });
+    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeLockModal(); });
   }
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeLockModal();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLockModal(); });
 
-  // Hide "Mine" filter until wallet connected
+  // Mine filter hidden until wallet connected
   const mineFilter = $('#filter-mine');
   if (mineFilter) mineFilter.style.display = 'none';
 
