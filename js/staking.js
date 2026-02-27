@@ -18,6 +18,7 @@
 import { AudioFeedback } from './utils/audio-feedback.js';
 import { formatNumber, formatWallet } from './utils/format.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
 
 // ============================================
 // SECURITY — inline escape (ES module context)
@@ -152,6 +153,7 @@ function normalizeLock(raw) {
 async function connectWallet() {
   try {
     if (!window.solana || !window.solana.isPhantom) {
+      window.showNotice('Wallet required — install Phantom to use Staking');
       window.open('https://phantom.app/', '_blank');
       AudioFeedback.play('warning');
       return;
@@ -567,6 +569,13 @@ function init() {
 
   setupVisceralFeedback();
   fetchLocks();
+
+  // Refresh countdown + stats displays every 60s (matches footer claim)
+  // No API refetch — operates on in-memory locks state
+  PageLifecycle.registerTimer(
+    'staking-refresh',
+    setInterval(() => { renderTimeline(); updateStats(); }, 60000)
+  );
 }
 
 if (document.readyState === 'loading') {

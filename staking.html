@@ -159,38 +159,6 @@
             </div>
         </section>
 
-        <!-- Governance Overview (adapted from sollama58/TokenVotingUtil) -->
-        <section class="staking-governance density-detailed">
-            <h2 class="staking-section-title">Governance &amp; Voting</h2>
-            <p class="staking-context" style="margin-top:12px">
-                <strong>Vote Weighting:</strong> Locked tokens carry more voting power.
-                Longer lock periods increase your governance weight using a time-multiplier.
-                This prevents short-term holders from influencing long-term decisions.
-            </p>
-            <div class="governance-thresholds">
-                <div class="threshold-card">
-                    <div class="threshold-label">Quorum</div>
-                    <div class="threshold-bar">
-                        <div class="threshold-fill" style="width:62%"></div>
-                    </div>
-                    <div class="threshold-meta">
-                        <span>62% reached</span>
-                        <span>Target: 67%</span>
-                    </div>
-                </div>
-                <div class="threshold-card">
-                    <div class="threshold-label">Approval</div>
-                    <div class="threshold-bar">
-                        <div class="threshold-fill threshold-fill--success" style="width:78%"></div>
-                    </div>
-                    <div class="threshold-meta">
-                        <span>78% in favor</span>
-                        <span>Target: 51%</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Vesting Glossary (density-detailed) -->
         <section class="staking-glossary density-detailed">
             <h2 class="staking-section-title">Vesting Glossary</h2>
@@ -306,6 +274,7 @@
         </div>
     </div>
 
+    <script src="js/utils/notice.js"></script>
     <script type="module" src="js/staking.js"></script>
     <script src="js/ecosystem.js" defer></script>
 </body>
