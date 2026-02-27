@@ -1,344 +1,319 @@
 /**
- * ASDF Ignition Page - JavaScript
- * Solana airdrop platform: dashboard, tabs, countdown, wallet UI
- * API integration points marked with [API] comments
+ * ASDF Ignition - Solana Airdrop Platform JavaScript
+ *
+ * Backend (sollama58/ignition) not yet deployed.
+ * Shell ready — pending endpoints marked with [API] comments.
+ *
+ * Expected endpoints (when available):
+ *   GET /ignition/pool          — { balance, usd }
+ *   GET /ignition/koth          — { name, fullName, volume, mcap, holders, share, history[] }
+ *   GET /ignition/leaderboard   — { tokens[{ rank, token, volume, mcap, multiplier }] }
+ *   GET /ignition/robinhood     — { partners[{ name, creator, feesSol, status }] }
+ *   GET /ignition/pags          — { designations[{ handle, wallet, earned }] }
+ *   GET /ignition/airdrop-schedule — { nextAirdropMs }
+ *   GET /ignition/holdings?wallet= — { sol, status, tokens, asdf }
  */
 
-(function () {
-  'use strict';
+'use strict';
 
-  // ============================================
-  // CONFIG
-  // ============================================
+import { AudioFeedback } from './utils/audio-feedback.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
+import { formatWallet } from './utils/format.js';
 
-  var isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  // API endpoint — mirrors ASDF_ENDPOINTS.ignition (see /js/config/endpoints.js)
-  var API_BASE = isDev ? '/api' : 'https://alonisthe.dev/ignition';
+// API_BASE ready for when backend is deployed
+// eslint-disable-next-line no-unused-vars
+const API_BASE = ASDF_ENDPOINTS.ignition;
 
-  // ============================================
-  // MOCK DATA
-  // ============================================
+// ============================================
+// STATE
+// ============================================
 
-  var MOCK = {
-    pool: {
-      balance: 12.847,
-      usd: 2441.0,
-    },
-    countdown: {
-      // Next airdrop: 2 days 14h 37m from now (mock)
-      target: Date.now() + (2 * 24 * 60 * 60 + 14 * 60 * 60 + 37 * 60) * 1000,
-    },
-    holdings: {
-      sol: '0.000',
-      status: '--',
-      tokens: '0',
-      asdf: '0',
-    },
-    koth: {
-      name: '$PUMP',
-      fullName: 'PumpKing Token',
-      volume: '$1.2M',
-      mcap: '$4.8M',
-      holders: '2,847',
-      share: '10%',
-    },
-  };
+const state = {
+  wallet: null,
+};
 
-  // ============================================
-  // TAB NAVIGATION
-  // ============================================
+// ============================================
+// TAB NAVIGATION
+// ============================================
 
-  var tabs = [];
-  var sections = [];
+function initTabs() {
+  const tabs = Array.from(document.querySelectorAll('.ig-tab'));
+  const sections = Array.from(document.querySelectorAll('.ig-section'));
 
-  function initTabs() {
-    tabs = Array.prototype.slice.call(document.querySelectorAll('.ig-tab'));
-    sections = Array.prototype.slice.call(document.querySelectorAll('.ig-section'));
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      AudioFeedback.play('click');
+      const sectionId = tab.getAttribute('data-section');
 
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        switchTab(tab.getAttribute('data-section'));
+      tabs.forEach(t => {
+        const isActive = t.getAttribute('data-section') === sectionId;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', String(isActive));
+      });
+
+      sections.forEach(section => {
+        const id = section.id.replace('section-', '');
+        if (id === sectionId) {
+          section.removeAttribute('hidden');
+          section.classList.add('ig-section--active');
+        } else {
+          section.setAttribute('hidden', '');
+          section.classList.remove('ig-section--active');
+        }
       });
     });
+  });
+}
+
+// ============================================
+// COUNTDOWN
+// ============================================
+
+function pad(n) {
+  return n < 10 ? '0' + n : String(n);
+}
+
+function startCountdown(targetMs) {
+  const ids = ['countdown-days', 'countdown-hours', 'countdown-mins', 'countdown-secs'];
+  const els = ids.map(id => document.getElementById(id));
+
+  if (!targetMs) {
+    // [API] No target until backend provides real airdrop schedule
+    els.forEach(el => { if (el) el.textContent = '--'; });
+    return;
   }
 
-  function switchTab(sectionId) {
-    // Update tab active states
-    tabs.forEach(function (tab) {
-      var isActive = tab.getAttribute('data-section') === sectionId;
-      tab.classList.toggle('active', isActive);
-      tab.setAttribute('aria-selected', String(isActive));
-    });
+  function tick() {
+    const diff = Math.max(0, targetMs - Date.now());
+    const [dEl, hEl, mEl, sEl] = els;
 
-    // Show/hide sections
-    sections.forEach(function (section) {
-      var id = section.id.replace('section-', '');
-      if (id === sectionId) {
-        section.removeAttribute('hidden');
-        section.classList.add('ig-section--active');
-      } else {
-        section.setAttribute('hidden', '');
-        section.classList.remove('ig-section--active');
-      }
-    });
+    if (dEl) dEl.textContent = pad(Math.floor(diff / 86_400_000));
+    if (hEl) hEl.textContent = pad(Math.floor((diff % 86_400_000) / 3_600_000));
+    if (mEl) mEl.textContent = pad(Math.floor((diff % 3_600_000) / 60_000));
+    if (sEl) sEl.textContent = pad(Math.floor((diff % 60_000) / 1000));
+
+    if (diff <= 0) els.forEach(el => { if (el) el.textContent = '00'; });
   }
 
-  // ============================================
-  // COUNTDOWN TIMER
-  // ============================================
+  tick();
+  const timer = setInterval(() => {
+    if (Date.now() >= targetMs) {
+      clearInterval(timer);
+      els.forEach(el => { if (el) el.textContent = '00'; });
+      return;
+    }
+    tick();
+  }, 1000);
 
-  var countdownInterval = null;
+  PageLifecycle.registerTimer('ignition-countdown', timer);
+}
 
-  function startCountdown() {
-    var target = MOCK.countdown.target;
+// ============================================
+// WALLET CONNECTION
+// ============================================
 
-    function update() {
-      var now = Date.now();
-      var diff = Math.max(0, target - now);
-
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-      var daysEl = document.getElementById('countdown-days');
-      var hoursEl = document.getElementById('countdown-hours');
-      var minsEl = document.getElementById('countdown-mins');
-      var secsEl = document.getElementById('countdown-secs');
-
-      if (daysEl) daysEl.textContent = pad(days);
-      if (hoursEl) hoursEl.textContent = pad(hours);
-      if (minsEl) minsEl.textContent = pad(mins);
-      if (secsEl) secsEl.textContent = pad(secs);
-
-      if (diff <= 0 && countdownInterval) {
-        clearInterval(countdownInterval);
-      }
+async function connectWallet() {
+  try {
+    if (!window.solana || !window.solana.isPhantom) {
+      window.showNotice('Wallet required — install Phantom to use Ignition');
+      window.open('https://phantom.app/', '_blank');
+      return;
     }
 
-    update();
-    countdownInterval = setInterval(update, 1000);
-  }
+    const resp = await window.solana.connect();
+    state.wallet = resp.publicKey.toString();
 
-  function pad(n) {
-    return n < 10 ? '0' + n : String(n);
-  }
+    const btn = document.getElementById('wallet-connect');
+    if (btn) {
+      btn.classList.add('connected');
+      btn.querySelector('.ig-wallet-label').textContent = formatWallet(state.wallet, 4, 4);
+      btn.querySelector('.ig-wallet-icon').textContent = '\u2713';
+    }
 
-  // ============================================
-  // WALLET CONNECTION (UI Only)
-  // ============================================
-
-  var walletConnected = false;
-
-  function initWallet() {
-    var btn = document.getElementById('wallet-connect');
-    if (!btn) return;
-
-    btn.addEventListener('click', function () {
-      if (walletConnected) {
-        disconnectWallet();
-      } else {
-        connectWallet();
-      }
-    });
-  }
-
-  function connectWallet() {
-    // [API] TODO: Integrate actual Solana wallet adapter
-    // Check for Phantom, Solflare, Backpack providers
-    // window.solana || window.solflare || window.backpack
-
-    var btn = document.getElementById('wallet-connect');
-    if (!btn) return;
-
-    // Mock connection UI state
-    walletConnected = true;
-    btn.classList.add('connected');
-    btn.querySelector('.ig-wallet-label').textContent = '7xK2...m9Fq';
-    btn.querySelector('.ig-wallet-icon').textContent = '✓';
-
-    // Enable form buttons when wallet is connected
     enableFormButtons(true);
 
-    // [API] TODO: Fetch actual holdings after wallet connection
-    updateHoldings({
-      sol: '2.847',
-      status: 'Holder',
-      tokens: '3',
-      asdf: '145,230',
-    });
-
-    console.log('[Ignition] Wallet connected (mock)');
+    // [API] TODO: GET /ignition/holdings?wallet={pubkey}
+    updateHoldings({ sol: '\u2014', status: '\u2014', tokens: '\u2014', asdf: '\u2014' });
+  } catch (error) {
+    console.error('[Ignition] Wallet connection error:', error);
   }
+}
 
-  function disconnectWallet() {
-    var btn = document.getElementById('wallet-connect');
-    if (!btn) return;
+function disconnectWallet() {
+  state.wallet = null;
 
-    walletConnected = false;
+  const btn = document.getElementById('wallet-connect');
+  if (btn) {
     btn.classList.remove('connected');
     btn.querySelector('.ig-wallet-label').textContent = 'Connect Wallet';
     btn.querySelector('.ig-wallet-icon').textContent = '\u26AB';
-
-    enableFormButtons(false);
-
-    updateHoldings(MOCK.holdings);
-
-    console.log('[Ignition] Wallet disconnected');
   }
 
-  function enableFormButtons(enabled) {
-    var buttons = [
-      document.getElementById('launch-token-btn'),
-      document.getElementById('register-token-btn'),
-      document.getElementById('pags-submit-btn'),
-    ];
+  enableFormButtons(false);
+  updateHoldings({ sol: '\u2014', status: '\u2014', tokens: '\u2014', asdf: '\u2014' });
+}
 
-    buttons.forEach(function (btn) {
-      if (btn) btn.disabled = !enabled;
+function initWallet() {
+  const btn = document.getElementById('wallet-connect');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    if (state.wallet) {
+      disconnectWallet();
+    } else {
+      connectWallet();
+    }
+  });
+}
+
+function enableFormButtons(enabled) {
+  ['launch-token-btn', 'register-token-btn', 'pags-submit-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = !enabled;
+  });
+}
+
+// ============================================
+// PENDING STATE RENDERERS
+// ============================================
+
+function updateHoldings(data) {
+  const map = {
+    'holding-sol': data.sol,
+    'holding-status': data.status,
+    'holding-tokens': data.tokens,
+    'holding-asdf': data.asdf,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
+}
+
+function showPoolPending() {
+  // [API] TODO: GET /ignition/pool
+  const amountEl = document.querySelector('.ig-pool-amount');
+  const usdEl = document.querySelector('.ig-pool-usd');
+  if (amountEl) amountEl.textContent = '\u2014';
+  if (usdEl) usdEl.textContent = 'Endpoint pending';
+}
+
+function showKothPending() {
+  // [API] TODO: GET /ignition/koth
+  const fields = {
+    'koth-name': '\u2014',
+    'koth-ticker': '\u2014',
+    'koth-volume': '\u2014',
+    'koth-mcap': '\u2014',
+    'koth-holders': '\u2014',
+    'koth-share': '\u2014',
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
+
+  const historyEl = document.getElementById('koth-history');
+  if (historyEl) {
+    historyEl.innerHTML =
+      '<div class="ig-koth-row" style="color:var(--white-muted)">History endpoint pending</div>';
+  }
+}
+
+function showLeaderboardPending() {
+  // [API] TODO: GET /ignition/leaderboard
+  const body = document.getElementById('leaderboard-body');
+  if (body) {
+    body.innerHTML = `
+      <div class="ig-table-row" style="color:var(--white-muted);grid-column:1/-1;text-align:center;padding:24px">
+        Leaderboard endpoint pending
+      </div>`;
+  }
+}
+
+function showRobinhoodPending() {
+  // [API] TODO: GET /ignition/robinhood
+  const list = document.getElementById('robinhood-list');
+  if (list) {
+    list.innerHTML = `
+      <div style="color:var(--white-muted);padding:24px;text-align:center">
+        Robinhood endpoint pending
+      </div>`;
+  }
+}
+
+function showPagsPending() {
+  // [API] TODO: GET /ignition/pags
+  const list = document.getElementById('pags-list');
+  if (!list) return;
+
+  list.querySelectorAll('.ig-pags-row').forEach(row => row.remove());
+
+  const pending = document.createElement('div');
+  pending.style.cssText = 'color:var(--white-muted);padding:12px 0';
+  pending.textContent = 'Designations endpoint pending';
+  list.appendChild(pending);
+}
+
+// ============================================
+// FORM HANDLERS
+// ============================================
+
+function initForms() {
+  const launcherForm = document.getElementById('launcher-form');
+  if (launcherForm) {
+    launcherForm.addEventListener('submit', e => {
+      e.preventDefault();
+      // [API] TODO: POST /ignition/launch — wallet + 0.02 SOL transaction
+      window.showNotice('Token launch requires wallet connection and Solana integration — coming soon.');
     });
   }
 
-  // ============================================
-  // DASHBOARD UPDATES
-  // ============================================
-
-  function updateHoldings(data) {
-    var sol = document.getElementById('holding-sol');
-    var status = document.getElementById('holding-status');
-    var tokens = document.getElementById('holding-tokens');
-    var asdf = document.getElementById('holding-asdf');
-
-    if (sol) sol.textContent = data.sol;
-    if (status) status.textContent = data.status;
-    if (tokens) tokens.textContent = data.tokens;
-    if (asdf) asdf.textContent = data.asdf;
+  const registerForm = document.getElementById('register-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', e => {
+      e.preventDefault();
+      // [API] TODO: POST /ignition/register — verify mint + register token
+      window.showNotice('Token registration requires API integration — coming soon.');
+    });
   }
 
-  function updatePool() {
-    // [API] TODO: Fetch pool balance from API
-    // fetch(`${API_BASE}/ignition/pool`)
-    //   .then(res => res.json())
-    //   .then(data => { ... })
-
-    var amountEl = document.querySelector('.ig-pool-amount');
-    var usdEl = document.querySelector('.ig-pool-usd');
-
-    if (amountEl) amountEl.textContent = MOCK.pool.balance.toFixed(3);
-    if (usdEl) usdEl.textContent = '~ $' + MOCK.pool.usd.toFixed(2) + ' USD';
+  const pagsForm = document.getElementById('pags-form');
+  if (pagsForm) {
+    pagsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      // [API] TODO: POST /ignition/pags — designate Twitter fee beneficiary
+      window.showNotice('PAGS designation requires API integration — coming soon.');
+    });
   }
+}
 
-  function updateKOTH() {
-    // [API] TODO: Fetch current KOTH from API
-    // fetch(`${API_BASE}/ignition/koth`)
-    //   .then(res => res.json())
-    //   .then(data => { ... })
+// ============================================
+// INITIALIZATION
+// ============================================
 
-    var nameEl = document.getElementById('koth-name');
-    var tickerEl = document.getElementById('koth-ticker');
-    var volumeEl = document.getElementById('koth-volume');
-    var mcapEl = document.getElementById('koth-mcap');
-    var holdersEl = document.getElementById('koth-holders');
-    var shareEl = document.getElementById('koth-share');
+async function init() {
+  AudioFeedback.init();
 
-    if (nameEl) nameEl.textContent = MOCK.koth.name;
-    if (tickerEl) tickerEl.textContent = MOCK.koth.fullName;
-    if (volumeEl) volumeEl.textContent = MOCK.koth.volume;
-    if (mcapEl) mcapEl.textContent = MOCK.koth.mcap;
-    if (holdersEl) holdersEl.textContent = MOCK.koth.holders;
-    if (shareEl) shareEl.textContent = MOCK.koth.share;
-  }
+  initTabs();
+  initWallet();
+  initForms();
 
-  // ============================================
-  // FORM HANDLERS (Placeholder)
-  // ============================================
+  // Honest pending state for all API-driven sections
+  showPoolPending();
+  showKothPending();
+  showLeaderboardPending();
+  showRobinhoodPending();
+  showPagsPending();
 
-  function initForms() {
-    // Token Launcher form
-    var launcherForm = document.getElementById('launcher-form');
-    if (launcherForm) {
-      launcherForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        // [API] TODO: Submit token launch transaction
-        // Requires wallet connection + 0.02 SOL fee
-        console.log('[Ignition] Token launch submitted (mock)');
-        showNotice('Token launch requires wallet connection and Solana integration — coming soon.');
-      });
-    }
+  // Countdown — no target until backend provides real schedule
+  // [API] TODO: startCountdown(await fetchAirdropSchedule())
+  startCountdown(null);
 
-    // Token Registration form
-    var registerForm = document.getElementById('register-form');
-    if (registerForm) {
-      registerForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        // [API] TODO: Verify mint address and register token
-        console.log('[Ignition] Token registration submitted (mock)');
-        showNotice('Token registration requires API integration — coming soon.');
-      });
-    }
+  // Holdings default — pending wallet connection + API
+  updateHoldings({ sol: '\u2014', status: '\u2014', tokens: '\u2014', asdf: '\u2014' });
+}
 
-    // PAGS form
-    var pagsForm = document.getElementById('pags-form');
-    if (pagsForm) {
-      pagsForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        // [API] TODO: Designate Twitter user as fee beneficiary
-        console.log('[Ignition] PAGS designation submitted (mock)');
-        showNotice('PAGS designation requires API integration — coming soon.');
-      });
-    }
-  }
-
-  // ============================================
-  // LEADERBOARD
-  // ============================================
-
-  function fetchLeaderboard() {
-    // [API] TODO: Fetch top tokens from API
-    // fetch(`${API_BASE}/ignition/leaderboard`)
-    //   .then(res => res.json())
-    //   .then(data => renderLeaderboard(data))
-
-    // Currently using static HTML mock data
-    console.log('[Ignition] Leaderboard loaded (static mock)');
-  }
-
-  // ============================================
-  // INITIALIZATION
-  // ============================================
-
-  function init() {
-    console.log('[Ignition] Initializing...');
-
-    // Setup tab navigation
-    initTabs();
-
-    // Start countdown timer
-    startCountdown();
-
-    // Setup wallet connection
-    initWallet();
-
-    // Setup form handlers
-    initForms();
-
-    // Populate mock data
-    updatePool();
-    updateKOTH();
-    updateHoldings(MOCK.holdings);
-    fetchLeaderboard();
-
-    // [API] TODO: Periodic refresh
-    // setInterval(updatePool, 30000);
-    // setInterval(fetchLeaderboard, 60000);
-
-    console.log('[Ignition] Initialized');
-  }
-
-  // Start when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+// Start when DOM is ready
+document.addEventListener('DOMContentLoaded', init);
