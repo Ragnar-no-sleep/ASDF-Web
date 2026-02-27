@@ -18,33 +18,9 @@ import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatNumber, formatWallet } from './utils/format.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
 
 const API_BASE = ASDF_ENDPOINTS.burns;
-
-// ============================================
-// EXPONENTIAL BACKOFF FETCH
-// (Adapted from sollama58/ASDFBurnTracker)
-// ============================================
-
-async function fetchWithRetry(url, maxRetries = 3) {
-  let delay = 1000;
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      updateConnectionStatus(true);
-      return response;
-    } catch (err) {
-      if (i === maxRetries) {
-        updateConnectionStatus(false);
-        throw err;
-      }
-      console.warn('[Burns] Retry ' + (i + 1) + '/' + maxRetries + ' after ' + delay + 'ms');
-      await new Promise(resolve => setTimeout(resolve, delay));
-      delay *= 2;
-    }
-  }
-}
 
 // ============================================
 // API CONNECTION STATUS
@@ -73,30 +49,32 @@ function updateConnectionStatus(connected) {
 
 async function fetchBurnStats() {
   try {
-    const response = await fetchWithRetry(`${API_BASE}/api/burn`);
+    const response = await fetchWithRetry(`${API_BASE}/api/burn`, { retries: 3 });
     const data = await response.json();
-    // Normalize ASDFBurnTracker field names → internal
+    updateConnectionStatus(true);
     return {
       totalBurned: data.burnedAmount ?? 0,
       burnPercentage: data.burnedPercent ?? 0,
       circulatingSupply: data.currentSupply ?? 0,
-      // Not yet in backend — pending sollama58/ASDFBurnTracker issue #2
       uniqueBurners: data.uniqueBurners ?? null,
       burnedToday: data.burnedToday ?? null,
       largestBurn: data.largestBurn ?? null,
     };
   } catch (error) {
     console.error('[Burns] Error fetching burn stats:', error);
+    updateConnectionStatus(false);
     return null;
   }
 }
 
 async function fetchWalletStats() {
   try {
-    const response = await fetchWithRetry(`${API_BASE}/api/wallet`);
+    const response = await fetchWithRetry(`${API_BASE}/api/wallet`, { retries: 3 });
+    updateConnectionStatus(true);
     return await response.json();
   } catch (error) {
     console.error('[Burns] Error fetching wallet stats:', error);
+    updateConnectionStatus(false);
     return null;
   }
 }

@@ -19,6 +19,7 @@ import { AudioFeedback } from './utils/audio-feedback.js';
 import { formatNumber, formatWallet } from './utils/format.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
 
 // ============================================
 // SECURITY — inline escape (ES module context)
@@ -84,28 +85,7 @@ function setCachedData(data) {
   } catch {}
 }
 
-// ============================================
-// FETCH WITH RETRY (2 retries, 377ms backoff)
-// ============================================
-
-async function fetchWithRetry(url, opts = {}, retries = 2) {
-  let lastErr;
-  for (let i = 0; i <= retries; i++) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    try {
-      const res = await fetch(url, { ...opts, signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      lastErr = err;
-      if (i < retries) await new Promise(r => setTimeout(r, 377 * (i + 1)));
-    }
-  }
-  throw lastErr;
-}
+// fetchWithRetry imported from ./utils/fetch-retry.js
 
 // ============================================
 // DATA NORMALIZATION (TVU actual fields → ASDF)
