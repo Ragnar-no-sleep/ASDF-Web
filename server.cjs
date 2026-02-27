@@ -422,6 +422,16 @@ app.get('/ecosystem-map', (req, res) => {
   res.sendFile(path.join(__dirname, 'ecosystem-map.html'));
 });
 
+// Route /me to me.html (User profile & settings)
+app.get('/me', (req, res) => {
+  res.sendFile(path.join(__dirname, 'me.html'));
+});
+
+// Route /terrier to terrier.html (CYNIC companion chatbot)
+app.get('/terrier', (req, res) => {
+  res.sendFile(path.join(__dirname, 'terrier.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
   // If it's a file request that doesn't exist, 404
