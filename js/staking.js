@@ -378,17 +378,6 @@ function renderLocks() {
     })
     .join('');
 
-  setTimeout(() => {
-    $$('.staking-lock--clickable').forEach(card => {
-      const lock = locks.find(l => l.id === card.dataset.id);
-      if (!lock) return;
-      card.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
-      card.addEventListener('click', () => showLockDetail(lock));
-    });
-    $$('.staking-stat-card').forEach(card => {
-      card.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
-    });
-  }, 100);
 }
 
 // ============================================
@@ -561,13 +550,34 @@ function init() {
     modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeLockModal(); });
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLockModal(); });
+  PageLifecycle.registerListener(document, 'keydown', e => { if (e.key === 'Escape') closeLockModal(); });
 
   // Mine filter hidden until wallet connected
   const mineFilter = $('#filter-mine');
   if (mineFilter) mineFilter.style.display = 'none';
 
   setupVisceralFeedback();
+
+  // Event delegation on lock list — registered once, survives re-renders
+  const locksList = $('#locks-list');
+  if (locksList) {
+    locksList.addEventListener('click', e => {
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const lock = locks.find(l => l.id === card.dataset.id);
+      if (lock) showLockDetail(lock);
+    });
+    locksList.addEventListener('mouseover', e => {
+      const card = e.target.closest('.staking-lock--clickable');
+      if (card && !card.contains(e.relatedTarget)) AudioFeedback.play('hover');
+    });
+  }
+
+  // Stat cards hover — static DOM, registered once
+  $$('.staking-stat-card').forEach(card => {
+    card.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
+  });
+
   fetchLocks();
 
   // Refresh countdown + stats displays every 60s (matches footer claim)
