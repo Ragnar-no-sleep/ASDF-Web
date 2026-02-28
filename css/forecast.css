@@ -22,7 +22,7 @@
   --red: #ff0040;
   --green-dim: rgba(0, 255, 65, 0.2);
   --red-dim: rgba(255, 0, 64, 0.2);
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  /* --font-mono: inherited from design-tokens.css */
 }
 
 /* ============================================

@@ -43,9 +43,7 @@
   --led-blue: #3b82f6;
   --led-green: #22c55e;
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* --font-sans, --font-mono: inherited from design-tokens.css */
 
   /* Device styling */
   --device-radius: 16px;

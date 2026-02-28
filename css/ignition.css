@@ -44,9 +44,7 @@
   --space-2xl: 89px;
   --space-3xl: 144px;
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  /* --font-sans, --font-mono: inherited from design-tokens.css */
 
   /* Effects */
   --ig-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);

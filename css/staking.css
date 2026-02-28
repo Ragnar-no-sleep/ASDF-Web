@@ -15,8 +15,7 @@
 }
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  /* --font-sans, --font-mono: inherited from design-tokens.css */
 
   /* Staking theme tokens — overridden by [data-variant] */
   --staking-accent: #7b93ff;
@@ -1164,7 +1163,7 @@
 .lock-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
