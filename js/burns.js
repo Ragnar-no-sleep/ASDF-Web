@@ -17,7 +17,7 @@ import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
-import { formatNumber, formatWallet } from './utils/format.js';
+import { formatNumber, formatWallet, formatTimeAgo } from './utils/format.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 
 const API_BASE = ASDF_ENDPOINTS.burns;
@@ -83,15 +83,7 @@ async function fetchWalletStats() {
 // UI UPDATES
 // ============================================
 
-// Local: ISO timestamp variant — format.js expects Unix ms, API returns ISO strings
-function formatTimeAgo(timestamp) {
-  const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
-}
+// formatTimeAgo: now imported from utils/format.js (accepts ISO strings + Unix ms)
 
 function animateCounter(element, target, duration = 2000) {
   const start = 0;

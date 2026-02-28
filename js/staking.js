@@ -20,18 +20,7 @@ import { formatNumber, formatWallet } from './utils/format.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
-
-// ============================================
-// SECURITY — inline escape (ES module context)
-// ============================================
-
-function esc(s) {
-  if (typeof s !== 'string') return String(s ?? '');
-  return s.replace(/[&<>"'`=/]/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
-    "'": '&#039;', '`': '&#x60;', '=': '&#x3D;', '/': '&#x2F;',
-  }[c]));
-}
+import { esc } from './utils/escape.js';
 
 // ============================================
 // CONSTANTS

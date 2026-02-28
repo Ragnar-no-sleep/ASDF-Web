@@ -15,13 +15,9 @@ import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
+import { esc } from './utils/escape.js';
 
 const API_BASE = ASDF_ENDPOINTS.holdex;
-
-function esc(s) {
-  if (typeof s !== 'string') return String(s ?? '');
-  return s.replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
-}
 
 // ============================================
 // STATE
@@ -321,7 +317,7 @@ function setupEventListeners() {
   const modal = document.getElementById('token-modal');
   if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeTokenModal(); });
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTokenModal(); });
+  PageLifecycle.registerListener(document, 'keydown', e => { if (e.key === 'Escape') closeTokenModal(); });
 }
 
 // ============================================

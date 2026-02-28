@@ -35,12 +35,14 @@ export function formatWallet(address, start = 8, end = 4) {
 
 /**
  * Format a timestamp as a relative "time ago" string
- * @param {number} timestamp Unix ms
+ * @param {number|string} timestamp — Unix ms OR ISO 8601 string
  * @returns {string}
  * @example formatTimeAgo(Date.now() - 7200000) // "2h ago"
+ * @example formatTimeAgo("2026-02-28T10:00:00Z") // "3h ago"
  */
 export function formatTimeAgo(timestamp) {
-  const diff = Date.now() - timestamp;
+  const ms = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
+  const diff = Date.now() - ms;
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
