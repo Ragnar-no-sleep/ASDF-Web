@@ -346,9 +346,7 @@ const Settings = {
     this.applyAll();
     this.render();
 
-    if (window.Hub) {
-      window.Hub.showNotification('Settings reset to defaults', 'info');
-    }
+    GameEvents.emit('notify', { msg: 'Settings reset to defaults' });
   },
 
   // ============================================
@@ -672,9 +670,7 @@ const Settings = {
     a.click();
     URL.revokeObjectURL(url);
 
-    if (window.Hub) {
-      window.Hub.showNotification('Data exported successfully', 'success');
-    }
+    GameEvents.emit('notify', { msg: 'Data exported successfully' });
   },
 
   /**
@@ -697,9 +693,7 @@ const Settings = {
 
     keys.forEach(key => localStorage.removeItem(key));
 
-    if (window.Hub) {
-      window.Hub.showNotification('All data cleared', 'info');
-    }
+    GameEvents.emit('notify', { msg: 'All data cleared' });
 
     // Reload page
     setTimeout(() => {

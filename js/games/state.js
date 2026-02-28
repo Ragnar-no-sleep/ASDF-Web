@@ -264,7 +264,7 @@ async function connectWallet() {
   try {
     const provider = getPhantomProvider();
     if (!provider) {
-      if (window.showNotice) { window.showNotice('Please install Phantom wallet to connect: phantom.app'); } else { console.warn('Phantom wallet not detected'); }
+      GameEvents.emit('notify', { msg: 'Please install Phantom wallet to connect: phantom.app' });
       return;
     }
 
@@ -281,7 +281,7 @@ async function connectWallet() {
     if (error.code === 4001) {
       return;
     }
-    if (window.showNotice) { window.showNotice('Failed to connect wallet. Please try again.'); } else { console.warn('Wallet connection failed'); }
+    GameEvents.emit('notify', { msg: 'Failed to connect wallet. Please try again.' });
   }
 }
 

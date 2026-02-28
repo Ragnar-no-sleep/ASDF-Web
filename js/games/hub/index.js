@@ -70,6 +70,13 @@ const Hub = {
     // Listen for hash changes
     window.addEventListener('hashchange', () => this.handleHashChange());
 
+    // Subscribe to GameEvents notifications
+    if (typeof GameEvents !== 'undefined') {
+      GameEvents.on('notify', ({ msg }) => {
+        if (window.showNotice) window.showNotice(msg);
+      });
+    }
+
     this.initialized = true;
     console.log('[Hub] Initialized');
   },
@@ -321,17 +328,6 @@ const Hub = {
     return this.currentView === view;
   },
 
-  /**
-   * Show a notification toast
-   * Delegates to showNotice (loaded via notice.js module)
-   * @param {string} message - Notification message
-   * @param {string} _type - Notification type (reserved for future styling)
-   */
-  showNotification(message, _type = 'info') {
-    if (window.showNotice) {
-      window.showNotice(message);
-    }
-  },
 };
 
 // ============================================

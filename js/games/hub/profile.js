@@ -637,9 +637,7 @@ const Profile = {
     this.renderAvatar();
 
     // Show feedback
-    if (window.Hub) {
-      window.Hub.showNotification('Equipment updated!', 'success');
-    }
+    GameEvents.emit('notify', { msg: 'Equipment updated!' });
   },
 
   /**
@@ -794,9 +792,7 @@ const Profile = {
     localStorage.setItem('asdf_achievements', JSON.stringify(unlocked));
 
     // Show notification
-    if (window.Hub) {
-      window.Hub.showNotification(`Achievement Unlocked: ${achievement.name}!`, 'success');
-    }
+    GameEvents.emit('notify', { msg: `Achievement Unlocked: ${achievement.name}!` });
 
     // Re-render
     this.renderAchievements();

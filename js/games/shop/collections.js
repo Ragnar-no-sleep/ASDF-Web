@@ -344,13 +344,10 @@ const ShopCollections = {
       });
     }
 
-    // Could trigger notification, achievement, etc.
-    if (window.Hub && window.Hub.showNotification) {
-      window.Hub.showNotification(
-        `Collection Complete: ${collection.name}! ${collection.bonus ? 'Bonus unlocked!' : ''}`,
-        'success'
-      );
-    }
+    // Notify collection completion
+    GameEvents.emit('notify', {
+      msg: `Collection Complete: ${collection.name}!${collection.bonus ? ' Bonus unlocked!' : ''}`,
+    });
   },
 };
 
