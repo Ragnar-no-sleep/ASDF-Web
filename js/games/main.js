@@ -86,11 +86,17 @@ function init() {
   updateCountdown();
   renderLeaderboards(); // Load global leaderboard
 
+  // Track page-level intervals via IntervalManager for cleanup
+  const pageTimers = IntervalManager.create();
+
   // Update countdown every second
-  setInterval(updateCountdown, 1000);
+  pageTimers.setInterval(updateCountdown, 1000);
 
   // Update competitive timers every second
-  setInterval(updateAllCompetitiveTimers, 1000);
+  pageTimers.setInterval(updateAllCompetitiveTimers, 1000);
+
+  // Cleanup on page exit
+  window.addEventListener('beforeunload', () => pageTimers.cleanup());
 
   // Reconnect wallet if previously connected
   if (appState.wallet) {

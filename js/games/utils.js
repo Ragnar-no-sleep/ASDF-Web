@@ -493,5 +493,6 @@ const AntiCheat = {
   },
 };
 
-// Periodic cleanup
-setInterval(() => AntiCheat.cleanup(), 5 * 60 * 1000);
+// Periodic cleanup (stored for beforeunload cleanup since IntervalManager loads later)
+const antiCheatTimerId = setInterval(() => AntiCheat.cleanup(), 5 * 60 * 1000);
+window.addEventListener('beforeunload', () => clearInterval(antiCheatTimerId));
