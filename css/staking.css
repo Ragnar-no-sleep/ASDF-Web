@@ -1008,7 +1008,7 @@
 /* ============================================
    MOBILE RESPONSIVE
    ============================================ */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .staking-hero {
     padding: 20px 16px 16px;
   }
@@ -1061,7 +1061,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .staking-stats {
     grid-template-columns: 1fr;
   }
@@ -1325,7 +1325,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .lock-modal {
     max-width: 100%;
     border-radius: 16px;
