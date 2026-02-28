@@ -84,6 +84,16 @@ app.use(express.json({ limit: '10kb' }));
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Validate environment at startup
+if (isProduction && !process.env.NODE_ENV) {
+  console.error('[Server] NODE_ENV not set in production');
+  process.exit(1);
+}
+if (process.env.REDIS_URL && !/^rediss?:\/\//.test(process.env.REDIS_URL)) {
+  console.error('[Server] REDIS_URL format invalid');
+  process.exit(1);
+}
+
 // HTTPS redirect middleware for production
 if (isProduction) {
   app.use((req, res, next) => {
@@ -124,8 +134,7 @@ app.use(
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
         connectSrc: [
           "'self'",
-          'http://localhost:3000',
-          'http://localhost:3001',
+          ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
           'https://asdforecast.onrender.com',
@@ -137,6 +146,8 @@ app.use(
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',
+          'https://alonisthe.dev',
+          'https://lock-verifier.onrender.com',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -150,7 +161,7 @@ app.use(
           'https://*.squarespace-cdn.com',
         ],
         // Upgrade HTTP requests to HTTPS in production
-        upgradeInsecureRequests: isProduction ? [] : null,
+        upgradeInsecureRequests: isProduction ? true : null,
       },
     },
     // HSTS - Strict Transport Security (1 year, include subdomains, preload eligible)
@@ -168,6 +179,15 @@ app.use(
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     noSniff: true,
     xssFilter: true,
+    permissionsPolicy: {
+      features: {
+        geolocation: ["'none'"],
+        camera: ["'none'"],
+        microphone: ["'none'"],
+        usb: ["'none'"],
+        payment: ["'self'"],
+      },
+    },
   })
 );
 
@@ -215,19 +235,27 @@ app.use(
         blockedFiles.includes(fileName) ||
         (blockedExtensions.includes(ext) && !filePath.includes('.well-known'))
       ) {
-        res.status(403);
+        res.status(404);
       }
     },
   })
 );
 
-// Explicit block for sensitive paths (note: /api routes are defined below)
+// Block sensitive paths
 app.use(['/node_modules', '/.git', '/.env'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// Block demo/lab directories in production
+if (isProduction) {
+  app.use(['/demo', '/lab'], (req, res) => {
+    res.status(404).json({ error: 'Not found' });
+  });
+}
+
 // Health check endpoint for UptimeRobot / monitoring
 app.get('/health', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -322,7 +350,7 @@ app.post('/api/redis', async (req, res) => {
     console.error('[Redis API] Error:', error.message);
     res.status(500).json({
       error: 'Redis operation failed',
-      message: error.message
+      ...(isProduction ? {} : { message: error.message }),
     });
   }
 });
@@ -442,7 +470,29 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
+// Global error handler — prevent stack trace leakage
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  console.error('[Server] Unhandled error:', err.message);
+  res.status(status).json({
+    error: isProduction ? 'Internal server error' : err.message,
+  });
+});
+
+const server = app.listen(PORT, () => {
   console.log(`ASDF Web running on port ${PORT}`);
   console.log(`   http://localhost:${PORT}`);
 });
+
+// Graceful shutdown — clean up Redis + close server
+function gracefulShutdown(signal) {
+  console.log(`[Server] ${signal} received, shutting down...`);
+  server.close(() => {
+    console.log('[Server] HTTP server closed');
+    process.exit(0);
+  });
+  // Force exit after 10s if connections hang
+  setTimeout(() => process.exit(1), 10000);
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
