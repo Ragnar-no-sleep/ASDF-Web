@@ -28,8 +28,8 @@ const API_BASE = ASDF_ENDPOINTS.burns;
 // ============================================
 
 function updateConnectionStatus(connected) {
-  var badge = document.querySelector('.hero-badge');
-  var dot = document.querySelector('.hero-badge-dot');
+  const badge = document.querySelector('.hero-badge');
+  const dot = document.querySelector('.hero-badge-dot');
   if (!badge || !dot) return;
 
   if (connected) {

@@ -48,6 +48,8 @@ js/utils/format.js         — formatNumber, formatWallet, formatTimeAgo, format
 js/core/PageLifecycle.js   — Timer/listener cleanup on beforeunload
 js/utils/sound-system.js   — Web Audio API synthesized sounds
 js/utils/audio-feedback.js — AudioFeedback wrapper
+js/utils/notice.js         — showNotice() toast (ES6 export + window global)
+js/utils/fetch-retry.js    — fetchWithRetry() with AbortController + phi backoff
 ```
 
 ## Linked Repositories (sollama58)
@@ -86,8 +88,12 @@ Typography: Inter (body), JetBrains Mono (code)
 | `/games`                 | games.html      | P2 — Full game suite                      |
 | `/privacy`               | privacy.html    | Legal — Privacy policy                    |
 | `/me`                    | me.html         | User profile & settings                   |
-| `/tools`                 | tools.html      | Tools index & discovery                   |
+| `/tools`                 | → redirect `/`  | Tools redirect (integrated into landing)  |
 | `/terrier`               | terrier.html    | CYNIC companion chatbot                   |
+| `/widget`                | widget.html     | Embeddable widget                         |
+| `/asdforecast`           | forecast.html   | Forecast alias (legacy URL)               |
+| `/ecosystem-map`         | ecosystem-map.html | Dev ecosystem dashboard                |
+| `/health`                | — (JSON)        | API health check endpoint                 |
 
 ## Git Workflow (CRITICAL — read before any push)
 
