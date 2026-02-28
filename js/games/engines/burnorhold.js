@@ -498,7 +498,7 @@ const BurnOrHold = {
    */
   resolveAttack(attack) {
     const { defender, power, isPlayer } = attack;
-    let defenderPower = defender.validators;
+    const defenderPower = defender.validators;
 
     // Check for shield power-up
     if (isPlayer === false) {

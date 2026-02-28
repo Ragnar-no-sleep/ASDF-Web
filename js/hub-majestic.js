@@ -201,7 +201,7 @@ import { initInteractions, hapticFeedback, animateCounter } from './utils/intera
     const GLOW_PROGRESSION = [3, 5, 8, 13, 21, 34, 55]; // Fibonacci
 
     // Load progress
-    let clicked = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    const clicked = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
     const unlocked = localStorage.getItem(UNLOCK_KEY) === 'true';
 
     if (unlocked) {

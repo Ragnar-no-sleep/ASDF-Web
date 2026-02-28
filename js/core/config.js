@@ -117,7 +117,7 @@ function deepClone(obj) {
 
   const cloned = {};
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       cloned[key] = deepClone(obj[key]);
     }
   }
@@ -136,7 +136,7 @@ function deepMerge(target, source) {
   const output = deepClone(target);
 
   for (const key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
+    if (Object.hasOwn(source, key)) {
       const sourceValue = source[key];
       const targetValue = output[key];
 

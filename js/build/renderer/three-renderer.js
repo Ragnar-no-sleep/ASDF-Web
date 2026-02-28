@@ -95,7 +95,7 @@ let burnCore = null;
 let fireParticles = null;
 let snowParticles = null;
 let cameraController = null;
-let islands = new Map();
+const islands = new Map();
 
 // Scene management
 let projectTreeScene = null;

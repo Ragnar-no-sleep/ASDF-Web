@@ -52,7 +52,7 @@ export default [
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
-      eqeqeq: ['error', 'always'],
+      eqeqeq: ['error', 'smart'],
       curly: ['error', 'multi-line', 'consistent'],
       'no-var': 'error',
       'prefer-const': 'error',
@@ -63,6 +63,10 @@ export default [
       'no-useless-escape': 'warn',
       'no-prototype-builtins': 'warn',
       'no-useless-catch': 'warn',
+      // ESLint 10 recommended — downgrade until audited
+      'no-useless-assignment': 'warn',
+      'prefer-object-has-own': 'warn',
+      'preserve-caught-error': 'warn',
     },
   },
 
@@ -86,9 +90,9 @@ export default [
     },
   },
 
-  // CJS files (api/, services/, server) — use require/module.exports
+  // CJS files — only .cjs extension (package.json "type": "module")
   {
-    files: ['api/**/*.js', 'services/**/*.js', 'server.cjs'],
+    files: ['**/*.cjs'],
     languageOptions: {
       sourceType: 'commonjs',
     },

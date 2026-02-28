@@ -127,7 +127,7 @@ const SpriteCache = {
 function deepFreeze(obj) {
   if (obj === null || typeof obj !== 'object') return obj;
   Object.keys(obj).forEach(key => {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       deepFreeze(obj[key]);
     }
   });

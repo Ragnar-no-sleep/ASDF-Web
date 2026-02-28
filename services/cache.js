@@ -242,7 +242,7 @@ export class CacheManager {
  * Global cache manager instance
  * Initialize in server startup
  */
-export let cacheManager = new CacheManager({
+export const cacheManager = new CacheManager({
   memoryMaxSize: 100,
   defaultTtl: 3600,
   // Redis config from environment variables
