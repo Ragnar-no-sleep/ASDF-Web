@@ -47,4 +47,7 @@ module.exports = {
 
   // Fail on console errors
   errorOnDeprecated: true,
+
+  // Force exit after all tests (prevents worker leak from audio timers)
+  forceExit: true,
 };

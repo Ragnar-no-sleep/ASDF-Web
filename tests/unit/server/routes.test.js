@@ -8,12 +8,6 @@ const path = require('path');
 // Import app without starting server (require.main !== module)
 const { app } = require('../../../server.cjs');
 
-// Clean up open handles after all tests complete
-afterAll((done) => {
-  // Allow supertest connections to drain
-  done();
-});
-
 // ============================================
 // ROUTE TESTS
 // ============================================
