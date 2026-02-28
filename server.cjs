@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
+const crypto = require('crypto');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
@@ -132,22 +133,19 @@ app.use(
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
+        // connectSrc aligned with js/config/endpoints.js (single source of truth)
         connectSrc: [
           "'self'",
           ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
-          'https://asdforecast.onrender.com',
-          'https://burns.onrender.com',
-          'https://api.asdf-games.com',
-          'https://asdf-web.onrender.com',
-          'https://asdf-api.onrender.com',
-          'https://holdex.onrender.com',
+          'https://alonisthe.dev',              // Proxy: burns, holdex, ignition
+          'https://asdforecast.onrender.com',   // Forecast (direct, not proxied yet)
+          'https://asdf-api.onrender.com',      // Central API gateway
+          'https://lock-verifier.onrender.com', // Staking / TVU (direct)
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',
-          'https://alonisthe.dev',
-          'https://lock-verifier.onrender.com',
         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -317,8 +315,13 @@ app.post('/api/redis', async (req, res) => {
       return res.status(403).json({ error: 'Redis API disabled in production without REDIS_API_KEY' });
     }
     console.warn('[Redis API] No REDIS_API_KEY configured - endpoint unprotected in dev mode');
-  } else if (apiKey !== expectedKey) {
-    return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
+  } else {
+    // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
+    const a = crypto.createHash('sha256').update(String(apiKey || '')).digest();
+    const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
+    if (!crypto.timingSafeEqual(a, b)) {
+      return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
+    }
   }
 
   const client = getRedisClient();
