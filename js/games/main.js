@@ -138,10 +138,6 @@ function init() {
       appState.wallet = null;
       appState.isHolder = false;
       appState.balance = 0;
-      // Clear API auth cache on disconnect
-      if (typeof ApiClient !== 'undefined' && ApiClient.clearAuthCache) {
-        ApiClient.clearAuthCache();
-      }
       saveState();
       updateWalletUI(null);
       updateAccessUI();
@@ -157,10 +153,6 @@ function init() {
         // SECURITY: Reset holder status until verified
         appState.isHolder = false;
         appState.balance = 0;
-        // Clear old auth cache
-        if (typeof ApiClient !== 'undefined' && ApiClient.clearAuthCache) {
-          ApiClient.clearAuthCache();
-        }
         saveState();
         updateWalletUI(newWallet);
         checkTokenBalance(newWallet);
