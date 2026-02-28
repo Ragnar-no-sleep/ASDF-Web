@@ -17,7 +17,7 @@ export default [
       // Separate monorepos — have their own lint configs
       'ecosystem/**',
       // Archived build artifacts
-      'js/_archive_build.js',
+      '_archive/**',
     ],
   },
 
