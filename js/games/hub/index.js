@@ -320,6 +320,18 @@ const Hub = {
   isViewActive(view) {
     return this.currentView === view;
   },
+
+  /**
+   * Show a notification toast
+   * Delegates to showNotice (loaded via notice.js module)
+   * @param {string} message - Notification message
+   * @param {string} _type - Notification type (reserved for future styling)
+   */
+  showNotification(message, _type = 'info') {
+    if (window.showNotice) {
+      window.showNotice(message);
+    }
+  },
 };
 
 // ============================================
