@@ -46,6 +46,7 @@
   --text-3xl: 28px; /* Section titles */
   --text-4xl: 34px; /* Page titles */
   --text-5xl: 55px; /* Hero text */
+  --text-6xl: 89px; /* Display text (Fibonacci: 55 + 34) */
 
   /* Font weights */
   --font-normal: 400;
@@ -70,6 +71,7 @@
      ============================================ */
   --z-base: 1; /* Canvas, base content */
   --z-elevated: 10; /* Cards, elevated surfaces */
+  --z-header: 50; /* Fixed navigation headers */
   --z-sticky: 50; /* Sticky headers, HUDs */
   --z-overlay: 100; /* Panels, drawers */
   --z-modal: 200; /* Modal dialogs */
@@ -81,6 +83,7 @@
      BORDER RADIUS
      ============================================ */
   --radius-none: 0;
+  --radius-xs: 4px; /* Small buttons, compact elements */
   --radius-sm: 6px; /* Buttons, inputs */
   --radius-md: 10px; /* Cards */
   --radius-lg: 16px; /* Modals, large cards */
