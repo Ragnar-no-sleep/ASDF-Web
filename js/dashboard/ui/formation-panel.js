@@ -380,7 +380,7 @@ export const FormationPanel = {
    */
   on(event, callback) {
     const key = `on${event.charAt(0).toUpperCase() + event.slice(1)}`;
-    if (this.callbacks.hasOwnProperty(key)) {
+    if (Object.hasOwn(this.callbacks, key)) {
       this.callbacks[key] = callback;
     }
   },

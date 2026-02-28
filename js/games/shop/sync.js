@@ -123,7 +123,7 @@ const ShopSync = {
         }
         url = endpoint;
       } catch (e) {
-        throw new Error('Invalid endpoint URL');
+        throw new Error('Invalid endpoint URL', { cause: e });
       }
     } else {
       url = `${API_V2}${endpoint}`;

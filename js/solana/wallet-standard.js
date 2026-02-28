@@ -215,7 +215,7 @@ const WalletStandard = {
       return { address, wallet: walletName };
     } catch (error) {
       if (error.message?.includes('User rejected')) {
-        throw new Error('Connection rejected by user');
+        throw new Error('Connection rejected by user', { cause: error });
       }
       throw error;
     }

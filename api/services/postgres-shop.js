@@ -130,7 +130,7 @@ async function getShopCatalog(filters = {}) {
             SELECT * FROM shop_items
             ${whereClause}
             ORDER BY sort_order ASC, tier ASC, name ASC
-            LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+            LIMIT $${paramIndex++} OFFSET $${paramIndex}
         `,
         params
       );

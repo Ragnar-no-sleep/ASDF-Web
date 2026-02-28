@@ -507,7 +507,7 @@ const ShopFilters = {
     const { field, asc } = sortOption;
 
     return [...items].sort((a, b) => {
-      let comparison = 0;
+      let comparison;
 
       switch (field) {
         case 'tier':

@@ -2568,7 +2568,7 @@ function startPumpArena(gameId) {
                             const isCompleted = idx < progress;
                             const isCurrent = idx === progress;
                             const isCollabPhase = idx >= 2; // Q3 & Q4 are collab phases
-                            let statusIcon = '';
+                            let statusIcon;
                             if (isCompleted) statusIcon = '✅';
                             else if (isCurrent) statusIcon = '🔨';
                             else statusIcon = '⏳';

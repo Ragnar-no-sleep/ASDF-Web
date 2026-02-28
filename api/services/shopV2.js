@@ -689,7 +689,7 @@ async function confirmPurchase(purchaseId, signature = null) {
       await db.spendUserCurrency(wallet, price, 'shop_purchase', itemId);
     } catch (error) {
       pendingPurchases.delete(purchaseId);
-      throw new Error('Failed to deduct currency: ' + error.message);
+      throw new Error('Failed to deduct currency: ' + error.message, { cause: error });
     }
   }
 

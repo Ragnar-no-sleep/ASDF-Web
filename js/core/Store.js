@@ -81,7 +81,7 @@ export class Store {
         }
       });
     } catch (error) {
-      throw new Error(`Failed to dispatch action '${action.type}': ${error.message}`);
+      throw new Error(`Failed to dispatch action '${action.type}': ${error.message}`, { cause: error });
     }
   }
 

@@ -433,7 +433,7 @@ async function executeOnEndpoint(endpoint, method, params, timeout) {
     clearTimeout(timeoutId);
 
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout');
+      throw new Error('Request timeout', { cause: error });
     }
 
     throw error;

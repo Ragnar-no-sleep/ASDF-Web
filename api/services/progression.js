@@ -284,7 +284,7 @@ function calculateBaseXP(source, context) {
   const config = PROGRESSION_CONFIG.xpSources;
 
   switch (source) {
-    case 'burn':
+    case 'burn': {
       let burnXP = (context.amount || 0) * config.burn.base;
       // Check bonus thresholds
       for (const threshold of config.burn.bonusThresholds) {
@@ -293,8 +293,9 @@ function calculateBaseXP(source, context) {
         }
       }
       return burnXP;
+    }
 
-    case 'game':
+    case 'game': {
       let gameXP = config.game.completion;
       gameXP += Math.floor((context.score || 0) * config.game.scoreMultiplier);
 
@@ -309,10 +310,12 @@ function calculateBaseXP(source, context) {
       }
 
       return gameXP;
+    }
 
-    case 'achievement':
+    case 'achievement': {
       const rarity = context.rarity || 'common';
       return config.achievement[rarity] || config.achievement.common;
+    }
 
     case 'referral':
       return config.referral.invited;

@@ -64,50 +64,46 @@ const Dashboard = {
       throw new Error('WebGL not supported');
     }
 
-    try {
-      // Initialize UI
-      this.tooltip = Tooltip.init();
-      this.panel = Panel.init(this.container);
-      this.formationPanel = FormationPanel.init(this.container);
-      this.onboarding = Onboarding.init(this.container, {
-        onComplete: () => {},
-      });
+    // Initialize UI
+    this.tooltip = Tooltip.init();
+    this.panel = Panel.init(this.container);
+    this.formationPanel = FormationPanel.init(this.container);
+    this.onboarding = Onboarding.init(this.container, {
+      onComplete: () => {},
+    });
 
-      // Initialize cosmos with error wrapping
-      this.cosmos = Yggdrasil;
-      await ErrorBoundary.wrap(
-        () => this.cosmos.init(this.container),
-        ErrorType.INITIALIZATION_FAILED
-      );
+    // Initialize cosmos with error wrapping
+    this.cosmos = Yggdrasil;
+    await ErrorBoundary.wrap(
+      () => this.cosmos.init(this.container),
+      ErrorType.INITIALIZATION_FAILED
+    );
 
-      // Wire events
-      this.setupCallbacks();
-      this.setupKeyboard();
+    // Wire events
+    this.setupCallbacks();
+    this.setupKeyboard();
 
-      // Track mouse (store handler for cleanup)
-      this._handlers.mousemove = e => {
-        this.lastMouseX = e.clientX;
-        this.lastMouseY = e.clientY;
-        this.tooltip.updatePosition(e.clientX, e.clientY);
-      };
-      this.container.addEventListener('mousemove', this._handlers.mousemove);
+    // Track mouse (store handler for cleanup)
+    this._handlers.mousemove = e => {
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+      this.tooltip.updatePosition(e.clientX, e.clientY);
+    };
+    this.container.addEventListener('mousemove', this._handlers.mousemove);
 
-      this.initialized = true;
+    this.initialized = true;
 
-      // Show onboarding for first-time users
-      this.onboarding.showIfFirstTime();
+    // Show onboarding for first-time users
+    this.onboarding.showIfFirstTime();
 
-      // Emit ready event
-      window.dispatchEvent(
-        new CustomEvent('cosmos:ready', {
-          detail: { dashboard: this },
-        })
-      );
+    // Emit ready event
+    window.dispatchEvent(
+      new CustomEvent('cosmos:ready', {
+        detail: { dashboard: this },
+      })
+    );
 
-      return this;
-    } catch (error) {
-      throw error;
-    }
+    return this;
   },
 
   /**

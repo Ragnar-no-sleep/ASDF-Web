@@ -481,12 +481,14 @@ function coerceType(value, type) {
   switch (type) {
     case 'string':
       return String(value);
-    case 'number':
+    case 'number': {
       const num = Number(value);
       return isNaN(num) ? value : num;
-    case 'integer':
+    }
+    case 'integer': {
       const int = parseInt(value, 10);
       return isNaN(int) ? value : int;
+    }
     case 'boolean':
       if (typeof value === 'string') {
         return value.toLowerCase() === 'true' || value === '1';

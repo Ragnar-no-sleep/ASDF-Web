@@ -182,7 +182,7 @@ export const ProgressClient = {
     // Return cached if available
     if (progressCache) return progressCache;
 
-    let progress = {};
+    let progress;
 
     switch (currentMode) {
       case STORAGE_MODE.API:
@@ -321,7 +321,7 @@ export const ProgressClient = {
   async getUserXP(wallet = null) {
     if (xpCache !== null) return xpCache;
 
-    let xp = 0;
+    let xp;
 
     switch (currentMode) {
       case STORAGE_MODE.API:

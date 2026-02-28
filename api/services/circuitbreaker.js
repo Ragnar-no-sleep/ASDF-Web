@@ -166,11 +166,7 @@ class CircuitBreaker {
       // Try fallback
       if (this.fallback) {
         this.stats.fallbacks++;
-        try {
-          return await this.fallback(error, ...args);
-        } catch (fallbackError) {
-          throw fallbackError;
-        }
+        return await this.fallback(error, ...args);
       }
 
       throw error;

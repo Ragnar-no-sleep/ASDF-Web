@@ -32,7 +32,7 @@ function validateSettingValue(key, value, defaults) {
     case 'boolean':
       return typeof value === 'boolean' ? value : defaultValue;
 
-    case 'number':
+    case 'number': {
       const num = Number(value);
       if (!Number.isFinite(num)) return defaultValue;
       // For volume settings, clamp to 0-1
@@ -40,6 +40,7 @@ function validateSettingValue(key, value, defaults) {
         return Math.max(0, Math.min(1, num));
       }
       return num;
+    }
 
     case 'string':
       if (typeof value !== 'string') return defaultValue;
@@ -376,12 +377,13 @@ const Settings = {
         document.body.classList.toggle('no-animations', !value);
         break;
 
-      case 'particles':
+      case 'particles': {
         const particles = document.querySelector('.valhalla-particles');
         if (particles) {
           particles.style.display = value ? 'block' : 'none';
         }
         break;
+      }
 
       case 'reducedMotion':
         document.body.classList.toggle('reduced-motion', value);

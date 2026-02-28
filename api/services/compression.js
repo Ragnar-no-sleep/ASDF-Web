@@ -205,7 +205,7 @@ function parseAcceptEncoding(header) {
         const enc = encoding.trim().toLowerCase();
         const q = quality ? parseFloat(quality) : 1;
 
-        if (encodings.hasOwnProperty(enc)) {
+        if (Object.hasOwn(encodings, enc)) {
             encodings[enc] = q;
         }
 

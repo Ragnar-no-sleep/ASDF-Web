@@ -89,7 +89,7 @@ for (const version of VERSIONING_CONFIG.supportedVersions) {
  * @returns {string} Detected version
  */
 function detectVersion(req) {
-  let version = null;
+  let version;
 
   // Try header detection
   if (VERSIONING_CONFIG.detection.header) {

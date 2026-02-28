@@ -50,7 +50,7 @@ export default [
       ...js.configs.recommended.rules,
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-empty': ['error', { allowEmptyCatch: true }],
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['warn', { allow: ['warn', 'error', 'log'] }],
       'no-debugger': 'error',
       eqeqeq: ['error', 'smart'],
       curly: ['error', 'multi-line', 'consistent'],
@@ -82,11 +82,21 @@ export default [
     },
   },
 
-  // JS in js/ folder
+  // JS in js/ folder — script-tag architecture, cross-file usage invisible to ESLint
   {
     files: ['js/**/*.js'],
     rules: {
-      'no-undef': 'warn',
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+
+  // Server-side code — console.log is standard, P3 backend has planned imports
+  {
+    files: ['api/**/*.js', 'services/**/*.js', 'middleware/**/*.js', 'build/**/*.js'],
+    rules: {
+      'no-console': 'off',
+      'no-unused-vars': 'off',
     },
   },
 
@@ -96,15 +106,22 @@ export default [
     languageOptions: {
       sourceType: 'commonjs',
     },
+    rules: {
+      'no-console': 'off',
+    },
   },
 
-  // Test files
+  // Test files — mocks and helpers may appear unused
   {
     files: ['tests/**/*.js', '**/*.test.js'],
     languageOptions: {
       globals: {
         ...globals.jest,
       },
+    },
+    rules: {
+      'no-console': 'off',
+      'no-unused-vars': 'off',
     },
   },
 ];

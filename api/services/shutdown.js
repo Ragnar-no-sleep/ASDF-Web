@@ -358,7 +358,7 @@ async function runCleanupHandlers() {
       console.error(`[Shutdown] Cleanup failed: ${handler.name} - ${error.message}`);
 
       if (handler.critical) {
-        throw new Error(`Critical cleanup handler failed: ${handler.name}`);
+        throw new Error(`Critical cleanup handler failed: ${handler.name}`, { cause: error });
       }
     }
   }

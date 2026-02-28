@@ -288,8 +288,8 @@ class BadgeManager {
     const criteria = definition.criteria;
     if (!criteria) return { earned: false, progress: 0 };
 
-    let current = 0;
-    let target = 1;
+    let current;
+    let target;
 
     switch (criteria.type) {
       case 'quest_count':

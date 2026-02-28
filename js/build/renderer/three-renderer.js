@@ -389,7 +389,7 @@ const ThreeRenderer = {
       const posData = positions[index];
 
       // Add vertical variation based on status
-      let yOffset = 0;
+      let yOffset;
       if (project.status === 'live') yOffset = 8;
       else if (project.status === 'building') yOffset = 3;
       else yOffset = -2;

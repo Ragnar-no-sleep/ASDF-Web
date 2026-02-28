@@ -1,3 +1,5 @@
+/* eslint-disable no-console -- debug utility uses all console methods by design */
+
 /**
  * ASDF-Web Debug Utilities
  * Environment-aware logging with module prefixes
