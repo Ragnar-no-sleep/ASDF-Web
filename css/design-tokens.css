@@ -46,6 +46,11 @@
   --text-3xl: 28px; /* Section titles */
   --text-4xl: 34px; /* Page titles */
   --text-5xl: 55px; /* Hero text */
+  --text-6xl: 89px; /* Display text (Fibonacci: 55 + 34) */
+
+  /* Font stacks */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
 
   /* Font weights */
   --font-normal: 400;
@@ -66,10 +71,14 @@
   --tracking-wider: 0.1em;
 
   /* ============================================
-     Z-INDEX LAYERS (10 max, clear hierarchy)
+     Z-INDEX LAYERS
+     Tool pages: use these tokens for modals, toasts, etc.
+     Ecosystem nav/drawer: uses 800-900 range (see ecosystem.css)
+     Console theme: uses 9997-9998 for decorative pointer-events:none overlays
      ============================================ */
   --z-base: 1; /* Canvas, base content */
   --z-elevated: 10; /* Cards, elevated surfaces */
+  --z-header: 50; /* Fixed navigation headers */
   --z-sticky: 50; /* Sticky headers, HUDs */
   --z-overlay: 100; /* Panels, drawers */
   --z-modal: 200; /* Modal dialogs */
@@ -81,6 +90,7 @@
      BORDER RADIUS
      ============================================ */
   --radius-none: 0;
+  --radius-xs: 4px; /* Small buttons, compact elements */
   --radius-sm: 6px; /* Buttons, inputs */
   --radius-md: 10px; /* Cards */
   --radius-lg: 16px; /* Modals, large cards */
@@ -199,12 +209,14 @@
   --modal-width-xl: 1100px;
 
   /* ============================================
-     BREAKPOINTS (for reference in JS)
+     BREAKPOINTS — Standard: 1024 / 768 / 480
+     @media (max-width: 1024px) → tablet
+     @media (max-width: 768px)  → mobile
+     @media (max-width: 480px)  → small mobile
      ============================================ */
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
+  --breakpoint-tablet: 1024px;
+  --breakpoint-mobile: 768px;
+  --breakpoint-small: 480px;
 }
 
 /* ============================================

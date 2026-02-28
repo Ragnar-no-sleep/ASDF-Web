@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const path = require('path');
+const crypto = require('crypto');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
@@ -84,6 +85,16 @@ app.use(express.json({ limit: '10kb' }));
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Validate environment at startup
+if (isProduction && !process.env.NODE_ENV) {
+  console.error('[Server] NODE_ENV not set in production');
+  process.exit(1);
+}
+if (process.env.REDIS_URL && !/^rediss?:\/\//.test(process.env.REDIS_URL)) {
+  console.error('[Server] REDIS_URL format invalid');
+  process.exit(1);
+}
+
 // HTTPS redirect middleware for production
 if (isProduction) {
   app.use((req, res, next) => {
@@ -122,17 +133,16 @@ app.use(
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
+        // connectSrc aligned with js/config/endpoints.js (single source of truth)
         connectSrc: [
           "'self'",
-          'http://localhost:3000',
-          'http://localhost:3001',
+          ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
-          'https://asdforecast.onrender.com',
-          'https://burns.onrender.com',
-          'https://api.asdf-games.com',
-          'https://asdf-web.onrender.com',
-          'https://asdf-api.onrender.com',
+          'https://alonisthe.dev',              // Proxy: burns, holdex, ignition
+          'https://asdforecast.onrender.com',   // Forecast (direct, not proxied yet)
+          'https://asdf-api.onrender.com',      // Central API gateway
+          'https://lock-verifier.onrender.com', // Staking / TVU (direct)
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',
@@ -149,7 +159,7 @@ app.use(
           'https://*.squarespace-cdn.com',
         ],
         // Upgrade HTTP requests to HTTPS in production
-        upgradeInsecureRequests: isProduction ? [] : null,
+        upgradeInsecureRequests: isProduction ? true : null,
       },
     },
     // HSTS - Strict Transport Security (1 year, include subdomains, preload eligible)
@@ -167,8 +177,18 @@ app.use(
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     noSniff: true,
     xssFilter: true,
+    // Note: Helmet 8.x does NOT support permissionsPolicy — set manually below
   })
 );
+
+// Permissions-Policy header (Helmet 8.x dropped built-in support)
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'geolocation=(), camera=(), microphone=(), usb=(), payment=(self)'
+  );
+  next();
+});
 
 // Compression
 app.use(compression());
@@ -204,6 +224,7 @@ app.use(
     maxAge: '1d',
     etag: true,
     index: false, // Don't serve directory listings
+    redirect: false, // Don't redirect /dir → /dir/ (lets route handlers win)
     dotfiles: 'deny', // Block dotfiles
     setHeaders: (res, filePath) => {
       const fileName = path.basename(filePath);
@@ -214,19 +235,27 @@ app.use(
         blockedFiles.includes(fileName) ||
         (blockedExtensions.includes(ext) && !filePath.includes('.well-known'))
       ) {
-        res.status(403);
+        res.status(404);
       }
     },
   })
 );
 
-// Explicit block for sensitive paths (note: /api routes are defined below)
+// Block sensitive paths
 app.use(['/node_modules', '/.git', '/.env'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// Block demo/lab directories in production
+if (isProduction) {
+  app.use(['/demo', '/lab'], (req, res) => {
+    res.status(404).json({ error: 'Not found' });
+  });
+}
+
 // Health check endpoint for UptimeRobot / monitoring
 app.get('/health', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -286,8 +315,13 @@ app.post('/api/redis', async (req, res) => {
       return res.status(403).json({ error: 'Redis API disabled in production without REDIS_API_KEY' });
     }
     console.warn('[Redis API] No REDIS_API_KEY configured - endpoint unprotected in dev mode');
-  } else if (apiKey !== expectedKey) {
-    return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
+  } else {
+    // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
+    const a = crypto.createHash('sha256').update(String(apiKey || '')).digest();
+    const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
+    if (!crypto.timingSafeEqual(a, b)) {
+      return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
+    }
   }
 
   const client = getRedisClient();
@@ -321,7 +355,7 @@ app.post('/api/redis', async (req, res) => {
     console.error('[Redis API] Error:', error.message);
     res.status(500).json({
       error: 'Redis operation failed',
-      message: error.message
+      ...(isProduction ? {} : { message: error.message }),
     });
   }
 });
@@ -396,9 +430,9 @@ app.get('/staking', (req, res) => {
   res.sendFile(path.join(__dirname, 'staking.html'));
 });
 
-// Route /tools to tools.html (Ecosystem Tools Hub)
+// Route /tools — redirect to hub (tools are integrated into landing page)
 app.get('/tools', (req, res) => {
-  res.sendFile(path.join(__dirname, 'tools.html'));
+  res.redirect(301, '/');
 });
 
 // Route /build to build.html (Builder Hub)
@@ -416,6 +450,21 @@ app.get('/deep-learn', (req, res) => {
   res.sendFile(path.join(__dirname, 'deep-learn.html'));
 });
 
+// Route /ecosystem-map — Dev dashboard (not in navbar, accessible by URL)
+app.get('/ecosystem-map', (req, res) => {
+  res.sendFile(path.join(__dirname, 'ecosystem-map.html'));
+});
+
+// Route /me to me.html (User profile & settings)
+app.get('/me', (req, res) => {
+  res.sendFile(path.join(__dirname, 'me.html'));
+});
+
+// Route /terrier to terrier.html (CYNIC companion chatbot)
+app.get('/terrier', (req, res) => {
+  res.sendFile(path.join(__dirname, 'terrier.html'));
+});
+
 // SPA fallback - serve index.html for unknown routes
 app.get('*', (req, res) => {
   // If it's a file request that doesn't exist, 404
@@ -426,7 +475,42 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🔥 ASDF Web running on port ${PORT}`);
-  console.log(`   http://localhost:${PORT}`);
+// Global error handler — prevent stack trace leakage
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  console.error('[Server] Unhandled error:', err.message);
+  res.status(status).json({
+    error: isProduction ? 'Internal server error' : err.message,
+  });
 });
+
+// Start server unless imported for testing
+const server = require.main === module
+  ? app.listen(PORT, () => {
+      console.log(`ASDF Web running on port ${PORT}`);
+      console.log(`   http://localhost:${PORT}`);
+    })
+  : null;
+
+// Export for supertest
+module.exports = { app };
+
+// Graceful shutdown — clean up Redis + close server
+function gracefulShutdown(signal) {
+  console.log(`[Server] ${signal} received, shutting down...`);
+  if (redisClient) {
+    redisClient.quit().catch(() => {});
+  }
+  if (server) {
+    server.close(() => {
+      console.log('[Server] HTTP server closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+  // Force exit after 10s if connections hang
+  setTimeout(() => process.exit(1), 10000);
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

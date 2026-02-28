@@ -10,7 +10,7 @@
 // LEVELS & PROGRESSION
 // ============================================
 
-var JOURNEY_LEVELS = [
+const JOURNEY_LEVELS = [
   { name: 'Moldu', minXp: 0, icon: '&#127793;', color: '#666666' },
   { name: 'Apprentice', minXp: 500, icon: '&#128293;', color: '#ea4e33' },
   { name: 'Builder', minXp: 2000, icon: '&#9874;', color: '#f59e0b' },
@@ -19,7 +19,7 @@ var JOURNEY_LEVELS = [
 ];
 
 function getJourneyLevel(xp) {
-  for (var i = JOURNEY_LEVELS.length - 1; i >= 0; i--) {
+  for (let i = JOURNEY_LEVELS.length - 1; i >= 0; i--) {
     if (xp >= JOURNEY_LEVELS[i].minXp) return JOURNEY_LEVELS[i];
   }
   return JOURNEY_LEVELS[0];
@@ -37,7 +37,7 @@ function getLessonXpReward(lesson) {
 // "The Moldu's First Steps"
 // ============================================
 
-var MODULE_1_FOUNDATIONS = {
+const MODULE_1_FOUNDATIONS = {
   id: 'foundations',
   number: 1,
   title: 'Foundations',
@@ -536,7 +536,7 @@ var MODULE_1_FOUNDATIONS = {
 // FULL DEV CURRICULUM
 // ============================================
 
-var DEV_CURRICULUM = [
+const DEV_CURRICULUM = [
   MODULE_1_FOUNDATIONS,
   // MODULE_2_CORE_CONCEPTS - Coming soon
   // MODULE_3_ANCHOR_PROGRAMS - Coming soon
@@ -563,7 +563,7 @@ function getModuleTotalXp(module) {
 
 // Helper to get all skills in a module
 function getModuleSkills(module) {
-  var skills = [];
+  const skills = [];
   module.skillPacks.forEach(function (pack) {
     pack.lessons.forEach(function (lesson) {
       lesson.skills.forEach(function (skill) {

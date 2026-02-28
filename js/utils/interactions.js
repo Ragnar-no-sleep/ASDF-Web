@@ -270,7 +270,6 @@ function init(config) {
     initGlowHover(config.glowHoverSelector);
   }
 
-  console.log('🎯 ASDF Interactions initialized');
 }
 
 // Auto-init if data attribute present

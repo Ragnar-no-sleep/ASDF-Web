@@ -1,3 +1,4 @@
+#!/bin/sh
 # ASDF-Web Pre-Commit Hook
 # Philosophy: Don't trust. Verify.
 # Sans lint-staged (cause des bugs index.lock sur Windows)

@@ -73,7 +73,7 @@ const { getSummaryMetrics } = require('../services/metrics');
 let heliusEnhanced = null;
 function getHeliusEnhanced() {
   if (!heliusEnhanced) {
-    heliusEnhanced = require('../services/heliusEnhanced');
+    heliusEnhanced = require('../services/helius/enhanced');
   }
   return heliusEnhanced;
 }
@@ -89,7 +89,7 @@ function getTokenMetadata() {
 let heliusMetrics = null;
 function getHeliusMetrics() {
   if (!heliusMetrics) {
-    heliusMetrics = require('../services/heliusMetrics');
+    heliusMetrics = require('../services/helius/middleware/metrics');
   }
   return heliusMetrics;
 }

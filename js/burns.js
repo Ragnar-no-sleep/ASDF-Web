@@ -1,20 +1,47 @@
 /**
  * ASDF Burns Page - JavaScript
- * Fetches burn data from API and updates UI
+ * Fetches burn data from ASDFBurnTracker API and updates UI
+ *
+ * Real endpoints (sollama58/ASDFBurnTracker):
+ *   GET /api/burn   — totalBurned, burnPercentage, circulatingSupply
+ *   GET /api/wallet — tokenPriceUsd, ctoFeesSol, ctoFeesUsd
+ *
+ * Pending (issue #2): burnedToday, uniqueBurners, largestBurn
+ * Pending (issue #3): GET /api/leaderboard
+ * Pending (issue #4): GET /api/burns/recent
  */
 
 'use strict';
 
-// Phase 1 Visceral Feedback - Import modules
-import { interactions } from './utils/interactions.js';
 import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
+import { formatNumber, formatWallet } from './utils/format.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
 
-// Use relative URL in dev (proxied by Vite), full URL in production
-const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
+const API_BASE = ASDF_ENDPOINTS.burns;
 
-// escapeHtml loaded from js/shared/security.js
+// ============================================
+// API CONNECTION STATUS
+// (Adapted from sollama58/ASDFBurnTracker status monitor)
+// ============================================
+
+function updateConnectionStatus(connected) {
+  const badge = document.querySelector('.hero-badge');
+  const dot = document.querySelector('.hero-badge-dot');
+  if (!badge || !dot) return;
+
+  if (connected) {
+    dot.style.background = '#22c55e';
+    dot.style.boxShadow = '0 0 8px rgba(34, 197, 94, 0.6)';
+    badge.setAttribute('title', 'API connected');
+  } else {
+    dot.style.background = '#ef4444';
+    dot.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+    badge.setAttribute('title', 'API unreachable');
+  }
+}
 
 // ============================================
 // DATA FETCHING
@@ -22,80 +49,39 @@ const API_BASE = isDev ? '/api' : 'https://asdf-api.onrender.com/api';
 
 async function fetchBurnStats() {
   try {
-    const response = await fetch(`${API_BASE}/ecosystem/burns`);
-    if (!response.ok) throw new Error('Failed to fetch stats');
+    const response = await fetchWithRetry(`${API_BASE}/api/burn`, { retries: 3 });
+    const data = await response.json();
+    updateConnectionStatus(true);
+    return {
+      totalBurned: data.burnedAmount ?? 0,
+      burnPercentage: data.burnedPercent ?? 0,
+      circulatingSupply: data.currentSupply ?? 0,
+      uniqueBurners: data.uniqueBurners ?? null,
+      burnedToday: data.burnedToday ?? null,
+      largestBurn: data.largestBurn ?? null,
+    };
+  } catch (error) {
+    console.error('[Burns] Error fetching burn stats:', error);
+    updateConnectionStatus(false);
+    return null;
+  }
+}
+
+async function fetchWalletStats() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE}/api/wallet`, { retries: 3 });
+    updateConnectionStatus(true);
     return await response.json();
   } catch (error) {
-    console.error('[Burns] Error fetching stats:', error);
-    // Return mock data for display
-    return {
-      totalBurned: 7393300,
-      burnPercentage: 0.74,
-      circulatingSupply: 992606700,
-      uniqueBurners: 23,
-      burnedToday: 12500,
-      largestBurn: 3046567,
-    };
-  }
-}
-
-async function fetchLeaderboard(period = 'all') {
-  try {
-    const endpoint =
-      period === 'all'
-        ? `${API_BASE}/leaderboard/burns`
-        : `${API_BASE}/scores/leaderboard/${period}/burns`;
-
-    const response = await fetch(endpoint);
-    if (!response.ok) throw new Error('Failed to fetch leaderboard');
-    const data = await response.json();
-    return { leaderboard: data.leaderboard || data.topBurners || data };
-  } catch (error) {
-    console.error('[Burns] Error fetching leaderboard:', error);
-    return { leaderboard: [] };
-  }
-}
-
-async function fetchRecentBurns() {
-  try {
-    const response = await fetch(`${API_BASE}/ecosystem/burns?recent=true`);
-    if (!response.ok) throw new Error('Failed to fetch recent burns');
-    const data = await response.json();
-    return { burns: data.recentBurns || [] };
-  } catch (error) {
-    console.error('[Burns] Error fetching recent burns:', error);
-    return { burns: [] };
+    console.error('[Burns] Error fetching wallet stats:', error);
+    updateConnectionStatus(false);
+    return null;
   }
 }
 
 // ============================================
 // UI UPDATES
 // ============================================
-
-function formatNumber(num) {
-  if (num >= 1_000_000_000) {
-    return (num / 1_000_000_000).toFixed(2) + 'B';
-  } else if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(2) + 'M';
-  } else if (num >= 1_000) {
-    return (num / 1_000).toFixed(2) + 'K';
-  }
-  return num.toLocaleString();
-}
-
-function formatWallet(wallet) {
-  if (!wallet || wallet.length < 8) return wallet || '---';
-  return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-}
-
-function formatTimeAgo(timestamp) {
-  const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
-
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
-}
 
 function animateCounter(element, target, duration = 2000) {
   const start = 0;
@@ -115,7 +101,7 @@ function animateCounter(element, target, duration = 2000) {
       current = target;
       clearInterval(timer);
     }
-    element.textContent = formatNumber(Math.floor(current));
+    element.textContent = formatNumber(Math.floor(current), 2);
   }, 16);
 }
 
@@ -123,10 +109,13 @@ async function updateStats() {
   const stats = await fetchBurnStats();
   if (!stats) {
     AudioFeedback.play('error');
+    ['burns-today', 'total-burners', 'remaining-supply', 'biggest-burn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '\u2014';
+    });
     return;
   }
 
-  // Success chime on data load
   AudioFeedback.play('success');
 
   // Total burned
@@ -143,59 +132,71 @@ async function updateStats() {
     if (percentageEl) percentageEl.textContent = `${stats.burnPercentage.toFixed(2)}%`;
   }
 
-  // Burns today
+  // Burned today — not yet in backend (issue #2)
   const burnsTodayEl = document.getElementById('burns-today');
-  if (burnsTodayEl && stats.burnedToday !== undefined) {
-    burnsTodayEl.textContent = formatNumber(stats.burnedToday);
+  if (burnsTodayEl) {
+    burnsTodayEl.textContent =
+      stats.burnedToday !== null ? formatNumber(stats.burnedToday, 2) : '\u2014';
   }
 
-  // Total burners
+  // Unique burners — not yet in backend (issue #2)
   const totalBurnersEl = document.getElementById('total-burners');
-  if (totalBurnersEl && stats.uniqueBurners !== undefined) {
-    totalBurnersEl.textContent = stats.uniqueBurners.toLocaleString();
+  if (totalBurnersEl) {
+    totalBurnersEl.textContent =
+      stats.uniqueBurners !== null ? stats.uniqueBurners.toLocaleString() : '\u2014';
   }
 
-  // Remaining supply
+  // Circulating supply
   const remainingEl = document.getElementById('remaining-supply');
-  if (remainingEl && stats.circulatingSupply !== undefined) {
-    remainingEl.textContent = formatNumber(stats.circulatingSupply);
+  if (remainingEl) {
+    remainingEl.textContent = stats.circulatingSupply
+      ? formatNumber(stats.circulatingSupply, 2)
+      : '\u2014';
   }
 
-  // Biggest burn
+  // Largest burn — not yet in backend (issue #2)
   const biggestEl = document.getElementById('biggest-burn');
-  if (biggestEl && stats.largestBurn !== undefined) {
-    biggestEl.textContent = formatNumber(stats.largestBurn);
+  if (biggestEl) {
+    biggestEl.textContent =
+      stats.largestBurn !== null ? formatNumber(stats.largestBurn, 2) : '\u2014';
   }
 }
 
-async function updateLeaderboard(period = 'all') {
-  const data = await fetchLeaderboard(period);
-  if (!data || !data.leaderboard) return;
+async function updateWalletStats() {
+  const data = await fetchWalletStats();
+  if (!data || !data.tokenPriceUsd) return;
 
-  const leaderboard = data.leaderboard;
+  // Enrich hero badge title with live price
+  const badge = document.querySelector('.hero-badge');
+  if (badge) badge.setAttribute('title', `API connected \u00b7 $${data.tokenPriceUsd}`);
+}
 
-  // Update podium
-  updatePodiumPlace(1, leaderboard[0]);
-  updatePodiumPlace(2, leaderboard[1]);
-  updatePodiumPlace(3, leaderboard[2]);
+function showLeaderboardPending() {
+  // Leaderboard endpoint not yet available — sollama58/ASDFBurnTracker issue #3
+  updatePodiumPlace(1, null);
+  updatePodiumPlace(2, null);
+  updatePodiumPlace(3, null);
 
-  // Update table
   const tableBody = document.getElementById('leaderboard-body');
-  if (!tableBody) return;
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <div class="feed-empty">
+        <span>Leaderboard endpoint in progress</span>
+      </div>
+    `;
+  }
+}
 
-  tableBody.innerHTML = leaderboard
-    .slice(3)
-    .map(
-      (entry, index) => `
-        <div class="table-row">
-            <span class="col-rank">#${index + 4}</span>
-            <span class="col-wallet">${escapeHtml(formatWallet(entry.wallet))}</span>
-            <span class="col-burned">${escapeHtml(formatNumber(entry.totalBurned))} ASDF</span>
-            <span class="col-count">${escapeHtml(String(entry.burnCount || '-'))}</span>
-        </div>
-    `
-    )
-    .join('');
+function showFeedPending() {
+  // Recent burns endpoint not yet available — sollama58/ASDFBurnTracker issue #4
+  const feedEl = document.getElementById('burns-feed');
+  if (feedEl) {
+    feedEl.innerHTML = `
+      <div class="feed-empty">
+        <span>Recent burns endpoint in progress</span>
+      </div>
+    `;
+  }
 }
 
 function updatePodiumPlace(place, data) {
@@ -206,44 +207,12 @@ function updatePodiumPlace(place, data) {
   const amountEl = el.querySelector('.place-amount');
 
   if (data) {
-    if (walletEl) walletEl.textContent = formatWallet(data.wallet);
-    if (amountEl) amountEl.textContent = `${formatNumber(data.totalBurned)} ASDF`;
+    if (walletEl) walletEl.textContent = formatWallet(data.wallet, 4, 4);
+    if (amountEl) amountEl.textContent = `${formatNumber(data.totalBurned, 2)} ASDF`;
   } else {
     if (walletEl) walletEl.textContent = '---';
-    if (amountEl) amountEl.textContent = '0 ASDF';
+    if (amountEl) amountEl.textContent = '\u2014';
   }
-}
-
-async function updateRecentBurns() {
-  const data = await fetchRecentBurns();
-  if (!data || !data.burns) return;
-
-  const feedEl = document.getElementById('burns-feed');
-  if (!feedEl) return;
-
-  if (data.burns.length === 0) {
-    feedEl.innerHTML = `
-            <div class="feed-empty">
-                <span>No recent burns</span>
-            </div>
-        `;
-    return;
-  }
-
-  feedEl.innerHTML = data.burns
-    .map(
-      burn => `
-        <div class="feed-item">
-            <div class="feed-icon">&#128293;</div>
-            <div class="feed-content">
-                <div class="feed-wallet">${escapeHtml(formatWallet(burn.wallet))}</div>
-                <div class="feed-time">${escapeHtml(formatTimeAgo(burn.timestamp))}</div>
-            </div>
-            <div class="feed-amount">${escapeHtml(formatNumber(burn.amount))} ASDF</div>
-        </div>
-    `
-    )
-    .join('');
 }
 
 // ============================================
@@ -254,17 +223,10 @@ function setupTabListeners() {
   const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(tab => {
     tab.addEventListener('click', e => {
-      // Visceral feedback: click sound + ripple
       AudioFeedback.play('click');
-      interactions.ripple(tab, e);
-
-      // Update active state
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
-      // Fetch new data
-      const period = tab.dataset.period;
-      updateLeaderboard(period);
+      // Leaderboard endpoint pending (issue #3) — no-op for now
     });
   });
 }
@@ -273,34 +235,27 @@ function setupTabListeners() {
 // VISCERAL FEEDBACK SETUP
 // ============================================
 
-function setupViscernalFeedback() {
-  // Initialize audio system
+function setupVisceralFeedback() {
   AudioFeedback.init();
 
-  // Add hover effects to stat cards
   const statCards = document.querySelectorAll('.stat-card');
   statCards.forEach(card => {
     card.addEventListener('mouseenter', () => {
       AudioFeedback.play('hover');
-      interactions.glow(card);
     });
   });
 
-  // Add click effects to CTA button
   const ctaBtn = document.querySelector('.cta-btn');
   if (ctaBtn) {
     ctaBtn.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(ctaBtn, e);
     });
   }
 
-  // Add ripple to podium places on click
   const podiumPlaces = document.querySelectorAll('.podium-place');
   podiumPlaces.forEach(place => {
     place.addEventListener('click', e => {
       AudioFeedback.play('click');
-      interactions.ripple(place, e);
     });
   });
 }
@@ -310,22 +265,15 @@ function setupViscernalFeedback() {
 // ============================================
 
 async function init() {
-  console.log('[Burns] Initializing...');
-
-  // Setup event listeners
   setupTabListeners();
+  setupVisceralFeedback();
+  showLeaderboardPending();
+  showFeedPending();
 
-  // Setup visceral feedback
-  setupViscernalFeedback();
+  await Promise.all([updateStats(), updateWalletStats()]);
 
-  // Load initial data
-  await Promise.all([updateStats(), updateLeaderboard('all'), updateRecentBurns()]);
-
-  // Refresh data periodically
-  setInterval(updateStats, 30000);
-  setInterval(updateRecentBurns, 15000);
-
-  console.log('[Burns] Initialized');
+  PageLifecycle.registerTimer('burns-stats', setInterval(updateStats, 30000));
+  PageLifecycle.registerTimer('burns-wallet', setInterval(updateWalletStats, 60000));
 }
 
 // Start when DOM is ready

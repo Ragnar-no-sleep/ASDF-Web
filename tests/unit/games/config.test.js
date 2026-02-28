@@ -10,22 +10,21 @@
 // ============================================
 
 /**
- * Environment detection
+ * Environment detection — factory variant for testing
+ * (avoids window.location mocking complexity in jsdom)
  */
-const Environment = {
-  isDev: () => window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-  isProd: () =>
-    window.location.hostname === 'alonisthe.dev' ||
-    window.location.hostname === 'www.alonisthe.dev',
-  isTest: () =>
-    window.location.hostname.includes('test') || window.location.hostname.includes('staging'),
-
-  getMode() {
-    if (this.isProd()) return 'production';
-    if (this.isTest()) return 'staging';
-    return 'development';
-  },
-};
+function makeEnv(hostname) {
+  return {
+    isDev: () => hostname === 'localhost' || hostname === '127.0.0.1',
+    isProd: () => hostname === 'alonisthe.dev' || hostname === 'www.alonisthe.dev',
+    isTest: () => hostname.includes('test') || hostname.includes('staging'),
+    getMode() {
+      if (this.isProd()) return 'production';
+      if (this.isTest()) return 'staging';
+      return 'development';
+    },
+  };
+}
 
 /**
  * Default configuration
@@ -170,91 +169,61 @@ describe('Games Config Module', () => {
   // ENVIRONMENT DETECTION
   // ============================================
   describe('Environment', () => {
-    const originalLocation = window.location;
-
-    afterEach(() => {
-      // Restore original location
-      delete window.location;
-      window.location = originalLocation;
-    });
+    // No window.location mocking — factory function takes hostname directly
 
     describe('isDev()', () => {
       it('should return true for localhost', () => {
-        delete window.location;
-        window.location = { hostname: 'localhost' };
-        expect(Environment.isDev()).toBe(true);
+        expect(makeEnv('localhost').isDev()).toBe(true);
       });
 
       it('should return true for 127.0.0.1', () => {
-        delete window.location;
-        window.location = { hostname: '127.0.0.1' };
-        expect(Environment.isDev()).toBe(true);
+        expect(makeEnv('127.0.0.1').isDev()).toBe(true);
       });
 
       it('should return false for production domain', () => {
-        delete window.location;
-        window.location = { hostname: 'alonisthe.dev' };
-        expect(Environment.isDev()).toBe(false);
+        expect(makeEnv('alonisthe.dev').isDev()).toBe(false);
       });
     });
 
     describe('isProd()', () => {
       it('should return true for alonisthe.dev', () => {
-        delete window.location;
-        window.location = { hostname: 'alonisthe.dev' };
-        expect(Environment.isProd()).toBe(true);
+        expect(makeEnv('alonisthe.dev').isProd()).toBe(true);
       });
 
       it('should return true for www.alonisthe.dev', () => {
-        delete window.location;
-        window.location = { hostname: 'www.alonisthe.dev' };
-        expect(Environment.isProd()).toBe(true);
+        expect(makeEnv('www.alonisthe.dev').isProd()).toBe(true);
       });
 
       it('should return false for localhost', () => {
-        delete window.location;
-        window.location = { hostname: 'localhost' };
-        expect(Environment.isProd()).toBe(false);
+        expect(makeEnv('localhost').isProd()).toBe(false);
       });
     });
 
     describe('isTest()', () => {
       it('should return true for test subdomain', () => {
-        delete window.location;
-        window.location = { hostname: 'test.alonisthe.dev' };
-        expect(Environment.isTest()).toBe(true);
+        expect(makeEnv('test.alonisthe.dev').isTest()).toBe(true);
       });
 
       it('should return true for staging subdomain', () => {
-        delete window.location;
-        window.location = { hostname: 'staging.alonisthe.dev' };
-        expect(Environment.isTest()).toBe(true);
+        expect(makeEnv('staging.alonisthe.dev').isTest()).toBe(true);
       });
 
       it('should return false for production', () => {
-        delete window.location;
-        window.location = { hostname: 'alonisthe.dev' };
-        expect(Environment.isTest()).toBe(false);
+        expect(makeEnv('alonisthe.dev').isTest()).toBe(false);
       });
     });
 
     describe('getMode()', () => {
       it('should return production for prod domain', () => {
-        delete window.location;
-        window.location = { hostname: 'alonisthe.dev' };
-        expect(Environment.getMode()).toBe('production');
+        expect(makeEnv('alonisthe.dev').getMode()).toBe('production');
       });
 
       it('should return staging for test domain', () => {
-        delete window.location;
-        window.location = { hostname: 'test.example.com' };
-        expect(Environment.getMode()).toBe('staging');
+        expect(makeEnv('test.example.com').getMode()).toBe('staging');
       });
 
       it('should return development for localhost', () => {
-        delete window.location;
-        window.location = { hostname: 'localhost' };
-        expect(Environment.getMode()).toBe('development');
+        expect(makeEnv('localhost').getMode()).toBe('development');
       });
     });
   });

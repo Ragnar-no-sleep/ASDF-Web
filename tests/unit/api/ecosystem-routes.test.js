@@ -79,9 +79,12 @@ describe('Ecosystem Routes', () => {
         wallet: `wallet${i}`,
         amount: 1000 - i * 10,
       }));
-      mockGetTopBurners.mockReturnValue(mockData);
+      // Mock implements pagination so the route can trust the service
+      mockGetTopBurners.mockImplementation((offset, limit) =>
+        mockData.slice(offset, offset + limit)
+      );
 
-      const res = await makeRequest(app, '/api/leaderboard/burns?offset=10&limit=5');
+      const res = await makeRequest(app, '/api/leaderboard/burns?offset=10&limit=20');
 
       expect(res.statusCode).toBe(200);
       expect(res.body.entries).toHaveLength(20);

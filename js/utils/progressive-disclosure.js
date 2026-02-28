@@ -148,7 +148,6 @@ class ProgressiveDisclosure {
     // Check for new reveals
     this.checkReveals();
 
-    console.log('🔓 Progressive disclosure initialized');
   }
 
   /**
@@ -244,8 +243,6 @@ class ProgressiveDisclosure {
     this.unlockedFeatures.push(feature.id);
     this.saveProgress();
 
-    console.log(`🔓 Feature unlocked: ${feature.name}`);
-
     // Show unlock notification
     this.showUnlockNotification(feature);
 
@@ -306,8 +303,6 @@ class ProgressiveDisclosure {
   showTip(tip) {
     this.shownTips.push(tip.id);
     this.saveProgress();
-
-    console.log(`💡 Pro tip shown: ${tip.message}`);
 
     const toast = document.createElement('div');
     toast.className = 'disclosure-tip-toast';

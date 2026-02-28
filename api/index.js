@@ -32,12 +32,12 @@ const rateLimit = require('express-rate-limit');
 
 // Services
 const {
-  generateChallenge,
-  verifyAndAuthenticate,
-  refreshToken,
-  revokeToken,
-  authMiddleware,
-  optionalAuthMiddleware,
+  _generateChallenge,
+  _verifyAndAuthenticate,
+  _refreshToken,
+  _revokeToken,
+  _authMiddleware,
+  _optionalAuthMiddleware,
 } = require('./services/auth');
 const {
   getTokenBalance,
@@ -305,7 +305,7 @@ const {
   checkAllEndpointsHealth,
   getStats: getRpcStats,
   ENDPOINT_TYPES: _ENDPOINT_TYPES,
-} = require('./services/rpcFailover');
+} = require('./services/helius/middleware/failover');
 const {
   trackTransaction,
   getTransactionStatus,
@@ -714,6 +714,10 @@ function walletRateLimiter(req, res, next) {
 
   let walletData = walletRateLimits.get(wallet);
   if (!walletData || now - walletData.windowStart > WALLET_RATE_CONFIG.windowMs) {
+    // Window expired or new wallet - delete old entry and reset
+    if (walletData) {
+      walletRateLimits.delete(wallet);
+    }
     walletData = { windowStart: now, count: 0 };
   }
 

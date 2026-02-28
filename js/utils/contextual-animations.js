@@ -311,10 +311,14 @@ export function showSuccessAnimation(message, options = {}) {
   // Create message card
   const card = document.createElement('div');
   card.className = 'success-card';
-  card.innerHTML = `
-    <div style="font-size: 64px; margin-bottom: 16px;">✓</div>
-    <div style="font-size: 24px; font-weight: 600; color: #22c55e;">${message}</div>
-  `;
+  const checkDiv = document.createElement('div');
+  checkDiv.style.cssText = 'font-size: 64px; margin-bottom: 16px;';
+  checkDiv.textContent = '\u2713';
+  const msgDiv = document.createElement('div');
+  msgDiv.style.cssText = 'font-size: 24px; font-weight: 600; color: #22c55e;';
+  msgDiv.textContent = message;
+  card.appendChild(checkDiv);
+  card.appendChild(msgDiv);
   card.style.cssText = `
     background: rgba(10, 15, 25, 0.95);
     border: 2px solid #22c55e;
@@ -354,10 +358,14 @@ export function showErrorAnimation(message, options = {}) {
   // Create toast
   const toast = document.createElement('div');
   toast.className = 'error-toast';
-  toast.innerHTML = `
-    <div style="font-size: 24px; margin-right: 12px;">⚠️</div>
-    <div style="font-size: 16px;">${message}</div>
-  `;
+  const warnIcon = document.createElement('div');
+  warnIcon.style.cssText = 'font-size: 24px; margin-right: 12px;';
+  warnIcon.textContent = '\u26A0\uFE0F';
+  const msgEl = document.createElement('div');
+  msgEl.style.cssText = 'font-size: 16px;';
+  msgEl.textContent = message;
+  toast.appendChild(warnIcon);
+  toast.appendChild(msgEl);
   toast.style.cssText = `
     position: fixed;
     top: 24px;

@@ -16,7 +16,7 @@ if (typeof window.escapeHtml !== 'function') {
    */
   window.escapeHtml = function escapeHtml(text) {
     if (typeof text !== 'string') return String(text ?? '');
-    var map = {
+    const map = {
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',

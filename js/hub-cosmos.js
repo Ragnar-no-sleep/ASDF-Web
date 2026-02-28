@@ -17,14 +17,14 @@
   'use strict';
 
   function applyStage(stage) {
-    var hub = document.querySelector('.hub');
+    const hub = document.querySelector('.hub');
     if (!hub) return;
     hub.dataset.stage = stage || 'void';
   }
 
   function syncFromEngine() {
     if (!window.AchievementEngine) return;
-    var progress = AchievementEngine.getProgress();
+    const progress = AchievementEngine.getProgress();
     applyStage(progress.stage);
   }
 

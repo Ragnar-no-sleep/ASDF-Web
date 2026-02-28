@@ -1,32 +1,117 @@
 /**
- * ASDF Staking - Streamflow Token Lock Dashboard
- * Fetches lock data from Streamflow SDK and displays lock browser + timeline
+ * ASDF Staking - Token Lock Dashboard
+ * Fetches live data from sollama58/TokenVotingUtil (lock-verifier.onrender.com)
+ *
+ * Tier 1: Real API, lock detail modal, mine filter, sort, localStorage cache
+ *
+ * TVU API actual format (empirically verified 2026-02-27):
+ *   GET /api/locks → { summary, locks[] }
+ *   lock fields: id, contractName, sender, recipient, totalAmount,
+ *     withdrawn, unlocked, locked, startDate (ISO), endDate (ISO),
+ *     status (pending|vesting|fully_unlocked|cancelled),
+ *     unlockSchedule: [{ date (ISO), amount, cumulative }]
+ *   amounts: already in display units (NO decimals divide needed)
  */
 
 'use strict';
 
-// Phase 1 Visceral Feedback - Import modules
-import { interactions } from './utils/interactions.js';
-import { contextualAnimations } from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
-
-// ASDF token mint on Solana
-const ASDF_MINT = '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump';
-
-// Streamflow program ID (mainnet)
-const STREAMFLOW_PROGRAM_ID = 'strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m';
-
-// State
-let locks = [];
-let activeFilter = 'all';
-let walletConnected = false;
+import { formatNumber, formatWallet } from './utils/format.js';
+import { ASDF_ENDPOINTS } from './config/endpoints.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
+import { esc } from './utils/escape.js';
 
 // ============================================
-// DOM REFERENCES
+// CONSTANTS
+// ============================================
+
+const CACHE_KEY = 'asdf_locks_v2';
+const CACHE_TTL = 10 * 60 * 1000; // 10 min
+
+// TVU status → ASDF display status
+const STATUS_MAP = {
+  vesting: 'active',
+  fully_unlocked: 'completed',
+  pending: 'pending',     // future lock, not yet started
+  cancelled: 'cancelled',
+};
+
+// ============================================
+// STATE
+// ============================================
+
+let locks = [];
+let activeFilter = 'all';
+let activeSort = 'default';
+let walletConnected = false;
+let connectedPubkey = null;
+
+// ============================================
+// DOM HELPERS
 // ============================================
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => document.querySelectorAll(sel);
+
+// ============================================
+// CACHE (localStorage, 10 min TTL)
+// ============================================
+
+function getCachedData() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY); return null; }
+    return data;
+  } catch { return null; }
+}
+
+function setCachedData(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch {}
+}
+
+// ============================================
+// DATA NORMALIZATION (TVU actual fields → ASDF)
+// ============================================
+
+function normalizeLock(raw) {
+  // Amounts come pre-formatted from TVU (no decimals divide needed)
+  const amount = raw.totalAmount || raw.amount || 0;
+  const unlocked = raw.unlocked != null ? raw.unlocked : (raw.withdrawn || 0);
+
+  // Derive nextUnlock from unlockSchedule (first future entry)
+  let nextUnlock = null;
+  let nextUnlockAmount = 0;
+  if (Array.isArray(raw.unlockSchedule) && raw.unlockSchedule.length > 0) {
+    const now = Date.now();
+    const next = raw.unlockSchedule.find(e => new Date(e.date).getTime() > now);
+    if (next) {
+      nextUnlock = new Date(next.date);
+      nextUnlockAmount = next.amount;
+    }
+  }
+
+  return {
+    id: raw.id || '',
+    title: raw.contractName || raw.name || raw.title || 'Unnamed Lock',
+    wallet: raw.recipient || raw.wallet || '',
+    sender: raw.sender || '',
+    amount,
+    deposited: amount,
+    unlocked,
+    status: STATUS_MAP[raw.status] || raw.status || 'active',
+    startDate: raw.startDate ? new Date(raw.startDate) : null,
+    endDate: raw.endDate ? new Date(raw.endDate) : null,
+    nextUnlock,
+    nextUnlockAmount,
+    period: raw.period || 0,
+    unlockSchedule: raw.unlockSchedule || [],
+  };
+}
 
 // ============================================
 // WALLET CONNECTION
@@ -35,6 +120,7 @@ const $$ = sel => document.querySelectorAll(sel);
 async function connectWallet() {
   try {
     if (!window.solana || !window.solana.isPhantom) {
+      window.showNotice('Wallet required — install Phantom to use Staking');
       window.open('https://phantom.app/', '_blank');
       AudioFeedback.play('warning');
       return;
@@ -42,26 +128,24 @@ async function connectWallet() {
 
     const resp = await window.solana.connect();
     walletConnected = true;
+    connectedPubkey = resp.publicKey.toString();
 
-    // Visceral feedback: success chime + confetti
     AudioFeedback.play('success');
+
     const btn = $('#connect-wallet');
     if (btn) {
-      contextualAnimations.successConfetti(btn);
-    }
-
-    const pubkey = resp.publicKey.toString();
-    if (btn) {
-      btn.textContent = pubkey.slice(0, 4) + '...' + pubkey.slice(-4);
+      btn.textContent = connectedPubkey.slice(0, 4) + '...' + connectedPubkey.slice(-4);
       btn.disabled = true;
     }
 
-    // Hide CTA
+    // Reveal "Mine" filter
+    const mineFilter = $('#filter-mine');
+    if (mineFilter) mineFilter.style.display = '';
+
     const cta = $('#staking-cta');
     if (cta) cta.style.display = 'none';
 
-    // Reload with wallet context
-    await fetchLocks();
+    renderLocks();
   } catch (err) {
     console.error('[Staking] Wallet connect failed:', err);
     AudioFeedback.play('error');
@@ -72,100 +156,100 @@ async function connectWallet() {
 // DATA FETCHING
 // ============================================
 
+function showApiNotice(msg) {
+  const existing = $('.staking-api-notice');
+  if (existing) existing.remove();
+  const notice = document.createElement('div');
+  notice.className = 'staking-api-notice';
+  notice.textContent = msg;
+  const browser = $('.staking-browser');
+  if (browser) browser.insertAdjacentElement('afterbegin', notice);
+}
+
 async function fetchLocks() {
-  try {
-    // For now, display demo data structure
-    // Real integration will use Streamflow JS SDK:
-    // import { StreamflowSolana } from '@streamflow/stream'
-    // const client = new StreamflowSolana.SolanaStreamClient('mainnet-beta')
-    // const streams = await client.get({ mint: ASDF_MINT })
+  const locksList = $('#locks-list');
+  if (locksList) {
+    locksList.innerHTML =
+      '<div class="staking-loading"><div class="staking-spinner"></div><span>Loading locks&hellip;</span></div>';
+  }
 
-    locks = getDemoLocks();
-
-    // Visceral feedback: success chime on data load
+  const cached = getCachedData();
+  if (cached) {
+    locks = cached;
     AudioFeedback.play('success');
+    renderLocks();
+    renderTimeline();
+    updateStats();
+    return;
+  }
 
+  try {
+    const res = await fetchWithRetry(ASDF_ENDPOINTS.staking + '/api/locks');
+    const json = await res.json();
+    // TVU response: { summary, locks } — no data wrapper
+    const rawLocks = json.locks || (json.data && json.data.locks) || [];
+    locks = rawLocks.map(normalizeLock);
+    setCachedData(locks);
+    AudioFeedback.play('success');
     renderLocks();
     renderTimeline();
     updateStats();
   } catch (err) {
-    console.error('[Staking] Failed to fetch locks:', err);
+    console.error('[Staking] API unavailable, using demo data:', err);
     AudioFeedback.play('error');
-
-    const locksList = $('#locks-list');
-    if (locksList) {
-      locksList.innerHTML =
-        '<div class="staking-loading"><span>Failed to load lock data</span></div>';
-    }
+    locks = getDemoLocks();
+    renderLocks();
+    renderTimeline();
+    updateStats();
+    showApiNotice('Showing demo data \u2014 live API temporarily unavailable');
   }
 }
+
+// ============================================
+// DEMO FALLBACK DATA (matches normalizeLock output shape)
+// ============================================
 
 function getDemoLocks() {
   return [
     {
-      id: 'lock-001',
+      id: 'demo-001',
       title: 'Team Vesting',
-      wallet: 'Bx7d...kP4r',
-      amount: 50000000,
-      deposited: 50000000,
-      unlocked: 28750000,
+      wallet: 'FcTcbGqcTpXqcHZptzp7XmKN2LvhPgBMMuLbGiFe16nG',
+      sender: 'DF2DBPBnnTbkEgqWtRcEzT4ECMVFWwpQ63pz9Y8XDoJM',
+      amount: 10000000, deposited: 10000000, unlocked: 0,
       status: 'active',
-      startDate: new Date('2025-06-01'),
-      endDate: new Date('2027-06-01'),
-      nextUnlock: new Date('2026-03-01'),
-      nextUnlockAmount: 2083333,
+      startDate: new Date('2026-01-14'), endDate: new Date('2038-01-11'),
+      nextUnlock: new Date('2026-04-16'), nextUnlockAmount: 208333,
+      period: 7883982, unlockSchedule: [],
     },
     {
-      id: 'lock-002',
+      id: 'demo-002',
       title: 'Community Treasury',
-      wallet: '7mQv...rT2x',
-      amount: 25000000,
-      deposited: 25000000,
-      unlocked: 18750000,
-      status: 'active',
-      startDate: new Date('2025-03-15'),
-      endDate: new Date('2026-09-15'),
-      nextUnlock: new Date('2026-02-15'),
-      nextUnlockAmount: 1388889,
+      wallet: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
+      sender: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
+      amount: 10000000, deposited: 10000000, unlocked: 0,
+      status: 'pending',
+      startDate: new Date('2026-06-19'), endDate: new Date('2026-06-19'),
+      nextUnlock: new Date('2026-06-19'), nextUnlockAmount: 9999999,
+      period: 1, unlockSchedule: [],
     },
     {
-      id: 'lock-003',
+      id: 'demo-003',
       title: 'Advisor Lock',
-      wallet: '4kNz...yF8m',
-      amount: 10000000,
-      deposited: 10000000,
-      unlocked: 10000000,
-      status: 'completed',
-      startDate: new Date('2024-12-01'),
-      endDate: new Date('2025-12-01'),
-      nextUnlock: null,
-      nextUnlockAmount: 0,
-    },
-    {
-      id: 'lock-004',
-      title: 'LP Incentives',
-      wallet: '9pRx...cW3j',
-      amount: 15000000,
-      deposited: 15000000,
-      unlocked: 5000000,
-      status: 'active',
-      startDate: new Date('2025-09-01'),
-      endDate: new Date('2027-03-01'),
-      nextUnlock: new Date('2026-02-28'),
-      nextUnlockAmount: 833333,
+      wallet: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
+      sender: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
+      amount: 5, deposited: 5, unlocked: 0,
+      status: 'pending',
+      startDate: new Date('2055-02-25'), endDate: new Date('2055-02-25'),
+      nextUnlock: new Date('2055-02-25'), nextUnlockAmount: 4.999999,
+      period: 1, unlockSchedule: [],
     },
   ];
 }
 
 // ============================================
-// RENDERING
+// RENDERING HELPERS
 // ============================================
-
-function formatNumber(n) {
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
-  return n.toLocaleString();
-}
 
 function formatDate(d) {
   if (!d) return '--';
@@ -173,108 +257,172 @@ function formatDate(d) {
 }
 
 function getProgress(lock) {
+  if (!lock.amount) return 0;
   return Math.min(100, Math.round((lock.unlocked / lock.amount) * 100));
 }
 
 function getCountdown(date) {
   if (!date) return '--';
-  const now = Date.now();
-  const diff = date.getTime() - now;
+  const diff = date.getTime() - Date.now();
   if (diff <= 0) return 'Now';
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
   if (days > 0) return days + 'd ' + hours + 'h';
   return hours + 'h';
 }
+
+// ============================================
+// FILTER + SORT
+// ============================================
+
+function isMyLock(lock) {
+  if (!walletConnected || !connectedPubkey) return false;
+  return lock.sender === connectedPubkey || lock.wallet === connectedPubkey;
+}
+
+function getFilteredSortedLocks() {
+  let filtered;
+  if (activeFilter === 'mine') {
+    filtered = locks.filter(isMyLock);
+  } else if (activeFilter === 'active') {
+    // 'active' includes both vesting + pending (not yet started)
+    filtered = locks.filter(l => l.status === 'active' || l.status === 'pending');
+  } else if (activeFilter === 'all') {
+    filtered = locks.slice();
+  } else {
+    filtered = locks.filter(l => l.status === activeFilter);
+  }
+
+  if (activeSort === 'amount') {
+    filtered.sort((a, b) => b.amount - a.amount);
+  } else if (activeSort === 'date') {
+    filtered.sort((a, b) => {
+      const ta = a.endDate ? a.endDate.getTime() : 0;
+      const tb = b.endDate ? b.endDate.getTime() : 0;
+      return ta - tb;
+    });
+  } else if (activeSort === 'status') {
+    const order = { active: 0, pending: 1, completed: 2, cancelled: 3 };
+    filtered.sort((a, b) => (order[a.status] || 0) - (order[b.status] || 0));
+  }
+
+  return filtered;
+}
+
+// ============================================
+// LOCK BROWSER
+// ============================================
 
 function renderLocks() {
   const container = $('#locks-list');
   if (!container) return;
 
-  const filtered =
-    activeFilter === 'all'
-      ? locks
-      : locks.filter(function (l) {
-          return l.status === activeFilter;
-        });
+  const filtered = getFilteredSortedLocks();
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="staking-loading"><span>No locks found</span></div>';
     return;
   }
 
+  // esc() applied to all API-sourced strings interpolated into innerHTML
   container.innerHTML = filtered
-    .map(function (lock) {
+    .map(lock => {
       const pct = getProgress(lock);
       return (
-        '<div class="staking-lock" data-id="' +
-        lock.id +
-        '">' +
+        '<div class="staking-lock staking-lock--clickable" data-id="' + esc(lock.id) + '">' +
         '<div class="staking-lock-info">' +
-        '<div class="staking-lock-title">' +
-        lock.title +
+        '<div class="staking-lock-title">' + esc(lock.title) + '</div>' +
+        '<div class="staking-lock-wallet">' + esc(formatWallet(lock.wallet, 8, 4)) + '</div>' +
         '</div>' +
-        '<div class="staking-lock-wallet">' +
-        lock.wallet +
-        '</div>' +
-        '</div>' +
-        '<div class="staking-lock-amount">' +
-        formatNumber(lock.amount) +
-        ' ASDF</div>' +
+        '<div class="staking-lock-amount">' + formatNumber(lock.amount) + ' ASDF</div>' +
         '<div class="staking-lock-progress">' +
-        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' +
-        pct +
-        '%"></div></div>' +
-        '<div class="staking-lock-pct">' +
-        pct +
-        '% unlocked</div>' +
+        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="staking-lock-pct">' + pct + '% unlocked</div>' +
         '</div>' +
-        '<span class="staking-lock-status ' +
-        lock.status +
-        '">' +
-        lock.status +
-        '</span>' +
+        '<span class="staking-lock-status ' + esc(lock.status) + '">' + esc(lock.status) + '</span>' +
         '</div>'
       );
     })
     .join('');
 
-  // Visceral feedback: lock animation for completed locks
-  setTimeout(() => {
-    const lockCards = $$('.staking-lock');
-    lockCards.forEach(card => {
-      const lockId = card.dataset.id;
-      const lock = locks.find(l => l.id === lockId);
-      if (lock && lock.status === 'completed') {
-        contextualAnimations.stakeLock(card, true);
-      }
-
-      // Add hover effects
-      card.addEventListener('mouseenter', () => {
-        AudioFeedback.play('hover');
-        interactions.glow(card);
-      });
-
-      // Add click ripple
-      card.addEventListener('click', e => {
-        AudioFeedback.play('click');
-        interactions.ripple(card, e);
-      });
-    });
-  }, 100);
 }
+
+// ============================================
+// LOCK DETAIL MODAL (uses textContent — XSS-safe)
+// ============================================
+
+function showLockDetail(lock) {
+  const modal = $('#lock-modal');
+  if (!modal) return;
+
+  AudioFeedback.play('click');
+
+  const pct = getProgress(lock);
+  const set = (id, val) => { const e = modal.querySelector('#' + id); if (e) e.textContent = val; };
+
+  set('lock-modal-title', lock.title);
+
+  const statusEl = modal.querySelector('#lock-modal-status');
+  if (statusEl) {
+    statusEl.textContent = lock.status;
+    statusEl.className = 'lock-modal-status staking-lock-status ' + lock.status;
+  }
+
+  set('lock-modal-amount', formatNumber(lock.amount) + ' ASDF');
+  set('lock-modal-unlocked', formatNumber(lock.unlocked) + ' ASDF');
+
+  const fillEl = modal.querySelector('#lock-modal-fill');
+  if (fillEl) fillEl.style.width = pct + '%';
+  set('lock-modal-pct', pct + '% unlocked');
+
+  set('lock-modal-wallet', lock.wallet);
+  set('lock-modal-start', formatDate(lock.startDate));
+  set('lock-modal-end', formatDate(lock.endDate));
+
+  const nextRow = modal.querySelector('#lock-modal-next-row');
+  if (nextRow) {
+    if (lock.nextUnlock) {
+      nextRow.style.display = '';
+      set('lock-modal-next', formatDate(lock.nextUnlock) + ' \u2014 ' + formatNumber(lock.nextUnlockAmount) + ' ASDF');
+    } else {
+      nextRow.style.display = 'none';
+    }
+  }
+
+  const solscanEl = modal.querySelector('#lock-modal-solscan');
+  if (solscanEl) {
+    if (lock.id && lock.id.length >= 32 && !lock.id.startsWith('demo-')) {
+      solscanEl.href = 'https://solscan.io/account/' + encodeURIComponent(lock.id);
+      solscanEl.style.display = '';
+    } else {
+      solscanEl.style.display = 'none';
+    }
+  }
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLockModal() {
+  const modal = $('#lock-modal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+// ============================================
+// UNLOCK TIMELINE
+// ============================================
 
 function renderTimeline() {
   const container = $('#unlock-timeline');
   if (!container) return;
 
   const upcoming = locks
-    .filter(function (l) {
-      return l.nextUnlock && l.status === 'active';
-    })
-    .sort(function (a, b) {
-      return a.nextUnlock - b.nextUnlock;
-    });
+    .filter(l => l.nextUnlock && (l.status === 'active' || l.status === 'pending'))
+    .sort((a, b) => a.nextUnlock - b.nextUnlock);
 
   if (upcoming.length === 0) {
     container.innerHTML = '<div class="staking-loading"><span>No upcoming unlocks</span></div>';
@@ -282,25 +430,19 @@ function renderTimeline() {
   }
 
   container.innerHTML = upcoming
-    .map(function (lock) {
-      return (
-        '<div class="staking-timeline-item">' +
-        '<div class="staking-timeline-date">' +
-        formatDate(lock.nextUnlock) +
-        ' (' +
-        getCountdown(lock.nextUnlock) +
-        ')</div>' +
-        '<div class="staking-timeline-desc">' +
-        lock.title +
-        '</div>' +
-        '<div class="staking-timeline-amount">' +
-        formatNumber(lock.nextUnlockAmount) +
-        ' ASDF</div>' +
-        '</div>'
-      );
-    })
+    .map(lock =>
+      '<div class="staking-timeline-item">' +
+      '<div class="staking-timeline-date">' + formatDate(lock.nextUnlock) + ' (' + getCountdown(lock.nextUnlock) + ')</div>' +
+      '<div class="staking-timeline-desc">' + esc(lock.title) + '</div>' +
+      '<div class="staking-timeline-amount">' + formatNumber(lock.nextUnlockAmount) + ' ASDF</div>' +
+      '</div>'
+    )
     .join('');
 }
+
+// ============================================
+// STATS
+// ============================================
 
 function updateStats() {
   let totalLocked = 0;
@@ -308,78 +450,49 @@ function updateStats() {
   let activeLocks = 0;
   let nextUnlockDate = null;
 
-  locks.forEach(function (lock) {
+  locks.forEach(lock => {
     totalLocked += lock.amount - lock.unlocked;
     totalDeposited += lock.deposited;
-    if (lock.status === 'active') activeLocks++;
-    if (lock.nextUnlock && lock.status === 'active') {
-      if (!nextUnlockDate || lock.nextUnlock < nextUnlockDate) {
-        nextUnlockDate = lock.nextUnlock;
-      }
+    if (lock.status === 'active' || lock.status === 'pending') activeLocks++;
+    if (lock.nextUnlock) {
+      if (!nextUnlockDate || lock.nextUnlock < nextUnlockDate) nextUnlockDate = lock.nextUnlock;
     }
   });
 
-  let el;
-  el = $('#stat-total-locked');
-  if (el) el.textContent = formatNumber(totalLocked);
-  el = $('#stat-deposited');
-  if (el) el.textContent = formatNumber(totalDeposited);
-  el = $('#stat-active-locks');
-  if (el) el.textContent = activeLocks.toString();
-  el = $('#stat-next-unlock');
-  if (el) el.textContent = getCountdown(nextUnlockDate);
-
-  // Visceral feedback: pulse stat cards
-  setTimeout(() => {
-    const statCards = $$('.staking-stat-card');
-    statCards.forEach(card => {
-      interactions.pulse(card);
-
-      // Add hover effects
-      card.addEventListener('mouseenter', () => {
-        AudioFeedback.play('hover');
-        interactions.glow(card);
-      });
-    });
-  }, 200);
+  const el = (id, val) => { const e = $(id); if (e) e.textContent = val; };
+  el('#stat-total-locked', formatNumber(totalLocked));
+  el('#stat-deposited', formatNumber(totalDeposited));
+  el('#stat-active-locks', activeLocks.toString());
+  el('#stat-next-unlock', getCountdown(nextUnlockDate));
 }
 
 // ============================================
-// FILTERS
+// FILTERS & SORT
 // ============================================
 
 function handleFilterClick(e) {
   const btn = e.target.closest('.staking-filter');
   if (!btn) return;
-
-  // Visceral feedback: click sound + ripple
   AudioFeedback.play('click');
-  interactions.ripple(btn, e);
-
   activeFilter = btn.getAttribute('data-filter') || 'all';
+  $$('.staking-filter').forEach(f => f.classList.toggle('active', f === btn));
+  renderLocks();
+}
 
-  $$('.staking-filter').forEach(function (f) {
-    f.classList.toggle('active', f === btn);
-  });
-
+function handleSortChange(e) {
+  activeSort = e.target.value || 'default';
+  AudioFeedback.play('click');
   renderLocks();
 }
 
 // ============================================
-// VISCERAL FEEDBACK SETUP
+// VISCERAL FEEDBACK
 // ============================================
 
 function setupVisceralFeedback() {
-  // Initialize audio system
   AudioFeedback.init();
-
-  // CTA button effects
   const ctaBtn = $('#connect-wallet');
-  if (ctaBtn) {
-    ctaBtn.addEventListener('mouseenter', () => {
-      AudioFeedback.play('hover');
-    });
-  }
+  if (ctaBtn) ctaBtn.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
 }
 
 // ============================================
@@ -387,23 +500,59 @@ function setupVisceralFeedback() {
 // ============================================
 
 function init() {
-  // Wallet connect
   const connectBtn = $('#connect-wallet');
-  if (connectBtn) {
-    connectBtn.addEventListener('click', connectWallet);
+  if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+
+  const filtersEl = $('.staking-filters');
+  if (filtersEl) filtersEl.addEventListener('click', handleFilterClick);
+
+  const sortEl = $('#locks-sort');
+  if (sortEl) sortEl.addEventListener('change', handleSortChange);
+
+  const modalClose = $('#lock-modal-close');
+  if (modalClose) modalClose.addEventListener('click', closeLockModal);
+
+  const modalOverlay = $('#lock-modal');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeLockModal(); });
   }
 
-  // Filters
-  const filtersEl = document.querySelector('.staking-filters');
-  if (filtersEl) {
-    filtersEl.addEventListener('click', handleFilterClick);
-  }
+  PageLifecycle.registerListener(document, 'keydown', e => { if (e.key === 'Escape') closeLockModal(); });
 
-  // Setup visceral feedback
+  // Mine filter hidden until wallet connected
+  const mineFilter = $('#filter-mine');
+  if (mineFilter) mineFilter.style.display = 'none';
+
   setupVisceralFeedback();
 
-  // Load data
+  // Event delegation on lock list — registered once, survives re-renders
+  const locksList = $('#locks-list');
+  if (locksList) {
+    locksList.addEventListener('click', e => {
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const lock = locks.find(l => l.id === card.dataset.id);
+      if (lock) showLockDetail(lock);
+    });
+    locksList.addEventListener('mouseover', e => {
+      const card = e.target.closest('.staking-lock--clickable');
+      if (card && !card.contains(e.relatedTarget)) AudioFeedback.play('hover');
+    });
+  }
+
+  // Stat cards hover — static DOM, registered once
+  $$('.staking-stat-card').forEach(card => {
+    card.addEventListener('mouseenter', () => AudioFeedback.play('hover'));
+  });
+
   fetchLocks();
+
+  // Refresh countdown + stats displays every 60s (matches footer claim)
+  // No API refetch — operates on in-memory locks state
+  PageLifecycle.registerTimer(
+    'staking-refresh',
+    setInterval(() => { renderTimeline(); updateStats(); }, 60000)
+  );
 }
 
 if (document.readyState === 'loading') {

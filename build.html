@@ -4,6 +4,7 @@
     <style>html{background:#020812!important}body{background:transparent!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>Build | ASDF Ecosystem</title>
     <meta name="description" content="Yggdrasil - The World Tree of ASDF projects. Builders Marketplace.">
 
@@ -11,32 +12,14 @@
     <meta property="og:url" content="https://alonisthe.dev/build">
     <meta property="og:title" content="Build - ASDF Ecosystem">
     <meta property="og:description" content="Yggdrasil and Marketplace - The ASDF builders ecosystem.">
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Build - ASDF Ecosystem">
+    <meta name="twitter:description" content="Yggdrasil and Marketplace - The ASDF builders ecosystem.">
 
     <link rel="icon" type="image/png" href="/favicon.png">
 
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <!-- Content Security Policy (frame-ancestors handled by server HTTP header) -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com;
-        script-src-attr 'unsafe-inline';
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https://api.mainnet-beta.solana.com https://*.solana.com https://api.asdf-games.com https://asdf-api.onrender.com https://api.github.com;
-        object-src 'none';
-        base-uri 'self';
-        form-action 'self';
-        upgrade-insecure-requests;
-    ">
-
-    <!-- Prefetch other pages for instant navigation -->
-    <link rel="prefetch" href="learn.html">
-    <link rel="prefetch" href="index.html">
+    <!-- CSP handled by server.cjs Helmet -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +27,8 @@
 
     <link rel="stylesheet" href="css/build.css">
     <link rel="stylesheet" href="css/journey.css">
-    <link rel="stylesheet" href="css/viking-bg.css">
+    <link rel="preload" href="css/viking-bg.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/viking-bg.css"></noscript>
     <!-- Yggdrasil 3D Components -->
     <link rel="stylesheet" href="css/formation-panel.css">
     <link rel="stylesheet" href="css/skill-tree.css">
@@ -65,6 +49,8 @@
             "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
     }
+    </script>
+
     </script>
 </head>
 <body>
@@ -154,7 +140,7 @@
                         </g>
 
                         <!-- Nordic phrases along canopy branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="36" fill="#0f3d0f" opacity="1" font-weight="bold" stroke="#22c55e" stroke-width="1">
+                        <g class="branch-phrases" font-family="serif" font-size="36" fill="#0f3d0f" opacity="1" font-weight="bold" stroke="#22c55e" stroke-width="1" aria-hidden="true">
                             <!-- Learn branch - Wisdom & Knowledge -->
                             <text><textPath href="#branchLearn" startOffset="2%">ᚠᚱᛟᛞᛚᛖᛁᚲᛁ</textPath></text>
                             <text><textPath href="#branchLearn" startOffset="22%">ᚹᛁᛊᛞᛟᛗᚱ</textPath></text>
@@ -213,7 +199,7 @@
                         </g>
 
                         <!-- Nordic phrases along trunk branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#2a1a08" opacity="1" font-weight="bold" stroke="#f59e0b" stroke-width="1">
+                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#2a1a08" opacity="1" font-weight="bold" stroke="#f59e0b" stroke-width="1" aria-hidden="true">
                             <!-- Oracle branch - Prophecy & Vision -->
                             <text><textPath href="#branchOracle" startOffset="2%">ᛊᛈᚨᛞᛟᛗᚱ</textPath></text>
                             <text><textPath href="#branchOracle" startOffset="18%">ᚹᛁᛏᚨ</textPath></text>
@@ -245,7 +231,7 @@
                         </g>
 
                         <!-- Nordic phrases along root branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#1e0a4a" opacity="1" font-weight="bold" stroke="#c4b5fd" stroke-width="1">
+                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#1e0a4a" opacity="1" font-weight="bold" stroke="#c4b5fd" stroke-width="1" aria-hidden="true">
                             <!-- Security branch - Protection & Shield -->
                             <text><textPath href="#branchSecurity" startOffset="2%">ᚹᛟᚱᛞ</textPath></text>
                             <text><textPath href="#branchSecurity" startOffset="15%">ᛊᚲᛃᛟᛚᛞᚱ</textPath></text>
@@ -350,7 +336,7 @@
                             <circle cx="400" cy="300" r="120" fill="url(#nordicAura)" class="sun-aura" opacity="0.7"/>
 
                             <!-- Runic rays with Elder Futhark symbols -->
-                            <g class="runic-rays" font-family="serif" font-size="16" font-weight="bold">
+                            <g class="runic-rays" font-family="serif" font-size="16" font-weight="bold" aria-hidden="true">
                                 <!-- 8 rays with runes at the tips -->
                                 <line x1="400" y1="300" x2="400" y2="190" stroke="#d97706" stroke-width="3" opacity="0.8"/>
                                 <text x="400" y="178" text-anchor="middle" fill="#fbbf24" class="ray-rune">ᚠ</text>
@@ -472,7 +458,7 @@
                         </g>
 
                         <!-- Runic symbols on branches -->
-                        <g class="branch-runes" font-family="serif" font-size="18" opacity="0.7">
+                        <g class="branch-runes" font-family="serif" font-size="18" opacity="0.7" aria-hidden="true">
                             <!-- Canopy branch runes (green) -->
                             <text x="220" y="180" fill="#4ade80">ᛃ</text>
                             <text x="280" y="160" fill="#4ade80">ᛇ</text>
@@ -868,7 +854,6 @@
         });
     </script>
 
-    <!-- Legacy scripts removed - cosmos is now the primary experience -->
     <script src="js/consent/index.js"></script>
 </body>
 </html>

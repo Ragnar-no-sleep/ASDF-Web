@@ -36,7 +36,6 @@ class SoundSystem {
       if (!this.initialized) {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.initialized = true;
-        console.log('🔊 Sound system initialized');
       }
       document.removeEventListener('click', init);
       document.removeEventListener('keydown', init);
@@ -217,7 +216,6 @@ class SoundSystem {
   toggle(enabled) {
     this.enabled = enabled;
     this.saveSetting('enabled', enabled);
-    console.log(`🔊 Sound ${enabled ? 'enabled' : 'disabled'}`);
 
     // Play confirmation sound when enabling
     if (enabled && this.initialized) {
@@ -232,7 +230,6 @@ class SoundSystem {
   setVolume(volume) {
     this.volume = Math.max(0, Math.min(100, volume));
     this.saveSetting('volume', this.volume);
-    console.log(`🔊 Volume set to ${this.volume}%`);
   }
 
   /**
@@ -290,7 +287,6 @@ export function initSounds(options = {}) {
     });
   }
 
-  console.log('🔊 Sound system auto-integration active');
 }
 
 // ============================================

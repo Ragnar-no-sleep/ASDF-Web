@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASDF Achievements Demo</title>
+
+    <link rel="stylesheet" href="css/design-tokens.css">
+    <link rel="stylesheet" href="css/interactions.css">
+
+    <style>
+        body {
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            font-family: 'Inter', sans-serif;
+            padding: var(--space-2xl);
+            line-height: var(--leading-normal);
+        }
+
+        .demo-section {
+            margin-bottom: var(--space-3xl);
+            padding: var(--space-xl);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            backdrop-filter: var(--glass-blur);
+        }
+
+        .demo-section h2 {
+            color: var(--color-fire);
+            margin-bottom: var(--space-lg);
+            font-size: var(--text-2xl);
+        }
+
+        .demo-section p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-md);
+            font-size: var(--text-sm);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
+        }
+
+        .demo-button {
+            padding: var(--space-md) var(--space-lg);
+            background: var(--color-fire);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-semibold);
+            cursor: pointer;
+            font-size: var(--text-base);
+            transition: var(--transition-all);
+        }
+
+        .demo-button:hover {
+            background: var(--color-fire-light);
+            transform: translateY(-2px);
+        }
+
+        .action-card {
+            padding: var(--space-md);
+            background: var(--color-bg-surface);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .action-name {
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .action-desc {
+            font-size: var(--text-sm);
+            color: var(--color-text-tertiary);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl);">
+        🏆 ASDF Achievements Demo
+    </h1>
+
+    <!-- Achievement Gallery -->
+    <section class="demo-section">
+        <h2>Achievement Gallery</h2>
+        <p>All 20 achievements organized by rarity. Locked achievements show progress bars.</p>
+
+        <div id="achievementGallery"></div>
+    </section>
+
+    <!-- Test Actions -->
+    <section class="demo-section">
+        <h2>Test Actions</h2>
+        <p>Trigger achievements by simulating user actions.</p>
+
+        <div class="action-card">
+            <div class="action-name">🔥 Simulate Burn</div>
+            <div class="action-desc">Track a token burn (unlocks First Burn, Pyromaniac, Whale Burn)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateBurn(10)">Burn 10 tokens</button>
+                <button class="demo-button" onclick="simulateBurn(100)">Burn 100 tokens</button>
+                <button class="demo-button" onclick="simulateBurn(15000)">Burn 15,000 tokens 🐳</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">💎 Simulate Stake</div>
+            <div class="action-desc">Track a stake action (unlocks Diamond Hands)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateStake()">Stake tokens</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">🎮 Simulate Game</div>
+            <div class="action-desc">Track game play (unlocks Game On, High Scorer, Perfectionist)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateGame(500)">Play game (500 score)</button>
+                <button class="demo-button" onclick="simulateGame(1000, 5)">High score (rank 5)</button>
+                <button class="demo-button" onclick="simulateGame(1000, 1, true)">Perfect score!</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">📚 Simulate Course</div>
+            <div class="action-desc">Track course completion (unlocks Builder, Architect)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateCourse()">Complete course</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">🔍 Simulate Secret</div>
+            <div class="action-desc">Track secret discovery (unlocks Curiosity Seeker, Secret Collector)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateSecret()">Find secret</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">🗺️ Simulate Page Visit</div>
+            <div class="action-desc">Track unique page visit (unlocks Explorer)</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulatePageVisit()">Visit random page</button>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-name">🎮 Konami Code</div>
+            <div class="action-desc">Unlock Konami Master achievement</div>
+            <div class="demo-grid" style="margin-top: 12px;">
+                <button class="demo-button" onclick="simulateKonami()">Unlock Konami Code</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="demo-section">
+        <h2>Controls</h2>
+
+        <div class="demo-grid">
+            <button class="demo-button" onclick="refreshGallery()">🔄 Refresh Gallery</button>
+            <button class="demo-button" onclick="resetAchievements()" style="background: #ef4444;">
+                ⚠️ Reset All
+            </button>
+        </div>
+    </section>
+
+    <!-- Instructions -->
+    <section class="demo-section">
+        <h2>Achievement Tiers</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+            <div style="padding: 16px; background: var(--color-bg-surface); border-radius: 8px; border-left: 4px solid #ffffff;">
+                <div style="font-weight: 600; margin-bottom: 8px;">⚪ Common</div>
+                <div style="font-size: 13px; color: var(--color-text-tertiary);">Basic milestones everyone gets</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--color-bg-surface); border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <div style="font-weight: 600; margin-bottom: 8px;">🔵 Rare</div>
+                <div style="font-size: 13px; color: var(--color-text-tertiary);">Requires dedication and engagement</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--color-bg-surface); border-radius: 8px; border-left: 4px solid #9945ff;">
+                <div style="font-weight: 600; margin-bottom: 8px;">🟣 Epic</div>
+                <div style="font-size: 13px; color: var(--color-text-tertiary);">Challenging feats for dedicated users</div>
+            </div>
+
+            <div style="padding: 16px; background: var(--color-bg-surface); border-radius: 8px; border-left: 4px solid #fbbf24;">
+                <div style="font-weight: 600; margin-bottom: 8px;">🟡 Legendary</div>
+                <div style="font-size: 13px; color: var(--color-text-tertiary);">Ultra-rare, only for completionists</div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+        import { achievementSystem, createAchievementGallery } from './js/utils/achievements.js';
+        import { soundSystem } from './js/utils/sound-system.js';
+
+        // Enable sounds for better demo
+        soundSystem.toggle(true);
+
+        // Initialize gallery
+        createAchievementGallery(document.getElementById('achievementGallery'));
+
+        // Test actions
+        window.simulateBurn = (amount) => {
+            achievementSystem.track('burn_tokens', { amount });
+            refreshGallery();
+        };
+
+        window.simulateStake = () => {
+            achievementSystem.track('stake_tokens');
+            refreshGallery();
+        };
+
+        window.simulateGame = (score, rank = 100, perfect = false) => {
+            achievementSystem.track('play_game', { score, rank });
+
+            if (perfect) {
+                achievementSystem.track('perfect_score', { score });
+            }
+
+            if (rank <= 10) {
+                achievementSystem.track('leaderboard_rank', { rank });
+            }
+
+            refreshGallery();
+        };
+
+        window.simulateCourse = () => {
+            achievementSystem.track('complete_course');
+            refreshGallery();
+        };
+
+        window.simulateSecret = () => {
+            achievementSystem.track('secret_found');
+            refreshGallery();
+        };
+
+        window.simulatePageVisit = () => {
+            const pages = ['/about', '/team', '/docs', '/api', '/contact', '/faq'];
+            const randomPage = pages[Math.floor(Math.random() * pages.length)];
+            achievementSystem.track('unique_pages', { page: randomPage });
+            refreshGallery();
+        };
+
+        window.simulateKonami = () => {
+            achievementSystem.track('konami_unlock');
+            refreshGallery();
+        };
+
+        window.refreshGallery = () => {
+            const container = document.getElementById('achievementGallery');
+            container.innerHTML = '';
+            createAchievementGallery(container);
+        };
+
+        window.resetAchievements = () => {
+            if (confirm('Reset all achievements? This cannot be undone.')) {
+                localStorage.removeItem('asdf_achievement_progress');
+                localStorage.removeItem('asdf_achievements_unlocked');
+                localStorage.removeItem('asdf_visited_pages');
+                localStorage.removeItem('asdf_daily_streak');
+                localStorage.removeItem('asdf_last_visit_date');
+                location.reload();
+            }
+        };
+
+        console.log('🏆 Achievements Demo loaded');
+    </script>
+
+</body>
+</html>

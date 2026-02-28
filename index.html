@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background:#0d0906">
 <head>
+    <style>html,body{background:#0d0906!important}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
     <title>$ASDFASDFA - This is Fine</title>
     <meta name="description" content="The $asdfasdfa ecosystem hub. This is fine.">
 
@@ -30,27 +32,264 @@
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
-    <!-- Prefetch tool pages via Express routes -->
+    <!-- Prefetch tool pages -->
     <link rel="prefetch" href="/burns">
     <link rel="prefetch" href="/holdex">
-    <link rel="prefetch" href="/asdforecast">
+    <link rel="prefetch" href="/forecast">
     <link rel="prefetch" href="/staking">
     <link rel="prefetch" href="/ignition">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/design-tokens.css">
     <link rel="stylesheet" href="css/interactions.css">
     <link rel="stylesheet" href="css/hub-majestic.css">
     <link rel="stylesheet" href="css/orbital-system.css">
     <link rel="stylesheet" href="css/orbital-patch.css">
 
     <style>
-        html, body { background: #0d0906; }
+        /* ========================================
+           HUB VIEW TOGGLE + TOOL GRID
+           ======================================== */
+
+        .hub-view-toggle {
+            position: fixed;
+            bottom: 21px;
+            right: 21px;
+            z-index: 200;
+            padding: 10px 18px;
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.25);
+            border-radius: 8px;
+            color: #eab308;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 233ms cubic-bezier(0.618, 0, 0.382, 1);
+        }
+
+        .hub-view-toggle:hover {
+            background: rgba(234, 179, 8, 0.2);
+            transform: scale(1.05);
+        }
+        .hub-view-toggle:focus-visible {
+            outline: 2px solid var(--asdf-gold, #f59e0b);
+            outline-offset: 2px;
+        }
+
+        /* Grid view container */
+        .hub-grid-view {
+            display: none;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 55px 21px;
+            min-height: 100vh;
+        }
+
+        .hub-grid-view.is-active { display: block; }
+        .hub[data-view="grid"] { display: none; }
+        .hub[data-view="grid"] ~ .hub-footer { display: none; }
+
+        /* Grid header */
+        .hub-grid-header {
+            text-align: center;
+            margin-bottom: 34px;
+        }
+
+        .hub-grid-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 13px;
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: #eab308;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+        }
+
+        .hub-grid-badge-dot {
+            width: 5px;
+            height: 5px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: hub-dot-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes hub-dot-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hub-grid-title {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 300;
+            color: #faf8f5;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .hub-grid-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        /* Tool cards */
+        .hub-tools-grid { display: grid; gap: 10px; }
+
+        .hub-tool-card {
+            display: grid;
+            grid-template-columns: 48px 1fr auto;
+            align-items: center;
+            gap: 13px;
+            padding: 16px 21px;
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 13px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 233ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hub-tool-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 233ms ease;
+            pointer-events: none;
+        }
+
+        .hub-tool-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 34px rgba(0, 0, 0, 0.3);
+        }
+
+        .hub-tool-card:hover::before { opacity: 1; }
+
+        .hub-tool-card[data-tool="burns"]    { --card-accent: rgba(201, 162, 39, 0.06); --tool-color: #c9a227; }
+        .hub-tool-card[data-tool="forecast"] { --card-accent: rgba(0, 255, 65, 0.04); --tool-color: #00ff41; }
+        .hub-tool-card[data-tool="holdex"]   { --card-accent: rgba(74, 222, 128, 0.05); --tool-color: #4ade80; }
+        .hub-tool-card[data-tool="staking"]  { --card-accent: rgba(123, 147, 255, 0.05); --tool-color: #7b93ff; }
+        .hub-tool-card[data-tool="ignition"] { --card-accent: rgba(234, 88, 12, 0.06); --tool-color: #ea580c; }
+
+        .hub-tool-card:hover {
+            border-color: color-mix(in srgb, var(--tool-color, #eab308) 30%, transparent);
+        }
+
+        .hub-tool-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(17, 17, 24, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            transition: border-color 200ms ease;
+        }
+
+        .hub-tool-card:hover .hub-tool-icon {
+            border-color: color-mix(in srgb, var(--tool-color, #eab308) 40%, transparent);
+        }
+
+        .hub-tool-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: #faf8f5;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hub-tool-live {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            letter-spacing: 0.04em;
+        }
+
+        .hub-tool-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.4;
+        }
+
+        .hub-tool-arrow {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            transition: all 200ms ease;
+        }
+
+        .hub-tool-card:hover .hub-tool-arrow {
+            color: var(--tool-color, #eab308);
+            transform: translateX(3px);
+        }
+
+        /* Grid footer links */
+        .hub-grid-footer {
+            margin-top: 34px;
+            padding-top: 21px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: center;
+            gap: 21px;
+            flex-wrap: wrap;
+        }
+
+        .hub-grid-footer a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            transition: color 200ms ease;
+        }
+
+        .hub-grid-footer a:hover { color: #eab308; }
+
+        @media (max-width: 600px) {
+            .hub-tool-card {
+                grid-template-columns: 40px 1fr auto;
+                padding: 13px 16px;
+                gap: 10px;
+            }
+            .hub-tool-icon { width: 36px; height: 36px; font-size: 17px; }
+            .hub-tool-name { font-size: 13px; }
+            .hub-view-toggle { bottom: 13px; right: 13px; font-size: 11px; padding: 8px 13px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hub-tool-card { transition: none; }
+            .hub-grid-badge-dot { animation: none; }
+            .hub-view-toggle { transition: none; }
+        }
     </style>
 </head>
 <body class="hub-majestic">
@@ -82,7 +321,9 @@
         <i></i><i></i><i></i><i></i>
     </div>
 
-    <!-- Main Hub -->
+    <!-- ================================================
+         VIEW 1: ORBITAL (default)
+         ================================================ -->
     <main id="main-hub" class="hub">
 
         <!-- Orbital Rings (decorative) -->
@@ -106,79 +347,51 @@
                 <span class="planet-label">$ASDF</span>
             </div>
 
-            <!-- ================================================
-                 5 ORBITAL TOOLS — Pentagon (φ-pentagon symmetry)
-                 72° spacing = 360/5 = Phi-pentagon angle
-                 φ = 2·cos(36°) — deeply connected
-                 Orbit: F9=34s radius: F12=144px
-                 delay = -(angle/360 * 34)s
-                 ================================================ -->
+            <!-- 5 ORBITAL TOOLS — Pentagon (phi-pentagon symmetry) -->
 
-            <!-- Burns — 0° → delay: 0s -->
-            <a href="/burns"
-               class="hub-orbit-item"
-               data-orbit-id="burns"
-               style="--orbit-delay: 0s; --static-angle: 0deg;"
-               aria-label="Burns tracker">
+            <a href="/burns" class="hub-orbit-item" data-orbit-id="burns"
+               style="--orbit-delay: 0s; --static-angle: 0deg;" aria-label="Burns tracker">
                 <span class="hub-orbit-item-icon" aria-hidden="true">&#128293;</span>
                 <span class="hub-orbit-item-label">Burns</span>
             </a>
 
-            <!-- Forecast — 72° → delay: -6.8s -->
-            <a href="/forecast"
-               class="hub-orbit-item"
-               data-orbit-id="forecast"
-               style="--orbit-delay: -6.8s; --static-angle: 72deg;"
-               aria-label="Forecast tool">
+            <a href="/forecast" class="hub-orbit-item" data-orbit-id="forecast"
+               style="--orbit-delay: -6.8s; --static-angle: 72deg;" aria-label="Forecast tool">
                 <span class="hub-orbit-item-icon" aria-hidden="true">&#127919;</span>
                 <span class="hub-orbit-item-label">Forecast</span>
             </a>
 
-            <!-- HolDex — 144° → delay: -13.6s -->
-            <a href="/holdex"
-               class="hub-orbit-item"
-               data-orbit-id="holdex"
-               style="--orbit-delay: -13.6s; --static-angle: 144deg;"
-               aria-label="HolDex tracker">
+            <a href="/holdex" class="hub-orbit-item" data-orbit-id="holdex"
+               style="--orbit-delay: -13.6s; --static-angle: 144deg;" aria-label="HolDex tracker">
                 <span class="hub-orbit-item-icon" aria-hidden="true">&#128200;</span>
                 <span class="hub-orbit-item-label">HolDex</span>
             </a>
 
-            <!-- Staking — 216° → delay: -20.4s -->
-            <a href="/staking"
-               class="hub-orbit-item"
-               data-orbit-id="staking"
-               style="--orbit-delay: -20.4s; --static-angle: 216deg;"
-               aria-label="Staking platform">
+            <a href="/staking" class="hub-orbit-item" data-orbit-id="staking"
+               style="--orbit-delay: -20.4s; --static-angle: 216deg;" aria-label="Staking platform">
                 <span class="hub-orbit-item-icon" aria-hidden="true">&#128274;</span>
                 <span class="hub-orbit-item-label">Staking</span>
             </a>
 
-            <!-- Ignition — 288° → delay: -27.2s -->
-            <a href="/ignition"
-               class="hub-orbit-item"
-               data-orbit-id="ignition"
-               style="--orbit-delay: -27.2s; --static-angle: 288deg;"
-               aria-label="Ignition launchpad">
+            <a href="/ignition" class="hub-orbit-item" data-orbit-id="ignition"
+               style="--orbit-delay: -27.2s; --static-angle: 288deg;" aria-label="Ignition launchpad">
                 <span class="hub-orbit-item-icon" aria-hidden="true">&#128640;</span>
                 <span class="hub-orbit-item-label">Ignition</span>
             </a>
 
-            <!-- Outer ring satellites — appear progressively per achievement stage -->
-            <!-- Satellites: 5 at 72° spacing on F13 orbit (233px) -->
+            <!-- Outer ring satellites -->
             <div class="hub-satellites">
                 <a href="/story"      class="hub-satellite" data-sat="learn"      style="--sat-angle: 0deg;"   aria-label="Learn"></a>
-                <a href="/build"      class="hub-satellite" data-sat="analytics"  style="--sat-angle: 72deg;"  aria-label="Analytics"></a>
-                <a href="/build"      class="hub-satellite" data-sat="build"      style="--sat-angle: 144deg;" aria-label="Build"></a>
-                <a href="/games"      class="hub-satellite" data-sat="games"      style="--sat-angle: 216deg;" aria-label="Games"></a>
-                <a href="/deep-learn" class="hub-satellite" data-sat="deep-learn" style="--sat-angle: 288deg;" aria-label="Deep Learn"></a>
+                <a href="/build"      class="hub-satellite" data-sat="build"      style="--sat-angle: 90deg;"  aria-label="Build"></a>
+                <a href="/games"      class="hub-satellite" data-sat="games"      style="--sat-angle: 180deg;" aria-label="Games"></a>
+                <a href="/deep-learn" class="hub-satellite" data-sat="deep-learn" style="--sat-angle: 270deg;" aria-label="Deep Learn"></a>
             </div>
 
         </div>
 
     </main>
 
-    <!-- Footer -->
+    <!-- Footer (orbital view) -->
     <footer class="hub-footer">
         <nav class="hub-footer-nav" aria-label="Content pages">
             <a href="/story">Learn</a>
@@ -198,6 +411,81 @@
         </div>
     </footer>
 
+    <!-- ================================================
+         VIEW 2: GRID (toggle)
+         ================================================ -->
+    <section class="hub-grid-view" id="hubGridView">
+        <header class="hub-grid-header">
+            <span class="hub-grid-badge">
+                <span class="hub-grid-badge-dot"></span>
+                5 LIVE TOOLS
+            </span>
+            <h1 class="hub-grid-title">Ecosystem Tools</h1>
+            <p class="hub-grid-subtitle">Burn. Track. Predict. Stake. Play.</p>
+        </header>
+
+        <div class="hub-tools-grid">
+            <a href="/burns" class="hub-tool-card" data-tool="burns">
+                <div class="hub-tool-icon">&#128293;</div>
+                <div>
+                    <div class="hub-tool-name">Burns <span class="hub-tool-live">LIVE</span></div>
+                    <p class="hub-tool-desc">Hall of Flames. Real-time burn analytics, leaderboard, and supply tracking.</p>
+                </div>
+                <span class="hub-tool-arrow">&#8594;</span>
+            </a>
+
+            <a href="/forecast" class="hub-tool-card" data-tool="forecast">
+                <div class="hub-tool-icon">&#127919;</div>
+                <div>
+                    <div class="hub-tool-name">Forecast <span class="hub-tool-live">LIVE</span></div>
+                    <p class="hub-tool-desc">Prediction market. Forecast burn amounts and prove conviction on-chain.</p>
+                </div>
+                <span class="hub-tool-arrow">&#8594;</span>
+            </a>
+
+            <a href="/holdex" class="hub-tool-card" data-tool="holdex">
+                <div class="hub-tool-icon">&#128200;</div>
+                <div>
+                    <div class="hub-tool-name">HolDex <span class="hub-tool-live">LIVE</span></div>
+                    <p class="hub-tool-desc">K-Score holder quality index. Diamond hands detection and conviction metrics.</p>
+                </div>
+                <span class="hub-tool-arrow">&#8594;</span>
+            </a>
+
+            <a href="/staking" class="hub-tool-card" data-tool="staking">
+                <div class="hub-tool-icon">&#128274;</div>
+                <div>
+                    <div class="hub-tool-name">Staking <span class="hub-tool-live">LIVE</span></div>
+                    <p class="hub-tool-desc">Token lock dashboard. Streamflow vesting, governance, and voting power.</p>
+                </div>
+                <span class="hub-tool-arrow">&#8594;</span>
+            </a>
+
+            <a href="/ignition" class="hub-tool-card" data-tool="ignition">
+                <div class="hub-tool-icon">&#128640;</div>
+                <div>
+                    <div class="hub-tool-name">Ignition <span class="hub-tool-live">LIVE</span></div>
+                    <p class="hub-tool-desc">Airdrop platform. Fee-sharing, KOTH competitions, and multiplier rewards.</p>
+                </div>
+                <span class="hub-tool-arrow">&#8594;</span>
+            </a>
+        </div>
+
+        <div class="hub-grid-footer">
+            <a href="/story">Learn</a>
+            <a href="/deep-learn">Deep Learn</a>
+            <a href="/build">Build</a>
+            <a href="/games">Games</a>
+            <a href="/privacy">Privacy</a>
+        </div>
+    </section>
+
+    <!-- View Toggle Button (fixed bottom-right) -->
+    <button class="hub-view-toggle" id="hubViewToggle" aria-label="Toggle view mode">
+        <span id="hubToggleIcon">&#9638;</span>
+        <span id="hubToggleLabel">Grid View</span>
+    </button>
+
     <script src="js/achievements.js"></script>
     <script src="js/achievement-toast.js"></script>
     <script src="js/hub-cosmos.js"></script>
@@ -207,6 +495,43 @@
       // Achievement init on hub
       if (window.AchievementToast) AchievementToast.init();
       if (window.AchievementEngine) AchievementEngine.autoArrival();
+
+      // View toggle: orbital ↔ grid
+      (function() {
+        var KEY = 'asdf-hub-view';
+        var toggle = document.getElementById('hubViewToggle');
+        var icon = document.getElementById('hubToggleIcon');
+        var label = document.getElementById('hubToggleLabel');
+        var orbital = document.getElementById('main-hub');
+        var grid = document.getElementById('hubGridView');
+
+        function setView(view) {
+          if (view === 'grid') {
+            orbital.setAttribute('data-view', 'grid');
+            grid.classList.add('is-active');
+            icon.innerHTML = '&#9673;'; // circle = orbital
+            label.textContent = 'Orbital View';
+          } else {
+            orbital.removeAttribute('data-view');
+            grid.classList.remove('is-active');
+            icon.innerHTML = '&#9638;'; // square = grid
+            label.textContent = 'Grid View';
+          }
+          try { localStorage.setItem(KEY, view); } catch(e) {}
+        }
+
+        // Restore saved preference
+        var saved = null;
+        try { saved = localStorage.getItem(KEY); } catch(e) {}
+        if (saved === 'grid') setView('grid');
+
+        if (toggle) {
+          toggle.addEventListener('click', function() {
+            var current = grid.classList.contains('is-active') ? 'grid' : 'orbital';
+            setView(current === 'grid' ? 'orbital' : 'grid');
+          });
+        }
+      })();
     </script>
 
 </body>

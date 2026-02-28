@@ -20,23 +20,33 @@
 
   /* Gold Accent */
   --gold: #c9a227;
+  --gold-rgb: 201, 162, 39;
   --gold-light: #e8c547;
   --gold-dim: #8b7019;
-  --gold-glow: rgba(201, 162, 39, 0.15);
+  --gold-glow: rgba(var(--gold-rgb), 0.15);
 
   /* Fire Accent (subtle) */
   --ember: #ff6b35;
-  --ember-dim: rgba(255, 107, 53, 0.1);
+  --ember-rgb: 255, 107, 53;
+  --ember-dim: rgba(var(--ember-rgb), 0.1);
 
   /* Text */
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.5);
-  --text-dim: rgba(255, 255, 255, 0.3);
+  --white-rgb: 255, 255, 255;
+  --text-primary: rgba(var(--white-rgb), 0.95);
+  --text-secondary: rgba(var(--white-rgb), 0.7);
+  --text-muted: rgba(var(--white-rgb), 0.5);
+  --text-dim: rgba(var(--white-rgb), 0.3);
 
   /* Functional */
   --success: #22c55e;
   --danger: #ef4444;
+
+  /* Podium metals */
+  --silver-rgb: 192, 192, 192;
+  --bronze-rgb: 205, 127, 50;
+
+  /* Smoke / neutral */
+  --smoke-rgb: 100, 100, 100;
 
   /* Fibonacci Spacing */
   --space-xs: 8px;
@@ -47,13 +57,11 @@
   --space-2xl: 89px;
   --space-3xl: 144px;
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  /* --font-sans, --font-mono: inherited from design-tokens.css */
 
   /* Effects */
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --glow-gold: 0 0 40px rgba(201, 162, 39, 0.2);
+  --glow-gold: 0 0 40px rgba(var(--gold-rgb), 0.2);
 }
 
 /* ============================================
@@ -122,7 +130,7 @@ a:hover {
   left: -10%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(201, 162, 39, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.08) 0%, transparent 70%);
   animation: float-orb 20s ease-in-out infinite;
 }
 
@@ -133,7 +141,7 @@ a:hover {
   right: -10%;
   width: 60%;
   height: 60%;
-  background: radial-gradient(circle, rgba(255, 107, 53, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ember-rgb), 0.05) 0%, transparent 70%);
   animation: float-orb 25s ease-in-out infinite reverse;
 }
 
@@ -167,8 +175,8 @@ a:hover {
   animation: rise-ember 6s ease-out infinite;
   box-shadow:
     0 0 15px var(--gold),
-    0 0 30px rgba(255, 107, 53, 0.8),
-    0 0 45px rgba(255, 107, 53, 0.4);
+    0 0 30px rgba(var(--ember-rgb), 0.8),
+    0 0 45px rgba(var(--ember-rgb), 0.4);
 }
 
 .ember:nth-child(1) {
@@ -263,8 +271,8 @@ a:hover {
   height: 40%;
   background: linear-gradient(
     to top,
-    rgba(255, 107, 53, 0.15),
-    rgba(201, 162, 39, 0.08),
+    rgba(var(--ember-rgb), 0.15),
+    rgba(var(--gold-rgb), 0.08),
     transparent
   );
   animation: haze-pulse 3s ease-in-out infinite;
@@ -285,7 +293,7 @@ a:hover {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(var(--white-rgb), 0.3);
   border-radius: 50%;
   animation: float-ash 15s linear infinite;
 }
@@ -375,8 +383,8 @@ a:hover {
   height: 80px;
   background: linear-gradient(
     to top,
-    rgba(255, 107, 53, 0.4),
-    rgba(201, 162, 39, 0.2),
+    rgba(var(--ember-rgb), 0.4),
+    rgba(var(--gold-rgb), 0.2),
     transparent
   );
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
@@ -462,7 +470,7 @@ a:hover {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(100, 100, 100, 0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--smoke-rgb), 0.15), transparent 70%);
   animation: smoke-rise 12s ease-out infinite;
   filter: blur(20px);
 }
@@ -512,7 +520,7 @@ a:hover {
   position: absolute;
   width: 3px;
   height: 3px;
-  background: #fff;
+  background: rgb(var(--white-rgb));
   border-radius: 50%;
   box-shadow:
     0 0 6px var(--gold),
@@ -583,7 +591,7 @@ a:hover {
 .glow-circle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(201, 162, 39, 0.1), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.1), transparent 70%);
   animation: glow-pulse 6s ease-in-out infinite;
 }
 
@@ -628,12 +636,14 @@ a:hover {
    ============================================ */
 [data-variant='2'] {
   --gold: #dc2626;
+  --gold-rgb: 220, 38, 38;
   --gold-light: #f87171;
   --gold-dim: #991b1b;
-  --gold-glow: rgba(220, 38, 38, 0.2);
+  --gold-glow: rgba(var(--gold-rgb), 0.2);
   --ember: #ff3b3b;
-  --ember-dim: rgba(255, 59, 59, 0.12);
-  --glow-gold: 0 0 40px rgba(220, 38, 38, 0.25);
+  --ember-rgb: 255, 59, 59;
+  --ember-dim: rgba(var(--ember-rgb), 0.12);
+  --glow-gold: 0 0 40px rgba(var(--gold-rgb), 0.25);
 }
 
 [data-variant='2'] .cosmic-bg {
@@ -641,27 +651,27 @@ a:hover {
 }
 
 [data-variant='2'] .cosmic-bg::before {
-  background: radial-gradient(circle, rgba(220, 38, 38, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.1) 0%, transparent 70%);
 }
 
 [data-variant='2'] .cosmic-bg::after {
-  background: radial-gradient(circle, rgba(255, 59, 59, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ember-rgb), 0.06) 0%, transparent 70%);
 }
 
 [data-variant='2'] .heat-haze {
-  background: linear-gradient(to top, rgba(220, 38, 38, 0.2), rgba(255, 59, 59, 0.08), transparent);
+  background: linear-gradient(to top, rgba(var(--gold-rgb), 0.2), rgba(var(--ember-rgb), 0.08), transparent);
 }
 
 [data-variant='2'] .ember {
-  background: #dc2626;
+  background: var(--gold);
   box-shadow:
-    0 0 15px #dc2626,
-    0 0 30px rgba(255, 59, 59, 0.8),
-    0 0 45px rgba(255, 59, 59, 0.4);
+    0 0 15px var(--gold),
+    0 0 30px rgba(var(--ember-rgb), 0.8),
+    0 0 45px rgba(var(--ember-rgb), 0.4);
 }
 
 [data-variant='2'] .glow-circle {
-  background: radial-gradient(circle, rgba(220, 38, 38, 0.12), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.12), transparent 70%);
 }
 
 /* ============================================
@@ -669,12 +679,14 @@ a:hover {
    ============================================ */
 [data-variant='3'] {
   --gold: #94a3b8;
+  --gold-rgb: 148, 163, 184;
   --gold-light: #cbd5e1;
   --gold-dim: #64748b;
-  --gold-glow: rgba(148, 163, 184, 0.12);
+  --gold-glow: rgba(var(--gold-rgb), 0.12);
   --ember: #64748b;
-  --ember-dim: rgba(100, 116, 139, 0.08);
-  --glow-gold: 0 0 30px rgba(148, 163, 184, 0.15);
+  --ember-rgb: 100, 116, 139;
+  --ember-dim: rgba(var(--ember-rgb), 0.08);
+  --glow-gold: 0 0 30px rgba(var(--gold-rgb), 0.15);
   --black: #0f172a;
   --void: #0c1322;
   --obsidian: #111827;
@@ -684,43 +696,43 @@ a:hover {
 }
 
 [data-variant='3'] .cosmic-bg {
-  background: #0f172a;
+  background: var(--black);
 }
 
 [data-variant='3'] .cosmic-bg::before {
-  background: radial-gradient(circle, rgba(148, 163, 184, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.05) 0%, transparent 70%);
 }
 
 [data-variant='3'] .cosmic-bg::after {
-  background: radial-gradient(circle, rgba(100, 116, 139, 0.03) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ember-rgb), 0.03) 0%, transparent 70%);
 }
 
 [data-variant='3'] .heat-haze {
   background: linear-gradient(
     to top,
-    rgba(100, 116, 139, 0.08),
-    rgba(148, 163, 184, 0.04),
+    rgba(var(--ember-rgb), 0.08),
+    rgba(var(--gold-rgb), 0.04),
     transparent
   );
 }
 
 [data-variant='3'] .ember {
-  background: #94a3b8;
+  background: var(--gold);
   box-shadow:
-    0 0 10px #94a3b8,
-    0 0 20px rgba(148, 163, 184, 0.5),
-    0 0 30px rgba(148, 163, 184, 0.2);
+    0 0 10px var(--gold),
+    0 0 20px rgba(var(--gold-rgb), 0.5),
+    0 0 30px rgba(var(--gold-rgb), 0.2);
 }
 
 [data-variant='3'] .glow-circle {
-  background: radial-gradient(circle, rgba(148, 163, 184, 0.06), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--gold-rgb), 0.06), transparent 70%);
 }
 
 [data-variant='3'] .flame {
   background: linear-gradient(
     to top,
-    rgba(100, 116, 139, 0.15),
-    rgba(148, 163, 184, 0.08),
+    rgba(var(--ember-rgb), 0.15),
+    rgba(var(--gold-rgb), 0.08),
     transparent
   );
 }
@@ -749,7 +761,7 @@ a:hover {
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
   background: var(--gold-glow);
-  border: 1px solid rgba(201, 162, 39, 0.3);
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
   border-radius: 100px;
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
@@ -809,8 +821,8 @@ a:hover {
 
 .mega-stat-inner {
   padding: var(--space-xl);
-  background: linear-gradient(135deg, rgba(201, 162, 39, 0.05), transparent);
-  border: 1px solid rgba(201, 162, 39, 0.15);
+  background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.05), transparent);
+  border: 1px solid rgba(var(--gold-rgb), 0.15);
   border-radius: var(--radius-2xl);
   position: relative;
   overflow: hidden;
@@ -906,14 +918,14 @@ a:hover {
 .stat-card {
   padding: var(--space-lg);
   background: var(--charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--white-rgb), 0.05);
   border-radius: var(--radius-lg);
   text-align: center;
   transition: var(--transition);
 }
 
 .stat-card:hover {
-  border-color: rgba(201, 162, 39, 0.3);
+  border-color: rgba(var(--gold-rgb), 0.3);
   background: var(--slate);
 }
 
@@ -975,7 +987,7 @@ a:hover {
 .tab-btn {
   padding: var(--space-sm) var(--space-md);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--white-rgb), 0.1);
   border-radius: var(--radius-md);
   color: var(--text-muted);
   font-family: var(--font-sans);
@@ -986,7 +998,7 @@ a:hover {
 }
 
 .tab-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(var(--white-rgb), 0.2);
   color: var(--text-primary);
 }
 
@@ -1011,24 +1023,24 @@ a:hover {
   text-align: center;
   padding: var(--space-lg);
   background: var(--charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--white-rgb), 0.05);
   border-radius: var(--radius-lg);
   min-width: 160px;
   transition: var(--transition);
 }
 
 .podium-place.first {
-  background: linear-gradient(135deg, rgba(201, 162, 39, 0.1), rgba(201, 162, 39, 0.02));
-  border-color: rgba(201, 162, 39, 0.3);
+  background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.1), rgba(var(--gold-rgb), 0.02));
+  border-color: rgba(var(--gold-rgb), 0.3);
   transform: scale(1.05);
 }
 
 .podium-place.second {
-  border-color: rgba(192, 192, 192, 0.3);
+  border-color: rgba(var(--silver-rgb), 0.3);
 }
 
 .podium-place.third {
-  border-color: rgba(205, 127, 50, 0.3);
+  border-color: rgba(var(--bronze-rgb), 0.3);
 }
 
 .place-rank {
@@ -1053,7 +1065,7 @@ a:hover {
 /* Table */
 .leaderboard-table {
   background: var(--charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--white-rgb), 0.05);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -1079,13 +1091,13 @@ a:hover {
   display: grid;
   grid-template-columns: 80px 1fr 150px 100px;
   padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(var(--white-rgb), 0.03);
   align-items: center;
   transition: var(--transition);
 }
 
 .table-row:hover {
-  background: rgba(201, 162, 39, 0.03);
+  background: rgba(var(--gold-rgb), 0.03);
 }
 
 .table-row:last-child {
@@ -1146,13 +1158,13 @@ a:hover {
   gap: var(--space-md);
   padding: var(--space-md) var(--space-lg);
   background: var(--charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--white-rgb), 0.05);
   border-radius: var(--radius-lg);
   transition: var(--transition);
 }
 
 .feed-item:hover {
-  border-color: rgba(201, 162, 39, 0.2);
+  border-color: rgba(var(--gold-rgb), 0.2);
 }
 
 .feed-icon {
@@ -1200,8 +1212,8 @@ a:hover {
 .cta-inner {
   text-align: center;
   padding: var(--space-xl);
-  background: linear-gradient(135deg, rgba(201, 162, 39, 0.08), rgba(201, 162, 39, 0.02));
-  border: 1px solid rgba(201, 162, 39, 0.2);
+  background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.08), rgba(var(--gold-rgb), 0.02));
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
   border-radius: var(--radius-2xl);
 }
 
@@ -1240,7 +1252,7 @@ a:hover {
    ============================================ */
 .burns-footer {
   padding: var(--space-xl) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(var(--white-rgb), 0.05);
   text-align: center;
   position: relative;
   z-index: 1;
@@ -1302,7 +1314,7 @@ a:hover {
 /* ============================================
    RESPONSIVE
    ============================================ */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1327,7 +1339,7 @@ a:hover {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -1351,7 +1363,7 @@ a:hover {
 [data-variant='2'] .flame {
   opacity: 0.9;
   animation-duration: 0.5s;
-  background: linear-gradient(to top, rgba(220, 38, 38, 0.6), rgba(255, 59, 59, 0.35), transparent);
+  background: linear-gradient(to top, rgba(var(--gold-rgb), 0.6), rgba(var(--ember-rgb), 0.35), transparent);
 }
 
 /* More intense glow circles */
@@ -1368,15 +1380,15 @@ a:hover {
 /* Hero accent glow */
 [data-variant='2'] .hero-title-accent {
   text-shadow:
-    0 0 30px rgba(220, 38, 38, 0.5),
-    0 0 60px rgba(220, 38, 38, 0.2);
+    0 0 30px rgba(var(--gold-rgb), 0.5),
+    0 0 60px rgba(var(--gold-rgb), 0.2);
 }
 
 /* Spark intensity */
 [data-variant='2'] .spark {
   box-shadow:
-    0 0 8px #dc2626,
-    0 0 16px rgba(255, 59, 59, 0.8);
+    0 0 8px var(--gold),
+    0 0 16px rgba(var(--ember-rgb), 0.8);
 }
 
 /* ============================================
@@ -1421,7 +1433,7 @@ a:hover {
 
 /* Muted hero */
 [data-variant='3'] .hero-title-accent {
-  text-shadow: 0 0 20px rgba(148, 163, 184, 0.2);
+  text-shadow: 0 0 20px rgba(var(--gold-rgb), 0.2);
 }
 
 /* ============================================
@@ -1456,8 +1468,8 @@ a:hover {
 
 /* Context boxes within sections */
 .density-context {
-  background: rgba(201, 162, 39, 0.04);
-  border: 1px solid rgba(201, 162, 39, 0.1);
+  background: rgba(var(--gold-rgb), 0.04);
+  border: 1px solid rgba(var(--gold-rgb), 0.1);
   border-radius: 12px;
   padding: var(--space-md) var(--space-lg);
   margin-bottom: var(--space-lg);
@@ -1516,25 +1528,25 @@ a:hover {
 /* Hero title glow in full mode */
 [data-density='full'] .hero-title-accent {
   text-shadow:
-    0 0 30px rgba(201, 162, 39, 0.4),
-    0 0 60px rgba(201, 162, 39, 0.15);
+    0 0 30px rgba(var(--gold-rgb), 0.4),
+    0 0 60px rgba(var(--gold-rgb), 0.15);
 }
 
 /* Stat cards with subtle glow */
 [data-density='full'] .stat-card {
-  border-color: rgba(201, 162, 39, 0.15);
-  box-shadow: 0 0 20px rgba(201, 162, 39, 0.05);
+  border-color: rgba(var(--gold-rgb), 0.15);
+  box-shadow: 0 0 20px rgba(var(--gold-rgb), 0.05);
 }
 
 /* Podium glow */
 [data-density='full'] .podium-place.first {
-  box-shadow: 0 0 30px rgba(201, 162, 39, 0.15);
+  box-shadow: 0 0 30px rgba(var(--gold-rgb), 0.15);
 }
 
 /* CTA section glow */
 [data-density='full'] .cta-inner {
-  border-color: rgba(201, 162, 39, 0.2);
-  box-shadow: 0 0 40px rgba(201, 162, 39, 0.08);
+  border-color: rgba(var(--gold-rgb), 0.2);
+  box-shadow: 0 0 40px rgba(var(--gold-rgb), 0.08);
 }
 
 /* ============================================

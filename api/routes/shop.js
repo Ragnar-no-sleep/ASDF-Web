@@ -16,6 +16,9 @@ const router = express.Router();
 // Helpers
 const { sanitizeError } = require('./helpers');
 
+// CSRF Protection
+const { csrfProtection, generateToken, storeToken } = require('../../middleware/csrf');
+
 // Services
 const {
   getCatalogWithPrices,
@@ -81,9 +84,10 @@ router.get('/shop/inventory', authMiddleware, async (req, res) => {
 /**
  * Initiate purchase (returns transaction to sign)
  * POST /shop/purchase
+ * Requires CSRF token via x-csrf-token header
  * Supports idempotency key header for safe retries
  */
-router.post('/shop/purchase', authMiddleware, async (req, res) => {
+router.post('/shop/purchase', authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { itemId } = req.body;
     const idempotencyKey = req.headers['x-idempotency-key'] || null;
@@ -116,8 +120,9 @@ router.post('/shop/purchase', authMiddleware, async (req, res) => {
 /**
  * Confirm purchase after signing
  * POST /shop/purchase/confirm
+ * Requires CSRF token via x-csrf-token header
  */
-router.post('/shop/purchase/confirm', authMiddleware, async (req, res) => {
+router.post('/shop/purchase/confirm', authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { purchaseId, signature } = req.body;
 
@@ -170,20 +175,21 @@ router.post('/shop/unequip', authMiddleware, async (req, res) => {
 /**
  * Get CSRF token for state-changing requests
  * GET /v2/csrf-token
+ * Returns a token that must be sent in x-csrf-token header on subsequent POST/PUT/DELETE requests
  */
 router.get('/v2/csrf-token', (req, res) => {
-  // Generate a simple CSRF token based on session/time
-  const token = crypto.randomBytes(32).toString('hex');
+  try {
+    const token = generateToken();
+    storeToken(token);
 
-  // Set token in cookie (httpOnly for security)
-  res.cookie('csrftoken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 3600000, // 1 hour
-  });
-
-  res.json({ token });
+    res.json({
+      token,
+      expires: 3600, // 1 hour in seconds
+      header: 'x-csrf-token',
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate CSRF token' });
+  }
 });
 
 // ============================================
@@ -364,9 +370,10 @@ router.get('/v2/shop/events', async (req, res) => {
 /**
  * Initiate v2 purchase (supports dual currency)
  * POST /v2/shop/purchase/initiate
+ * Requires CSRF token via x-csrf-token header
  * Body: { itemId, currency: 'burn' | 'ingame' }
  */
-router.post('/v2/shop/purchase/initiate', authMiddleware, async (req, res) => {
+router.post('/v2/shop/purchase/initiate', authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { itemId, currency = 'burn' } = req.body;
 
@@ -402,9 +409,10 @@ router.post('/v2/shop/purchase/initiate', authMiddleware, async (req, res) => {
 /**
  * Confirm v2 purchase
  * POST /v2/shop/purchase/confirm
+ * Requires CSRF token via x-csrf-token header
  * Body: { purchaseId, signature? }
  */
-router.post('/v2/shop/purchase/confirm', authMiddleware, async (req, res) => {
+router.post('/v2/shop/purchase/confirm', authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { purchaseId, signature } = req.body;
 

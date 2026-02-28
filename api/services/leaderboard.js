@@ -170,82 +170,90 @@ function recordBurn(wallet, amount, signature) {
 }
 
 /**
- * Get top burners leaderboard
+ * Get top burners leaderboard with pagination
+ * @param {number} offset - Start position (for pagination)
  * @param {number} limit - Max entries to return
  * @param {string} timeframe - 'all', 'month', 'week', 'day'
- * @returns {Array}
+ * @returns {Object} { entries: Array, total: number }
  */
-function getTopBurners(limit = 20, timeframe = 'all') {
-  const cacheKey = `leaderboard:burns:${timeframe}:${limit}`;
-  const cached = getCached(cacheKey);
-  if (cached) return cached;
+function getTopBurners(offset = 0, limit = 20, timeframe = 'all') {
+  // Cache the full leaderboard, not per-page (avoids cache fragmentation)
+  const cacheKey = `leaderboard:burns:${timeframe}:full`;
+  let fullList = getCached(cacheKey);
 
-  // Calculate time filter
-  const now = Date.now();
-  const timeFilters = {
-    day: now - 24 * 60 * 60 * 1000,
-    week: now - 7 * 24 * 60 * 60 * 1000,
-    month: now - 30 * 24 * 60 * 60 * 1000,
-    all: 0,
-  };
-  const minTime = timeFilters[timeframe] || 0;
+  if (!fullList) {
+    // Calculate time filter
+    const now = Date.now();
+    const timeFilters = {
+      day: now - 24 * 60 * 60 * 1000,
+      week: now - 7 * 24 * 60 * 60 * 1000,
+      month: now - 30 * 24 * 60 * 60 * 1000,
+      all: 0,
+    };
+    const minTime = timeFilters[timeframe] || 0;
 
-  // Aggregate burns by wallet within timeframe
-  const walletBurns = new Map();
+    // Aggregate burns by wallet within timeframe
+    const walletBurns = new Map();
 
-  for (const record of burnRecords) {
-    if (record.timestamp >= minTime) {
-      const current = walletBurns.get(record.wallet) || 0;
-      walletBurns.set(record.wallet, current + record.amount);
+    for (const record of burnRecords) {
+      if (record.timestamp >= minTime) {
+        const current = walletBurns.get(record.wallet) || 0;
+        walletBurns.set(record.wallet, current + record.amount);
+      }
     }
-  }
 
-  // Sort and get top
-  const sorted = Array.from(walletBurns.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([wallet, amount], index) => ({
-      rank: index + 1,
-      wallet,
-      walletShort: `${wallet.slice(0, 4)}...${wallet.slice(-4)}`,
-      totalBurned: amount,
-      burnCount: burnRecords.filter(r => r.wallet === wallet && r.timestamp >= minTime).length,
-    }));
-
-  setCached(cacheKey, sorted, CACHE_TTL.leaderboard);
-  return sorted;
-}
-
-/**
- * Get XP/tier leaderboard
- * @param {number} limit - Max entries
- * @returns {Array}
- */
-function getXPLeaderboard(limit = 20) {
-  const cacheKey = `leaderboard:xp:${limit}`;
-  const cached = getCached(cacheKey);
-  if (cached) return cached;
-
-  // Sort users by XP
-  const sorted = Array.from(userStats.entries())
-    .sort((a, b) => b[1].totalXP - a[1].totalXP)
-    .slice(0, limit)
-    .map(([wallet, stats], index) => {
-      const tierInfo = calculateTierFromXP(stats.totalXP);
-      return {
+    // Sort all entries (no slice yet)
+    fullList = Array.from(walletBurns.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([wallet, amount], index) => ({
         rank: index + 1,
         wallet,
         walletShort: `${wallet.slice(0, 4)}...${wallet.slice(-4)}`,
-        totalXP: stats.totalXP,
-        tier: tierInfo.tier,
-        tierName: tierInfo.name,
-        totalBurned: stats.totalBurned,
-        burnCount: stats.burnCount,
-      };
-    });
+        totalBurned: amount,
+        burnCount: burnRecords.filter(r => r.wallet === wallet && r.timestamp >= minTime).length,
+      }));
 
-  setCached(cacheKey, sorted, CACHE_TTL.leaderboard);
-  return sorted;
+    setCached(cacheKey, fullList, CACHE_TTL.leaderboard);
+  }
+
+  // Apply offset and limit to cached full list
+  return fullList.slice(offset, offset + limit);
+}
+
+/**
+ * Get XP/tier leaderboard with pagination
+ * @param {number} offset - Start position (for pagination)
+ * @param {number} limit - Max entries to return
+ * @returns {Array}
+ */
+function getXPLeaderboard(offset = 0, limit = 20) {
+  // Cache the full leaderboard, not per-page (avoids cache fragmentation)
+  const cacheKey = `leaderboard:xp:full`;
+  let fullList = getCached(cacheKey);
+
+  if (!fullList) {
+    // Sort all users by XP (no slice yet)
+    fullList = Array.from(userStats.entries())
+      .sort((a, b) => b[1].totalXP - a[1].totalXP)
+      .map(([wallet, stats], index) => {
+        const tierInfo = calculateTierFromXP(stats.totalXP);
+        return {
+          rank: index + 1,
+          wallet,
+          walletShort: `${wallet.slice(0, 4)}...${wallet.slice(-4)}`,
+          totalXP: stats.totalXP,
+          tier: tierInfo.tier,
+          tierName: tierInfo.name,
+          totalBurned: stats.totalBurned,
+          burnCount: stats.burnCount,
+        };
+      });
+
+    setCached(cacheKey, fullList, CACHE_TTL.leaderboard);
+  }
+
+  // Apply offset and limit to cached full list
+  return fullList.slice(offset, offset + limit);
 }
 
 /**

@@ -181,7 +181,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
     rgba(0, 0, 0, 0.1) 4px
   );
   pointer-events: none;
-  z-index: 9998;
+  z-index: 9998; /* decorative, pointer-events:none — must be above all content */
   opacity: 0.3;
 }
 
@@ -192,7 +192,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   inset: 0;
   background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
   pointer-events: none;
-  z-index: 9997;
+  z-index: 9997; /* decorative, pointer-events:none */
 }
 
 /* Console text glow */
@@ -235,7 +235,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   left: 0;
   right: 0;
   height: var(--eco-nav-height);
-  z-index: 900;
+  z-index: 900; /* ecosystem nav layer — above tool content, below modals use separate stacking context */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1135,6 +1135,62 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
 }
 [data-variant='3'] .eco-nav--ignition .eco-nav-logo-mark {
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+/* --- Hub nav (landing page) --- */
+.eco-nav--hub {
+  border-bottom-color: rgba(234, 179, 8, 0.15);
+}
+.eco-nav--hub .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.25);
+}
+
+/* --- Learn nav --- */
+.eco-nav--learn {
+  border-bottom-color: rgba(96, 165, 250, 0.15);
+}
+.eco-nav--learn .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.25);
+}
+
+/* --- Build nav --- */
+.eco-nav--build {
+  border-bottom-color: rgba(249, 115, 22, 0.15);
+}
+.eco-nav--build .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.25);
+}
+
+/* --- Games nav --- */
+.eco-nav--games {
+  border-bottom-color: rgba(167, 139, 250, 0.15);
+}
+.eco-nav--games .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.25);
+}
+
+/* --- Me nav --- */
+.eco-nav--me {
+  border-bottom-color: rgba(148, 163, 184, 0.15);
+}
+.eco-nav--me .eco-nav-logo-mark {
+  box-shadow: 0 0 10px rgba(148, 163, 184, 0.2);
+}
+
+/* --- Terrier nav --- */
+.eco-nav--terrier {
+  border-bottom-color: rgba(245, 158, 11, 0.15);
+}
+.eco-nav--terrier .eco-nav-logo-mark {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+}
+
+/* --- Privacy nav --- */
+.eco-nav--privacy {
+  border-bottom-color: rgba(107, 114, 128, 0.12);
+}
+.eco-nav--privacy .eco-nav-logo-mark {
+  box-shadow: 0 0 8px rgba(107, 114, 128, 0.15);
 }
 
 /* ============================================

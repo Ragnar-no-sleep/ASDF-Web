@@ -146,7 +146,6 @@ class SecretSequenceDetector {
     config.unlocked = true;
     this.userInput = [];
 
-    console.log(`🎉 Secret unlocked: ${name}`);
     this.triggerUnlock(name, config.reward);
   }
 
@@ -469,7 +468,6 @@ export function initEasterEggs() {
   // Initialize interaction easter eggs
   interactionEggs = new InteractionEasterEggs();
 
-  console.log('🥚 Easter eggs initialized');
 }
 
 function unlockKonamiCode() {
@@ -576,7 +574,6 @@ function enableDeveloperMode() {
 
   document.body.appendChild(badge);
 
-  console.log('🛠️ Developer Mode enabled!');
 }
 
 function showDeveloperPanel() {

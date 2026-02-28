@@ -11,7 +11,7 @@
 // STATE
 // ============================================
 
-var journeyState = {
+const journeyState = {
   currentModule: null,
   currentSkillPack: null,
   currentLesson: null,
@@ -41,11 +41,11 @@ function initJourney() {
  */
 function setupJourneyEventListeners() {
   // Module click handlers
-  var moduleElements = document.querySelectorAll('.journey-module');
+  const moduleElements = document.querySelectorAll('.journey-module');
   moduleElements.forEach(function (el) {
     el.addEventListener('click', function () {
-      var moduleId = this.dataset.module;
-      var lessonId = this.dataset.lesson;
+      const moduleId = this.dataset.module;
+      const lessonId = this.dataset.lesson;
       if (moduleId && lessonId) {
         openJourneyLesson(moduleId, lessonId);
       }
@@ -53,22 +53,22 @@ function setupJourneyEventListeners() {
   });
 
   // Close modal handlers
-  var closeBtn = document.getElementById('journey-modal-close');
+  const closeBtn = document.getElementById('journey-modal-close');
   if (closeBtn) {
     closeBtn.addEventListener('click', closeJourneyModal);
   }
 
-  var backdrop = document.getElementById('journey-modal-backdrop');
+  const backdrop = document.getElementById('journey-modal-backdrop');
   if (backdrop) {
     backdrop.addEventListener('click', closeJourneyModal);
   }
 
   // Begin Learning button
-  var beginBtn = document.querySelector('.journey-cta-btn');
+  const beginBtn = document.querySelector('.journey-cta-btn');
   if (beginBtn) {
     beginBtn.addEventListener('click', function () {
       // Open first unlocked lesson
-      var firstModule = DEV_CURRICULUM[0];
+      const firstModule = DEV_CURRICULUM[0];
       if (firstModule && firstModule.skillPacks[0] && firstModule.skillPacks[0].lessons[0]) {
         openJourneyLesson(firstModule.id, firstModule.skillPacks[0].lessons[0].id);
       }
@@ -84,20 +84,20 @@ function setupJourneyEventListeners() {
  * Render all modules in the journey curriculum
  */
 function renderJourneyModules() {
-  var container = document.querySelector('.journey-modules');
+  const container = document.querySelector('.journey-modules');
   if (!container) return;
 
-  var progress = getJourneyProgress();
-  var html = '';
+  const progress = getJourneyProgress();
+  let html = '';
 
   DEV_CURRICULUM.forEach(function (module) {
     module.skillPacks.forEach(function (skillPack, spIndex) {
       skillPack.lessons.forEach(function (lesson, lessonIndex) {
-        var lessonProgress = progress.lessons[lesson.id];
-        var isCompleted = lessonProgress && lessonProgress.completed;
-        var isUnlocked = canAccessLesson(lesson, progress);
+        const lessonProgress = progress.lessons[lesson.id];
+        const isCompleted = lessonProgress && lessonProgress.completed;
+        const isUnlocked = canAccessLesson(lesson, progress);
 
-        var statusClass = isCompleted ? 'completed' : isUnlocked ? 'unlocked' : 'locked';
+        const statusClass = isCompleted ? 'completed' : isUnlocked ? 'unlocked' : 'locked';
 
         html +=
           '<div class="journey-module ' +
@@ -131,13 +131,13 @@ function renderJourneyModules() {
   container.innerHTML = html;
 
   // Re-attach event listeners after rendering
-  var moduleElements = container.querySelectorAll(
+  const moduleElements = container.querySelectorAll(
     '.journey-module.unlocked, .journey-module.completed'
   );
   moduleElements.forEach(function (el) {
     el.addEventListener('click', function () {
-      var moduleId = this.dataset.module;
-      var lessonId = this.dataset.lesson;
+      const moduleId = this.dataset.module;
+      const lessonId = this.dataset.lesson;
       if (moduleId && lessonId) {
         openJourneyLesson(moduleId, lessonId);
       }
@@ -165,26 +165,26 @@ function canAccessLesson(lesson, progress) {
  * Update the stats display in the sidebar
  */
 function updateJourneyStatsDisplay() {
-  var progress = getJourneyProgress();
-  var level = getJourneyLevel(progress.totalXP);
+  const progress = getJourneyProgress();
+  const level = getJourneyLevel(progress.totalXP);
 
   // Update XP display
-  var xpEl = document.querySelector('.journey-stat-value');
+  const xpEl = document.querySelector('.journey-stat-value');
   if (xpEl) {
     xpEl.textContent = progress.totalXP;
   }
 
   // Update progress bar
-  var progressFill = document.getElementById('journey-progress-fill');
-  var progressPct = document.getElementById('journey-progress-pct');
+  const progressFill = document.getElementById('journey-progress-fill');
+  const progressPct = document.getElementById('journey-progress-pct');
   if (progressFill && progressPct) {
-    var levelProgress = getJourneyLevelProgress(progress.totalXP);
+    const levelProgress = getJourneyLevelProgress(progress.totalXP);
     progressFill.style.width = levelProgress.percent + '%';
     progressPct.textContent = levelProgress.percent + '%';
   }
 
   // Update level indicators
-  var levelEls = document.querySelectorAll('.journey-level');
+  const levelEls = document.querySelectorAll('.journey-level');
   levelEls.forEach(function (el, index) {
     el.classList.remove('active', 'completed');
     if (index < progress.currentLevel) {
@@ -195,17 +195,17 @@ function updateJourneyStatsDisplay() {
   });
 
   // Update modules completed
-  var completedCount = Object.values(progress.lessons).filter(function (l) {
+  const completedCount = Object.values(progress.lessons).filter(function (l) {
     return l.completed;
   }).length;
-  var totalLessons = 0;
+  let totalLessons = 0;
   DEV_CURRICULUM.forEach(function (m) {
     m.skillPacks.forEach(function (sp) {
       totalLessons += sp.lessons.length;
     });
   });
 
-  var modulesEl = document.querySelectorAll('.journey-stat-value')[1];
+  const modulesEl = document.querySelectorAll('.journey-stat-value')[1];
   if (modulesEl) {
     modulesEl.textContent = completedCount + '/' + totalLessons;
   }
@@ -222,14 +222,14 @@ function updateJourneyStatsDisplay() {
  */
 function openJourneyLesson(moduleId, lessonId) {
   // Find the lesson
-  var module = DEV_CURRICULUM.find(function (m) {
+  const module = DEV_CURRICULUM.find(function (m) {
     return m.id === moduleId;
   });
   if (!module) return;
 
-  var lesson = null;
+  let lesson = null;
   module.skillPacks.forEach(function (sp) {
-    var found = sp.lessons.find(function (l) {
+    const found = sp.lessons.find(function (l) {
       return l.id === lessonId;
     });
     if (found) lesson = found;
@@ -248,7 +248,7 @@ function openJourneyLesson(moduleId, lessonId) {
   renderLessonContent();
 
   // Show modal
-  var modal = document.getElementById('journey-lesson-modal');
+  const modal = document.getElementById('journey-lesson-modal');
   if (modal) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -259,7 +259,7 @@ function openJourneyLesson(moduleId, lessonId) {
  * Close the lesson modal
  */
 function closeJourneyModal() {
-  var modal = document.getElementById('journey-lesson-modal');
+  const modal = document.getElementById('journey-lesson-modal');
   if (modal) {
     modal.classList.remove('active');
     document.body.style.overflow = '';
@@ -274,27 +274,27 @@ function closeJourneyModal() {
  * Render the current lesson content
  */
 function renderLessonContent() {
-  var lesson = journeyState.currentLesson;
+  const lesson = journeyState.currentLesson;
   if (!lesson) return;
 
-  var titleEl = document.getElementById('journey-lesson-title');
-  var subtitleEl = document.getElementById('journey-lesson-subtitle');
-  var contentEl = document.getElementById('journey-lesson-content');
-  var progressEl = document.getElementById('journey-lesson-progress');
+  const titleEl = document.getElementById('journey-lesson-title');
+  const subtitleEl = document.getElementById('journey-lesson-subtitle');
+  const contentEl = document.getElementById('journey-lesson-content');
+  const progressEl = document.getElementById('journey-lesson-progress');
 
   if (titleEl) titleEl.textContent = lesson.title;
   if (subtitleEl) subtitleEl.textContent = lesson.subtitle;
 
   // Render progress indicator
   if (progressEl) {
-    var total = lesson.content.length;
-    var current = journeyState.currentContentIndex + 1;
+    const total = lesson.content.length;
+    const current = journeyState.currentContentIndex + 1;
     progressEl.textContent = current + ' / ' + total;
   }
 
   // Render content block
   if (contentEl) {
-    var block = lesson.content[journeyState.currentContentIndex];
+    const block = lesson.content[journeyState.currentContentIndex];
     contentEl.innerHTML = renderContentBlock(block, lesson.id);
 
     // Attach quiz handlers if quiz block
@@ -344,20 +344,20 @@ function renderTheoryBlock(block) {
  * @returns {string} HTML
  */
 function renderQuizBlock(block, lessonId) {
-  var progress = getJourneyProgress();
-  var lessonProgress = progress.lessons[lessonId];
-  var previousAnswer = lessonProgress && lessonProgress.quizAnswers[block.id];
+  const progress = getJourneyProgress();
+  const lessonProgress = progress.lessons[lessonId];
+  const previousAnswer = lessonProgress && lessonProgress.quizAnswers[block.id];
 
-  var html = '<div class="journey-quiz" data-quiz-id="' + block.id + '">';
+  let html = '<div class="journey-quiz" data-quiz-id="' + block.id + '">';
   html += '<h3 class="journey-quiz-question">' + escapeHtml(block.content) + '</h3>';
   html += '<div class="journey-quiz-options">';
 
   block.options.forEach(function (option) {
-    var isSelected = previousAnswer && previousAnswer.answerId === option.id;
-    var isCorrect = option.id === block.correctAnswer;
-    var showResult = previousAnswer !== undefined;
+    const isSelected = previousAnswer && previousAnswer.answerId === option.id;
+    const isCorrect = option.id === block.correctAnswer;
+    const showResult = previousAnswer !== undefined;
 
-    var optionClass = 'journey-quiz-option';
+    let optionClass = 'journey-quiz-option';
     if (showResult && isSelected) {
       optionClass += isCorrect ? ' correct' : ' incorrect';
     } else if (showResult && isCorrect) {
@@ -417,7 +417,7 @@ function renderCodeBlock(block) {
  * @returns {string} HTML
  */
 function renderChallengeBlock(block) {
-  var html = '<div class="journey-challenge">';
+  let html = '<div class="journey-challenge">';
   html += '<h3>&#9889; Challenge</h3>';
   html += '<p>' + escapeHtml(block.content) + '</p>';
 
@@ -438,11 +438,11 @@ function renderChallengeBlock(block) {
  * @param {string} lessonId - Lesson ID
  */
 function attachQuizHandlers(block, lessonId) {
-  var options = document.querySelectorAll('.journey-quiz-option:not([disabled])');
+  const options = document.querySelectorAll('.journey-quiz-option:not([disabled])');
   options.forEach(function (optionEl) {
     optionEl.addEventListener('click', function () {
-      var optionId = this.dataset.optionId;
-      var isCorrect = optionId === block.correctAnswer;
+      const optionId = this.dataset.optionId;
+      const isCorrect = optionId === block.correctAnswer;
 
       // Record answer
       recordJourneyQuizAnswer(lessonId, block.id, optionId, isCorrect);
@@ -457,18 +457,18 @@ function attachQuizHandlers(block, lessonId) {
  * Update navigation button states
  */
 function updateLessonNavigation() {
-  var lesson = journeyState.currentLesson;
+  const lesson = journeyState.currentLesson;
   if (!lesson) return;
 
-  var prevBtn = document.getElementById('journey-prev-btn');
-  var nextBtn = document.getElementById('journey-next-btn');
+  const prevBtn = document.getElementById('journey-prev-btn');
+  const nextBtn = document.getElementById('journey-next-btn');
 
   if (prevBtn) {
     prevBtn.disabled = journeyState.currentContentIndex === 0;
   }
 
   if (nextBtn) {
-    var isLastBlock = journeyState.currentContentIndex >= lesson.content.length - 1;
+    const isLastBlock = journeyState.currentContentIndex >= lesson.content.length - 1;
     nextBtn.textContent = isLastBlock ? 'Complete Lesson' : 'Next';
   }
 }
@@ -487,7 +487,7 @@ function journeyPrevContent() {
  * Go to next content block or complete lesson
  */
 function journeyNextContent() {
-  var lesson = journeyState.currentLesson;
+  const lesson = journeyState.currentLesson;
   if (!lesson) return;
 
   if (journeyState.currentContentIndex < lesson.content.length - 1) {
@@ -495,7 +495,7 @@ function journeyNextContent() {
     renderLessonContent();
   } else {
     // Complete lesson
-    var xpReward = getLessonXpReward(lesson);
+    const xpReward = getLessonXpReward(lesson);
     completeJourneyLesson(lesson.id, xpReward);
 
     // Show completion message
@@ -509,7 +509,7 @@ function journeyNextContent() {
  * @param {number} xpReward - XP awarded
  */
 function showLessonComplete(lesson, xpReward) {
-  var contentEl = document.getElementById('journey-lesson-content');
+  const contentEl = document.getElementById('journey-lesson-content');
   if (!contentEl) return;
 
   contentEl.innerHTML =
@@ -536,7 +536,7 @@ function showLessonComplete(lesson, xpReward) {
     '</div>';
 
   // Hide navigation
-  var navEl = document.querySelector('.journey-lesson-nav');
+  const navEl = document.querySelector('.journey-lesson-nav');
   if (navEl) navEl.style.display = 'none';
 }
 
@@ -553,7 +553,7 @@ function simpleMarkdown(text) {
   if (!text) return '';
 
   // Escape HTML first
-  var html = escapeHtml(text);
+  let html = escapeHtml(text);
 
   // Headers
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
@@ -581,7 +581,7 @@ function simpleMarkdown(text) {
 
   // Tables (basic support)
   html = html.replace(/\|(.+)\|/g, function (match, content) {
-    var cells = content.split('|').map(function (c) {
+    const cells = content.split('|').map(function (c) {
       return c.trim();
     });
     if (
@@ -633,7 +633,7 @@ function simpleMarkdown(text) {
 
 // Event delegation for dynamically generated buttons
 document.addEventListener('click', function (e) {
-  var target = e.target.closest('[data-action="close-journey-modal"]');
+  const target = e.target.closest('[data-action="close-journey-modal"]');
   if (target) closeJourneyModal();
 });
 

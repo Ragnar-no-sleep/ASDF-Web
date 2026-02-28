@@ -12,12 +12,19 @@
 :root {
   /* Ignition Core Palette */
   --ig-accent: #ea580c;
+  --ig-accent-rgb: 234, 88, 12;
   --ig-accent-light: #f97316;
+  --ig-accent-light-rgb: 249, 115, 22;
   --ig-accent-dim: #9a3412;
-  --ig-accent-glow: rgba(234, 88, 12, 0.2);
+  --ig-accent-glow: rgba(var(--ig-accent-rgb), 0.2);
+
+  /* Secondary (gold, used for 5x multipliers) */
+  --ig-secondary: #fbbf24;
+  --ig-secondary-rgb: 251, 191, 36;
 
   /* Backgrounds */
   --ig-black: #000000;
+  --ig-bg-deep: #000000;
   --ig-void: #050508;
   --ig-obsidian: #0a0a0f;
   --ig-charcoal: #111118;
@@ -25,15 +32,19 @@
   --ig-ash: #2a2a38;
 
   /* Text */
-  --ig-text-primary: rgba(255, 255, 255, 0.95);
-  --ig-text-secondary: rgba(255, 255, 255, 0.7);
-  --ig-text-muted: rgba(255, 255, 255, 0.5);
-  --ig-text-dim: rgba(255, 255, 255, 0.3);
+  --ig-white-rgb: 255, 255, 255;
+  --ig-text-primary: rgba(var(--ig-white-rgb), 0.95);
+  --ig-text-secondary: rgba(var(--ig-white-rgb), 0.7);
+  --ig-text-muted: rgba(var(--ig-white-rgb), 0.5);
+  --ig-text-dim: rgba(var(--ig-white-rgb), 0.3);
 
   /* Functional */
   --ig-success: #22c55e;
+  --ig-success-rgb: 34, 197, 94;
   --ig-warning: #eab308;
+  --ig-warning-rgb: 234, 179, 8;
   --ig-danger: #ef4444;
+  --ig-danger-rgb: 239, 68, 68;
 
   /* Fibonacci Spacing */
   --space-xs: 8px;
@@ -44,13 +55,11 @@
   --space-2xl: 89px;
   --space-3xl: 144px;
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  /* --font-sans, --font-mono: inherited from design-tokens.css */
 
   /* Effects */
   --ig-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --ig-glow: 0 0 40px rgba(234, 88, 12, 0.2);
+  --ig-glow: 0 0 40px rgba(var(--ig-accent-rgb), 0.2);
 }
 
 /* ============================================
@@ -104,7 +113,7 @@ a:hover {
   transform: translateX(-50%);
   padding: var(--space-sm) var(--space-md);
   background: var(--ig-accent);
-  color: #000;
+  color: var(--ig-bg-deep);
   font-weight: 600;
   border-radius: var(--radius-md, 10px);
   z-index: 9999;
@@ -137,7 +146,7 @@ a:hover {
   left: -10%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(234, 88, 12, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-accent-rgb), 0.08) 0%, transparent 70%);
   animation: ig-float 22s ease-in-out infinite;
 }
 
@@ -148,7 +157,7 @@ a:hover {
   right: -10%;
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-accent-light-rgb), 0.05) 0%, transparent 70%);
   animation: ig-float 28s ease-in-out infinite reverse;
 }
 
@@ -177,7 +186,7 @@ a:hover {
   height: 280px;
   top: 20%;
   left: 10%;
-  background: radial-gradient(circle, rgba(234, 88, 12, 0.1), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-accent-rgb), 0.1), transparent 70%);
 }
 
 .ig-glow--2 {
@@ -185,7 +194,7 @@ a:hover {
   height: 200px;
   top: 55%;
   right: 15%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.08), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-accent-light-rgb), 0.08), transparent 70%);
   animation-delay: 2.5s;
 }
 
@@ -194,7 +203,7 @@ a:hover {
   height: 240px;
   bottom: 20%;
   left: 35%;
-  background: radial-gradient(circle, rgba(234, 88, 12, 0.06), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-accent-rgb), 0.06), transparent 70%);
   animation-delay: 4.5s;
 }
 
@@ -221,7 +230,7 @@ a:hover {
   animation: ig-rise 7s ease-out infinite;
   box-shadow:
     0 0 12px var(--ig-accent),
-    0 0 24px rgba(249, 115, 22, 0.6);
+    0 0 24px rgba(var(--ig-accent-light-rgb), 0.6);
 }
 
 .ig-particle:nth-child(4) {
@@ -293,8 +302,8 @@ a:hover {
   height: 30%;
   background: linear-gradient(
     to top,
-    rgba(234, 88, 12, 0.1),
-    rgba(249, 115, 22, 0.04),
+    rgba(var(--ig-accent-rgb), 0.1),
+    rgba(var(--ig-accent-light-rgb), 0.04),
     transparent
   );
   animation: ig-heat-pulse 4s ease-in-out infinite;
@@ -334,7 +343,7 @@ a:hover {
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
   background: var(--ig-accent-glow);
-  border: 1px solid rgba(234, 88, 12, 0.3);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.3);
   border-radius: 100px;
   font-size: var(--text-xs, 11px);
   font-weight: 500;
@@ -372,7 +381,7 @@ a:hover {
 
 .ig-hero-title-accent {
   color: var(--ig-accent);
-  text-shadow: 0 0 40px rgba(234, 88, 12, 0.3);
+  text-shadow: 0 0 40px rgba(var(--ig-accent-rgb), 0.3);
 }
 
 .ig-hero-subtitle {
@@ -396,7 +405,7 @@ a:hover {
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-lg);
   background: var(--ig-accent);
-  color: #000;
+  color: var(--ig-bg-deep);
   font-family: var(--font-sans);
   font-size: var(--text-sm, 13px);
   font-weight: 600;
@@ -415,7 +424,7 @@ a:hover {
 .ig-wallet-btn.connected {
   background: var(--ig-charcoal);
   color: var(--ig-accent);
-  border: 1px solid rgba(234, 88, 12, 0.3);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.3);
 }
 
 .ig-wallet-icon {
@@ -445,7 +454,7 @@ a:hover {
 .ig-tab {
   padding: var(--space-sm) var(--space-md);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.08);
   border-radius: var(--radius-md, 10px);
   color: var(--ig-text-muted);
   font-family: var(--font-sans);
@@ -458,14 +467,14 @@ a:hover {
 }
 
 .ig-tab:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(var(--ig-white-rgb), 0.15);
   color: var(--ig-text-primary);
 }
 
 .ig-tab.active {
   background: var(--ig-accent);
   border-color: var(--ig-accent);
-  color: #000;
+  color: var(--ig-bg-deep);
   font-weight: 600;
 }
 
@@ -532,8 +541,8 @@ a:hover {
 .ig-pool-card,
 .ig-countdown-card {
   padding: var(--space-xl);
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.06), transparent);
-  border: 1px solid rgba(234, 88, 12, 0.15);
+  background: linear-gradient(135deg, rgba(var(--ig-accent-rgb), 0.06), transparent);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.15);
   border-radius: var(--radius-xl, 24px);
   text-align: center;
   position: relative;
@@ -633,14 +642,14 @@ a:hover {
 .ig-holding-card {
   padding: var(--space-lg);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.05);
   border-radius: var(--radius-lg, 16px);
   text-align: center;
   transition: var(--ig-transition);
 }
 
 .ig-holding-card:hover {
-  border-color: rgba(234, 88, 12, 0.3);
+  border-color: rgba(var(--ig-accent-rgb), 0.3);
   background: var(--ig-slate);
 }
 
@@ -670,8 +679,8 @@ a:hover {
    ============================================ */
 .ig-koth-card {
   padding: var(--space-xl);
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(234, 88, 12, 0.02));
-  border: 1px solid rgba(234, 88, 12, 0.25);
+  background: linear-gradient(135deg, rgba(var(--ig-accent-rgb), 0.08), rgba(var(--ig-accent-rgb), 0.02));
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.25);
   border-radius: var(--radius-xl, 24px);
   display: flex;
   align-items: center;
@@ -738,7 +747,7 @@ a:hover {
   right: var(--space-md);
   padding: 4px var(--space-sm);
   background: var(--ig-accent-glow);
-  border: 1px solid rgba(234, 88, 12, 0.3);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.3);
   border-radius: 100px;
   font-size: var(--text-2xs, 10px);
   font-weight: 600;
@@ -759,7 +768,7 @@ a:hover {
   grid-template-columns: 80px 1fr 100px;
   padding: var(--space-sm) var(--space-md);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.04);
   border-radius: var(--radius-md, 10px);
   font-family: var(--font-mono);
   font-size: var(--text-sm, 13px);
@@ -785,7 +794,7 @@ a:hover {
    ============================================ */
 .ig-leaderboard-table {
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.05);
   border-radius: var(--radius-lg, 16px);
   overflow: hidden;
 }
@@ -811,13 +820,13 @@ a:hover {
   display: grid;
   grid-template-columns: 50px 1fr 100px 100px 80px;
   padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(var(--ig-white-rgb), 0.03);
   align-items: center;
   transition: var(--ig-transition);
 }
 
 .ig-table-row:hover {
-  background: rgba(234, 88, 12, 0.04);
+  background: rgba(var(--ig-accent-rgb), 0.04);
 }
 
 .ig-table-row:last-child {
@@ -858,8 +867,8 @@ a:hover {
 }
 
 .ig-multi--5x {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
+  color: var(--ig-secondary);
+  background: rgba(var(--ig-secondary-rgb), 0.12);
 }
 
 .ig-multi--3x {
@@ -869,17 +878,17 @@ a:hover {
 
 .ig-multi--2x {
   color: var(--ig-accent-light);
-  background: rgba(249, 115, 22, 0.1);
+  background: rgba(var(--ig-accent-light-rgb), 0.1);
 }
 
 .ig-multi--1x {
   color: var(--ig-text-secondary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--ig-white-rgb), 0.05);
 }
 
 .ig-multi--low {
   color: var(--ig-text-dim);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--ig-white-rgb), 0.03);
 }
 
 /* ============================================
@@ -914,7 +923,7 @@ a:hover {
 .ig-textarea {
   padding: var(--space-sm) var(--space-md);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.08);
   border-radius: var(--radius-md, 10px);
   color: var(--ig-text-primary);
   font-family: var(--font-sans);
@@ -926,7 +935,7 @@ a:hover {
 .ig-input:focus,
 .ig-textarea:focus {
   border-color: var(--ig-accent);
-  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.15);
+  box-shadow: 0 0 0 2px rgba(var(--ig-accent-rgb), 0.15);
 }
 
 .ig-input::placeholder,
@@ -949,7 +958,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding-top: var(--space-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(var(--ig-white-rgb), 0.05);
 }
 
 .ig-form-fee {
@@ -975,7 +984,7 @@ a:hover {
   align-items: center;
   padding: var(--space-sm) var(--space-xl);
   background: var(--ig-accent);
-  color: #000;
+  color: var(--ig-bg-deep);
   font-family: var(--font-sans);
   font-size: var(--text-sm, 13px);
   font-weight: 600;
@@ -1003,7 +1012,7 @@ a:hover {
   margin: var(--space-lg) 0;
   padding: var(--space-lg);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.06);
   border-radius: var(--radius-lg, 16px);
 }
 
@@ -1011,7 +1020,7 @@ a:hover {
   display: flex;
   justify-content: space-between;
   padding: var(--space-xs) 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(var(--ig-white-rgb), 0.03);
 }
 
 .ig-register-row:last-child {
@@ -1048,13 +1057,13 @@ a:hover {
   gap: var(--space-lg);
   padding: var(--space-lg);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.05);
   border-radius: var(--radius-lg, 16px);
   transition: var(--ig-transition);
 }
 
 .ig-robinhood-card:hover {
-  border-color: rgba(234, 88, 12, 0.2);
+  border-color: rgba(var(--ig-accent-rgb), 0.2);
 }
 
 .ig-robinhood-token {
@@ -1096,8 +1105,8 @@ a:hover {
 
 .ig-robinhood-badge {
   padding: 4px var(--space-sm);
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.25);
+  background: rgba(var(--ig-success-rgb), 0.12);
+  border: 1px solid rgba(var(--ig-success-rgb), 0.25);
   border-radius: 100px;
   font-size: var(--text-2xs, 10px);
   font-weight: 600;
@@ -1108,8 +1117,8 @@ a:hover {
 }
 
 .ig-robinhood-badge--pending {
-  background: rgba(234, 179, 8, 0.12);
-  border-color: rgba(234, 179, 8, 0.25);
+  background: rgba(var(--ig-warning-rgb), 0.12);
+  border-color: rgba(var(--ig-warning-rgb), 0.25);
   color: var(--ig-warning);
 }
 
@@ -1125,7 +1134,7 @@ a:hover {
   grid-template-columns: 150px 1fr 100px;
   padding: var(--space-sm) var(--space-md);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.04);
   border-radius: var(--radius-md, 10px);
   font-family: var(--font-mono);
   font-size: var(--text-sm, 13px);
@@ -1177,8 +1186,8 @@ a:hover {
 }
 
 .ig-fee-card--primary {
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(234, 88, 12, 0.02));
-  border: 1px solid rgba(234, 88, 12, 0.2);
+  background: linear-gradient(135deg, rgba(var(--ig-accent-rgb), 0.1), rgba(var(--ig-accent-rgb), 0.02));
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.2);
 }
 
 .ig-fee-card--primary::before {
@@ -1186,8 +1195,8 @@ a:hover {
 }
 
 .ig-fee-card--burn {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: linear-gradient(135deg, rgba(var(--ig-danger-rgb), 0.08), rgba(var(--ig-danger-rgb), 0.02));
+  border: 1px solid rgba(var(--ig-danger-rgb), 0.15);
 }
 
 .ig-fee-card--burn::before {
@@ -1196,7 +1205,7 @@ a:hover {
 
 .ig-fee-card--reserve {
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.06);
 }
 
 .ig-fee-card--reserve::before {
@@ -1244,7 +1253,7 @@ a:hover {
   gap: var(--space-md);
   padding: var(--space-lg);
   background: var(--ig-charcoal);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(var(--ig-white-rgb), 0.05);
   border-radius: var(--radius-lg, 16px);
   flex-wrap: wrap;
 }
@@ -1262,7 +1271,7 @@ a:hover {
   height: 32px;
   border-radius: 50%;
   background: var(--ig-accent-glow);
-  border: 1px solid rgba(234, 88, 12, 0.3);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1289,7 +1298,7 @@ a:hover {
    ============================================ */
 .ig-footer {
   padding: var(--space-xl) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(var(--ig-white-rgb), 0.05);
   position: relative;
   z-index: 1;
 }
@@ -1383,13 +1392,13 @@ a:hover {
 
 /* Context info panels */
 .ig-context {
-  background: rgba(234, 88, 12, 0.04);
-  border: 1px solid rgba(234, 88, 12, 0.1);
+  background: rgba(var(--ig-accent-rgb), 0.04);
+  border: 1px solid rgba(var(--ig-accent-rgb), 0.1);
   border-radius: 10px;
   padding: 12px 16px;
   margin-bottom: 16px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(var(--ig-white-rgb), 0.6);
   line-height: 1.6;
 }
 
@@ -1407,7 +1416,7 @@ a:hover {
 }
 
 [data-density='full'] .ig-pool-card {
-  box-shadow: 0 0 20px rgba(234, 88, 12, 0.08);
+  box-shadow: 0 0 20px rgba(var(--ig-accent-rgb), 0.08);
 }
 
 /* ============================================
@@ -1415,67 +1424,49 @@ a:hover {
    ============================================ */
 [data-variant='2'] {
   --ig-accent: #e879f9;
+  --ig-accent-rgb: 232, 121, 249;
   --ig-accent-light: #f0abfc;
+  --ig-accent-light-rgb: 240, 171, 252;
   --ig-accent-dim: #a21caf;
-  --ig-accent-glow: rgba(232, 121, 249, 0.2);
-  --ig-glow: 0 0 40px rgba(232, 121, 249, 0.25);
+  --ig-accent-glow: rgba(var(--ig-accent-rgb), 0.2);
+  --ig-secondary: #22d3ee;
+  --ig-secondary-rgb: 34, 211, 238;
+  --ig-bg-deep: #080010;
+  --ig-success: #4ade80;
+  --ig-success-rgb: 74, 222, 128;
+  --ig-warning: #facc15;
+  --ig-warning-rgb: 250, 204, 21;
+  --ig-danger: #f87171;
+  --ig-danger-rgb: 248, 113, 113;
+  --ig-glow: 0 0 40px rgba(var(--ig-accent-rgb), 0.25);
 }
 
 [data-variant='2'] .ig-bg {
-  background: #080010;
-}
-
-[data-variant='2'] .ig-bg::before {
-  background: radial-gradient(circle, rgba(232, 121, 249, 0.1) 0%, transparent 70%);
+  background: var(--ig-bg-deep);
 }
 
 [data-variant='2'] .ig-bg::after {
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.06) 0%, transparent 70%);
-}
-
-[data-variant='2'] .ig-glow--1 {
-  background: radial-gradient(circle, rgba(232, 121, 249, 0.1), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-secondary-rgb), 0.06) 0%, transparent 70%);
 }
 
 [data-variant='2'] .ig-glow--2 {
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.08), transparent 70%);
-}
-
-[data-variant='2'] .ig-glow--3 {
-  background: radial-gradient(circle, rgba(232, 121, 249, 0.06), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--ig-secondary-rgb), 0.08), transparent 70%);
 }
 
 [data-variant='2'] .ig-particle {
-  background: #e879f9;
+  background: var(--ig-accent);
   box-shadow:
-    0 0 12px #e879f9,
-    0 0 24px rgba(232, 121, 249, 0.6);
+    0 0 12px var(--ig-accent),
+    0 0 24px rgba(var(--ig-accent-rgb), 0.6);
 }
 
 [data-variant='2'] .ig-heat {
   background: linear-gradient(
     to top,
-    rgba(232, 121, 249, 0.1),
-    rgba(34, 211, 238, 0.04),
+    rgba(var(--ig-accent-rgb), 0.1),
+    rgba(var(--ig-secondary-rgb), 0.04),
     transparent
   );
-}
-
-[data-variant='2'] .ig-hero-title-accent {
-  text-shadow: 0 0 40px rgba(232, 121, 249, 0.4);
-}
-
-[data-variant='2'] .ig-fee-card--primary {
-  background: linear-gradient(135deg, rgba(232, 121, 249, 0.1), rgba(232, 121, 249, 0.02));
-  border-color: rgba(232, 121, 249, 0.2);
-}
-
-[data-variant='2'] .ig-fee-card--primary::before {
-  background: linear-gradient(90deg, transparent, #e879f9, transparent);
-}
-
-[data-variant='2'] .ig-fee-card--primary .ig-fee-percent {
-  color: #e879f9;
 }
 
 /* ============================================
@@ -1483,10 +1474,21 @@ a:hover {
    ============================================ */
 [data-variant='3'] {
   --ig-accent: #22c55e;
+  --ig-accent-rgb: 34, 197, 94;
   --ig-accent-light: #4ade80;
+  --ig-accent-light-rgb: 74, 222, 128;
   --ig-accent-dim: #15803d;
-  --ig-accent-glow: rgba(34, 197, 94, 0.15);
-  --ig-glow: 0 0 30px rgba(34, 197, 94, 0.2);
+  --ig-accent-glow: rgba(var(--ig-accent-rgb), 0.15);
+  --ig-secondary: #a3e635;
+  --ig-secondary-rgb: 163, 230, 53;
+  --ig-bg-deep: #020a05;
+  --ig-success: #34d399;
+  --ig-success-rgb: 52, 211, 153;
+  --ig-warning: #fbbf24;
+  --ig-warning-rgb: 251, 191, 36;
+  --ig-danger: #f87171;
+  --ig-danger-rgb: 248, 113, 113;
+  --ig-glow: 0 0 30px rgba(var(--ig-accent-rgb), 0.2);
   --ig-black: #020a05;
   --ig-void: #030d07;
   --ig-obsidian: #051208;
@@ -1496,66 +1498,29 @@ a:hover {
 }
 
 [data-variant='3'] .ig-bg {
-  background: #020a05;
-}
-
-[data-variant='3'] .ig-bg::before {
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.06) 0%, transparent 70%);
-}
-
-[data-variant='3'] .ig-bg::after {
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.04) 0%, transparent 70%);
-}
-
-[data-variant='3'] .ig-glow--1 {
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.08), transparent 70%);
-}
-
-[data-variant='3'] .ig-glow--2 {
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.06), transparent 70%);
-}
-
-[data-variant='3'] .ig-glow--3 {
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.04), transparent 70%);
+  background: var(--ig-bg-deep);
 }
 
 [data-variant='3'] .ig-particle {
-  background: #22c55e;
+  background: var(--ig-accent);
   box-shadow:
-    0 0 10px #22c55e,
-    0 0 20px rgba(34, 197, 94, 0.5);
+    0 0 10px var(--ig-accent),
+    0 0 20px rgba(var(--ig-accent-rgb), 0.5);
   animation-duration: 10s;
 }
 
 [data-variant='3'] .ig-heat {
   background: linear-gradient(
     to top,
-    rgba(34, 197, 94, 0.06),
-    rgba(74, 222, 128, 0.03),
+    rgba(var(--ig-accent-rgb), 0.06),
+    rgba(var(--ig-accent-light-rgb), 0.03),
     transparent
   );
   opacity: 0.4;
 }
 
-[data-variant='3'] .ig-hero-title-accent {
-  text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
-}
-
 [data-variant='3'] .ig-tab.active {
   font-family: var(--font-mono);
-}
-
-[data-variant='3'] .ig-fee-card--primary {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.02));
-  border-color: rgba(34, 197, 94, 0.2);
-}
-
-[data-variant='3'] .ig-fee-card--primary::before {
-  background: linear-gradient(90deg, transparent, #22c55e, transparent);
-}
-
-[data-variant='3'] .ig-fee-card--primary .ig-fee-percent {
-  color: #22c55e;
 }
 
 /* ============================================

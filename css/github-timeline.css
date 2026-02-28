@@ -83,11 +83,7 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* spin: defined in build.css (same page chain) */
 
 .error-icon {
   font-size: var(--text-xl);
