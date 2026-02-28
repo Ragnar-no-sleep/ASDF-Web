@@ -479,10 +479,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`ASDF Web running on port ${PORT}`);
-  console.log(`   http://localhost:${PORT}`);
-});
+// Start server unless imported for testing
+const server = require.main === module
+  ? app.listen(PORT, () => {
+      console.log(`ASDF Web running on port ${PORT}`);
+      console.log(`   http://localhost:${PORT}`);
+    })
+  : null;
+
+// Export for supertest
+module.exports = { app };
 
 // Graceful shutdown — clean up Redis + close server
 function gracefulShutdown(signal) {
@@ -490,10 +496,14 @@ function gracefulShutdown(signal) {
   if (redisClient) {
     redisClient.quit().catch(() => {});
   }
-  server.close(() => {
-    console.log('[Server] HTTP server closed');
+  if (server) {
+    server.close(() => {
+      console.log('[Server] HTTP server closed');
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
   // Force exit after 10s if connections hang
   setTimeout(() => process.exit(1), 10000);
 }
