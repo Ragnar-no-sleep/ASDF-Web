@@ -18,8 +18,6 @@ import { triggerBurnAnimation } from './utils/contextual-animations.js';
 // ============================================
 
 function initASDF() {
-  console.log('🔥 ASDF Integration initializing...');
-
   // 1. Interactions (ripples, hover, glow)
   initInteractions({
     ripples: true,
@@ -49,7 +47,6 @@ function initASDF() {
   // 5. Track scroll to bottom
   trackScrollToBottom();
 
-  console.log('✅ ASDF Integration complete');
 }
 
 // ============================================
@@ -108,7 +105,6 @@ export function trackBurn(amount, element = null) {
     triggerBurnAnimation(element, amount);
   }
 
-  console.log(`🔥 Burn tracked: ${amount} tokens`);
 }
 
 /**
@@ -120,7 +116,6 @@ export function trackStake(amount, element = null) {
 
   soundSystem.play('stake');
 
-  console.log(`💎 Stake tracked: ${amount} tokens`);
 }
 
 /**
@@ -131,7 +126,6 @@ export function trackGamePlay(gameName, score, data = {}) {
 
   soundSystem.play('success');
 
-  console.log(`🎮 Game tracked: ${gameName}, score: ${score}`);
 }
 
 /**

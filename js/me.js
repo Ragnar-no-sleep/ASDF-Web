@@ -335,8 +335,6 @@ function init() {
   renderHeatmap();
   renderAchievements();
 
-  console.log('📊 Dashboard loaded');
-
   // Auto-refresh every 5 seconds
   const refreshId = setInterval(() => {
     renderKScore();

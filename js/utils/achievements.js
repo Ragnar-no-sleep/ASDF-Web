@@ -222,8 +222,6 @@ class AchievementSystem {
     // Track daily streak
     this.trackDailyStreak();
 
-    console.log('🏆 Achievement system initialized');
-    console.log(`Unlocked: ${this.unlocked.length}/${Object.keys(this.achievements).length}`);
   }
 
   /**
@@ -343,8 +341,6 @@ class AchievementSystem {
   unlock(achievement) {
     this.unlocked.push(achievement.id);
     this.saveProgress();
-
-    console.log(`🏆 Achievement unlocked: ${achievement.name}`);
 
     // Play sound
     soundSystem.play('success');
