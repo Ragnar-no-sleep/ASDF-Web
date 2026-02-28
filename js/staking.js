@@ -85,8 +85,6 @@ function setCachedData(data) {
   } catch {}
 }
 
-// fetchWithRetry imported from ./utils/fetch-retry.js
-
 // ============================================
 // DATA NORMALIZATION (TVU actual fields → ASDF)
 // ============================================
