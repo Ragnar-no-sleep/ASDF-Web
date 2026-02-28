@@ -8,7 +8,7 @@
 
 /* eslint-disable no-unused-vars */
 
-var JOURNEY_STORAGE_KEY = 'asdf_journey_progress';
+const JOURNEY_STORAGE_KEY = 'asdf_journey_progress';
 
 // ============================================
 // PROGRESS MANAGEMENT
@@ -20,9 +20,9 @@ var JOURNEY_STORAGE_KEY = 'asdf_journey_progress';
  */
 function getJourneyProgress() {
   try {
-    var stored = localStorage.getItem(JOURNEY_STORAGE_KEY);
+    const stored = localStorage.getItem(JOURNEY_STORAGE_KEY);
     if (stored) {
-      var progress = JSON.parse(stored);
+      const progress = JSON.parse(stored);
       progress.lastActiveAt = new Date().toISOString();
       saveJourneyProgress(progress);
       return progress;
@@ -31,7 +31,7 @@ function getJourneyProgress() {
     console.error('Failed to load journey progress:', e);
   }
 
-  var defaultProgress = createDefaultJourneyProgress();
+  const defaultProgress = createDefaultJourneyProgress();
   saveJourneyProgress(defaultProgress);
   return defaultProgress;
 }
@@ -85,7 +85,7 @@ function generateJourneyUserId() {
  * @returns {Object} Lesson progress object
  */
 function startJourneyLesson(lessonId) {
-  var progress = getJourneyProgress();
+  const progress = getJourneyProgress();
 
   if (!progress.lessons[lessonId]) {
     progress.lessons[lessonId] = {
@@ -109,7 +109,7 @@ function startJourneyLesson(lessonId) {
  * @param {string} blockId - Content block ID
  */
 function markJourneyContentCompleted(lessonId, blockId) {
-  var progress = getJourneyProgress();
+  let progress = getJourneyProgress();
 
   if (!progress.lessons[lessonId]) {
     startJourneyLesson(lessonId);
@@ -128,7 +128,7 @@ function markJourneyContentCompleted(lessonId, blockId) {
  * @param {boolean} correct - Whether answer was correct
  */
 function recordJourneyQuizAnswer(lessonId, quizId, answerId, correct) {
-  var progress = getJourneyProgress();
+  let progress = getJourneyProgress();
 
   if (!progress.lessons[lessonId]) {
     startJourneyLesson(lessonId);
@@ -147,7 +147,7 @@ function recordJourneyQuizAnswer(lessonId, quizId, answerId, correct) {
  * @param {string} lessonId - Lesson ID
  */
 function markJourneyChallengeCompleted(lessonId) {
-  var progress = getJourneyProgress();
+  let progress = getJourneyProgress();
 
   if (!progress.lessons[lessonId]) {
     startJourneyLesson(lessonId);
@@ -164,14 +164,14 @@ function markJourneyChallengeCompleted(lessonId) {
  * @param {number} xpReward - XP to award
  */
 function completeJourneyLesson(lessonId, xpReward) {
-  var progress = getJourneyProgress();
+  let progress = getJourneyProgress();
 
   if (!progress.lessons[lessonId]) {
     startJourneyLesson(lessonId);
     progress = getJourneyProgress();
   }
 
-  var lesson = progress.lessons[lessonId];
+  const lesson = progress.lessons[lessonId];
 
   // Only award XP if not already completed
   if (!lesson.completed) {
@@ -180,7 +180,7 @@ function completeJourneyLesson(lessonId, xpReward) {
     progress.totalXP += xpReward;
 
     // Check for level up
-    var newLevel = calculateJourneyLevel(progress.totalXP);
+    const newLevel = calculateJourneyLevel(progress.totalXP);
     if (newLevel > progress.currentLevel) {
       progress.currentLevel = newLevel;
       // Could trigger level-up notification here
@@ -200,7 +200,7 @@ function completeJourneyLesson(lessonId, xpReward) {
  * @returns {number} Level index
  */
 function calculateJourneyLevel(xp) {
-  for (var i = JOURNEY_LEVELS.length - 1; i >= 0; i--) {
+  for (let i = JOURNEY_LEVELS.length - 1; i >= 0; i--) {
     if (xp >= JOURNEY_LEVELS[i].minXp) {
       return i;
     }
@@ -214,17 +214,17 @@ function calculateJourneyLevel(xp) {
  * @returns {Object} Progress info { current, max, percent }
  */
 function getJourneyLevelProgress(xp) {
-  var level = calculateJourneyLevel(xp);
-  var currentLevel = JOURNEY_LEVELS[level];
-  var nextLevel = JOURNEY_LEVELS[level + 1];
+  const level = calculateJourneyLevel(xp);
+  const currentLevel = JOURNEY_LEVELS[level];
+  const nextLevel = JOURNEY_LEVELS[level + 1];
 
   if (!nextLevel) {
     return { current: xp - currentLevel.minXp, max: 1000, percent: 100 };
   }
 
-  var current = xp - currentLevel.minXp;
-  var max = nextLevel.minXp - currentLevel.minXp;
-  var percent = Math.round((current / max) * 100);
+  const current = xp - currentLevel.minXp;
+  const max = nextLevel.minXp - currentLevel.minXp;
+  const percent = Math.round((current / max) * 100);
 
   return { current: current, max: max, percent: percent };
 }
@@ -240,12 +240,12 @@ function getJourneyLevelProgress(xp) {
  * @returns {boolean} Whether completed
  */
 function checkJourneySkillPackCompletion(skillPackId, skillPack) {
-  var progress = getJourneyProgress();
-  var lessonIds = skillPack.lessons.map(function (l) {
+  const progress = getJourneyProgress();
+  const lessonIds = skillPack.lessons.map(function (l) {
     return l.id;
   });
 
-  var allCompleted = lessonIds.every(function (id) {
+  const allCompleted = lessonIds.every(function (id) {
     return progress.lessons[id] && progress.lessons[id].completed;
   });
 
@@ -272,12 +272,12 @@ function checkJourneySkillPackCompletion(skillPackId, skillPack) {
  * @returns {boolean} Whether completed
  */
 function checkJourneyModuleCompletion(moduleId, module) {
-  var progress = getJourneyProgress();
-  var skillPackIds = module.skillPacks.map(function (sp) {
+  const progress = getJourneyProgress();
+  const skillPackIds = module.skillPacks.map(function (sp) {
     return sp.id;
   });
 
-  var allCompleted = skillPackIds.every(function (id) {
+  const allCompleted = skillPackIds.every(function (id) {
     return progress.skillPacks[id] && progress.skillPacks[id].completed;
   });
 
@@ -307,15 +307,15 @@ function checkJourneyModuleCompletion(moduleId, module) {
  * @returns {Object} Stats object
  */
 function getJourneyModuleStats(module) {
-  var progress = getJourneyProgress();
-  var totalLessons = 0;
-  var completedLessons = 0;
-  var totalXP = 0;
-  var earnedXP = 0;
+  const progress = getJourneyProgress();
+  let totalLessons = 0;
+  let completedLessons = 0;
+  let totalXP = 0;
+  let earnedXP = 0;
 
   module.skillPacks.forEach(function (skillPack) {
     skillPack.lessons.forEach(function (lesson) {
-      var xp = getLessonXpReward(lesson);
+      const xp = getLessonXpReward(lesson);
       totalLessons++;
       totalXP += xp;
 
@@ -326,7 +326,7 @@ function getJourneyModuleStats(module) {
     });
   });
 
-  var percentComplete = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const percentComplete = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return {
     totalLessons: totalLessons,
@@ -343,7 +343,7 @@ function getJourneyModuleStats(module) {
  * @returns {Object|null} Lesson progress or null
  */
 function getJourneyLessonProgress(lessonId) {
-  var progress = getJourneyProgress();
+  const progress = getJourneyProgress();
   return progress.lessons[lessonId] || null;
 }
 
@@ -359,7 +359,7 @@ function resetJourneyProgress() {
  * @returns {string} JSON string
  */
 function exportJourneyProgress() {
-  var progress = getJourneyProgress();
+  const progress = getJourneyProgress();
   return JSON.stringify(progress, null, 2);
 }
 
@@ -370,7 +370,7 @@ function exportJourneyProgress() {
  */
 function importJourneyProgress(json) {
   try {
-    var progress = JSON.parse(json);
+    const progress = JSON.parse(json);
     saveJourneyProgress(progress);
     return true;
   } catch (e) {
