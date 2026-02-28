@@ -20,12 +20,12 @@
   // CONSTANTS
   // ============================================
 
-  var STORAGE_KEY = 'asdf:achievements';
-  var EVENT_NAME = 'asdf:achievement-unlocked';
+  const STORAGE_KEY = 'asdf:achievements';
+  const EVENT_NAME = 'asdf:achievement-unlocked';
 
   // Hero's Journey — 6 stages
   // Order matters: defines progression narrative
-  var DEFINITIONS = {
+  const DEFINITIONS = {
     ARRIVAL: {
       index: 0,
       label: 'Arrival',
@@ -70,7 +70,7 @@
     },
   };
 
-  var ORDER = ['ARRIVAL', 'LEARNED', 'VERIFIED', 'BELIEVER', 'BUILDER', 'THE_UNNAMEABLE'];
+  const ORDER = ['ARRIVAL', 'LEARNED', 'VERIFIED', 'BELIEVER', 'BUILDER', 'THE_UNNAMEABLE'];
 
   // ============================================
   // STORAGE
@@ -99,8 +99,8 @@
    * Returns: { ARRIVAL: { unlocked, at, wallet }, ... }
    */
   function getAll() {
-    var saved = load();
-    var result = {};
+    const saved = load();
+    const result = {};
     ORDER.forEach(function (id) {
       result[id] = saved[id] || { unlocked: false, at: null, wallet: null };
     });
@@ -111,7 +111,7 @@
    * Check if a specific achievement is unlocked.
    */
   function isUnlocked(id) {
-    var saved = load();
+    const saved = load();
     return !!(saved[id] && saved[id].unlocked);
   }
 
@@ -120,15 +120,15 @@
    * Returns: { count, total, percent, stage }
    */
   function getProgress() {
-    var all = getAll();
-    var count = ORDER.filter(function (id) {
+    const all = getAll();
+    const count = ORDER.filter(function (id) {
       return all[id].unlocked;
     }).length;
-    var total = ORDER.length;
+    const total = ORDER.length;
 
     // Current stage = highest unlocked
-    var stage = 'void';
-    for (var i = ORDER.length - 1; i >= 0; i--) {
+    let stage = 'void';
+    for (let i = ORDER.length - 1; i >= 0; i--) {
       if (all[ORDER[i]].unlocked) {
         stage = DEFINITIONS[ORDER[i]].stage;
         break;
@@ -150,11 +150,11 @@
     }
     if (isUnlocked(id)) return false; // Silent — already earned
 
-    var state = load();
+    const state = load();
     state[id] = { unlocked: true, at: Date.now(), wallet: null };
     save(state);
 
-    var progress = getProgress();
+    const progress = getProgress();
 
     try {
       document.dispatchEvent(
@@ -180,8 +180,8 @@
    */
   function linkWallet(walletAddress) {
     if (!walletAddress) return;
-    var state = load();
-    var changed = false;
+    const state = load();
+    let changed = false;
     ORDER.forEach(function (id) {
       if (state[id] && state[id].unlocked && !state[id].wallet) {
         state[id].wallet = walletAddress;
@@ -222,7 +222,7 @@
   // PUBLIC API
   // ============================================
 
-  var AchievementEngine = {
+  const AchievementEngine = {
     // Data
     DEFINITIONS: DEFINITIONS,
     ORDER: ORDER,

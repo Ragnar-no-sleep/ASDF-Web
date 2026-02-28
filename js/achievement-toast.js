@@ -18,7 +18,7 @@
   // CSS — injected once
   // ============================================
 
-  var CSS = [
+  const CSS = [
     '.asdf-toast {',
     '  position: fixed;',
     '  top: 21px;' /* F8 — Fibonacci */,
@@ -92,11 +92,11 @@
     '}',
   ].join('\n');
 
-  var cssInjected = false;
+  let cssInjected = false;
 
   function injectCSS() {
     if (cssInjected) return;
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.id = 'asdf-achievement-toast-css';
     style.textContent = CSS;
     document.head.appendChild(style);
@@ -107,13 +107,13 @@
   // TOAST ELEMENT
   // ============================================
 
-  var toastEl = null;
-  var hideTimer = null;
-  var queue = [];
-  var showing = false;
+  let toastEl = null;
+  let hideTimer = null;
+  const queue = [];
+  let showing = false;
 
   function createToast() {
-    var el = document.createElement('div');
+    const el = document.createElement('div');
     el.className = 'asdf-toast';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
@@ -135,8 +135,8 @@
   function showToast(detail) {
     if (!toastEl) toastEl = createToast();
 
-    var def = detail.definition;
-    var progress = detail.progress;
+    const def = detail.definition;
+    const progress = detail.progress;
 
     // ARRIVAL: show brief "welcome" toast on first visit only
     // (achievement-toast.js called once per session — if it triggers, it's genuinely first)
@@ -165,7 +165,7 @@
     toastEl.querySelector('.asdf-toast-label').textContent = def.label;
     toastEl.querySelector('.asdf-toast-sub').textContent = def.subtitle;
 
-    var fill = toastEl.querySelector('.asdf-toast-progress-fill');
+    const fill = toastEl.querySelector('.asdf-toast-progress-fill');
 
     // Show
     toastEl.classList.add('visible');
