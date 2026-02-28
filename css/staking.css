@@ -17,6 +17,31 @@
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* Staking theme tokens — overridden by [data-variant] */
+  --staking-accent: #7b93ff;
+  --staking-accent-rgb: 123, 147, 255;
+  --staking-secondary: #a78bfa;
+  --staking-secondary-rgb: 167, 139, 250;
+  --staking-bg-deep: #06080f;
+  --staking-success: #4ade80;
+  --staking-warning: #f59e0b;
+}
+
+[data-variant='2'] {
+  --staking-accent: #eab308;
+  --staking-accent-rgb: 234, 179, 8;
+  --staking-secondary: #64748b;
+  --staking-secondary-rgb: 100, 116, 139;
+  --staking-bg-deep: #0f0f14;
+}
+
+[data-variant='3'] {
+  --staking-accent: #2dd4bf;
+  --staking-accent-rgb: 45, 212, 191;
+  --staking-secondary: #a78bfa;
+  --staking-secondary-rgb: 167, 139, 250;
+  --staking-bg-deep: #030712;
 }
 
 /* ============================================
@@ -27,7 +52,7 @@
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: #06080f;
+  background: var(--staking-bg-deep);
 }
 
 .staking-orb {
@@ -41,7 +66,7 @@
 .staking-orb-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(123, 147, 255, 0.4), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--staking-accent-rgb), 0.4), transparent 70%);
   top: -10%;
   right: -5%;
 }
@@ -49,7 +74,7 @@
 .staking-orb-2 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 70%);
+  background: radial-gradient(circle, rgba(var(--staking-secondary-rgb), 0.3), transparent 70%);
   bottom: -10%;
   left: -5%;
   animation-delay: -13s;
@@ -59,8 +84,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(123, 147, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(123, 147, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(var(--staking-accent-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--staking-accent-rgb), 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
@@ -99,8 +124,8 @@
 .staking-stat-card {
   padding: 24px;
   border-radius: 16px;
-  background: rgba(123, 147, 255, 0.04);
-  border: 1px solid rgba(123, 147, 255, 0.08);
+  background: rgba(var(--staking-accent-rgb), 0.04);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition:
@@ -109,8 +134,8 @@
 }
 
 .staking-stat-card:hover {
-  border-color: rgba(123, 147, 255, 0.18);
-  background: rgba(123, 147, 255, 0.07);
+  border-color: rgba(var(--staking-accent-rgb), 0.18);
+  background: rgba(var(--staking-accent-rgb), 0.07);
 }
 
 .staking-stat-label {
@@ -188,7 +213,7 @@
 
 .staking-filter.active {
   color: #fff;
-  background: rgba(123, 147, 255, 0.15);
+  background: rgba(var(--staking-accent-rgb), 0.15);
 }
 
 /* Lock list */
@@ -214,8 +239,8 @@
 }
 
 .staking-lock:hover {
-  border-color: rgba(123, 147, 255, 0.15);
-  background: rgba(123, 147, 255, 0.04);
+  border-color: rgba(var(--staking-accent-rgb), 0.15);
+  background: rgba(var(--staking-accent-rgb), 0.04);
 }
 
 .staking-lock-info {
@@ -241,7 +266,7 @@
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
-  color: #7b93ff;
+  color: var(--staking-accent);
   text-align: right;
 }
 
@@ -259,7 +284,7 @@
 .staking-progress-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #7b93ff, #a78bfa);
+  background: linear-gradient(90deg, var(--staking-accent), var(--staking-secondary));
   transition: width 610ms ease;
 }
 
@@ -282,17 +307,17 @@
 }
 
 .staking-lock-status.active {
-  color: #7b93ff;
-  background: rgba(123, 147, 255, 0.12);
+  color: var(--staking-accent);
+  background: rgba(var(--staking-accent-rgb), 0.12);
 }
 
 .staking-lock-status.completed {
-  color: #4ade80;
+  color: var(--staking-success);
   background: rgba(74, 222, 128, 0.12);
 }
 
 .staking-lock-status.pending {
-  color: #f59e0b;
+  color: var(--staking-warning);
   background: rgba(245, 158, 11, 0.1);
 }
 
@@ -324,7 +349,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(123, 147, 255, 0.3), rgba(123, 147, 255, 0.05));
+  background: linear-gradient(180deg, rgba(var(--staking-accent-rgb), 0.3), rgba(var(--staking-accent-rgb), 0.05));
   border-radius: 1px;
 }
 
@@ -345,8 +370,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #7b93ff;
-  border: 2px solid #06080f;
+  background: var(--staking-accent);
+  border: 2px solid var(--staking-bg-deep);
   z-index: 1;
 }
 
@@ -367,7 +392,7 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
-  color: #7b93ff;
+  color: var(--staking-accent);
   margin-top: 4px;
 }
 
@@ -382,8 +407,8 @@
   text-align: center;
   padding: 48px 32px;
   border-radius: 20px;
-  background: rgba(123, 147, 255, 0.04);
-  border: 1px solid rgba(123, 147, 255, 0.1);
+  background: rgba(var(--staking-accent-rgb), 0.04);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.1);
 }
 
 .staking-cta-title {
@@ -405,7 +430,7 @@
   padding: 12px 28px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #7b93ff, #a78bfa);
+  background: linear-gradient(135deg, var(--staking-accent), var(--staking-secondary));
   color: #fff;
   font-family: var(--font-sans);
   font-size: 14px;
@@ -442,8 +467,8 @@
 .staking-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(123, 147, 255, 0.15);
-  border-top-color: #7b93ff;
+  border: 2px solid rgba(var(--staking-accent-rgb), 0.15);
+  border-top-color: var(--staking-accent);
   border-radius: 50%;
   animation: staking-spin 610ms linear infinite;
 }
@@ -470,7 +495,7 @@
 }
 
 .staking-footer a {
-  color: #7b93ff;
+  color: var(--staking-accent);
   text-decoration: none;
 }
 
@@ -528,12 +553,12 @@
 .threshold-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #7b93ff, #a78bfa);
+  background: linear-gradient(90deg, var(--staking-accent), var(--staking-secondary));
   transition: width 610ms ease;
 }
 
 .threshold-fill--success {
-  background: linear-gradient(90deg, #22c55e, #4ade80);
+  background: linear-gradient(90deg, #22c55e, var(--staking-success));
 }
 
 .threshold-meta {
@@ -572,7 +597,7 @@
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
-  color: #7b93ff;
+  color: var(--staking-accent);
   margin-bottom: 6px;
 }
 
@@ -603,20 +628,20 @@
 .faq-card {
   padding: 20px;
   border-radius: 14px;
-  background: rgba(123, 147, 255, 0.03);
-  border: 1px solid rgba(123, 147, 255, 0.08);
+  background: rgba(var(--staking-accent-rgb), 0.03);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.08);
   transition: border-color 233ms ease;
 }
 
 .faq-card:hover {
-  border-color: rgba(123, 147, 255, 0.18);
+  border-color: rgba(var(--staking-accent-rgb), 0.18);
 }
 
 .faq-question {
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  color: #7b93ff;
+  color: var(--staking-accent);
   margin-bottom: 8px;
 }
 
@@ -671,8 +696,8 @@
   position: relative;
   padding: 28px 24px 22px;
   text-align: center;
-  border-bottom: 1px solid rgba(123, 147, 255, 0.08);
-  background: linear-gradient(180deg, rgba(123, 147, 255, 0.04) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(var(--staking-accent-rgb), 0.08);
+  background: linear-gradient(180deg, rgba(var(--staking-accent-rgb), 0.04) 0%, transparent 100%);
 }
 
 .staking-hero-badge {
@@ -680,14 +705,14 @@
   align-items: center;
   gap: 6px;
   padding: 3px 12px;
-  background: rgba(123, 147, 255, 0.08);
-  border: 1px solid rgba(123, 147, 255, 0.2);
+  background: rgba(var(--staking-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.2);
   border-radius: 100px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7b93ff;
+  color: var(--staking-accent);
   margin-bottom: 10px;
 }
 
@@ -695,8 +720,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7b93ff;
-  box-shadow: 0 0 6px rgba(123, 147, 255, 0.4);
+  background: var(--staking-accent);
+  box-shadow: 0 0 6px rgba(var(--staking-accent-rgb), 0.4);
 }
 
 .staking-hero-title {
@@ -725,8 +750,8 @@
   margin: 10px auto 0;
   line-height: 1.6;
   padding: 8px 14px;
-  background: rgba(123, 147, 255, 0.04);
-  border: 1px solid rgba(123, 147, 255, 0.08);
+  background: rgba(var(--staking-accent-rgb), 0.04);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.08);
   border-radius: 8px;
 }
 
@@ -751,8 +776,8 @@
 
 /* Context info panels */
 .staking-context {
-  background: rgba(123, 147, 255, 0.04);
-  border: 1px solid rgba(123, 147, 255, 0.1);
+  background: rgba(var(--staking-accent-rgb), 0.04);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.1);
   border-radius: 10px;
   padding: 12px 16px;
   margin-bottom: 16px;
@@ -762,7 +787,7 @@
 }
 
 .staking-context strong {
-  color: rgb(123, 147, 255);
+  color: var(--staking-accent);
 }
 
 /* Full mode — enhanced effects */
@@ -771,12 +796,12 @@
 }
 
 [data-density='full'] .staking-stat-card {
-  border-color: rgba(123, 147, 255, 0.12);
-  box-shadow: 0 0 20px rgba(123, 147, 255, 0.05);
+  border-color: rgba(var(--staking-accent-rgb), 0.12);
+  box-shadow: 0 0 20px rgba(var(--staking-accent-rgb), 0.05);
 }
 
 [data-density='full'] .staking-cta-inner {
-  box-shadow: 0 0 30px rgba(123, 147, 255, 0.08);
+  box-shadow: 0 0 30px rgba(var(--staking-accent-rgb), 0.08);
 }
 
 /* ============================================
@@ -1073,7 +1098,7 @@
 
 .staking-lock--clickable:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(123, 147, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(var(--staking-accent-rgb), 0.08);
 }
 
 .staking-lock--clickable:active {
@@ -1109,7 +1134,7 @@
 
 .staking-sort:hover,
 .staking-sort:focus {
-  border-color: rgba(123, 147, 255, 0.2);
+  border-color: rgba(var(--staking-accent-rgb), 0.2);
   color: rgba(255, 255, 255, 0.8);
   outline: none;
 }
@@ -1163,7 +1188,7 @@
   max-width: 480px;
   border-radius: 20px;
   background: #111114;
-  border: 1px solid rgba(123, 147, 255, 0.14);
+  border: 1px solid rgba(var(--staking-accent-rgb), 0.14);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   transform: translateY(12px) scale(0.98);
   transition: transform 233ms ease;
@@ -1284,7 +1309,7 @@
 .lock-modal-solscan {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #7b93ff;
+  color: var(--staking-accent);
   text-decoration: none;
   transition: opacity 144ms ease;
 }
