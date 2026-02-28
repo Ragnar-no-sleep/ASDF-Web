@@ -1011,7 +1011,10 @@ h6 {
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS — Canonical definitions
+   Pages that load system.css can use these directly.
+   Pages that don't (build, games, index) define their own.
+   Naming: kebab-case preferred, camelCase aliases for compat.
    ============================================ */
 
 @keyframes fade-in {
@@ -1051,6 +1054,23 @@ h6 {
 
 .animate-fade-up {
   animation: fade-up var(--duration-slow) var(--ease-default);
+}
+
+/* CamelCase alias — used by build.css, games.css, shop.css, deep-learn.css */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 /* ============================================
