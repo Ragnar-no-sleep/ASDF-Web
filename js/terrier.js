@@ -10,24 +10,36 @@
   const overlay = document.getElementById('kFormulaOverlay');
   const hovered = new Set();
 
-  triggers.forEach(trigger => {
-    trigger.addEventListener('mouseenter', () => {
-      const k = trigger.dataset.k;
-      hovered.add(k);
-      trigger.classList.add('k-active'); // Show ∛ symbol
+  function activateTrigger(trigger) {
+    const k = trigger.dataset.k;
+    hovered.add(k);
+    trigger.classList.add('k-active');
 
-      // Check if all 3 triggered
-      if (hovered.size === 3 && overlay) {
-        overlay.classList.remove('hidden');
-        localStorage.setItem('asdf_k_formula_found', 'true');
+    if (hovered.size === 3 && overlay) {
+      overlay.classList.remove('hidden');
+      localStorage.setItem('asdf_k_formula_found', 'true');
+    }
+  }
+
+  triggers.forEach(trigger => {
+    trigger.addEventListener('mouseenter', () => activateTrigger(trigger));
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        activateTrigger(trigger);
       }
     });
   });
 
-  // Click overlay to close
+  // Click or Escape to close overlay
   if (overlay) {
     overlay.addEventListener('click', () => {
       overlay.classList.add('hidden');
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+      }
     });
   }
 
