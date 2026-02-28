@@ -1,17 +1,18 @@
 /**
- * ASDF Games - BaseEngine Module Tests
- * Tests game engine lifecycle, state management, and utility functions
+ * ASDF Games - Game Engine Contract Tests
+ * Tests engine lifecycle, state management, and utility functions.
+ * BaseEngine class is defined inline (standalone contract spec).
  *
  * This is fine.
  */
 
 // ============================================
-// COPY OF PURE FUNCTIONS FROM js/games/engines/BaseEngine.js
+// INLINE ENGINE CONTRACT (standalone test spec)
 // ============================================
 
 /**
  * BaseEngine - Abstract Game Engine Contract
- * Simplified version for testing without PixiJS dependencies
+ * Defines the interface that game engines should follow
  */
 class BaseEngine {
   static id = 'base';

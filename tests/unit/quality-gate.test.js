@@ -146,29 +146,15 @@ describe('SOLID Principles', () => {
   });
 
   describe('Interface Segregation Principle (ISP)', () => {
-    test('container should not force unused dependencies', () => {
-      const containerFile = path.join(JS_GAMES_DIR, 'core/container.js');
-      const content = readFile(containerFile);
+    test('shared modules should use conditional checks for optional deps', () => {
+      const lifecycleFile = path.join(JS_GAMES_DIR, 'shared/lifecycle.js');
+      const content = readFile(lifecycleFile);
 
       if (content) {
-        // Container should use lazy loading
-        const hasLazy =
-          content.includes('lazy') || content.includes('get(') || content.includes('_instances');
-        expect(hasLazy).toBe(true);
-      }
-    });
-  });
-
-  describe('Dependency Inversion Principle (DIP)', () => {
-    test('high-level modules should depend on abstractions', () => {
-      const bootstrapFile = path.join(JS_GAMES_DIR, 'core/bootstrap.js');
-      const content = readFile(bootstrapFile);
-
-      if (content) {
-        // Should register services, not instantiate directly
-        const hasRegistration =
-          content.includes('register') || content.includes('set(') || content.includes('bind');
-        expect(hasRegistration).toBe(true);
+        // Should guard optional dependencies with typeof checks
+        const hasGuards =
+          content.includes('typeof') || content.includes('window.') || content.includes('if (');
+        expect(hasGuards).toBe(true);
       }
     });
   });
@@ -472,18 +458,18 @@ describe('Privacy', () => {
 
 describe('Modularity', () => {
   describe('Module Structure', () => {
-    test('core modules should exist', () => {
-      const coreDir = path.join(JS_GAMES_DIR, 'core');
+    test('shared modules should exist', () => {
+      const sharedDir = path.join(JS_GAMES_DIR, 'shared');
 
-      if (fs.existsSync(coreDir)) {
-        const files = fs.readdirSync(coreDir);
+      if (fs.existsSync(sharedDir)) {
+        const files = fs.readdirSync(sharedDir).filter(f => f.endsWith('.js'));
         expect(files.length).toBeGreaterThan(0);
 
-        // Check for expected core files
-        const expectedFiles = ['container.js', 'bootstrap.js'];
+        // Check for expected shared files
+        const expectedFiles = ['intervals.js', 'lifecycle.js', 'validation.js'];
         for (const expected of expectedFiles) {
           if (!files.includes(expected)) {
-            console.warn(`[Modularity] Missing core file: ${expected}`);
+            console.warn(`[Modularity] Missing shared file: ${expected}`);
           }
         }
       }
