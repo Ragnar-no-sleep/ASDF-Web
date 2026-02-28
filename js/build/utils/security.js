@@ -267,7 +267,7 @@ export function sanitizeUrl(url) {
       return null;
     }
     return parsed.href;
-  } catch (e) {
+  } catch (_e) {
     // Not a valid URL
     return null;
   }
@@ -287,7 +287,7 @@ export function isAllowedDomain(url, allowedDomains = []) {
     return allowedDomains.some(domain => {
       return parsed.hostname === domain || parsed.hostname.endsWith('.' + domain);
     });
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

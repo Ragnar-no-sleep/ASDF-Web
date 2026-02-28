@@ -110,7 +110,7 @@ export function trackBurn(amount, element = null) {
 /**
  * Track a stake action
  */
-export function trackStake(amount, element = null) {
+export function trackStake(amount, _element = null) {
   achievementSystem.track('stake_tokens', { amount });
   disclosureSystem.track('stake_tokens', { amount });
 

@@ -273,7 +273,7 @@ class StoneIsland {
    * @param {number} deltaTime - Time since last update
    */
   update(deltaTime) {
-    const { animation, debris } = this.options;
+    const { animation } = this.options;
     this.time += deltaTime;
 
     // Float animation

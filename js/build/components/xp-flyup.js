@@ -8,7 +8,7 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { DURATION, GAMIFICATION } from '../config/timing.js';
+import { GAMIFICATION } from '../config/timing.js';
 
 // ============================================
 // XP FLY-UP COMPONENT

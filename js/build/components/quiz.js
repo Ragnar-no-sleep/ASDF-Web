@@ -13,7 +13,6 @@ import { sanitizeText } from '../utils/security.js';
 import {
   $,
   $$,
-  byId,
   addClass,
   removeClass,
   show,

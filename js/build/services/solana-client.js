@@ -204,7 +204,7 @@ const SolanaClient = {
    * @param {string} source - Source of XP (lesson, quest, etc.)
    * @returns {Promise<number>} - New total XP
    */
-  async addXP(wallet, amount, source = 'unknown') {
+  async addXP(wallet, amount, _source = 'unknown') {
     const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
 
     // Apply streak bonus
@@ -236,7 +236,7 @@ const SolanaClient = {
    * @returns {Promise<boolean>}
    */
   async completeLesson(wallet, trackId, moduleId, lessonId, xpReward) {
-    const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
+    const _builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
 
     // Check if already completed
     const completedKey = `${trackId}:${moduleId}:${lessonId}`;
@@ -351,7 +351,7 @@ const SolanaClient = {
       const key = `${STORAGE_KEYS.COMPLETED_LESSONS}_${wallet || 'anonymous'}`;
       const data = localStorage.getItem(key);
       return data ? JSON.parse(data) : [];
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   },
@@ -380,7 +380,7 @@ const SolanaClient = {
    * @param {string} wallet
    * @returns {Promise<boolean>}
    */
-  async migrateToOnChain(wallet) {
+  async migrateToOnChain(_wallet) {
     // Future: Read localStorage, write to PDA, clear localStorage
     console.log('[SolanaClient] migrateToOnChain not implemented (stub)');
     return false;

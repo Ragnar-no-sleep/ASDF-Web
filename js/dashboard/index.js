@@ -181,7 +181,7 @@ const Dashboard = {
     });
 
     // Skill click -> open FormationPanel
-    this.cosmos.on('skillClick', (skill, project) => {
+    this.cosmos.on('skillClick', (skill) => {
       this.formationPanel.open({
         trackId: skill.track,
         skillId: skill.id,

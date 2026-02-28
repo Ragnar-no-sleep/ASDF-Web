@@ -10,15 +10,15 @@
 
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
-import { PHI, GOLDEN_ANGLE, calculatePhiPositions, calculateFermatSpiral } from '../utils/phi.js';
+import { calculateFermatSpiral } from '../utils/phi.js';
 
 // Import 3D components
 import { FireParticles } from './effects/fire-particles.js';
 import { SnowParticles } from './effects/snow-particles.js';
 import { YggdrasilTree } from './objects/yggdrasil-tree.js';
-import { StoneIsland, StoneIslandFactory } from './objects/stone-island.js';
+import { StoneIsland } from './objects/stone-island.js';
 import { BurnCore } from './objects/burn-core.js';
-import { CameraController, CAMERA_STATES } from './camera/camera-controller.js';
+import { CameraController } from './camera/camera-controller.js';
 import { PostProcessing } from './effects/post-processing.js';
 import { PerformanceManager } from './performance.js';
 import { ProjectTreeScene } from './scenes/project-tree.js';
@@ -67,7 +67,7 @@ const THREE_CONFIG = {
 };
 
 // Status colors
-const STATUS_COLORS = {
+const _STATUS_COLORS = {
   live: 0x00ff88,
   building: 0xffaa00,
   planned: 0x8855cc,
@@ -146,7 +146,7 @@ const ThreeRenderer = {
    * @param {HTMLElement} containerEl - Container element
    * @param {Object} options - Configuration options
    */
-  async init(containerEl, options = {}) {
+  async init(containerEl, _options = {}) {
     if (isInitialized) {
       console.warn('[ThreeRenderer] Already initialized');
       return;
@@ -584,7 +584,7 @@ const ThreeRenderer = {
    * Handle click
    * @param {MouseEvent} e
    */
-  onClick(e) {
+  onClick(_e) {
     // Ignore click if it was a drag
     if (isDragging) {
       isDragging = false;
@@ -757,7 +757,6 @@ const ThreeRenderer = {
    * @returns {Object}
    */
   getScreenPosition(position) {
-    const { THREE } = this;
     const vector = position.clone();
     vector.project(camera);
 
@@ -826,7 +825,7 @@ const ThreeRenderer = {
    * @param {string} status
    */
   applyFilter(status) {
-    islands.forEach((island, id) => {
+    islands.forEach((island, _id) => {
       const project = island.project;
       const visible = status === 'all' || project?.status === status;
 

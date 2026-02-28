@@ -16,7 +16,6 @@
  */
 
 import { soundSystem } from './sound-system.js';
-import { showSuccessAnimation } from './contextual-animations.js';
 
 // ============================================
 // ACHIEVEMENT DEFINITIONS

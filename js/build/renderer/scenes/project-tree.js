@@ -10,8 +10,7 @@
 
 import { BuildState } from '../../state.js';
 import { DataAdapter } from '../../data/adapter.js';
-import { SkillNode, SkillNodeFactory, calculatePhiSpiralPositions } from '../objects/skill-node.js';
-import { PHI, GOLDEN_ANGLE } from '../../utils/phi.js';
+import { SkillNode, calculatePhiSpiralPositions } from '../objects/skill-node.js';
 
 // ============================================
 // PROJECT TREE CONFIGURATION

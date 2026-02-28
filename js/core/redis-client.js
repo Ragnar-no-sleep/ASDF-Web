@@ -25,8 +25,7 @@
  * @module core/redis-client
  */
 
-import { eventBus, EVENTS } from './event-bus.js';
-import { getConfig } from './config.js';
+import { eventBus } from './event-bus.js';
 import { createError } from './errors.js';
 
 // ============================================

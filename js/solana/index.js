@@ -36,14 +36,13 @@ import {
   isValidAddress,
   address,
 } from './kit/client.js';
-import { WalletManager, WALLET_STANDARD_FEATURES } from './kit/wallet-manager.js';
+import { WalletManager } from './kit/wallet-manager.js';
 import {
   buildSolTransfer,
   buildTokenTransfer,
   transferSolToTreasury,
   transferAsdfToEscrow,
   transferTokens,
-  estimateFee,
   hasSufficientSol,
   hasSufficientAsdf,
   TREASURY_WALLET,

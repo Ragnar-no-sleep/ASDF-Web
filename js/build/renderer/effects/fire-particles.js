@@ -183,7 +183,7 @@ class FireParticles {
   update(deltaTime, intensity = 1.0) {
     if (!this.particles) return;
 
-    const { colors, emission } = this.options;
+    const { colors } = this.options;
     this.time += deltaTime;
 
     // Update shader uniform

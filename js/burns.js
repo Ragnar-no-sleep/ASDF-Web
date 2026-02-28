@@ -222,7 +222,7 @@ function updatePodiumPlace(place, data) {
 function setupTabListeners() {
   const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(tab => {
-    tab.addEventListener('click', e => {
+    tab.addEventListener('click', () => {
       AudioFeedback.play('click');
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
@@ -247,14 +247,14 @@ function setupVisceralFeedback() {
 
   const ctaBtn = document.querySelector('.cta-btn');
   if (ctaBtn) {
-    ctaBtn.addEventListener('click', e => {
+    ctaBtn.addEventListener('click', () => {
       AudioFeedback.play('click');
     });
   }
 
   const podiumPlaces = document.querySelectorAll('.podium-place');
   podiumPlaces.forEach(place => {
-    place.addEventListener('click', e => {
+    place.addEventListener('click', () => {
       AudioFeedback.play('click');
     });
   });

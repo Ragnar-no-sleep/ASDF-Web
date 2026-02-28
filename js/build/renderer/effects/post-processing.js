@@ -89,8 +89,6 @@ class PostProcessing {
    * @returns {Object}
    */
   createComposer(renderTarget) {
-    const THREE = this.THREE;
-
     return {
       renderTarget1: renderTarget,
       renderTarget2: renderTarget.clone(),
@@ -131,7 +129,6 @@ class PostProcessing {
    * Add render pass
    */
   addRenderPass() {
-    const THREE = this.THREE;
     const scene = this.scene;
     const camera = this.camera;
 
@@ -139,7 +136,7 @@ class PostProcessing {
       enabled: true,
       needsSwap: true,
 
-      render: (renderer, writeBuffer, readBuffer) => {
+      render: (renderer, writeBuffer, _readBuffer) => {
         renderer.setRenderTarget(writeBuffer);
         renderer.render(scene, camera);
       }

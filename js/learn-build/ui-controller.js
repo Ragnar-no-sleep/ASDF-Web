@@ -66,7 +66,7 @@ class LearnBuildUIController {
    * @param {Object} options - Options
    * @returns {Promise<void>}
    */
-  async init(userId, options = {}) {
+  async init(userId, _options = {}) {
     if (this.initialized) {
       log.debug('Already initialized');
       return;
@@ -327,8 +327,8 @@ class LearnBuildUIController {
     const modules = LearnBuild.module.getTrackModules(trackId);
 
     // Update journey view elements
-    const trackNameEl = document.querySelector(SELECTORS.JOURNEY_TRACK_NAME);
-    const trackDescEl = document.querySelector(SELECTORS.JOURNEY_TRACK_DESC);
+    const _trackNameEl = document.querySelector(SELECTORS.JOURNEY_TRACK_NAME);
+    const _trackDescEl = document.querySelector(SELECTORS.JOURNEY_TRACK_DESC);
     const statValues = document.querySelectorAll(SELECTORS.JOURNEY_STAT_VALUES);
 
     if (statValues.length >= 2 && statValues[1]) {
@@ -415,7 +415,7 @@ class LearnBuildUIController {
     });
 
     // Quest completed
-    eventBus.on(EVENTS.QUEST_COMPLETED, (data) => {
+    eventBus.on(EVENTS.QUEST_COMPLETED, (_data) => {
       this.renderActiveQuests();
       this.renderProgressCard();
       this.renderMilestones();

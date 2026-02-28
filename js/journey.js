@@ -5,7 +5,6 @@
  * Philosophy: Don't trust. Verify. Build.
  */
 
-/* eslint-disable no-unused-vars */
 
 // ============================================
 // STATE

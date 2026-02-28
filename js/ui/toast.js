@@ -29,7 +29,7 @@ import { audio } from '../audio/engine.js';
 // CONFIGURATION
 // ============================================
 
-const PHI = 1.618033988749895;
+const _PHI = 1.618033988749895;
 
 /**
  * Toast configuration with Fibonacci timing

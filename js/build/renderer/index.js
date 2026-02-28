@@ -221,7 +221,7 @@ const RendererFactory = {
         const battery = await navigator.getBattery();
         // Consider low power if battery < 20% and not charging
         return battery.level < 0.2 && !battery.charging;
-      } catch (e) {
+      } catch (_e) {
         // Battery API not supported or blocked
       }
     }

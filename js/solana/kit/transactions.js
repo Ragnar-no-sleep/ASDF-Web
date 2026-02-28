@@ -11,13 +11,11 @@
 
 import {
   address,
-  lamports,
   createTransactionMessage,
   setTransactionMessageFeePayer,
   setTransactionMessageLifetimeUsingBlockhash,
   appendTransactionMessageInstruction,
   compileTransaction,
-  getBase64Encoder,
   pipe
 } from 'https://esm.sh/@solana/kit@5';
 
@@ -58,7 +56,6 @@ const ESCROW_WALLET = 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y';
  * @returns {Promise<Object>} Transaction ready for signing
  */
 export async function buildSolTransfer({ from, to, amountSOL }) {
-  const rpc = SolanaClient.getRpc();
   const { blockhash, lastValidBlockHeight } = await SolanaClient.getLatestBlockhash();
 
   const fromAddr = address(from);
@@ -132,7 +129,6 @@ export async function transferSolToTreasury(amountSOL) {
  * @returns {Promise<Object>} Transaction ready for signing
  */
 export async function buildTokenTransfer({ from, to, mint, amount, decimals = TOKEN_DECIMALS }) {
-  const rpc = SolanaClient.getRpc();
   const { blockhash, lastValidBlockHeight } = await SolanaClient.getLatestBlockhash();
 
   const fromAddr = address(from);

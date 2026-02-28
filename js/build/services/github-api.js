@@ -541,7 +541,7 @@ const GitHubApiService = {
             contributions: found.contributions,
           });
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip this project on error
       }
     }

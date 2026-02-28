@@ -329,7 +329,7 @@ export const ProgressClient = {
           try {
             const response = await fetchAPI(`/progress/${wallet}/xp`);
             xp = response.totalXP || 0;
-          } catch (e) {
+          } catch (_e) {
             xp = loadFromStorage(STORAGE_KEYS.XP) || 0;
           }
         } else {

@@ -480,7 +480,7 @@ class BadgeManager {
    * Mint cNFT for badge (future Helius integration)
    * @private
    */
-  async _mintCNFT(badgeId, userBadge) {
+  async _mintCNFT(badgeId, _userBadge) {
     if (!this.config.cnftEnabled || !this.config.heliusApiKey) {
       return;
     }

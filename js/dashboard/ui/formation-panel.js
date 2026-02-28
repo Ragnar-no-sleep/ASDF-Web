@@ -392,7 +392,7 @@ export const FormationPanel = {
     try {
       const saved = localStorage.getItem(CONFIG.storageKey);
       this.progress = saved ? JSON.parse(saved) : {};
-    } catch (e) {
+    } catch (_e) {
       this.progress = {};
     }
   },
@@ -403,7 +403,7 @@ export const FormationPanel = {
   saveProgress() {
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify(this.progress));
-    } catch (e) {
+    } catch (_e) {
       // Silent fail - localStorage may be unavailable
     }
   },

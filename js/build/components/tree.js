@@ -12,7 +12,6 @@ import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
 import { ModalFactory } from './modal.js';
 import { BurnApiService } from '../services/burn-api.js';
-import { calculatePhiPositions, phiDelays, PHI } from '../utils/phi.js';
 import { isValidProjectId } from '../utils/security.js';
 import { RendererFactory } from '../renderer/index.js';
 import {
@@ -20,12 +19,10 @@ import {
   $$,
   addClass,
   removeClass,
-  hasClass,
   on,
   delegate,
   getData,
   setStyles,
-  createElement,
 } from '../utils/dom.js';
 
 // ============================================
@@ -89,7 +86,7 @@ const BURN_PULSE_CONFIG = {
 let treeContainer = null;
 let treeSvg = null;
 let currentFilter = 'all';
-let hoveredNode = null;
+let _hoveredNode = null;
 let selectedNode = null;
 
 // Burn pulse state
@@ -171,13 +168,13 @@ const TreeComponent = {
 
     // Hover effects
     delegate(treeContainer, 'mouseenter', '.tree-node, .realm', (e, node) => {
-      hoveredNode = getData(node, 'project');
+      _hoveredNode = getData(node, 'project');
       addClass(node, 'hovered');
       this.showTooltip(node);
     });
 
     delegate(treeContainer, 'mouseleave', '.tree-node, .realm', (e, node) => {
-      hoveredNode = null;
+      _hoveredNode = null;
       removeClass(node, 'hovered');
       this.hideTooltip();
     });

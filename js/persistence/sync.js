@@ -24,7 +24,7 @@
  * @module persistence/sync
  */
 
-import { redis, REDIS_EVENTS } from '../core/redis-client.js';
+import { redis } from '../core/redis-client.js';
 import { eventBus, EVENTS } from '../core/event-bus.js';
 import { createLogger } from '../core/debug.js';
 
@@ -137,7 +137,7 @@ class SyncManager {
           // Update localStorage cache
           try {
             localStorage.setItem(cacheKey, redisValue);
-          } catch (e) {
+          } catch (_e) {
             // Ignore localStorage errors
           }
 
@@ -172,7 +172,7 @@ class SyncManager {
     // Remove from localStorage
     try {
       localStorage.removeItem(cacheKey);
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
 
@@ -180,7 +180,7 @@ class SyncManager {
     if (this.online) {
       try {
         await redis.del(key);
-      } catch (error) {
+      } catch (_error) {
         log.warn(`Redis delete failed: ${key}`);
       }
     }
@@ -368,7 +368,7 @@ class SyncManager {
         this.queue = JSON.parse(saved);
         log.debug(`Loaded ${this.queue.length} pending items from queue`);
       }
-    } catch (e) {
+    } catch (_e) {
       this.queue = [];
     }
   }
@@ -379,7 +379,7 @@ class SyncManager {
   _saveQueue() {
     try {
       localStorage.setItem(this.config.queueKey, JSON.stringify(this.queue));
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
   }

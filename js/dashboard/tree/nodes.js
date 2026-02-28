@@ -5,7 +5,7 @@
 
 'use strict';
 
-import { DASHBOARD_CONFIG, PHI } from '../config.js';
+import { DASHBOARD_CONFIG } from '../config.js';
 
 let THREE = null;
 
@@ -59,7 +59,6 @@ export const NodeManager = {
   createFromData(projects) {
     if (!projects || !Array.isArray(projects)) return;
 
-    const { tree } = DASHBOARD_CONFIG;
     const projectCount = projects.length;
 
     projects.forEach((project, index) => {
@@ -239,7 +238,7 @@ export const NodeManager = {
    * Clear all nodes
    */
   clear() {
-    for (const [id, node] of this.nodes) {
+    for (const [_id, node] of this.nodes) {
       this.scene.remove(node.mesh);
       node.mesh.geometry.dispose();
       node.mesh.material.dispose();

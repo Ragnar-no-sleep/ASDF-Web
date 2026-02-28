@@ -17,9 +17,7 @@ import {
   createSolanaRpc,
   createSolanaRpcSubscriptions,
   address,
-  lamports,
-  getBase58Decoder,
-  getBase58Encoder
+  getBase58Decoder
 } from 'https://esm.run/@solana/web3.js@2';
 
 // ============================================

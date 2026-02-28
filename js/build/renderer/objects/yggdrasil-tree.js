@@ -142,7 +142,7 @@ class YggdrasilTree {
    */
   createBranches() {
     const { THREE } = this;
-    const { trunk, branches, colors } = this.options;
+    const { trunk, branches } = this.options;
     const goldenAngle = 137.5 * (Math.PI / 180); // Golden angle in radians
 
     for (let i = 0; i < branches.count; i++) {

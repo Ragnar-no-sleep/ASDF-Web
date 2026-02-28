@@ -344,7 +344,7 @@ const YggdrasilCosmos = {
   /**
    * Open project modal with details
    */
-  openProjectModal(projectId, highlightSkillId = null) {
+  openProjectModal(projectId, _highlightSkillId = null) {
     const mappedId = this.mapProjectId(projectId);
     const project = this.projectsData[mappedId];
     const ecosystemProject = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);

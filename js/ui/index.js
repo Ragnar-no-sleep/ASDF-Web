@@ -47,7 +47,7 @@ export {
  * @param {Object} options - Init options
  * @returns {Object} UI instance
  */
-export function initUI(options = {}) {
+export function initUI(_options = {}) {
   const { toast: toastModule } = require('./toast.js');
   const { modal: modalModule } = require('./modal.js');
 

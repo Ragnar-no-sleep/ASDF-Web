@@ -3,7 +3,7 @@
  * Philosophy: Controlled chaos. Natural feel. Consumer-grade polish.
  */
 
-import { initInteractions, hapticFeedback, animateCounter } from './utils/interactions.js';
+import { initInteractions } from './utils/interactions.js';
 
 (() => {
   'use strict';
@@ -145,7 +145,7 @@ import { initInteractions, hapticFeedback, animateCounter } from './utils/intera
       await document.documentElement.requestFullscreen();
       // Success - reset attempts
       localStorage.removeItem(STORAGE_KEY);
-    } catch (err) {
+    } catch (_err) {
       // User refused or browser blocked
       const newAttempts = attempts + 1;
       localStorage.setItem(STORAGE_KEY, newAttempts.toString());
@@ -179,7 +179,7 @@ import { initInteractions, hapticFeedback, animateCounter } from './utils/intera
       try {
         await document.documentElement.requestFullscreen();
         localStorage.removeItem('asdf_fullscreen_prompted');
-      } catch (err) {
+      } catch (_err) {
         localStorage.setItem('asdf_fullscreen_prompted', '2'); // Max reached
       }
     });
@@ -210,7 +210,7 @@ import { initInteractions, hapticFeedback, animateCounter } from './utils/intera
     }
 
     // Apply existing glow to already-clicked items
-    clicked.forEach((id, index) => {
+    clicked.forEach((id) => {
       const item = document.querySelector(`[data-orbit-id="${id}"]`);
       if (item) {
         item.dataset.easterClicked = 'true';

@@ -11,7 +11,7 @@
 // IMPORTS
 // ============================================
 
-import { DEFAULTS, EVENTS, SELECTORS } from './config.js';
+import { EVENTS, SELECTORS } from './config.js';
 import { BuildState } from './state.js';
 import { DataAdapter } from './data/adapter.js';
 import { ModalFactory } from './components/modal.js';
@@ -34,7 +34,7 @@ import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
 import { escapeHtml, sanitizeHtml, safeInnerHTML, safeTextContent } from './utils/security.js';
-import { $, $$, on, delegate } from './utils/dom.js';
+import { $, on, delegate } from './utils/dom.js';
 import { DURATION, DELAY } from './config/timing.js';
 
 // ============================================

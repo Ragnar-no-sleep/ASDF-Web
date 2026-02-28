@@ -8,9 +8,9 @@
 
 'use strict';
 
-import { STORAGE_VERSION, EVENTS, DEFAULTS } from './config.js';
+import { EVENTS } from './config.js';
 import { EventBus } from './state/event-bus.js';
-import { StateMachine, isValidState } from './state/state-machine.js';
+import { StateMachine } from './state/state-machine.js';
 import { OnboardingManager } from './state/onboarding-manager.js';
 import { QuizManager, isValidTrackId } from './state/quiz-manager.js';
 import { PersistenceManager } from './state/persistence-manager.js';

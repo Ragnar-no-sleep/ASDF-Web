@@ -4,7 +4,6 @@
 // Converted from React/TypeScript to Vanilla JS
 // ============================================
 
-/* eslint-disable no-unused-vars */
 
 // ============================================
 // LEVELS & PROGRESSION

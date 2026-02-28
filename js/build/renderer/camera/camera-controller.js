@@ -259,7 +259,7 @@ class CameraController {
 
     event.preventDefault();
 
-    const { zoomSpeed, minDistance, maxDistance } = this.options.orbit;
+    const { minDistance, maxDistance } = this.options.orbit;
     const delta = event.deltaY > 0 ? 1.1 : 0.9;
 
     this.spherical.radius *= delta;

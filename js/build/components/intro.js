@@ -7,19 +7,15 @@
 
 'use strict';
 
-import { STATES, EVENTS, DEFAULTS } from '../config.js';
 import { BuildState } from '../state.js';
 import { sanitizeText } from '../utils/security.js';
 import {
   $,
-  $$,
-  byId,
   addClass,
   removeClass,
   show,
   hide,
   on,
-  once,
   createElement,
   setStyles,
   waitForTransition,

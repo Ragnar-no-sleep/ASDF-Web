@@ -15,7 +15,6 @@ import {
   $$,
   addClass,
   removeClass,
-  hasClass,
   on,
   delegate,
   setStyles,

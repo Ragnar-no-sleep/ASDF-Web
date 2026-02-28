@@ -8,7 +8,6 @@
 'use strict';
 
 import { LearnBuild } from '../index.js';
-import { learnBuildUI } from '../ui-controller.js';
 
 // ============================================
 // DASHBOARD COMPONENT

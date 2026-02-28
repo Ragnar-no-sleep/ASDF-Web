@@ -13,8 +13,6 @@ import { DataAdapter } from '../data/adapter.js';
 import { GitHubApiService } from '../services/github-api.js';
 import {
   safeInnerHTML,
-  safeTextContent,
-  sanitizeHtml,
   sanitizeText,
   sanitizeUrl,
 } from '../utils/security.js';
@@ -24,10 +22,7 @@ import {
   byId,
   addClass,
   removeClass,
-  show,
-  hide,
   on,
-  once,
   createElement,
 } from '../utils/dom.js';
 

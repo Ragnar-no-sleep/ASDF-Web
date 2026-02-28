@@ -448,25 +448,25 @@ class InteractionEasterEggs {
 // MAIN INIT
 // ============================================
 
-let konamiDetector = null;
-let secretSequences = null;
-let interactionEggs = null;
+let _konamiDetector = null;
+let _secretSequences = null;
+let _interactionEggs = null;
 
 export function initEasterEggs() {
   // Check if Konami code already unlocked
   const konamiUnlocked = localStorage.getItem('asdf_konami_unlocked') === 'true';
 
   if (!konamiUnlocked) {
-    konamiDetector = new KonamiDetector(() => {
+    _konamiDetector = new KonamiDetector(() => {
       unlockKonamiCode();
     });
   }
 
   // Initialize secret sequences
-  secretSequences = new SecretSequenceDetector();
+  _secretSequences = new SecretSequenceDetector();
 
   // Initialize interaction easter eggs
-  interactionEggs = new InteractionEasterEggs();
+  _interactionEggs = new InteractionEasterEggs();
 
 }
 

@@ -6,7 +6,6 @@
  * Philosophy: Don't trust. Verify. Build.
  */
 
-/* eslint-disable no-unused-vars */
 
 const JOURNEY_STORAGE_KEY = 'asdf_journey_progress';
 

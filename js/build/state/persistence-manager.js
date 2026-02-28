@@ -55,7 +55,7 @@ const PersistenceManager = {
       let data;
       try {
         data = JSON.parse(saved);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.warn('[PersistenceManager] Corrupted data, clearing');
         this.clear();
         return null;
@@ -177,7 +177,7 @@ const PersistenceManager = {
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   },

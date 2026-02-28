@@ -82,12 +82,45 @@ export default [
     },
   },
 
-  // JS in js/ folder — script-tag architecture, cross-file usage invisible to ESLint
+  // JS in js/ folder — script-tag base: cross-file usage invisible to ESLint
   {
     files: ['js/**/*.js'],
     rules: {
       'no-undef': 'off',
       'no-unused-vars': 'off',
+    },
+  },
+
+  // ES module directories — re-enable no-unused-vars (imports are trackable)
+  {
+    files: [
+      'js/core/**/*.js',
+      'js/config/**/*.js',
+      'js/utils/**/*.js',
+      'js/build/**/*.js',
+      'js/dashboard/**/*.js',
+      'js/solana/**/*.js',
+      'js/shared/**/*.js',
+      'js/audio/**/*.js',
+      'js/badge/**/*.js',
+      'js/ui/**/*.js',
+      'js/persistence/**/*.js',
+      'js/learn-build/**/*.js',
+      'js/burns.js',
+      'js/forecast.js',
+      'js/holdex.js',
+      'js/staking.js',
+      'js/ignition.js',
+      'js/me.js',
+      'js/hub-majestic.js',
+      'js/debug.js',
+      'js/asdf-integration.js',
+    ],
+    rules: {
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 

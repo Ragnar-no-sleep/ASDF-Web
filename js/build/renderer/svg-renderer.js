@@ -9,7 +9,6 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { TreeComponent } from '../components/tree.js';
 import { $, $$, addClass, removeClass, setStyles } from '../utils/dom.js';
 import { DURATION, NOTIFICATION } from '../config/timing.js';
 

@@ -415,7 +415,7 @@ const LODManager = {
 
     const cameraPos = this.camera.position;
 
-    for (const [id, entry] of this.objects) {
+    for (const [_id, entry] of this.objects) {
       if (!entry.object || !entry.object.position) continue;
 
       const distance = cameraPos.distanceTo(entry.object.position);
