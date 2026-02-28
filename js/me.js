@@ -8,6 +8,7 @@ import { disclosureSystem } from './utils/progressive-disclosure.js';
 import { soundSystem, initSounds } from './utils/sound-system.js';
 import { initInteractions, animateCounter } from './utils/interactions.js';
 import { initEasterEggs } from './utils/easter-eggs.js';
+import { PageLifecycle } from './core/PageLifecycle.js';
 
 // ============================================
 // K-SCORE CALCULATION
@@ -337,7 +338,7 @@ function init() {
   console.log('📊 Dashboard loaded');
 
   // Auto-refresh every 5 seconds
-  setInterval(() => {
+  const refreshId = setInterval(() => {
     renderKScore();
     renderStreakCalendar();
     renderProgress();
@@ -345,6 +346,7 @@ function init() {
     renderHeatmap();
     renderAchievements();
   }, 5000);
+  PageLifecycle.registerTimer('me-dashboard-refresh', refreshId);
 }
 
 // Wait for DOM
