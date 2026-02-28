@@ -93,9 +93,6 @@ async function renderGamesPage() {
         <noscript><div class="noscript-warning" style="padding:2rem;text-align:center;background:#1a1a2e;color:#fff;margin:2rem;"><h2>JavaScript Required</h2><p>Please enable JavaScript to play games.</p></div></noscript>
     </main>
     <div id="game-modals"></div>
-    <script src="/js/games/core/container.js"></script>
-    <script src="/js/games/core/facades.js"></script>
-    <script src="/js/games/core/bootstrap.js"></script>
     <script src="/js/games/utils.js"></script>
     <script src="/js/games/config.js"></script>
     <script src="/js/games/state.js"></script>
