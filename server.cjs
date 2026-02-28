@@ -179,17 +179,18 @@ app.use(
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     noSniff: true,
     xssFilter: true,
-    permissionsPolicy: {
-      features: {
-        geolocation: ["'none'"],
-        camera: ["'none'"],
-        microphone: ["'none'"],
-        usb: ["'none'"],
-        payment: ["'self'"],
-      },
-    },
+    // Note: Helmet 8.x does NOT support permissionsPolicy — set manually below
   })
 );
+
+// Permissions-Policy header (Helmet 8.x dropped built-in support)
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'geolocation=(), camera=(), microphone=(), usb=(), payment=(self)'
+  );
+  next();
+});
 
 // Compression
 app.use(compression());
@@ -225,6 +226,7 @@ app.use(
     maxAge: '1d',
     etag: true,
     index: false, // Don't serve directory listings
+    redirect: false, // Don't redirect /dir → /dir/ (lets route handlers win)
     dotfiles: 'deny', // Block dotfiles
     setHeaders: (res, filePath) => {
       const fileName = path.basename(filePath);

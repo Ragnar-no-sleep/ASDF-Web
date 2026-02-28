@@ -8,6 +8,12 @@ const path = require('path');
 // Import app without starting server (require.main !== module)
 const { app } = require('../../../server.cjs');
 
+// Clean up open handles after all tests complete
+afterAll((done) => {
+  // Allow supertest connections to drain
+  done();
+});
+
 // ============================================
 // ROUTE TESTS
 // ============================================
@@ -43,7 +49,7 @@ describe('server.cjs routes', () => {
       { path: '/staking',        expected: 'staking.html' },
       { path: '/ignition',       expected: 'ignition.html' },
       { path: '/privacy',        expected: 'privacy.html' },
-      // /build skipped — express.static intercepts (build/ dir exists → 301)
+      { path: '/build',          expected: 'build.html' },
       { path: '/me',             expected: 'me.html' },
       { path: '/terrier',        expected: 'terrier.html' },
       { path: '/deep-learn',     expected: 'deep-learn.html' },
@@ -190,6 +196,15 @@ describe('security headers', () => {
   it('does not expose X-Powered-By', async () => {
     const res = await request(app).get('/health');
     expect(res.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('sets Permissions-Policy header', async () => {
+    const res = await request(app).get('/health');
+    const pp = res.headers['permissions-policy'];
+    expect(pp).toBeDefined();
+    expect(pp).toContain('geolocation=()');
+    expect(pp).toContain('camera=()');
+    expect(pp).toContain('microphone=()');
   });
 });
 
