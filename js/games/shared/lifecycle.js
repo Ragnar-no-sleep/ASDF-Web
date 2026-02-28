@@ -22,14 +22,14 @@ const GameLifecycle = {
     if (isCompetitive) {
       // Verify we can still play competitive and start session
       if (typeof canPlayCompetitive === 'function' && !canPlayCompetitive(gameId)) {
-        alert('Mode competitif non disponible. Basculement vers le mode entrainement.');
+        if (window.showNotice) { window.showNotice('Mode compétitif non disponible. Basculement vers le mode entraînement.'); } else { console.warn('Competitive mode unavailable'); }
         activeGameModes[gameId] = 'practice';
         const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
         const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
         if (competitiveBtn) competitiveBtn.classList.remove('active');
         if (practiceBtn) practiceBtn.classList.add('active');
       } else if (typeof startCompetitiveSession === 'function' && !startCompetitiveSession()) {
-        alert("Temps competitif epuise pour aujourd'hui! Basculement vers le mode entrainement.");
+        if (window.showNotice) { window.showNotice("Temps compétitif épuisé pour aujourd'hui! Basculement vers le mode entraînement."); } else { console.warn('Competitive time exhausted'); }
         activeGameModes[gameId] = 'practice';
         const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
         const practiceBtn = document.getElementById(`practice-btn-${gameId}`);

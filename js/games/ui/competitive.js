@@ -52,7 +52,7 @@ const CompetitiveUI = {
     if (wantCompetitive) {
       // Check if user can play competitive (only time limit check now)
       if (!canPlayCompetitive(gameId)) {
-        alert("Temps compétitif épuisé pour aujourd'hui! Revenez demain.");
+        if (window.showNotice) { window.showNotice("Temps compétitif épuisé pour aujourd'hui! Revenez demain."); } else { console.warn('Competitive time exhausted'); }
         return;
       }
 
