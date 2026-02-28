@@ -17,7 +17,7 @@ import * as contextualAnimations from './utils/contextual-animations.js';
 import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
-import { formatNumber, formatWallet, formatTimeAgo } from './utils/format.js';
+import { formatNumber, formatWallet } from './utils/format.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 
 const API_BASE = ASDF_ENDPOINTS.burns;
@@ -82,8 +82,6 @@ async function fetchWalletStats() {
 // ============================================
 // UI UPDATES
 // ============================================
-
-// formatTimeAgo: now imported from utils/format.js (accepts ISO strings + Unix ms)
 
 function animateCounter(element, target, duration = 2000) {
   const start = 0;

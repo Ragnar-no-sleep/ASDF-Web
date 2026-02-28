@@ -107,7 +107,7 @@ body {
     transparent 3px
   );
   pointer-events: none;
-  z-index: 100;
+  z-index: var(--z-overlay);
 }
 
 .cosmic-bg::after {
