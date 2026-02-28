@@ -12,6 +12,7 @@
     <meta property="og:url" content="https://alonisthe.dev/build">
     <meta property="og:title" content="Build - ASDF Ecosystem">
     <meta property="og:description" content="Yggdrasil and Marketplace - The ASDF builders ecosystem.">
+    <meta property="og:image" content="https://alonisthe.dev/favicon.png">
 
     <link rel="icon" type="image/png" href="/favicon.png">
 
@@ -23,7 +24,8 @@
 
     <link rel="stylesheet" href="css/build.css">
     <link rel="stylesheet" href="css/journey.css">
-    <link rel="stylesheet" href="css/viking-bg.css">
+    <link rel="preload" href="css/viking-bg.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/viking-bg.css"></noscript>
     <!-- Yggdrasil 3D Components -->
     <link rel="stylesheet" href="css/formation-panel.css">
     <link rel="stylesheet" href="css/skill-tree.css">
