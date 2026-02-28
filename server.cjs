@@ -487,6 +487,9 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown — clean up Redis + close server
 function gracefulShutdown(signal) {
   console.log(`[Server] ${signal} received, shutting down...`);
+  if (redisClient) {
+    redisClient.quit().catch(() => {});
+  }
   server.close(() => {
     console.log('[Server] HTTP server closed');
     process.exit(0);
