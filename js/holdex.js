@@ -14,6 +14,7 @@
 import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
 
 const API_BASE = ASDF_ENDPOINTS.holdex;
 
@@ -58,28 +59,7 @@ function getCreditRating(score) {
   return { grade: 'D', css: 'd' };
 }
 
-// ============================================
-// EXPONENTIAL BACKOFF FETCH
-// (Adapted from sollama58/ASDFBurnTracker)
-// ============================================
-
-async function fetchWithRetry(url, options, maxRetries = 3) {
-  let delay = 1000;
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      const response = await fetch(url, options || {});
-      // Don't retry on rate-limit or service unavailable — bail immediately
-      if (response.status === 503 || response.status === 429) throw new Error('HTTP ' + response.status);
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response;
-    } catch (err) {
-      // CORS errors are TypeErrors — no point retrying
-      if (err instanceof TypeError || i === maxRetries) throw err;
-      await new Promise(resolve => setTimeout(resolve, delay));
-      delay *= 2;
-    }
-  }
-}
+// fetchWithRetry imported from js/utils/fetch-retry.js
 
 // ============================================
 // FORMAT UTILS
