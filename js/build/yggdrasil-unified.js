@@ -2280,6 +2280,9 @@ const YggdrasilCosmos = {
     // Fetch initial data and start polling
     this.updateBurnStats();
     this.startBurnPolling();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => this.stopBurnPolling());
   },
 
   /**

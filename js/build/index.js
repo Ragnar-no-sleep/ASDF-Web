@@ -382,6 +382,8 @@ const BuildApp = {
     // Cleanup WebGL context + resources on page unload
     on(window, 'beforeunload', () => {
       RendererFactory.dispose();
+      TreeComponent.pauseBurnPulse();
+      StreakCounter.destroy();
     });
   },
 

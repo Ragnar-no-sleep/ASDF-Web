@@ -112,6 +112,9 @@ const ShopV2 = {
       // Setup event listeners
       this.setupEventListeners();
 
+      // Cleanup on page unload
+      window.addEventListener('beforeunload', () => this.destroy());
+
       this.initialized = true;
 
       // Emit ready event
@@ -182,7 +185,6 @@ const ShopV2 = {
       if (this.collections && this.state.collections.length > 0) {
         this.collections.init(this.state.collections, this.state.inventory);
       }
-
     } catch (error) {
       console.error('[ShopV2] Sync failed:', error);
     }

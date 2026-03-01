@@ -21,7 +21,7 @@ const WALLET_STANDARD_FEATURES = {
   EVENTS: 'standard:events',
   SIGN_MESSAGE: 'solana:signMessage',
   SIGN_TRANSACTION: 'solana:signTransaction',
-  SIGN_AND_SEND: 'solana:signAndSendTransaction'
+  SIGN_AND_SEND: 'solana:signAndSendTransaction',
 };
 
 // ============================================
@@ -44,6 +44,9 @@ const WalletManager = {
 
   /** @type {Function[]} Event listeners */
   listeners: [],
+
+  /** @type {number|null} Poll timer ID */
+  _pollTimer: null,
 
   /** @type {boolean} Initialization state */
   initialized: false,
@@ -93,11 +96,9 @@ const WalletManager = {
    * @private
    */
   _hasWalletStandard() {
-    return typeof window !== 'undefined' && (
-      window.navigator?.wallets ||
-      window.solana ||
-      window.phantom?.solana ||
-      window.backpack
+    return (
+      typeof window !== 'undefined' &&
+      (window.navigator?.wallets || window.solana || window.phantom?.solana || window.backpack)
     );
   },
 
@@ -121,22 +122,34 @@ const WalletManager = {
     // Phantom
     if (window.phantom?.solana || window.solana?.isPhantom) {
       const phantom = window.phantom?.solana || window.solana;
-      this.wallets.set('Phantom', this._wrapLegacyWallet('Phantom', phantom, 'https://phantom.app/img/logo.png'));
+      this.wallets.set(
+        'Phantom',
+        this._wrapLegacyWallet('Phantom', phantom, 'https://phantom.app/img/logo.png')
+      );
     }
 
     // Backpack
     if (window.backpack) {
-      this.wallets.set('Backpack', this._wrapLegacyWallet('Backpack', window.backpack, 'https://backpack.app/logo.png'));
+      this.wallets.set(
+        'Backpack',
+        this._wrapLegacyWallet('Backpack', window.backpack, 'https://backpack.app/logo.png')
+      );
     }
 
     // Solflare
     if (window.solflare?.isSolflare) {
-      this.wallets.set('Solflare', this._wrapLegacyWallet('Solflare', window.solflare, 'https://solflare.com/favicon.ico'));
+      this.wallets.set(
+        'Solflare',
+        this._wrapLegacyWallet('Solflare', window.solflare, 'https://solflare.com/favicon.ico')
+      );
     }
 
     // Glow
     if (window.glow) {
-      this.wallets.set('Glow', this._wrapLegacyWallet('Glow', window.glow, 'https://glow.app/favicon.ico'));
+      this.wallets.set(
+        'Glow',
+        this._wrapLegacyWallet('Glow', window.glow, 'https://glow.app/favicon.ico')
+      );
     }
   },
 
@@ -153,37 +166,43 @@ const WalletManager = {
         [WALLET_STANDARD_FEATURES.CONNECT]: {
           connect: async () => {
             const resp = await provider.connect();
-            return [{
-              address: resp.publicKey.toString(),
-              publicKey: resp.publicKey
-            }];
-          }
+            return [
+              {
+                address: resp.publicKey.toString(),
+                publicKey: resp.publicKey,
+              },
+            ];
+          },
         },
         [WALLET_STANDARD_FEATURES.DISCONNECT]: {
           disconnect: async () => {
             await provider.disconnect();
-          }
+          },
         },
         [WALLET_STANDARD_FEATURES.SIGN_TRANSACTION]: {
-          signTransaction: async (transaction) => {
+          signTransaction: async transaction => {
             return await provider.signTransaction(transaction);
-          }
+          },
         },
         [WALLET_STANDARD_FEATURES.SIGN_AND_SEND]: {
           signAndSendTransaction: async (transaction, options) => {
             return await provider.signAndSendTransaction(transaction, options);
-          }
+          },
         },
         [WALLET_STANDARD_FEATURES.SIGN_MESSAGE]: {
-          signMessage: async (message) => {
+          signMessage: async message => {
             return await provider.signMessage(message);
-          }
-        }
+          },
+        },
       },
-      accounts: provider.publicKey ? [{
-        address: provider.publicKey.toString(),
-        publicKey: provider.publicKey
-      }] : []
+      accounts: provider.publicKey
+        ? [
+            {
+              address: provider.publicKey.toString(),
+              publicKey: provider.publicKey,
+            },
+          ]
+        : [],
     };
   },
 
@@ -209,13 +228,26 @@ const WalletManager = {
     }
 
     // Poll for new wallets (fallback)
-    setInterval(() => {
+    this._pollTimer = setInterval(() => {
       const previousCount = this.wallets.size;
       this._discoverWallets();
       if (this.wallets.size !== previousCount) {
         this._emit('walletsChanged', this.getWallets());
       }
     }, 5000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => this.destroy());
+  },
+
+  /**
+   * Destroy and clean up resources
+   */
+  destroy() {
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = null;
+    }
   },
 
   /**
@@ -236,7 +268,7 @@ const WalletManager = {
         this.connectedWallet = wallet;
         this.connectedAccount = {
           address: provider.publicKey.toString(),
-          publicKey: provider.publicKey
+          publicKey: provider.publicKey,
         };
         this._emit('connect', this.connectedAccount);
         console.log(`[WalletManager] Auto-reconnected to ${savedWallet}`);
@@ -255,7 +287,7 @@ const WalletManager = {
     return Array.from(this.wallets.entries()).map(([name, wallet]) => ({
       name,
       icon: wallet.icon || '',
-      installed: true
+      installed: true,
     }));
   },
 
@@ -267,7 +299,9 @@ const WalletManager = {
   async connect(walletName) {
     const wallet = this.wallets.get(walletName);
     if (!wallet) {
-      throw new Error(`Wallet "${walletName}" not found. Available: ${Array.from(this.wallets.keys()).join(', ')}`);
+      throw new Error(
+        `Wallet "${walletName}" not found. Available: ${Array.from(this.wallets.keys()).join(', ')}`
+      );
     }
 
     try {
@@ -280,10 +314,12 @@ const WalletManager = {
       // Fallback to legacy provider
       else if (wallet.provider?.connect) {
         const resp = await wallet.provider.connect();
-        accounts = [{
-          address: resp.publicKey.toString(),
-          publicKey: resp.publicKey
-        }];
+        accounts = [
+          {
+            address: resp.publicKey.toString(),
+            publicKey: resp.publicKey,
+          },
+        ];
       } else {
         throw new Error('Wallet does not support connect');
       }
@@ -304,9 +340,8 @@ const WalletManager = {
 
       return {
         address: this.connectedAccount.address,
-        wallet: walletName
+        wallet: walletName,
       };
-
     } catch (error) {
       if (error.message?.includes('User rejected')) {
         throw new Error('Connection rejected by user', { cause: error });
@@ -449,9 +484,7 @@ const WalletManager = {
    * @param {Function} callback - Callback function
    */
   off(event, callback) {
-    this.listeners = this.listeners.filter(
-      l => !(l.event === event && l.callback === callback)
-    );
+    this.listeners = this.listeners.filter(l => !(l.event === event && l.callback === callback));
   },
 
   /**
@@ -468,7 +501,7 @@ const WalletManager = {
         }
       }
     }
-  }
+  },
 };
 
 // ============================================

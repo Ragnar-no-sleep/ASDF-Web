@@ -2076,6 +2076,11 @@
       tokenRefreshTimer = setInterval(fetchTokenHealth, 60_000);
     }
 
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (tokenRefreshTimer) clearInterval(tokenRefreshTimer);
+    });
+
     // ============================================
     // LAYER VIEW
     // ============================================

@@ -46,7 +46,7 @@ const SELECTORS = {
   JOURNEY_TRACK_NAME: '#journey-track-name',
   JOURNEY_TRACK_DESC: '#journey-track-desc',
   JOURNEY_TRACK_ICON: '#journey-track-icon',
-  JOURNEY_STAT_VALUES: '.journey-stat-value'
+  JOURNEY_STAT_VALUES: '.journey-stat-value',
 };
 
 // ============================================
@@ -75,7 +75,7 @@ class LearnBuildUIController {
     // Initialize Learn & Build system with sample data
     await LearnBuild.init(userId, {
       quests: ALL_QUESTS,
-      modules: ALL_MODULES
+      modules: ALL_MODULES,
     });
 
     // Cache DOM elements
@@ -91,6 +91,9 @@ class LearnBuildUIController {
     this.updateInterval = setInterval(() => {
       this._updateDynamicElements();
     }, 30000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => this.destroy());
 
     this.initialized = true;
     log.debug('UI Controller initialized');
@@ -200,12 +203,16 @@ class LearnBuildUIController {
       return;
     }
 
-    container.innerHTML = showcase.map(badge => `
+    container.innerHTML = showcase
+      .map(
+        badge => `
       <div class="lb-badge" data-badge-id="${badge.id}" data-tier="${badge.tier}">
         <span class="lb-badge-icon">${badge.icon}</span>
         <span class="lb-badge-name">${badge.name}</span>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Badge count
     const countEl = document.querySelector(SELECTORS.BADGE_COUNT);
@@ -232,7 +239,9 @@ class LearnBuildUIController {
       return;
     }
 
-    container.innerHTML = milestones.map(m => `
+    container.innerHTML = milestones
+      .map(
+        m => `
       <div class="lb-milestone" data-type="${m.type}">
         <div class="lb-milestone-info">
           ${m.icon ? `<span class="lb-milestone-icon">${m.icon}</span>` : ''}
@@ -245,7 +254,9 @@ class LearnBuildUIController {
           <span class="lb-milestone-text">${m.current}/${m.target}</span>
         </div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -270,7 +281,9 @@ class LearnBuildUIController {
       return;
     }
 
-    container.innerHTML = activeQuests.map(quest => `
+    container.innerHTML = activeQuests
+      .map(
+        quest => `
       <div class="lb-quest-card" data-quest-id="${quest.id}" data-state="${quest.state}">
         <div class="lb-quest-header">
           <span class="lb-quest-name">${quest.definition.name}</span>
@@ -285,11 +298,13 @@ class LearnBuildUIController {
           Continue
         </button>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Bind quest actions
     container.querySelectorAll('.lb-quest-action').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', e => {
         const card = e.target.closest('.lb-quest-card');
         const questId = card?.dataset.questId;
         if (questId) {
@@ -395,44 +410,47 @@ class LearnBuildUIController {
    */
   _subscribeToEvents() {
     // XP gained
-    eventBus.on(EVENTS.XP_GAINED, (data) => {
+    eventBus.on(EVENTS.XP_GAINED, data => {
       this.renderXPDisplay();
       this.showToast(`+${data.amount} XP`, 'success');
     });
 
     // Level up
-    eventBus.on(EVENTS.XP_LEVEL_UP, (data) => {
+    eventBus.on(EVENTS.XP_LEVEL_UP, data => {
       this.renderXPDisplay();
       this.showToast(`Level Up! You're now Level ${data.newLevel}`, 'success');
       this._playLevelUpAnimation();
     });
 
     // Badge earned
-    eventBus.on(EVENTS.BADGE_EARNED, (data) => {
+    eventBus.on(EVENTS.BADGE_EARNED, data => {
       this.renderBadgeShowcase();
       this.showToast(`Badge Earned: ${data.badge.name}`, 'success');
       this._showBadgeModal(data.badge);
     });
 
     // Quest completed
-    eventBus.on(EVENTS.QUEST_COMPLETED, (_data) => {
+    eventBus.on(EVENTS.QUEST_COMPLETED, _data => {
       this.renderActiveQuests();
       this.renderProgressCard();
       this.renderMilestones();
     });
 
     // Module completed
-    eventBus.on(EVENTS.MODULE_COMPLETED, (data) => {
+    eventBus.on(EVENTS.MODULE_COMPLETED, data => {
       this.renderProgressCard();
       this.renderTrackProgress();
       this.showToast(`Module Completed! +${data.xp} XP`, 'success');
     });
 
     // Streak update
-    eventBus.on(EVENTS.XP_STREAK, (data) => {
+    eventBus.on(EVENTS.XP_STREAK, data => {
       this.renderXPDisplay();
       if (data.streak > 1) {
-        this.showToast(`${data.streak}-day streak! ${Math.round(data.bonus * 100)}% XP bonus`, 'info');
+        this.showToast(
+          `${data.streak}-day streak! ${Math.round(data.bonus * 100)}% XP bonus`,
+          'info'
+        );
       }
     });
   }
@@ -482,7 +500,7 @@ class LearnBuildUIController {
     if (window.ASDF?.modal) {
       window.ASDF.modal.show({
         type: 'badge',
-        badge
+        badge,
       });
       return;
     }
