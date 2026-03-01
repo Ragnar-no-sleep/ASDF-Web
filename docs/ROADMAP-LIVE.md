@@ -239,14 +239,12 @@ Rapid iteration through all 27 audit findings. 18 fixed, 2 false positives, 7 de
 - [x] CSS: build.css within-file fadeIn dupe removed + roadmap update
 
 **Deferred (with rationale):**
-- SEC-3 (unsafe-inline): requires full onclick→JS migration across codebase
 - CSS-1 (@keyframes): system.css not loaded by most pages, dupes are sole definitions
 - CSS-3 (!important): 84 occurrences across 16 files, needs specificity analysis per case
 - CSS-5 (z-index): ecosystem.css uses separate stacking context, needs visual testing
 - PERF-2 (pumparena): 2800-line engine, 27 listeners, dedicated refactor ticket
-- PERF-3 (@import cascade): 20+ CSS files, dedicated ticket
 
-**Tests:** 566/566 pass (24 suites). **Score: 18/27 fixed (67%), 2 false positives, 7 deferred.**
+**Tests:** 587/587 pass (26 suites). **Score: 22/27 fixed (81%), 2 false positives, 3 deferred.**
 
 **Décisions 2026-02-27 (session 1)** :
 - HolDex backend = Option A (shell only) — PostgreSQL+Redis trop lourd à forker
@@ -346,7 +344,7 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 ### P1 — High priority (6/8 DONE)
 
 - [x] **SEC-2** `build.html` inline `<script type="module">` → external `js/build/cosmos-init.js`
-- [ ] **SEC-3** `server.cjs:131` — `scriptSrcAttr: unsafe-inline` broad scope → migrate onclick to JS listeners
+- [x] **SEC-3** `server.cjs:131` — scriptSrcAttr hardened to 'none' (all inline handlers removed)
 - [x] **SEC-4** `server.cjs` — Redis endpoint requires API key in ALL environments
 - [x] **SEC-5** `ecosystem-map.html` — crossorigin="anonymous" on D3.js CDN
 - [x] **CSS-2** 7 files — breakpoints standardized to 1024/768/480 (14 replacements)
@@ -371,7 +369,7 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 
 - [x] **ARCH-6** `timing-config.js` — PHI_INVERSE exported to window
 - [ ] **PERF-2** `pumparena.js` — 27 listeners bypass PageLifecycle (2800+ line engine, dedicated ticket)
-- [ ] **PERF-3** 20 CSS files — @import design-tokens cascade → HTML `<link>` preferred (20+ files, dedicated ticket)
+- [x] **PERF-3** 20 CSS files — @import design-tokens removed, 8 HTML pages got direct `<link>` (-20 redundant HTTP requests)
 - [x] **SEO-1** `me.html`, `terrier.html` — og:image + twitter:card meta added
 - [ ] **CSS-7** 4 HTML files — inline style="" on html tags (FOUC prevention)
 - [x] **SEC-6** `admin.js` — Math.max lower bound on pagination params
