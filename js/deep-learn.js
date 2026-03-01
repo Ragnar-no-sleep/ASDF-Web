@@ -106,7 +106,8 @@ function setupEventListeners() {
 
 async function loadStats() {
   try {
-    const response = await fetch('/api/burns/stats');
+    const fetchFn = typeof fetchWithRetry === 'function' ? fetchWithRetry : fetch;
+    const response = await fetchFn('/api/burns/stats');
     if (response.ok) {
       const data = await response.json();
       const sidebarBurned = document.getElementById('sidebar-burned');

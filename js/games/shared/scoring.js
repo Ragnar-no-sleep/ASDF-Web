@@ -14,13 +14,15 @@ const GameScoring = {
    * @param {number} score - The new score
    */
   updateScore(gameId, score) {
-    const scoreEl = document.getElementById(`score-${gameId}`);
-    if (scoreEl) scoreEl.textContent = score;
+    if (typeof GameEvents !== 'undefined') {
+      GameEvents.emit('score:updated', { gameId, score });
+    }
 
     if (typeof appState !== 'undefined' && score > (appState.practiceScores[gameId] || 0)) {
       appState.practiceScores[gameId] = score;
-      const bestEl = document.getElementById(`best-${gameId}`);
-      if (bestEl) bestEl.textContent = score;
+      if (typeof GameEvents !== 'undefined') {
+        GameEvents.emit('score:best', { gameId, score });
+      }
       if (typeof saveState === 'function') {
         saveState();
       }

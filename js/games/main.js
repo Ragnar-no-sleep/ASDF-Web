@@ -92,6 +92,14 @@ function init() {
       updateAccessUI();
       renderGamesGrid();
     });
+    GameEvents.on('score:updated', ({ gameId, score }) => {
+      const el = document.getElementById(`score-${gameId}`);
+      if (el) el.textContent = score;
+    });
+    GameEvents.on('score:best', ({ gameId, score }) => {
+      const el = document.getElementById(`best-${gameId}`);
+      if (el) el.textContent = score;
+    });
   }
 
   // Wire CompetitiveUI event subscribers (must be after GameEvents is defined)

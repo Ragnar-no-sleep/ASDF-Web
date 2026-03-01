@@ -151,17 +151,16 @@ if (typeof window !== 'undefined') {
   window.GAME_TIMING = window.ASDF.GAME_TIMING;
   window.ASDF.GAME_EASING = GAME_EASING;
   window.GAME_EASING = window.ASDF.GAME_EASING;
-  window.ASDF = window.ASDF || {};
   window.ASDF.FIBONACCI = FIBONACCI;
   window.FIBONACCI = window.ASDF.FIBONACCI;
   window.ASDF.PHI = PHI;
   window.PHI = window.ASDF.PHI;
-  window.ASDF = window.ASDF || {};
+  window.ASDF.PHI_INVERSE = PHI_INVERSE;
+  window.PHI_INVERSE = window.ASDF.PHI_INVERSE;
   window.ASDF.fib = fib;
   window.fib = window.ASDF.fib;
   window.ASDF.phiStagger = phiStagger;
   window.phiStagger = window.ASDF.phiStagger;
-  window.ASDF = window.ASDF || {};
   window.ASDF.phiScale = phiScale;
   window.phiScale = window.ASDF.phiScale;
 }
