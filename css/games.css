@@ -3,8 +3,6 @@
            Fire-themed gaming platform
            ============================================ */
 
-@import url('./design-tokens.css');
-
 :root {
   /* Fire Palette */
   --bg-void: #0a0a0f;

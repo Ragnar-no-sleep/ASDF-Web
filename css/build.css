@@ -3,8 +3,6 @@
    The World Tree - Vertical Medallion Layout
    ============================================ */
 
-@import url('./design-tokens.css');
-
 :root {
   /* Fire Palette */
   --bg-void: #0a0a0f;

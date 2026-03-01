@@ -7,8 +7,6 @@
  * @version 2.0.0
  */
 
-@import url('./design-tokens.css');
-
 :root {
   --bg: #0d0906;
   --surface: #1a1410;
