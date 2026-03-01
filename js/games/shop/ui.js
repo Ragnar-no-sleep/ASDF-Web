@@ -59,7 +59,6 @@ const ShopUI = {
     // Initial render
     this.render();
 
-    console.log('[ShopUI] Initialized');
   },
 
   /**
@@ -595,7 +594,7 @@ const ShopUI = {
     this.canvasInstance.init(canvas, {
       size: 300,
       interactive: true,
-      onLoad: () => console.log('[ShopUI] Canvas loaded'),
+      onLoad: () => {},
       onError: err => console.error('[ShopUI] Canvas error:', err),
     });
 

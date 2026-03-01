@@ -44,8 +44,6 @@ const Hub = {
   init() {
     if (this.initialized) return;
 
-    console.log('[Hub] Initializing...');
-
     // Cache section elements
     this.cacheSections();
 
@@ -78,7 +76,6 @@ const Hub = {
     }
 
     this.initialized = true;
-    console.log('[Hub] Initialized');
   },
 
   /**

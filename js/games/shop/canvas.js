@@ -84,8 +84,6 @@ const ShopCanvas = {
 
     // Set up high DPI
     this.setupHighDPI();
-
-    console.log('[ShopCanvas] Initialized', this.currentSize);
   },
 
   /**

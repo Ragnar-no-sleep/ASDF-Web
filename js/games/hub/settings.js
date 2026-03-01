@@ -128,8 +128,6 @@ const Settings = {
    * Initialize settings
    */
   init() {
-    console.log('[Settings] Initializing...');
-
     // Load settings
     this.load();
 
@@ -278,7 +276,6 @@ const Settings = {
       this.current = { ...this.defaults };
     }
 
-    console.log('[Settings] Loaded (validated):', this.current);
   },
 
   /**
@@ -287,7 +284,6 @@ const Settings = {
   save() {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.current));
-      console.log('[Settings] Saved');
     } catch (e) {
       console.error('[Settings] Failed to save:', e);
     }

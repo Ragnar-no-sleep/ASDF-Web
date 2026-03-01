@@ -94,8 +94,6 @@ const Profile = {
    * Initialize profile module
    */
   init() {
-    console.log('[Profile] Initializing...');
-
     // Cache DOM elements
     this.cacheElements();
 
@@ -344,8 +342,6 @@ const Profile = {
    * Refresh profile data from server
    */
   async refresh() {
-    console.log('[Profile] Refreshing...');
-
     // Show loading state
     if (this.elements.refreshBtn) {
       this.elements.refreshBtn.disabled = true;

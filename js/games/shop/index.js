@@ -57,8 +57,6 @@ const ShopV2 = {
     // Merge options
     Object.assign(this.config, options);
 
-    console.log('[ShopV2] Initializing...');
-
     try {
       // Get module references
       this.state = window.ShopStateV2;
@@ -115,7 +113,6 @@ const ShopV2 = {
       this.setupEventListeners();
 
       this.initialized = true;
-      console.log('[ShopV2] Initialized successfully');
 
       // Emit ready event
       this.state.emit('shop-ready');
@@ -566,7 +563,6 @@ const ShopV2 = {
     }
 
     this.initialized = false;
-    console.log('[ShopV2] Destroyed');
   },
 };
 

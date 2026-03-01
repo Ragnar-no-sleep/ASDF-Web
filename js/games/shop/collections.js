@@ -51,7 +51,6 @@ const ShopCollections = {
     // Calculate progress from inventory
     this.calculateProgress(inventory);
 
-    console.log(`[ShopCollections] Initialized with ${this.definitions.size} collections`);
   },
 
   /**

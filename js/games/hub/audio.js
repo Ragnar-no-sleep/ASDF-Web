@@ -79,8 +79,6 @@ const ValhallaAudio = {
   init() {
     if (this.initialized) return;
 
-    console.log('[ValhallaAudio] Initializing...');
-
     // Create audio context on user interaction (required by browsers)
     const initContext = () => {
       if (this.context) return;
@@ -110,7 +108,6 @@ const ValhallaAudio = {
         this.generateProceduralSounds();
 
         this.initialized = true;
-        console.log('[ValhallaAudio] Context initialized');
       } catch (e) {
         console.error('[ValhallaAudio] Failed to create context:', e);
       }

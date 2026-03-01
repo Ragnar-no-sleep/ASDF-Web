@@ -85,7 +85,6 @@ const ShopFilters = {
     this.container = container;
     this.onFilterChange = onChange;
     this.render();
-    console.log('[ShopFilters] Initialized');
   },
 
   /**

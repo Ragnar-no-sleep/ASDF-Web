@@ -42,7 +42,6 @@ const ShopPreview = {
     this.onFavorite = callbacks.onFavorite;
 
     this.render();
-    console.log('[ShopPreview] Initialized');
   },
 
   /**

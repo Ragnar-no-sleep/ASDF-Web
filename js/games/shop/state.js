@@ -602,7 +602,6 @@ const ShopStateV2 = {
         this.favorites = validateFavorites(favoritesData);
       }
 
-      console.log('[ShopState] Loaded from localStorage (validated)');
     } catch (e) {
       console.warn('[ShopState] Failed to load from localStorage:', e);
     }
@@ -625,7 +624,6 @@ const ShopStateV2 = {
    */
   init() {
     this.loadFromLocal();
-    console.log('[ShopState] Initialized');
     this.emit('initialized');
   },
 

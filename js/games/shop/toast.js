@@ -44,7 +44,6 @@ const Toast = {
     this.container.setAttribute('aria-label', 'Notifications');
     document.body.appendChild(this.container);
 
-    console.log('[Toast] Initialized');
   },
 
   /**
