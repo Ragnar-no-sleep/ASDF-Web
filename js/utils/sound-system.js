@@ -241,10 +241,21 @@ class SoundSystem {
       volume: this.volume,
     };
   }
+
+  dispose() {
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      this.audioContext.close();
+    }
+    this.audioContext = null;
+    this.initialized = false;
+  }
 }
 
 // Singleton instance
 export const soundSystem = new SoundSystem();
+
+// Release AudioContext on page unload
+window.addEventListener('beforeunload', () => soundSystem.dispose());
 
 // ============================================
 // AUTO-INTEGRATION WITH INTERACTIONS
@@ -286,7 +297,6 @@ export function initSounds(options = {}) {
       );
     });
   }
-
 }
 
 // ============================================

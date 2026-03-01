@@ -378,6 +378,11 @@ const BuildApp = {
         this.toggleDebugOverlay();
       }
     });
+
+    // Cleanup WebGL context + resources on page unload
+    on(window, 'beforeunload', () => {
+      RendererFactory.dispose();
+    });
   },
 
   /**
