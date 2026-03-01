@@ -591,7 +591,6 @@ function updateEcosystemState(data) {
 
 function initShop() {
   loadShopState();
-  console.log('[ASDF Shop] Initialized:', ShopState.inventory.length, 'items owned');
 }
 
 // Initialize on DOM ready

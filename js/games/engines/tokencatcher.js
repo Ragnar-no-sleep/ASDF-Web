@@ -44,7 +44,6 @@ const TokenCatcher = {
    * @param {string} gameId - The game ID
    */
   start(gameId) {
-    console.log(`[TokenCatcher v${this.version}] Starting - ALL tokens shootable`);
     this.gameId = gameId;
     const arena = document.getElementById(`arena-${gameId}`);
     if (!arena) {

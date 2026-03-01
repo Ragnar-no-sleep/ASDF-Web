@@ -164,7 +164,6 @@ function validateStateSchema(data) {
 function loadState() {
   // RGPD: Only load from localStorage if user has given consent
   if (!hasStorageConsent()) {
-    console.log('[State] No storage consent, using session-only state');
     return;
   }
 

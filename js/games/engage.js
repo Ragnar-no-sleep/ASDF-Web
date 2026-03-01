@@ -501,7 +501,6 @@ function showTierUpCelebration(fromTier, toTier) {
  */
 function initEngage() {
     loadEngageState();
-    console.log('[ASDF Engage] Initialized:', getCurrentTier());
 }
 
 // Initialize on DOM ready

@@ -165,7 +165,3 @@ if (typeof window !== 'undefined') {
   window.phiScale = window.ASDF.phiScale;
 }
 
-// Log initialization (dev only)
-if (typeof console !== 'undefined' && window.location?.hostname === 'localhost') {
-  console.log('[ASDF Timing] Fibonacci config loaded. PHI =', PHI);
-}

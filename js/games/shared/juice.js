@@ -747,11 +747,3 @@ if (typeof window !== 'undefined') {
   window.renderParticles = window.ASDF.renderParticles;
 }
 
-// Log initialization (dev only)
-if (
-  typeof console !== 'undefined' &&
-  typeof window !== 'undefined' &&
-  window.location?.hostname === 'localhost'
-) {
-  console.log('[GameJuice] Juice system loaded. Presets:', Object.keys(JUICE_PRESETS).join(', '));
-}
