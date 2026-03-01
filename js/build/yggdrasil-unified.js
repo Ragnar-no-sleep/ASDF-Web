@@ -2237,7 +2237,6 @@ const YggdrasilCosmos = {
    * Connect wallet (placeholder)
    */
   connectWallet() {
-    console.log('[YggdrasilCosmos] Connect wallet requested');
     window.dispatchEvent(new CustomEvent('wallet:connect'));
   },
 
@@ -2647,7 +2646,6 @@ const YggdrasilCosmos = {
     this.toggleLeftPanel(false);
 
     // TODO: Animate camera to track's projects
-    console.log('[YggdrasilCosmos] Selected track:', trackId);
   },
 
   /**

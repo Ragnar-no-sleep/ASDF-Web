@@ -63,7 +63,6 @@ const PersistenceManager = {
 
       // Version check
       if (!data || data.version !== this.version) {
-        console.log('[PersistenceManager] Version mismatch, migrating...');
         return this._migrate(data);
       }
 
@@ -136,8 +135,6 @@ const PersistenceManager = {
 
       // Save migrated data
       this.save(migrated);
-      console.log('[PersistenceManager] Migration complete');
-
       return migrated;
     } catch (e) {
       console.warn('[PersistenceManager] Migration failed:', e);

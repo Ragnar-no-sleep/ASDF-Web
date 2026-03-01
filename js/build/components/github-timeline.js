@@ -74,7 +74,6 @@ const GitHubTimeline = {
     // Bind events
     this.bindEvents();
 
-    console.log('[GitHubTimeline] Initialized');
   },
 
   /**

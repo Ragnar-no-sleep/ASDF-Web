@@ -69,7 +69,6 @@ const QuizComponent = {
       this.showResult(BuildState.data.quizResult);
     }
 
-    console.log('[QuizComponent] Initialized');
   },
 
   /**

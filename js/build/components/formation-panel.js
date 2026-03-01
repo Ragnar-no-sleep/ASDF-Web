@@ -85,7 +85,6 @@ const FormationPanel = {
     // Bind events
     this.bindEvents();
 
-    console.log('[FormationPanel] Initialized');
   },
 
   /**

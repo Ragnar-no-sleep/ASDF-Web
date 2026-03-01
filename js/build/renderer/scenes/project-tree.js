@@ -120,7 +120,6 @@ class ProjectTreeScene {
       skillCount: skills.length
     });
 
-    console.log(`[ProjectTreeScene] Loaded project: ${projectId} with ${skills.length} skills`);
   }
 
   /**

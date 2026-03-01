@@ -82,8 +82,6 @@ async function loadGSAP() {
     script.onload = () => {
       gsap = window.gsap;
       isLoaded = true;
-      console.log('[Animations] GSAP loaded');
-
       // Try to load ScrollTrigger
       const scrollScript = document.createElement('script');
       scrollScript.src = 'https://unpkg.com/gsap@3.12.4/dist/ScrollTrigger.min.js';

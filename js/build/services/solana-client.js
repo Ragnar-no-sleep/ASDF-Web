@@ -84,7 +84,6 @@ const SolanaClient = {
    */
   async init(config = {}) {
     this._rpcEndpoint = config.rpcEndpoint || 'https://mainnet.helius-rpc.com';
-    console.log('[SolanaClient] Initialized (stub mode)');
     return true;
   },
 
@@ -110,7 +109,6 @@ const SolanaClient = {
    */
   async connectWallet() {
     // Future: Integrate with wallet-standard
-    console.log('[SolanaClient] Wallet connection not implemented (stub)');
     return null;
   },
 
@@ -120,7 +118,6 @@ const SolanaClient = {
   async disconnectWallet() {
     this._connected = false;
     this._wallet = null;
-    console.log('[SolanaClient] Wallet disconnected');
   },
 
   // ============================================
@@ -137,8 +134,6 @@ const SolanaClient = {
     // const program = getProgram('asdf-builder');
     // const [pda] = findProgramAddressSync([Buffer.from('builder'), wallet.toBuffer()], programId);
     // return await program.account.builder.fetch(pda);
-
-    console.log('[SolanaClient] getBuilderPDA not implemented (stub)');
 
     // Return localStorage data if available
     return this._getLocalBuilderData(wallet);
@@ -162,8 +157,6 @@ const SolanaClient = {
    */
   async initializeBuilderPDA(wallet) {
     // Future: Create on-chain PDA
-    console.log('[SolanaClient] initializeBuilderPDA not implemented (stub)');
-
     // Initialize in localStorage for now
     const builder = {
       ...MOCK_BUILDER,
@@ -184,8 +177,6 @@ const SolanaClient = {
    */
   async updateProgress(wallet, progress) {
     // Future: Write to on-chain PDA
-    console.log('[SolanaClient] updateProgress not implemented (stub)');
-
     const builder = (await this.getBuilderPDA(wallet)) || { ...MOCK_BUILDER, wallet };
     const updated = {
       ...builder,
@@ -219,10 +210,6 @@ const SolanaClient = {
     };
 
     this._saveLocalBuilderData(wallet, updated);
-    console.log(
-      `[SolanaClient] Added ${finalXP} XP (${amount} base + ${Math.floor(streakBonus * 100)}% streak bonus)`
-    );
-
     return updated.xpTotal;
   },
 
@@ -243,7 +230,6 @@ const SolanaClient = {
     const completed = this._getCompletedLessons(wallet);
 
     if (completed.includes(completedKey)) {
-      console.log('[SolanaClient] Lesson already completed');
       return false;
     }
 
@@ -254,7 +240,6 @@ const SolanaClient = {
     completed.push(completedKey);
     this._saveCompletedLessons(wallet, completed);
 
-    console.log(`[SolanaClient] Completed lesson: ${completedKey}`);
     return true;
   },
 
@@ -382,7 +367,6 @@ const SolanaClient = {
    */
   async migrateToOnChain(_wallet) {
     // Future: Read localStorage, write to PDA, clear localStorage
-    console.log('[SolanaClient] migrateToOnChain not implemented (stub)');
     return false;
   },
 };

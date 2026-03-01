@@ -280,7 +280,6 @@ const KeyboardHandler = {
 
     // ? - show help (future)
     if (key === '?' && shiftKey) {
-      console.log('[Keyboard] Help requested');
       return true;
     }
 

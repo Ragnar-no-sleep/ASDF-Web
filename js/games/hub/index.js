@@ -151,8 +151,6 @@ const Hub = {
       return;
     }
 
-    console.log('[Hub] Navigating to:', view);
-
     // Hide all sections
     this.hideAllSections();
 

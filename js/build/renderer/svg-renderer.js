@@ -64,7 +64,6 @@ const SVGRenderer = {
     svgElement = $('svg', container) || $('.yggdrasil-svg', container);
 
     if (!svgElement) {
-      console.log('[SVGRenderer] Waiting for TreeComponent SVG...');
       // TreeComponent handles SVG creation, we just enhance it
       await this.waitForSVG();
     }
@@ -76,8 +75,6 @@ const SVGRenderer = {
     this.bindInteractions();
 
     isInitialized = true;
-    console.log('[SVGRenderer] Initialized');
-
     return this;
   },
 
@@ -359,7 +356,6 @@ const SVGRenderer = {
    */
   startLoop() {
     // SVG uses CSS animations, no render loop needed
-    console.log('[SVGRenderer] CSS animations active');
   },
 
   /**
@@ -429,7 +425,6 @@ const SVGRenderer = {
     svgElement = null;
     isInitialized = false;
 
-    console.log('[SVGRenderer] Disposed');
   },
 };
 

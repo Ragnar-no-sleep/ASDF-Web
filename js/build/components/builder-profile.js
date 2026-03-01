@@ -87,7 +87,6 @@ const BuilderProfile = {
     // Bind events
     this.bindEvents();
 
-    console.log('[BuilderProfile] Initialized');
   },
 
   /**

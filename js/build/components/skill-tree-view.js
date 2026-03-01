@@ -86,7 +86,6 @@ const SkillTreeView = {
     // Bind events
     this.bindEvents();
 
-    console.log('[SkillTreeView] Initialized');
   },
 
   /**

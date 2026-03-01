@@ -86,7 +86,6 @@ const IntroComponent = {
   init(container = '#intro-container') {
     // Check if intro was already completed
     if (BuildState.data.introCompleted) {
-      console.log('[IntroComponent] Intro already completed, skipping');
       return false;
     }
 
@@ -103,7 +102,6 @@ const IntroComponent = {
     // Bind events
     this.bindEvents();
 
-    console.log('[IntroComponent] Initialized');
     return true;
   },
 
@@ -455,7 +453,6 @@ const IntroComponent = {
     // Emit completion event
     BuildState.emit('intro:complete', {});
 
-    console.log('[IntroComponent] Completed');
   },
 
   /**

@@ -183,7 +183,6 @@ const ShopV2 = {
         this.collections.init(this.state.collections, this.state.inventory);
       }
 
-      console.log('[ShopV2] Sync complete, data enriched');
     } catch (error) {
       console.error('[ShopV2] Sync failed:', error);
     }

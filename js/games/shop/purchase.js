@@ -202,7 +202,6 @@ const ShopPurchase = {
    */
   cancel() {
     if (this.currentPurchase) {
-      console.log('[ShopPurchase] Cancelled purchase:', this.currentPurchase.purchaseId);
     }
     this.reset();
   },
@@ -314,7 +313,6 @@ const ShopPurchase = {
       this.onStateChange(newState, oldState);
     }
 
-    console.log(`[ShopPurchase] State: ${oldState} -> ${newState}`);
   },
 
   /**

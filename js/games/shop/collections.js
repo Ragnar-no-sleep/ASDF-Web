@@ -333,8 +333,6 @@ const ShopCollections = {
    * @param {Object} shopState - Shop state reference
    */
   onCollectionComplete(collection, shopState) {
-    console.log(`[ShopCollections] Collection complete: ${collection.name}`);
-
     // Emit event
     if (shopState && shopState.emit) {
       shopState.emit('collection-complete', {

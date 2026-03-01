@@ -218,7 +218,6 @@ const FactoryPanelComponent = {
       }
     });
 
-    console.log('[FactoryPanelComponent] Initialized');
   },
 
   /**

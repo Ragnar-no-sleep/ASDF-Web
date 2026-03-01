@@ -60,7 +60,6 @@ const ProjectPanelComponent = {
       // This allows the modal system to work alongside
     });
 
-    console.log('[ProjectPanelComponent] Initialized');
   },
 
   /**

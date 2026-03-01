@@ -80,7 +80,6 @@ class PostProcessing {
     // Handle resize
     this.bindResize();
 
-    console.log('[PostProcessing] Initialized');
   }
 
   /**

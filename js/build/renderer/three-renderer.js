@@ -190,7 +190,6 @@ const ThreeRenderer = {
           bloom: { strength: performanceSettings.bloom || 0.8 },
         });
         await postProcessing.init();
-        console.log('[ThreeRenderer] Post-processing enabled');
       } catch (error) {
         console.warn('[ThreeRenderer] Post-processing failed:', error);
         postProcessing = null;
@@ -204,8 +203,6 @@ const ThreeRenderer = {
     this.startLoop();
 
     isInitialized = true;
-    console.log('[ThreeRenderer] Initialized with immersive 3D');
-
     return this;
   },
 
@@ -356,7 +353,6 @@ const ThreeRenderer = {
       const projects = projectsData ? Object.values(projectsData) : [];
       if (projects.length > 0) {
         await this.createProjectIslands(projects);
-        console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
       } else {
         console.warn('[ThreeRenderer] No projects to display');
       }
@@ -367,7 +363,6 @@ const ThreeRenderer = {
     // Initialize Project Tree Scene (L1 view)
     try {
       projectTreeScene = new ProjectTreeScene(THREE, scene);
-      console.log('[ThreeRenderer] ProjectTreeScene initialized');
     } catch (error) {
       console.warn('[ThreeRenderer] Failed to create ProjectTreeScene:', error.message);
     }
@@ -545,8 +540,6 @@ const ThreeRenderer = {
    * @param {string} projectId
    */
   onIslandHover(projectId) {
-    console.log('[ThreeRenderer] Island hover:', projectId);
-
     // Unhover previous
     if (hoveredIsland) {
       hoveredIsland.setHovered(false);
@@ -647,8 +640,6 @@ const ThreeRenderer = {
    * @param {Object} project
    */
   async enterProjectTreeView(projectId, project) {
-    console.log('[ThreeRenderer] Entering PROJECT_TREE view for:', projectId);
-
     if (!projectTreeScene) {
       console.warn('[ThreeRenderer] ProjectTreeScene not initialized');
       return;
@@ -940,7 +931,6 @@ const ThreeRenderer = {
     };
 
     animate(performance.now());
-    console.log('[ThreeRenderer] Render loop started');
   },
 
   /**
@@ -949,8 +939,6 @@ const ThreeRenderer = {
    */
   onQualityChange(data) {
     const { newPreset, settings } = data;
-    console.log(`[ThreeRenderer] Quality changed to: ${newPreset}`);
-
     // Update post-processing
     if (postProcessing) {
       if (settings.postProcessing) {
@@ -984,7 +972,6 @@ const ThreeRenderer = {
    */
   pause() {
     isPaused = true;
-    console.log('[ThreeRenderer] Paused');
   },
 
   /**
@@ -993,7 +980,6 @@ const ThreeRenderer = {
   resume() {
     isPaused = false;
     clock.getDelta(); // Reset delta
-    console.log('[ThreeRenderer] Resumed');
   },
 
   /**
@@ -1096,7 +1082,6 @@ const ThreeRenderer = {
     hoveredIsland = null;
     selectedIsland = null;
 
-    console.log('[ThreeRenderer] Disposed');
   },
 };
 

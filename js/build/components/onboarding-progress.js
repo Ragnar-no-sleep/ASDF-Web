@@ -42,7 +42,6 @@ const OnboardingProgress = {
       this.complete();
     });
 
-    console.log('[OnboardingProgress] Initialized');
   },
 
   /**

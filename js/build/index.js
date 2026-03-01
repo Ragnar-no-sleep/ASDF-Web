@@ -110,12 +110,6 @@ const BuildApp = {
 
       // 4c. Initialize renderer (progressive enhancement)
       const treeContainer = $('.tree-container');
-      console.log(
-        '[BuildApp] Tree container found:',
-        !!treeContainer,
-        'enableRenderer:',
-        options.enableRenderer
-      );
       if (treeContainer && options.enableRenderer !== false) {
         try {
           this._updateLoadingText(loadingEl, 'Rendering Yggdrasil cosmos...');
@@ -298,7 +292,6 @@ const BuildApp = {
 
     // Renderer ready event - sync initial state
     BuildState.subscribe('renderer:ready', data => {
-      console.log(`[BuildApp] Renderer ready: ${data.type}`);
       // Sync current filter if any
       if (TreeComponent.getCurrentFilter() !== 'all') {
         RendererFactory.getRenderer()?.update({
@@ -321,7 +314,6 @@ const BuildApp = {
     // Renderer skill click event - open formation for skill
     BuildState.subscribe('renderer:skillClick', data => {
       const { skillId, skill } = data;
-      console.log(`[BuildApp] Skill clicked: ${skillId}`, skill);
       // TODO: Open formation panel for skill
     });
 
@@ -396,8 +388,6 @@ const BuildApp = {
 
     const container = $('.tree-container');
     if (!container) return;
-
-    console.log(`[BuildApp] Switching renderer: ${currentType} -> ${newType}`);
 
     try {
       await RendererFactory.switchRenderer(newType, container);

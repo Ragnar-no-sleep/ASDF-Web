@@ -529,7 +529,6 @@ const ModalFactory = {
       }
     });
 
-    console.log('[ModalFactory] Initialized', modalConfigs.size, 'modals');
   },
 
   /**

@@ -170,7 +170,6 @@ const ShopCurrency = {
     current.totalEarned += amount;
     this.saveLocalBalance(current);
 
-    console.log(`[ShopCurrency] Earned ${amount} from ${source}. Balance: ${current.ingame}`);
     return current;
   },
 
