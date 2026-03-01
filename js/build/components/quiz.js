@@ -68,7 +68,6 @@ const QuizComponent = {
     if (BuildState.data.quizResult) {
       this.showResult(BuildState.data.quizResult);
     }
-
   },
 
   /**

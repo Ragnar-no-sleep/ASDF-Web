@@ -59,7 +59,6 @@ const ProjectPanelComponent = {
       // Panel opens via explicit call, not auto on tree click
       // This allows the modal system to work alongside
     });
-
   },
 
   /**

@@ -467,7 +467,6 @@ export function initEasterEggs() {
 
   // Initialize interaction easter eggs
   _interactionEggs = new InteractionEasterEggs();
-
 }
 
 function unlockKonamiCode() {
@@ -573,7 +572,6 @@ function enableDeveloperMode() {
   });
 
   document.body.appendChild(badge);
-
 }
 
 function showDeveloperPanel() {

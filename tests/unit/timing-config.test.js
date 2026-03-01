@@ -7,7 +7,7 @@
 
 // Mock window for browser globals
 global.window = {
-  location: { hostname: 'test' }
+  location: { hostname: 'test' },
 };
 
 // Load the module (it exports to window)
@@ -47,14 +47,14 @@ describe('Timing Config', () => {
 
   describe('GAME_TIMING', () => {
     it('should have EFFECT timings based on Fibonacci', () => {
-      expect(GAME_TIMING.EFFECT.VERY_FAST).toBe(100);  // fib[1] * 100
-      expect(GAME_TIMING.EFFECT.FAST).toBe(200);       // fib[2] * 100
-      expect(GAME_TIMING.EFFECT.QUICK).toBe(300);      // fib[3] * 100
-      expect(GAME_TIMING.EFFECT.NORMAL).toBe(500);     // fib[4] * 100
-      expect(GAME_TIMING.EFFECT.MEDIUM).toBe(800);     // fib[5] * 100
-      expect(GAME_TIMING.EFFECT.SLOW).toBe(1300);      // fib[6] * 100
+      expect(GAME_TIMING.EFFECT.VERY_FAST).toBe(100); // fib[1] * 100
+      expect(GAME_TIMING.EFFECT.FAST).toBe(200); // fib[2] * 100
+      expect(GAME_TIMING.EFFECT.QUICK).toBe(300); // fib[3] * 100
+      expect(GAME_TIMING.EFFECT.NORMAL).toBe(500); // fib[4] * 100
+      expect(GAME_TIMING.EFFECT.MEDIUM).toBe(800); // fib[5] * 100
+      expect(GAME_TIMING.EFFECT.SLOW).toBe(1300); // fib[6] * 100
       expect(GAME_TIMING.EFFECT.VERY_SLOW).toBe(2100); // fib[7] * 100
-      expect(GAME_TIMING.EFFECT.EXTENDED).toBe(3400);  // fib[8] * 100
+      expect(GAME_TIMING.EFFECT.EXTENDED).toBe(3400); // fib[8] * 100
     });
 
     it('should have STAGGER timings', () => {

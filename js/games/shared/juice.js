@@ -746,4 +746,3 @@ if (typeof window !== 'undefined') {
   window.ASDF.renderParticles = renderParticles;
   window.renderParticles = window.ASDF.renderParticles;
 }
-

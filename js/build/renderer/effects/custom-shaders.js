@@ -19,9 +19,9 @@ const FlameShader = {
     uTime: { value: 0 },
     uIntensity: { value: 1.0 },
     uBaseColor: { value: null }, // vec3
-    uTipColor: { value: null },  // vec3
+    uTipColor: { value: null }, // vec3
     uNoiseScale: { value: 3.0 },
-    uSpeed: { value: 1.5 }
+    uSpeed: { value: 1.5 },
   },
 
   vertexShader: `
@@ -146,7 +146,7 @@ const FlameShader = {
 
       gl_FragColor = vec4(color, alpha);
     }
-  `
+  `,
 };
 
 // ============================================
@@ -162,7 +162,7 @@ const FrostShader = {
     uIntensity: { value: 1.0 },
     uColor: { value: null }, // vec3
     uCrystalScale: { value: 2.0 },
-    uSparkle: { value: 0.5 }
+    uSparkle: { value: 0.5 },
   },
 
   vertexShader: `
@@ -243,7 +243,7 @@ const FrostShader = {
 
       gl_FragColor = vec4(color, alpha);
     }
-  `
+  `,
 };
 
 // ============================================
@@ -260,7 +260,7 @@ const EnergyShader = {
     uColor1: { value: null }, // vec3
     uColor2: { value: null }, // vec3
     uFlowSpeed: { value: 1.0 },
-    uPulse: { value: 0.5 }
+    uPulse: { value: 0.5 },
   },
 
   vertexShader: `
@@ -305,7 +305,7 @@ const EnergyShader = {
 
       gl_FragColor = vec4(color, alpha);
     }
-  `
+  `,
 };
 
 // ============================================
@@ -345,7 +345,7 @@ function createShaderMaterial(THREE, shaderDef, uniformValues = {}) {
     vertexShader: shaderDef.vertexShader,
     fragmentShader: shaderDef.fragmentShader,
     transparent: true,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 }
 
@@ -357,11 +357,11 @@ function createShaderMaterial(THREE, shaderDef, uniformValues = {}) {
  */
 function createFlameMaterial(THREE, options = {}) {
   const defaults = {
-    uBaseColor: new THREE.Vector3(1.0, 0.3, 0.0),  // Orange
-    uTipColor: new THREE.Vector3(1.0, 0.8, 0.2),   // Yellow
+    uBaseColor: new THREE.Vector3(1.0, 0.3, 0.0), // Orange
+    uTipColor: new THREE.Vector3(1.0, 0.8, 0.2), // Yellow
     uIntensity: 1.0,
     uNoiseScale: 3.0,
-    uSpeed: 1.5
+    uSpeed: 1.5,
   };
 
   return createShaderMaterial(THREE, FlameShader, { ...defaults, ...options });
@@ -375,10 +375,10 @@ function createFlameMaterial(THREE, options = {}) {
  */
 function createFrostMaterial(THREE, options = {}) {
   const defaults = {
-    uColor: new THREE.Vector3(0.7, 0.9, 1.0),  // Ice blue
+    uColor: new THREE.Vector3(0.7, 0.9, 1.0), // Ice blue
     uIntensity: 0.8,
     uCrystalScale: 2.0,
-    uSparkle: 0.5
+    uSparkle: 0.5,
   };
 
   return createShaderMaterial(THREE, FrostShader, { ...defaults, ...options });
@@ -392,11 +392,11 @@ function createFrostMaterial(THREE, options = {}) {
  */
 function createEnergyMaterial(THREE, options = {}) {
   const defaults = {
-    uColor1: new THREE.Vector3(0.0, 1.0, 0.5),   // Cyan-green
-    uColor2: new THREE.Vector3(0.0, 0.5, 1.0),   // Blue
+    uColor1: new THREE.Vector3(0.0, 1.0, 0.5), // Cyan-green
+    uColor2: new THREE.Vector3(0.0, 0.5, 1.0), // Blue
     uIntensity: 1.0,
     uFlowSpeed: 1.0,
-    uPulse: 0.5
+    uPulse: 0.5,
   };
 
   return createShaderMaterial(THREE, EnergyShader, { ...defaults, ...options });
@@ -413,7 +413,7 @@ export {
   createShaderMaterial,
   createFlameMaterial,
   createFrostMaterial,
-  createEnergyMaterial
+  createEnergyMaterial,
 };
 
 export default {
@@ -422,5 +422,5 @@ export default {
   EnergyShader,
   createFlameMaterial,
   createFrostMaterial,
-  createEnergyMaterial
+  createEnergyMaterial,
 };

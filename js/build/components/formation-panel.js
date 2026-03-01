@@ -84,7 +84,6 @@ const FormationPanel = {
 
     // Bind events
     this.bindEvents();
-
   },
 
   /**

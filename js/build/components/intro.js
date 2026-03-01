@@ -452,7 +452,6 @@ const IntroComponent = {
 
     // Emit completion event
     BuildState.emit('intro:complete', {});
-
   },
 
   /**

@@ -16,7 +16,7 @@ import {
   transferAsdfToEscrow,
   transferTokens,
   TREASURY_WALLET,
-  ESCROW_WALLET
+  ESCROW_WALLET,
 } from '../kit/transactions.js';
 
 // ============================================
@@ -45,17 +45,17 @@ const LegacySolanaPayment = {
     return {
       _isKitShim: true,
       getLatestBlockhash: async () => SolanaClient.getLatestBlockhash(),
-      getBalance: async (pubkey) => {
+      getBalance: async pubkey => {
         const addr = typeof pubkey === 'string' ? pubkey : pubkey.toString();
         return await SolanaClient.getBalance(addr);
       },
-      getAccountInfo: async (pubkey) => {
+      getAccountInfo: async pubkey => {
         const addr = typeof pubkey === 'string' ? pubkey : pubkey.toString();
         return await SolanaClient.getAccountInfo(addr);
       },
       confirmTransaction: async (signature, blockhash) => {
         return await SolanaClient.confirmTransaction(signature, blockhash);
-      }
+      },
     };
   },
 
@@ -80,7 +80,7 @@ const LegacySolanaPayment = {
     return {
       _isKitShim: true,
       publicKey: WalletManager.connectedAccount?.publicKey || {
-        toString: () => WalletManager.getAddress()
+        toString: () => WalletManager.getAddress(),
       },
       isConnected: WalletManager.isConnected(),
       connect: async () => {
@@ -90,9 +90,9 @@ const LegacySolanaPayment = {
         return await WalletManager.connect(wallets[0].name);
       },
       disconnect: async () => WalletManager.disconnect(),
-      signTransaction: async (tx) => WalletManager.signTransaction(tx),
-      signAndSendTransaction: async (tx) => WalletManager.signAndSendTransaction(tx),
-      signMessage: async (msg) => WalletManager.signMessage(msg)
+      signTransaction: async tx => WalletManager.signTransaction(tx),
+      signAndSendTransaction: async tx => WalletManager.signAndSendTransaction(tx),
+      signMessage: async msg => WalletManager.signMessage(msg),
     };
   },
 
@@ -142,7 +142,7 @@ const LegacySolanaPayment = {
   createTransferInstruction() {
     console.warn('[LegacyAdapter] createTransferInstruction() is deprecated');
     throw new Error('Use Kit transactions.js for instruction building');
-  }
+  },
 };
 
 // ============================================
@@ -174,7 +174,7 @@ export function toPublicKeyLike(addressStr) {
       console.warn('[LegacyAdapter] toBuffer() called - consider using Kit directly');
       return new Uint8Array(32); // Placeholder
     },
-    equals: (other) => addressStr === toAddress(other)
+    equals: other => addressStr === toAddress(other),
   };
 }
 
@@ -215,7 +215,7 @@ export function isUsingLegacyApi() {
 export function logMigrationWarning(feature) {
   console.warn(
     `[LegacyAdapter] "${feature}" is using legacy web3.js patterns. ` +
-    `Consider migrating to Kit: js/solana/kit/`
+      `Consider migrating to Kit: js/solana/kit/`
   );
 }
 
@@ -223,11 +223,7 @@ export function logMigrationWarning(feature) {
 // EXPORTS
 // ============================================
 
-export {
-  LegacySolanaPayment,
-  TREASURY_WALLET,
-  ESCROW_WALLET
-};
+export { LegacySolanaPayment, TREASURY_WALLET, ESCROW_WALLET };
 
 // Default export for drop-in replacement
 export default LegacySolanaPayment;

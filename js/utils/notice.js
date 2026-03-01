@@ -12,7 +12,9 @@ export function showNotice(msg) {
   el.style.cssText = 'position:fixed;bottom:1rem;right:1rem;z-index:999;max-width:340px;';
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => { el.remove(); }, 4000);
+  setTimeout(() => {
+    el.remove();
+  }, 4000);
 }
 
 // Global access for non-module scripts

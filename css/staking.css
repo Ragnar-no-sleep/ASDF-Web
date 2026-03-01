@@ -350,7 +350,11 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, rgba(var(--staking-accent-rgb), 0.3), rgba(var(--staking-accent-rgb), 0.05));
+  background: linear-gradient(
+    180deg,
+    rgba(var(--staking-accent-rgb), 0.3),
+    rgba(var(--staking-accent-rgb), 0.05)
+  );
   border-radius: 1px;
 }
 
@@ -755,7 +759,6 @@
   border: 1px solid rgba(var(--staking-accent-rgb), 0.08);
   border-radius: 8px;
 }
-
 
 /* ============================================
    DENSITY: DETAILED — More context & guides

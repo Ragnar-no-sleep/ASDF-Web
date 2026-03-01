@@ -1,535 +1,613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tools | $ASDFASDFA Ecosystem</title>
-    <meta name="description" content="Five live tools for the $asdfasdfa ecosystem. Burns, Forecast, HolDex, Staking, Ignition.">
+    <meta
+      name="description"
+      content="Five live tools for the $asdfasdfa ecosystem. Burns, Forecast, HolDex, Staking, Ignition."
+    />
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://alonisthe.dev/tools">
-    <meta property="og:title" content="Tools - ASDF Ecosystem">
-    <meta property="og:description" content="Five live tools for tracking, analyzing, and engaging with the ecosystem.">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alonisthe.dev/tools" />
+    <meta property="og:title" content="Tools - ASDF Ecosystem" />
+    <meta
+      property="og:description"
+      content="Five live tools for tracking, analyzing, and engaging with the ecosystem."
+    />
 
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Orbital system CSS -->
-    <link rel="stylesheet" href="css/orbital-system.css">
+    <link rel="stylesheet" href="css/orbital-system.css" />
 
     <style>
-        :root {
-            --bg: #050508;
-            --surface: #0a0a0f;
-            --surface-2: #111118;
-            --border: rgba(255, 255, 255, 0.06);
-            --border-hover: rgba(255, 255, 255, 0.12);
-            --text: #faf8f5;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.45);
-            --accent: #eab308;
-            --accent-soft: rgba(234, 179, 8, 0.12);
+      :root {
+        --bg: #050508;
+        --surface: #0a0a0f;
+        --surface-2: #111118;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-hover: rgba(255, 255, 255, 0.12);
+        --text: #faf8f5;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.45);
+        --accent: #eab308;
+        --accent-soft: rgba(234, 179, 8, 0.12);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* --- Back nav --- */
+      .back-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        background: rgba(5, 5, 8, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        z-index: 100;
+      }
+
+      .back-link {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 200ms ease;
+      }
+
+      .back-link:hover {
+        color: var(--accent);
+      }
+
+      .back-link svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+      }
+
+      /* --- Main --- */
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 100px 24px 60px;
+      }
+
+      /* --- Header --- */
+      .page-header {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+
+      .page-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(234, 179, 8, 0.25);
+        border-radius: 100px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 20px;
+      }
+
+      .page-badge-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--accent);
+        border-radius: 50%;
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
+        50% {
+          opacity: 0.3;
         }
+      }
 
-        /* --- Back nav --- */
-        .back-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            background: rgba(5, 5, 8, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
-        }
+      .page-title {
+        font-size: clamp(32px, 6vw, 44px);
+        font-weight: 300;
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+      }
 
-        .back-link {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            color: var(--text-muted);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: color 200ms ease;
-        }
+      .page-subtitle {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto;
+      }
 
-        .back-link:hover { color: var(--accent); }
+      /* --- Tools grid --- */
+      .tools-grid {
+        display: grid;
+        gap: 12px;
+      }
 
-        .back-link svg {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-        }
+      /* --- Tool card --- */
+      .tool-card {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
 
-        /* --- Main --- */
-        .page {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 100px 24px 60px;
-        }
+      .tool-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 250ms ease;
+        pointer-events: none;
+      }
 
-        /* --- Header --- */
-        .page-header {
-            text-align: center;
-            margin-bottom: 48px;
-        }
+      .tool-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
 
-        .page-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: var(--accent-soft);
-            border: 1px solid rgba(234, 179, 8, 0.25);
-            border-radius: 100px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 20px;
-        }
+      .tool-card:hover::before {
+        opacity: 1;
+      }
 
-        .page-badge-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-            animation: pulse-dot 2s ease-in-out infinite;
-        }
+      /* Card accent colors */
+      .tool-card[data-tool='burns'] {
+        --card-accent: rgba(201, 162, 39, 0.06);
+        --tool-color: #c9a227;
+      }
+      .tool-card[data-tool='forecast'] {
+        --card-accent: rgba(0, 255, 65, 0.04);
+        --tool-color: #00ff41;
+      }
+      .tool-card[data-tool='holdex'] {
+        --card-accent: rgba(74, 222, 128, 0.05);
+        --tool-color: #4ade80;
+      }
+      .tool-card[data-tool='staking'] {
+        --card-accent: rgba(123, 147, 255, 0.05);
+        --tool-color: #7b93ff;
+      }
+      .tool-card[data-tool='ignition'] {
+        --card-accent: rgba(234, 88, 12, 0.06);
+        --tool-color: #ea580c;
+      }
 
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+      .tool-card:hover {
+        border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 30%, transparent);
+      }
 
-        .page-title {
-            font-size: clamp(32px, 6vw, 44px);
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-        }
+      /* Icon */
+      .tool-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+        transition:
+          border-color 200ms ease,
+          background 200ms ease;
+      }
 
-        .page-subtitle {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            max-width: 480px;
-            margin: 0 auto;
-        }
+      .tool-card:hover .tool-icon-wrap {
+        border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 40%, transparent);
+        background: color-mix(in srgb, var(--tool-color, var(--accent)) 8%, var(--surface-2));
+      }
 
-        /* --- Tools grid --- */
-        .tools-grid {
-            display: grid;
-            gap: 12px;
-        }
+      /* Info */
+      .tool-info {
+        min-width: 0;
+      }
 
-        /* --- Tool card --- */
+      .tool-name {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tool-status {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+      }
+
+      .tool-status--live {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+      }
+
+      .tool-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* Arrow */
+      .tool-arrow {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 16px;
+        flex-shrink: 0;
+        transition: all 200ms ease;
+      }
+
+      .tool-card:hover .tool-arrow {
+        color: var(--tool-color, var(--accent));
+        transform: translateX(3px);
+      }
+
+      /* --- Footer --- */
+      .page-footer {
+        text-align: center;
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .page-footer-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .page-footer-text a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 200ms ease;
+      }
+
+      .page-footer-text a:hover {
+        color: #fbbf24;
+      }
+
+      /* --- Responsive --- */
+      @media (max-width: 600px) {
         .tool-card {
-            display: grid;
-            grid-template-columns: 56px 1fr auto;
-            align-items: center;
-            gap: 16px;
-            padding: 20px 24px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+          grid-template-columns: 44px 1fr auto;
+          padding: 16px 18px;
+          gap: 12px;
         }
 
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 250ms ease;
-            pointer-events: none;
-        }
-
-        .tool-card:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .tool-card:hover::before {
-            opacity: 1;
-        }
-
-        /* Card accent colors */
-        .tool-card[data-tool="burns"]    { --card-accent: rgba(201, 162, 39, 0.06); --tool-color: #c9a227; }
-        .tool-card[data-tool="forecast"] { --card-accent: rgba(0, 255, 65, 0.04); --tool-color: #00ff41; }
-        .tool-card[data-tool="holdex"]   { --card-accent: rgba(74, 222, 128, 0.05); --tool-color: #4ade80; }
-        .tool-card[data-tool="staking"]  { --card-accent: rgba(123, 147, 255, 0.05); --tool-color: #7b93ff; }
-        .tool-card[data-tool="ignition"] { --card-accent: rgba(234, 88, 12, 0.06); --tool-color: #ea580c; }
-
-        .tool-card:hover {
-            border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 30%, transparent);
-        }
-
-        /* Icon */
         .tool-icon-wrap {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-            transition: border-color 200ms ease, background 200ms ease;
-        }
-
-        .tool-card:hover .tool-icon-wrap {
-            border-color: color-mix(in srgb, var(--tool-color, var(--accent)) 40%, transparent);
-            background: color-mix(in srgb, var(--tool-color, var(--accent)) 8%, var(--surface-2));
-        }
-
-        /* Info */
-        .tool-info {
-            min-width: 0;
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
         }
 
         .tool-name {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+          font-size: 14px;
         }
+      }
 
-        .tool-status {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 7px;
-            border-radius: 4px;
-            letter-spacing: 0.04em;
-            flex-shrink: 0;
+      /* --- View toggle button --- */
+      .view-toggle {
+        margin-top: 21px;
+        padding: 13px 21px;
+        background: rgba(234, 179, 8, 0.12);
+        border: 1px solid rgba(234, 179, 8, 0.25);
+        border-radius: 8px;
+        color: var(--accent);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.618, 0, 0.382, 1);
+      }
+
+      .view-toggle:hover {
+        background: rgba(234, 179, 8, 0.18);
+        transform: scale(1.05);
+      }
+
+      .view-toggle-icon {
+        font-size: 16px;
+        animation: rotate-slow 8s linear infinite;
+      }
+
+      @keyframes rotate-slow {
+        from {
+          transform: rotate(0deg);
         }
-
-        .tool-status--live {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
+        to {
+          transform: rotate(360deg);
         }
+      }
 
-        .tool-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.5;
+      /* Orbital view mode */
+      .page[data-view='orbital'] .tools-grid {
+        display: none;
+      }
+
+      .tools-orbital {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: 56px; /* Below nav */
+        background: var(--bg);
+      }
+
+      .page[data-view='orbital'] .tools-orbital {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* --- Reduced motion --- */
+      @media (prefers-reduced-motion: reduce) {
+        .tool-card {
+          transition: none;
         }
-
-        /* Arrow */
-        .tool-arrow {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 16px;
-            flex-shrink: 0;
-            transition: all 200ms ease;
+        .page-badge-dot {
+          animation: none;
         }
-
-        .tool-card:hover .tool-arrow {
-            color: var(--tool-color, var(--accent));
-            transform: translateX(3px);
-        }
-
-        /* --- Footer --- */
-        .page-footer {
-            text-align: center;
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border);
-        }
-
-        .page-footer-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .page-footer-text a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: color 200ms ease;
-        }
-
-        .page-footer-text a:hover {
-            color: #fbbf24;
-        }
-
-        /* --- Responsive --- */
-        @media (max-width: 600px) {
-            .tool-card {
-                grid-template-columns: 44px 1fr auto;
-                padding: 16px 18px;
-                gap: 12px;
-            }
-
-            .tool-icon-wrap {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-
-            .tool-name {
-                font-size: 14px;
-            }
-        }
-
-        /* --- View toggle button --- */
-        .view-toggle {
-            margin-top: 21px;
-            padding: 13px 21px;
-            background: rgba(234, 179, 8, 0.12);
-            border: 1px solid rgba(234, 179, 8, 0.25);
-            border-radius: 8px;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s cubic-bezier(0.618, 0, 0.382, 1);
-        }
-
-        .view-toggle:hover {
-            background: rgba(234, 179, 8, 0.18);
-            transform: scale(1.05);
-        }
-
         .view-toggle-icon {
-            font-size: 16px;
-            animation: rotate-slow 8s linear infinite;
+          animation: none;
         }
-
-        @keyframes rotate-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Orbital view mode */
-        .page[data-view="orbital"] .tools-grid {
-            display: none;
-        }
-
-        .tools-orbital {
-            display: none;
-            position: fixed;
-            inset: 0;
-            top: 56px; /* Below nav */
-            background: var(--bg);
-        }
-
-        .page[data-view="orbital"] .tools-orbital {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* --- Reduced motion --- */
-        @media (prefers-reduced-motion: reduce) {
-            .tool-card { transition: none; }
-            .page-badge-dot { animation: none; }
-            .view-toggle-icon { animation: none; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="back-nav">
-        <a href="/" class="back-link">
-            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Hub
-        </a>
+      <a href="/" class="back-link">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7" /></svg>
+        Hub
+      </a>
     </nav>
 
     <div class="page">
-        <header class="page-header">
-            <span class="page-badge">
-                <span class="page-badge-dot"></span>
-                5 LIVE TOOLS
-            </span>
-            <h1 class="page-title">Ecosystem Tools</h1>
-            <p class="page-subtitle">
-                Burn. Track. Predict. Stake. Play.<br>
-                Don't trust. Verify.
+      <header class="page-header">
+        <span class="page-badge">
+          <span class="page-badge-dot"></span>
+          5 LIVE TOOLS
+        </span>
+        <h1 class="page-title">Ecosystem Tools</h1>
+        <p class="page-subtitle">
+          Burn. Track. Predict. Stake. Play.<br />
+          Don't trust. Verify.
+        </p>
+
+        <!-- View toggle -->
+        <button class="view-toggle" id="viewToggle" aria-label="Toggle orbital view">
+          <span class="view-toggle-icon">🌀</span>
+          <span class="view-toggle-text">Orbital View</span>
+        </button>
+      </header>
+
+      <div class="tools-grid">
+        <a href="/burns" class="tool-card" data-tool="burns">
+          <div class="tool-icon-wrap">&#128293;</div>
+          <div class="tool-info">
+            <div class="tool-name">
+              Burns
+              <span class="tool-status tool-status--live">LIVE</span>
+            </div>
+            <p class="tool-desc">
+              Hall of Flames. Real-time burn analytics, leaderboard, and supply tracking.
             </p>
+          </div>
+          <span class="tool-arrow">&#8594;</span>
+        </a>
 
-            <!-- View toggle -->
-            <button class="view-toggle" id="viewToggle" aria-label="Toggle orbital view">
-                <span class="view-toggle-icon">🌀</span>
-                <span class="view-toggle-text">Orbital View</span>
-            </button>
-        </header>
-
-        <div class="tools-grid">
-            <a href="/burns" class="tool-card" data-tool="burns">
-                <div class="tool-icon-wrap">&#128293;</div>
-                <div class="tool-info">
-                    <div class="tool-name">
-                        Burns
-                        <span class="tool-status tool-status--live">LIVE</span>
-                    </div>
-                    <p class="tool-desc">Hall of Flames. Real-time burn analytics, leaderboard, and supply tracking.</p>
-                </div>
-                <span class="tool-arrow">&#8594;</span>
-            </a>
-
-            <a href="/forecast" class="tool-card" data-tool="forecast">
-                <div class="tool-icon-wrap">&#127919;</div>
-                <div class="tool-info">
-                    <div class="tool-name">
-                        Forecast
-                        <span class="tool-status tool-status--live">LIVE</span>
-                    </div>
-                    <p class="tool-desc">Prediction market. Forecast burn amounts and prove conviction on-chain.</p>
-                </div>
-                <span class="tool-arrow">&#8594;</span>
-            </a>
-
-            <a href="/holdex" class="tool-card" data-tool="holdex">
-                <div class="tool-icon-wrap">&#128200;</div>
-                <div class="tool-info">
-                    <div class="tool-name">
-                        HolDex
-                        <span class="tool-status tool-status--live">LIVE</span>
-                    </div>
-                    <p class="tool-desc">K-Score holder quality index. Diamond hands detection and conviction metrics.</p>
-                </div>
-                <span class="tool-arrow">&#8594;</span>
-            </a>
-
-            <a href="/staking" class="tool-card" data-tool="staking">
-                <div class="tool-icon-wrap">&#128274;</div>
-                <div class="tool-info">
-                    <div class="tool-name">
-                        Staking
-                        <span class="tool-status tool-status--live">LIVE</span>
-                    </div>
-                    <p class="tool-desc">Token lock dashboard. Delegate, earn rewards, and track validator performance.</p>
-                </div>
-                <span class="tool-arrow">&#8594;</span>
-            </a>
-
-            <a href="/ignition" class="tool-card" data-tool="ignition">
-                <div class="tool-icon-wrap">&#128640;</div>
-                <div class="tool-info">
-                    <div class="tool-name">
-                        Ignition
-                        <span class="tool-status tool-status--live">LIVE</span>
-                    </div>
-                    <p class="tool-desc">9 mini-games. Compete, earn XP, climb the leaderboard. Gamified engagement.</p>
-                </div>
-                <span class="tool-arrow">&#8594;</span>
-            </a>
-        </div>
-
-        <footer class="page-footer">
-            <p class="page-footer-text">
-                Want to build a tool? <a href="/build">Join the builders</a>
+        <a href="/forecast" class="tool-card" data-tool="forecast">
+          <div class="tool-icon-wrap">&#127919;</div>
+          <div class="tool-info">
+            <div class="tool-name">
+              Forecast
+              <span class="tool-status tool-status--live">LIVE</span>
+            </div>
+            <p class="tool-desc">
+              Prediction market. Forecast burn amounts and prove conviction on-chain.
             </p>
-        </footer>
+          </div>
+          <span class="tool-arrow">&#8594;</span>
+        </a>
+
+        <a href="/holdex" class="tool-card" data-tool="holdex">
+          <div class="tool-icon-wrap">&#128200;</div>
+          <div class="tool-info">
+            <div class="tool-name">
+              HolDex
+              <span class="tool-status tool-status--live">LIVE</span>
+            </div>
+            <p class="tool-desc">
+              K-Score holder quality index. Diamond hands detection and conviction metrics.
+            </p>
+          </div>
+          <span class="tool-arrow">&#8594;</span>
+        </a>
+
+        <a href="/staking" class="tool-card" data-tool="staking">
+          <div class="tool-icon-wrap">&#128274;</div>
+          <div class="tool-info">
+            <div class="tool-name">
+              Staking
+              <span class="tool-status tool-status--live">LIVE</span>
+            </div>
+            <p class="tool-desc">
+              Token lock dashboard. Delegate, earn rewards, and track validator performance.
+            </p>
+          </div>
+          <span class="tool-arrow">&#8594;</span>
+        </a>
+
+        <a href="/ignition" class="tool-card" data-tool="ignition">
+          <div class="tool-icon-wrap">&#128640;</div>
+          <div class="tool-info">
+            <div class="tool-name">
+              Ignition
+              <span class="tool-status tool-status--live">LIVE</span>
+            </div>
+            <p class="tool-desc">
+              9 mini-games. Compete, earn XP, climb the leaderboard. Gamified engagement.
+            </p>
+          </div>
+          <span class="tool-arrow">&#8594;</span>
+        </a>
+      </div>
+
+      <footer class="page-footer">
+        <p class="page-footer-text">Want to build a tool? <a href="/build">Join the builders</a></p>
+      </footer>
     </div>
 
     <!-- Orbital View Container -->
     <div class="tools-orbital" aria-hidden="true">
-        <div class="hub-orbit-container" style="--orbit-radius: 233px;">
-            <!-- Center -->
-            <div class="hub-orbit-center" style="pointer-events: auto;">
-                <span>Choose</span>
-            </div>
-
-            <!-- 5 Tools in orbit -->
-            <a href="/burns" class="hub-orbit-item" data-orbit-id="burns" style="--orbit-delay: 0s;">
-                <span class="hub-orbit-item-icon">&#128293;</span>
-                <span class="hub-orbit-item-label">Burns</span>
-            </a>
-
-            <a href="/forecast" class="hub-orbit-item" data-orbit-id="forecast" style="--orbit-delay: -6.8s;">
-                <span class="hub-orbit-item-icon">&#127919;</span>
-                <span class="hub-orbit-item-label">Forecast</span>
-            </a>
-
-            <a href="/holdex" class="hub-orbit-item" data-orbit-id="holdex" style="--orbit-delay: -13.6s;">
-                <span class="hub-orbit-item-icon">&#128200;</span>
-                <span class="hub-orbit-item-label">HolDex</span>
-            </a>
-
-            <a href="/staking" class="hub-orbit-item" data-orbit-id="staking" style="--orbit-delay: -20.4s;">
-                <span class="hub-orbit-item-icon">&#128274;</span>
-                <span class="hub-orbit-item-label">Staking</span>
-            </a>
-
-            <a href="/ignition" class="hub-orbit-item" data-orbit-id="ignition" style="--orbit-delay: -27.2s;">
-                <span class="hub-orbit-item-icon">&#128640;</span>
-                <span class="hub-orbit-item-label">Ignition</span>
-            </a>
+      <div class="hub-orbit-container" style="--orbit-radius: 233px">
+        <!-- Center -->
+        <div class="hub-orbit-center" style="pointer-events: auto">
+          <span>Choose</span>
         </div>
+
+        <!-- 5 Tools in orbit -->
+        <a href="/burns" class="hub-orbit-item" data-orbit-id="burns" style="--orbit-delay: 0s">
+          <span class="hub-orbit-item-icon">&#128293;</span>
+          <span class="hub-orbit-item-label">Burns</span>
+        </a>
+
+        <a
+          href="/forecast"
+          class="hub-orbit-item"
+          data-orbit-id="forecast"
+          style="--orbit-delay: -6.8s"
+        >
+          <span class="hub-orbit-item-icon">&#127919;</span>
+          <span class="hub-orbit-item-label">Forecast</span>
+        </a>
+
+        <a
+          href="/holdex"
+          class="hub-orbit-item"
+          data-orbit-id="holdex"
+          style="--orbit-delay: -13.6s"
+        >
+          <span class="hub-orbit-item-icon">&#128200;</span>
+          <span class="hub-orbit-item-label">HolDex</span>
+        </a>
+
+        <a
+          href="/staking"
+          class="hub-orbit-item"
+          data-orbit-id="staking"
+          style="--orbit-delay: -20.4s"
+        >
+          <span class="hub-orbit-item-icon">&#128274;</span>
+          <span class="hub-orbit-item-label">Staking</span>
+        </a>
+
+        <a
+          href="/ignition"
+          class="hub-orbit-item"
+          data-orbit-id="ignition"
+          style="--orbit-delay: -27.2s"
+        >
+          <span class="hub-orbit-item-icon">&#128640;</span>
+          <span class="hub-orbit-item-label">Ignition</span>
+        </a>
+      </div>
     </div>
 
     <script>
-        // View toggle
-        const toggle = document.getElementById('viewToggle');
-        const page = document.querySelector('.page');
-        const orbitalContainer = document.querySelector('.tools-orbital');
+      // View toggle
+      const toggle = document.getElementById('viewToggle');
+      const page = document.querySelector('.page');
+      const orbitalContainer = document.querySelector('.tools-orbital');
 
-        if (toggle) {
-            toggle.addEventListener('click', () => {
-                const current = page.dataset.view;
-                const newView = current === 'orbital' ? 'grid' : 'orbital';
-                page.dataset.view = newView;
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const current = page.dataset.view;
+          const newView = current === 'orbital' ? 'grid' : 'orbital';
+          page.dataset.view = newView;
 
-                if (newView === 'orbital') {
-                    toggle.querySelector('.view-toggle-text').textContent = 'Grid View';
-                    orbitalContainer.setAttribute('aria-hidden', 'false');
-                } else {
-                    toggle.querySelector('.view-toggle-text').textContent = 'Orbital View';
-                    orbitalContainer.setAttribute('aria-hidden', 'true');
-                }
-            });
-        }
+          if (newView === 'orbital') {
+            toggle.querySelector('.view-toggle-text').textContent = 'Grid View';
+            orbitalContainer.setAttribute('aria-hidden', 'false');
+          } else {
+            toggle.querySelector('.view-toggle-text').textContent = 'Orbital View';
+            orbitalContainer.setAttribute('aria-hidden', 'true');
+          }
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

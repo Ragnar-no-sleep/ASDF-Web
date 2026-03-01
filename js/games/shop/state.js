@@ -601,7 +601,6 @@ const ShopStateV2 = {
 
         this.favorites = validateFavorites(favoritesData);
       }
-
     } catch (e) {
       console.warn('[ShopState] Failed to load from localStorage:', e);
     }

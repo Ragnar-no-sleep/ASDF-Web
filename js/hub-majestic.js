@@ -210,7 +210,7 @@ import { initInteractions } from './utils/interactions.js';
     }
 
     // Apply existing glow to already-clicked items
-    clicked.forEach((id) => {
+    clicked.forEach(id => {
       const item = document.querySelector(`[data-orbit-id="${id}"]`);
       if (item) {
         item.dataset.easterClicked = 'true';

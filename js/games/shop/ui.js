@@ -58,7 +58,6 @@ const ShopUI = {
 
     // Initial render
     this.render();
-
   },
 
   /**

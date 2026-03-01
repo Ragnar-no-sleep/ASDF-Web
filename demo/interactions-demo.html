@@ -1,279 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ASDF Interactions Demo</title>
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/interactions.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/interactions.css" />
 
     <style>
-        body {
-            background: var(--color-bg-primary);
-            color: var(--color-text-primary);
-            font-family: 'Inter', sans-serif;
-            padding: var(--space-2xl);
-            line-height: var(--leading-normal);
-        }
+      body {
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-family: 'Inter', sans-serif;
+        padding: var(--space-2xl);
+        line-height: var(--leading-normal);
+      }
 
-        .demo-section {
-            margin-bottom: var(--space-3xl);
-            padding: var(--space-xl);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            backdrop-filter: var(--glass-blur);
-        }
+      .demo-section {
+        margin-bottom: var(--space-3xl);
+        padding: var(--space-xl);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: var(--glass-blur);
+      }
 
-        .demo-section h2 {
-            color: var(--color-fire);
-            margin-bottom: var(--space-lg);
-            font-size: var(--text-2xl);
-        }
+      .demo-section h2 {
+        color: var(--color-fire);
+        margin-bottom: var(--space-lg);
+        font-size: var(--text-2xl);
+      }
 
-        .demo-section p {
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-md);
-            font-size: var(--text-sm);
-        }
+      .demo-section p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-md);
+        font-size: var(--text-sm);
+      }
 
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-lg);
-            margin-top: var(--space-lg);
-        }
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+      }
 
-        .demo-button {
-            padding: var(--space-md) var(--space-lg);
-            background: var(--color-fire);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: var(--font-semibold);
-            cursor: pointer;
-            font-size: var(--text-base);
-            transition: var(--transition-all);
-        }
+      .demo-button {
+        padding: var(--space-md) var(--space-lg);
+        background: var(--color-fire);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        font-size: var(--text-base);
+        transition: var(--transition-all);
+      }
 
-        .demo-button:hover {
-            background: var(--color-fire-light);
-        }
+      .demo-button:hover {
+        background: var(--color-fire-light);
+      }
 
-        .demo-card {
-            padding: var(--space-xl);
-            background: var(--color-bg-surface);
-            border: 1px solid var(--color-border-default);
-            border-radius: var(--radius-md);
-            text-align: center;
-        }
+      .demo-card {
+        padding: var(--space-xl);
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        text-align: center;
+      }
 
-        .counter-display {
-            font-size: var(--text-5xl);
-            font-weight: var(--font-bold);
-            color: var(--color-fire);
-            margin: var(--space-lg) 0;
-            font-variant-numeric: tabular-nums;
-        }
+      .counter-display {
+        font-size: var(--text-5xl);
+        font-weight: var(--font-bold);
+        color: var(--color-fire);
+        margin: var(--space-lg) 0;
+        font-variant-numeric: tabular-nums;
+      }
 
-        .glow-demo {
-            width: 100px;
-            height: 100px;
-            margin: var(--space-lg) auto;
-            background: var(--color-fire);
-            border-radius: var(--radius-full);
-        }
+      .glow-demo {
+        width: 100px;
+        height: 100px;
+        margin: var(--space-lg) auto;
+        background: var(--color-fire);
+        border-radius: var(--radius-full);
+      }
 
-        .parallax-demo {
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--color-fire-dark), var(--color-ice-dark));
-            border-radius: var(--radius-lg);
-            font-size: var(--text-3xl);
-            font-weight: var(--font-bold);
-            color: white;
-        }
+      .parallax-demo {
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--color-fire-dark), var(--color-ice-dark));
+        border-radius: var(--radius-lg);
+        font-size: var(--text-3xl);
+        font-weight: var(--font-bold);
+        color: white;
+      }
 
-        .status-badge {
-            display: inline-block;
-            padding: var(--space-xs) var(--space-md);
-            background: var(--color-success-bg);
-            color: var(--color-success);
-            border-radius: var(--radius-full);
-            font-size: var(--text-xs);
-            margin-left: var(--space-sm);
-        }
+      .status-badge {
+        display: inline-block;
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-success-bg);
+        color: var(--color-success);
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
+        margin-left: var(--space-sm);
+      }
     </style>
-</head>
-<body>
-
-    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl);">
-        🎯 ASDF Interactions Demo
+  </head>
+  <body>
+    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl)">
+      🎯 ASDF Interactions Demo
     </h1>
 
     <!-- Ripple Effect -->
     <section class="demo-section">
-        <h2>1. Ripple Effect <span class="status-badge">Active</span></h2>
-        <p>Click any button or card to see the ripple effect. It creates a satisfying visual feedback centered on your click.</p>
+      <h2>1. Ripple Effect <span class="status-badge">Active</span></h2>
+      <p>
+        Click any button or card to see the ripple effect. It creates a satisfying visual feedback
+        centered on your click.
+      </p>
 
-        <div class="demo-grid">
-            <button class="demo-button ripple-trigger">Click Me</button>
-            <button class="demo-button ripple-trigger">Ripple Here</button>
-            <button class="demo-button ripple-trigger">And Here</button>
-            <div class="demo-card ripple-trigger hover-scale">
-                <p>Clickable Card</p>
-            </div>
+      <div class="demo-grid">
+        <button class="demo-button ripple-trigger">Click Me</button>
+        <button class="demo-button ripple-trigger">Ripple Here</button>
+        <button class="demo-button ripple-trigger">And Here</button>
+        <div class="demo-card ripple-trigger hover-scale">
+          <p>Clickable Card</p>
         </div>
+      </div>
     </section>
 
     <!-- Haptic Feedback -->
     <section class="demo-section">
-        <h2>2. Haptic Feedback <span class="status-badge">Mobile Only</span></h2>
-        <p>On mobile devices with vibration support, clicks trigger subtle haptic feedback. Desktop users won't feel this.</p>
+      <h2>2. Haptic Feedback <span class="status-badge">Mobile Only</span></h2>
+      <p>
+        On mobile devices with vibration support, clicks trigger subtle haptic feedback. Desktop
+        users won't feel this.
+      </p>
 
-        <div class="demo-grid">
-            <button class="demo-button haptic-trigger" onclick="testHaptic('light')">Light</button>
-            <button class="demo-button haptic-trigger" onclick="testHaptic('medium')">Medium</button>
-            <button class="demo-button haptic-trigger" onclick="testHaptic('heavy')">Heavy</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button haptic-trigger" onclick="testHaptic('light')">Light</button>
+        <button class="demo-button haptic-trigger" onclick="testHaptic('medium')">Medium</button>
+        <button class="demo-button haptic-trigger" onclick="testHaptic('heavy')">Heavy</button>
+      </div>
     </section>
 
     <!-- Hover Scale -->
     <section class="demo-section">
-        <h2>3. Hover Scale <span class="status-badge">Active</span></h2>
-        <p>Hover over elements to see them subtly grow. Creates a sense of depth and responsiveness.</p>
+      <h2>3. Hover Scale <span class="status-badge">Active</span></h2>
+      <p>
+        Hover over elements to see them subtly grow. Creates a sense of depth and responsiveness.
+      </p>
 
-        <div class="demo-grid">
-            <div class="demo-card hover-scale">
-                <p>Hover Me</p>
-            </div>
-            <div class="demo-card hover-scale">
-                <p>Scale 1.02x</p>
-            </div>
-            <div class="demo-card hover-scale">
-                <p>Smooth Zoom</p>
-            </div>
+      <div class="demo-grid">
+        <div class="demo-card hover-scale">
+          <p>Hover Me</p>
         </div>
+        <div class="demo-card hover-scale">
+          <p>Scale 1.02x</p>
+        </div>
+        <div class="demo-card hover-scale">
+          <p>Smooth Zoom</p>
+        </div>
+      </div>
     </section>
 
     <!-- Glow Effects -->
     <section class="demo-section">
-        <h2>4. Glow Effects <span class="status-badge">Active</span></h2>
-        <p>Hover to trigger glowing halos. Fire and ice variants available.</p>
+      <h2>4. Glow Effects <span class="status-badge">Active</span></h2>
+      <p>Hover to trigger glowing halos. Fire and ice variants available.</p>
 
-        <div class="demo-grid">
-            <div class="glow-demo glow-hover"></div>
-            <div class="glow-demo glow-fire"></div>
-            <div class="glow-demo glow-ice"></div>
-        </div>
+      <div class="demo-grid">
+        <div class="glow-demo glow-hover"></div>
+        <div class="glow-demo glow-fire"></div>
+        <div class="glow-demo glow-ice"></div>
+      </div>
     </section>
 
     <!-- Progressive Counter -->
     <section class="demo-section">
-        <h2>5. Progressive Counter <span class="status-badge">Active</span></h2>
-        <p>Numbers animate smoothly instead of jumping. Perfect for K-Score, burns, stakes.</p>
+      <h2>5. Progressive Counter <span class="status-badge">Active</span></h2>
+      <p>Numbers animate smoothly instead of jumping. Perfect for K-Score, burns, stakes.</p>
 
-        <div class="counter-display" id="counterDisplay">0</div>
+      <div class="counter-display" id="counterDisplay">0</div>
 
-        <div class="demo-grid">
-            <button class="demo-button ripple-trigger" onclick="animateTestCounter(100)">Count to 100</button>
-            <button class="demo-button ripple-trigger" onclick="animateTestCounter(1000)">Count to 1000</button>
-            <button class="demo-button ripple-trigger" onclick="animateTestCounter(42069)">Count to 42069</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button ripple-trigger" onclick="animateTestCounter(100)">
+          Count to 100
+        </button>
+        <button class="demo-button ripple-trigger" onclick="animateTestCounter(1000)">
+          Count to 1000
+        </button>
+        <button class="demo-button ripple-trigger" onclick="animateTestCounter(42069)">
+          Count to 42069
+        </button>
+      </div>
     </section>
 
     <!-- Parallax -->
     <section class="demo-section">
-        <h2>6. Parallax Scroll <span class="status-badge">Active</span></h2>
-        <p>Scroll the page to see elements move at different speeds. Creates depth.</p>
+      <h2>6. Parallax Scroll <span class="status-badge">Active</span></h2>
+      <p>Scroll the page to see elements move at different speeds. Creates depth.</p>
 
-        <div class="parallax-demo parallax">
-            Scroll to see parallax effect
-        </div>
+      <div class="parallax-demo parallax">Scroll to see parallax effect</div>
     </section>
 
     <!-- Entrance Animations -->
     <section class="demo-section">
-        <h2>7. Entrance Animations <span class="status-badge">Active</span></h2>
-        <p>Elements can fade in, slide up, or scale in when they appear.</p>
+      <h2>7. Entrance Animations <span class="status-badge">Active</span></h2>
+      <p>Elements can fade in, slide up, or scale in when they appear.</p>
 
-        <div class="demo-grid">
-            <div class="demo-card fade-in">Fade In</div>
-            <div class="demo-card slide-up">Slide Up</div>
-            <div class="demo-card scale-in">Scale In</div>
-        </div>
+      <div class="demo-grid">
+        <div class="demo-card fade-in">Fade In</div>
+        <div class="demo-card slide-up">Slide Up</div>
+        <div class="demo-card scale-in">Scale In</div>
+      </div>
 
-        <button class="demo-button ripple-trigger" style="margin-top: var(--space-lg);" onclick="replayAnimations()">
-            Replay Animations
-        </button>
+      <button
+        class="demo-button ripple-trigger"
+        style="margin-top: var(--space-lg)"
+        onclick="replayAnimations()"
+      >
+        Replay Animations
+      </button>
     </section>
 
     <!-- Loading States -->
     <section class="demo-section">
-        <h2>8. Loading Indicators <span class="status-badge">Active</span></h2>
-        <p>Various loading states for async operations.</p>
+      <h2>8. Loading Indicators <span class="status-badge">Active</span></h2>
+      <p>Various loading states for async operations.</p>
 
-        <div class="demo-grid">
-            <button class="demo-button btn-loading">
-                Processing...
-            </button>
-            <div class="demo-card" style="display: flex; align-items: center; justify-content: center; gap: var(--space-md);">
-                <span class="spinner"></span>
-                <span>Loading...</span>
-            </div>
-            <div class="demo-card" style="display: flex; align-items: center; justify-content: center; gap: var(--space-md);">
-                <span class="pulse-dot"></span>
-                <span>Syncing</span>
-            </div>
+      <div class="demo-grid">
+        <button class="demo-button btn-loading">Processing...</button>
+        <div
+          class="demo-card"
+          style="display: flex; align-items: center; justify-content: center; gap: var(--space-md)"
+        >
+          <span class="spinner"></span>
+          <span>Loading...</span>
         </div>
+        <div
+          class="demo-card"
+          style="display: flex; align-items: center; justify-content: center; gap: var(--space-md)"
+        >
+          <span class="pulse-dot"></span>
+          <span>Syncing</span>
+        </div>
+      </div>
     </section>
 
     <script type="module">
-        import { initInteractions, hapticFeedback, animateCounter } from './js/utils/interactions.js';
+      import { initInteractions, hapticFeedback, animateCounter } from './js/utils/interactions.js';
 
-        // Initialize all interactions
-        initInteractions({
-            ripples: true,
-            haptics: true,
-            hoverScale: true,
-            parallax: true,
-            glowHover: true
+      // Initialize all interactions
+      initInteractions({
+        ripples: true,
+        haptics: true,
+        hoverScale: true,
+        parallax: true,
+        glowHover: true,
+      });
+
+      // Test haptic function
+      window.testHaptic = type => {
+        hapticFeedback(type);
+        console.log(`Haptic feedback: ${type}`);
+      };
+
+      // Test counter animation
+      window.animateTestCounter = target => {
+        const display = document.getElementById('counterDisplay');
+        const current = parseInt(display.textContent || '0', 10);
+        animateCounter(display, current, target, 1500);
+      };
+
+      // Replay entrance animations
+      window.replayAnimations = () => {
+        const animated = document.querySelectorAll('.fade-in, .slide-up, .scale-in');
+        animated.forEach(el => {
+          // Remove animation
+          const animation = el.style.animation;
+          el.style.animation = 'none';
+
+          // Force reflow
+          void el.offsetWidth;
+
+          // Re-add animation
+          el.style.animation = animation;
         });
+      };
 
-        // Test haptic function
-        window.testHaptic = (type) => {
-            hapticFeedback(type);
-            console.log(`Haptic feedback: ${type}`);
-        };
-
-        // Test counter animation
-        window.animateTestCounter = (target) => {
-            const display = document.getElementById('counterDisplay');
-            const current = parseInt(display.textContent || '0', 10);
-            animateCounter(display, current, target, 1500);
-        };
-
-        // Replay entrance animations
-        window.replayAnimations = () => {
-            const animated = document.querySelectorAll('.fade-in, .slide-up, .scale-in');
-            animated.forEach(el => {
-                // Remove animation
-                const animation = el.style.animation;
-                el.style.animation = 'none';
-
-                // Force reflow
-                void el.offsetWidth;
-
-                // Re-add animation
-                el.style.animation = animation;
-            });
-        };
-
-        console.log('🎯 ASDF Interactions Demo loaded');
+      console.log('🎯 ASDF Interactions Demo loaded');
     </script>
-
-</body>
+  </body>
 </html>

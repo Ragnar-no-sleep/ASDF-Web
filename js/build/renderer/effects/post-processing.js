@@ -15,15 +15,15 @@ const PP_CONFIG = {
   bloom: {
     strength: 0.8,
     radius: 0.5,
-    threshold: 0.6
+    threshold: 0.6,
   },
   vignette: {
     offset: 0.5,
-    darkness: 0.6
+    darkness: 0.6,
   },
   chromatic: {
-    offset: 0.002
-  }
+    offset: 0.002,
+  },
 };
 
 // ============================================
@@ -58,16 +58,12 @@ class PostProcessing {
     const THREE = this.THREE;
 
     // Create render targets
-    const renderTarget = new THREE.WebGLRenderTarget(
-      window.innerWidth,
-      window.innerHeight,
-      {
-        minFilter: THREE.LinearFilter,
-        magFilter: THREE.LinearFilter,
-        format: THREE.RGBAFormat,
-        type: THREE.HalfFloatType
-      }
-    );
+    const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat,
+      type: THREE.HalfFloatType,
+    });
 
     // Create effect composer manually (without imports)
     this.composer = this.createComposer(renderTarget);
@@ -79,7 +75,6 @@ class PostProcessing {
 
     // Handle resize
     this.bindResize();
-
   }
 
   /**
@@ -99,7 +94,7 @@ class PostProcessing {
         this.passes.push(pass);
       },
 
-      render: (deltaTime) => {
+      render: deltaTime => {
         // Simple multi-pass rendering
         let inputBuffer = this.composer.readBuffer;
         let outputBuffer = this.composer.writeBuffer;
@@ -120,7 +115,7 @@ class PostProcessing {
       setSize: (width, height) => {
         this.composer.renderTarget1.setSize(width, height);
         this.composer.renderTarget2.setSize(width, height);
-      }
+      },
     };
   }
 
@@ -138,7 +133,7 @@ class PostProcessing {
       render: (renderer, writeBuffer, _readBuffer) => {
         renderer.setRenderTarget(writeBuffer);
         renderer.render(scene, camera);
-      }
+      },
     };
 
     this.composer.addPass(renderPass);
@@ -159,10 +154,10 @@ class PostProcessing {
         uStrength: { value: strength },
         uRadius: { value: radius },
         uThreshold: { value: threshold },
-        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
       },
       vertexShader: this.getFullscreenVertexShader(),
-      fragmentShader: this.getBloomFragmentShader()
+      fragmentShader: this.getBloomFragmentShader(),
     });
 
     const bloomPass = {
@@ -175,7 +170,7 @@ class PostProcessing {
         bloomMaterial.uniforms.tDiffuse.value = readBuffer.texture;
         renderer.setRenderTarget(writeBuffer);
         this.renderFullscreenQuad(renderer, bloomPass.fsQuad);
-      }
+      },
     };
 
     this.composer.addPass(bloomPass);
@@ -194,10 +189,10 @@ class PostProcessing {
       uniforms: {
         tDiffuse: { value: null },
         uOffset: { value: offset },
-        uDarkness: { value: darkness }
+        uDarkness: { value: darkness },
       },
       vertexShader: this.getFullscreenVertexShader(),
-      fragmentShader: this.getVignetteFragmentShader()
+      fragmentShader: this.getVignetteFragmentShader(),
     });
 
     const vignettePass = {
@@ -211,7 +206,7 @@ class PostProcessing {
         vignetteMaterial.uniforms.tDiffuse.value = readBuffer.texture;
         renderer.setRenderTarget(null); // Render to screen
         this.renderFullscreenQuad(renderer, vignettePass.fsQuad);
-      }
+      },
     };
 
     this.composer.addPass(vignettePass);
@@ -233,7 +228,7 @@ class PostProcessing {
       geometry,
       material,
       mesh,
-      camera: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+      camera: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1),
     };
   }
 
@@ -407,13 +402,13 @@ class PostProcessing {
       bloom: {
         enabled: this.passes.bloom?.enabled,
         strength: this.passes.bloom?.material.uniforms.uStrength.value,
-        threshold: this.passes.bloom?.material.uniforms.uThreshold.value
+        threshold: this.passes.bloom?.material.uniforms.uThreshold.value,
       },
       vignette: {
         enabled: this.passes.vignette?.enabled,
         offset: this.passes.vignette?.material.uniforms.uOffset.value,
-        darkness: this.passes.vignette?.material.uniforms.uDarkness.value
-      }
+        darkness: this.passes.vignette?.material.uniforms.uDarkness.value,
+      },
     };
   }
 

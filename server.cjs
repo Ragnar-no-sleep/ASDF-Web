@@ -83,7 +83,7 @@ function isBot(req) {
   const ua = (req.headers['user-agent'] || '').toLowerCase();
 
   // Check for known bots
-  if (BOT_USER_AGENTS.some((bot) => ua.includes(bot))) {
+  if (BOT_USER_AGENTS.some(bot => ua.includes(bot))) {
     return true;
   }
 
@@ -158,11 +158,13 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Request logging — structured JSON with request ID
-app.use(pinoHttp({
-  logger,
-  autoLogging: { ignore: req => req.url === '/health' },
-  genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
-}));
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: req => req.url === '/health' },
+    genReqId: req => req.headers['x-request-id'] || crypto.randomUUID(),
+  })
+);
 
 // Security headers
 app.use(
@@ -171,7 +173,12 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         // Scripts: self + CDNs for Solana Kit (esm.sh) and DOMPurify (with SRI validation)
-        scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com', 'https://esm.sh'],
+        scriptSrc: [
+          "'self'",
+          'https://unpkg.com',
+          'https://cdnjs.cloudflare.com',
+          'https://esm.sh',
+        ],
         // Inline event handlers (onclick etc) removed from all production pages
         // Remaining onclick in demo/lab are gated behind !isProduction check
         scriptSrcAttr: ["'none'"],
@@ -199,9 +206,9 @@ app.use(
           ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
-          'https://alonisthe.dev',              // Proxy: burns, holdex, ignition
-          'https://asdforecast.onrender.com',   // Forecast (direct, not proxied yet)
-          'https://asdf-api.onrender.com',      // Central API gateway
+          'https://alonisthe.dev', // Proxy: burns, holdex, ignition
+          'https://asdforecast.onrender.com', // Forecast (direct, not proxied yet)
+          'https://asdf-api.onrender.com', // Central API gateway
           'https://lock-verifier.onrender.com', // Staking / TVU (direct)
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
@@ -347,10 +354,10 @@ function getRedisClient() {
       maxRetriesPerRequest: 3,
       retryDelayOnFailover: 100,
       enableReadyCheck: true,
-      lazyConnect: true
+      lazyConnect: true,
     });
 
-    redisClient.on('error', (err) => {
+    redisClient.on('error', err => {
       logger.error({ err: err.message }, 'Redis connection error');
     });
 
@@ -363,13 +370,57 @@ function getRedisClient() {
 
 // Allowed Redis methods (whitelist for security)
 const REDIS_ALLOWED_METHODS = [
-  'GET', 'SET', 'DEL', 'INCR', 'INCRBY', 'DECR', 'DECRBY',
-  'MGET', 'MSET', 'SETNX', 'SETEX', 'TTL', 'EXPIRE', 'EXISTS',
-  'HGET', 'HSET', 'HDEL', 'HGETALL', 'HMGET', 'HMSET', 'HINCRBY', 'HEXISTS', 'HKEYS', 'HVALS', 'HLEN',
-  'SADD', 'SREM', 'SMEMBERS', 'SISMEMBER', 'SCARD', 'SUNION', 'SINTER',
-  'LPUSH', 'RPUSH', 'LPOP', 'RPOP', 'LRANGE', 'LLEN', 'LINDEX',
-  'ZADD', 'ZREM', 'ZSCORE', 'ZRANK', 'ZREVRANK', 'ZRANGE', 'ZREVRANGE', 'ZRANGEBYSCORE', 'ZCOUNT', 'ZCARD',
-  'TYPE', 'SCAN'  // KEYS removed: O(N) blocking operation, use SCAN instead
+  'GET',
+  'SET',
+  'DEL',
+  'INCR',
+  'INCRBY',
+  'DECR',
+  'DECRBY',
+  'MGET',
+  'MSET',
+  'SETNX',
+  'SETEX',
+  'TTL',
+  'EXPIRE',
+  'EXISTS',
+  'HGET',
+  'HSET',
+  'HDEL',
+  'HGETALL',
+  'HMGET',
+  'HMSET',
+  'HINCRBY',
+  'HEXISTS',
+  'HKEYS',
+  'HVALS',
+  'HLEN',
+  'SADD',
+  'SREM',
+  'SMEMBERS',
+  'SISMEMBER',
+  'SCARD',
+  'SUNION',
+  'SINTER',
+  'LPUSH',
+  'RPUSH',
+  'LPOP',
+  'RPOP',
+  'LRANGE',
+  'LLEN',
+  'LINDEX',
+  'ZADD',
+  'ZREM',
+  'ZSCORE',
+  'ZRANK',
+  'ZREVRANK',
+  'ZRANGE',
+  'ZREVRANGE',
+  'ZRANGEBYSCORE',
+  'ZCOUNT',
+  'ZCARD',
+  'TYPE',
+  'SCAN', // KEYS removed: O(N) blocking operation, use SCAN instead
 ];
 
 // Redis proxy endpoint - INTERNAL USE ONLY
@@ -383,7 +434,10 @@ app.post('/api/redis', async (req, res) => {
     return res.status(403).json({ error: 'Redis API disabled without REDIS_API_KEY' });
   } else {
     // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
-    const a = crypto.createHash('sha256').update(String(apiKey || '')).digest();
+    const a = crypto
+      .createHash('sha256')
+      .update(String(apiKey || ''))
+      .digest();
     const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
     if (!crypto.timingSafeEqual(a, b)) {
       return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
@@ -395,7 +449,7 @@ app.post('/api/redis', async (req, res) => {
   if (!client) {
     return res.status(503).json({
       error: 'Redis not configured',
-      message: 'Set REDIS_URL environment variable'
+      message: 'Set REDIS_URL environment variable',
     });
   }
 
@@ -416,7 +470,6 @@ app.post('/api/redis', async (req, res) => {
     // Execute Redis command
     const result = await client[upperMethod.toLowerCase()](...params);
     res.json(result);
-
   } catch (error) {
     logger.error({ err: error.message }, 'Redis API error');
     res.status(500).json({
@@ -551,11 +604,12 @@ app.use((err, req, res, next) => {
 });
 
 // Start server unless imported for testing
-const server = require.main === module
-  ? app.listen(PORT, () => {
-      logger.info({ port: PORT }, 'ASDF Web running');
-    })
-  : null;
+const server =
+  require.main === module
+    ? app.listen(PORT, () => {
+        logger.info({ port: PORT }, 'ASDF Web running');
+      })
+    : null;
 
 // Export for supertest + shared logging
 module.exports = { app, logger };

@@ -143,14 +143,8 @@ class AudioEngine {
 
     gain.gain.setValueAtTime(0, this.ctx.currentTime);
     gain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + attackTime);
-    gain.gain.linearRampToValueAtTime(
-      sustainLevel,
-      this.ctx.currentTime + attackTime + decayTime
-    );
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      this.ctx.currentTime + duration
-    );
+    gain.gain.linearRampToValueAtTime(sustainLevel, this.ctx.currentTime + attackTime + decayTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
 
     // Connect and play
     osc.connect(gain);
@@ -182,7 +176,7 @@ class AudioEngine {
    * @param {Object} options - Options for all notes
    */
   playChord(types, options = {}) {
-    types.forEach((type) => this.play(type, options));
+    types.forEach(type => this.play(type, options));
   }
 
   /**

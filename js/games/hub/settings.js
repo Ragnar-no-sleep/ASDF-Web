@@ -275,7 +275,6 @@ const Settings = {
       console.error('[Settings] Failed to load:', e);
       this.current = { ...this.defaults };
     }
-
   },
 
   /**

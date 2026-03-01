@@ -73,7 +73,6 @@ const GitHubTimeline = {
 
     // Bind events
     this.bindEvents();
-
   },
 
   /**

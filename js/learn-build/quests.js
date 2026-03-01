@@ -15,7 +15,7 @@ export const QUEST_TYPES = {
   VIDEO: 'video',
   QUIZ: 'quiz',
   PROJECT: 'project',
-  CHALLENGE: 'challenge'
+  CHALLENGE: 'challenge',
 };
 
 // ============================================
@@ -36,8 +36,8 @@ export const DEV_QUESTS = [
     estimatedTime: 30,
     content: {
       videoUrl: '/content/dev/html-basics.mp4',
-      duration: '25 min'
-    }
+      duration: '25 min',
+    },
   },
   {
     id: 'quest-css-styling',
@@ -51,8 +51,8 @@ export const DEV_QUESTS = [
     estimatedTime: 30,
     content: {
       videoUrl: '/content/dev/css-styling.mp4',
-      duration: '28 min'
-    }
+      duration: '28 min',
+    },
   },
   {
     id: 'quest-js-intro',
@@ -66,8 +66,8 @@ export const DEV_QUESTS = [
     estimatedTime: 45,
     content: {
       videoUrl: '/content/dev/js-intro.mp4',
-      duration: '40 min'
-    }
+      duration: '40 min',
+    },
   },
   {
     id: 'quest-fundamentals-quiz',
@@ -88,24 +88,24 @@ export const DEV_QUESTS = [
             'Hyper Text Markup Language',
             'High Tech Modern Language',
             'Hyperlink Text Management Language',
-            'Home Tool Markup Language'
+            'Home Tool Markup Language',
           ],
-          correct: 0
+          correct: 0,
         },
         {
           id: 'q2',
           text: 'Which CSS property changes text color?',
           options: ['text-color', 'font-color', 'color', 'text-style'],
-          correct: 2
+          correct: 2,
         },
         {
           id: 'q3',
           text: 'How do you declare a variable in modern JavaScript?',
           options: ['var x = 1', 'let x = 1', 'const x = 1', 'Both B and C'],
-          correct: 3
-        }
-      ]
-    }
+          correct: 3,
+        },
+      ],
+    },
   },
 
   // Module: dev-solana-basics
@@ -121,8 +121,8 @@ export const DEV_QUESTS = [
     estimatedTime: 45,
     content: {
       videoUrl: '/content/dev/solana-architecture.mp4',
-      duration: '40 min'
-    }
+      duration: '40 min',
+    },
   },
   {
     id: 'quest-accounts-model',
@@ -136,8 +136,8 @@ export const DEV_QUESTS = [
     estimatedTime: 40,
     content: {
       videoUrl: '/content/dev/accounts-model.mp4',
-      duration: '35 min'
-    }
+      duration: '35 min',
+    },
   },
   {
     id: 'quest-connect-wallet',
@@ -154,9 +154,9 @@ export const DEV_QUESTS = [
         'Create a new web page',
         'Add wallet adapter library',
         'Implement connect button',
-        'Display connected wallet address'
-      ]
-    }
+        'Display connected wallet address',
+      ],
+    },
   },
 
   // Module: dev-token-mastery
@@ -172,8 +172,8 @@ export const DEV_QUESTS = [
     estimatedTime: 45,
     content: {
       videoUrl: '/content/dev/spl-tokens.mp4',
-      duration: '42 min'
-    }
+      duration: '42 min',
+    },
   },
   {
     id: 'quest-token-2022',
@@ -187,8 +187,8 @@ export const DEV_QUESTS = [
     estimatedTime: 40,
     content: {
       videoUrl: '/content/dev/token-2022.mp4',
-      duration: '38 min'
-    }
+      duration: '38 min',
+    },
   },
   {
     id: 'quest-create-token',
@@ -205,10 +205,10 @@ export const DEV_QUESTS = [
         'Create a new token mint',
         'Set up metadata',
         'Mint tokens to your wallet',
-        'Transfer tokens to another address'
-      ]
-    }
-  }
+        'Transfer tokens to another address',
+      ],
+    },
+  },
 ];
 
 // ============================================
@@ -229,8 +229,8 @@ export const GAMING_QUESTS = [
     estimatedTime: 30,
     content: {
       videoUrl: '/content/gaming/game-design-basics.mp4',
-      duration: '28 min'
-    }
+      duration: '28 min',
+    },
   },
   {
     id: 'quest-player-psychology',
@@ -244,8 +244,8 @@ export const GAMING_QUESTS = [
     estimatedTime: 35,
     content: {
       videoUrl: '/content/gaming/player-psychology.mp4',
-      duration: '32 min'
-    }
+      duration: '32 min',
+    },
   },
 
   // Module: gaming-canvas
@@ -261,8 +261,8 @@ export const GAMING_QUESTS = [
     estimatedTime: 40,
     content: {
       videoUrl: '/content/gaming/canvas-intro.mp4',
-      duration: '35 min'
-    }
+      duration: '35 min',
+    },
   },
   {
     id: 'quest-game-loop',
@@ -276,8 +276,8 @@ export const GAMING_QUESTS = [
     estimatedTime: 45,
     content: {
       videoUrl: '/content/gaming/game-loop.mp4',
-      duration: '40 min'
-    }
+      duration: '40 min',
+    },
   },
   {
     id: 'quest-first-game',
@@ -295,10 +295,10 @@ export const GAMING_QUESTS = [
         'Add player character',
         'Implement keyboard controls',
         'Add collision detection',
-        'Display score'
-      ]
-    }
-  }
+        'Display score',
+      ],
+    },
+  },
 ];
 
 // ============================================
@@ -319,8 +319,8 @@ export const CONTENT_QUESTS = [
     estimatedTime: 25,
     content: {
       videoUrl: '/content/creator/content-strategy.mp4',
-      duration: '22 min'
-    }
+      duration: '22 min',
+    },
   },
   {
     id: 'quest-finding-voice',
@@ -334,8 +334,8 @@ export const CONTENT_QUESTS = [
     estimatedTime: 25,
     content: {
       videoUrl: '/content/creator/finding-voice.mp4',
-      duration: '20 min'
-    }
+      duration: '20 min',
+    },
   },
 
   // Module: content-storytelling
@@ -351,8 +351,8 @@ export const CONTENT_QUESTS = [
     estimatedTime: 35,
     content: {
       videoUrl: '/content/creator/crypto-narrative.mp4',
-      duration: '30 min'
-    }
+      duration: '30 min',
+    },
   },
   {
     id: 'quest-write-thread',
@@ -366,12 +366,12 @@ export const CONTENT_QUESTS = [
     estimatedTime: 45,
     content: {
       requirements: [
-        'Choose a topic you\'re passionate about',
+        "Choose a topic you're passionate about",
         'Write a 5-10 tweet thread',
         'Include hooks and CTAs',
-        'Add relevant images or graphics'
-      ]
-    }
+        'Add relevant images or graphics',
+      ],
+    },
   },
 
   // Growth modules (merged into content)
@@ -387,8 +387,8 @@ export const CONTENT_QUESTS = [
     estimatedTime: 30,
     content: {
       videoUrl: '/content/growth/growth-mindset.mp4',
-      duration: '28 min'
-    }
+      duration: '28 min',
+    },
   },
   {
     id: 'quest-community-building',
@@ -402,8 +402,8 @@ export const CONTENT_QUESTS = [
     estimatedTime: 40,
     content: {
       videoUrl: '/content/growth/community-building.mp4',
-      duration: '35 min'
-    }
+      duration: '35 min',
+    },
   },
   {
     id: 'quest-viral-mechanics',
@@ -417,19 +417,15 @@ export const CONTENT_QUESTS = [
     estimatedTime: 40,
     content: {
       videoUrl: '/content/growth/viral-mechanics.mp4',
-      duration: '38 min'
-    }
-  }
+      duration: '38 min',
+    },
+  },
 ];
 
 // ============================================
 // ALL QUESTS
 // ============================================
 
-export const ALL_QUESTS = [
-  ...DEV_QUESTS,
-  ...GAMING_QUESTS,
-  ...CONTENT_QUESTS
-];
+export const ALL_QUESTS = [...DEV_QUESTS, ...GAMING_QUESTS, ...CONTENT_QUESTS];
 
 export default ALL_QUESTS;

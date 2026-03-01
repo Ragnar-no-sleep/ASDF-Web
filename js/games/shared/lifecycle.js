@@ -22,10 +22,14 @@ const GameLifecycle = {
     if (isCompetitive) {
       // Verify we can still play competitive and start session
       if (typeof canPlayCompetitive === 'function' && !canPlayCompetitive(gameId)) {
-        GameEvents.emit('notify', { msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.' });
+        GameEvents.emit('notify', {
+          msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.',
+        });
         GameEvents.emit('game:mode-fallback', { gameId });
       } else if (typeof startCompetitiveSession === 'function' && !startCompetitiveSession()) {
-        GameEvents.emit('notify', { msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement." });
+        GameEvents.emit('notify', {
+          msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement.",
+        });
         GameEvents.emit('game:mode-fallback', { gameId });
       }
     }
@@ -43,7 +47,8 @@ const GameLifecycle = {
 
     requestAnimationFrame(() => {
       // Read mode AFTER fallback logic (may have changed from competitive to practice)
-      const actualMode = typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
+      const actualMode =
+        typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
       GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
 
       // Delegate to GameEngines coordinator

@@ -15,11 +15,11 @@ js/solana/
 
 ## Stack
 
-| Layer | Package | CDN |
-|-------|---------|-----|
-| RPC | @solana/kit | esm.sh |
-| Transactions | @solana-program/system, @solana-program/token | esm.sh |
-| Legacy bridge | Custom adapter | local |
+| Layer         | Package                                       | CDN    |
+| ------------- | --------------------------------------------- | ------ |
+| RPC           | @solana/kit                                   | esm.sh |
+| Transactions  | @solana-program/system, @solana-program/token | esm.sh |
+| Legacy bridge | Custom adapter                                | local  |
 
 ## Quick Start
 
@@ -28,13 +28,13 @@ Add this to your HTML `<head>`:
 ```html
 <!-- Solana Kit Import Map -->
 <script type="importmap">
-{
-  "imports": {
-    "@solana/kit": "https://esm.sh/@solana/kit@5",
-    "@solana-program/system": "https://esm.sh/@solana-program/system@0.7",
-    "@solana-program/token": "https://esm.sh/@solana-program/token@0.5"
+  {
+    "imports": {
+      "@solana/kit": "https://esm.sh/@solana/kit@5",
+      "@solana-program/system": "https://esm.sh/@solana-program/system@0.7",
+      "@solana-program/token": "https://esm.sh/@solana-program/token@0.5"
+    }
   }
-}
 </script>
 
 <!-- ASDF Solana Module -->
@@ -49,7 +49,7 @@ Add this to your HTML `<head>`:
   console.log('Available wallets:', wallets);
 
   // Listen for connection
-  ASDFSolana.on('connect', (account) => {
+  ASDFSolana.on('connect', account => {
     console.log('Connected:', account.address);
   });
 
@@ -73,66 +73,67 @@ Add this to your HTML `<head>`:
 
 ```javascript
 // Get available wallets
-ASDFSolana.getWallets()  // [{name: 'Phantom', icon: '...'}]
+ASDFSolana.getWallets(); // [{name: 'Phantom', icon: '...'}]
 
 // Connect to wallet
-await ASDFSolana.connect('Phantom')
+await ASDFSolana.connect('Phantom');
 
 // Disconnect
-await ASDFSolana.disconnect()
+await ASDFSolana.disconnect();
 
 // Check connection
-ASDFSolana.isConnected()  // boolean
+ASDFSolana.isConnected(); // boolean
 
 // Get address
-ASDFSolana.getAddress()  // '5VUu...'
+ASDFSolana.getAddress(); // '5VUu...'
 
 // Events
-ASDFSolana.on('connect', (account) => {})
-ASDFSolana.on('disconnect', () => {})
-ASDFSolana.on('walletsChanged', (wallets) => {})
+ASDFSolana.on('connect', account => {});
+ASDFSolana.on('disconnect', () => {});
+ASDFSolana.on('walletsChanged', wallets => {});
 ```
 
 ### Balances
 
 ```javascript
 // SOL balance
-await ASDFSolana.getBalanceSOL()  // 1.234
+await ASDFSolana.getBalanceSOL(); // 1.234
 
 // ASDF token balance
-await ASDFSolana.getTokenBalance()  // 1000000
+await ASDFSolana.getTokenBalance(); // 1000000
 ```
 
 ### Transactions
 
 ```javascript
 // Transfer SOL to treasury
-await ASDFSolana.transferSOL(0.1)  // signature
+await ASDFSolana.transferSOL(0.1); // signature
 
 // Transfer ASDF to escrow
-await ASDFSolana.transferTokens(1000)  // signature
+await ASDFSolana.transferTokens(1000); // signature
 
 // Transfer to any address
-await ASDFSolana.transferTokensTo('recipient...', 500)
+await ASDFSolana.transferTokensTo('recipient...', 500);
 
 // Check balances before tx
-await ASDFSolana.hasSufficientSol(0.1)  // boolean
-await ASDFSolana.hasSufficientAsdf(1000)  // boolean
+await ASDFSolana.hasSufficientSol(0.1); // boolean
+await ASDFSolana.hasSufficientAsdf(1000); // boolean
 ```
 
 ### Utilities
 
 ```javascript
 // Validate address
-ASDFSolana.isValidAddress('5VUu...')  // boolean
+ASDFSolana.isValidAddress('5VUu...'); // boolean
 
 // Explorer URL
-ASDFSolana.getExplorerUrl(signature)  // 'https://solscan.io/tx/...'
+ASDFSolana.getExplorerUrl(signature); // 'https://solscan.io/tx/...'
 ```
 
 ## Migration from Legacy
 
 Old (`js/games/solana.js`):
+
 ```javascript
 const provider = SolanaPayment.getProvider();
 await provider.connect();
@@ -140,6 +141,7 @@ await SolanaPayment.transferSOL(0.1);
 ```
 
 New:
+
 ```javascript
 await ASDFSolana.connect('Phantom');
 await ASDFSolana.transferSOL(0.1);

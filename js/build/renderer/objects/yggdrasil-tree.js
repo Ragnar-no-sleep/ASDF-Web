@@ -18,32 +18,32 @@ const YGGDRASIL_CONFIG = {
     topRadius: 0.8,
     height: 30,
     segments: 8,
-    radialSegments: 12
+    radialSegments: 12,
   },
   // Branch settings
   branches: {
-    count: 13,           // Number of main branches (for projects)
+    count: 13, // Number of main branches (for projects)
     minRadius: 0.3,
     maxRadius: 0.6,
     minLength: 8,
     maxLength: 15,
-    curve: 0.3,          // Branch curve factor
-    segments: 6
+    curve: 0.3, // Branch curve factor
+    segments: 6,
   },
   // Root settings
   roots: {
     count: 5,
     radius: 0.5,
     length: 8,
-    spread: 1.5
+    spread: 1.5,
   },
   // Colors
   colors: {
-    bark: 0x4a3728,       // Brown bark
+    bark: 0x4a3728, // Brown bark
     barkHighlight: 0x6b4d3a,
-    moss: 0x2d5a27,       // Green moss
-    root: 0x3d2817        // Dark root
-  }
+    moss: 0x2d5a27, // Green moss
+    root: 0x3d2817, // Dark root
+  },
 };
 
 // ============================================
@@ -112,7 +112,7 @@ class YggdrasilTree {
     const material = new THREE.MeshPhongMaterial({
       color: colors.bark,
       flatShading: true,
-      shininess: 5
+      shininess: 5,
     });
 
     // Add vertex color variation for organic look
@@ -151,7 +151,7 @@ class YggdrasilTree {
 
       // Height position (distribute along trunk with phi ratio)
       const heightRatio = 0.3 + (i / branches.count) * 0.6;
-      const height = (heightRatio * trunk.height) - trunk.height / 2;
+      const height = heightRatio * trunk.height - trunk.height / 2;
 
       // Branch properties
       const length = branches.minLength + Math.random() * (branches.maxLength - branches.minLength);
@@ -172,7 +172,7 @@ class YggdrasilTree {
       this.branchEndpoints.push({
         position: new THREE.Vector3(endX, endY, endZ),
         angle: angle,
-        index: i
+        index: i,
       });
 
       this.branches.push(branch);
@@ -197,16 +197,10 @@ class YggdrasilTree {
       new THREE.Vector3(0, 0, 0),
       new THREE.Vector3(length * 0.3, length * 0.1, 0),
       new THREE.Vector3(length * 0.6, length * 0.15, 0),
-      new THREE.Vector3(length, length * upAngle, 0)
+      new THREE.Vector3(length, length * upAngle, 0),
     ]);
 
-    const geometry = new THREE.TubeGeometry(
-      curve,
-      branches.segments,
-      radius,
-      8,
-      false
-    );
+    const geometry = new THREE.TubeGeometry(curve, branches.segments, radius, 8, false);
 
     // Taper the branch
     const positionAttribute = geometry.getAttribute('position');
@@ -229,7 +223,7 @@ class YggdrasilTree {
     const material = new THREE.MeshPhongMaterial({
       color: colors.bark,
       flatShading: true,
-      shininess: 5
+      shininess: 5,
     });
 
     const branch = new THREE.Mesh(geometry, material);
@@ -255,21 +249,15 @@ class YggdrasilTree {
         new THREE.Vector3(trunk.baseRadius * 0.8, 0, 0),
         new THREE.Vector3(length * 0.4, -2, 0),
         new THREE.Vector3(length * 0.7, -4, 0),
-        new THREE.Vector3(length * roots.spread, -6, 0)
+        new THREE.Vector3(length * roots.spread, -6, 0),
       ]);
 
-      const geometry = new THREE.TubeGeometry(
-        curve,
-        8,
-        roots.radius,
-        6,
-        false
-      );
+      const geometry = new THREE.TubeGeometry(curve, 8, roots.radius, 6, false);
 
       const material = new THREE.MeshPhongMaterial({
         color: colors.root,
         flatShading: true,
-        shininess: 3
+        shininess: 3,
       });
 
       const root = new THREE.Mesh(geometry, material);
@@ -294,7 +282,7 @@ class YggdrasilTree {
     const mossGeometry = new THREE.SphereGeometry(0.3, 6, 4);
     const mossMaterial = new THREE.MeshPhongMaterial({
       color: colors.moss,
-      flatShading: true
+      flatShading: true,
     });
 
     for (let i = 0; i < mossCount; i++) {

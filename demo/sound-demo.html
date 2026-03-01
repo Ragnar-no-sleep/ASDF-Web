@@ -1,288 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ASDF Sound System Demo</title>
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/interactions.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/interactions.css" />
 
     <style>
-        body {
-            background: var(--color-bg-primary);
-            color: var(--color-text-primary);
-            font-family: 'Inter', sans-serif;
-            padding: var(--space-2xl);
-            line-height: var(--leading-normal);
-        }
+      body {
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-family: 'Inter', sans-serif;
+        padding: var(--space-2xl);
+        line-height: var(--leading-normal);
+      }
 
-        .demo-section {
-            margin-bottom: var(--space-3xl);
-            padding: var(--space-xl);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            backdrop-filter: var(--glass-blur);
-        }
+      .demo-section {
+        margin-bottom: var(--space-3xl);
+        padding: var(--space-xl);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: var(--glass-blur);
+      }
 
-        .demo-section h2 {
-            color: var(--color-fire);
-            margin-bottom: var(--space-lg);
-            font-size: var(--text-2xl);
-        }
+      .demo-section h2 {
+        color: var(--color-fire);
+        margin-bottom: var(--space-lg);
+        font-size: var(--text-2xl);
+      }
 
-        .demo-section p {
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-md);
-            font-size: var(--text-sm);
-        }
+      .demo-section p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-md);
+        font-size: var(--text-sm);
+      }
 
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-lg);
-            margin-top: var(--space-lg);
-        }
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+      }
 
-        .demo-button {
-            padding: var(--space-md) var(--space-lg);
-            background: var(--color-fire);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: var(--font-semibold);
-            cursor: pointer;
-            font-size: var(--text-base);
-            transition: var(--transition-all);
-        }
+      .demo-button {
+        padding: var(--space-md) var(--space-lg);
+        background: var(--color-fire);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        font-size: var(--text-base);
+        transition: var(--transition-all);
+      }
 
-        .demo-button:hover {
-            background: var(--color-fire-light);
-            transform: translateY(-2px);
-        }
+      .demo-button:hover {
+        background: var(--color-fire-light);
+        transform: translateY(-2px);
+      }
 
-        .demo-card {
-            padding: var(--space-xl);
-            background: var(--color-bg-surface);
-            border: 1px solid var(--color-border-default);
-            border-radius: var(--radius-md);
-            text-align: center;
-        }
+      .demo-card {
+        padding: var(--space-xl);
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        text-align: center;
+      }
 
-        .status-badge {
-            display: inline-block;
-            padding: var(--space-xs) var(--space-md);
-            background: var(--color-success-bg);
-            color: var(--color-success);
-            border-radius: var(--radius-full);
-            font-size: var(--text-xs);
-            margin-left: var(--space-sm);
-        }
+      .status-badge {
+        display: inline-block;
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-success-bg);
+        color: var(--color-success);
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
+        margin-left: var(--space-sm);
+      }
 
-        .warning-badge {
-            display: inline-block;
-            padding: var(--space-xs) var(--space-md);
-            background: var(--color-warning-bg);
-            color: var(--color-warning);
-            border-radius: var(--radius-full);
-            font-size: var(--text-xs);
-            margin-left: var(--space-sm);
-        }
+      .warning-badge {
+        display: inline-block;
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-warning-bg);
+        color: var(--color-warning);
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
+        margin-left: var(--space-sm);
+      }
 
-        .settings-container {
-            max-width: 400px;
-            margin: var(--space-xl) 0;
-        }
+      .settings-container {
+        max-width: 400px;
+        margin: var(--space-xl) 0;
+      }
 
-        .sound-preview {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            padding: var(--space-md);
-            background: var(--color-bg-surface);
-            border-radius: var(--radius-sm);
-            margin-bottom: var(--space-sm);
-        }
+      .sound-preview {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-sm);
+      }
 
-        .sound-preview-name {
-            flex: 1;
-            font-weight: 500;
-        }
+      .sound-preview-name {
+        flex: 1;
+        font-weight: 500;
+      }
 
-        .sound-preview-desc {
-            flex: 2;
-            font-size: var(--text-sm);
-            color: var(--color-text-tertiary);
-        }
+      .sound-preview-desc {
+        flex: 2;
+        font-size: var(--text-sm);
+        color: var(--color-text-tertiary);
+      }
 
-        .sound-preview-btn {
-            padding: var(--space-xs) var(--space-md);
-            background: var(--color-fire);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: var(--text-sm);
-        }
+      .sound-preview-btn {
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-fire);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: var(--text-sm);
+      }
     </style>
-</head>
-<body>
-
-    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl);">
-        🔊 ASDF Sound System Demo
+  </head>
+  <body>
+    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl)">
+      🔊 ASDF Sound System Demo
     </h1>
 
     <!-- Settings Control -->
     <section class="demo-section">
-        <h2>Settings Control <span class="status-badge">Persistent</span></h2>
-        <p>Toggle sound ON/OFF and adjust volume. Settings are saved to localStorage.</p>
+      <h2>Settings Control <span class="status-badge">Persistent</span></h2>
+      <p>Toggle sound ON/OFF and adjust volume. Settings are saved to localStorage.</p>
 
-        <div class="settings-container" id="settingsContainer"></div>
+      <div class="settings-container" id="settingsContainer"></div>
 
-        <p style="margin-top: var(--space-lg); font-size: var(--text-xs); color: var(--color-text-muted);">
-            💡 Tip: Sounds are disabled by default. Enable them above to hear the demos below.
-        </p>
+      <p
+        style="
+          margin-top: var(--space-lg);
+          font-size: var(--text-xs);
+          color: var(--color-text-muted);
+        "
+      >
+        💡 Tip: Sounds are disabled by default. Enable them above to hear the demos below.
+      </p>
     </section>
 
     <!-- UI Sounds -->
     <section class="demo-section">
-        <h2>1. UI Interaction Sounds <span class="status-badge">Subtle</span></h2>
-        <p>Lightweight feedback for clicks and hovers. Click triggers automatically on all buttons below.</p>
+      <h2>1. UI Interaction Sounds <span class="status-badge">Subtle</span></h2>
+      <p>
+        Lightweight feedback for clicks and hovers. Click triggers automatically on all buttons
+        below.
+      </p>
 
-        <div class="demo-grid">
-            <button class="demo-button">Click Me (auto-sound)</button>
-            <button class="demo-button">Another Button</button>
-            <button class="demo-button">And Another</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button">Click Me (auto-sound)</button>
+        <button class="demo-button">Another Button</button>
+        <button class="demo-button">And Another</button>
+      </div>
 
-        <div style="margin-top: var(--space-lg);">
-            <div class="sound-preview">
-                <span class="sound-preview-name">Click</span>
-                <span class="sound-preview-desc">800Hz sine, 50ms (buttons, links)</span>
-                <button class="sound-preview-btn" onclick="playSound('click')">▶</button>
-            </div>
-            <div class="sound-preview">
-                <span class="sound-preview-name">Hover</span>
-                <span class="sound-preview-desc">600Hz sine, 30ms (very subtle)</span>
-                <button class="sound-preview-btn" onclick="playSound('hover')">▶</button>
-            </div>
+      <div style="margin-top: var(--space-lg)">
+        <div class="sound-preview">
+          <span class="sound-preview-name">Click</span>
+          <span class="sound-preview-desc">800Hz sine, 50ms (buttons, links)</span>
+          <button class="sound-preview-btn" onclick="playSound('click')">▶</button>
         </div>
+        <div class="sound-preview">
+          <span class="sound-preview-name">Hover</span>
+          <span class="sound-preview-desc">600Hz sine, 30ms (very subtle)</span>
+          <button class="sound-preview-btn" onclick="playSound('hover')">▶</button>
+        </div>
+      </div>
     </section>
 
     <!-- Feedback Sounds -->
     <section class="demo-section">
-        <h2>2. Feedback Sounds <span class="status-badge">Clear</span></h2>
-        <p>Success (C-E-G chord) and error (dissonant) sounds for transaction feedback.</p>
+      <h2>2. Feedback Sounds <span class="status-badge">Clear</span></h2>
+      <p>Success (C-E-G chord) and error (dissonant) sounds for transaction feedback.</p>
 
-        <div class="demo-grid">
-            <button class="demo-button" onclick="playSound('success')">✓ Success</button>
-            <button class="demo-button" onclick="playSound('error')">⚠ Error</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" onclick="playSound('success')">✓ Success</button>
+        <button class="demo-button" onclick="playSound('error')">⚠ Error</button>
+      </div>
 
-        <div style="margin-top: var(--space-lg);">
-            <div class="sound-preview">
-                <span class="sound-preview-name">Success</span>
-                <span class="sound-preview-desc">523-659-784Hz chord (C-E-G major)</span>
-                <button class="sound-preview-btn" onclick="playSound('success')">▶</button>
-            </div>
-            <div class="sound-preview">
-                <span class="sound-preview-name">Error</span>
-                <span class="sound-preview-desc">300-250Hz dissonant (square wave)</span>
-                <button class="sound-preview-btn" onclick="playSound('error')">▶</button>
-            </div>
+      <div style="margin-top: var(--space-lg)">
+        <div class="sound-preview">
+          <span class="sound-preview-name">Success</span>
+          <span class="sound-preview-desc">523-659-784Hz chord (C-E-G major)</span>
+          <button class="sound-preview-btn" onclick="playSound('success')">▶</button>
         </div>
+        <div class="sound-preview">
+          <span class="sound-preview-name">Error</span>
+          <span class="sound-preview-desc">300-250Hz dissonant (square wave)</span>
+          <button class="sound-preview-btn" onclick="playSound('error')">▶</button>
+        </div>
+      </div>
     </section>
 
     <!-- Action Sounds -->
     <section class="demo-section">
-        <h2>3. Action Sounds <span class="status-badge">Contextual</span></h2>
-        <p>Unique sounds for burns (descending), stakes (ascending lock), and unstakes (descending unlock).</p>
+      <h2>3. Action Sounds <span class="status-badge">Contextual</span></h2>
+      <p>
+        Unique sounds for burns (descending), stakes (ascending lock), and unstakes (descending
+        unlock).
+      </p>
 
-        <div class="demo-grid">
-            <button class="demo-button" onclick="playSound('burn')">🔥 Burn</button>
-            <button class="demo-button" onclick="playSound('stake')">🔒 Stake</button>
-            <button class="demo-button" onclick="playSound('unstake')">🔓 Unstake</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" onclick="playSound('burn')">🔥 Burn</button>
+        <button class="demo-button" onclick="playSound('stake')">🔒 Stake</button>
+        <button class="demo-button" onclick="playSound('unstake')">🔓 Unstake</button>
+      </div>
 
-        <div style="margin-top: var(--space-lg);">
-            <div class="sound-preview">
-                <span class="sound-preview-name">Burn</span>
-                <span class="sound-preview-desc">200→100Hz sweep (sawtooth, descending)</span>
-                <button class="sound-preview-btn" onclick="playSound('burn')">▶</button>
-            </div>
-            <div class="sound-preview">
-                <span class="sound-preview-name">Stake</span>
-                <span class="sound-preview-desc">400→800Hz sweep (triangle, ascending)</span>
-                <button class="sound-preview-btn" onclick="playSound('stake')">▶</button>
-            </div>
-            <div class="sound-preview">
-                <span class="sound-preview-name">Unstake</span>
-                <span class="sound-preview-desc">800→400Hz sweep (triangle, descending)</span>
-                <button class="sound-preview-btn" onclick="playSound('unstake')">▶</button>
-            </div>
+      <div style="margin-top: var(--space-lg)">
+        <div class="sound-preview">
+          <span class="sound-preview-name">Burn</span>
+          <span class="sound-preview-desc">200→100Hz sweep (sawtooth, descending)</span>
+          <button class="sound-preview-btn" onclick="playSound('burn')">▶</button>
         </div>
+        <div class="sound-preview">
+          <span class="sound-preview-name">Stake</span>
+          <span class="sound-preview-desc">400→800Hz sweep (triangle, ascending)</span>
+          <button class="sound-preview-btn" onclick="playSound('stake')">▶</button>
+        </div>
+        <div class="sound-preview">
+          <span class="sound-preview-name">Unstake</span>
+          <span class="sound-preview-desc">800→400Hz sweep (triangle, descending)</span>
+          <button class="sound-preview-btn" onclick="playSound('unstake')">▶</button>
+        </div>
+      </div>
     </section>
 
     <!-- Special Sounds -->
     <section class="demo-section">
-        <h2>4. Special Effects <span class="warning-badge">Optional</span></h2>
-        <p>Additional sounds for notifications and transitions.</p>
+      <h2>4. Special Effects <span class="warning-badge">Optional</span></h2>
+      <p>Additional sounds for notifications and transitions.</p>
 
-        <div class="demo-grid">
-            <button class="demo-button" onclick="playSound('notification')">🔔 Notification</button>
-            <button class="demo-button" onclick="playSound('whoosh')">💨 Whoosh</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" onclick="playSound('notification')">🔔 Notification</button>
+        <button class="demo-button" onclick="playSound('whoosh')">💨 Whoosh</button>
+      </div>
 
-        <div style="margin-top: var(--space-lg);">
-            <div class="sound-preview">
-                <span class="sound-preview-name">Notification</span>
-                <span class="sound-preview-desc">659-784Hz (E-G interval)</span>
-                <button class="sound-preview-btn" onclick="playSound('notification')">▶</button>
-            </div>
-            <div class="sound-preview">
-                <span class="sound-preview-name">Whoosh</span>
-                <span class="sound-preview-desc">1200→400Hz sweep (fast transition)</span>
-                <button class="sound-preview-btn" onclick="playSound('whoosh')">▶</button>
-            </div>
+      <div style="margin-top: var(--space-lg)">
+        <div class="sound-preview">
+          <span class="sound-preview-name">Notification</span>
+          <span class="sound-preview-desc">659-784Hz (E-G interval)</span>
+          <button class="sound-preview-btn" onclick="playSound('notification')">▶</button>
         </div>
+        <div class="sound-preview">
+          <span class="sound-preview-name">Whoosh</span>
+          <span class="sound-preview-desc">1200→400Hz sweep (fast transition)</span>
+          <button class="sound-preview-btn" onclick="playSound('whoosh')">▶</button>
+        </div>
+      </div>
     </section>
 
     <!-- Technical Info -->
     <section class="demo-section">
-        <h2>Technical Details</h2>
-        <ul style="color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed);">
-            <li><strong>Web Audio API</strong> — Synthesized sounds, no audio files required</li>
-            <li><strong>Zero dependencies</strong> — Pure JavaScript, no external libraries</li>
-            <li><strong>File size</strong> — ~8KB minified (sound-system.js)</li>
-            <li><strong>Browser support</strong> — All modern browsers (Chrome, Firefox, Safari, Edge)</li>
-            <li><strong>Settings persistence</strong> — localStorage (enabled/volume)</li>
-            <li><strong>Default state</strong> — Disabled (user opt-in required)</li>
-            <li><strong>Auto-integration</strong> — Attaches to buttons/links automatically when enabled</li>
-            <li><strong>Performance</strong> — Negligible CPU usage, sounds < 500ms each</li>
-        </ul>
+      <h2>Technical Details</h2>
+      <ul
+        style="
+          color: var(--color-text-secondary);
+          font-size: var(--text-sm);
+          line-height: var(--leading-relaxed);
+        "
+      >
+        <li><strong>Web Audio API</strong> — Synthesized sounds, no audio files required</li>
+        <li><strong>Zero dependencies</strong> — Pure JavaScript, no external libraries</li>
+        <li><strong>File size</strong> — ~8KB minified (sound-system.js)</li>
+        <li>
+          <strong>Browser support</strong> — All modern browsers (Chrome, Firefox, Safari, Edge)
+        </li>
+        <li><strong>Settings persistence</strong> — localStorage (enabled/volume)</li>
+        <li><strong>Default state</strong> — Disabled (user opt-in required)</li>
+        <li>
+          <strong>Auto-integration</strong> — Attaches to buttons/links automatically when enabled
+        </li>
+        <li><strong>Performance</strong> — Negligible CPU usage, sounds < 500ms each</li>
+      </ul>
     </section>
 
     <script type="module">
-        import { soundSystem, initSounds, createSoundSettingsUI } from './js/utils/sound-system.js';
+      import { soundSystem, initSounds, createSoundSettingsUI } from './js/utils/sound-system.js';
 
-        // Create settings UI
-        createSoundSettingsUI(document.getElementById('settingsContainer'));
+      // Create settings UI
+      createSoundSettingsUI(document.getElementById('settingsContainer'));
 
-        // Initialize auto-sounds (click on all buttons)
-        initSounds({
-            attachClick: true,
-            attachHover: false, // Disabled by default (can be annoying)
-        });
+      // Initialize auto-sounds (click on all buttons)
+      initSounds({
+        attachClick: true,
+        attachHover: false, // Disabled by default (can be annoying)
+      });
 
-        // Manual sound trigger
-        window.playSound = (type) => {
-            soundSystem.play(type);
-        };
+      // Manual sound trigger
+      window.playSound = type => {
+        soundSystem.play(type);
+      };
 
-        console.log('🔊 Sound System Demo loaded');
-        console.log('Current settings:', soundSystem.getSettings());
+      console.log('🔊 Sound System Demo loaded');
+      console.log('Current settings:', soundSystem.getSettings());
     </script>
-
-</body>
+  </body>
 </html>

@@ -11,20 +11,8 @@ import { MODAL_TYPES, EVENTS, SELECTORS } from '../config.js';
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
 import { GitHubApiService } from '../services/github-api.js';
-import {
-  safeInnerHTML,
-  sanitizeText,
-  sanitizeUrl,
-} from '../utils/security.js';
-import {
-  $,
-  $$,
-  byId,
-  addClass,
-  removeClass,
-  on,
-  createElement,
-} from '../utils/dom.js';
+import { safeInnerHTML, sanitizeText, sanitizeUrl } from '../utils/security.js';
+import { $, $$, byId, addClass, removeClass, on, createElement } from '../utils/dom.js';
 
 // ============================================
 // MODAL STATE
@@ -528,7 +516,6 @@ const ModalFactory = {
         this.close(modalStack[modalStack.length - 1]);
       }
     });
-
   },
 
   /**

@@ -18,40 +18,40 @@ const ISLAND_CONFIG = {
     radiusBottom: 1.5,
     height: 2,
     radialSegments: 8,
-    heightSegments: 3
+    heightSegments: 3,
   },
   // Crystal on top
   crystal: {
     radius: 0.4,
     height: 1.2,
-    segments: 6
+    segments: 6,
   },
   // Floating debris
   debris: {
     count: 4,
     minSize: 0.2,
     maxSize: 0.5,
-    orbitRadius: 3
+    orbitRadius: 3,
   },
   // Status colors
   statusColors: {
     live: 0x00ff88,
     building: 0xffaa00,
     planned: 0x8855cc,
-    default: 0x666688
+    default: 0x666688,
   },
   // Stone colors
   stoneColors: {
     base: 0x4a4a5a,
     highlight: 0x6a6a7a,
-    moss: 0x3d5a3d
+    moss: 0x3d5a3d,
   },
   // Animation
   animation: {
     floatAmplitude: 0.3,
     floatSpeed: 1.0,
-    rotationSpeed: 0.2
-  }
+    rotationSpeed: 0.2,
+  },
 };
 
 // ============================================
@@ -76,7 +76,7 @@ class StoneIsland {
     this.group.userData = {
       type: 'island',
       projectId: project.id,
-      project: project
+      project: project,
     };
 
     // References
@@ -145,7 +145,7 @@ class StoneIsland {
     const material = new THREE.MeshPhongMaterial({
       color: stoneColors.base,
       flatShading: true,
-      shininess: 10
+      shininess: 10,
     });
 
     // Add vertex color variation
@@ -202,7 +202,7 @@ class StoneIsland {
       emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.9,
-      shininess: 100
+      shininess: 100,
     });
 
     this.crystalMesh = new THREE.Mesh(geometry, material);
@@ -228,7 +228,7 @@ class StoneIsland {
       color: this.statusColor,
       transparent: true,
       opacity: 0.3,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
 
     this.glowMesh = new THREE.Sprite(spriteMaterial);
@@ -248,7 +248,7 @@ class StoneIsland {
     const geometry = new THREE.TetrahedronGeometry(1, 0);
     const material = new THREE.MeshPhongMaterial({
       color: stoneColors.highlight,
-      flatShading: true
+      flatShading: true,
     });
 
     for (let i = 0; i < debris.count; i++) {
@@ -260,7 +260,7 @@ class StoneIsland {
         orbitAngle: (i / debris.count) * Math.PI * 2,
         orbitRadius: debris.orbitRadius + Math.random(),
         orbitSpeed: 0.3 + Math.random() * 0.2,
-        floatOffset: Math.random() * Math.PI * 2
+        floatOffset: Math.random() * Math.PI * 2,
       };
 
       this.debrisMeshes.push(mesh);
@@ -296,7 +296,7 @@ class StoneIsland {
     }
 
     // Debris orbit
-    this.debrisMeshes.forEach((mesh) => {
+    this.debrisMeshes.forEach(mesh => {
       const data = mesh.userData;
       data.orbitAngle += deltaTime * data.orbitSpeed;
 
@@ -437,7 +437,7 @@ const StoneIslandFactory = {
     const island = new StoneIsland(THREE, project);
     island.init(position);
     return island;
-  }
+  },
 };
 
 // ============================================

@@ -452,7 +452,7 @@ export const SkillNodes = {
         }
 
         // Fade in rings
-        this.rings.forEach((ring) => {
+        this.rings.forEach(ring => {
           const t = Math.max(0, Math.min(1, this.animationProgress - 0.2));
           if (ring.material) {
             ring.material.opacity = t * (ring.material.userData?.baseOpacity || 0.3);

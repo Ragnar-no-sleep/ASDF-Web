@@ -322,7 +322,6 @@ const Hub = {
   isViewActive(view) {
     return this.currentView === view;
   },
-
 };
 
 // ============================================

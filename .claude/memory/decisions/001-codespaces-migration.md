@@ -11,6 +11,7 @@ L'environnement de développement local Windows présente des instabilités. Le 
 ## Decision
 
 Migrer vers GitHub Codespaces avec:
+
 - DevContainer portable (Dockerfile)
 - Git Flow (main/develop/feature)
 - PR-based workflow avec Claude review
@@ -20,12 +21,14 @@ Migrer vers GitHub Codespaces avec:
 ## Consequences
 
 ### Positives
+
 - Environnement reproductible
 - CI/CD intégré
 - Collaboration facilitée
 - Workflow standardisé
 
 ### Negatives
+
 - Dépendance à GitHub
 - Coût Codespaces (gratuit limité)
 - Latence réseau possible
@@ -36,4 +39,4 @@ Migrer vers GitHub Codespaces avec:
 - **Burn**: Config minimale, pas de bloat
 - **Hold**: Déploiement stable via CI
 
-*This is fine.* 🐕‍🦺🔥
+_This is fine._ 🐕‍🦺🔥

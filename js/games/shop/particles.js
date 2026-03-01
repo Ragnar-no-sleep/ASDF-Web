@@ -191,8 +191,7 @@ const ShopParticles = {
     }
 
     // Calculate velocity
-    let vx,
-      vy;
+    let vx, vy;
     switch (config.direction) {
       case 'up':
         vx = (Math.random() - 0.5) * config.spread * 2;

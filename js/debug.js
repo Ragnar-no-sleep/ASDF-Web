@@ -16,9 +16,11 @@
 
 const isDebugEnabled = () => {
   try {
-    return localStorage.getItem('DEBUG') === 'true' ||
-           window.location.hostname === 'localhost' ||
-           window.location.hostname === '127.0.0.1';
+    return (
+      localStorage.getItem('DEBUG') === 'true' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    );
   } catch {
     return false;
   }

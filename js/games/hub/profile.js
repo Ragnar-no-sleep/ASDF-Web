@@ -185,9 +185,10 @@ const Profile = {
   loadFromLocalStorage() {
     try {
       // Load wallet: prefer appState (games context), fall back to localStorage
-      const wallet = (typeof appState !== 'undefined' && appState.wallet)
-        ? appState.wallet
-        : localStorage.getItem('connectedWallet');
+      const wallet =
+        typeof appState !== 'undefined' && appState.wallet
+          ? appState.wallet
+          : localStorage.getItem('connectedWallet');
       if (wallet && isValidWallet(wallet)) {
         this.data.wallet = wallet;
         this.data.walletShort = wallet.slice(0, 4) + '...' + wallet.slice(-4);

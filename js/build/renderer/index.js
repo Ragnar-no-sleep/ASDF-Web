@@ -142,7 +142,6 @@ const RendererFactory = {
     // Check WebGL support
     this.capabilities.webgl = this.detectWebGL(1);
     this.capabilities.webgl2 = this.detectWebGL(2);
-
   },
 
   /**

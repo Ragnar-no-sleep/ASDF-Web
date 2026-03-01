@@ -72,7 +72,6 @@ const FeatureTooltip = {
 
     // Subscribe to events
     this.bindEvents();
-
   },
 
   /**

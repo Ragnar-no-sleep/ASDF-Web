@@ -164,4 +164,3 @@ if (typeof window !== 'undefined') {
   window.ASDF.phiScale = phiScale;
   window.phiScale = window.ASDF.phiScale;
 }
-

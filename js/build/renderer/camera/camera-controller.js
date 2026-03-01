@@ -21,7 +21,7 @@ const CAMERA_STATES = {
     orbitEnabled: true,
     autoRotate: true,
     minDistance: 40,
-    maxDistance: 120
+    maxDistance: 120,
   },
   // L1: Project Tree view - zoomed on single project with skill nodes
   PROJECT_TREE: {
@@ -31,7 +31,7 @@ const CAMERA_STATES = {
     orbitEnabled: true,
     autoRotate: false,
     minDistance: 15,
-    maxDistance: 50
+    maxDistance: 50,
   },
   // L2: Skill focus view - zoomed on single skill node
   SKILL_FOCUS: {
@@ -41,8 +41,8 @@ const CAMERA_STATES = {
     orbitEnabled: false,
     autoRotate: false,
     minDistance: 8,
-    maxDistance: 20
-  }
+    maxDistance: 20,
+  },
 };
 
 // ============================================
@@ -54,7 +54,7 @@ const CAMERA_CONFIG = {
   defaults: {
     position: { x: 0, y: 15, z: 70 },
     target: { x: 0, y: 10, z: 0 },
-    fov: 60
+    fov: 60,
   },
   // Orbit controls
   orbit: {
@@ -67,21 +67,21 @@ const CAMERA_CONFIG = {
     minDistance: 20,
     maxDistance: 100,
     minPolarAngle: Math.PI * 0.1,
-    maxPolarAngle: Math.PI * 0.7
+    maxPolarAngle: Math.PI * 0.7,
   },
   // Zoom to node
   zoom: {
     distance: 15,
     duration: 1000,
-    easing: 'easeInOutCubic'
+    easing: 'easeInOutCubic',
   },
   // Pan limits
   pan: {
     enabled: true,
     maxX: 50,
     maxY: 30,
-    maxZ: 50
-  }
+    maxZ: 50,
+  },
 };
 
 // ============================================
@@ -92,11 +92,11 @@ const Easing = {
   linear: t => t,
   easeInQuad: t => t * t,
   easeOutQuad: t => t * (2 - t),
-  easeInOutQuad: t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+  easeInOutQuad: t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
   easeInCubic: t => t * t * t,
-  easeOutCubic: t => (--t) * t * t + 1,
-  easeInOutCubic: t => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
-  easeOutExpo: t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
+  easeOutCubic: t => --t * t * t + 1,
+  easeInOutCubic: t => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+  easeOutExpo: t => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
 };
 
 // ============================================
@@ -177,7 +177,9 @@ class CameraController {
     this.domElement.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
 
     // Touch events for mobile
-    this.domElement.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+    this.domElement.addEventListener('touchstart', this.onTouchStart.bind(this), {
+      passive: false,
+    });
     this.domElement.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
     this.domElement.addEventListener('touchend', this.onTouchEnd.bind(this));
   }
@@ -197,8 +199,14 @@ class CameraController {
     const { orbit } = this.options;
 
     // Clamp values
-    this.spherical.radius = Math.max(orbit.minDistance, Math.min(orbit.maxDistance, this.spherical.radius));
-    this.spherical.phi = Math.max(orbit.minPolarAngle, Math.min(orbit.maxPolarAngle, this.spherical.phi));
+    this.spherical.radius = Math.max(
+      orbit.minDistance,
+      Math.min(orbit.maxDistance, this.spherical.radius)
+    );
+    this.spherical.phi = Math.max(
+      orbit.minPolarAngle,
+      Math.min(orbit.maxPolarAngle, this.spherical.phi)
+    );
 
     // Apply to camera
     const offset = new this.THREE.Vector3().setFromSpherical(this.spherical);
@@ -409,7 +417,7 @@ class CameraController {
       this.stateHistory.push({
         state: this.currentState,
         position: this.camera.position.clone(),
-        target: this.target.clone()
+        target: this.target.clone(),
       });
     }
 
@@ -544,8 +552,8 @@ class CameraController {
       this.spherical.theta += this.sphericalDelta.theta;
       this.spherical.phi += this.sphericalDelta.phi;
 
-      this.sphericalDelta.theta *= (1 - dampingFactor);
-      this.sphericalDelta.phi *= (1 - dampingFactor);
+      this.sphericalDelta.theta *= 1 - dampingFactor;
+      this.sphericalDelta.phi *= 1 - dampingFactor;
 
       this.applySpherical();
     }

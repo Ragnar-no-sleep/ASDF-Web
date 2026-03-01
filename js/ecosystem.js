@@ -407,7 +407,8 @@
           const doc = iframe.contentDocument;
           if (!doc) return;
           const theme = getGlobalTheme();
-          const resolved = theme === 'auto' ? (PAGE_TOOLS[key] || {}).defaultTheme || 'ember' : theme;
+          const resolved =
+            theme === 'auto' ? (PAGE_TOOLS[key] || {}).defaultTheme || 'ember' : theme;
           doc.documentElement.setAttribute('data-theme', resolved);
           const iframeDrawer = doc.querySelector('.eco-drawer');
           if (iframeDrawer) iframeDrawer.style.display = 'none';

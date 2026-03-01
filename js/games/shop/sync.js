@@ -412,7 +412,6 @@ const ShopSync = {
       state.lastSync = Date.now();
       state.saveToLocal();
       state.emit('sync-complete');
-
     } catch (error) {
       console.error('[ShopSync] Sync failed:', error);
       state.setError(error.message);

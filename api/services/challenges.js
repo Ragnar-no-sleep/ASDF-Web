@@ -27,20 +27,20 @@ const FIB = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987];
 // ============================================
 
 const CHALLENGE_TYPES = {
-  SCORE: 'score',           // Reach a score in a specific game
+  SCORE: 'score', // Reach a score in a specific game
   GAMES_PLAYED: 'games_played', // Play X games
-  TOTAL_SCORE: 'total_score',   // Accumulate X total score
-  STREAK: 'streak',         // Play X days in a row
-  PERFECT: 'perfect',       // Complete X perfect rounds
+  TOTAL_SCORE: 'total_score', // Accumulate X total score
+  STREAK: 'streak', // Play X days in a row
+  PERFECT: 'perfect', // Complete X perfect rounds
   HIGH_SCORE: 'high_score', // Beat your high score
-  BURN: 'burn'              // Burn X tokens
+  BURN: 'burn', // Burn X tokens
 };
 
 const DIFFICULTY = {
   EASY: 'easy',
   MEDIUM: 'medium',
   HARD: 'hard',
-  LEGENDARY: 'legendary'
+  LEGENDARY: 'legendary',
 };
 
 // Challenge templates - rotated daily
@@ -53,7 +53,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 100,
     coinsReward: 20,
     name: 'Warm Up',
-    description: 'Play 3 games today'
+    description: 'Play 3 games today',
   },
   {
     type: CHALLENGE_TYPES.SCORE,
@@ -62,7 +62,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 150,
     coinsReward: 30,
     name: 'Score Seeker',
-    description: 'Score 500 points in any game'
+    description: 'Score 500 points in any game',
   },
   {
     type: CHALLENGE_TYPES.TOTAL_SCORE,
@@ -71,7 +71,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 200,
     coinsReward: 40,
     name: 'Point Collector',
-    description: 'Accumulate 1000 total points today'
+    description: 'Accumulate 1000 total points today',
   },
 
   // Medium challenges
@@ -82,7 +82,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 250,
     coinsReward: 50,
     name: 'Dedicated Player',
-    description: 'Play 5 games today'
+    description: 'Play 5 games today',
   },
   {
     type: CHALLENGE_TYPES.SCORE,
@@ -91,7 +91,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 300,
     coinsReward: 60,
     name: 'Score Hunter',
-    description: 'Score 1000 points in a single game'
+    description: 'Score 1000 points in a single game',
   },
   {
     type: CHALLENGE_TYPES.TOTAL_SCORE,
@@ -100,7 +100,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 350,
     coinsReward: 70,
     name: 'Score Stacker',
-    description: 'Accumulate 3000 total points today'
+    description: 'Accumulate 3000 total points today',
   },
   {
     type: CHALLENGE_TYPES.HIGH_SCORE,
@@ -109,7 +109,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 400,
     coinsReward: 80,
     name: 'Personal Best',
-    description: 'Beat your high score in any game'
+    description: 'Beat your high score in any game',
   },
 
   // Hard challenges
@@ -120,7 +120,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 500,
     coinsReward: 100,
     name: 'Marathon Runner',
-    description: 'Play 8 games today'
+    description: 'Play 8 games today',
   },
   {
     type: CHALLENGE_TYPES.SCORE,
@@ -129,7 +129,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 600,
     coinsReward: 120,
     name: 'Score Master',
-    description: 'Score 2000 points in a single game'
+    description: 'Score 2000 points in a single game',
   },
   {
     type: CHALLENGE_TYPES.PERFECT,
@@ -138,7 +138,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 750,
     coinsReward: 150,
     name: 'Flawless',
-    description: 'Complete a perfect round (no mistakes)'
+    description: 'Complete a perfect round (no mistakes)',
   },
 
   // Legendary challenges
@@ -149,7 +149,7 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 1000,
     coinsReward: 200,
     name: 'Score Legend',
-    description: 'Score 5000 points in a single game'
+    description: 'Score 5000 points in a single game',
   },
   {
     type: CHALLENGE_TYPES.TOTAL_SCORE,
@@ -158,8 +158,8 @@ const CHALLENGE_TEMPLATES = [
     xpReward: 1500,
     coinsReward: 300,
     name: 'Point Emperor',
-    description: 'Accumulate 10000 total points today'
-  }
+    description: 'Accumulate 10000 total points today',
+  },
 ];
 
 // ============================================
@@ -201,7 +201,7 @@ function getChallengeExpiration(date) {
 function generateDailyChallenges(date) {
   // Use date as seed for consistent daily challenges
   const seed = date.split('-').reduce((acc, n) => acc + parseInt(n), 0);
-  const seededRandom = (max) => {
+  const seededRandom = max => {
     const x = Math.sin(seed * max) * 10000;
     return Math.floor((x - Math.floor(x)) * max);
   };
@@ -209,14 +209,14 @@ function generateDailyChallenges(date) {
   // Select 3 challenges: 1 easy, 1 medium, 1 hard/legendary
   const easy = CHALLENGE_TEMPLATES.filter(c => c.difficulty === DIFFICULTY.EASY);
   const medium = CHALLENGE_TEMPLATES.filter(c => c.difficulty === DIFFICULTY.MEDIUM);
-  const hardLegendary = CHALLENGE_TEMPLATES.filter(c =>
-    c.difficulty === DIFFICULTY.HARD || c.difficulty === DIFFICULTY.LEGENDARY
+  const hardLegendary = CHALLENGE_TEMPLATES.filter(
+    c => c.difficulty === DIFFICULTY.HARD || c.difficulty === DIFFICULTY.LEGENDARY
   );
 
   const challenges = [
     { ...easy[seededRandom(easy.length)], id: `${date}_easy` },
     { ...medium[seededRandom(medium.length)], id: `${date}_medium` },
-    { ...hardLegendary[seededRandom(hardLegendary.length)], id: `${date}_hard` }
+    { ...hardLegendary[seededRandom(hardLegendary.length)], id: `${date}_hard` },
   ];
 
   // Add expiration
@@ -267,7 +267,7 @@ function getUserProgress(wallet) {
       gamesPlayed: 0,
       totalScore: 0,
       highScoresBeaten: 0,
-      perfectRounds: 0
+      perfectRounds: 0,
     };
     userProgress.set(wallet, progress);
   }
@@ -294,7 +294,7 @@ function getActiveChallenges(wallet) {
       ...challenge,
       progress: challengeProgress.current,
       completed: challengeProgress.completed,
-      claimed: claimed.has(challenge.id)
+      claimed: claimed.has(challenge.id),
     };
   });
 }
@@ -357,7 +357,7 @@ function updateProgress(wallet, gameResult) {
         id: challenge.id,
         name: challenge.name,
         xpReward: challenge.xpReward,
-        coinsReward: challenge.coinsReward
+        coinsReward: challenge.coinsReward,
       });
     }
   });
@@ -402,8 +402,8 @@ function claimReward(wallet, challengeId) {
     coinsAwarded: challenge.coinsReward,
     challenge: {
       id: challenge.id,
-      name: challenge.name
-    }
+      name: challenge.name,
+    },
   };
 }
 
@@ -430,7 +430,7 @@ function getChallengeStats() {
   return {
     activeChallenges: getTodayChallenges().length,
     totalCompletedToday: totalCompleted,
-    totalClaimedAllTime: totalClaimed
+    totalClaimedAllTime: totalClaimed,
   };
 }
 
@@ -451,5 +451,5 @@ module.exports = {
 
   // Helpers (for testing)
   getTodayDate,
-  generateDailyChallenges
+  generateDailyChallenges,
 };

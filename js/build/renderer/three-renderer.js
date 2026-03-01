@@ -1081,7 +1081,6 @@ const ThreeRenderer = {
     isPaused = false;
     hoveredIsland = null;
     selectedIsland = null;
-
   },
 };
 

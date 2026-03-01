@@ -1,365 +1,405 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#000">
-<head>
-    <style>html,body{background:#000!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
+<!doctype html>
+<html lang="en" style="background: #000">
+  <head>
+    <style>
+      html,
+      body {
+        background: #000 !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="view-transition" content="same-origin" />
     <title>ASDF Burns - Hall of Flames | Burn Analytics</title>
-    <meta name="description" content="Track ASDF token burns in real-time. View burn analytics, leaderboard, and supply reduction metrics.">
+    <meta
+      name="description"
+      content="Track ASDF token burns in real-time. View burn analytics, leaderboard, and supply reduction metrics."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="ASDF Burns - Hall of Flames">
-    <meta property="og:description" content="Track ASDF token burns in real-time. View burn analytics and leaderboard.">
-    <meta property="og:image" content="https://alonisthe.dev/og-burns.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ASDF Burns - Hall of Flames">
-    <meta name="twitter:description" content="Track ASDF token burns in real-time. View burn analytics and leaderboard.">
+    <meta property="og:title" content="ASDF Burns - Hall of Flames" />
+    <meta
+      property="og:description"
+      content="Track ASDF token burns in real-time. View burn analytics and leaderboard."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-burns.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ASDF Burns - Hall of Flames" />
+    <meta
+      name="twitter:description"
+      content="Track ASDF token burns in real-time. View burn analytics and leaderboard."
+    />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server-side Helmet -->
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
-    <link rel="stylesheet" href="css/burns.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/ecosystem.css" />
+    <link rel="stylesheet" href="css/burns.css" />
 
     <!-- Theme anti-flash (external for CSP compliance) -->
     <script src="/js/anti-flash.js"></script>
-    <link rel="stylesheet" href="css/runtime-components.css">
-</head>
-<body class="eco-page">
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body class="eco-page">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Animated Background - Ember Theme -->
     <div class="cosmic-bg" aria-hidden="true">
-        <!-- Glow circles -->
-        <div class="glow-circle"></div>
-        <div class="glow-circle"></div>
-        <div class="glow-circle"></div>
+      <!-- Glow circles -->
+      <div class="glow-circle"></div>
+      <div class="glow-circle"></div>
+      <div class="glow-circle"></div>
 
-        <!-- Rising embers -->
-        <div class="embers">
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-            <div class="ember"></div>
-        </div>
+      <!-- Rising embers -->
+      <div class="embers">
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+        <div class="ember"></div>
+      </div>
 
-        <!-- Smoke wisps -->
-        <div class="smoke"></div>
-        <div class="smoke"></div>
-        <div class="smoke"></div>
-        <div class="smoke"></div>
-        <div class="smoke"></div>
+      <!-- Smoke wisps -->
+      <div class="smoke"></div>
+      <div class="smoke"></div>
+      <div class="smoke"></div>
+      <div class="smoke"></div>
+      <div class="smoke"></div>
 
-        <!-- Sparks -->
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
-        <div class="spark"></div>
+      <!-- Sparks -->
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
 
-        <!-- Flames at bottom -->
-        <div class="flames">
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-            <div class="flame"></div>
-        </div>
+      <!-- Flames at bottom -->
+      <div class="flames">
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+        <div class="flame"></div>
+      </div>
 
-        <div class="heat-haze"></div>
+      <div class="heat-haze"></div>
 
-        <!-- Floating ash -->
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
-        <div class="ash"></div>
+      <!-- Floating ash -->
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
+      <div class="ash"></div>
     </div>
 
     <!-- Ecosystem Navigation -->
     <nav class="eco-nav eco-nav--burns">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link active">Burns</a>
-            <a href="/forecast" class="eco-nav-link">Forecast</a>
-            <a href="/holdex" class="eco-nav-link">HolDex</a>
-            <a href="/staking" class="eco-nav-link">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
+      <a href="/" class="eco-nav-logo">
+        <div class="eco-nav-logo-mark">A</div>
+        <span>ASDF Tools</span>
+      </a>
+      <div class="eco-nav-links">
+        <div class="eco-nav-pill"></div>
+        <a href="/burns" class="eco-nav-link active">Burns</a>
+        <a href="/forecast" class="eco-nav-link">Forecast</a>
+        <a href="/holdex" class="eco-nav-link">HolDex</a>
+        <a href="/staking" class="eco-nav-link">Staking</a>
+        <a href="/ignition" class="eco-nav-link">Ignition</a>
+      </div>
+      <div class="eco-nav-right">
+        <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+      </div>
     </nav>
 
     <!-- Style Drawer Button -->
     <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
+      <span class="eco-style-icon">&#127912;</span>
     </button>
 
     <!-- Theme Drawer -->
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
+      <div class="eco-drawer-header">
+        <span class="eco-drawer-title">ASDF Tools</span>
+        <button class="eco-drawer-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="eco-drawer-body">
+        <!-- Dynamically populated by ecosystem.js -->
+      </div>
     </aside>
 
     <!-- Hero Section -->
     <main id="main-content">
-    <section class="burns-hero">
+      <section class="burns-hero">
         <div class="hero-content">
-            <div class="hero-badge">
-                <span class="hero-badge-dot"></span>
-                <span>Live Burn Analytics</span>
-            </div>
-            <h1 class="hero-title">
-                Hall of <span class="hero-title-accent">Flames</span>
-            </h1>
-            <p class="hero-subtitle">
-                Watch tokens return to the void. Supply reduction in real-time.
-            </p>
-            <p class="hero-description density-detailed">
-                Every burn permanently removes ASDF tokens from circulation, reducing total supply.
-                Burns are verified on-chain via Solana. No trust needed &mdash; verify everything.
-            </p>
-            <p class="hero-description density-full">
-                The burn mechanism is the core deflationary force behind ASDF. Each transaction
-                sends tokens to a dead address &mdash; irreversible, immutable, provable.
-                Track every flame in real-time below.
-            </p>
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            <span>Live Burn Analytics</span>
+          </div>
+          <h1 class="hero-title">Hall of <span class="hero-title-accent">Flames</span></h1>
+          <p class="hero-subtitle">
+            Watch tokens return to the void. Supply reduction in real-time.
+          </p>
+          <p class="hero-description density-detailed">
+            Every burn permanently removes ASDF tokens from circulation, reducing total supply.
+            Burns are verified on-chain via Solana. No trust needed &mdash; verify everything.
+          </p>
+          <p class="hero-description density-full">
+            The burn mechanism is the core deflationary force behind ASDF. Each transaction sends
+            tokens to a dead address &mdash; irreversible, immutable, provable. Track every flame in
+            real-time below.
+          </p>
         </div>
-    </section>
+      </section>
 
-    <!-- Mega Stat -->
-    <section class="mega-stat">
+      <!-- Mega Stat -->
+      <section class="mega-stat">
         <div class="container">
-            <div class="mega-stat-inner">
-                <div class="mega-stat-label">Total Tokens Burned</div>
-                <div class="mega-stat-value" id="total-burned">
-                    <span class="counter-number">0</span>
-                    <span class="mega-stat-suffix">ASDF</span>
-                </div>
-                <div class="mega-stat-subtext">Permanently removed from circulation</div>
-                <div class="burn-progress">
-                    <div class="burn-progress-bar">
-                        <div class="burn-progress-fill" id="burn-progress" style="width: 0%"></div>
-                    </div>
-                    <div class="burn-progress-labels">
-                        <span>0%</span>
-                        <span id="burn-percentage">0%</span>
-                        <span>100%</span>
-                    </div>
-                </div>
+          <div class="mega-stat-inner">
+            <div class="mega-stat-label">Total Tokens Burned</div>
+            <div class="mega-stat-value" id="total-burned">
+              <span class="counter-number">0</span>
+              <span class="mega-stat-suffix">ASDF</span>
             </div>
+            <div class="mega-stat-subtext">Permanently removed from circulation</div>
+            <div class="burn-progress">
+              <div class="burn-progress-bar">
+                <div class="burn-progress-fill" id="burn-progress" style="width: 0%"></div>
+              </div>
+              <div class="burn-progress-labels">
+                <span>0%</span>
+                <span id="burn-percentage">0%</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Stats Grid -->
-    <section class="stats-section">
+      <!-- Stats Grid -->
+      <section class="stats-section">
         <div class="container">
-            <div class="density-context density-detailed">
-                <strong>How burning works:</strong> Anyone can send ASDF tokens to the burn address.
-                Once burned, tokens are permanently removed from the total supply. Each burn
-                is recorded on Solana and reflected here in real-time.
+          <div class="density-context density-detailed">
+            <strong>How burning works:</strong> Anyone can send ASDF tokens to the burn address.
+            Once burned, tokens are permanently removed from the total supply. Each burn is recorded
+            on Solana and reflected here in real-time.
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">*</div>
+              <div class="stat-value" id="burns-today">0</div>
+              <div class="stat-label">Burned Today</div>
+              <div class="stat-desc density-detailed">Tokens burned in the last 24h</div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">*</div>
-                    <div class="stat-value" id="burns-today">0</div>
-                    <div class="stat-label">Burned Today</div>
-                    <div class="stat-desc density-detailed">Tokens burned in the last 24h</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">@</div>
-                    <div class="stat-value" id="total-burners">0</div>
-                    <div class="stat-label">Unique Burners</div>
-                    <div class="stat-desc density-detailed">Distinct wallets that have burned</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">$</div>
-                    <div class="stat-value" id="remaining-supply">0</div>
-                    <div class="stat-label">Circulating Supply</div>
-                    <div class="stat-desc density-detailed">Tokens still in circulation</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">#</div>
-                    <div class="stat-value" id="biggest-burn">0</div>
-                    <div class="stat-label">Largest Burn</div>
-                    <div class="stat-desc density-detailed">Single largest burn transaction</div>
-                </div>
+            <div class="stat-card">
+              <div class="stat-icon">@</div>
+              <div class="stat-value" id="total-burners">0</div>
+              <div class="stat-label">Unique Burners</div>
+              <div class="stat-desc density-detailed">Distinct wallets that have burned</div>
             </div>
+            <div class="stat-card">
+              <div class="stat-icon">$</div>
+              <div class="stat-value" id="remaining-supply">0</div>
+              <div class="stat-label">Circulating Supply</div>
+              <div class="stat-desc density-detailed">Tokens still in circulation</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">#</div>
+              <div class="stat-value" id="biggest-burn">0</div>
+              <div class="stat-label">Largest Burn</div>
+              <div class="stat-desc density-detailed">Single largest burn transaction</div>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Burn Mechanics (density-detailed) -->
-    <section class="burns-faq density-detailed">
+      <!-- Burn Mechanics (density-detailed) -->
+      <section class="burns-faq density-detailed">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">How Burns Work</h2>
-                <p class="section-subtitle">The deflationary mechanics explained</p>
+          <div class="section-header">
+            <h2 class="section-title">How Burns Work</h2>
+            <p class="section-subtitle">The deflationary mechanics explained</p>
+          </div>
+          <div class="faq-grid">
+            <div class="faq-card">
+              <h3 class="faq-question">What is a token burn?</h3>
+              <p class="faq-answer">
+                Sending tokens to a dead wallet address that nobody controls. The tokens become
+                permanently inaccessible, reducing total supply forever.
+              </p>
             </div>
-            <div class="faq-grid">
-                <div class="faq-card">
-                    <h3 class="faq-question">What is a token burn?</h3>
-                    <p class="faq-answer">Sending tokens to a dead wallet address that nobody controls. The tokens become permanently inaccessible, reducing total supply forever.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">How is it verified?</h3>
-                    <p class="faq-answer">Every burn is a standard Solana transaction. You can verify any burn on Solscan by checking the destination address. Don&rsquo;t trust &mdash; verify.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">Why burn tokens?</h3>
-                    <p class="faq-answer">Fewer tokens in circulation means each remaining token represents a larger share of the total supply. Burns are the simplest deflationary mechanism.</p>
-                </div>
-                <div class="faq-card density-full">
-                    <h3 class="faq-question">Can burns be reversed?</h3>
-                    <p class="faq-answer">No. The burn address has no private key. Once tokens arrive there, they are gone permanently. This is by design &mdash; immutability is the point.</p>
-                </div>
+            <div class="faq-card">
+              <h3 class="faq-question">How is it verified?</h3>
+              <p class="faq-answer">
+                Every burn is a standard Solana transaction. You can verify any burn on Solscan by
+                checking the destination address. Don&rsquo;t trust &mdash; verify.
+              </p>
             </div>
+            <div class="faq-card">
+              <h3 class="faq-question">Why burn tokens?</h3>
+              <p class="faq-answer">
+                Fewer tokens in circulation means each remaining token represents a larger share of
+                the total supply. Burns are the simplest deflationary mechanism.
+              </p>
+            </div>
+            <div class="faq-card density-full">
+              <h3 class="faq-question">Can burns be reversed?</h3>
+              <p class="faq-answer">
+                No. The burn address has no private key. Once tokens arrive there, they are gone
+                permanently. This is by design &mdash; immutability is the point.
+              </p>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Leaderboard -->
-    <section class="leaderboard-section">
+      <!-- Leaderboard -->
+      <section class="leaderboard-section">
         <div class="container">
-            <div class="density-context density-detailed">
-                <strong>Leaderboard:</strong> Rankings are based on total tokens burned.
-                Filter by time period to see who's been most active. Top 3 get the podium.
+          <div class="density-context density-detailed">
+            <strong>Leaderboard:</strong> Rankings are based on total tokens burned. Filter by time
+            period to see who's been most active. Top 3 get the podium.
+          </div>
+          <div class="section-header">
+            <h2 class="section-title">Top Burners</h2>
+            <p class="section-subtitle">Wallets that sacrificed the most</p>
+            <div class="leaderboard-tabs">
+              <button class="tab-btn active" data-period="all">All Time</button>
+              <button class="tab-btn" data-period="cycle">This Cycle</button>
+              <button class="tab-btn" data-period="weekly">This Week</button>
             </div>
-            <div class="section-header">
-                <h2 class="section-title">Top Burners</h2>
-                <p class="section-subtitle">Wallets that sacrificed the most</p>
-                <div class="leaderboard-tabs">
-                    <button class="tab-btn active" data-period="all">All Time</button>
-                    <button class="tab-btn" data-period="cycle">This Cycle</button>
-                    <button class="tab-btn" data-period="weekly">This Week</button>
-                </div>
-            </div>
+          </div>
 
-            <!-- Podium -->
-            <div class="podium">
-                <div class="podium-place second" id="place-2">
-                    <div class="place-rank">2</div>
-                    <div class="place-wallet">---</div>
-                    <div class="place-amount">0 ASDF</div>
-                </div>
-                <div class="podium-place first" id="place-1">
-                    <div class="place-rank">1</div>
-                    <div class="place-wallet">---</div>
-                    <div class="place-amount">0 ASDF</div>
-                </div>
-                <div class="podium-place third" id="place-3">
-                    <div class="place-rank">3</div>
-                    <div class="place-wallet">---</div>
-                    <div class="place-amount">0 ASDF</div>
-                </div>
+          <!-- Podium -->
+          <div class="podium">
+            <div class="podium-place second" id="place-2">
+              <div class="place-rank">2</div>
+              <div class="place-wallet">---</div>
+              <div class="place-amount">0 ASDF</div>
             </div>
+            <div class="podium-place first" id="place-1">
+              <div class="place-rank">1</div>
+              <div class="place-wallet">---</div>
+              <div class="place-amount">0 ASDF</div>
+            </div>
+            <div class="podium-place third" id="place-3">
+              <div class="place-rank">3</div>
+              <div class="place-wallet">---</div>
+              <div class="place-amount">0 ASDF</div>
+            </div>
+          </div>
 
-            <!-- Table -->
-            <div class="leaderboard-table">
-                <div class="table-header">
-                    <span class="col-rank">Rank</span>
-                    <span class="col-wallet">Wallet</span>
-                    <span class="col-burned">Total Burned</span>
-                    <span class="col-count">Burns</span>
-                </div>
-                <div class="table-body" id="leaderboard-body">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
+          <!-- Table -->
+          <div class="leaderboard-table">
+            <div class="table-header">
+              <span class="col-rank">Rank</span>
+              <span class="col-wallet">Wallet</span>
+              <span class="col-burned">Total Burned</span>
+              <span class="col-count">Burns</span>
             </div>
+            <div class="table-body" id="leaderboard-body">
+              <div class="loading-skeleton">
+                <div class="skeleton-row"></div>
+                <div class="skeleton-row"></div>
+                <div class="skeleton-row"></div>
+                <div class="skeleton-row"></div>
+                <div class="skeleton-row"></div>
+              </div>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Live Feed -->
-    <section class="feed-section">
+      <!-- Live Feed -->
+      <section class="feed-section">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Recent Burns</h2>
-                <p class="section-subtitle">Real-time burn activity</p>
+          <div class="section-header">
+            <h2 class="section-title">Recent Burns</h2>
+            <p class="section-subtitle">Real-time burn activity</p>
+          </div>
+          <div
+            class="burns-feed"
+            id="burns-feed"
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-label="Recent burn transactions"
+          >
+            <div class="feed-empty">
+              <span>Waiting for burns...</span>
             </div>
-            <div class="burns-feed" id="burns-feed" role="log" aria-live="polite" aria-atomic="false" aria-label="Recent burn transactions">
-                <div class="feed-empty">
-                    <span>Waiting for burns...</span>
-                </div>
-            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- CTA -->
-    <section class="cta-section">
+      <!-- CTA -->
+      <section class="cta-section">
         <div class="container">
-            <div class="cta-inner">
-                <h2 class="cta-title">Join the Burn</h2>
-                <p class="cta-text">Sacrifice tokens. Reduce supply. Fuel the flywheel.</p>
-                <a href="/ignition" class="cta-btn">Enter Ignition</a>
-            </div>
+          <div class="cta-inner">
+            <h2 class="cta-title">Join the Burn</h2>
+            <p class="cta-text">Sacrifice tokens. Reduce supply. Fuel the flywheel.</p>
+            <a href="/ignition" class="cta-btn">Enter Ignition</a>
+          </div>
         </div>
-    </section>
-
+      </section>
     </main>
 
     <!-- Footer -->
     <footer class="burns-footer" role="contentinfo">
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-links">
-                    <a href="https://twitter.com/asikisFINE" target="_blank" rel="noopener">Twitter</a>
-                    <a href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump" target="_blank" rel="noopener">Solscan</a>
-                    <a href="https://github.com/zeyxx/asdf-burn-engine" target="_blank" rel="noopener">GitHub</a>
-                </div>
-                <p class="footer-text">Open source. Verifiable on-chain.</p>
-            </div>
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-links">
+            <a href="https://twitter.com/asikisFINE" target="_blank" rel="noopener">Twitter</a>
+            <a
+              href="https://solscan.io/token/9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump"
+              target="_blank"
+              rel="noopener"
+              >Solscan</a
+            >
+            <a href="https://github.com/zeyxx/asdf-burn-engine" target="_blank" rel="noopener"
+              >GitHub</a
+            >
+          </div>
+          <p class="footer-text">Open source. Verifiable on-chain.</p>
         </div>
+      </div>
     </footer>
 
     <script src="js/shared/security.js"></script>
     <script type="module" src="js/burns.js"></script>
     <script src="js/ecosystem.js" defer></script>
     <script src="js/consent/index.js"></script>
-</body>
+  </body>
 </html>

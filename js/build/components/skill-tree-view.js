@@ -8,11 +8,7 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import {
-  SKILL_CATEGORIES,
-  getProjectSkills,
-  getSkillPrerequisites,
-} from '../data/skills-data.js';
+import { SKILL_CATEGORIES, getProjectSkills, getSkillPrerequisites } from '../data/skills-data.js';
 import { calculateFermatSpiral, phiDelays } from '../utils/phi.js';
 
 // ============================================
@@ -85,7 +81,6 @@ const SkillTreeView = {
 
     // Bind events
     this.bindEvents();
-
   },
 
   /**

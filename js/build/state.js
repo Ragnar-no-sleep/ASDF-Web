@@ -375,7 +375,6 @@ const BuildState = {
         this.data.onboarding = this._managers.onboarding.getState();
       }
     }
-
   },
 
   /**

@@ -1,324 +1,355 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#000">
-<head>
-    <style>html,body{background:#000!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
+<!doctype html>
+<html lang="en" style="background: #000">
+  <head>
+    <style>
+      html,
+      body {
+        background: #000 !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="view-transition" content="same-origin" />
     <title>ASDForecast - Prediction Market | ASDF Ecosystem</title>
-    <meta name="description" content="The first prediction market on a Pump.fun coin. Predict SOL price movements. Earn rewards. Fuel the burn.">
+    <meta
+      name="description"
+      content="The first prediction market on a Pump.fun coin. Predict SOL price movements. Earn rewards. Fuel the burn."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="ASDForecast - Prediction Market">
-    <meta property="og:description" content="Predict SOL price movements. Earn rewards. Fees fuel the ASDF burn.">
-    <meta property="og:image" content="https://alonisthe.dev/og-forecast.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ASDForecast - Prediction Market">
-    <meta name="twitter:description" content="Predict SOL price movements. Earn rewards. Fees fuel the ASDF burn.">
+    <meta property="og:title" content="ASDForecast - Prediction Market" />
+    <meta
+      property="og:description"
+      content="Predict SOL price movements. Earn rewards. Fees fuel the ASDF burn."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-forecast.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ASDForecast - Prediction Market" />
+    <meta
+      name="twitter:description"
+      content="Predict SOL price movements. Earn rewards. Fees fuel the ASDF burn."
+    />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server-side Helmet -->
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
-    <link rel="stylesheet" href="css/forecast.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/ecosystem.css" />
+    <link rel="stylesheet" href="css/forecast.css" />
 
     <!-- Theme anti-flash (external for CSP compliance) -->
     <script src="/js/anti-flash.js"></script>
-    <link rel="stylesheet" href="css/runtime-components.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Animated Background - HACKER/MATRIX THEME -->
     <div class="cosmic-bg" aria-hidden="true">
-        <!-- Matrix rain -->
-        <div class="data-streams">
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-            <div class="data-column"></div>
-        </div>
+      <!-- Matrix rain -->
+      <div class="data-streams">
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+        <div class="data-column"></div>
+      </div>
 
-        <!-- Binary particles -->
-        <div class="binary-particle">1</div>
-        <div class="binary-particle">0</div>
-        <div class="binary-particle">1</div>
-        <div class="binary-particle">0</div>
-        <div class="binary-particle">1</div>
-        <div class="binary-particle">0</div>
-        <div class="binary-particle">1</div>
-        <div class="binary-particle">0</div>
+      <!-- Binary particles -->
+      <div class="binary-particle">1</div>
+      <div class="binary-particle">0</div>
+      <div class="binary-particle">1</div>
+      <div class="binary-particle">0</div>
+      <div class="binary-particle">1</div>
+      <div class="binary-particle">0</div>
+      <div class="binary-particle">1</div>
+      <div class="binary-particle">0</div>
 
-        <!-- Data nodes -->
-        <div class="data-node"></div>
-        <div class="data-node"></div>
-        <div class="data-node"></div>
-        <div class="data-node"></div>
-        <div class="data-node"></div>
-        <div class="data-node"></div>
+      <!-- Data nodes -->
+      <div class="data-node"></div>
+      <div class="data-node"></div>
+      <div class="data-node"></div>
+      <div class="data-node"></div>
+      <div class="data-node"></div>
+      <div class="data-node"></div>
 
-        <div class="grid-overlay"></div>
-        <div class="scan-line"></div>
+      <div class="grid-overlay"></div>
+      <div class="scan-line"></div>
     </div>
 
     <!-- Ecosystem Navigation -->
     <nav class="eco-nav eco-nav--forecast">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link">Burns</a>
-            <a href="/forecast" class="eco-nav-link active">Forecast</a>
-            <a href="/holdex" class="eco-nav-link">HolDex</a>
-            <a href="/staking" class="eco-nav-link">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
+      <a href="/" class="eco-nav-logo">
+        <div class="eco-nav-logo-mark">A</div>
+        <span>ASDF Tools</span>
+      </a>
+      <div class="eco-nav-links">
+        <div class="eco-nav-pill"></div>
+        <a href="/burns" class="eco-nav-link">Burns</a>
+        <a href="/forecast" class="eco-nav-link active">Forecast</a>
+        <a href="/holdex" class="eco-nav-link">HolDex</a>
+        <a href="/staking" class="eco-nav-link">Staking</a>
+        <a href="/ignition" class="eco-nav-link">Ignition</a>
+      </div>
+      <div class="eco-nav-right">
+        <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+      </div>
     </nav>
 
     <!-- Style Drawer Button -->
     <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
+      <span class="eco-style-icon">&#127912;</span>
     </button>
 
     <!-- Theme Drawer -->
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
+      <div class="eco-drawer-header">
+        <span class="eco-drawer-title">ASDF Tools</span>
+        <button class="eco-drawer-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="eco-drawer-body">
+        <!-- Dynamically populated by ecosystem.js -->
+      </div>
     </aside>
 
     <!-- Full Page Dashboard -->
     <div class="dashboard eco-page">
-        <!-- Hero Intro -->
-        <section class="forecast-hero">
-            <div class="forecast-hero-badge">
-                <span class="forecast-hero-led"></span>
-                <span>Prediction Market</span>
+      <!-- Hero Intro -->
+      <section class="forecast-hero">
+        <div class="forecast-hero-badge">
+          <span class="forecast-hero-led"></span>
+          <span>Prediction Market</span>
+        </div>
+        <h1 class="forecast-hero-title">ASD<span class="forecast-hero-accent">Forecast</span></h1>
+        <p class="forecast-hero-sub">
+          Predict SOL price direction. Winners take the pool. Fees fuel the burn.
+        </p>
+        <p class="forecast-hero-detail density-detailed">
+          15-minute prediction rounds &mdash; choose UP or DOWN. Correct calls split the pot. All
+          entry fees flow back into the ASDF burn mechanism. No house edge.
+        </p>
+      </section>
+
+      <!-- Top Bar (sub-header for forecast-specific controls) -->
+      <header class="dashboard-header">
+        <div class="header-left">
+          <span class="status-led"></span>
+          <span class="page-name">Forecast</span>
+          <span class="system-status">system.status: ONLINE</span>
+        </div>
+        <div class="header-center">
+          <span class="terminal-command">$ ./forecast --run</span>
+        </div>
+        <div class="header-right">
+          <button class="btn-connect" id="connect-wallet">wallet.connect()</button>
+        </div>
+      </header>
+
+      <!-- Marquee Ticker (adapted from sollama58/ASDForecast) -->
+      <div class="marquee-bar" aria-hidden="true">
+        <div class="marquee-track">
+          <span class="marquee-item"
+            >SOL/USD <span class="marquee-price" id="ticker-sol">$189.42</span></span
+          >
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item"
+            >Pool Volume <span class="marquee-price" id="ticker-volume">$48.2K</span></span
+          >
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">SOL/USD <span class="marquee-price">$189.42</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
+          <span class="marquee-sep">|</span>
+          <span class="marquee-item">Pool Volume <span class="marquee-price">$48.2K</span></span>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid -->
+      <main class="dashboard-main" id="main-content">
+        <!-- Left Panel - Stats -->
+        <aside class="panel panel-left">
+          <div class="forecast-context density-detailed">
+            <strong>// HOW_IT_WORKS</strong><br />
+            Predict SOL price direction (up/down) over 15min intervals. Winners split the pool. Fees
+            fuel the ASDF burn.
+          </div>
+          <div class="panel-title">// SYSTEM_METRICS</div>
+          <div class="stats-compact">
+            <div class="stat-item">
+              <span class="stat-icon">$</span>
+              <span class="stat-value is-loading" id="stat-volume">0</span>
+              <span class="stat-label">total_volume</span>
             </div>
-            <h1 class="forecast-hero-title">ASD<span class="forecast-hero-accent">Forecast</span></h1>
-            <p class="forecast-hero-sub">Predict SOL price direction. Winners take the pool. Fees fuel the burn.</p>
-            <p class="forecast-hero-detail density-detailed">
-                15-minute prediction rounds &mdash; choose UP or DOWN. Correct calls split the pot.
-                All entry fees flow back into the ASDF burn mechanism. No house edge.
-            </p>
+            <div class="stat-item">
+              <span class="stat-icon">#</span>
+              <span class="stat-value is-loading" id="stat-frames">0</span>
+              <span class="stat-label">frames_completed</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">@</span>
+              <span class="stat-value is-loading" id="stat-users">0</span>
+              <span class="stat-label">unique_predictors</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">~</span>
+              <span class="stat-value is-loading" id="stat-burned">0</span>
+              <span class="stat-label">asdf_burned</span>
+            </div>
+          </div>
+
+          <div class="forecast-context density-detailed">
+            <strong>// RESOLUTION</strong><br />
+            Each frame resolves after 15 minutes. If SOL moves in your predicted direction, you win
+            a proportional share of the pool.
+          </div>
+          <div class="forecast-context density-detailed">
+            <strong>// MULTIPLIERS</strong><br />
+            Odds shift based on pool balance. If 70% bet UP, DOWN pays ~2.8x. The protocol takes no
+            cut &mdash; all fees go to the ASDF burn.
+          </div>
+          <div class="forecast-context density-full">
+            <strong>// FEE_FLOW</strong><br />
+            1. User places prediction (SOL)<br />
+            2. Frame resolves at T+15min<br />
+            3. Winners split pool proportionally<br />
+            4. Protocol fee &rarr; ASDF burn address<br />
+            5. Burn verified on Solscan
+          </div>
+          <div class="panel-title">// LEADERBOARD</div>
+          <div class="leaderboard-compact" id="leaderboard-body">
+            <div class="loading-skeleton">
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center - Trade Terminal -->
+        <section class="panel panel-center">
+          <div class="terminal-header">
+            <span class="terminal-title">PREDICTION_TERMINAL v1.0</span>
+            <span class="terminal-status">[ READY ]</span>
+          </div>
+
+          <div class="market-info">
+            <div class="market-pair">
+              <div class="market-icon">S</div>
+              <div>
+                <div class="market-name">SOL/USD</div>
+                <div class="market-type">interval: 15m | type: binary</div>
+              </div>
+            </div>
+            <div class="market-timer">
+              <div class="timer-label">next_resolution</div>
+              <div class="timer-value" id="countdown">14:59</div>
+            </div>
+          </div>
+
+          <div class="prediction-buttons">
+            <button class="prediction-btn up" id="btn-up">
+              <div class="prediction-icon">▲</div>
+              <div class="prediction-label">direction: up</div>
+              <div class="prediction-odds" id="odds-up">multiplier: 1.95x</div>
+            </button>
+            <button class="prediction-btn down" id="btn-down">
+              <div class="prediction-icon">▼</div>
+              <div class="prediction-label">direction: down</div>
+              <div class="prediction-odds" id="odds-down">multiplier: 1.95x</div>
+            </button>
+          </div>
+
+          <div class="amount-section">
+            <div class="amount-label">
+              <span>amount:</span>
+              <span class="amount-balance">balance: <span id="user-balance">0.00</span> SOL</span>
+            </div>
+            <div class="amount-input-wrapper">
+              <input
+                type="number"
+                class="amount-input"
+                id="bet-amount"
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                aria-label="Prediction amount"
+              />
+              <span class="amount-currency">SOL</span>
+            </div>
+            <div class="amount-presets">
+              <button class="preset-btn" data-amount="0.1">0.1</button>
+              <button class="preset-btn" data-amount="0.5">0.5</button>
+              <button class="preset-btn" data-amount="1">1</button>
+              <button class="preset-btn" data-amount="max">MAX</button>
+            </div>
+          </div>
+
+          <button class="btn-predict" id="btn-predict" disabled>
+            await wallet.connect() to execute
+          </button>
         </section>
 
-        <!-- Top Bar (sub-header for forecast-specific controls) -->
-        <header class="dashboard-header">
-            <div class="header-left">
-                <span class="status-led"></span>
-                <span class="page-name">Forecast</span>
-                <span class="system-status">system.status: ONLINE</span>
+        <!-- Right Panel - History -->
+        <aside class="panel panel-right">
+          <div class="panel-title">// RECENT_FRAMES</div>
+          <div class="history-compact" id="history-list">
+            <div class="loading-skeleton">
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
+              <div class="skeleton-row"></div>
             </div>
-            <div class="header-center">
-                <span class="terminal-command">$ ./forecast --run</span>
-            </div>
-            <div class="header-right">
-                <button class="btn-connect" id="connect-wallet">wallet.connect()</button>
-            </div>
-        </header>
+          </div>
+        </aside>
+      </main>
 
-        <!-- Marquee Ticker (adapted from sollama58/ASDForecast) -->
-        <div class="marquee-bar" aria-hidden="true">
-            <div class="marquee-track">
-                <span class="marquee-item">SOL/USD <span class="marquee-price" id="ticker-sol">$189.42</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">Pool Volume <span class="marquee-price" id="ticker-volume">$48.2K</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">SOL/USD <span class="marquee-price">$189.42</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">BTC/USD <span class="marquee-price">$97,204</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">ETH/USD <span class="marquee-price">$3,421</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">ASDF Burned <span class="marquee-burn">2.4M</span></span>
-                <span class="marquee-sep">|</span>
-                <span class="marquee-item">Pool Volume <span class="marquee-price">$48.2K</span></span>
-            </div>
-        </div>
-
-        <!-- Main Dashboard Grid -->
-        <main class="dashboard-main" id="main-content">
-            <!-- Left Panel - Stats -->
-            <aside class="panel panel-left">
-                <div class="forecast-context density-detailed">
-                    <strong>// HOW_IT_WORKS</strong><br>
-                    Predict SOL price direction (up/down) over 15min intervals.
-                    Winners split the pool. Fees fuel the ASDF burn.
-                </div>
-                <div class="panel-title">// SYSTEM_METRICS</div>
-                <div class="stats-compact">
-                    <div class="stat-item">
-                        <span class="stat-icon">$</span>
-                        <span class="stat-value is-loading" id="stat-volume">0</span>
-                        <span class="stat-label">total_volume</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">#</span>
-                        <span class="stat-value is-loading" id="stat-frames">0</span>
-                        <span class="stat-label">frames_completed</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">@</span>
-                        <span class="stat-value is-loading" id="stat-users">0</span>
-                        <span class="stat-label">unique_predictors</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">~</span>
-                        <span class="stat-value is-loading" id="stat-burned">0</span>
-                        <span class="stat-label">asdf_burned</span>
-                    </div>
-                </div>
-
-                <div class="forecast-context density-detailed">
-                    <strong>// RESOLUTION</strong><br>
-                    Each frame resolves after 15 minutes. If SOL moves in your predicted direction, you win a proportional share of the pool.
-                </div>
-                <div class="forecast-context density-detailed">
-                    <strong>// MULTIPLIERS</strong><br>
-                    Odds shift based on pool balance. If 70% bet UP, DOWN pays ~2.8x.
-                    The protocol takes no cut &mdash; all fees go to the ASDF burn.
-                </div>
-                <div class="forecast-context density-full">
-                    <strong>// FEE_FLOW</strong><br>
-                    1. User places prediction (SOL)<br>
-                    2. Frame resolves at T+15min<br>
-                    3. Winners split pool proportionally<br>
-                    4. Protocol fee &rarr; ASDF burn address<br>
-                    5. Burn verified on Solscan
-                </div>
-                <div class="panel-title">// LEADERBOARD</div>
-                <div class="leaderboard-compact" id="leaderboard-body">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Center - Trade Terminal -->
-            <section class="panel panel-center">
-                <div class="terminal-header">
-                    <span class="terminal-title">PREDICTION_TERMINAL v1.0</span>
-                    <span class="terminal-status">[ READY ]</span>
-                </div>
-
-                <div class="market-info">
-                    <div class="market-pair">
-                        <div class="market-icon">S</div>
-                        <div>
-                            <div class="market-name">SOL/USD</div>
-                            <div class="market-type">interval: 15m | type: binary</div>
-                        </div>
-                    </div>
-                    <div class="market-timer">
-                        <div class="timer-label">next_resolution</div>
-                        <div class="timer-value" id="countdown">14:59</div>
-                    </div>
-                </div>
-
-                <div class="prediction-buttons">
-                    <button class="prediction-btn up" id="btn-up">
-                        <div class="prediction-icon">▲</div>
-                        <div class="prediction-label">direction: up</div>
-                        <div class="prediction-odds" id="odds-up">multiplier: 1.95x</div>
-                    </button>
-                    <button class="prediction-btn down" id="btn-down">
-                        <div class="prediction-icon">▼</div>
-                        <div class="prediction-label">direction: down</div>
-                        <div class="prediction-odds" id="odds-down">multiplier: 1.95x</div>
-                    </button>
-                </div>
-
-                <div class="amount-section">
-                    <div class="amount-label">
-                        <span>amount:</span>
-                        <span class="amount-balance">balance: <span id="user-balance">0.00</span> SOL</span>
-                    </div>
-                    <div class="amount-input-wrapper">
-                        <input type="number" class="amount-input" id="bet-amount" placeholder="0.00" step="0.01" min="0.01" aria-label="Prediction amount">
-                        <span class="amount-currency">SOL</span>
-                    </div>
-                    <div class="amount-presets">
-                        <button class="preset-btn" data-amount="0.1">0.1</button>
-                        <button class="preset-btn" data-amount="0.5">0.5</button>
-                        <button class="preset-btn" data-amount="1">1</button>
-                        <button class="preset-btn" data-amount="max">MAX</button>
-                    </div>
-                </div>
-
-                <button class="btn-predict" id="btn-predict" disabled>
-                    await wallet.connect() to execute
-                </button>
-            </section>
-
-            <!-- Right Panel - History -->
-            <aside class="panel panel-right">
-                <div class="panel-title">// RECENT_FRAMES</div>
-                <div class="history-compact" id="history-list">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                        <div class="skeleton-row"></div>
-                    </div>
-                </div>
-            </aside>
-        </main>
-
-        <!-- Bottom Bar -->
-        <footer class="dashboard-footer">
-            <span class="footer-status">[STATUS: ACTIVE]</span>
-            <span class="footer-info">fees.transfer(asdf_burn_address)</span>
-            <a href="/burns" class="footer-link">[view_burns]</a>
-            <span class="footer-meta">v1.0.0 | pid: 31337 | uptime: 99.9%</span>
-        </footer>
+      <!-- Bottom Bar -->
+      <footer class="dashboard-footer">
+        <span class="footer-status">[STATUS: ACTIVE]</span>
+        <span class="footer-info">fees.transfer(asdf_burn_address)</span>
+        <a href="/burns" class="footer-link">[view_burns]</a>
+        <span class="footer-meta">v1.0.0 | pid: 31337 | uptime: 99.9%</span>
+      </footer>
     </div>
-
 
     <script type="module" src="js/utils/notice.js"></script>
     <script type="module" src="js/forecast.js"></script>
     <script src="js/ecosystem.js" defer></script>
     <script src="js/consent/index.js"></script>
-</body>
+  </body>
 </html>

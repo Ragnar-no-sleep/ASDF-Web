@@ -24,7 +24,7 @@ describe('Realtime Module', () => {
         onopen: null,
         onclose: null,
         onerror: null,
-        onmessage: null
+        onmessage: null,
       };
 
       global.WebSocket = jest.fn(() => mockWebSocket);
@@ -33,7 +33,7 @@ describe('Realtime Module', () => {
       // Mock eventBus
       mockEventBus = {
         emit: jest.fn(),
-        on: jest.fn(() => () => {})
+        on: jest.fn(() => () => {}),
       };
 
       // Create RealtimeClient class for testing
@@ -44,14 +44,14 @@ describe('Realtime Module', () => {
             reconnect: {
               enabled: true,
               delays: [1000, 1000, 2000, 3000, 5000],
-              maxAttempts: 5
+              maxAttempts: 5,
             },
             heartbeat: {
               interval: 21000,
-              timeout: 13000
+              timeout: 13000,
             },
             debug: false,
-            ...config
+            ...config,
           };
 
           this.ws = null;
@@ -64,7 +64,7 @@ describe('Realtime Module', () => {
             connected: 0,
             disconnected: 0,
             messagesReceived: 0,
-            messagesSent: 0
+            messagesSent: 0,
           };
         }
 
@@ -75,7 +75,7 @@ describe('Realtime Module', () => {
           this.token = token;
           this.state = 'connecting';
 
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             const url = this._buildUrl();
             this.ws = new WebSocket(url);
 
@@ -98,7 +98,7 @@ describe('Realtime Module', () => {
               this.stats.disconnected++;
             };
 
-            this.ws.onmessage = (event) => {
+            this.ws.onmessage = event => {
               this.stats.messagesReceived++;
               this._handleMessage(JSON.parse(event.data));
             };
@@ -138,7 +138,7 @@ describe('Realtime Module', () => {
               }
               mockEventBus.emit('ws:ready', {
                 connectionId: this.connectionId,
-                authenticated: message.authenticated
+                authenticated: message.authenticated,
               });
               break;
             case 'notification':
@@ -199,7 +199,7 @@ describe('Realtime Module', () => {
             ...this.stats,
             state: this.state,
             connectionId: this.connectionId,
-            subscriptions: this.subscriptions.size
+            subscriptions: this.subscriptions.size,
           };
         }
       };
@@ -234,9 +234,7 @@ describe('Realtime Module', () => {
     test('should build URL with token', async () => {
       await client.connect('test-token');
 
-      expect(WebSocket).toHaveBeenCalledWith(
-        'wss://localhost/ws/notifications?token=test-token'
-      );
+      expect(WebSocket).toHaveBeenCalledWith('wss://localhost/ws/notifications?token=test-token');
     });
 
     test('should not reconnect if already connected', async () => {
@@ -311,7 +309,7 @@ describe('Realtime Module', () => {
         type: 'connected',
         connectionId: 'conn_123',
         authenticated: true,
-        channels: ['global', 'burns']
+        channels: ['global', 'burns'],
       });
 
       expect(client.connectionId).toBe('conn_123');
@@ -326,13 +324,13 @@ describe('Realtime Module', () => {
         type: 'notification',
         notification: {
           type: 'burn_confirmed',
-          data: { amount: 1000 }
-        }
+          data: { amount: 1000 },
+        },
       });
 
       expect(mockEventBus.emit).toHaveBeenCalledWith('ws:notification', {
         type: 'burn_confirmed',
-        data: { amount: 1000 }
+        data: { amount: 1000 },
       });
     });
 
@@ -341,7 +339,7 @@ describe('Realtime Module', () => {
 
       client._handleMessage({
         type: 'subscribed',
-        channel: 'leaderboard'
+        channel: 'leaderboard',
       });
 
       expect(client.getSubscriptions()).toContain('leaderboard');
@@ -357,7 +355,7 @@ describe('Realtime Module', () => {
       CONNECTING: 'connecting',
       CONNECTED: 'connected',
       RECONNECTING: 'reconnecting',
-      FAILED: 'failed'
+      FAILED: 'failed',
     };
 
     test('should have all required states', () => {
@@ -378,7 +376,7 @@ describe('Realtime Module', () => {
       GLOBAL: 'global',
       BURNS: 'burns',
       LEADERBOARD: 'leaderboard',
-      EVENTS: 'events'
+      EVENTS: 'events',
     };
 
     test('should have all required channels', () => {
@@ -404,7 +402,7 @@ describe('Realtime Module', () => {
       ERROR: 'error',
       SUBSCRIBED: 'subscribed',
       UNSUBSCRIBED: 'unsubscribed',
-      CONNECTED: 'connected'
+      CONNECTED: 'connected',
     };
 
     test('should have client message types', () => {
@@ -441,8 +439,8 @@ describe('Realtime Module', () => {
       const config = {
         reconnect: {
           enabled: true,
-          maxAttempts: 10
-        }
+          maxAttempts: 10,
+        },
       };
 
       expect(config.reconnect.maxAttempts).toBe(10);
@@ -458,7 +456,7 @@ describe('Realtime Module', () => {
       const mockWs = {
         readyState: 1,
         send: jest.fn(),
-        close: jest.fn()
+        close: jest.fn(),
       };
       global.WebSocket = jest.fn(() => mockWs);
 
@@ -468,13 +466,13 @@ describe('Realtime Module', () => {
         connect: async function () {
           this.state = 'connecting';
           // Simulate async connection
-          await new Promise((r) => setTimeout(r, 10));
+          await new Promise(r => setTimeout(r, 10));
           this.state = 'connected';
           return true;
         },
         disconnect: function () {
           this.state = 'disconnected';
-        }
+        },
       };
 
       expect(lifecycle.state).toBe('disconnected');
@@ -490,7 +488,7 @@ describe('Realtime Module', () => {
       const events = [];
       const mockBus = {
         emit: (event, data) => events.push({ event, data }),
-        on: jest.fn()
+        on: jest.fn(),
       };
 
       // Simulate notification flow

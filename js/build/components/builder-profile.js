@@ -86,7 +86,6 @@ const BuilderProfile = {
 
     // Bind events
     this.bindEvents();
-
   },
 
   /**

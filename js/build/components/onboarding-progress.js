@@ -41,7 +41,6 @@ const OnboardingProgress = {
     BuildState.subscribe('onboarding:complete', () => {
       this.complete();
     });
-
   },
 
   /**

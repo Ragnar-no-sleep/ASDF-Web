@@ -1,364 +1,449 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#0a0a0f">
-<head>
-    <style>html,body{background:#0a0a0f!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
+<!doctype html>
+<html lang="en" style="background: #0a0a0f">
+  <head>
+    <style>
+      html,
+      body {
+        background: #0a0a0f !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="view-transition" content="same-origin" />
     <title>HolDEX - Token Tracker for Holders | ASDF Ecosystem</title>
-    <meta name="description" content="DEX screener built for holders. Track Solana tokens with K-Score conviction metrics. Fees fuel the ASDF burn.">
+    <meta
+      name="description"
+      content="DEX screener built for holders. Track Solana tokens with K-Score conviction metrics. Fees fuel the ASDF burn."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="HolDEX - Token Tracker for Holders">
-    <meta property="og:description" content="Track Solana tokens with K-Score conviction metrics. Built for holders, by holders.">
-    <meta property="og:image" content="https://alonisthe.dev/og-holdex.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="HolDEX - Token Tracker for Holders">
-    <meta name="twitter:description" content="Track Solana tokens with K-Score conviction metrics. Built for holders, by holders.">
+    <meta property="og:title" content="HolDEX - Token Tracker for Holders" />
+    <meta
+      property="og:description"
+      content="Track Solana tokens with K-Score conviction metrics. Built for holders, by holders."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-holdex.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HolDEX - Token Tracker for Holders" />
+    <meta
+      name="twitter:description"
+      content="Track Solana tokens with K-Score conviction metrics. Built for holders, by holders."
+    />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server-side Helmet -->
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
-    <link rel="stylesheet" href="css/holdex.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/ecosystem.css" />
+    <link rel="stylesheet" href="css/holdex.css" />
 
     <!-- Theme anti-flash (external for CSP compliance) -->
     <script src="/js/anti-flash.js"></script>
-    <link rel="stylesheet" href="css/runtime-components.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Subtle Background -->
     <div class="bg-ambient" aria-hidden="true">
-        <div class="bg-gradient"></div>
-        <div class="bg-grid"></div>
-        <div class="bg-glow"></div>
+      <div class="bg-gradient"></div>
+      <div class="bg-grid"></div>
+      <div class="bg-glow"></div>
     </div>
 
     <!-- Ecosystem Navigation -->
     <nav class="eco-nav eco-nav--holdex">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link">Burns</a>
-            <a href="/forecast" class="eco-nav-link">Forecast</a>
-            <a href="/holdex" class="eco-nav-link active">HolDex</a>
-            <a href="/staking" class="eco-nav-link">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
+      <a href="/" class="eco-nav-logo">
+        <div class="eco-nav-logo-mark">A</div>
+        <span>ASDF Tools</span>
+      </a>
+      <div class="eco-nav-links">
+        <div class="eco-nav-pill"></div>
+        <a href="/burns" class="eco-nav-link">Burns</a>
+        <a href="/forecast" class="eco-nav-link">Forecast</a>
+        <a href="/holdex" class="eco-nav-link active">HolDex</a>
+        <a href="/staking" class="eco-nav-link">Staking</a>
+        <a href="/ignition" class="eco-nav-link">Ignition</a>
+      </div>
+      <div class="eco-nav-right">
+        <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+      </div>
     </nav>
 
     <!-- Style Drawer Button -->
     <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
+      <span class="eco-style-icon">&#127912;</span>
     </button>
 
     <!-- Theme Drawer -->
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
+      <div class="eco-drawer-header">
+        <span class="eco-drawer-title">ASDF Tools</span>
+        <button class="eco-drawer-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="eco-drawer-body">
+        <!-- Dynamically populated by ecosystem.js -->
+      </div>
     </aside>
 
     <!-- Dashboard -->
     <div class="dashboard eco-page">
-        <!-- Hero Intro -->
-        <section class="holdex-hero">
-            <div class="holdex-hero-badge">
-                <span class="holdex-hero-dot"></span>
-                <span>Token Intelligence</span>
+      <!-- Hero Intro -->
+      <section class="holdex-hero">
+        <div class="holdex-hero-badge">
+          <span class="holdex-hero-dot"></span>
+          <span>Token Intelligence</span>
+        </div>
+        <h1 class="holdex-hero-title">Hol<span class="holdex-hero-accent">DEX</span></h1>
+        <p class="holdex-hero-sub">
+          DEX screener built for holders. K-Score reveals conviction, not hype.
+        </p>
+        <p class="holdex-hero-detail density-detailed">
+          Track Solana tokens with on-chain conviction metrics. Distribution, velocity, whale risk
+          &amp; activity &mdash; combined into one K-Score. Higher K = stronger holder base.
+        </p>
+      </section>
+
+      <!-- Sub-Header (search bar) -->
+      <header class="header">
+        <div class="header-left">
+          <span class="logo-page">HolDEX</span>
+        </div>
+
+        <div class="header-center">
+          <div class="search-wrapper">
+            <svg
+              class="search-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              class="search-input"
+              id="search-input"
+              placeholder="Search token name, symbol, or address..."
+              aria-label="Search tokens"
+            />
+          </div>
+        </div>
+
+        <div class="header-right"></div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main" id="main-content">
+        <!-- Left Sidebar - Stats & K-Score Info -->
+        <aside class="sidebar sidebar-left">
+          <div class="holdex-context density-detailed">
+            <strong>K-Score</strong> measures token holder conviction using on-chain data:
+            Distribution (how spread), Velocity (trading frequency), Whale Risk, and Activity.
+            Higher K = stronger holder base.
+          </div>
+          <div class="widget">
+            <div class="widget-header">
+              <span class="widget-title">Market Overview</span>
             </div>
-            <h1 class="holdex-hero-title">Hol<span class="holdex-hero-accent">DEX</span></h1>
-            <p class="holdex-hero-sub">DEX screener built for holders. K-Score reveals conviction, not hype.</p>
-            <p class="holdex-hero-detail density-detailed">
-                Track Solana tokens with on-chain conviction metrics. Distribution, velocity,
-                whale risk &amp; activity &mdash; combined into one K-Score. Higher K = stronger holder base.
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-value is-loading" id="stat-tokens">847</span>
+                <span class="stat-label">Tokens</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value is-loading" id="stat-volume">$24.7M</span>
+                <span class="stat-label">24h Volume</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="widget widget-kscore">
+            <div class="widget-header">
+              <span class="widget-title">K-Score</span>
+              <span class="widget-badge">Conviction Metric</span>
+            </div>
+            <div class="kscore-display">
+              <div class="kscore-ring">
+                <svg viewBox="0 0 100 100">
+                  <circle class="kscore-bg" cx="50" cy="50" r="42" />
+                  <circle
+                    class="kscore-progress"
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke-dasharray="264"
+                    stroke-dashoffset="35"
+                  />
+                </svg>
+                <span class="kscore-value">87</span>
+              </div>
+            </div>
+            <div class="kscore-factors">
+              <div class="factor">
+                <span class="factor-label">Distribution</span>
+                <div class="factor-bar"><div class="factor-fill" style="width: 85%"></div></div>
+                <span class="factor-pct">35%</span>
+              </div>
+              <div class="factor">
+                <span class="factor-label">Velocity</span>
+                <div class="factor-bar"><div class="factor-fill" style="width: 70%"></div></div>
+                <span class="factor-pct">25%</span>
+              </div>
+              <div class="factor">
+                <span class="factor-label">Whale Risk</span>
+                <div class="factor-bar"><div class="factor-fill" style="width: 60%"></div></div>
+                <span class="factor-pct">20%</span>
+              </div>
+              <div class="factor">
+                <span class="factor-label">Activity</span>
+                <div class="factor-bar"><div class="factor-fill" style="width: 90%"></div></div>
+                <span class="factor-pct">20%</span>
+              </div>
+            </div>
+
+            <!-- Credit Rating -->
+            <div class="kscore-credit">
+              <span class="kscore-credit-label">Credit Rating</span>
+              <span class="credit-badge credit-badge--a1" id="credit-rating">A1</span>
+            </div>
+          </div>
+
+          <!-- Metal Ranks Legend (density-detailed) -->
+          <div class="widget density-detailed">
+            <div class="widget-header">
+              <span class="widget-title">Metal Ranks</span>
+              <span class="widget-badge">K-Score Tiers</span>
+            </div>
+            <div class="rank-legend">
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--diamond">&#9670;</span
+                ><span class="rank-name">Diamond</span><span class="rank-range">90+</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--platinum">&#9670;</span
+                ><span class="rank-name">Platinum</span><span class="rank-range">80-89</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--gold">&#9670;</span
+                ><span class="rank-name">Gold</span><span class="rank-range">70-79</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--silver">&#9670;</span
+                ><span class="rank-name">Silver</span><span class="rank-range">60-69</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--bronze">&#9670;</span
+                ><span class="rank-name">Bronze</span><span class="rank-range">50-59</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--copper">&#9670;</span
+                ><span class="rank-name">Copper</span><span class="rank-range">40-49</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--iron">&#9670;</span
+                ><span class="rank-name">Iron</span><span class="rank-range">20-39</span>
+              </div>
+              <div class="rank-row">
+                <span class="rank-badge rank-badge--rust">&#9670;</span
+                ><span class="rank-name">Rust</span><span class="rank-range">&lt;20</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- K-Score Deep Dive (density-full) -->
+          <div class="holdex-context density-full">
+            <strong>K-Score Methodology</strong>: Distribution measures how evenly tokens are spread
+            across wallets (Gini coefficient). Velocity tracks trade frequency &mdash; lower is
+            better for holders. Whale Risk flags top-10 wallet concentration. Activity scores recent
+            on-chain engagement. All factors use EMA smoothing for stability.
+          </div>
+        </aside>
+
+        <!-- Center - Token Table -->
+        <section class="content">
+          <div class="table-controls">
+            <div class="filters">
+              <button class="filter active" data-filter="all">All</button>
+              <button class="filter" data-filter="trending">Trending</button>
+              <button class="filter" data-filter="new">New</button>
+              <button class="filter" data-filter="verified">Verified</button>
+            </div>
+            <div class="sort">
+              <span class="sort-label">Sort:</span>
+              <select id="sort-select" class="sort-select" aria-label="Sort tokens by">
+                <option value="kscore">K-Score</option>
+                <option value="volume">Volume</option>
+                <option value="mcap">Market Cap</option>
+                <option value="change">24h Change</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="token-table">
+              <thead>
+                <tr>
+                  <th class="col-rank">#</th>
+                  <th class="col-token">Token</th>
+                  <th class="col-price">Price</th>
+                  <th class="col-change">24h</th>
+                  <th class="col-volume">Volume</th>
+                  <th class="col-mcap">Market Cap</th>
+                  <th class="col-holders">Holders</th>
+                  <th class="col-kscore">K-Score</th>
+                </tr>
+              </thead>
+              <tbody id="token-list">
+                <tr class="loading-skeleton">
+                  <td colspan="8"><div class="skeleton-row"></div></td>
+                </tr>
+                <tr class="loading-skeleton">
+                  <td colspan="8"><div class="skeleton-row"></div></td>
+                </tr>
+                <tr class="loading-skeleton">
+                  <td colspan="8"><div class="skeleton-row"></div></td>
+                </tr>
+                <tr class="loading-skeleton">
+                  <td colspan="8"><div class="skeleton-row"></div></td>
+                </tr>
+                <tr class="loading-skeleton">
+                  <td colspan="8"><div class="skeleton-row"></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Right Sidebar - Selected Token Details -->
+        <aside class="sidebar sidebar-right">
+          <div class="widget" id="token-detail">
+            <div class="widget-header">
+              <span class="widget-title">Token Details</span>
+            </div>
+            <div class="detail-placeholder">
+              <span>Select a token to view details</span>
+            </div>
+          </div>
+
+          <div class="widget">
+            <div class="widget-header">
+              <span class="widget-title">Top Gainers</span>
+            </div>
+            <div class="gainers-list" id="gainers-list">
+              <div class="gainer">
+                <span class="gainer-symbol">&mdash;</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <!-- FAQ (density-detailed) -->
+      <section class="holdex-faq density-detailed">
+        <div class="faq-header">
+          <h2 class="faq-title">Understanding HolDex</h2>
+          <p class="faq-subtitle">How the token tracker works</p>
+        </div>
+        <div class="faq-grid">
+          <div class="faq-card">
+            <h3 class="faq-question">What is K-Score?</h3>
+            <p class="faq-answer">
+              A conviction metric that scores tokens 0-100 based on holder distribution, trading
+              velocity, whale concentration, and on-chain activity. Higher scores indicate stronger
+              holder bases.
             </p>
-        </section>
+          </div>
+          <div class="faq-card">
+            <h3 class="faq-question">What are Metal Ranks?</h3>
+            <p class="faq-answer">
+              8 tiers from Diamond (90+) to Rust (&lt;20) that categorize token holder quality at a
+              glance. Ranks use EMA smoothing to prevent manipulation from short-term trading
+              spikes.
+            </p>
+          </div>
+          <div class="faq-card">
+            <h3 class="faq-question">What are Credit Ratings?</h3>
+            <p class="faq-answer">
+              Grades from A1 (highest conviction) to D (lowest) that summarize a token&rsquo;s
+              overall investment quality. Based on K-Score, liquidity depth, and holder retention
+              metrics.
+            </p>
+          </div>
+          <div class="faq-card density-full">
+            <h3 class="faq-question">How are fees used?</h3>
+            <p class="faq-answer">
+              HolDex usage fees are routed to the ASDF burn address, permanently reducing token
+              supply. Every search, every filter, every interaction fuels deflation.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <!-- Sub-Header (search bar) -->
-        <header class="header">
-            <div class="header-left">
-                <span class="logo-page">HolDEX</span>
-            </div>
-
-            <div class="header-center">
-                <div class="search-wrapper">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
-                    <input type="text" class="search-input" id="search-input" placeholder="Search token name, symbol, or address..." aria-label="Search tokens">
-                </div>
-            </div>
-
-            <div class="header-right"></div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="main" id="main-content">
-            <!-- Left Sidebar - Stats & K-Score Info -->
-            <aside class="sidebar sidebar-left">
-                <div class="holdex-context density-detailed">
-                    <strong>K-Score</strong> measures token holder conviction using on-chain data:
-                    Distribution (how spread), Velocity (trading frequency), Whale Risk, and Activity.
-                    Higher K = stronger holder base.
-                </div>
-                <div class="widget">
-                    <div class="widget-header">
-                        <span class="widget-title">Market Overview</span>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat">
-                            <span class="stat-value is-loading" id="stat-tokens">847</span>
-                            <span class="stat-label">Tokens</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-value is-loading" id="stat-volume">$24.7M</span>
-                            <span class="stat-label">24h Volume</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="widget widget-kscore">
-                    <div class="widget-header">
-                        <span class="widget-title">K-Score</span>
-                        <span class="widget-badge">Conviction Metric</span>
-                    </div>
-                    <div class="kscore-display">
-                        <div class="kscore-ring">
-                            <svg viewBox="0 0 100 100">
-                                <circle class="kscore-bg" cx="50" cy="50" r="42"/>
-                                <circle class="kscore-progress" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="35"/>
-                            </svg>
-                            <span class="kscore-value">87</span>
-                        </div>
-                    </div>
-                    <div class="kscore-factors">
-                        <div class="factor">
-                            <span class="factor-label">Distribution</span>
-                            <div class="factor-bar"><div class="factor-fill" style="width:85%"></div></div>
-                            <span class="factor-pct">35%</span>
-                        </div>
-                        <div class="factor">
-                            <span class="factor-label">Velocity</span>
-                            <div class="factor-bar"><div class="factor-fill" style="width:70%"></div></div>
-                            <span class="factor-pct">25%</span>
-                        </div>
-                        <div class="factor">
-                            <span class="factor-label">Whale Risk</span>
-                            <div class="factor-bar"><div class="factor-fill" style="width:60%"></div></div>
-                            <span class="factor-pct">20%</span>
-                        </div>
-                        <div class="factor">
-                            <span class="factor-label">Activity</span>
-                            <div class="factor-bar"><div class="factor-fill" style="width:90%"></div></div>
-                            <span class="factor-pct">20%</span>
-                        </div>
-                    </div>
-
-                    <!-- Credit Rating -->
-                    <div class="kscore-credit">
-                        <span class="kscore-credit-label">Credit Rating</span>
-                        <span class="credit-badge credit-badge--a1" id="credit-rating">A1</span>
-                    </div>
-                </div>
-
-                <!-- Metal Ranks Legend (density-detailed) -->
-                <div class="widget density-detailed">
-                    <div class="widget-header">
-                        <span class="widget-title">Metal Ranks</span>
-                        <span class="widget-badge">K-Score Tiers</span>
-                    </div>
-                    <div class="rank-legend">
-                        <div class="rank-row"><span class="rank-badge rank-badge--diamond">&#9670;</span><span class="rank-name">Diamond</span><span class="rank-range">90+</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--platinum">&#9670;</span><span class="rank-name">Platinum</span><span class="rank-range">80-89</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--gold">&#9670;</span><span class="rank-name">Gold</span><span class="rank-range">70-79</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--silver">&#9670;</span><span class="rank-name">Silver</span><span class="rank-range">60-69</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--bronze">&#9670;</span><span class="rank-name">Bronze</span><span class="rank-range">50-59</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--copper">&#9670;</span><span class="rank-name">Copper</span><span class="rank-range">40-49</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--iron">&#9670;</span><span class="rank-name">Iron</span><span class="rank-range">20-39</span></div>
-                        <div class="rank-row"><span class="rank-badge rank-badge--rust">&#9670;</span><span class="rank-name">Rust</span><span class="rank-range">&lt;20</span></div>
-                    </div>
-                </div>
-
-                <!-- K-Score Deep Dive (density-full) -->
-                <div class="holdex-context density-full">
-                    <strong>K-Score Methodology</strong>:
-                    Distribution measures how evenly tokens are spread across wallets (Gini coefficient).
-                    Velocity tracks trade frequency &mdash; lower is better for holders.
-                    Whale Risk flags top-10 wallet concentration.
-                    Activity scores recent on-chain engagement. All factors use EMA smoothing for stability.
-                </div>
-            </aside>
-
-            <!-- Center - Token Table -->
-            <section class="content">
-                <div class="table-controls">
-                    <div class="filters">
-                        <button class="filter active" data-filter="all">All</button>
-                        <button class="filter" data-filter="trending">Trending</button>
-                        <button class="filter" data-filter="new">New</button>
-                        <button class="filter" data-filter="verified">Verified</button>
-                    </div>
-                    <div class="sort">
-                        <span class="sort-label">Sort:</span>
-                        <select id="sort-select" class="sort-select" aria-label="Sort tokens by">
-                            <option value="kscore">K-Score</option>
-                            <option value="volume">Volume</option>
-                            <option value="mcap">Market Cap</option>
-                            <option value="change">24h Change</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="table-wrapper">
-                    <table class="token-table">
-                        <thead>
-                            <tr>
-                                <th class="col-rank">#</th>
-                                <th class="col-token">Token</th>
-                                <th class="col-price">Price</th>
-                                <th class="col-change">24h</th>
-                                <th class="col-volume">Volume</th>
-                                <th class="col-mcap">Market Cap</th>
-                                <th class="col-holders">Holders</th>
-                                <th class="col-kscore">K-Score</th>
-                            </tr>
-                        </thead>
-                        <tbody id="token-list">
-                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
-                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
-                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
-                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
-                            <tr class="loading-skeleton"><td colspan="8"><div class="skeleton-row"></div></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Right Sidebar - Selected Token Details -->
-            <aside class="sidebar sidebar-right">
-                <div class="widget" id="token-detail">
-                    <div class="widget-header">
-                        <span class="widget-title">Token Details</span>
-                    </div>
-                    <div class="detail-placeholder">
-                        <span>Select a token to view details</span>
-                    </div>
-                </div>
-
-                <div class="widget">
-                    <div class="widget-header">
-                        <span class="widget-title">Top Gainers</span>
-                    </div>
-                    <div class="gainers-list" id="gainers-list">
-                        <div class="gainer">
-                            <span class="gainer-symbol">&mdash;</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-        </main>
-
-        <!-- FAQ (density-detailed) -->
-        <section class="holdex-faq density-detailed">
-            <div class="faq-header">
-                <h2 class="faq-title">Understanding HolDex</h2>
-                <p class="faq-subtitle">How the token tracker works</p>
-            </div>
-            <div class="faq-grid">
-                <div class="faq-card">
-                    <h3 class="faq-question">What is K-Score?</h3>
-                    <p class="faq-answer">A conviction metric that scores tokens 0-100 based on holder distribution, trading velocity, whale concentration, and on-chain activity. Higher scores indicate stronger holder bases.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">What are Metal Ranks?</h3>
-                    <p class="faq-answer">8 tiers from Diamond (90+) to Rust (&lt;20) that categorize token holder quality at a glance. Ranks use EMA smoothing to prevent manipulation from short-term trading spikes.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">What are Credit Ratings?</h3>
-                    <p class="faq-answer">Grades from A1 (highest conviction) to D (lowest) that summarize a token&rsquo;s overall investment quality. Based on K-Score, liquidity depth, and holder retention metrics.</p>
-                </div>
-                <div class="faq-card density-full">
-                    <h3 class="faq-question">How are fees used?</h3>
-                    <p class="faq-answer">HolDex usage fees are routed to the ASDF burn address, permanently reducing token supply. Every search, every filter, every interaction fuels deflation.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <span class="footer-brand">HolDEX</span>
-            <span class="footer-sep">·</span>
-            <span class="footer-text">Fees fuel the <a href="/burns">ASDF burn</a></span>
-            <span class="footer-right">Built for holders</span>
-        </footer>
+      <!-- Footer -->
+      <footer class="footer">
+        <span class="footer-brand">HolDEX</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-text">Fees fuel the <a href="/burns">ASDF burn</a></span>
+        <span class="footer-right">Built for holders</span>
+      </footer>
     </div>
 
     <!-- Token Detail Modal -->
     <div class="modal" id="token-modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-token">
-                    <div class="modal-icon" id="modal-icon">A</div>
-                    <div>
-                        <div class="modal-name" id="modal-name">ASDFASDFA</div>
-                        <div class="modal-symbol" id="modal-symbol">$ASDF</div>
-                    </div>
-                </div>
-                <button class="modal-close" id="modal-close">&times;</button>
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-token">
+            <div class="modal-icon" id="modal-icon">A</div>
+            <div>
+              <div class="modal-name" id="modal-name">ASDFASDFA</div>
+              <div class="modal-symbol" id="modal-symbol">$ASDF</div>
             </div>
-            <div class="modal-body">
-                <div class="modal-stats">
-                    <div class="modal-stat">
-                        <span class="modal-stat-value" id="modal-price">$0.0042</span>
-                        <span class="modal-stat-label">Price</span>
-                    </div>
-                    <div class="modal-stat">
-                        <span class="modal-stat-value" id="modal-mcap">$4.2M</span>
-                        <span class="modal-stat-label">Market Cap</span>
-                    </div>
-                    <div class="modal-stat">
-                        <span class="modal-stat-value" id="modal-volume">$1.2M</span>
-                        <span class="modal-stat-label">24h Volume</span>
-                    </div>
-                    <div class="modal-stat">
-                        <span class="modal-stat-value" id="modal-kscore">87</span>
-                        <span class="modal-stat-label">K-Score</span>
-                    </div>
-                </div>
-                <div class="modal-chart">
-                    <span>Chart integration coming soon</span>
-                </div>
-            </div>
+          </div>
+          <button class="modal-close" id="modal-close">&times;</button>
         </div>
+        <div class="modal-body">
+          <div class="modal-stats">
+            <div class="modal-stat">
+              <span class="modal-stat-value" id="modal-price">$0.0042</span>
+              <span class="modal-stat-label">Price</span>
+            </div>
+            <div class="modal-stat">
+              <span class="modal-stat-value" id="modal-mcap">$4.2M</span>
+              <span class="modal-stat-label">Market Cap</span>
+            </div>
+            <div class="modal-stat">
+              <span class="modal-stat-value" id="modal-volume">$1.2M</span>
+              <span class="modal-stat-label">24h Volume</span>
+            </div>
+            <div class="modal-stat">
+              <span class="modal-stat-value" id="modal-kscore">87</span>
+              <span class="modal-stat-label">K-Score</span>
+            </div>
+          </div>
+          <div class="modal-chart">
+            <span>Chart integration coming soon</span>
+          </div>
+        </div>
+      </div>
     </div>
-
 
     <script type="module" src="js/holdex.js"></script>
     <script src="js/ecosystem.js" defer></script>
     <script src="js/consent/index.js"></script>
-</body>
+  </body>
 </html>

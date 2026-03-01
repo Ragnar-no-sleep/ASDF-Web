@@ -26,7 +26,7 @@ export {
   PHI,
   getProfile,
   getProfileNames,
-  getProfilesByCategory
+  getProfilesByCategory,
 } from './profiles.js';
 
 /**

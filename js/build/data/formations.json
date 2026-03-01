@@ -57,12 +57,22 @@
               "questions": [
                 {
                   "q": "What consensus mechanism does Solana use?",
-                  "options": ["Proof of Work", "Proof of Stake", "Proof of History + Tower BFT", "Delegated Proof of Stake"],
+                  "options": [
+                    "Proof of Work",
+                    "Proof of Stake",
+                    "Proof of History + Tower BFT",
+                    "Delegated Proof of Stake"
+                  ],
                   "correct": 2
                 },
                 {
                   "q": "What is a PDA?",
-                  "options": ["Personal Data Account", "Program Derived Address", "Public Data Array", "Private Derivation Algorithm"],
+                  "options": [
+                    "Personal Data Account",
+                    "Program Derived Address",
+                    "Public Data Array",
+                    "Private Derivation Algorithm"
+                  ],
                   "correct": 1
                 },
                 {

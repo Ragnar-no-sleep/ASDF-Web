@@ -39,7 +39,8 @@ const GridUI = {
       }).join('');
     } catch (e) {
       console.error('[GridUI] Render failed:', e);
-      grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Failed to load games grid.</p>';
+      grid.innerHTML =
+        '<p style="color:var(--text-muted);text-align:center;">Failed to load games grid.</p>';
     }
   },
 };

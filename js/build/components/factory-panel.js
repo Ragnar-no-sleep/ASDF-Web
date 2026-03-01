@@ -217,7 +217,6 @@ const FactoryPanelComponent = {
         }, 300);
       }
     });
-
   },
 
   /**

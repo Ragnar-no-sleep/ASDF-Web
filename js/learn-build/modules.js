@@ -31,7 +31,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '25 min',
         xp: 50,
-        description: 'Learn the building blocks of web pages'
+        description: 'Learn the building blocks of web pages',
       },
       {
         id: 'lesson-css-styling',
@@ -39,7 +39,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '28 min',
         xp: 50,
-        description: 'Style your first web page'
+        description: 'Style your first web page',
       },
       {
         id: 'lesson-js-intro',
@@ -47,7 +47,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '40 min',
         xp: 75,
-        description: 'Add interactivity to your pages'
+        description: 'Add interactivity to your pages',
       },
       {
         id: 'lesson-dom-manipulation',
@@ -55,7 +55,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '20 min',
         xp: 50,
-        description: 'Interact with page elements using JavaScript'
+        description: 'Interact with page elements using JavaScript',
       },
       {
         id: 'lesson-fundamentals-quiz',
@@ -72,15 +72,15 @@ export const DEV_MODULES = [
               'Hyper Text Markup Language',
               'High Tech Modern Language',
               'Hyperlink Text Management Language',
-              'Home Tool Markup Language'
+              'Home Tool Markup Language',
             ],
-            correct: 0
+            correct: 0,
           },
           {
             id: 'q2',
             text: 'Which CSS property changes text color?',
             options: ['text-color', 'font-color', 'color', 'text-style'],
-            correct: 2
+            correct: 2,
           },
           {
             id: 'q3',
@@ -89,13 +89,13 @@ export const DEV_MODULES = [
               'document.querySelector("#id")',
               'document.getElementById("id")',
               'document.getElement("id")',
-              'Both A and B'
+              'Both A and B',
             ],
-            correct: 3
-          }
-        ]
-      }
-    ]
+            correct: 3,
+          },
+        ],
+      },
+    ],
   },
   {
     id: 'dev-solana-basics',
@@ -114,7 +114,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '40 min',
         xp: 100,
-        description: 'How Solana achieves high throughput'
+        description: 'How Solana achieves high throughput',
       },
       {
         id: 'lesson-accounts-model',
@@ -122,7 +122,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '35 min',
         xp: 100,
-        description: 'Understanding Solana account structure'
+        description: 'Understanding Solana account structure',
       },
       {
         id: 'lesson-transactions',
@@ -130,7 +130,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '45 min',
         xp: 100,
-        description: 'How transactions work on Solana'
+        description: 'How transactions work on Solana',
       },
       {
         id: 'lesson-wallet-adapter',
@@ -138,7 +138,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '30 min',
         xp: 75,
-        description: 'Connecting wallets to your dApp'
+        description: 'Connecting wallets to your dApp',
       },
       {
         id: 'lesson-connect-wallet-project',
@@ -151,10 +151,10 @@ export const DEV_MODULES = [
           'Create a new web page',
           'Add wallet adapter library',
           'Implement connect button',
-          'Display connected wallet address'
-        ]
-      }
-    ]
+          'Display connected wallet address',
+        ],
+      },
+    ],
   },
   {
     id: 'dev-token-mastery',
@@ -173,7 +173,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '42 min',
         xp: 100,
-        description: 'Understanding the Token Program'
+        description: 'Understanding the Token Program',
       },
       {
         id: 'lesson-token-2022',
@@ -181,7 +181,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '38 min',
         xp: 100,
-        description: 'New features in Token-2022'
+        description: 'New features in Token-2022',
       },
       {
         id: 'lesson-metadata',
@@ -189,7 +189,7 @@ export const DEV_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '25 min',
         xp: 75,
-        description: 'Adding metadata to your tokens'
+        description: 'Adding metadata to your tokens',
       },
       {
         id: 'lesson-create-token-project',
@@ -202,11 +202,11 @@ export const DEV_MODULES = [
           'Create a new token mint',
           'Set up metadata',
           'Mint tokens to your wallet',
-          'Transfer tokens to another address'
-        ]
-      }
-    ]
-  }
+          'Transfer tokens to another address',
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================
@@ -231,7 +231,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '28 min',
         xp: 50,
-        description: 'Core game design concepts'
+        description: 'Core game design concepts',
       },
       {
         id: 'lesson-player-psychology',
@@ -239,7 +239,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '32 min',
         xp: 75,
-        description: 'What motivates players'
+        description: 'What motivates players',
       },
       {
         id: 'lesson-game-loops',
@@ -247,7 +247,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '20 min',
         xp: 50,
-        description: 'Designing engaging gameplay loops'
+        description: 'Designing engaging gameplay loops',
       },
       {
         id: 'lesson-game-design-quiz',
@@ -264,19 +264,19 @@ export const GAMING_MODULES = [
               'The main menu screen',
               'The repeating cycle of primary gameplay',
               'A programming pattern',
-              'The final boss fight'
+              'The final boss fight',
             ],
-            correct: 1
+            correct: 1,
           },
           {
             id: 'q2',
             text: 'Which is NOT a type of player motivation?',
             options: ['Achievement', 'Exploration', 'Compilation', 'Socialization'],
-            correct: 2
-          }
-        ]
-      }
-    ]
+            correct: 2,
+          },
+        ],
+      },
+    ],
   },
   {
     id: 'gaming-canvas',
@@ -295,7 +295,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '35 min',
         xp: 75,
-        description: 'Drawing graphics with Canvas'
+        description: 'Drawing graphics with Canvas',
       },
       {
         id: 'lesson-game-loop',
@@ -303,7 +303,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '40 min',
         xp: 100,
-        description: 'Implementing a proper game loop'
+        description: 'Implementing a proper game loop',
       },
       {
         id: 'lesson-sprites',
@@ -311,7 +311,7 @@ export const GAMING_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '45 min',
         xp: 100,
-        description: 'Animating game characters'
+        description: 'Animating game characters',
       },
       {
         id: 'lesson-first-game-project',
@@ -325,11 +325,11 @@ export const GAMING_MODULES = [
           'Add player character',
           'Implement keyboard controls',
           'Add collision detection',
-          'Display score'
-        ]
-      }
-    ]
-  }
+          'Display score',
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================
@@ -354,7 +354,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '22 min',
         xp: 50,
-        description: 'Planning effective content'
+        description: 'Planning effective content',
       },
       {
         id: 'lesson-finding-voice',
@@ -362,7 +362,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '20 min',
         xp: 50,
-        description: 'Developing your unique style'
+        description: 'Developing your unique style',
       },
       {
         id: 'lesson-audience',
@@ -370,9 +370,9 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '15 min',
         xp: 50,
-        description: 'Know who you\'re creating for'
-      }
-    ]
+        description: "Know who you're creating for",
+      },
+    ],
   },
   {
     id: 'content-storytelling',
@@ -391,7 +391,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '30 min',
         xp: 75,
-        description: 'Crafting compelling crypto narratives'
+        description: 'Crafting compelling crypto narratives',
       },
       {
         id: 'lesson-thread-writing',
@@ -399,7 +399,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '25 min',
         xp: 75,
-        description: 'Writing viral Twitter threads'
+        description: 'Writing viral Twitter threads',
       },
       {
         id: 'lesson-write-thread-project',
@@ -409,13 +409,13 @@ export const CONTENT_MODULES = [
         xp: 100,
         description: 'Create a viral-worthy Twitter thread',
         requirements: [
-          'Choose a topic you\'re passionate about',
+          "Choose a topic you're passionate about",
           'Write a 5-10 tweet thread',
           'Include hooks and CTAs',
-          'Add relevant images or graphics'
-        ]
-      }
-    ]
+          'Add relevant images or graphics',
+        ],
+      },
+    ],
   },
   // Growth modules (merged into content track)
   {
@@ -435,7 +435,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '28 min',
         xp: 75,
-        description: 'Think like a growth hacker'
+        description: 'Think like a growth hacker',
       },
       {
         id: 'lesson-metrics',
@@ -443,9 +443,9 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '20 min',
         xp: 50,
-        description: 'Key metrics to track'
-      }
-    ]
+        description: 'Key metrics to track',
+      },
+    ],
   },
   {
     id: 'growth-community',
@@ -464,7 +464,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '35 min',
         xp: 100,
-        description: 'Build and engage your community'
+        description: 'Build and engage your community',
       },
       {
         id: 'lesson-discord-strategy',
@@ -472,7 +472,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '30 min',
         xp: 75,
-        description: 'Running an effective Discord'
+        description: 'Running an effective Discord',
       },
       {
         id: 'lesson-community-playbook',
@@ -480,9 +480,9 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '25 min',
         xp: 50,
-        description: 'Templates and best practices'
-      }
-    ]
+        description: 'Templates and best practices',
+      },
+    ],
   },
   {
     id: 'growth-viral-loops',
@@ -501,7 +501,7 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.VIDEO,
         duration: '38 min',
         xp: 100,
-        description: 'Design content that spreads'
+        description: 'Design content that spreads',
       },
       {
         id: 'lesson-case-studies',
@@ -509,20 +509,16 @@ export const CONTENT_MODULES = [
         type: LESSON_TYPES.ARTICLE,
         duration: '30 min',
         xp: 75,
-        description: 'Learn from successful campaigns'
-      }
-    ]
-  }
+        description: 'Learn from successful campaigns',
+      },
+    ],
+  },
 ];
 
 // ============================================
 // ALL MODULES
 // ============================================
 
-export const ALL_MODULES = [
-  ...DEV_MODULES,
-  ...GAMING_MODULES,
-  ...CONTENT_MODULES
-];
+export const ALL_MODULES = [...DEV_MODULES, ...GAMING_MODULES, ...CONTENT_MODULES];
 
 export default ALL_MODULES;

@@ -23,18 +23,10 @@
  */
 
 // Manager exports
-export {
-  badgeManager,
-  BADGE_TIERS,
-  BADGE_CATEGORIES
-} from './manager.js';
+export { badgeManager, BADGE_TIERS, BADGE_CATEGORIES } from './manager.js';
 
 // Definition exports
-export {
-  BADGE_DEFINITIONS,
-  TIER_METADATA,
-  CATEGORY_METADATA
-} from './definitions.js';
+export { BADGE_DEFINITIONS, TIER_METADATA, CATEGORY_METADATA } from './definitions.js';
 
 // Default export
 export { badgeManager as default } from './manager.js';

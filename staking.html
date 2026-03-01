@@ -1,287 +1,345 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#06080f">
-<head>
-    <style>html,body{background:#06080f!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
+<!doctype html>
+<html lang="en" style="background: #06080f">
+  <head>
+    <style>
+      html,
+      body {
+        background: #06080f !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="view-transition" content="same-origin" />
     <title>ASDF Staking - Token Lock Dashboard | ASDF Ecosystem</title>
-    <meta name="description" content="View ASDF token locks, vesting schedules, and delegation stats. Powered by Streamflow.">
+    <meta
+      name="description"
+      content="View ASDF token locks, vesting schedules, and delegation stats. Powered by Streamflow."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="ASDF Staking - Token Lock Dashboard">
-    <meta property="og:description" content="Track ASDF token locks and vesting schedules. Powered by Streamflow.">
-    <meta property="og:image" content="https://alonisthe.dev/og-staking.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ASDF Staking - Token Lock Dashboard">
-    <meta name="twitter:description" content="Track ASDF token locks and vesting schedules. Powered by Streamflow.">
+    <meta property="og:title" content="ASDF Staking - Token Lock Dashboard" />
+    <meta
+      property="og:description"
+      content="Track ASDF token locks and vesting schedules. Powered by Streamflow."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-staking.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ASDF Staking - Token Lock Dashboard" />
+    <meta
+      name="twitter:description"
+      content="Track ASDF token locks and vesting schedules. Powered by Streamflow."
+    />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server-side Helmet -->
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
-    <link rel="stylesheet" href="css/staking.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/ecosystem.css" />
+    <link rel="stylesheet" href="css/staking.css" />
 
     <!-- Theme anti-flash (external for CSP compliance) -->
     <script src="/js/anti-flash.js"></script>
-    <link rel="stylesheet" href="css/runtime-components.css">
-</head>
-<body class="eco-page">
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body class="eco-page">
     <a href="#staking-main" class="skip-link">Skip to main content</a>
 
     <!-- Ambient Background -->
     <div class="staking-bg">
-        <div class="staking-orb staking-orb-1"></div>
-        <div class="staking-orb staking-orb-2"></div>
-        <div class="staking-grid-floor"></div>
+      <div class="staking-orb staking-orb-1"></div>
+      <div class="staking-orb staking-orb-2"></div>
+      <div class="staking-grid-floor"></div>
     </div>
 
     <!-- Ecosystem Navigation -->
     <nav class="eco-nav eco-nav--staking">
-        <a href="/" class="eco-nav-logo">
-            <div class="eco-nav-logo-mark">A</div>
-            <span>ASDF Tools</span>
-        </a>
-        <div class="eco-nav-links">
-            <div class="eco-nav-pill"></div>
-            <a href="/burns" class="eco-nav-link">Burns</a>
-            <a href="/forecast" class="eco-nav-link">Forecast</a>
-            <a href="/holdex" class="eco-nav-link">HolDex</a>
-            <a href="/staking" class="eco-nav-link active">Staking</a>
-            <a href="/ignition" class="eco-nav-link">Ignition</a>
-        </div>
-        <div class="eco-nav-right">
-            <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
-        </div>
+      <a href="/" class="eco-nav-logo">
+        <div class="eco-nav-logo-mark">A</div>
+        <span>ASDF Tools</span>
+      </a>
+      <div class="eco-nav-links">
+        <div class="eco-nav-pill"></div>
+        <a href="/burns" class="eco-nav-link">Burns</a>
+        <a href="/forecast" class="eco-nav-link">Forecast</a>
+        <a href="/holdex" class="eco-nav-link">HolDex</a>
+        <a href="/staking" class="eco-nav-link active">Staking</a>
+        <a href="/ignition" class="eco-nav-link">Ignition</a>
+      </div>
+      <div class="eco-nav-right">
+        <a href="/" class="eco-nav-home" title="Home">&#8962;</a>
+      </div>
     </nav>
 
     <!-- Style Drawer Button -->
     <button class="eco-style-btn" aria-label="Open theme drawer">
-        <span class="eco-style-icon">&#127912;</span>
+      <span class="eco-style-icon">&#127912;</span>
     </button>
 
     <!-- Theme Drawer -->
     <div class="eco-drawer-backdrop"></div>
     <aside class="eco-drawer">
-        <div class="eco-drawer-header">
-            <span class="eco-drawer-title">ASDF Tools</span>
-            <button class="eco-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="eco-drawer-body">
-            <!-- Dynamically populated by ecosystem.js -->
-        </div>
+      <div class="eco-drawer-header">
+        <span class="eco-drawer-title">ASDF Tools</span>
+        <button class="eco-drawer-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="eco-drawer-body">
+        <!-- Dynamically populated by ecosystem.js -->
+      </div>
     </aside>
 
     <!-- Hero Intro -->
     <section class="staking-hero" id="staking-main">
-        <div class="staking-hero-badge">
-            <span class="staking-hero-dot"></span>
-            <span>Token Locks</span>
-        </div>
-        <h1 class="staking-hero-title">Staking</h1>
-        <p class="staking-hero-sub">Transparent vesting via Streamflow. Locked supply protects holders.</p>
-        <p class="staking-hero-detail density-detailed">
-            View active locks, vesting schedules &amp; delegation stats.
-            All lock data verified on-chain through Streamflow smart contracts.
-        </p>
+      <div class="staking-hero-badge">
+        <span class="staking-hero-dot"></span>
+        <span>Token Locks</span>
+      </div>
+      <h1 class="staking-hero-title">Staking</h1>
+      <p class="staking-hero-sub">
+        Transparent vesting via Streamflow. Locked supply protects holders.
+      </p>
+      <p class="staking-hero-detail density-detailed">
+        View active locks, vesting schedules &amp; delegation stats. All lock data verified on-chain
+        through Streamflow smart contracts.
+      </p>
     </section>
 
     <!-- Main Content -->
     <main class="staking-main">
-        <!-- Guide (visible in detailed+ density) -->
-        <div class="staking-context density-detailed">
-            <strong>Token Locks:</strong> ASDF uses Streamflow for transparent token vesting.
-            Locked tokens cannot be sold until the vesting schedule completes. This protects
-            holders and ensures long-term commitment from the team and early investors.
+      <!-- Guide (visible in detailed+ density) -->
+      <div class="staking-context density-detailed">
+        <strong>Token Locks:</strong> ASDF uses Streamflow for transparent token vesting. Locked
+        tokens cannot be sold until the vesting schedule completes. This protects holders and
+        ensures long-term commitment from the team and early investors.
+      </div>
+
+      <!-- Header Stats -->
+      <section class="staking-stats">
+        <div class="staking-stat-card">
+          <div class="staking-stat-label">Total Locked</div>
+          <div class="staking-stat-value" id="stat-total-locked">--</div>
+          <div class="staking-stat-sub">ASDF tokens</div>
         </div>
+        <div class="staking-stat-card">
+          <div class="staking-stat-label">Total Deposited</div>
+          <div class="staking-stat-value" id="stat-deposited">--</div>
+          <div class="staking-stat-sub">across all locks</div>
+        </div>
+        <div class="staking-stat-card">
+          <div class="staking-stat-label">Active Locks</div>
+          <div class="staking-stat-value" id="stat-active-locks">--</div>
+          <div class="staking-stat-sub">currently vesting</div>
+        </div>
+        <div class="staking-stat-card">
+          <div class="staking-stat-label">Next Unlock</div>
+          <div class="staking-stat-value" id="stat-next-unlock">--</div>
+          <div class="staking-stat-sub">countdown</div>
+        </div>
+      </section>
 
-        <!-- Header Stats -->
-        <section class="staking-stats">
-            <div class="staking-stat-card">
-                <div class="staking-stat-label">Total Locked</div>
-                <div class="staking-stat-value" id="stat-total-locked">--</div>
-                <div class="staking-stat-sub">ASDF tokens</div>
+      <!-- Lock Browser -->
+      <section class="staking-browser">
+        <div class="staking-browser-header">
+          <h2 class="staking-section-title">Lock Browser</h2>
+          <div class="staking-browser-controls">
+            <div class="staking-filters">
+              <button class="staking-filter active" data-filter="all">All</button>
+              <button class="staking-filter" data-filter="active">Active</button>
+              <button class="staking-filter" data-filter="completed">Completed</button>
+              <button class="staking-filter" data-filter="mine" id="filter-mine">Mine</button>
             </div>
-            <div class="staking-stat-card">
-                <div class="staking-stat-label">Total Deposited</div>
-                <div class="staking-stat-value" id="stat-deposited">--</div>
-                <div class="staking-stat-sub">across all locks</div>
-            </div>
-            <div class="staking-stat-card">
-                <div class="staking-stat-label">Active Locks</div>
-                <div class="staking-stat-value" id="stat-active-locks">--</div>
-                <div class="staking-stat-sub">currently vesting</div>
-            </div>
-            <div class="staking-stat-card">
-                <div class="staking-stat-label">Next Unlock</div>
-                <div class="staking-stat-value" id="stat-next-unlock">--</div>
-                <div class="staking-stat-sub">countdown</div>
-            </div>
-        </section>
+            <select class="staking-sort" id="locks-sort" aria-label="Sort locks">
+              <option value="default">Sort</option>
+              <option value="amount">Amount &#8595;</option>
+              <option value="date">End Date</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+        </div>
+        <div class="staking-locks" id="locks-list">
+          <div class="staking-loading">
+            <div class="staking-spinner"></div>
+            <span>Loading locks from Streamflow...</span>
+          </div>
+        </div>
+      </section>
 
-        <!-- Lock Browser -->
-        <section class="staking-browser">
-            <div class="staking-browser-header">
-                <h2 class="staking-section-title">Lock Browser</h2>
-                <div class="staking-browser-controls">
-                    <div class="staking-filters">
-                        <button class="staking-filter active" data-filter="all">All</button>
-                        <button class="staking-filter" data-filter="active">Active</button>
-                        <button class="staking-filter" data-filter="completed">Completed</button>
-                        <button class="staking-filter" data-filter="mine" id="filter-mine">Mine</button>
-                    </div>
-                    <select class="staking-sort" id="locks-sort" aria-label="Sort locks">
-                        <option value="default">Sort</option>
-                        <option value="amount">Amount &#8595;</option>
-                        <option value="date">End Date</option>
-                        <option value="status">Status</option>
-                    </select>
-                </div>
-            </div>
-            <div class="staking-locks" id="locks-list">
-                <div class="staking-loading">
-                    <div class="staking-spinner"></div>
-                    <span>Loading locks from Streamflow...</span>
-                </div>
-            </div>
-        </section>
+      <!-- Unlock Timeline -->
+      <section class="staking-timeline-section">
+        <h2 class="staking-section-title">Unlock Timeline</h2>
+        <div class="staking-timeline" id="unlock-timeline">
+          <div class="staking-loading">
+            <div class="staking-spinner"></div>
+            <span>Building timeline...</span>
+          </div>
+        </div>
+      </section>
 
-        <!-- Unlock Timeline -->
-        <section class="staking-timeline-section">
-            <h2 class="staking-section-title">Unlock Timeline</h2>
-            <div class="staking-timeline" id="unlock-timeline">
-                <div class="staking-loading">
-                    <div class="staking-spinner"></div>
-                    <span>Building timeline...</span>
-                </div>
-            </div>
-        </section>
+      <!-- Vesting Glossary (density-detailed) -->
+      <section class="staking-glossary density-detailed">
+        <h2 class="staking-section-title">Vesting Glossary</h2>
+        <div class="glossary-grid">
+          <div class="glossary-item">
+            <dt class="glossary-term">Cliff</dt>
+            <dd class="glossary-def">
+              Initial lockup period before any tokens unlock. No withdrawals until the cliff ends.
+            </dd>
+          </div>
+          <div class="glossary-item">
+            <dt class="glossary-term">Linear Vesting</dt>
+            <dd class="glossary-def">
+              Tokens unlock gradually over time at a constant rate after the cliff period.
+            </dd>
+          </div>
+          <div class="glossary-item">
+            <dt class="glossary-term">TGE Unlock</dt>
+            <dd class="glossary-def">
+              Token Generation Event &mdash; percentage released immediately at launch before
+              vesting begins.
+            </dd>
+          </div>
+          <div class="glossary-item density-full">
+            <dt class="glossary-term">Streamflow</dt>
+            <dd class="glossary-def">
+              On-chain vesting protocol on Solana. All ASDF locks are verifiable via
+              Streamflow&rsquo;s smart contracts. No custodial risk.
+            </dd>
+          </div>
+        </div>
+      </section>
 
-        <!-- Vesting Glossary (density-detailed) -->
-        <section class="staking-glossary density-detailed">
-            <h2 class="staking-section-title">Vesting Glossary</h2>
-            <div class="glossary-grid">
-                <div class="glossary-item">
-                    <dt class="glossary-term">Cliff</dt>
-                    <dd class="glossary-def">Initial lockup period before any tokens unlock. No withdrawals until the cliff ends.</dd>
-                </div>
-                <div class="glossary-item">
-                    <dt class="glossary-term">Linear Vesting</dt>
-                    <dd class="glossary-def">Tokens unlock gradually over time at a constant rate after the cliff period.</dd>
-                </div>
-                <div class="glossary-item">
-                    <dt class="glossary-term">TGE Unlock</dt>
-                    <dd class="glossary-def">Token Generation Event &mdash; percentage released immediately at launch before vesting begins.</dd>
-                </div>
-                <div class="glossary-item density-full">
-                    <dt class="glossary-term">Streamflow</dt>
-                    <dd class="glossary-def">On-chain vesting protocol on Solana. All ASDF locks are verifiable via Streamflow&rsquo;s smart contracts. No custodial risk.</dd>
-                </div>
-            </div>
-        </section>
+      <!-- FAQ (density-detailed) -->
+      <section class="staking-faq density-detailed">
+        <h2 class="staking-section-title">Frequently Asked Questions</h2>
+        <div class="faq-grid">
+          <div class="faq-card">
+            <h3 class="faq-question">What is token locking?</h3>
+            <p class="faq-answer">
+              Tokens are deposited into a Streamflow smart contract with a defined vesting schedule.
+              They cannot be withdrawn or sold until the schedule allows.
+            </p>
+          </div>
+          <div class="faq-card">
+            <h3 class="faq-question">Why lock tokens?</h3>
+            <p class="faq-answer">
+              Locking signals long-term commitment. It protects holders from sudden sell pressure
+              and earns increased governance voting power.
+            </p>
+          </div>
+          <div class="faq-card">
+            <h3 class="faq-question">Can I cancel a lock?</h3>
+            <p class="faq-answer">
+              Only if the lock was created with cancellation enabled. Most ASDF locks are
+              non-cancellable to maximize holder confidence.
+            </p>
+          </div>
+          <div class="faq-card density-full">
+            <h3 class="faq-question">How does vote weighting work?</h3>
+            <p class="faq-answer">
+              Governance power = locked tokens &times; time multiplier. A 2-year lock earns 4x the
+              voting power of unlocked tokens, incentivizing long-term alignment.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <!-- FAQ (density-detailed) -->
-        <section class="staking-faq density-detailed">
-            <h2 class="staking-section-title">Frequently Asked Questions</h2>
-            <div class="faq-grid">
-                <div class="faq-card">
-                    <h3 class="faq-question">What is token locking?</h3>
-                    <p class="faq-answer">Tokens are deposited into a Streamflow smart contract with a defined vesting schedule. They cannot be withdrawn or sold until the schedule allows.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">Why lock tokens?</h3>
-                    <p class="faq-answer">Locking signals long-term commitment. It protects holders from sudden sell pressure and earns increased governance voting power.</p>
-                </div>
-                <div class="faq-card">
-                    <h3 class="faq-question">Can I cancel a lock?</h3>
-                    <p class="faq-answer">Only if the lock was created with cancellation enabled. Most ASDF locks are non-cancellable to maximize holder confidence.</p>
-                </div>
-                <div class="faq-card density-full">
-                    <h3 class="faq-question">How does vote weighting work?</h3>
-                    <p class="faq-answer">Governance power = locked tokens &times; time multiplier. A 2-year lock earns 4x the voting power of unlocked tokens, incentivizing long-term alignment.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Wallet Connect CTA -->
-        <section class="staking-cta" id="staking-cta">
-            <div class="staking-cta-inner">
-                <h2 class="staking-cta-title">Connect Wallet</h2>
-                <p class="staking-cta-text">View your personal lock positions and delegation status.</p>
-                <button class="staking-cta-btn" id="connect-wallet">Connect Phantom</button>
-            </div>
-        </section>
+      <!-- Wallet Connect CTA -->
+      <section class="staking-cta" id="staking-cta">
+        <div class="staking-cta-inner">
+          <h2 class="staking-cta-title">Connect Wallet</h2>
+          <p class="staking-cta-text">View your personal lock positions and delegation status.</p>
+          <button class="staking-cta-btn" id="connect-wallet">Connect Phantom</button>
+        </div>
+      </section>
     </main>
 
     <!-- Footer -->
     <footer class="staking-footer">
-        <span>ASDF Staking</span>
-        <span class="staking-footer-sep">&middot;</span>
-        <span>Powered by <a href="https://streamflow.finance" target="_blank" rel="noopener">Streamflow</a></span>
-        <span class="staking-footer-right">Data updates every 60s</span>
+      <span>ASDF Staking</span>
+      <span class="staking-footer-sep">&middot;</span>
+      <span
+        >Powered by
+        <a href="https://streamflow.finance" target="_blank" rel="noopener">Streamflow</a></span
+      >
+      <span class="staking-footer-right">Data updates every 60s</span>
     </footer>
 
-
     <!-- Lock Detail Modal -->
-    <div class="lock-modal-overlay" id="lock-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="lock-modal-title">
-        <div class="lock-modal">
-            <button class="lock-modal-close" id="lock-modal-close" aria-label="Close modal">&times;</button>
-            <div class="lock-modal-header">
-                <h3 class="lock-modal-title" id="lock-modal-title">Lock Detail</h3>
-                <span class="lock-modal-status staking-lock-status" id="lock-modal-status"></span>
-            </div>
-            <div class="lock-modal-body">
-                <div class="lock-modal-progress-wrap">
-                    <div class="staking-progress-bar lock-modal-progress-bar">
-                        <div class="staking-progress-fill" id="lock-modal-fill"></div>
-                    </div>
-                    <span class="lock-modal-pct" id="lock-modal-pct"></span>
-                </div>
-                <div class="lock-modal-rows">
-                    <div class="lock-modal-row">
-                        <span class="lock-modal-label">Total Deposited</span>
-                        <span class="lock-modal-value" id="lock-modal-amount"></span>
-                    </div>
-                    <div class="lock-modal-row">
-                        <span class="lock-modal-label">Unlocked</span>
-                        <span class="lock-modal-value" id="lock-modal-unlocked"></span>
-                    </div>
-                    <div class="lock-modal-row">
-                        <span class="lock-modal-label">Recipient</span>
-                        <span class="lock-modal-value lock-modal-mono" id="lock-modal-wallet"></span>
-                    </div>
-                    <div class="lock-modal-row">
-                        <span class="lock-modal-label">Start</span>
-                        <span class="lock-modal-value" id="lock-modal-start"></span>
-                    </div>
-                    <div class="lock-modal-row">
-                        <span class="lock-modal-label">End</span>
-                        <span class="lock-modal-value" id="lock-modal-end"></span>
-                    </div>
-                    <div class="lock-modal-row" id="lock-modal-next-row">
-                        <span class="lock-modal-label">Next Unlock</span>
-                        <span class="lock-modal-value" id="lock-modal-next"></span>
-                    </div>
-                </div>
-                <div class="lock-modal-footer">
-                    <a class="lock-modal-solscan" id="lock-modal-solscan" href="#" target="_blank" rel="noopener noreferrer">
-                        View on Solscan &#8599;
-                    </a>
-                </div>
-            </div>
+    <div
+      class="lock-modal-overlay"
+      id="lock-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lock-modal-title"
+    >
+      <div class="lock-modal">
+        <button class="lock-modal-close" id="lock-modal-close" aria-label="Close modal">
+          &times;
+        </button>
+        <div class="lock-modal-header">
+          <h3 class="lock-modal-title" id="lock-modal-title">Lock Detail</h3>
+          <span class="lock-modal-status staking-lock-status" id="lock-modal-status"></span>
         </div>
+        <div class="lock-modal-body">
+          <div class="lock-modal-progress-wrap">
+            <div class="staking-progress-bar lock-modal-progress-bar">
+              <div class="staking-progress-fill" id="lock-modal-fill"></div>
+            </div>
+            <span class="lock-modal-pct" id="lock-modal-pct"></span>
+          </div>
+          <div class="lock-modal-rows">
+            <div class="lock-modal-row">
+              <span class="lock-modal-label">Total Deposited</span>
+              <span class="lock-modal-value" id="lock-modal-amount"></span>
+            </div>
+            <div class="lock-modal-row">
+              <span class="lock-modal-label">Unlocked</span>
+              <span class="lock-modal-value" id="lock-modal-unlocked"></span>
+            </div>
+            <div class="lock-modal-row">
+              <span class="lock-modal-label">Recipient</span>
+              <span class="lock-modal-value lock-modal-mono" id="lock-modal-wallet"></span>
+            </div>
+            <div class="lock-modal-row">
+              <span class="lock-modal-label">Start</span>
+              <span class="lock-modal-value" id="lock-modal-start"></span>
+            </div>
+            <div class="lock-modal-row">
+              <span class="lock-modal-label">End</span>
+              <span class="lock-modal-value" id="lock-modal-end"></span>
+            </div>
+            <div class="lock-modal-row" id="lock-modal-next-row">
+              <span class="lock-modal-label">Next Unlock</span>
+              <span class="lock-modal-value" id="lock-modal-next"></span>
+            </div>
+          </div>
+          <div class="lock-modal-footer">
+            <a
+              class="lock-modal-solscan"
+              id="lock-modal-solscan"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View on Solscan &#8599;
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="js/utils/notice.js"></script>
     <script type="module" src="js/staking.js"></script>
     <script src="js/ecosystem.js" defer></script>
-</body>
+  </body>
 </html>

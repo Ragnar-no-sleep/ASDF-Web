@@ -16,7 +16,7 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   appendTransactionMessageInstruction,
   compileTransaction,
-  pipe
+  pipe,
 } from 'https://esm.sh/@solana/kit@5';
 
 // System Program for SOL transfers
@@ -27,7 +27,7 @@ import {
   getTransferInstruction,
   findAssociatedTokenPda,
   getCreateAssociatedTokenIdempotentInstruction,
-  TOKEN_PROGRAM_ADDRESS
+  TOKEN_PROGRAM_ADDRESS,
 } from 'https://esm.sh/@solana-program/token@0.5';
 
 import { SolanaClient, ASDF_TOKEN_MINT, TOKEN_DECIMALS, solToLamports } from './client.js';
@@ -66,7 +66,7 @@ export async function buildSolTransfer({ from, to, amountSOL }) {
   const transferIx = getTransferSolInstruction({
     source: fromAddr,
     destination: toAddr,
-    amount: amountLamports
+    amount: amountLamports,
   });
 
   // Create transaction message
@@ -80,7 +80,7 @@ export async function buildSolTransfer({ from, to, amountSOL }) {
   return {
     message,
     blockhash,
-    lastValidBlockHeight
+    lastValidBlockHeight,
   };
 }
 
@@ -98,14 +98,17 @@ export async function transferSolToTreasury(amountSOL) {
   const { message, blockhash, lastValidBlockHeight } = await buildSolTransfer({
     from,
     to: TREASURY_WALLET,
-    amountSOL
+    amountSOL,
   });
 
   // Sign and send via wallet
   const { signature } = await WalletManager.signAndSendTransaction(message);
 
   // Confirm
-  const confirmation = await SolanaClient.confirmTransaction(signature, { blockhash, lastValidBlockHeight });
+  const confirmation = await SolanaClient.confirmTransaction(signature, {
+    blockhash,
+    lastValidBlockHeight,
+  });
 
   if (confirmation.err) {
     throw new Error(`Transaction failed: ${JSON.stringify(confirmation.err)}`);
@@ -140,13 +143,13 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
   const [fromAta] = await findAssociatedTokenPda({
     owner: fromAddr,
     mint: mintAddr,
-    tokenProgram: TOKEN_PROGRAM_ADDRESS
+    tokenProgram: TOKEN_PROGRAM_ADDRESS,
   });
 
   const [toAta] = await findAssociatedTokenPda({
     owner: toAddr,
     mint: mintAddr,
-    tokenProgram: TOKEN_PROGRAM_ADDRESS
+    tokenProgram: TOKEN_PROGRAM_ADDRESS,
   });
 
   // Start building transaction message
@@ -164,7 +167,7 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
       payer: fromAddr,
       owner: toAddr,
       mint: mintAddr,
-      ata: toAta
+      ata: toAta,
     });
     message = appendTransactionMessageInstruction(createAtaIx, message);
   }
@@ -174,14 +177,14 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
     source: fromAta,
     destination: toAta,
     authority: fromAddr,
-    amount: rawAmount
+    amount: rawAmount,
   });
   message = appendTransactionMessageInstruction(transferIx, message);
 
   return {
     message,
     blockhash,
-    lastValidBlockHeight
+    lastValidBlockHeight,
   };
 }
 
@@ -201,14 +204,17 @@ export async function transferAsdfToEscrow(amount) {
     to: ESCROW_WALLET,
     mint: ASDF_TOKEN_MINT,
     amount,
-    decimals: TOKEN_DECIMALS
+    decimals: TOKEN_DECIMALS,
   });
 
   // Sign and send via wallet
   const { signature } = await WalletManager.signAndSendTransaction(message);
 
   // Confirm
-  const confirmation = await SolanaClient.confirmTransaction(signature, { blockhash, lastValidBlockHeight });
+  const confirmation = await SolanaClient.confirmTransaction(signature, {
+    blockhash,
+    lastValidBlockHeight,
+  });
 
   if (confirmation.err) {
     throw new Error(`Transaction failed: ${JSON.stringify(confirmation.err)}`);
@@ -235,14 +241,17 @@ export async function transferTokens(toAddress, amount, mintAddress = ASDF_TOKEN
     to: toAddress,
     mint: mintAddress,
     amount,
-    decimals: TOKEN_DECIMALS
+    decimals: TOKEN_DECIMALS,
   });
 
   // Sign and send via wallet
   const { signature } = await WalletManager.signAndSendTransaction(message);
 
   // Confirm
-  const confirmation = await SolanaClient.confirmTransaction(signature, { blockhash, lastValidBlockHeight });
+  const confirmation = await SolanaClient.confirmTransaction(signature, {
+    blockhash,
+    lastValidBlockHeight,
+  });
 
   if (confirmation.err) {
     throw new Error(`Transaction failed: ${JSON.stringify(confirmation.err)}`);
@@ -281,7 +290,7 @@ export async function hasSufficientSol(amountSOL, feeBuffer = 0.001) {
   if (!WalletManager.isConnected()) return false;
 
   const balance = await SolanaClient.getBalanceSOL(WalletManager.getAddress());
-  return balance >= (amountSOL + feeBuffer);
+  return balance >= amountSOL + feeBuffer;
 }
 
 /**
@@ -300,10 +309,7 @@ export async function hasSufficientAsdf(amount) {
 // EXPORTS
 // ============================================
 
-export {
-  TREASURY_WALLET,
-  ESCROW_WALLET
-};
+export { TREASURY_WALLET, ESCROW_WALLET };
 
 export default {
   buildSolTransfer,
@@ -313,5 +319,5 @@ export default {
   transferTokens,
   estimateFee,
   hasSufficientSol,
-  hasSufficientAsdf
+  hasSufficientAsdf,
 };

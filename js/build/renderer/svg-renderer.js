@@ -424,7 +424,6 @@ const SVGRenderer = {
     container = null;
     svgElement = null;
     isInitialized = false;
-
   },
 };
 

@@ -50,7 +50,6 @@ const ShopCollections = {
 
     // Calculate progress from inventory
     this.calculateProgress(inventory);
-
   },
 
   /**

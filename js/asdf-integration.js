@@ -46,7 +46,6 @@ function initASDF() {
 
   // 5. Track scroll to bottom
   trackScrollToBottom();
-
 }
 
 // ============================================
@@ -104,7 +103,6 @@ export function trackBurn(amount, element = null) {
   if (element) {
     triggerBurnAnimation(element, amount);
   }
-
 }
 
 /**
@@ -115,7 +113,6 @@ export function trackStake(amount, _element = null) {
   disclosureSystem.track('stake_tokens', { amount });
 
   soundSystem.play('stake');
-
 }
 
 /**
@@ -125,7 +122,6 @@ export function trackGamePlay(gameName, score, data = {}) {
   achievementSystem.track('play_game', { gameName, score, ...data });
 
   soundSystem.play('success');
-
 }
 
 /**

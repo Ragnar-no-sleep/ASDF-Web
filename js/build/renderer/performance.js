@@ -490,7 +490,6 @@ const MemoryManager = {
     this.resources.geometries.clear();
     this.resources.materials.clear();
     this.resources.textures.clear();
-
   },
 
   /**

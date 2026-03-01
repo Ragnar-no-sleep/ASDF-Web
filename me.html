@@ -1,184 +1,222 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Dashboard - ASDF</title>
-    <meta name="description" content="Your personal ASDF dashboard - track your K-Score, achievements, streaks, and ecosystem contributions.">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="My Dashboard - ASDF">
-    <meta property="og:description" content="Track your K-Score, achievements, and contributions to the ASDF ecosystem.">
-    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
-    <meta name="twitter:card" content="summary_large_image">
+    <meta
+      name="description"
+      content="Your personal ASDF dashboard - track your K-Score, achievements, streaks, and ecosystem contributions."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="My Dashboard - ASDF" />
+    <meta
+      property="og:description"
+      content="Track your K-Score, achievements, and contributions to the ASDF ecosystem."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/interactions.css">
-    <link rel="stylesheet" href="css/ecosystem.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/interactions.css" />
+    <link rel="stylesheet" href="css/ecosystem.css" />
 
-    <link rel="stylesheet" href="css/me.css">
+    <link rel="stylesheet" href="css/me.css" />
 
-    <link rel="stylesheet" href="css/runtime-components.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
 
     <div class="dashboard-container" id="main-content">
-        <!-- Header -->
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">My Dashboard</h1>
-            <p class="dashboard-subtitle">Your ASDF journey at a glance</p>
-        </div>
+      <!-- Header -->
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">My Dashboard</h1>
+        <p class="dashboard-subtitle">Your ASDF journey at a glance</p>
+      </div>
 
-        <!-- Top Row: K-Score + Streak -->
-        <div class="dashboard-grid">
-            <!-- K-Score -->
-            <div class="card">
-                <h2 class="card-title">K-Score</h2>
-                <div class="kscore-display">
-                    <div class="kscore-value" id="kScoreValue">0</div>
-                    <div class="kscore-breakdown">
-                        <div class="kscore-component">
-                            <div class="kscore-component-value" id="depthValue">0</div>
-                            <div class="kscore-component-label">Depth</div>
-                        </div>
-                        <div class="kscore-component">
-                            <div class="kscore-component-value" id="ownershipValue">0</div>
-                            <div class="kscore-component-label">Ownership</div>
-                        </div>
-                        <div class="kscore-component">
-                            <div class="kscore-component-value" id="loyaltyValue">0</div>
-                            <div class="kscore-component-label">Loyalty</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Daily Streak -->
-            <div class="card">
-                <h2 class="card-title">Daily Streak 🔥</h2>
-                <div class="streak-display">
-                    <div class="streak-value" id="streakValue">0</div>
-                    <div class="streak-label">days in a row</div>
-                </div>
-                <div class="streak-calendar" id="streakCalendar"></div>
-            </div>
-        </div>
-
-        <!-- Middle Row: Progress + Stats -->
-        <div class="dashboard-grid">
-            <!-- Exploration Progress -->
-            <div class="card">
-                <h2 class="card-title">Exploration Progress</h2>
-
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-label">Features Discovered</span>
-                        <span class="progress-value" id="featuresProgress">0/42</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" id="featuresBar" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Features discovered"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-label">Achievements Unlocked</span>
-                        <span class="progress-value" id="achievementsProgress">0/20</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" id="achievementsBar" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Achievements unlocked"></div>
-                    </div>
-                </div>
-
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-label">Pages Explored</span>
-                        <span class="progress-value" id="pagesProgress">0/10</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" id="pagesBar" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Pages explored"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="card">
-                <h2 class="card-title">Quick Stats</h2>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalBurns">0</div>
-                        <div class="stat-label">Total Burns</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalStakes">0</div>
-                        <div class="stat-label">Stakes</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="gamesPlayed">0</div>
-                        <div class="stat-label">Games Played</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="secretsFound">0</div>
-                        <div class="stat-label">Secrets Found</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Activity Heatmap -->
+      <!-- Top Row: K-Score + Streak -->
+      <div class="dashboard-grid">
+        <!-- K-Score -->
         <div class="card">
-            <h2 class="card-title">Activity Heatmap</h2>
-            <p style="font-size: var(--text-sm); color: var(--color-text-tertiary); margin-bottom: var(--space-lg);">
-                Your contribution to the ASDF ecosystem over the past year
-            </p>
-            <div class="heatmap">
-                <div class="heatmap-grid" id="heatmapGrid" role="img" aria-label="Activity heatmap showing contribution levels over the past year"></div>
-                <div class="heatmap-legend">
-                    <span>Less</span>
-                    <div class="heatmap-cell" data-level="0"></div>
-                    <div class="heatmap-cell" data-level="1"></div>
-                    <div class="heatmap-cell" data-level="2"></div>
-                    <div class="heatmap-cell" data-level="3"></div>
-                    <div class="heatmap-cell" data-level="4"></div>
-                    <div class="heatmap-cell" data-level="5"></div>
-                    <span>More</span>
-                </div>
+          <h2 class="card-title">K-Score</h2>
+          <div class="kscore-display">
+            <div class="kscore-value" id="kScoreValue">0</div>
+            <div class="kscore-breakdown">
+              <div class="kscore-component">
+                <div class="kscore-component-value" id="depthValue">0</div>
+                <div class="kscore-component-label">Depth</div>
+              </div>
+              <div class="kscore-component">
+                <div class="kscore-component-value" id="ownershipValue">0</div>
+                <div class="kscore-component-label">Ownership</div>
+              </div>
+              <div class="kscore-component">
+                <div class="kscore-component-value" id="loyaltyValue">0</div>
+                <div class="kscore-component-label">Loyalty</div>
+              </div>
             </div>
+          </div>
         </div>
 
-        <!-- Recent Achievements -->
+        <!-- Daily Streak -->
         <div class="card">
-            <h2 class="card-title">Recent Achievements</h2>
-            <div class="achievement-showcase" id="achievementShowcase"></div>
+          <h2 class="card-title">Daily Streak 🔥</h2>
+          <div class="streak-display">
+            <div class="streak-value" id="streakValue">0</div>
+            <div class="streak-label">days in a row</div>
+          </div>
+          <div class="streak-calendar" id="streakCalendar"></div>
+        </div>
+      </div>
+
+      <!-- Middle Row: Progress + Stats -->
+      <div class="dashboard-grid">
+        <!-- Exploration Progress -->
+        <div class="card">
+          <h2 class="card-title">Exploration Progress</h2>
+
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-label">Features Discovered</span>
+              <span class="progress-value" id="featuresProgress">0/42</span>
+            </div>
+            <div class="progress-bar-container">
+              <div
+                class="progress-bar-fill"
+                id="featuresBar"
+                style="width: 0%"
+                role="progressbar"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Features discovered"
+              ></div>
+            </div>
+          </div>
+
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-label">Achievements Unlocked</span>
+              <span class="progress-value" id="achievementsProgress">0/20</span>
+            </div>
+            <div class="progress-bar-container">
+              <div
+                class="progress-bar-fill"
+                id="achievementsBar"
+                style="width: 0%"
+                role="progressbar"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Achievements unlocked"
+              ></div>
+            </div>
+          </div>
+
+          <div class="progress-item">
+            <div class="progress-header">
+              <span class="progress-label">Pages Explored</span>
+              <span class="progress-value" id="pagesProgress">0/10</span>
+            </div>
+            <div class="progress-bar-container">
+              <div
+                class="progress-bar-fill"
+                id="pagesBar"
+                style="width: 0%"
+                role="progressbar"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Pages explored"
+              ></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Quick Stats -->
         <div class="card">
-            <h2 class="card-title">Quick Actions</h2>
-            <div class="quick-actions">
-                <a href="/burns" class="quick-action-btn ripple-trigger">
-                    &#128293; Burn Tokens
-                </a>
-                <a href="/staking" class="quick-action-btn ripple-trigger">
-                    &#128142; Stake Tokens
-                </a>
-                <a href="/games" class="quick-action-btn ripple-trigger">
-                    &#127918; Play Games
-                </a>
-                <a href="/build" class="quick-action-btn ripple-trigger">
-                    &#127959; Learn &amp; Build
-                </a>
+          <h2 class="card-title">Quick Stats</h2>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="totalBurns">0</div>
+              <div class="stat-label">Total Burns</div>
             </div>
+            <div class="stat-item">
+              <div class="stat-value" id="totalStakes">0</div>
+              <div class="stat-label">Stakes</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="gamesPlayed">0</div>
+              <div class="stat-label">Games Played</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="secretsFound">0</div>
+              <div class="stat-label">Secrets Found</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Activity Heatmap -->
+      <div class="card">
+        <h2 class="card-title">Activity Heatmap</h2>
+        <p
+          style="
+            font-size: var(--text-sm);
+            color: var(--color-text-tertiary);
+            margin-bottom: var(--space-lg);
+          "
+        >
+          Your contribution to the ASDF ecosystem over the past year
+        </p>
+        <div class="heatmap">
+          <div
+            class="heatmap-grid"
+            id="heatmapGrid"
+            role="img"
+            aria-label="Activity heatmap showing contribution levels over the past year"
+          ></div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="heatmap-cell" data-level="0"></div>
+            <div class="heatmap-cell" data-level="1"></div>
+            <div class="heatmap-cell" data-level="2"></div>
+            <div class="heatmap-cell" data-level="3"></div>
+            <div class="heatmap-cell" data-level="4"></div>
+            <div class="heatmap-cell" data-level="5"></div>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Achievements -->
+      <div class="card">
+        <h2 class="card-title">Recent Achievements</h2>
+        <div class="achievement-showcase" id="achievementShowcase"></div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <h2 class="card-title">Quick Actions</h2>
+        <div class="quick-actions">
+          <a href="/burns" class="quick-action-btn ripple-trigger"> &#128293; Burn Tokens </a>
+          <a href="/staking" class="quick-action-btn ripple-trigger"> &#128142; Stake Tokens </a>
+          <a href="/games" class="quick-action-btn ripple-trigger"> &#127918; Play Games </a>
+          <a href="/build" class="quick-action-btn ripple-trigger"> &#127959; Learn &amp; Build </a>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="js/me.js"></script>
-
-</body>
+  </body>
 </html>

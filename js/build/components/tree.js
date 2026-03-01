@@ -14,16 +14,7 @@ import { ModalFactory } from './modal.js';
 import { BurnApiService } from '../services/burn-api.js';
 import { isValidProjectId } from '../utils/security.js';
 import { RendererFactory } from '../renderer/index.js';
-import {
-  $,
-  $$,
-  addClass,
-  removeClass,
-  on,
-  delegate,
-  getData,
-  setStyles,
-} from '../utils/dom.js';
+import { $, $$, addClass, removeClass, on, delegate, getData, setStyles } from '../utils/dom.js';
 
 // ============================================
 // TREE CONFIGURATION

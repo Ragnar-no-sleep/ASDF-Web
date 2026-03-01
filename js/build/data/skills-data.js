@@ -15,51 +15,51 @@ export const SKILL_CATEGORIES = {
   blockchain: {
     id: 'blockchain',
     name: 'Blockchain',
-    icon: '\u26D3',  // Chain
-    color: '#8b5cf6'
+    icon: '\u26D3', // Chain
+    color: '#8b5cf6',
   },
   frontend: {
     id: 'frontend',
     name: 'Frontend',
     icon: '\u{1F3A8}',
-    color: '#06b6d4'
+    color: '#06b6d4',
   },
   backend: {
     id: 'backend',
     name: 'Backend',
-    icon: '\u2699',  // Gear
-    color: '#22c55e'
+    icon: '\u2699', // Gear
+    color: '#22c55e',
   },
   data: {
     id: 'data',
     name: 'Data',
     icon: '\u{1F4CA}',
-    color: '#f59e0b'
+    color: '#f59e0b',
   },
   security: {
     id: 'security',
     name: 'Security',
     icon: '\u{1F6E1}',
-    color: '#ef4444'
+    color: '#ef4444',
   },
   devops: {
     id: 'devops',
     name: 'DevOps',
-    icon: '\u2601',  // Cloud
-    color: '#3b82f6'
+    icon: '\u2601', // Cloud
+    color: '#3b82f6',
   },
   design: {
     id: 'design',
     name: 'Design',
     icon: '\u2728',
-    color: '#ec4899'
+    color: '#ec4899',
   },
   gaming: {
     id: 'gaming',
     name: 'Gaming',
     icon: '\u{1F3AE}',
-    color: '#a855f7'
-  }
+    color: '#a855f7',
+  },
 };
 
 // ============================================
@@ -74,7 +74,7 @@ export const SKILLS = {
     category: 'blockchain',
     level: 1,
     description: 'Understand Solana architecture, accounts, and transactions',
-    prerequisites: []
+    prerequisites: [],
   },
   'anchor-framework': {
     id: 'anchor-framework',
@@ -82,7 +82,7 @@ export const SKILLS = {
     category: 'blockchain',
     level: 2,
     description: 'Build Solana programs with Anchor',
-    prerequisites: ['solana-basics']
+    prerequisites: ['solana-basics'],
   },
   'token-program': {
     id: 'token-program',
@@ -90,7 +90,7 @@ export const SKILLS = {
     category: 'blockchain',
     level: 2,
     description: 'Create and manage SPL tokens',
-    prerequisites: ['solana-basics']
+    prerequisites: ['solana-basics'],
   },
   'token-2022': {
     id: 'token-2022',
@@ -98,7 +98,7 @@ export const SKILLS = {
     category: 'blockchain',
     level: 3,
     description: 'Advanced token features with Token-2022',
-    prerequisites: ['token-program']
+    prerequisites: ['token-program'],
   },
   'helius-rpc': {
     id: 'helius-rpc',
@@ -106,15 +106,15 @@ export const SKILLS = {
     category: 'blockchain',
     level: 2,
     description: 'Use Helius enhanced RPC and webhooks',
-    prerequisites: ['solana-basics']
+    prerequisites: ['solana-basics'],
   },
-  'metaplex': {
+  metaplex: {
     id: 'metaplex',
     name: 'Metaplex NFTs',
     category: 'blockchain',
     level: 3,
     description: 'Create and manage NFTs with Metaplex',
-    prerequisites: ['token-program']
+    prerequisites: ['token-program'],
   },
 
   // Frontend Skills
@@ -124,15 +124,15 @@ export const SKILLS = {
     category: 'frontend',
     level: 1,
     description: 'Build responsive web layouts',
-    prerequisites: []
+    prerequisites: [],
   },
-  'javascript': {
+  javascript: {
     id: 'javascript',
     name: 'JavaScript',
     category: 'frontend',
     level: 1,
     description: 'Core JavaScript programming',
-    prerequisites: []
+    prerequisites: [],
   },
   'dom-manipulation': {
     id: 'dom-manipulation',
@@ -140,23 +140,23 @@ export const SKILLS = {
     category: 'frontend',
     level: 2,
     description: 'Dynamic UI updates and interactions',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
-  'threejs': {
+  threejs: {
     id: 'threejs',
     name: 'Three.js',
     category: 'frontend',
     level: 3,
     description: '3D graphics in the browser',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
-  'gsap': {
+  gsap: {
     id: 'gsap',
     name: 'GSAP Animation',
     category: 'frontend',
     level: 2,
     description: 'Professional web animations',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
   'wallet-adapter': {
     id: 'wallet-adapter',
@@ -164,41 +164,41 @@ export const SKILLS = {
     category: 'frontend',
     level: 2,
     description: 'Integrate Solana wallets',
-    prerequisites: ['javascript', 'solana-basics']
+    prerequisites: ['javascript', 'solana-basics'],
   },
 
   // Backend Skills
-  'nodejs': {
+  nodejs: {
     id: 'nodejs',
     name: 'Node.js',
     category: 'backend',
     level: 1,
     description: 'Server-side JavaScript',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
-  'express': {
+  express: {
     id: 'express',
     name: 'Express.js',
     category: 'backend',
     level: 2,
     description: 'Build REST APIs with Express',
-    prerequisites: ['nodejs']
+    prerequisites: ['nodejs'],
   },
-  'webhooks': {
+  webhooks: {
     id: 'webhooks',
     name: 'Webhooks',
     category: 'backend',
     level: 2,
     description: 'Handle real-time events',
-    prerequisites: ['nodejs']
+    prerequisites: ['nodejs'],
   },
-  'caching': {
+  caching: {
     id: 'caching',
     name: 'Caching Strategies',
     category: 'backend',
     level: 3,
     description: 'Redis, memory caching, CDN',
-    prerequisites: ['nodejs']
+    prerequisites: ['nodejs'],
   },
 
   // Data Skills
@@ -208,7 +208,7 @@ export const SKILLS = {
     category: 'data',
     level: 2,
     description: 'Analyze on-chain and off-chain data',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
   'chart-visualization': {
     id: 'chart-visualization',
@@ -216,7 +216,7 @@ export const SKILLS = {
     category: 'data',
     level: 2,
     description: 'Create charts and dashboards',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
   'metrics-tracking': {
     id: 'metrics-tracking',
@@ -224,7 +224,7 @@ export const SKILLS = {
     category: 'data',
     level: 2,
     description: 'Track and display real-time metrics',
-    prerequisites: ['data-analysis']
+    prerequisites: ['data-analysis'],
   },
 
   // Security Skills
@@ -234,7 +234,7 @@ export const SKILLS = {
     category: 'security',
     level: 1,
     description: 'Web security fundamentals',
-    prerequisites: []
+    prerequisites: [],
   },
   'smart-contract-security': {
     id: 'smart-contract-security',
@@ -242,7 +242,7 @@ export const SKILLS = {
     category: 'security',
     level: 3,
     description: 'Audit and secure Solana programs',
-    prerequisites: ['anchor-framework', 'security-basics']
+    prerequisites: ['anchor-framework', 'security-basics'],
   },
   'wallet-security': {
     id: 'wallet-security',
@@ -250,7 +250,7 @@ export const SKILLS = {
     category: 'security',
     level: 2,
     description: 'Secure wallet integrations',
-    prerequisites: ['wallet-adapter', 'security-basics']
+    prerequisites: ['wallet-adapter', 'security-basics'],
   },
 
   // Gaming Skills
@@ -260,7 +260,7 @@ export const SKILLS = {
     category: 'gaming',
     level: 1,
     description: 'Core game design principles',
-    prerequisites: []
+    prerequisites: [],
   },
   'game-loops': {
     id: 'game-loops',
@@ -268,7 +268,7 @@ export const SKILLS = {
     category: 'gaming',
     level: 2,
     description: 'Implement game update and render loops',
-    prerequisites: ['javascript', 'game-design']
+    prerequisites: ['javascript', 'game-design'],
   },
   'canvas-graphics': {
     id: 'canvas-graphics',
@@ -276,16 +276,16 @@ export const SKILLS = {
     category: 'gaming',
     level: 2,
     description: '2D graphics with HTML5 Canvas',
-    prerequisites: ['javascript']
+    prerequisites: ['javascript'],
   },
-  'tokenomics': {
+  tokenomics: {
     id: 'tokenomics',
     name: 'Game Tokenomics',
     category: 'gaming',
     level: 3,
     description: 'Design token economies for games',
-    prerequisites: ['game-design', 'token-program']
-  }
+    prerequisites: ['game-design', 'token-program'],
+  },
 };
 
 // ============================================
@@ -296,73 +296,73 @@ export const PROJECT_SKILLS = {
   'burn-engine': {
     primary: ['token-2022', 'helius-rpc', 'webhooks'],
     secondary: ['solana-basics', 'anchor-framework', 'nodejs'],
-    teaches: ['token-2022', 'webhooks', 'caching']
+    teaches: ['token-2022', 'webhooks', 'caching'],
   },
   'burn-tracker': {
     primary: ['data-analysis', 'chart-visualization', 'helius-rpc'],
     secondary: ['javascript', 'dom-manipulation', 'metrics-tracking'],
-    teaches: ['chart-visualization', 'metrics-tracking', 'helius-rpc']
+    teaches: ['chart-visualization', 'metrics-tracking', 'helius-rpc'],
   },
   'token-launcher': {
     primary: ['token-program', 'token-2022', 'wallet-adapter'],
     secondary: ['solana-basics', 'javascript', 'security-basics'],
-    teaches: ['token-program', 'token-2022', 'wallet-security']
+    teaches: ['token-program', 'token-2022', 'wallet-security'],
   },
   'learn-platform': {
     primary: ['html-css', 'javascript', 'gsap'],
     secondary: ['dom-manipulation', 'game-design'],
-    teaches: ['html-css', 'javascript', 'game-loops']
+    teaches: ['html-css', 'javascript', 'game-loops'],
   },
   'games-platform': {
     primary: ['game-loops', 'canvas-graphics', 'gsap'],
     secondary: ['javascript', 'game-design', 'dom-manipulation'],
-    teaches: ['game-loops', 'canvas-graphics', 'game-design']
+    teaches: ['game-loops', 'canvas-graphics', 'game-design'],
   },
-  'holdex': {
+  holdex: {
     primary: ['data-analysis', 'helius-rpc', 'chart-visualization'],
     secondary: ['javascript', 'dom-manipulation', 'caching'],
-    teaches: ['data-analysis', 'helius-rpc', 'metrics-tracking']
+    teaches: ['data-analysis', 'helius-rpc', 'metrics-tracking'],
   },
-  'forecast': {
+  forecast: {
     primary: ['data-analysis', 'chart-visualization', 'metrics-tracking'],
     secondary: ['javascript', 'nodejs', 'caching'],
-    teaches: ['data-analysis', 'chart-visualization']
+    teaches: ['data-analysis', 'chart-visualization'],
   },
-  'ignition': {
+  ignition: {
     primary: ['token-program', 'anchor-framework', 'smart-contract-security'],
     secondary: ['solana-basics', 'security-basics'],
-    teaches: ['anchor-framework', 'smart-contract-security']
+    teaches: ['anchor-framework', 'smart-contract-security'],
   },
-  'oracle': {
+  oracle: {
     primary: ['helius-rpc', 'webhooks', 'data-analysis'],
     secondary: ['nodejs', 'express', 'caching'],
-    teaches: ['helius-rpc', 'webhooks']
+    teaches: ['helius-rpc', 'webhooks'],
   },
   'rpc-monitor': {
     primary: ['helius-rpc', 'metrics-tracking', 'nodejs'],
     secondary: ['express', 'caching', 'chart-visualization'],
-    teaches: ['helius-rpc', 'metrics-tracking']
+    teaches: ['helius-rpc', 'metrics-tracking'],
   },
   'community-hub': {
     primary: ['html-css', 'javascript', 'dom-manipulation'],
     secondary: ['gsap', 'game-design'],
-    teaches: ['dom-manipulation', 'gsap']
+    teaches: ['dom-manipulation', 'gsap'],
   },
   'deploy-pipeline': {
     primary: ['nodejs', 'express', 'security-basics'],
     secondary: ['caching', 'webhooks'],
-    teaches: ['nodejs', 'express', 'security-basics']
+    teaches: ['nodejs', 'express', 'security-basics'],
   },
   'security-audit': {
     primary: ['smart-contract-security', 'security-basics', 'anchor-framework'],
     secondary: ['solana-basics', 'token-program'],
-    teaches: ['smart-contract-security', 'wallet-security']
+    teaches: ['smart-contract-security', 'wallet-security'],
   },
   'ambassador-program': {
     primary: ['html-css', 'javascript'],
     secondary: ['dom-manipulation', 'gsap'],
-    teaches: ['html-css', 'javascript']
-  }
+    teaches: ['html-css', 'javascript'],
+  },
 };
 
 // ============================================
@@ -390,7 +390,7 @@ export function getProjectSkills(projectId) {
   return {
     primary: mapping.primary.map(id => SKILLS[id]).filter(Boolean),
     secondary: mapping.secondary.map(id => SKILLS[id]).filter(Boolean),
-    teaches: mapping.teaches.map(id => SKILLS[id]).filter(Boolean)
+    teaches: mapping.teaches.map(id => SKILLS[id]).filter(Boolean),
   };
 }
 
@@ -441,5 +441,5 @@ export default {
   getSkill,
   getProjectSkills,
   getSkillsByCategory,
-  getSkillPrerequisites
+  getSkillPrerequisites,
 };

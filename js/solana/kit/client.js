@@ -17,7 +17,7 @@ import {
   createSolanaRpc,
   createSolanaRpcSubscriptions,
   address,
-  getBase58Decoder
+  getBase58Decoder,
 } from 'https://esm.run/@solana/web3.js@2';
 
 // ============================================
@@ -28,18 +28,18 @@ const RPC_CONFIG = {
   // Helius mainnet (API key loaded from env/config)
   mainnet: {
     http: 'https://mainnet.helius-rpc.com/?api-key=',
-    ws: 'wss://mainnet.helius-rpc.com/?api-key='
+    ws: 'wss://mainnet.helius-rpc.com/?api-key=',
   },
   // Devnet for testing
   devnet: {
     http: 'https://api.devnet.solana.com',
-    ws: 'wss://api.devnet.solana.com'
+    ws: 'wss://api.devnet.solana.com',
   },
   // Local validator
   local: {
     http: 'http://127.0.0.1:8899',
-    ws: 'ws://127.0.0.1:8900'
-  }
+    ws: 'ws://127.0.0.1:8900',
+  },
 };
 
 // ASDF Token mint address
@@ -172,11 +172,13 @@ const SolanaClient = {
     if (!this.rpc) throw new Error('SolanaClient not initialized');
 
     // Get token accounts for this wallet
-    const result = await this.rpc.getTokenAccountsByOwner(
-      address(walletAddress),
-      { mint: address(ASDF_TOKEN_MINT) },
-      { encoding: 'jsonParsed' }
-    ).send();
+    const result = await this.rpc
+      .getTokenAccountsByOwner(
+        address(walletAddress),
+        { mint: address(ASDF_TOKEN_MINT) },
+        { encoding: 'jsonParsed' }
+      )
+      .send();
 
     if (!result.value || result.value.length === 0) {
       return 0;
@@ -202,10 +204,12 @@ const SolanaClient = {
   async sendTransaction(signedTransaction) {
     if (!this.rpc) throw new Error('SolanaClient not initialized');
 
-    const signature = await this.rpc.sendTransaction(signedTransaction, {
-      skipPreflight: false,
-      preflightCommitment: 'confirmed'
-    }).send();
+    const signature = await this.rpc
+      .sendTransaction(signedTransaction, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      })
+      .send();
 
     return signature;
   },
@@ -231,14 +235,20 @@ const SolanaClient = {
         if (status.err) {
           return { err: status.err };
         }
-        if (status.confirmationStatus === 'confirmed' || status.confirmationStatus === 'finalized') {
+        if (
+          status.confirmationStatus === 'confirmed' ||
+          status.confirmationStatus === 'finalized'
+        ) {
           return { err: null };
         }
       }
 
       // Check if blockhash expired
       const currentSlot = await this.getSlot();
-      if (blockhashContext?.lastValidBlockHeight && currentSlot > blockhashContext.lastValidBlockHeight) {
+      if (
+        blockhashContext?.lastValidBlockHeight &&
+        currentSlot > blockhashContext.lastValidBlockHeight
+      ) {
         return { err: 'BlockhashExpired' };
       }
 
@@ -255,7 +265,7 @@ const SolanaClient = {
   getRpc() {
     if (!this.rpc) throw new Error('SolanaClient not initialized');
     return this.rpc;
-  }
+  },
 };
 
 // ============================================
