@@ -98,6 +98,7 @@ async function renderGamesPage() {
     <script src="/js/games/state.js"></script>
     <script src="/js/games/api.js"></script>
     <script src="/js/games/shared/events.js"></script>
+    <script src="/js/games/shared/store.js"></script>
     <script src="/js/games/ui/rotation.js"></script>
     <script src="/js/games/ui/leaderboard.js"></script>
     <script src="/js/games/ui/competitive.js"></script>
