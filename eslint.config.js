@@ -50,7 +50,7 @@ export default [
       ...js.configs.recommended.rules,
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-empty': ['error', { allowEmptyCatch: true }],
-      'no-console': ['warn', { allow: ['warn', 'error', 'log'] }],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       eqeqeq: ['error', 'smart'],
       curly: ['error', 'multi-line', 'consistent'],
@@ -121,6 +121,14 @@ export default [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
+    },
+  },
+
+  // Debug utilities — console.log is their purpose
+  {
+    files: ['js/debug.js', 'js/core/debug.js'],
+    rules: {
+      'no-console': 'off',
     },
   },
 
