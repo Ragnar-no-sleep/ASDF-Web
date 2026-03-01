@@ -77,6 +77,7 @@
      Console theme: uses 9997-9998 for decorative pointer-events:none overlays
      ============================================ */
   --z-base: 1; /* Canvas, base content */
+  --z-content: 5; /* Tree nodes, formation items */
   --z-elevated: 10; /* Cards, elevated surfaces */
   --z-header: 50; /* Fixed navigation headers */
   --z-sticky: 50; /* Sticky headers, HUDs */
