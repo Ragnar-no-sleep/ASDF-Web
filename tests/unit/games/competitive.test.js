@@ -22,13 +22,23 @@ const GameEvents = {
   },
   off(event, fn) {
     const fns = this._listeners.get(event);
-    if (fns) this._listeners.set(event, fns.filter(f => f !== fn));
+    if (fns)
+      this._listeners.set(
+        event,
+        fns.filter(f => f !== fn)
+      );
   },
   emit(event, data) {
     const fns = this._listeners.get(event);
-    if (fns) fns.forEach(fn => {
-      try { fn(data); } catch (e) { console.error(`[GameEvents] ${event}:`, e); }
-    });
+    if (fns) {
+      fns.forEach(fn => {
+        try {
+          fn(data);
+        } catch (e) {
+          console.error(`[GameEvents] ${event}:`, e);
+        }
+      });
+    }
   },
 };
 
@@ -41,9 +51,15 @@ function createMockElement(id) {
     id,
     classList: {
       _classes: new Set(),
-      add(cls) { this._classes.add(cls); },
-      remove(cls) { this._classes.delete(cls); },
-      contains(cls) { return this._classes.has(cls); },
+      add(cls) {
+        this._classes.add(cls);
+      },
+      remove(cls) {
+        this._classes.delete(cls);
+      },
+      contains(cls) {
+        return this._classes.has(cls);
+      },
     },
     style: {},
   };
@@ -53,13 +69,11 @@ function createMockElement(id) {
 let domElements = {};
 
 // Mock document.getElementById
-const originalGetElementById = global.document
-  ? global.document.getElementById
-  : undefined;
+const originalGetElementById = global.document ? global.document.getElementById : undefined;
 
 beforeAll(() => {
   global.document = global.document || {};
-  global.document.getElementById = (id) => domElements[id] || null;
+  global.document.getElementById = id => domElements[id] || null;
 });
 
 afterAll(() => {
@@ -225,7 +239,10 @@ describe('CompetitiveUI', () => {
 
       // Now game:started reads the actual mode (practice after fallback)
       const actualMode = activeGameModes['dexdash'] || 'practice';
-      GameEvents.emit('game:started', { gameId: 'dexdash', isCompetitive: actualMode === 'competitive' });
+      GameEvents.emit('game:started', {
+        gameId: 'dexdash',
+        isCompetitive: actualMode === 'competitive',
+      });
 
       expect(startedHandler).toHaveBeenCalledWith({
         gameId: 'dexdash',

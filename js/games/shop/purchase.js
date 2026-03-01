@@ -201,8 +201,6 @@ const ShopPurchase = {
    * Cancel current purchase
    */
   cancel() {
-    if (this.currentPurchase) {
-    }
     this.reset();
   },
 
@@ -312,7 +310,6 @@ const ShopPurchase = {
     if (this.onStateChange) {
       this.onStateChange(newState, oldState);
     }
-
   },
 
   /**

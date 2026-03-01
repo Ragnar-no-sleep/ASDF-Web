@@ -22,11 +22,15 @@ const GameEvents = {
   },
   off(event, fn) {
     const fns = this._listeners.get(event);
-    if (fns) this._listeners.set(event, fns.filter(f => f !== fn));
+    if (fns)
+      this._listeners.set(
+        event,
+        fns.filter(f => f !== fn)
+      );
   },
   emit(event, data) {
     const fns = this._listeners.get(event);
-    if (fns)
+    if (fns) {
       fns.forEach(fn => {
         try {
           fn(data);
@@ -34,6 +38,7 @@ const GameEvents = {
           console.error(`[GameEvents] ${event}:`, e);
         }
       });
+    }
   },
 };
 

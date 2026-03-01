@@ -96,10 +96,13 @@ function startCountdown(targetMs) {
     if (mEl) mEl.textContent = pad(Math.floor((diff % TIME_MS.HOUR) / TIME_MS.MINUTE));
     if (sEl) sEl.textContent = pad(Math.floor((diff % TIME_MS.MINUTE) / TIME_MS.SECOND));
 
-    if (diff <= 0)
+    if (diff <= 0) {
       els.forEach(el => {
-        if (el) el.textContent = '00';
+        if (el) {
+          el.textContent = '00';
+        }
       });
+    }
   }
 
   tick();

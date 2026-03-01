@@ -24,11 +24,15 @@ const GameEvents = {
   },
   off(event, fn) {
     const fns = this._listeners.get(event);
-    if (fns) this._listeners.set(event, fns.filter(f => f !== fn));
+    if (fns)
+      this._listeners.set(
+        event,
+        fns.filter(f => f !== fn)
+      );
   },
   emit(event, data) {
     const fns = this._listeners.get(event);
-    if (fns)
+    if (fns) {
       fns.forEach(fn => {
         try {
           fn(data);
@@ -36,6 +40,7 @@ const GameEvents = {
           console.error(`[GameEvents] ${event}:`, e);
         }
       });
+    }
   },
 };
 
@@ -158,8 +163,7 @@ function startGame_events(gameId) {
   }
 
   // Read mode AFTER fallback (may have changed)
-  const actualMode =
-    typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
+  const actualMode = typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
   GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
 }
 
@@ -199,9 +203,7 @@ describe('GameLifecycle', () => {
 
       await endGame_scoreEvents('burnrunner', 800);
 
-      expect(handler).toHaveBeenCalledWith(
-        expect.objectContaining({ isCompetitive: true })
-      );
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ isCompetitive: true }));
     });
 
     it('should emit score:updated before game:ended', async () => {
@@ -220,9 +222,7 @@ describe('GameLifecycle', () => {
 
       await endGame_scoreEvents('tokencatcher', -500);
 
-      expect(handler).toHaveBeenCalledWith(
-        expect.objectContaining({ score: 0 })
-      );
+      expect(handler).toHaveBeenCalledWith(expect.objectContaining({ score: 0 }));
     });
   });
 

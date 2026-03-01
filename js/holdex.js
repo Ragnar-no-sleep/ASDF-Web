@@ -316,10 +316,13 @@ function setupEventListeners() {
   if (modalClose) modalClose.addEventListener('click', closeTokenModal);
 
   const modal = document.getElementById('token-modal');
-  if (modal)
+  if (modal) {
     modal.addEventListener('click', e => {
-      if (e.target === modal) closeTokenModal();
+      if (e.target === modal) {
+        closeTokenModal();
+      }
     });
+  }
 
   PageLifecycle.registerListener(document, 'keydown', e => {
     if (e.key === 'Escape') closeTokenModal();
