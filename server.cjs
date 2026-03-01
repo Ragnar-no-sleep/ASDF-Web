@@ -127,8 +127,9 @@ app.use(
         defaultSrc: ["'self'"],
         // Scripts: self + CDNs for Solana Kit (esm.sh) and DOMPurify (with SRI validation)
         scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com', 'https://esm.sh'],
-        // Allow inline event handlers (onclick etc) for games.html
-        scriptSrcAttr: ["'unsafe-inline'"],
+        // Inline event handlers (onclick etc) removed from all production pages
+        // Remaining onclick in demo/lab are gated behind !isProduction check
+        scriptSrcAttr: ["'none'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
