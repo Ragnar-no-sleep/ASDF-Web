@@ -112,7 +112,11 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(var(--forecast-accent-rgb), 0.03) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--forecast-accent-rgb), 0.03) 0%,
+    transparent 70%
+  );
   animation: glow-pulse 4s ease-in-out infinite;
 }
 
@@ -849,6 +853,7 @@ body {
 .preset-btn {
   flex: 1;
   padding: var(--space-xs);
+  min-height: 44px;
   background: transparent;
   border: 1px solid rgba(var(--forecast-accent-rgb), 0.15);
   color: rgba(var(--forecast-secondary-rgb), 0.5);
@@ -1078,7 +1083,11 @@ body {
 }
 
 [data-variant='2'] .cosmic-bg::after {
-  background: radial-gradient(ellipse at center, rgba(var(--forecast-accent-rgb), 0.03) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--forecast-accent-rgb), 0.03) 0%,
+    transparent 70%
+  );
 }
 
 [data-variant='2'] .data-column {
@@ -1182,7 +1191,13 @@ body {
 }
 
 [data-variant='3'] .scan-line {
-  background: linear-gradient(90deg, transparent, var(--forecast-accent), var(--forecast-synthwave-cyan), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--forecast-accent),
+    var(--forecast-synthwave-cyan),
+    transparent
+  );
   box-shadow: 0 0 15px var(--forecast-accent);
 }
 
@@ -1254,5 +1269,29 @@ body {
 
   .system-status {
     display: none;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION — Forecast-specific
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .matrix-rain,
+  .binary-rain,
+  .scanline-effect,
+  .glow-pulse {
+    animation: none;
+  }
+
+  .forecast-node,
+  .led-indicator,
+  .status-dot {
+    animation: none;
+  }
+
+  .forecast-panel,
+  .forecast-card,
+  .forecast-stat {
+    transition-duration: 0.01ms;
   }
 }

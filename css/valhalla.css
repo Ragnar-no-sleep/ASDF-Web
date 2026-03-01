@@ -968,6 +968,7 @@
 
 .inv-filter-btn {
   padding: var(--space-sm) var(--space-md);
+  min-height: 44px;
   background: var(--valhalla-stone);
   border: 1px solid var(--valhalla-iron);
   border-radius: var(--radius-full);
