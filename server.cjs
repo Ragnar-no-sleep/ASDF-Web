@@ -310,11 +310,7 @@ app.post('/api/redis', async (req, res) => {
   const expectedKey = process.env.REDIS_API_KEY;
 
   if (!expectedKey) {
-    // If no key configured, disable endpoint entirely in production
-    if (isProduction) {
-      return res.status(403).json({ error: 'Redis API disabled in production without REDIS_API_KEY' });
-    }
-    console.warn('[Redis API] No REDIS_API_KEY configured - endpoint unprotected in dev mode');
+    return res.status(403).json({ error: 'Redis API disabled without REDIS_API_KEY' });
   } else {
     // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
     const a = crypto.createHash('sha256').update(String(apiKey || '')).digest();
