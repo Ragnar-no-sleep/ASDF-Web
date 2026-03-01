@@ -725,6 +725,14 @@ const ShopUI = {
         this.handleFavoriteToggle(itemId);
       });
     });
+
+    // Image error fallbacks (CSP-safe — no inline onerror)
+    this.container.querySelectorAll('.shop-item img[loading="lazy"]').forEach(img => {
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
+      });
+    });
   },
 
   attachPaginationListeners() {

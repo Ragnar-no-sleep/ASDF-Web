@@ -109,8 +109,7 @@ const ShopItemCard = {
       return `<img src="${this.escapeHtml(item.asset_url)}"
                          alt="${this.escapeHtml(item.name)}"
                          class="card-image"
-                         loading="lazy"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         loading="lazy">
                     <div class="card-placeholder" style="display: none;">${this.getLayerIcon(item.layer)}</div>`;
     }
 
@@ -132,6 +131,20 @@ const ShopItemCard = {
     return `<div class="card-placeholder" style="background: linear-gradient(135deg, ${tierColor}40, ${tierColor}20);">
                     ${this.getLayerIcon(item.layer)}
                 </div>`;
+  },
+
+  /**
+   * Bind image error fallback listeners (CSP-safe — no inline onerror)
+   * Call after inserting rendered HTML into the DOM
+   * @param {HTMLElement} container - Parent element containing rendered cards
+   */
+  bindImageFallbacks(container) {
+    container.querySelectorAll('.card-image').forEach(img => {
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
+      });
+    });
   },
 
   /**

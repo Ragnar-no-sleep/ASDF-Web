@@ -338,22 +338,23 @@ describe('Security', () => {
   });
 
   describe('CSP Compliance', () => {
-    test('no inline scripts in template strings', () => {
+    test('no inline event handlers in template strings', () => {
       const jsFiles = getJsFiles(JS_GAMES_DIR);
+      const violations = [];
 
       for (const file of jsFiles) {
         const content = readFile(file);
         if (!content) continue;
 
-        // Check for onclick/onload in template strings (CSP violation)
+        // Check for onclick/onload/onerror in template strings (CSP violation)
         const inlineHandlers = content.match(/<[^>]+(onclick|onload|onerror)=/gi) || [];
 
         if (inlineHandlers.length > 0) {
-          console.warn(`[Security] ${path.basename(file)} has inline event handlers - CSP issue`);
+          violations.push(`${path.basename(file)}: ${inlineHandlers.length} inline handler(s)`);
         }
       }
 
-      expect(true).toBe(true);
+      expect(violations).toEqual([]);
     });
   });
 

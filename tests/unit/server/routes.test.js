@@ -177,6 +177,12 @@ describe('security headers', () => {
     expect(csp).toContain('https://lock-verifier.onrender.com');
   });
 
+  it('CSP blocks inline event handlers (script-src-attr none)', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toContain("script-src-attr 'none'");
+  });
+
   it('sets X-Content-Type-Options', async () => {
     const res = await request(app).get('/health');
     expect(res.headers['x-content-type-options']).toBe('nosniff');

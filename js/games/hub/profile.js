@@ -571,8 +571,7 @@ const Profile = {
                      style="--tier-color: ${tierColor}">
                     ${
                       item.asset_url
-                        ? `<img src="${escapeHtml(item.asset_url)}" alt="${escapeHtml(item.name)}" loading="lazy"
-                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        ? `<img src="${escapeHtml(item.asset_url)}" alt="${escapeHtml(item.name)}" loading="lazy">
                          <div class="item-placeholder" style="display: none;">${this.getLayerIcon(item.layer)}</div>`
                         : `<div class="item-placeholder">${this.getLayerIcon(item.layer)}</div>`
                     }
@@ -588,6 +587,14 @@ const Profile = {
         const itemId = el.dataset.itemId;
         const layer = el.dataset.layer;
         this.equipItem(itemId, layer);
+      });
+    });
+
+    // Bind image error fallback (CSP-safe — no inline onerror)
+    this.elements.inventoryGrid.querySelectorAll('img[loading="lazy"]').forEach(img => {
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
       });
     });
   },
