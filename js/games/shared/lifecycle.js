@@ -42,6 +42,10 @@ const GameLifecycle = {
     if (overlay) overlay.classList.add('hidden');
 
     requestAnimationFrame(() => {
+      // Read mode AFTER fallback logic (may have changed from competitive to practice)
+      const actualMode = typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
+      GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
+
       // Delegate to GameEngines coordinator if available
       if (typeof GameEngines !== 'undefined' && GameEngines.initialized) {
         GameEngines.start(gameId);
@@ -146,6 +150,8 @@ const GameLifecycle = {
 
     // Render game over UI
     this.renderGameOver(gameId, safeScore, xpResult, apiResult, submitError, isCompetitive);
+
+    GameEvents.emit('game:ended', { gameId, score: safeScore, isCompetitive });
   },
 
   /**
