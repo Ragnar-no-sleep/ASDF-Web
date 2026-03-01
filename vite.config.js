@@ -25,6 +25,11 @@ export default defineConfig({
         holdex: resolve(__dirname, 'holdex.html'),
         forecast: resolve(__dirname, 'forecast.html'),
         privacy: resolve(__dirname, 'privacy.html'),
+        staking: resolve(__dirname, 'staking.html'),
+        ignition: resolve(__dirname, 'ignition.html'),
+        me: resolve(__dirname, 'me.html'),
+        terrier: resolve(__dirname, 'terrier.html'),
+        ecosystemMap: resolve(__dirname, 'ecosystem-map.html'),
       },
       output: {
         chunkFileNames: 'js/[name]-[hash].js',

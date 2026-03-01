@@ -3,6 +3,9 @@
 # Philosophy: Don't trust. Verify.
 # Sans lint-staged (cause des bugs index.lock sur Windows)
 
+# Ensure Node.js is on PATH (Windows Git Bash may not inherit it)
+export PATH="/c/Program Files/nodejs:$PATH"
+
 echo "🔍 Running pre-commit checks..."
 
 # Get staged files
