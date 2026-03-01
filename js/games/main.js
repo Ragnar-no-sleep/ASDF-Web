@@ -131,7 +131,7 @@ function init() {
           } else {
             // Wallet changed - clear old state and reconnect
             GameStore.setWallet(connectedWallet);
-            GameStore.updateBalance(0, false);
+            GameStore.resetBalance();
             saveState();
             checkTokenBalance(connectedWallet);
           }
@@ -157,7 +157,7 @@ function init() {
         const newWallet = publicKey.toString();
         endCompetitiveSession();
         GameStore.setWallet(newWallet);
-        GameStore.updateBalance(0, false); // Reset until verified
+        GameStore.resetBalance(); // Security: silent reset before async verify
         saveState();
         checkTokenBalance(newWallet);
       } else {

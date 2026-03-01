@@ -17,11 +17,22 @@ const GameStore = {
   },
 
   clearWallet() {
-    if (typeof endCompetitiveSession === 'function') endCompetitiveSession();
+    endCompetitiveSession();
     appState.wallet = null;
     appState.isHolder = false;
     appState.balance = 0;
     GameEvents.emit('store:wallet-disconnected', {});
+  },
+
+  /**
+   * Reset balance to zero without emitting events.
+   * Used as a security precaution before async on-chain verification.
+   * The subsequent checkTokenBalance() call will emit balance-changed
+   * with the real verified data — one render, not two.
+   */
+  resetBalance() {
+    appState.balance = 0;
+    appState.isHolder = false;
   },
 
   updateBalance(balance, isHolder) {
