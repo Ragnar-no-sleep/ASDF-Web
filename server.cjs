@@ -175,7 +175,21 @@ app.use(
         // Inline event handlers (onclick etc) removed from all production pages
         // Remaining onclick in demo/lab are gated behind !isProduction check
         scriptSrcAttr: ["'none'"],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        // Disable bare style-src default — split into elem + attr below
+        styleSrc: null,
+        // Style tags: self + Google Fonts + FOUC anti-flash hashes (no unsafe-inline)
+        // Phase 2 will harden styleSrcAttr (inline style="" attributes)
+        styleSrcElem: [
+          "'self'",
+          'https://fonts.googleapis.com',
+          // FOUC anti-flash hashes — one per unique background color
+          "'sha256-g3zsE0Awsc4wfprhpe8YVZsqibeu2d4QukNDGbZkTHU='", // burns/forecast/ignition: html,body{background:#000!important}
+          "'sha256-UHB+MUGZC1RRhZqst+ys56opHmhRowJfMs9fGojrpJc='", // holdex: html,body{background:#0a0a0f!important}
+          "'sha256-VbU/423YJlS9/qfLYSz/0kkQJXKiizihJm3+NnDKEb4='", // staking: html,body{background:#06080f!important}
+          "'sha256-0lYMvYgiXsuAzDHBwjoj5n8jQ+Cv8pZbw11OmC2nhqc='", // build/games: html{background:#020812!important}body{background:transparent!important}
+          "'sha256-Eq449Zo+s3RjCHExwk5rAbkCNOYez04lqw5SYD5QKh4='", // index: html,body{background:#0d0906!important}
+        ],
+        styleSrcAttr: ["'unsafe-inline'"], // Phase 1: style="" attributes still allowed
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev

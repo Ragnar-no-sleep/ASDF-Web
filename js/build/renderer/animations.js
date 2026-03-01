@@ -608,37 +608,7 @@ const Animations = {
   },
 };
 
-// ============================================
-// CSS KEYFRAMES INJECTION
-// ============================================
-
-// Inject fallback keyframes if needed
-const injectKeyframes = () => {
-  if (document.getElementById('anim-keyframes')) return;
-
-  const style = document.createElement('style');
-  style.id = 'anim-keyframes';
-  style.textContent = `
-    @keyframes burnPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    @keyframes particleFloat {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(5px, 10px); }
-    }
-  `;
-  document.head.appendChild(style);
-};
-
-// Inject on load
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectKeyframes);
-  } else {
-    injectKeyframes();
-  }
-}
+// CSS keyframes extracted to css/runtime-components.css
 
 // ============================================
 // EXPORTS

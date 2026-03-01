@@ -50,34 +50,34 @@ const TOAST_CONFIG = {
     success: {
       icon: '✓',
       color: '#10b981',
-      sound: 'success'
+      sound: 'success',
     },
     error: {
       icon: '✕',
       color: '#ef4444',
-      sound: 'error'
+      sound: 'error',
     },
     warning: {
       icon: '⚠',
       color: '#f59e0b',
-      sound: 'warning'
+      sound: 'warning',
     },
     info: {
       icon: 'ℹ',
       color: '#3b82f6',
-      sound: 'info'
+      sound: 'info',
     },
     achievement: {
       icon: '🏆',
       color: '#8b5cf6',
-      sound: 'achievement'
+      sound: 'achievement',
     },
     burn: {
       icon: '🔥',
       color: '#f97316',
-      sound: 'burn'
-    }
-  }
+      sound: 'burn',
+    },
+  },
 };
 
 // ============================================
@@ -118,7 +118,6 @@ class ToastManager {
     if (typeof document === 'undefined') return;
 
     this._createContainer();
-    this._injectStyles();
     this._setupEventListeners();
 
     this.initialized = true;
@@ -142,144 +141,7 @@ class ToastManager {
     document.body.appendChild(this.container);
   }
 
-  /**
-   * Inject CSS styles
-   * @private
-   */
-  _injectStyles() {
-    if (document.getElementById('asdf-toast-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'asdf-toast-styles';
-    style.textContent = `
-      .toast-container {
-        position: fixed;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        pointer-events: none;
-        max-width: 400px;
-        padding: 16px;
-      }
-
-      .toast-top-right { top: 0; right: 0; }
-      .toast-top-left { top: 0; left: 0; }
-      .toast-bottom-right { bottom: 0; right: 0; }
-      .toast-bottom-left { bottom: 0; left: 0; }
-      .toast-top-center { top: 0; left: 50%; transform: translateX(-50%); }
-      .toast-bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
-
-      .toast {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px 16px;
-        background: rgba(17, 17, 17, 0.95);
-        border-radius: 8px;
-        border-left: 4px solid var(--toast-color, #3b82f6);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        pointer-events: auto;
-        cursor: default;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all ${TOAST_CONFIG.animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .toast-top-left .toast,
-      .toast-bottom-left .toast {
-        transform: translateX(-100%);
-      }
-
-      .toast-top-center .toast,
-      .toast-bottom-center .toast {
-        transform: translateY(-100%);
-      }
-
-      .toast.toast-visible {
-        opacity: 1;
-        transform: translateX(0) translateY(0);
-      }
-
-      .toast.toast-exit {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-
-      .toast-icon {
-        flex-shrink: 0;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        color: var(--toast-color, #3b82f6);
-      }
-
-      .toast-content {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .toast-title {
-        font-weight: 600;
-        font-size: 14px;
-        color: #fff;
-        margin-bottom: 2px;
-      }
-
-      .toast-message {
-        font-size: 13px;
-        color: #a1a1aa;
-        line-height: 1.4;
-        word-break: break-word;
-      }
-
-      .toast-close {
-        flex-shrink: 0;
-        background: none;
-        border: none;
-        color: #71717a;
-        cursor: pointer;
-        padding: 4px;
-        font-size: 16px;
-        line-height: 1;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-      }
-
-      .toast-close:hover {
-        opacity: 1;
-      }
-
-      .toast-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
-        background: var(--toast-color, #3b82f6);
-        border-radius: 0 0 0 8px;
-        opacity: 0.5;
-        transition: width linear;
-      }
-
-      @media (max-width: 480px) {
-        .toast-container {
-          left: 8px;
-          right: 8px;
-          max-width: none;
-          padding: 8px;
-        }
-        .toast-top-center,
-        .toast-bottom-center {
-          transform: none;
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-  }
+  // CSS extracted to css/runtime-components.css
 
   /**
    * Setup event listeners
@@ -287,7 +149,7 @@ class ToastManager {
    */
   _setupEventListeners() {
     // Listen for toast events from event bus
-    eventBus.on(EVENTS.TOAST_SHOW, (data) => {
+    eventBus.on(EVENTS.TOAST_SHOW, data => {
       this.show(data);
     });
   }
@@ -305,9 +167,7 @@ class ToastManager {
     this.init();
 
     // Normalize options
-    const opts = typeof options === 'string'
-      ? { message: options }
-      : { ...options };
+    const opts = typeof options === 'string' ? { message: options } : { ...options };
 
     const {
       message,
@@ -317,7 +177,7 @@ class ToastManager {
       icon = null,
       closable = true,
       progress = true,
-      onClick = null
+      onClick = null,
     } = opts;
 
     // Get type config
@@ -338,13 +198,13 @@ class ToastManager {
       color: typeConfig.color,
       closable,
       progress,
-      duration
+      duration,
     });
 
     // Add click handler
     if (onClick) {
       toast.style.cursor = 'pointer';
-      toast.addEventListener('click', (e) => {
+      toast.addEventListener('click', e => {
         if (!e.target.closest('.toast-close')) {
           onClick();
         }
@@ -529,7 +389,7 @@ class ToastManager {
       ...options,
       message,
       type: 'achievement',
-      duration: 5000
+      duration: 5000,
     });
   }
 
