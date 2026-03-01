@@ -9,6 +9,31 @@
 
 const CompetitiveUI = {
   /**
+   * Initialize event subscribers (must be called after GameEvents is defined)
+   */
+  init() {
+    if (typeof GameEvents !== 'undefined') {
+      GameEvents.on('game:mode-fallback', ({ gameId }) => {
+        this.resetToPractice(gameId);
+      });
+    }
+  },
+
+  /**
+   * Reset a game to practice mode (UI + state)
+   * @param {string} gameId - The game ID
+   */
+  resetToPractice(gameId) {
+    activeGameModes[gameId] = 'practice';
+    const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
+    const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
+    if (competitiveBtn) competitiveBtn.classList.remove('active');
+    if (practiceBtn) practiceBtn.classList.add('active');
+    const timerStat = document.getElementById(`timer-stat-${gameId}`);
+    if (timerStat) timerStat.style.display = 'none';
+  },
+
+  /**
    * Update global competitive timer display in header
    */
   updateGlobalTimer() {
@@ -66,17 +91,8 @@ const CompetitiveUI = {
       if (timerStat) timerStat.style.display = 'block';
       this.updateTimerDisplay(gameId);
     } else {
-      // Switch to practice mode
-      competitiveBtn.classList.remove('active');
-      practiceBtn.classList.add('active');
-      activeGameModes[gameId] = 'practice';
-
-      // End competitive session if active
       endCompetitiveSession();
-
-      // Hide timer
-      const timerStat = document.getElementById(`timer-stat-${gameId}`);
-      if (timerStat) timerStat.style.display = 'none';
+      this.resetToPractice(gameId);
     }
   },
 

@@ -94,6 +94,11 @@ function init() {
     });
   }
 
+  // Wire CompetitiveUI event subscribers (must be after GameEvents is defined)
+  if (typeof CompetitiveUI !== 'undefined') {
+    CompetitiveUI.init();
+  }
+
   loadState();
   checkDailyReset(); // Check if competitive time should reset for new day
   updateFeaturedGame();

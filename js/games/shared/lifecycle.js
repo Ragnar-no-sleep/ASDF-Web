@@ -23,18 +23,10 @@ const GameLifecycle = {
       // Verify we can still play competitive and start session
       if (typeof canPlayCompetitive === 'function' && !canPlayCompetitive(gameId)) {
         GameEvents.emit('notify', { msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.' });
-        activeGameModes[gameId] = 'practice';
-        const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-        const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-        if (competitiveBtn) competitiveBtn.classList.remove('active');
-        if (practiceBtn) practiceBtn.classList.add('active');
+        GameEvents.emit('game:mode-fallback', { gameId });
       } else if (typeof startCompetitiveSession === 'function' && !startCompetitiveSession()) {
         GameEvents.emit('notify', { msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement." });
-        activeGameModes[gameId] = 'practice';
-        const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-        const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-        if (competitiveBtn) competitiveBtn.classList.remove('active');
-        if (practiceBtn) practiceBtn.classList.add('active');
+        GameEvents.emit('game:mode-fallback', { gameId });
       }
     }
 
