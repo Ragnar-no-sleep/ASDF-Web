@@ -130,11 +130,9 @@ function init() {
             checkTokenBalance(connectedWallet);
           } else {
             // Wallet changed - clear old state and reconnect
-            appState.wallet = connectedWallet;
-            appState.isHolder = false;
-            appState.balance = 0;
+            GameStore.setWallet(connectedWallet);
+            GameStore.updateBalance(0, false);
             saveState();
-            updateWalletUI(connectedWallet);
             checkTokenBalance(connectedWallet);
           }
         })
@@ -149,28 +147,18 @@ function init() {
   const provider = getPhantomProvider();
   if (provider) {
     provider.on('disconnect', () => {
-      // End any active competitive session
-      endCompetitiveSession();
-      appState.wallet = null;
-      appState.isHolder = false;
-      appState.balance = 0;
+      // Provider already disconnected — just clear state
+      GameStore.clearWallet();
       saveState();
-      updateWalletUI(null);
-      updateAccessUI();
-      renderGamesGrid();
     });
 
     provider.on('accountChanged', publicKey => {
       if (publicKey) {
         const newWallet = publicKey.toString();
-        // End competitive session when switching accounts
         endCompetitiveSession();
-        appState.wallet = newWallet;
-        // SECURITY: Reset holder status until verified
-        appState.isHolder = false;
-        appState.balance = 0;
+        GameStore.setWallet(newWallet);
+        GameStore.updateBalance(0, false); // Reset until verified
         saveState();
-        updateWalletUI(newWallet);
         checkTokenBalance(newWallet);
       } else {
         disconnectWallet();
