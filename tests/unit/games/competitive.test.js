@@ -22,11 +22,12 @@ const GameEvents = {
   },
   off(event, fn) {
     const fns = this._listeners.get(event);
-    if (fns)
+    if (fns) {
       this._listeners.set(
         event,
         fns.filter(f => f !== fn)
       );
+    }
   },
   emit(event, data) {
     const fns = this._listeners.get(event);
