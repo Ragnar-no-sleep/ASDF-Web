@@ -6,6 +6,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
+const promClient = require('prom-client');
 
 // Structured logger — JSON in prod, pretty in dev
 const logger = pino({
@@ -13,6 +14,20 @@ const logger = pino({
   ...(process.env.NODE_ENV !== 'production' && {
     transport: { target: 'pino/file', options: { destination: 1 } },
   }),
+});
+
+// Prometheus metrics — default Node.js + custom HTTP histograms
+promClient.collectDefaultMetrics({ prefix: 'asdf_' });
+const httpRequestDuration = new promClient.Histogram({
+  name: 'asdf_http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+});
+const httpRequestsTotal = new promClient.Counter({
+  name: 'asdf_http_requests_total',
+  help: 'Total HTTP requests',
+  labelNames: ['method', 'route', 'status'],
 });
 
 // SSR renderer for games page
@@ -117,6 +132,19 @@ if (isProduction) {
   // Trust first proxy (Render, Heroku, etc.)
   app.set('trust proxy', 1);
 }
+
+// Prometheus HTTP metrics middleware
+app.use((req, res, next) => {
+  if (req.path === '/health' || req.path === '/metrics') return next();
+  const end = httpRequestDuration.startTimer();
+  res.on('finish', () => {
+    const route = req.route?.path || req.path;
+    const labels = { method: req.method, route, status: res.statusCode };
+    end(labels);
+    httpRequestsTotal.inc(labels);
+  });
+  next();
+});
 
 // Rate limiting - 400 requests per 15 minutes per IP
 const limiter = rateLimit({
@@ -279,6 +307,16 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
+});
+
+// Prometheus metrics endpoint — internal monitoring
+app.get('/metrics', async (req, res) => {
+  // In production, require API key to prevent scraping
+  if (isProduction && req.headers['x-metrics-key'] !== process.env.METRICS_API_KEY) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
 });
 
 // ============================================
