@@ -1528,12 +1528,14 @@
           ${cxBadge}${covBadge}${unresBadge}
         </div>
         ${gitHtml}
-        <div class="card-actions" onclick="event.stopPropagation()">
+        <div class="card-actions">
           ${IS_LOCAL ? `<a class="btn-open vscode" href="${vscodeUrl}" title="Ouvrir dans VSCode">⬡ VSCode</a>` : ''}
           <a class="btn-open github" href="${githubUrl}" target="_blank" rel="noopener" title="Voir sur GitHub">⎇ GitHub</a>
         </div>
       `;
 
+      const actions = card.querySelector('.card-actions');
+      if (actions) actions.addEventListener('click', e => e.stopPropagation());
       card.addEventListener('click', () => openModal(item));
 
       return card;

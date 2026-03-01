@@ -27,8 +27,12 @@
 
     <link rel="stylesheet" href="css/build.css">
     <link rel="stylesheet" href="css/journey.css">
-    <link rel="preload" href="css/viking-bg.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="css/viking-bg.css" as="style" id="viking-bg-preload">
     <noscript><link rel="stylesheet" href="css/viking-bg.css"></noscript>
+    <script>
+      var vbg = document.getElementById('viking-bg-preload');
+      vbg.addEventListener('load', function() { vbg.rel = 'stylesheet'; });
+    </script>
     <!-- Yggdrasil 3D Components -->
     <link rel="stylesheet" href="css/formation-panel.css">
     <link rel="stylesheet" href="css/skill-tree.css">

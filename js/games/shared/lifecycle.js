@@ -46,12 +46,9 @@ const GameLifecycle = {
       const actualMode = typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
       GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
 
-      // Delegate to GameEngines coordinator if available
-      if (typeof GameEngines !== 'undefined' && GameEngines.initialized) {
+      // Delegate to GameEngines coordinator
+      if (typeof GameEngines !== 'undefined') {
         GameEngines.start(gameId);
-      } else if (typeof initializeGame === 'function') {
-        // Fallback to legacy function
-        initializeGame(gameId);
       }
     });
   },
