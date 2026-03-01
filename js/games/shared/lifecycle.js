@@ -129,8 +129,9 @@ const GameLifecycle = {
           if (apiResult.isNewBest) {
             appState.practiceScores[gameId] = apiResult.bestScore;
             if (typeof saveState === 'function') saveState();
-            const bestEl = document.getElementById(`best-${gameId}`);
-            if (bestEl) bestEl.textContent = apiResult.bestScore;
+            if (typeof GameEvents !== 'undefined') {
+              GameEvents.emit('score:best', { gameId, score: apiResult.bestScore });
+            }
           }
         }
       } catch (error) {
