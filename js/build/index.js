@@ -169,7 +169,6 @@ const BuildApp = {
 
       // Hide loading overlay with fade
       this._hideLoading(loadingEl);
-
     } catch (error) {
       console.error('[BuildApp] Initialization failed:', error);
       this._showLoadingError(loadingEl, error);
@@ -221,11 +220,13 @@ const BuildApp = {
         <div class="error-icon">&#9888;</div>
         <p class="error-title">Failed to load Yggdrasil</p>
         <p class="error-message">${escapeHtml(error.message || 'Unknown error')}</p>
-        <button class="btn-retry" onclick="location.reload()">
+        <button class="btn-retry">
           <span>&#8635;</span> Retry
         </button>
       </div>`
     );
+    const retryBtn = el.querySelector('.btn-retry');
+    if (retryBtn) retryBtn.addEventListener('click', () => location.reload());
   },
 
   /**
