@@ -68,29 +68,44 @@ jobs:
 
     steps:
       - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          echo "🔥 Deploying ASDF-Web to Render..."
+          echo "Deploying ASDF-Web to Render..."
           echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
-          echo ""
-          echo "Render auto-deploy is enabled - deployment triggered automatically on push to main"
-          echo ""
-          echo "Monitor at: https://dashboard.render.com/web/srv-d599rtshg0os73c7u3qg"
 
-      - name: Wait for deploy
-        run: |
-          echo "⏳ Waiting for Render to deploy..."
-          sleep 60
-
-      - name: Health check
-        run: |
-          echo "🏥 Running health check..."
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://asdf-web.onrender.com/health || echo "000")
-          if [ "$response" = "200" ]; then
-            echo "✅ Health check passed"
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret not set — relying on Render auto-deploy"
+            echo "Set this secret to enable explicit deploy triggers"
           else
-            echo "⚠️ Health check returned: $response"
-            echo "Note: Render free tier may need wake-up time"
+            response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$RENDER_DEPLOY_HOOK_URL")
+            if [ "$response" = "200" ] || [ "$response" = "201" ]; then
+              echo "Deploy hook triggered successfully (HTTP $response)"
+            else
+              echo "::warning::Deploy hook returned HTTP $response"
+            fi
           fi
+
+      - name: Health check (with retry)
+        run: |
+          URL="https://hub.alonisthe.dev/health"
+          MAX_RETRIES=5
+          WAIT=30
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES (waiting ${WAIT}s)..."
+            sleep $WAIT
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$URL" || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "Health check passed (HTTP 200)"
+              exit 0
+            fi
+            echo "Got HTTP $code, retrying..."
+            WAIT=$((WAIT + 30))
+          done
+
+          echo "::warning::Health check did not return 200 after $MAX_RETRIES attempts"
+          echo "Render may still be deploying — check dashboard manually"
 
   # ============================================
   # Post-deploy notification
