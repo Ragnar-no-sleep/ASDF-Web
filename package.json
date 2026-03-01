@@ -48,7 +48,6 @@
     "husky": "^9.0.11",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
-    "lint-staged": "^15.2.2",
     "nodemon": "^3.0.2",
     "prettier": "^3.2.5",
     "supertest": "^7.2.2",
@@ -57,15 +56,6 @@
   "overrides": {
     "glob": "^10.5.0",
     "minimatch": "^10.2.1"
-  },
-  "lint-staged": {
-    "*.{js,html}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,css}": [
-      "prettier --write"
-    ]
   },
   "engines": {
     "node": ">=20.0.0"
