@@ -190,11 +190,6 @@ const ProgressTracker = {
     this.loadFromStorage();
     this.checkDailyStreak();
     this.recalculateTrackProgress();
-    console.log('[ProgressTracker] Initialized', {
-      level: this.data.level,
-      xp: this.data.totalXp,
-      streak: this.data.currentStreak,
-    });
     this.emit('initialized', this.getStats());
   },
 

@@ -89,7 +89,6 @@ const BuildApp = {
       return;
     }
 
-    console.log('[BuildApp] Initializing v' + this.version);
     const loadingEl = $('#app-loading');
 
     try {
@@ -99,7 +98,6 @@ const BuildApp = {
       // 2. Pre-load data
       this._updateLoadingText(loadingEl, 'Loading project data...');
       await DataAdapter.getProjects();
-      console.log('[BuildApp] Data loaded');
 
       // 3. Initialize modal factory
       ModalFactory.init();
@@ -151,8 +149,6 @@ const BuildApp = {
       // 9. Initialize Yggdrasil 3D components
       FormationPanel.init(SELECTORS.FORMATION_PANEL_ROOT);
       BuilderProfile.init(SELECTORS.BUILDER_PROFILE_ROOT);
-      console.log('[BuildApp] Formation panel and builder profile initialized');
-
       // 10. Initialize event handlers
       EventHandlers.init();
 
@@ -180,7 +176,6 @@ const BuildApp = {
       // Hide loading overlay with fade
       this._hideLoading(loadingEl);
 
-      console.log('[BuildApp] Initialization complete');
     } catch (error) {
       console.error('[BuildApp] Initialization failed:', error);
       this._showLoadingError(loadingEl, error);
@@ -500,7 +495,6 @@ const BuildApp = {
     ModalFactory.closeAll();
     IntroComponent.reset();
     QuizComponent.reset();
-    console.log('[BuildApp] State reset');
   },
 
   /**

@@ -113,8 +113,6 @@ const TracksComponent = {
     if (BuildState.data.selectedTrack) {
       this.selectTrack(BuildState.data.selectedTrack, false);
     }
-
-    console.log('[TracksComponent] Initialized');
   },
 
   /**

@@ -174,11 +174,6 @@ const Animations = {
 
     // Check for reduced motion preference
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    console.log('[Animations] Initialized', {
-      gsap: !!gsap,
-      reducedMotion: this.reducedMotion,
-    });
   },
 
   /**

@@ -376,7 +376,6 @@ const BuildState = {
       }
     }
 
-    console.log('[BuildState] Loaded from localStorage (validated)');
   },
 
   /**
@@ -395,10 +394,6 @@ const BuildState = {
    */
   init() {
     this.loadFromLocal();
-    console.log('[BuildState] Initialized', {
-      state: this.currentState,
-      track: this.data.selectedTrack,
-    });
     this.emit('initialized', { state: this.currentState });
   },
 

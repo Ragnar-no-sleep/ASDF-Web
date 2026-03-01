@@ -58,8 +58,6 @@ const StreakCounter = {
 
     // Start countdown timer
     this.startCountdown();
-
-    console.log('[StreakCounter] Initialized', streakData);
   },
 
   /**

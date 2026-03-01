@@ -381,8 +381,6 @@ const EventHandlers = {
 
     // Initial deep link processing
     processEvent('deeplink:init', {});
-
-    console.log('[EventHandlers] Initialized with', handlerChain.length, 'handlers');
   },
 
   /**

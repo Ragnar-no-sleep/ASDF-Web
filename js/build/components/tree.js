@@ -126,8 +126,6 @@ const TreeComponent = {
 
     // Initialize burn pulse system
     this.initBurnPulse();
-
-    console.log('[TreeComponent] Initialized');
   },
 
   /**
@@ -470,8 +468,6 @@ const TreeComponent = {
         this.resumeBurnPulse();
       }
     });
-
-    console.log('[TreeComponent] Burn pulse initialized');
   },
 
   /**

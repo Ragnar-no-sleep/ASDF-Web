@@ -120,9 +120,8 @@ async function loadStats() {
         sidebarCycles.textContent = data.totalCycles;
       }
     }
-  } catch (err) {
+  } catch {
     // Silently fail - stats will show defaults
-    console.log('Stats API not available');
   }
 }
 

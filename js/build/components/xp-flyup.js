@@ -20,7 +20,6 @@ const XPFlyup = {
    */
   init() {
     this.bindEvents();
-    console.log('[XPFlyup] Initialized');
   },
 
   /**
