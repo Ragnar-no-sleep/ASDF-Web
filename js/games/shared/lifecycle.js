@@ -231,20 +231,6 @@ const GameLifecycle = {
       gameOverDiv.appendChild(errorDiv);
     }
 
-    // Show achievements unlocked from this game
-    if (apiResult?.newAchievements && apiResult.newAchievements.length > 0) {
-      if (typeof GameRewards !== 'undefined') {
-        GameRewards.processScoreResponse(apiResult, gameId);
-
-        const achievementsSection = GameRewards.createGameOverAchievements(
-          apiResult.newAchievements
-        );
-        if (achievementsSection) {
-          gameOverDiv.appendChild(achievementsSection);
-        }
-      }
-    }
-
     const restartBtn = document.createElement('button');
     restartBtn.className = 'btn btn-primary game-over-restart';
     restartBtn.textContent = 'PLAY AGAIN';
