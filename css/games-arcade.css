@@ -407,7 +407,7 @@
   gap: var(--space-lg);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .arcade-cards {
     grid-template-columns: 260px;
   }
@@ -674,7 +674,7 @@
 /* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .arcade-hub {
     padding: var(--space-lg);
   }

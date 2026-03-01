@@ -2921,7 +2921,7 @@ body {
    RESPONSIVE
    ============================================ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .realm-medallion {
     width: 55px;
     height: 55px;
@@ -4592,7 +4592,7 @@ body {
    RESPONSIVE - Canonical Tree
    ============================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .yggdrasil-canonical {
     height: 700px;
   }
@@ -5565,7 +5565,7 @@ body {
   gap: 24px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .journey-content {
     grid-template-columns: 1fr;
   }

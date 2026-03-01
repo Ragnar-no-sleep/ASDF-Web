@@ -606,7 +606,7 @@ body.ready {
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .header {
     padding: var(--space-sm) var(--space-md);
   }

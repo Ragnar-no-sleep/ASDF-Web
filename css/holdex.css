@@ -1114,7 +1114,7 @@ body {
 /* ============================================
    Responsive
    ============================================ */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .main {
     grid-template-columns: 200px 1fr 200px;
   }
