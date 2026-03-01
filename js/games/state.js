@@ -271,10 +271,9 @@ async function connectWallet() {
     const response = await provider.connect();
     const publicKey = response.publicKey.toString();
 
-    appState.wallet = publicKey;
+    GameStore.setWallet(publicKey);
     saveState();
 
-    updateWalletUI(publicKey);
     await checkTokenBalance(publicKey);
   } catch (error) {
     console.error('Wallet connection failed:', error);
@@ -295,17 +294,8 @@ async function disconnectWallet() {
     console.warn('Disconnect error:', e);
   }
 
-  // End any active competitive session
-  endCompetitiveSession();
-
-  appState.wallet = null;
-  appState.isHolder = false;
-  appState.balance = 0;
+  GameStore.clearWallet();
   saveState();
-
-  updateWalletUI(null);
-  updateAccessUI();
-  renderGamesGrid();
 }
 
 /**
@@ -350,30 +340,23 @@ async function checkTokenBalance(publicKey) {
 
       if (profileResponse.ok) {
         const profile = await profileResponse.json();
-        appState.balance = profile.balance || 0;
-        appState.isHolder = profile.isHolder || false;
+        GameStore.updateBalance(profile.balance || 0, profile.isHolder || false);
       } else {
         // Session invalid on server, update local state
         ApiClient.setAuthenticated(false);
-        appState.balance = 0;
-        appState.isHolder = false;
+        GameStore.updateBalance(0, false);
       }
     } else {
       // Not authenticated - user needs to authenticate for verified holder status
       // For display only, show 0 balance until authenticated
-      appState.balance = 0;
-      appState.isHolder = false;
+      GameStore.updateBalance(0, false);
     }
 
     saveState();
-    updateAccessUI();
-    renderGamesGrid();
   } catch (error) {
     console.error('Failed to check token balance:', error);
-    appState.balance = 0;
-    appState.isHolder = false;
-    updateAccessUI();
-    renderGamesGrid();
+    GameStore.updateBalance(0, false);
+    // No saveState in catch — error state is transient
   }
 }
 

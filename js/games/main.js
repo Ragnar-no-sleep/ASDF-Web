@@ -78,6 +78,22 @@ function init() {
     GameEngines.init();
   }
 
+  // Subscribe to GameStore events for UI reactions
+  if (typeof GameEvents !== 'undefined') {
+    GameEvents.on('store:wallet-connected', ({ wallet }) => {
+      updateWalletUI(wallet);
+    });
+    GameEvents.on('store:wallet-disconnected', () => {
+      updateWalletUI(null);
+      updateAccessUI();
+      renderGamesGrid();
+    });
+    GameEvents.on('store:balance-changed', () => {
+      updateAccessUI();
+      renderGamesGrid();
+    });
+  }
+
   loadState();
   checkDailyReset(); // Check if competitive time should reset for new day
   updateFeaturedGame();
