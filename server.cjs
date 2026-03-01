@@ -4,6 +4,16 @@ const path = require('path');
 const crypto = require('crypto');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const pino = require('pino');
+const pinoHttp = require('pino-http');
+
+// Structured logger — JSON in prod, pretty in dev
+const logger = pino({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  ...(process.env.NODE_ENV !== 'production' && {
+    transport: { target: 'pino/file', options: { destination: 1 } },
+  }),
+});
 
 // SSR renderer for games page
 const { renderGamesPage } = require('./ssr/games.cjs');
@@ -87,11 +97,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Validate environment at startup
 if (isProduction && !process.env.NODE_ENV) {
-  console.error('[Server] NODE_ENV not set in production');
+  logger.fatal('NODE_ENV not set in production');
   process.exit(1);
 }
 if (process.env.REDIS_URL && !/^rediss?:\/\//.test(process.env.REDIS_URL)) {
-  console.error('[Server] REDIS_URL format invalid');
+  logger.fatal('REDIS_URL format invalid');
   process.exit(1);
 }
 
@@ -118,6 +128,13 @@ const limiter = rateLimit({
   skip: req => req.path === '/health', // Exclude health check from rate limiting
 });
 app.use(limiter);
+
+// Request logging — structured JSON with request ID
+app.use(pinoHttp({
+  logger,
+  autoLogging: { ignore: req => req.url === '/health' },
+  genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
+}));
 
 // Security headers
 app.use(
@@ -282,11 +299,11 @@ function getRedisClient() {
     });
 
     redisClient.on('error', (err) => {
-      console.error('[Redis] Connection error:', err.message);
+      logger.error({ err: err.message }, 'Redis connection error');
     });
 
     redisClient.on('connect', () => {
-      console.log('[Redis] Connected');
+      logger.info('Redis connected');
     });
   }
   return redisClient;
@@ -349,7 +366,7 @@ app.post('/api/redis', async (req, res) => {
     res.json(result);
 
   } catch (error) {
-    console.error('[Redis API] Error:', error.message);
+    logger.error({ err: error.message }, 'Redis API error');
     res.status(500).json({
       error: 'Redis operation failed',
       ...(isProduction ? {} : { message: error.message }),
@@ -383,7 +400,7 @@ async function serveGamesPage(req, res) {
       res.set('X-SSR', 'true'); // Debug header
       return res.send(html);
     } catch (err) {
-      console.error('[SSR] Games page error:', err.message);
+      logger.error({ err: err.message }, 'SSR games page error');
       // Fall through to static file
     }
   }
@@ -475,7 +492,7 @@ app.get('*', (req, res) => {
 // Global error handler — prevent stack trace leakage
 app.use((err, req, res, next) => {
   const status = err.status || 500;
-  console.error('[Server] Unhandled error:', err.message);
+  logger.error({ err: err.message, status }, 'Unhandled server error');
   res.status(status).json({
     error: isProduction ? 'Internal server error' : err.message,
   });
@@ -484,23 +501,22 @@ app.use((err, req, res, next) => {
 // Start server unless imported for testing
 const server = require.main === module
   ? app.listen(PORT, () => {
-      console.log(`ASDF Web running on port ${PORT}`);
-      console.log(`   http://localhost:${PORT}`);
+      logger.info({ port: PORT }, 'ASDF Web running');
     })
   : null;
 
-// Export for supertest
-module.exports = { app };
+// Export for supertest + shared logging
+module.exports = { app, logger };
 
 // Graceful shutdown — clean up Redis + close server
 function gracefulShutdown(signal) {
-  console.log(`[Server] ${signal} received, shutting down...`);
+  logger.info({ signal }, 'Graceful shutdown initiated');
   if (redisClient) {
     redisClient.quit().catch(() => {});
   }
   if (server) {
     server.close(() => {
-      console.log('[Server] HTTP server closed');
+      logger.info('HTTP server closed');
       process.exit(0);
     });
   } else {
