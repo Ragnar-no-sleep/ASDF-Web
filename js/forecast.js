@@ -17,6 +17,7 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet, formatTimeAgo } from './utils/format.js';
 import { esc } from './utils/escape.js';
+import { POLL_INTERVAL, ANIMATION } from './config/timing.js';
 
 const API_BASE = ASDF_ENDPOINTS.forecast;
 
@@ -211,8 +212,8 @@ function updateOdds(market) {
   // Binary AMM: payout = (opposing shares / own shares) * 0.94
   const sharesUp = market.sharesUp || 50;
   const sharesDown = market.sharesDown || 50;
-  const oddsUp = (sharesDown / sharesUp * 0.94).toFixed(2);
-  const oddsDown = (sharesUp / sharesDown * 0.94).toFixed(2);
+  const oddsUp = ((sharesDown / sharesUp) * 0.94).toFixed(2);
+  const oddsDown = ((sharesUp / sharesDown) * 0.94).toFixed(2);
 
   if (upEl) upEl.textContent = `multiplier: ${oddsUp}x`;
   if (downEl) downEl.textContent = `multiplier: ${oddsDown}x`;
@@ -233,13 +234,13 @@ function startCountdown(msUntilClose) {
   el.textContent = formatTime(Math.floor(state.msUntilClose / 1000));
 
   _countdownTimer = setInterval(() => {
-    state.msUntilClose = Math.max(0, state.msUntilClose - 1000);
-    el.textContent = formatTime(Math.floor(state.msUntilClose / 1000));
+    state.msUntilClose = Math.max(0, state.msUntilClose - ANIMATION.TICK);
+    el.textContent = formatTime(Math.floor(state.msUntilClose / ANIMATION.TICK));
     if (state.msUntilClose <= 0) {
       clearInterval(_countdownTimer);
       _countdownTimer = null;
     }
-  }, 1000);
+  }, ANIMATION.TICK);
 
   PageLifecycle.registerTimer('forecast-countdown', _countdownTimer);
 }
@@ -327,7 +328,9 @@ async function submitPrediction() {
   }
 
   // Wallet transaction required — pending Solana web3.js integration (POST /api/verify-bet)
-  window.showNotice('Prediction submission requires a wallet transaction — feature in development.');
+  window.showNotice(
+    'Prediction submission requires a wallet transaction — feature in development.'
+  );
 }
 
 // ============================================
@@ -370,7 +373,7 @@ async function init() {
     setInterval(async () => {
       const data = await fetchState(state.wallet || null);
       updateFromState(data);
-    }, 10000)
+    }, POLL_INTERVAL.FAST)
   );
 
   // Price refresh every 30s
@@ -379,7 +382,7 @@ async function init() {
     setInterval(async () => {
       const [data, walletData] = await Promise.all([fetchState(), fetchWallet()]);
       updateMarquee(data, walletData);
-    }, 30000)
+    }, POLL_INTERVAL.NORMAL)
   );
 }
 

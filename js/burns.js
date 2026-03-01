@@ -19,6 +19,7 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatNumber, formatWallet } from './utils/format.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
+import { POLL_INTERVAL, ANIMATION } from './config/timing.js';
 
 const API_BASE = ASDF_ENDPOINTS.burns;
 
@@ -83,9 +84,9 @@ async function fetchWalletStats() {
 // UI UPDATES
 // ============================================
 
-function animateCounter(element, target, duration = 2000) {
+function animateCounter(element, target, duration = ANIMATION.COUNTER) {
   const start = 0;
-  const increment = target / (duration / 16);
+  const increment = target / (duration / ANIMATION.FRAME);
   let current = start;
 
   // Trigger burn particles on the mega stat
@@ -102,7 +103,7 @@ function animateCounter(element, target, duration = 2000) {
       clearInterval(timer);
     }
     element.textContent = formatNumber(Math.floor(current), 2);
-  }, 16);
+  }, ANIMATION.FRAME);
 }
 
 async function updateStats() {
@@ -272,8 +273,8 @@ async function init() {
 
   await Promise.all([updateStats(), updateWalletStats()]);
 
-  PageLifecycle.registerTimer('burns-stats', setInterval(updateStats, 30000));
-  PageLifecycle.registerTimer('burns-wallet', setInterval(updateWalletStats, 60000));
+  PageLifecycle.registerTimer('burns-stats', setInterval(updateStats, POLL_INTERVAL.NORMAL));
+  PageLifecycle.registerTimer('burns-wallet', setInterval(updateWalletStats, POLL_INTERVAL.SLOW));
 }
 
 // Start when DOM is ready

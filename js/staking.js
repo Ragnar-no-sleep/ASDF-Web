@@ -21,19 +21,20 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
+import { POLL_INTERVAL, CACHE_TTL as CACHE_DURATIONS, TIME_MS } from './config/timing.js';
 
 // ============================================
 // CONSTANTS
 // ============================================
 
 const CACHE_KEY = 'asdf_locks_v2';
-const CACHE_TTL = 10 * 60 * 1000; // 10 min
+const CACHE_TTL = CACHE_DURATIONS.LOCKS;
 
 // TVU status → ASDF display status
 const STATUS_MAP = {
   vesting: 'active',
   fully_unlocked: 'completed',
-  pending: 'pending',     // future lock, not yet started
+  pending: 'pending', // future lock, not yet started
   cancelled: 'cancelled',
 };
 
@@ -63,9 +64,14 @@ function getCachedData() {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY); return null; }
+    if (Date.now() - ts > CACHE_TTL) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
     return data;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function setCachedData(data) {
@@ -81,7 +87,7 @@ function setCachedData(data) {
 function normalizeLock(raw) {
   // Amounts come pre-formatted from TVU (no decimals divide needed)
   const amount = raw.totalAmount || raw.amount || 0;
-  const unlocked = raw.unlocked != null ? raw.unlocked : (raw.withdrawn || 0);
+  const unlocked = raw.unlocked != null ? raw.unlocked : raw.withdrawn || 0;
 
   // Derive nextUnlock from unlockSchedule (first future entry)
   let nextUnlock = null;
@@ -216,33 +222,48 @@ function getDemoLocks() {
       title: 'Team Vesting',
       wallet: 'FcTcbGqcTpXqcHZptzp7XmKN2LvhPgBMMuLbGiFe16nG',
       sender: 'DF2DBPBnnTbkEgqWtRcEzT4ECMVFWwpQ63pz9Y8XDoJM',
-      amount: 10000000, deposited: 10000000, unlocked: 0,
+      amount: 10000000,
+      deposited: 10000000,
+      unlocked: 0,
       status: 'active',
-      startDate: new Date('2026-01-14'), endDate: new Date('2038-01-11'),
-      nextUnlock: new Date('2026-04-16'), nextUnlockAmount: 208333,
-      period: 7883982, unlockSchedule: [],
+      startDate: new Date('2026-01-14'),
+      endDate: new Date('2038-01-11'),
+      nextUnlock: new Date('2026-04-16'),
+      nextUnlockAmount: 208333,
+      period: 7883982,
+      unlockSchedule: [],
     },
     {
       id: 'demo-002',
       title: 'Community Treasury',
       wallet: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
       sender: 'dcW5uy7wKdKFxkhyBfPv3MyvrCkDcv1rWucoat13KH4',
-      amount: 10000000, deposited: 10000000, unlocked: 0,
+      amount: 10000000,
+      deposited: 10000000,
+      unlocked: 0,
       status: 'pending',
-      startDate: new Date('2026-06-19'), endDate: new Date('2026-06-19'),
-      nextUnlock: new Date('2026-06-19'), nextUnlockAmount: 9999999,
-      period: 1, unlockSchedule: [],
+      startDate: new Date('2026-06-19'),
+      endDate: new Date('2026-06-19'),
+      nextUnlock: new Date('2026-06-19'),
+      nextUnlockAmount: 9999999,
+      period: 1,
+      unlockSchedule: [],
     },
     {
       id: 'demo-003',
       title: 'Advisor Lock',
       wallet: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
       sender: '4evwwDJE7rQNfLtGBnmHGxZHVGKRqyqpoaR8Ab15qf9h',
-      amount: 5, deposited: 5, unlocked: 0,
+      amount: 5,
+      deposited: 5,
+      unlocked: 0,
       status: 'pending',
-      startDate: new Date('2055-02-25'), endDate: new Date('2055-02-25'),
-      nextUnlock: new Date('2055-02-25'), nextUnlockAmount: 4.999999,
-      period: 1, unlockSchedule: [],
+      startDate: new Date('2055-02-25'),
+      endDate: new Date('2055-02-25'),
+      nextUnlock: new Date('2055-02-25'),
+      nextUnlockAmount: 4.999999,
+      period: 1,
+      unlockSchedule: [],
     },
   ];
 }
@@ -265,8 +286,8 @@ function getCountdown(date) {
   if (!date) return '--';
   const diff = date.getTime() - Date.now();
   if (diff <= 0) return 'Now';
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
+  const days = Math.floor(diff / TIME_MS.DAY);
+  const hours = Math.floor((diff % TIME_MS.DAY) / TIME_MS.HOUR);
   if (days > 0) return days + 'd ' + hours + 'h';
   return hours + 'h';
 }
@@ -329,22 +350,37 @@ function renderLocks() {
     .map(lock => {
       const pct = getProgress(lock);
       return (
-        '<div class="staking-lock staking-lock--clickable" data-id="' + esc(lock.id) + '">' +
+        '<div class="staking-lock staking-lock--clickable" data-id="' +
+        esc(lock.id) +
+        '">' +
         '<div class="staking-lock-info">' +
-        '<div class="staking-lock-title">' + esc(lock.title) + '</div>' +
-        '<div class="staking-lock-wallet">' + esc(formatWallet(lock.wallet, 8, 4)) + '</div>' +
+        '<div class="staking-lock-title">' +
+        esc(lock.title) +
         '</div>' +
-        '<div class="staking-lock-amount">' + formatNumber(lock.amount) + ' ASDF</div>' +
+        '<div class="staking-lock-wallet">' +
+        esc(formatWallet(lock.wallet, 8, 4)) +
+        '</div>' +
+        '</div>' +
+        '<div class="staking-lock-amount">' +
+        formatNumber(lock.amount) +
+        ' ASDF</div>' +
         '<div class="staking-lock-progress">' +
-        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="staking-lock-pct">' + pct + '% unlocked</div>' +
+        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' +
+        pct +
+        '%"></div></div>' +
+        '<div class="staking-lock-pct">' +
+        pct +
+        '% unlocked</div>' +
         '</div>' +
-        '<span class="staking-lock-status ' + esc(lock.status) + '">' + esc(lock.status) + '</span>' +
+        '<span class="staking-lock-status ' +
+        esc(lock.status) +
+        '">' +
+        esc(lock.status) +
+        '</span>' +
         '</div>'
       );
     })
     .join('');
-
 }
 
 // ============================================
@@ -358,7 +394,10 @@ function showLockDetail(lock) {
   AudioFeedback.play('click');
 
   const pct = getProgress(lock);
-  const set = (id, val) => { const e = modal.querySelector('#' + id); if (e) e.textContent = val; };
+  const set = (id, val) => {
+    const e = modal.querySelector('#' + id);
+    if (e) e.textContent = val;
+  };
 
   set('lock-modal-title', lock.title);
 
@@ -383,7 +422,10 @@ function showLockDetail(lock) {
   if (nextRow) {
     if (lock.nextUnlock) {
       nextRow.style.display = '';
-      set('lock-modal-next', formatDate(lock.nextUnlock) + ' \u2014 ' + formatNumber(lock.nextUnlockAmount) + ' ASDF');
+      set(
+        'lock-modal-next',
+        formatDate(lock.nextUnlock) + ' \u2014 ' + formatNumber(lock.nextUnlockAmount) + ' ASDF'
+      );
     } else {
       nextRow.style.display = 'none';
     }
@@ -430,12 +472,21 @@ function renderTimeline() {
   }
 
   container.innerHTML = upcoming
-    .map(lock =>
-      '<div class="staking-timeline-item">' +
-      '<div class="staking-timeline-date">' + formatDate(lock.nextUnlock) + ' (' + getCountdown(lock.nextUnlock) + ')</div>' +
-      '<div class="staking-timeline-desc">' + esc(lock.title) + '</div>' +
-      '<div class="staking-timeline-amount">' + formatNumber(lock.nextUnlockAmount) + ' ASDF</div>' +
-      '</div>'
+    .map(
+      lock =>
+        '<div class="staking-timeline-item">' +
+        '<div class="staking-timeline-date">' +
+        formatDate(lock.nextUnlock) +
+        ' (' +
+        getCountdown(lock.nextUnlock) +
+        ')</div>' +
+        '<div class="staking-timeline-desc">' +
+        esc(lock.title) +
+        '</div>' +
+        '<div class="staking-timeline-amount">' +
+        formatNumber(lock.nextUnlockAmount) +
+        ' ASDF</div>' +
+        '</div>'
     )
     .join('');
 }
@@ -459,7 +510,10 @@ function updateStats() {
     }
   });
 
-  const el = (id, val) => { const e = $(id); if (e) e.textContent = val; };
+  const el = (id, val) => {
+    const e = $(id);
+    if (e) e.textContent = val;
+  };
   el('#stat-total-locked', formatNumber(totalLocked));
   el('#stat-deposited', formatNumber(totalDeposited));
   el('#stat-active-locks', activeLocks.toString());
@@ -514,10 +568,14 @@ function init() {
 
   const modalOverlay = $('#lock-modal');
   if (modalOverlay) {
-    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeLockModal(); });
+    modalOverlay.addEventListener('click', e => {
+      if (e.target === modalOverlay) closeLockModal();
+    });
   }
 
-  PageLifecycle.registerListener(document, 'keydown', e => { if (e.key === 'Escape') closeLockModal(); });
+  PageLifecycle.registerListener(document, 'keydown', e => {
+    if (e.key === 'Escape') closeLockModal();
+  });
 
   // Mine filter hidden until wallet connected
   const mineFilter = $('#filter-mine');
@@ -551,7 +609,10 @@ function init() {
   // No API refetch — operates on in-memory locks state
   PageLifecycle.registerTimer(
     'staking-refresh',
-    setInterval(() => { renderTimeline(); updateStats(); }, 60000)
+    setInterval(() => {
+      renderTimeline();
+      updateStats();
+    }, POLL_INTERVAL.SLOW)
   );
 }
 
