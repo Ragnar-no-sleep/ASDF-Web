@@ -9,46 +9,13 @@
  */
 
 // ============================================
-// INLINE DEPENDENCIES (no module bundler)
+// SHARED FIXTURES + INLINE SUT
 // ============================================
 
-const GameEvents = {
-  _listeners: new Map(),
-  on(event, fn) {
-    if (!this._listeners.has(event)) this._listeners.set(event, []);
-    this._listeners.get(event).push(fn);
-    return () => this.off(event, fn);
-  },
-  off(event, fn) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      this._listeners.set(
-        event,
-        fns.filter(f => f !== fn)
-      );
-    }
-  },
-  emit(event, data) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      fns.forEach(fn => {
-        try {
-          fn(data);
-        } catch (e) {
-          console.error(`[GameEvents] ${event}:`, e);
-        }
-      });
-    }
-  },
-};
+const { createGameEvents, createAppState } = require('../../fixtures/game-mocks');
 
-// Mock appState (mirrors state.js shape)
-const appState = {
-  wallet: null,
-  isHolder: false,
-  balance: 0,
-  competitiveSessionStart: null,
-};
+const GameEvents = createGameEvents();
+const appState = createAppState();
 
 // Mock endCompetitiveSession (defined in state.js, loaded before store.js)
 const endCompetitiveSession = jest.fn();

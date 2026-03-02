@@ -10,77 +10,25 @@
  */
 
 // ============================================
-// INLINE DEPENDENCIES (no module bundler)
+// SHARED FIXTURES + INLINE SUT
 // ============================================
 
-const GameEvents = {
-  _listeners: new Map(),
-  on(event, fn) {
-    if (!this._listeners.has(event)) this._listeners.set(event, []);
-    this._listeners.get(event).push(fn);
-    return () => this.off(event, fn);
-  },
-  off(event, fn) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      this._listeners.set(
-        event,
-        fns.filter(f => f !== fn)
-      );
-    }
-  },
-  emit(event, data) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      fns.forEach(fn => {
-        try {
-          fn(data);
-        } catch (e) {
-          console.error(`[GameEvents] ${event}:`, e);
-        }
-      });
-    }
-  },
-};
+const {
+  createGameEvents,
+  createMockElement,
+  setupElementRegistry,
+} = require('../../fixtures/game-mocks');
+
+const GameEvents = createGameEvents();
 
 // Mock activeGameModes (defined in state.js at runtime)
 const activeGameModes = {};
 
-// Minimal DOM mock
-function createMockElement(id) {
-  return {
-    id,
-    classList: {
-      _classes: new Set(),
-      add(cls) {
-        this._classes.add(cls);
-      },
-      remove(cls) {
-        this._classes.delete(cls);
-      },
-      contains(cls) {
-        return this._classes.has(cls);
-      },
-    },
-    style: {},
-  };
-}
-
 // DOM element registry for getElementById mock
-let domElements = {};
-
-// Mock document.getElementById
-const originalGetElementById = global.document ? global.document.getElementById : undefined;
-
-beforeAll(() => {
-  global.document = global.document || {};
-  global.document.getElementById = id => domElements[id] || null;
-});
+const { elements: domElements, cleanup: cleanupRegistry } = setupElementRegistry();
 
 afterAll(() => {
-  if (originalGetElementById) {
-    global.document.getElementById = originalGetElementById;
-  }
+  cleanupRegistry();
 });
 
 // CompetitiveUI under test (mirrors production competitive.js)
@@ -113,7 +61,7 @@ describe('CompetitiveUI', () => {
     // Reset state
     Object.keys(activeGameModes).forEach(k => delete activeGameModes[k]);
     GameEvents._listeners.clear();
-    domElements = {};
+    Object.keys(domElements).forEach(k => delete domElements[k]);
   });
 
   // ============================================

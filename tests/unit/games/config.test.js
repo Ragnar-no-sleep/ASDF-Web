@@ -39,14 +39,7 @@ const DEFAULT_CONFIG = {
   CYCLE_WEEKS: 9,
 };
 
-/**
- * Validate Solana address (same as state.js)
- */
-function isValidSolanaAddress(address) {
-  if (typeof address !== 'string') return false;
-  if (address.length < 32 || address.length > 44) return false;
-  return /^[1-9A-HJ-NP-Za-km-z]+$/.test(address);
-}
+const { isValidSolanaAddress } = require('../../fixtures/game-mocks');
 
 /**
  * Config validation

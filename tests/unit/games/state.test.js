@@ -28,15 +28,7 @@ const VALID_GAME_IDS = new Set([
   'liquiditymaze',
 ]);
 
-/**
- * Validate Solana address format
- * Base58 alphabet excludes 0, O, I, l
- */
-function isValidSolanaAddress(address) {
-  if (typeof address !== 'string') return false;
-  if (address.length < 32 || address.length > 44) return false;
-  return /^[1-9A-HJ-NP-Za-km-z]+$/.test(address);
-}
+const { isValidSolanaAddress } = require('../../fixtures/game-mocks');
 
 /**
  * Generate a simple hash for integrity checking
