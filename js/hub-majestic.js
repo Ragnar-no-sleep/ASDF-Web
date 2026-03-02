@@ -270,14 +270,61 @@ import { initInteractions } from './utils/interactions.js';
     center.appendChild(portal);
   };
 
+  // --- View toggle: orbital ↔ grid ---
+  const initViewToggle = () => {
+    const KEY = 'asdf-hub-view';
+    const toggle = document.getElementById('hubViewToggle');
+    const icon = document.getElementById('hubToggleIcon');
+    const label = document.getElementById('hubToggleLabel');
+    const orbital = document.getElementById('main-hub');
+    const grid = document.getElementById('hubGridView');
+
+    const setView = view => {
+      if (view === 'grid') {
+        orbital.setAttribute('data-view', 'grid');
+        grid.classList.add('is-active');
+        icon.innerHTML = '&#9673;';
+        label.textContent = 'Orbital View';
+      } else {
+        orbital.removeAttribute('data-view');
+        grid.classList.remove('is-active');
+        icon.innerHTML = '&#9638;';
+        label.textContent = 'Grid View';
+      }
+      try {
+        localStorage.setItem(KEY, view);
+      } catch (_e) {
+        /* private browsing */
+      }
+    };
+
+    try {
+      if (localStorage.getItem(KEY) === 'grid') setView('grid');
+    } catch (_e) {
+      /* private browsing */
+    }
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const current = grid.classList.contains('is-active') ? 'grid' : 'orbital';
+        setView(current === 'grid' ? 'orbital' : 'grid');
+      });
+    }
+  };
+
   // --- Init ---
   const init = () => {
     checkReducedMotion();
     initParallax();
     initNodeGlow();
     initTools();
+    initViewToggle();
     initFullscreenPrompt();
     initEasterEgg();
+
+    // Achievement init (deferred scripts loaded before DOMContentLoaded)
+    if (window.AchievementToast) window.AchievementToast.init();
+    if (window.AchievementEngine) window.AchievementEngine.autoArrival();
 
     // Init micro-interactions system
     initInteractions({

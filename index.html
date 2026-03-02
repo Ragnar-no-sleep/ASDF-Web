@@ -293,51 +293,5 @@
     <script src="js/hub-cosmos.js" defer></script>
     <script type="module" src="js/hub-majestic.js"></script>
     <script src="js/consent/index.js" defer></script>
-    <script>
-      // Achievement init on hub
-      if (window.AchievementToast) AchievementToast.init();
-      if (window.AchievementEngine) AchievementEngine.autoArrival();
-
-      // View toggle: orbital ↔ grid
-      (function () {
-        var KEY = 'asdf-hub-view';
-        var toggle = document.getElementById('hubViewToggle');
-        var icon = document.getElementById('hubToggleIcon');
-        var label = document.getElementById('hubToggleLabel');
-        var orbital = document.getElementById('main-hub');
-        var grid = document.getElementById('hubGridView');
-
-        function setView(view) {
-          if (view === 'grid') {
-            orbital.setAttribute('data-view', 'grid');
-            grid.classList.add('is-active');
-            icon.innerHTML = '&#9673;'; // circle = orbital
-            label.textContent = 'Orbital View';
-          } else {
-            orbital.removeAttribute('data-view');
-            grid.classList.remove('is-active');
-            icon.innerHTML = '&#9638;'; // square = grid
-            label.textContent = 'Grid View';
-          }
-          try {
-            localStorage.setItem(KEY, view);
-          } catch (e) {}
-        }
-
-        // Restore saved preference
-        var saved = null;
-        try {
-          saved = localStorage.getItem(KEY);
-        } catch (e) {}
-        if (saved === 'grid') setView('grid');
-
-        if (toggle) {
-          toggle.addEventListener('click', function () {
-            var current = grid.classList.contains('is-active') ? 'grid' : 'orbital';
-            setView(current === 'grid' ? 'orbital' : 'grid');
-          });
-        }
-      })();
-    </script>
   </body>
 </html>
