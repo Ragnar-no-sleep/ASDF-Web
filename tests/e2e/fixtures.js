@@ -93,3 +93,42 @@ export function isMobileViewport(page) {
   const viewport = page.viewportSize();
   return viewport ? viewport.width < 480 : false;
 }
+
+/**
+ * Collect network errors (4xx/5xx responses) during page lifecycle.
+ * Call BEFORE navigation — returns a mutable array that fills as responses arrive.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseURL — used to tag isFirstParty
+ * @returns {{ url: string, status: number, isFirstParty: boolean }[]}
+ */
+export function collectNetworkErrors(page, baseURL) {
+  const errors = [];
+  page.on('response', response => {
+    const status = response.status();
+    if (status >= 400) {
+      errors.push({
+        url: response.url(),
+        status,
+        isFirstParty: response.url().startsWith(baseURL),
+      });
+    }
+  });
+  return errors;
+}
+
+/**
+ * Collect performance metrics via Navigation Timing API.
+ * Call AFTER page has reached 'load' state.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<{ loadTimeMs: number, ttfbMs: number }>}
+ */
+export async function collectPerfMetrics(page) {
+  return page.evaluate(() => {
+    const nav = performance.getEntriesByType('navigation')[0];
+    if (!nav) return { loadTimeMs: 0, ttfbMs: 0 };
+    return {
+      loadTimeMs: Math.round(nav.loadEventEnd - nav.startTime),
+      ttfbMs: Math.round(nav.responseStart - nav.startTime),
+    };
+  });
+}
