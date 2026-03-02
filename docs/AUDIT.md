@@ -5,7 +5,7 @@
 > Q-Score Global: **72 WAG**
 > Auditor: CYNIC (5 parallel agents, ~400 files analyzed)
 > Branch: `develop` (113 commits ahead of main)
-> Tests: 566/566 pass (24 suites)
+> Tests: 635/635 unit (26 suites) + 120 E2E (11 specs)
 
 ### Scores by Dimension
 

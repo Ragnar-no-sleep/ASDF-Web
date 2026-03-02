@@ -1,7 +1,7 @@
 # ROADMAP-LIVE.md
 
 **Updated:** 2026-03-02
-**Status:** Phase 2.0 — P2 remaining (CSS quality + A11Y)
+**Status:** Phase 2.0 — E2E smoke + mobile responsive complete
 **Owner:** CYNIC / ragnarnosleep + sollama58 + zeyxx
 
 ---
@@ -255,6 +255,24 @@ Rapid iteration through all 27 audit findings. 18 fixed, 2 false positives, 7 de
 
 **Tests:** 635/635 unit (26 suites) + 42 E2E (7 specs).
 
+### P2.1 — Mobile Responsive + E2E Smoke (2026-03-02)
+
+**Mobile Responsive (4 commits):**
+- [x] `849c136` test(e2e): enable Playwright mobile viewport project (iPhone 13)
+- [x] `96f1f48` fix(hub): auto-switch to grid view below 480px
+- [x] `bc5432c` refactor(e2e): eliminate cascade failures in journey specs
+- [x] `7cd5633` test(e2e): add mobile viewport guards and responsive assertions
+
+**E2E Smoke — Universal Telemetry + Health Agent (1 commit):**
+- [x] `efe1efe` test(e2e): add universal telemetry + health agent smoke specs
+- Data-driven config: `tests/e2e/config/routes.js` (16 pages, 2 redirects, 1 API, 5 external)
+- Telemetry (48 tests): console errors (route-scoped noise filter), network 404s, load time + TTFB
+- Health agent (25 tests + 5 fixme): route status, redirects, /health JSON, security headers (CSP, nosniff, referrer-policy, permissions-policy), RGPD (consent banner, privacy sections, localStorage persistence)
+- External APIs: `test.fixme()` soft-fail (never break build)
+- CI fast-path: `npx playwright test --grep @smoke`
+
+**Tests:** 635/635 unit (26 suites) + 120 E2E (11 specs — 73 smoke + 42 journey + 5 fixme).
+
 **Décisions 2026-02-27 (session 1)** :
 - HolDex backend = Option A (shell only) — PostgreSQL+Redis trop lourd à forker
 - Gouvernance staking supprimée (données hardcodées 62%/78% sans endpoint)
@@ -411,7 +429,7 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 
 | Métrique | Valeur |
 |----------|--------|
-| Tests | 635/635 unit (26 suites) + 42 E2E (7 specs) |
+| Tests | 635/635 unit (26 suites) + 120 E2E (11 specs) |
 | Tool pages fork-ready | 5/5 ✓ |
 | Q-Score moyen tools | ~85 HOWL |
 | Q-Score global | 72 WAG |
@@ -433,8 +451,9 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 
 ---
 
-*Last commits (P1.7 Games Decoupling — Phase 3)*:
-- `c2f6837` refactor(games): delete GameRewards dead code from lifecycle.js
-- `1c0f66d` refactor(games): decouple competitive reset via CompetitiveUI + GameEvents
-- `f4aeb1f` feat(games): emit game:started and game:ended lifecycle events
-- `c4298cb` test(games): add CompetitiveUI contract tests (10 tests)
+*Last commits (P2.1 — Mobile Responsive + E2E Smoke)*:
+- `849c136` test(e2e): enable Playwright mobile viewport project
+- `96f1f48` fix(hub): auto-switch to grid view below 480px
+- `bc5432c` refactor(e2e): eliminate cascade failures in journey specs
+- `7cd5633` test(e2e): add mobile viewport guards and responsive assertions
+- `efe1efe` test(e2e): add universal telemetry + health agent smoke specs
