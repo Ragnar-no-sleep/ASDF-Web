@@ -246,30 +246,52 @@ Rapid iteration through all 27 audit findings. 18 fixed, 2 false positives, 7 de
 
 **Tests:** 587/587 pass (26 suites). **Score: 22/27 fixed (81%), 2 false positives, 3 deferred.**
 
-### P2.0 — CSS Quality & Tests (2026-03-02)
+### P2.0 — Full Day Sprint (2026-03-02)
 
-**P1-1**: CSP style-src hardened — styleSrcAttr 'none', ~430 inline style="" migrated.
-**P1-2**: Game test fixtures deduplicated → `tests/fixtures/game-mocks.js`.
-**P2-2**: CSS split — build.css (-50.7%), games.css (-37.8%), 7 new component files.
-**P2-3**: E2E Playwright — 5 user journey specs, 28 new tests (42 total).
+**107 files changed, +12,897 -8,500 lines, 20 commits across 6 work streams.**
 
-**Tests:** 635/635 unit (26 suites) + 42 E2E (7 specs).
+#### Stream 1: CSP style-src-attr hardening (P1-1)
+- [x] `d674592` fix(security): harden CSP style-src-attr to 'none' (74 files, +4482/-1175)
+- ~430 inline `style=""` migrated → CSS classes + CSSOM `.style.setProperty()`
+- New CSS: `game-engines.css` (1208L), `pumparena.css` (1265L), `deep-learn.css` (244L), `hub-grid.css`, `me.css`, `shop.css`
+- Dynamic colors: `color-mix()` + CSS custom properties (`--tier-color`, `--pa-accent`)
 
-### P2.1 — Mobile Responsive + E2E Smoke (2026-03-02)
+#### Stream 2: Test infrastructure (P1-2 + P2-3)
+- [x] `3a29030` refactor(games): deduplicate test fixtures into shared `game-mocks.js`
+- [x] `5662237` fix(hub): externalize CSP-blocked inline script into `hub-majestic.js`
+- [x] `eea0e32` test(e2e): add 5 user journey specs (hub, learn, build, games, burns)
+- Shared E2E fixtures: `setupErrorCollector`, `filterCriticalErrors`, `gotoWithRetry`, `dismissCookieConsent`
 
-**Mobile Responsive (4 commits):**
+#### Stream 3: CSS split + quality (P2-2 + P2-remaining)
+- [x] `fe3fb04` refactor(build,games): split monolithic CSS into 7 component files
+- [x] `07fc647` docs: mark ARCH-3 + P2-3 complete
+- [x] `f7fd14e` fix(a11y): improve color contrast in forecast + games CSS
+- [x] `134a5b5` refactor(css): replace hardcoded colors with CSS vars in build (20 replacements)
+- [x] `73fe9c8` refactor(css): remove unnecessary !important overrides (12 removed)
+- [x] `33d1e7b` refactor(css): replace z-index with design tokens in ecosystem (15 replacements)
+- [x] `57e42ba` refactor(css): align build animation timings to Fibonacci scale (~55 changes)
+- build.css: 7315→3607 lines (-50.7%), games.css: 3228→2007 lines (-37.8%)
+
+#### Stream 4: Mobile responsive fixes
+- [x] `fa97d6d` fix(games): restore mobile navigation with horizontal scroll
+- [x] `9b8048c` fix(ecosystem): add 480px breakpoints for mobile phones
+- [x] `deb42af` fix(games): make arcade cards grid fluid on small screens
+
+#### Stream 5: Mobile E2E viewport project
 - [x] `849c136` test(e2e): enable Playwright mobile viewport project (iPhone 13)
 - [x] `96f1f48` fix(hub): auto-switch to grid view below 480px
 - [x] `bc5432c` refactor(e2e): eliminate cascade failures in journey specs
 - [x] `7cd5633` test(e2e): add mobile viewport guards and responsive assertions
 
-**E2E Smoke — Universal Telemetry + Health Agent (1 commit):**
+#### Stream 6: Universal telemetry + health agent smoke
 - [x] `efe1efe` test(e2e): add universal telemetry + health agent smoke specs
 - Data-driven config: `tests/e2e/config/routes.js` (16 pages, 2 redirects, 1 API, 5 external)
 - Telemetry (48 tests): console errors (route-scoped noise filter), network 404s, load time + TTFB
-- Health agent (25 tests + 5 fixme): route status, redirects, /health JSON, security headers (CSP, nosniff, referrer-policy, permissions-policy), RGPD (consent banner, privacy sections, localStorage persistence)
-- External APIs: `test.fixme()` soft-fail (never break build)
+- Health agent (25 tests + 5 fixme): route status, redirects, /health JSON, security headers, RGPD compliance
 - CI fast-path: `npx playwright test --grep @smoke`
+
+#### Docs
+- [x] `e20c533` docs: update roadmap + audit with P2.1
 
 **Tests:** 635/635 unit (26 suites) + 120 E2E (11 specs — 73 smoke + 42 journey + 5 fixme).
 
@@ -444,16 +466,21 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 | sollama58 PRs | 2 (TVU #1 infra + #8 governance) |
 | sollama58 overviews | 4/4 repos covered |
 | sollama58 global Q | 81 HOWL |
-| Audit findings (2026-03-01) | 27 total → 19 fixed, 2 FP, 6 deferred |
-| Ralph loop commits | 7 atomic (P1.9) |
+| Audit findings (2026-03-01) | 27 total → 22 fixed, 2 FP, 3 deferred |
+| P2.0 day sprint (2026-03-02) | 20 commits, 107 files, +12,897/-8,500 |
 | Deferred items | 13 |
 | Blocked items | 3 |
 
 ---
 
-*Last commits (P2.1 — Mobile Responsive + E2E Smoke)*:
-- `849c136` test(e2e): enable Playwright mobile viewport project
-- `96f1f48` fix(hub): auto-switch to grid view below 480px
-- `bc5432c` refactor(e2e): eliminate cascade failures in journey specs
-- `7cd5633` test(e2e): add mobile viewport guards and responsive assertions
-- `efe1efe` test(e2e): add universal telemetry + health agent smoke specs
+*Last commits (P2.0 — Full Day Sprint, 2026-03-02)*:
+- `d674592` fix(security): harden CSP style-src-attr to 'none'
+- `3a29030` refactor(games): deduplicate test fixtures
+- `fe3fb04` refactor(build,games): split monolithic CSS
+- `5662237` fix(hub): externalize CSP-blocked inline script
+- `eea0e32` test(e2e): add 5 user journey specs
+- `07fc647` → `57e42ba` CSS quality (6 commits: a11y, colors, !important, z-index, timings)
+- `fa97d6d` → `deb42af` mobile responsive (3 commits: games nav, ecosystem, arcade grid)
+- `849c136` → `7cd5633` mobile E2E viewport (4 commits)
+- `efe1efe` test(e2e): universal telemetry + health agent smoke
+- `e20c533` docs: roadmap + audit update
