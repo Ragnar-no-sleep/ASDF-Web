@@ -959,12 +959,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  background: linear-gradient(135deg, #fbbf24, #f97316) !important;
-  border: none !important;
-  color: #000 !important;
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  border: none;
+  color: #000;
   font-weight: var(--font-semibold);
-  padding: var(--space-sm) var(--space-md) !important;
-  border-radius: var(--radius-md) !important;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     transform var(--duration-fast),

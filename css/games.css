@@ -1667,12 +1667,12 @@ body.modal-open {
 /* Timer in game modal */
 #timer-stat-container .game-stat-value.time-low,
 .game-stat-value.time-low {
-  color: var(--gold) !important;
+  color: var(--gold);
   animation: pulse 1s infinite;
 }
 
 .game-stat-value.time-exhausted {
-  color: var(--red) !important;
+  color: var(--red);
 }
 
 /* ============================================
@@ -1882,9 +1882,9 @@ body.modal-open {
 #competitive-btn-dexdash.active,
 #competitive-btn-burnorhold.active,
 #competitive-btn-liquiditymaze.active {
-  background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember)) !important;
-  border-color: var(--accent-bright) !important;
-  color: white !important;
+  background: linear-gradient(135deg, var(--accent-fire), var(--accent-ember));
+  border-color: var(--accent-bright);
+  color: white;
 }
 
 /* ============================================
