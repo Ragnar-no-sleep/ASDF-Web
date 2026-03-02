@@ -1289,3 +1289,153 @@ body::before {
   text-align: right;
   color: var(--gray-500);
 }
+
+/* ============================================
+   EXTRACTED INLINE STYLES (CSP Phase 2)
+   ============================================ */
+
+/* Hidden utility */
+.hidden {
+  display: none;
+}
+
+/* Stat value color variants */
+.stat-value--god {
+  color: var(--term-red);
+  text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+}
+
+.stat-value--complex {
+  color: var(--term-yellow);
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+}
+
+.stat-value--supply {
+  color: var(--term-blue);
+  text-shadow: var(--glow-blue);
+}
+
+.stat-value--burn {
+  color: var(--asdf-orange);
+  text-shadow: var(--glow-orange);
+}
+
+/* God files filter button */
+.filter-btn--god {
+  border-color: var(--term-red);
+  color: var(--term-red);
+}
+
+/* ============================================
+   CSP PHASE 2 — JS template inline styles
+   ============================================ */
+
+/* Git hash muted text (replaces style="color:var(--gray-500)") */
+.eco-text-muted {
+  color: var(--gray-500);
+}
+
+/* Edge/liaison section font size (replaces style="font-size:0.75rem" etc.) */
+.eco-text-xs {
+  font-size: 0.75rem;
+}
+.eco-text-xxs {
+  font-size: 0.7rem;
+}
+.eco-text-micro {
+  font-size: 0.72rem;
+}
+.eco-text-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Spacing utilities (replaces inline margin-bottom) */
+.eco-mb-2 {
+  margin-bottom: 0.5rem;
+}
+.eco-mb-1 {
+  margin-bottom: 0.4rem;
+}
+.eco-mt-6 {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Indented sub-items in edge lists */
+.eco-edge-item {
+  padding-left: 0.75rem;
+}
+.eco-edge-item--detail {
+  padding-left: 0.6rem;
+}
+
+/* Conditional color classes (replaces dynamic ternary style=) */
+.eco-color-unresolved {
+  color: var(--term-red);
+}
+
+/* Unresolved section title + content */
+.eco-section-unresolved {
+  color: var(--term-red);
+}
+
+/* Complexity/GodScore conditional colors */
+.eco-cx-high {
+  color: var(--term-red);
+}
+.eco-cx-normal {
+  color: #fff;
+}
+.eco-god-high {
+  color: var(--term-red);
+}
+.eco-god-mid {
+  color: var(--term-yellow);
+}
+.eco-god-normal {
+  color: #fff;
+}
+
+/* God count in layer sidebar (replaces inline color:var(--term-red)) */
+.eco-god-count {
+  color: var(--term-red);
+}
+
+/* Layer files header flex spacer */
+.eco-flex-1 {
+  flex: 1;
+}
+
+/* Layer file row inner wrapper (replaces style="flex:1;min-width:0") */
+.eco-file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Layer detail empty placeholder icon */
+.eco-placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.4;
+}
+
+/* D3 error fallback */
+.eco-d3-error {
+  padding: 2rem;
+  color: var(--term-red);
+}
+
+/* Table view fresh dot inline display */
+.fresh-dot--inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Edge color — dynamic via CSS custom property */
+.eco-edge-label {
+  color: var(--edge-color, #fff);
+}

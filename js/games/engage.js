@@ -462,12 +462,12 @@ function showTierUpCelebration(fromTier, toTier) {
   const color = ASDF.getTierColor(tierIndex, 'engage');
 
   modal.innerHTML = `
-        <div class="tier-up-icon" style="color: ${color}">&#x1F525;</div>
+        <div class="tier-up-icon" data-tier-color="${color}">&#x1F525;</div>
         <div class="tier-up-title">TIER UP!</div>
         <div class="tier-up-progression">
             <span class="tier-from">${fromTier}</span>
             <span class="tier-arrow">&#x2192;</span>
-            <span class="tier-to" style="color: ${color}">${toTier}</span>
+            <span class="tier-to" data-tier-color="${color}">${toTier}</span>
         </div>
         <div class="tier-up-benefits">
             <div>Discount: ${(ASDF.engage.getDiscount(tierIndex) * 100).toFixed(0)}%</div>
@@ -475,6 +475,12 @@ function showTierUpCelebration(fromTier, toTier) {
         </div>
         <button class="tier-up-close">Continue</button>
     `;
+
+  // Apply dynamic styles via CSSOM
+  modal.querySelectorAll('[data-tier-color]').forEach(el => {
+    el.style.setProperty('color', el.dataset.tierColor);
+    el.removeAttribute('data-tier-color');
+  });
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);

@@ -585,7 +585,7 @@ const Settings = {
                             <div class="settings-item-label">Clear All Data</div>
                             <div class="settings-item-desc">Delete all local data (cannot be undone)</div>
                         </div>
-                        <button class="btn-valhalla-secondary" id="settings-clear-btn" style="border-color: #ef4444; color: #ef4444;">Clear</button>
+                        <button class="btn-valhalla-secondary btn-danger" id="settings-clear-btn">Clear</button>
                     </div>
                 </div>
             </div>
@@ -614,7 +614,7 @@ const Settings = {
             </div>
 
             <!-- Reset -->
-            <div style="text-align: center; padding: 20px;">
+            <div class="settings-reset-wrapper">
                 <button class="btn-valhalla-secondary" id="settings-reset-btn">Reset All Settings</button>
             </div>
         `;

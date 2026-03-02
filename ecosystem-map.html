@@ -55,59 +55,29 @@
         <div class="stat-detail">Lignes de code réelles</div>
       </div>
       <div class="stat-card">
-        <div
-          class="stat-value"
-          id="stat-god"
-          style="color: var(--term-red); text-shadow: 0 0 15px rgba(255, 51, 102, 0.5)"
-        >
-          —
-        </div>
+        <div class="stat-value stat-value--god" id="stat-god">—</div>
         <div class="stat-label">God Files</div>
         <div class="stat-detail">Score ≥ 4 (multi-critères)</div>
       </div>
       <div class="stat-card">
-        <div
-          class="stat-value"
-          id="stat-complex"
-          style="color: var(--term-yellow); text-shadow: 0 0 10px rgba(255, 204, 0, 0.4)"
-        >
-          —
-        </div>
+        <div class="stat-value stat-value--complex" id="stat-complex">—</div>
         <div class="stat-label">Complexes</div>
         <div class="stat-detail">Score 2-3 — à surveiller</div>
       </div>
 
       <!-- TOKEN STATS (live) -->
       <div class="stat-card" id="stat-card-supply">
-        <div
-          class="stat-value"
-          id="stat-supply"
-          style="color: var(--term-blue); text-shadow: var(--glow-blue)"
-        >
-          ···
-        </div>
+        <div class="stat-value stat-value--supply" id="stat-supply">···</div>
         <div class="stat-label">$ASDF Supply</div>
         <div class="stat-detail" id="stat-supply-detail">chargement...</div>
       </div>
       <div class="stat-card" id="stat-card-burned">
-        <div
-          class="stat-value"
-          id="stat-burned"
-          style="color: var(--asdf-orange); text-shadow: var(--glow-orange)"
-        >
-          ···
-        </div>
+        <div class="stat-value stat-value--burn" id="stat-burned">···</div>
         <div class="stat-label">Total Brûlé</div>
         <div class="stat-detail" id="stat-burned-detail">Tokens détruits</div>
       </div>
       <div class="stat-card" id="stat-card-pct">
-        <div
-          class="stat-value"
-          id="stat-pct"
-          style="color: var(--asdf-orange); text-shadow: var(--glow-orange)"
-        >
-          ···
-        </div>
+        <div class="stat-value stat-value--burn" id="stat-pct">···</div>
         <div class="stat-label">% Burn</div>
         <div class="stat-detail">Sur 1 milliard initial</div>
       </div>
@@ -167,13 +137,7 @@
         <button class="filter-btn" data-filter="games">
           Games <span class="filter-count" id="count-games">0</span>
         </button>
-        <button
-          class="filter-btn"
-          data-filter="god"
-          style="border-color: var(--term-red); color: var(--term-red)"
-        >
-          🔴 God Files
-        </button>
+        <button class="filter-btn filter-btn--god" data-filter="god">🔴 God Files</button>
       </div>
 
       <!-- VIEW TOGGLE -->
@@ -191,7 +155,7 @@
     </section>
 
     <!-- GRAPH VIEW -->
-    <div class="graph-container" id="graph-container" style="display: none">
+    <div class="graph-container hidden" id="graph-container">
       <div class="graph-info">
         <span id="graph-node-count">0 noeuds</span>
         <span id="graph-edge-count">0 arêtes</span>
@@ -204,14 +168,14 @@
     </div>
 
     <!-- LAYER VIEW (3-panel hierarchical) -->
-    <div class="view-layers" id="view-layers" style="display: none">
+    <div class="view-layers hidden" id="view-layers">
       <aside class="layer-cats" id="layer-cats"></aside>
       <div class="layer-files" id="layer-files"></div>
       <aside class="layer-detail" id="layer-detail"></aside>
     </div>
 
     <!-- TABLE VIEW (dense data) -->
-    <div class="view-table-container" id="view-table" style="display: none"></div>
+    <div class="view-table-container hidden" id="view-table"></div>
 
     <!-- EMPTY STATE -->
     <div class="empty-state" id="empty-state">
@@ -1126,7 +1090,7 @@
             <span class="git-dot"></span>
             <span>${item.git.date}</span>
             <span>${item.git.author}</span>
-            <span style="color:var(--gray-500)">#${item.git.hash}</span>
+            <span class="eco-text-muted">#${item.git.hash}</span>
            </div>`
           : '';
 
@@ -1192,6 +1156,22 @@
           setEl('stat-god', S.godFiles);
           setEl('stat-complex', S.complexFiles);
         }
+      }
+
+      // ============================================
+      // CSP PHASE 2 — CSSOM helpers
+      // ============================================
+
+      /** Apply dynamic colors/widths via CSSOM after innerHTML render */
+      function applyDynamicStyles(container) {
+        // Edge label colors
+        container.querySelectorAll('[data-edge-color]').forEach(el => {
+          el.style.setProperty('color', el.dataset.edgeColor);
+        });
+        // Layer LOC fill widths
+        container.querySelectorAll('.layer-loc-fill[data-w]').forEach(el => {
+          el.style.setProperty('width', el.dataset.w + '%');
+        });
       }
 
       // ============================================
@@ -1317,19 +1297,19 @@
           }
           return `<div class="modal-section">
             <div class="modal-section-title">Liaisons (${edges.length})</div>
-            <div class="modal-section-content" style="font-size:0.75rem">
+            <div class="modal-section-content eco-text-xs">
               ${Object.entries(byType)
                 .map(
                   ([type, group]) => `
-                <div style="margin-bottom:0.5rem">
-                  <span style="color:${EDGE_COLOR[type] ?? '#fff'};font-size:0.65rem;text-transform:uppercase;letter-spacing:1px">${EDGE_LABEL[type] ?? type} (${group.length})</span>
+                <div class="eco-mb-2">
+                  <span class="eco-edge-label eco-text-label" data-edge-color="${EDGE_COLOR[type] ?? '#fff'}">${EDGE_LABEL[type] ?? type} (${group.length})</span>
                   ${group
                     .map(e => {
                       const label =
                         e.endpoint ?? e.eventName ?? (e.target ? e.target.split('/').pop() : null);
                       const isUnres = e.unresolved;
                       return label
-                        ? `<div style="color:${isUnres ? 'var(--term-red)' : 'var(--gray-500)'};padding-left:0.75rem">${isUnres ? '⚠ ' : ''}${label}</div>`
+                        ? `<div class="eco-edge-item ${isUnres ? 'eco-color-unresolved' : 'eco-text-muted'}">${isUnres ? '⚠ ' : ''}${label}</div>`
                         : '';
                     })
                     .filter(Boolean)
@@ -1344,6 +1324,7 @@
       `;
 
         modal.classList.add('active');
+        applyDynamicStyles(body);
       }
 
       function closeModal() {
@@ -1430,28 +1411,28 @@
         const emptyState = document.getElementById('empty-state');
 
         // Hide all panels
-        grid.style.display = 'none';
-        graphContainer.style.display = 'none';
-        layersContainer.style.display = 'none';
-        tableContainer.style.display = 'none';
-        emptyState.style.display = 'none';
+        grid.classList.add('hidden');
+        graphContainer.classList.add('hidden');
+        layersContainer.classList.add('hidden');
+        tableContainer.classList.add('hidden');
+        emptyState.classList.add('hidden');
 
         document.querySelectorAll('.view-btn').forEach(b => {
           b.classList.toggle('active', b.dataset.view === view);
         });
 
         if (view === 'cards') {
-          grid.style.display = '';
-          emptyState.style.display = '';
+          grid.classList.remove('hidden');
+          emptyState.classList.remove('hidden');
           renderCards();
         } else if (view === 'graph') {
-          graphContainer.style.display = '';
+          graphContainer.classList.remove('hidden');
           renderGraph();
         } else if (view === 'layers') {
-          layersContainer.style.display = 'flex';
+          layersContainer.classList.remove('hidden');
           renderLayers();
         } else if (view === 'table') {
-          tableContainer.style.display = '';
+          tableContainer.classList.remove('hidden');
           renderTable();
         }
       }
@@ -1535,7 +1516,7 @@
       function renderGraph() {
         if (!window.d3) {
           document.getElementById('graph-container').innerHTML =
-            '<div style="padding:2rem;color:var(--term-red)">D3.js non chargé (vérifier la connexion internet)</div>';
+            '<div class="eco-d3-error">D3.js non chargé (vérifier la connexion internet)</div>';
           return;
         }
 
@@ -1873,7 +1854,7 @@
             const m = CAT_META[cat];
             return `<div class="layer-cat-item${selectedLayerCat === cat ? ' active' : ''}" data-cat="${cat}">
           <div class="layer-cat-name">${m.icon} ${m.label}</div>
-          <div class="layer-cat-meta">${items.length} fichiers${godCount > 0 ? ` · <span style="color:var(--term-red)">🔴${godCount}</span>` : ''}</div>
+          <div class="layer-cat-meta">${items.length} fichiers${godCount > 0 ? ` · <span class="eco-god-count">🔴${godCount}</span>` : ''}</div>
         </div>`;
           })
           .join('');
@@ -1894,7 +1875,7 @@
         ];
 
         const header = `<div class="layer-files-header">
-        <span style="flex:1">${data.length} items</span>
+        <span class="eco-flex-1">${data.length} items</span>
         ${sorts.map(s => `<button class="layer-sort-btn${layerSortBy === s.key ? ' active' : ''}" data-sort="${s.key}">${s.label}${layerSortBy === s.key ? (layerSortDir < 0 ? ' ↓' : ' ↑') : ''}</button>`).join('')}
       </div>`;
 
@@ -1918,11 +1899,11 @@
             const isActive = selectedLayerItem?.name === item.name;
             return `<div class="layer-file-row${isActive ? ' active' : ''}" data-idx="${idx}" title="${item.description}">
           <span class="fresh-dot" data-fresh="${fresh}"></span>
-          <div style="flex:1;min-width:0">
+          <div class="eco-file-info">
             <div class="layer-file-name">${fname}</div>
             ${fdir ? `<div class="layer-file-dir">${fdir}/</div>` : ''}
           </div>
-          <div class="layer-loc-bar"><div class="layer-loc-fill" style="width:${locPct.toFixed(1)}%"></div></div>
+          <div class="layer-loc-bar"><div class="layer-loc-fill" data-w="${locPct.toFixed(1)}"></div></div>
           <span class="layer-cx${(item.complexity ?? 0) > 150 ? ' cx-high' : ''}">${item.complexity ?? '—'}</span>
           <span class="god-indicator">${godIcon}</span>
         </div>`;
@@ -1930,13 +1911,14 @@
           .join('');
 
         el.innerHTML = header + rows;
+        applyDynamicStyles(el);
       }
 
       function renderLayerDetail(item) {
         const el = document.getElementById('layer-detail');
         if (!el) return;
         if (!item) {
-          el.innerHTML = `<div class="layer-detail-empty"><span style="font-size:2rem;opacity:0.4">←</span><span>Sélectionner un fichier</span></div>`;
+          el.innerHTML = `<div class="layer-detail-empty"><span class="eco-placeholder-icon">←</span><span>Sélectionner un fichier</span></div>`;
           return;
         }
         const statusLabels = { prod: '🟢 PROD', dev: '🟡 DEV', demo: '🔵 DEMO', god: '🔴 GOD' };
@@ -1973,7 +1955,7 @@
           <div class="modal-section-title">Git</div>
           <div class="modal-section-content">
             ${item.git.date} · ${item.git.author}<br>
-            <span style="color:var(--gray-500)">#${item.git.hash}</span> · ${days}j
+            <span class="eco-text-muted">#${item.git.hash}</span> · ${days}j
             ${days > 90 ? ' ⚠ stale' : days < 7 ? ' 🟢 actif' : ''}
           </div>
         </div>`
@@ -1985,8 +1967,8 @@
             ? `<div class="modal-section">
           <div class="modal-section-title">Complexité / GodScore</div>
           <div class="modal-section-content">
-            CX: <strong style="color:${(item.complexity ?? 0) > 150 ? 'var(--term-red)' : '#fff'}">${item.complexity}</strong>
-            · Score: <strong style="color:${item.godScore >= 4 ? 'var(--term-red)' : item.godScore >= 2 ? 'var(--term-yellow)' : '#fff'}">${item.godScore ?? 0}/6</strong>
+            CX: <strong class="${(item.complexity ?? 0) > 150 ? 'eco-cx-high' : 'eco-cx-normal'}">${item.complexity}</strong>
+            · Score: <strong class="${item.godScore >= 4 ? 'eco-god-high' : item.godScore >= 2 ? 'eco-god-mid' : 'eco-god-normal'}">${item.godScore ?? 0}/6</strong>
           </div>
         </div>`
             : ''
@@ -2004,8 +1986,8 @@
         ${
           item.unresolvedDeps?.length > 0
             ? `<div class="modal-section">
-          <div class="modal-section-title" style="color:var(--term-red)">⚠ Unresolved (${item.unresolvedDeps.length})</div>
-          <div class="modal-section-content" style="color:var(--term-red);font-size:0.72rem">${item.unresolvedDeps.join(', ')}</div>
+          <div class="modal-section-title eco-section-unresolved">⚠ Unresolved (${item.unresolvedDeps.length})</div>
+          <div class="modal-section-content eco-section-unresolved eco-text-micro">${item.unresolvedDeps.join(', ')}</div>
         </div>`
             : ''
         }
@@ -2036,18 +2018,18 @@
           }
           return `<div class="modal-section">
             <div class="modal-section-title">Liaisons (${edges.length})</div>
-            <div class="modal-section-content" style="font-size:0.7rem">
+            <div class="modal-section-content eco-text-xxs">
               ${Object.entries(byType)
                 .map(
                   ([type, group]) => `
-                <div style="margin-bottom:0.4rem">
-                  <span style="color:${EDGE_COLOR[type] ?? '#fff'}">${EDGE_LABEL[type] ?? ''} ${type} ×${group.length}</span>
+                <div class="eco-mb-1">
+                  <span class="eco-edge-label" data-edge-color="${EDGE_COLOR[type] ?? '#fff'}">${EDGE_LABEL[type] ?? ''} ${type} ×${group.length}</span>
                   ${group
                     .map(e => {
                       const lbl =
                         e.endpoint ?? e.eventName ?? (e.target ? e.target.split('/').pop() : null);
                       return lbl
-                        ? `<div style="color:${e.unresolved ? 'var(--term-red)' : 'var(--gray-500)'};padding-left:0.6rem">${e.unresolved ? '⚠ ' : ''}${lbl}</div>`
+                        ? `<div class="eco-edge-item--detail ${e.unresolved ? 'eco-color-unresolved' : 'eco-text-muted'}">${e.unresolved ? '⚠ ' : ''}${lbl}</div>`
                         : '';
                     })
                     .filter(Boolean)
@@ -2060,11 +2042,12 @@
           </div>`;
         })()}
 
-        <div style="margin-top:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+        <div class="eco-mt-6">
           ${IS_LOCAL ? `<a class="btn-open vscode" href="${vscodeUrl}">⬡ VSCode</a>` : ''}
           <a class="btn-open github" href="${githubUrl}" target="_blank" rel="noopener">⎇ GitHub</a>
         </div>
       `;
+        applyDynamicStyles(el);
       }
 
       function renderLayers() {
@@ -2150,7 +2133,7 @@
             const cxHigh = (item.complexity ?? 0) > 150;
             return `<tr class="${godClass}" data-idx="${idx}" title="${item.description}">
           <td class="td-file">
-            <span class="fresh-dot" data-fresh="${fresh}" style="display:inline-block;vertical-align:middle;margin-right:5px"></span>${fname}
+            <span class="fresh-dot fresh-dot--inline" data-fresh="${fresh}"></span>${fname}
             ${fdir ? `<div class="td-file-dir">${fdir}/</div>` : ''}
           </td>
           <td class="td-loc">${item.loc.toLocaleString()}</td>

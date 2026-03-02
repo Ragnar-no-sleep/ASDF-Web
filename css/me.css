@@ -321,3 +321,15 @@ body {
   background: var(--color-fire-light);
   transform: translateY(-2px);
 }
+
+/* Hint text (extracted from inline style) */
+.me-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-lg);
+}
+
+/* Progress bar initial state */
+.progress-bar-fill {
+  width: 0%;
+}

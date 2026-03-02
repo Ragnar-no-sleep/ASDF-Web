@@ -205,6 +205,11 @@ body.ready {
   margin-bottom: var(--space-sm);
 }
 
+/* Text offset (extracted from inline style) */
+.learn-text-offset {
+  margin-top: 1.5rem;
+}
+
 /* Interaction hint */
 .hint {
   margin-top: var(--space-lg);

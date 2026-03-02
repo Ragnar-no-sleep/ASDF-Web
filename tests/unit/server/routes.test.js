@@ -214,10 +214,13 @@ describe('security headers', () => {
     expect(elemMatch[1]).toContain("'sha256-");
   });
 
-  it('CSP style-src-attr contains unsafe-inline (Phase 1 contract)', async () => {
+  it('CSP style-src-attr does NOT contain unsafe-inline (Phase 2 hardened)', async () => {
     const res = await request(app).get('/health');
     const csp = res.headers['content-security-policy'];
-    expect(csp).toContain("style-src-attr 'unsafe-inline'");
+    const attrMatch = csp.match(/style-src-attr ([^;]+)/);
+    expect(attrMatch).not.toBeNull();
+    expect(attrMatch[1]).not.toContain("'unsafe-inline'");
+    expect(attrMatch[1]).toContain("'none'");
   });
 
   it('CSP has no bare style-src directive (split into elem + attr)', async () => {

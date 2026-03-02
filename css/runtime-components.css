@@ -701,11 +701,12 @@
   position: absolute;
   bottom: 0;
   left: 0;
+  width: 100%;
   height: 3px;
   background: var(--toast-color, #3b82f6);
   border-radius: 0 0 0 8px;
   opacity: 0.5;
-  transition: width linear;
+  transition: width var(--toast-duration, 300ms) linear;
 }
 @media (max-width: 480px) {
   .toast-container {
@@ -906,4 +907,268 @@
   width: 24px;
   border-radius: 4px;
   background: linear-gradient(90deg, #ff6644, #ff4422);
+}
+
+/* ============================================
+   CSP Phase 2 — extracted from JS templates
+   ============================================ */
+
+/* Leaderboard bonus badge (games/ui/leaderboard.js) */
+.lb-bonus {
+  color: var(--gold, #ffd700);
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+/* Cycle leaderboard score color (games/ui/leaderboard.js) */
+.lb-cycle-score {
+  color: var(--gold, #ffd700);
+}
+
+/* Ignition pending-state message (ignition.js) */
+.ig-pending-msg {
+  color: var(--ig-text-muted, rgba(255, 255, 255, 0.4));
+  padding: 24px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+/* Ignition KOTH pending row (ignition.js) */
+.ig-koth-pending {
+  color: var(--ig-text-muted, rgba(255, 255, 255, 0.4));
+}
+
+/* Shop item card — tier-color via CSSOM (.style.setProperty) */
+/* Card glow via --tier-color custom property */
+.card-glow {
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--tier-color, #9ca3af) 19%, transparent),
+    transparent 70%
+  );
+}
+
+/* Card placeholder fallback gradient via --tier-color */
+.card-placeholder--gradient {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tier-color, #9ca3af) 25%, transparent),
+    color-mix(in srgb, var(--tier-color, #9ca3af) 12%, transparent)
+  );
+}
+
+/* Card tier label color via --tier-color custom property */
+.card-tier {
+  color: var(--tier-color, #9ca3af);
+}
+
+/* --- js/utils/achievements.js (CSP Phase 2) --- */
+
+/* Achievement unlock overlay inner container */
+.ach-unlock-inner {
+  text-align: center;
+  animation: scale-in 400ms ease-out;
+}
+
+/* Achievement unlock icon (large emoji) */
+.ach-unlock-icon {
+  font-size: 80px;
+  margin-bottom: 16px;
+}
+
+/* Achievement unlock rarity label — color via --ach-rarity-color custom property */
+.ach-unlock-rarity {
+  font-size: 14px;
+  color: var(--ach-rarity-color, #ffffff);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+/* Achievement unlock title */
+.ach-unlock-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Achievement unlock description */
+.ach-unlock-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 400px;
+}
+
+/* --- js/utils/progressive-disclosure.js (CSP Phase 2) --- */
+
+/* Disclosure notification header icon */
+.pd-notif-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+/* Disclosure notification header label */
+.pd-notif-label {
+  font-weight: 600;
+}
+
+/* Onboarding overlay inner container */
+.pd-onboarding-inner {
+  max-width: 500px;
+  text-align: center;
+  animation: scale-in 400ms ease-out;
+}
+
+/* Onboarding welcome icon (large emoji) */
+.pd-onboarding-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+}
+
+/* Onboarding welcome heading */
+.pd-onboarding-heading {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* Onboarding welcome body text */
+.pd-onboarding-body {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Onboarding button row */
+.pd-onboarding-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+/* Onboarding skip button */
+.pd-btn-skip {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Onboarding start button */
+.pd-btn-start {
+  padding: 12px 24px;
+  background: var(--color-fire);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* --- js/utils/easter-eggs.js (CSP Phase 2) --- */
+
+/* Secret message: dog emoji icon */
+.ee-secret-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* Secret message: headline */
+.ee-secret-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Secret message: subtitle */
+.ee-secret-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Achievement toast: icon */
+.ee-toast-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+/* Achievement toast: title */
+.ee-toast-title {
+  font-weight: 600;
+}
+
+/* Achievement toast: subtitle */
+.ee-toast-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* Achievement toast: extra sub-line */
+.ee-toast-sub {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+/* Konami unlock: inner container */
+.ee-konami-inner {
+  text-align: center;
+  animation: scale-in 600ms ease-out;
+}
+
+/* Konami unlock: large emoji icon */
+.ee-konami-icon {
+  font-size: 120px;
+  margin-bottom: 24px;
+}
+
+/* Konami unlock: main title */
+.ee-konami-title {
+  font-size: 48px;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 16px;
+}
+
+/* Konami unlock: description text */
+.ee-konami-desc {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 32px;
+}
+
+/* Konami unlock: code sequence hint */
+.ee-konami-code {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   CSP Phase 2: Sound Settings
+   ============================================ */
+
+/* Sound settings disabled state (replaces inline opacity/pointer-events) */
+.sound-settings-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================
+   CSP Phase 2: Modal Input
+   ============================================ */
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  margin-top: 12px;
 }

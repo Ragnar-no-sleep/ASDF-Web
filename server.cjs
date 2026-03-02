@@ -196,7 +196,7 @@ app.use(
           "'sha256-0lYMvYgiXsuAzDHBwjoj5n8jQ+Cv8pZbw11OmC2nhqc='", // build/games: html{background:#020812!important}body{background:transparent!important}
           "'sha256-Eq449Zo+s3RjCHExwk5rAbkCNOYez04lqw5SYD5QKh4='", // index: html,body{background:#0d0906!important}
         ],
-        styleSrcAttr: ["'unsafe-inline'"], // Phase 1: style="" attributes still allowed
+        styleSrcAttr: ["'none'"], // Phase 2: all inline style="" migrated to CSS classes + CSSOM
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev

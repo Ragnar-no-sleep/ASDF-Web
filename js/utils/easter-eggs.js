@@ -282,9 +282,9 @@ class InteractionEasterEggs {
     const message = document.createElement('div');
     message.className = 'secret-message';
     message.innerHTML = `
-      <div style="font-size: 48px; margin-bottom: 16px;">🐕</div>
-      <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">This is fine.</div>
-      <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">Everything is under control.</div>
+      <div class="ee-secret-icon">&#128021;</div>
+      <div class="ee-secret-title">This is fine.</div>
+      <div class="ee-secret-subtitle">Everything is under control.</div>
     `;
     message.style.cssText = `
       position: fixed;
@@ -333,9 +333,9 @@ class InteractionEasterEggs {
 
     const toast = document.createElement('div');
     toast.innerHTML = `
-      <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
-      <div style="font-weight: 600;">Achievement Unlocked!</div>
-      <div style="font-size: 13px; opacity: 0.8;">Curiosity Seeker</div>
+      <div class="ee-toast-icon">&#128269;</div>
+      <div class="ee-toast-title">Achievement Unlocked!</div>
+      <div class="ee-toast-subtitle">Curiosity Seeker</div>
     `;
     toast.style.cssText = `
       position: fixed;
@@ -414,10 +414,10 @@ class InteractionEasterEggs {
 
     const toast = document.createElement('div');
     toast.innerHTML = `
-      <div style="font-size: 24px; margin-bottom: 8px;">🏊</div>
-      <div style="font-weight: 600;">Achievement Unlocked!</div>
-      <div style="font-size: 13px; opacity: 0.8;">Deep Diver</div>
-      <div style="font-size: 11px; opacity: 0.6; margin-top: 4px;">Scrolled to bottom of 5 pages</div>
+      <div class="ee-toast-icon">&#127946;</div>
+      <div class="ee-toast-title">Achievement Unlocked!</div>
+      <div class="ee-toast-subtitle">Deep Diver</div>
+      <div class="ee-toast-sub">Scrolled to bottom of 5 pages</div>
     `;
     toast.style.cssText = `
       position: fixed;
@@ -491,16 +491,16 @@ function unlockKonamiCode() {
   `;
 
   overlay.innerHTML = `
-    <div style="text-align: center; animation: scale-in 600ms ease-out;">
-      <div style="font-size: 120px; margin-bottom: 24px;">🎮</div>
-      <div style="font-size: 48px; font-weight: 700; color: #22c55e; margin-bottom: 16px;">
+    <div class="ee-konami-inner">
+      <div class="ee-konami-icon">&#127918;</div>
+      <div class="ee-konami-title">
         KONAMI CODE!
       </div>
-      <div style="font-size: 20px; color: rgba(255, 255, 255, 0.8); margin-bottom: 32px;">
+      <div class="ee-konami-desc">
         You've unlocked Developer Mode
       </div>
-      <div style="font-size: 14px; color: rgba(255, 255, 255, 0.5);">
-        ↑↑↓↓←→←→BA
+      <div class="ee-konami-code">
+        &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA
       </div>
     </div>
   `;

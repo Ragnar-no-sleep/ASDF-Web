@@ -53,6 +53,7 @@ export class DashboardComponent {
       </div>
     `;
 
+    this._applyDynamicStyles();
     this._bindEvents();
   }
 
@@ -78,7 +79,7 @@ export class DashboardComponent {
       <div class="lb-header">
         <div class="lb-header-info">
           <h2 class="lb-header-title">Builder Dashboard</h2>
-          <span class="lb-rank-display" style="color: ${profile.xp?.rankColor}">${profile.xp?.rank || 'Novice'}</span>
+          <span class="lb-rank-display" data-rank-color="${profile.xp?.rankColor}">${profile.xp?.rank || 'Novice'}</span>
         </div>
         <div class="lb-header-stats">
           <div class="lb-stat">
@@ -113,7 +114,7 @@ export class DashboardComponent {
               <span>${xp.xpInLevel || 0}/${xp.xpForLevel || 100}</span>
             </div>
             <div class="lb-progress">
-              <div class="lb-level-progress" style="width: ${xp.progress || 0}%"></div>
+              <div class="lb-level-progress" data-progress="${xp.progress || 0}"></div>
             </div>
           </div>
         </div>
@@ -192,7 +193,7 @@ export class DashboardComponent {
           <span class="lb-track-pct">${pct}%</span>
         </div>
         <div class="lb-progress">
-          <div class="progress-bar" style="width: ${pct}%; background: ${color}"></div>
+          <div class="progress-bar" data-progress="${pct}" data-color="${color}"></div>
         </div>
       </div>
     `;
@@ -253,7 +254,7 @@ export class DashboardComponent {
               <div class="lb-milestone-content">
                 <span class="lb-milestone-name">${m.name}</span>
                 <div class="lb-progress">
-                  <div class="lb-milestone-fill" style="width: ${m.progress}%"></div>
+                  <div class="lb-milestone-fill" data-progress="${m.progress}"></div>
                 </div>
                 <span class="lb-milestone-text">${m.current}/${m.target}</span>
               </div>
@@ -306,6 +307,25 @@ export class DashboardComponent {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Apply dynamic styles via CSSOM after innerHTML render
+   * @private
+   */
+  _applyDynamicStyles() {
+    this.container.querySelectorAll('[data-rank-color]').forEach(el => {
+      el.style.setProperty('color', el.dataset.rankColor);
+      el.removeAttribute('data-rank-color');
+    });
+    this.container.querySelectorAll('[data-progress]').forEach(el => {
+      el.style.setProperty('width', el.dataset.progress + '%');
+      if (el.dataset.color) {
+        el.style.setProperty('background', el.dataset.color);
+        el.removeAttribute('data-color');
+      }
+      el.removeAttribute('data-progress');
+    });
   }
 
   /**

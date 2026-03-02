@@ -56,10 +56,10 @@ const ShopItemCard = {
             <div class="shop-item-card ${compact ? 'compact' : ''} ${selected ? 'selected' : ''} ${ownedClass} ${unavailableClass} ${particleClass}"
                  data-item-id="${this.escapeHtml(item.id)}"
                  data-tier="${tier}"
-                 style="--tier-color: ${tierColor}">
+                 data-tier-color="${this.escapeHtml(tierColor)}">
 
                 <!-- Tier Glow Effect -->
-                <div class="card-glow" style="background: radial-gradient(circle at center, ${tierColor}30, transparent 70%)"></div>
+                <div class="card-glow"></div>
 
                 <!-- Thumbnail -->
                 <div class="card-thumbnail">
@@ -74,7 +74,7 @@ const ShopItemCard = {
                 <!-- Info -->
                 <div class="card-info">
                     <div class="card-name" title="${this.escapeHtml(item.name)}">${this.escapeHtml(item.name)}</div>
-                    <div class="card-tier" style="color: ${tierColor}">${tierName}</div>
+                    <div class="card-tier">${tierName}</div>
                 </div>
 
                 <!-- Price -->
@@ -110,7 +110,7 @@ const ShopItemCard = {
                          alt="${this.escapeHtml(item.name)}"
                          class="card-image"
                          loading="lazy">
-                    <div class="card-placeholder" style="display: none;">${this.getLayerIcon(item.layer)}</div>`;
+                    <div class="card-placeholder hidden">${this.getLayerIcon(item.layer)}</div>`;
     }
 
     // Use placeholder
@@ -126,9 +126,8 @@ const ShopItemCard = {
       }
     }
 
-    // Fallback placeholder
-    const tierColor = item.tierColor || this.getTierColor(item.tier || 0);
-    return `<div class="card-placeholder" style="background: linear-gradient(135deg, ${tierColor}40, ${tierColor}20);">
+    // Fallback placeholder — gradient via CSS var(--tier-color) set by applyTierColors()
+    return `<div class="card-placeholder card-placeholder--gradient">
                     ${this.getLayerIcon(item.layer)}
                 </div>`;
   },
@@ -144,6 +143,17 @@ const ShopItemCard = {
         img.style.display = 'none';
         if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
       });
+    });
+  },
+
+  /**
+   * Apply --tier-color CSS custom property via CSSOM (CSP-safe)
+   * Call after inserting rendered HTML into the DOM
+   * @param {HTMLElement} container - Parent element containing rendered cards
+   */
+  applyTierColors(container) {
+    container.querySelectorAll('.shop-item-card[data-tier-color]').forEach(card => {
+      card.style.setProperty('--tier-color', card.dataset.tierColor);
     });
   },
 
@@ -338,6 +348,9 @@ const ShopItemCard = {
    */
   bindEvents(container, onItemClick, onFavoriteClick) {
     if (!container) return;
+
+    // Apply tier colors via CSSOM (CSP Phase 2)
+    this.applyTierColors(container);
 
     // Item card clicks
     container.querySelectorAll('.shop-item-card').forEach(card => {

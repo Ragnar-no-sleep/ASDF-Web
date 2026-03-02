@@ -356,7 +356,7 @@ function generateTimelineModalContent(project, commits, contributors) {
       const type = detectCommitType(commit.message);
 
       return `
-      <li class="commit-item" style="animation-delay: ${i * 50}ms">
+      <li class="commit-item" data-delay="${i * 50}"
         <div class="commit-timeline-row">
           <span class="commit-date">${date}</span>
           <span class="commit-dot">●</span>
@@ -382,7 +382,7 @@ function generateTimelineModalContent(project, commits, contributors) {
       const url = sanitizeUrl(contrib.url) || '#';
 
       return `
-      <div class="builder-card" style="animation-delay: ${i * 80}ms">
+      <div class="builder-card" data-delay="${i * 80}"
         <img src="${avatar}" alt="${login}" class="builder-avatar" loading="lazy" />
         <span class="builder-name">@${login}</span>
         <span class="builder-xp">${xp} XP</span>
@@ -756,6 +756,12 @@ const ModalFactory = {
       if (backBtn) {
         on(backBtn, 'click', () => this.close('project-timeline-modal'));
       }
+
+      // Apply animation-delay via CSSOM
+      content.querySelectorAll('[data-delay]').forEach(el => {
+        el.style.setProperty('animation-delay', el.dataset.delay + 'ms');
+        el.removeAttribute('data-delay');
+      });
 
       // Bind builder card clicks (emit event for profile viewing)
       const builderCards = $$('.builder-card', content);

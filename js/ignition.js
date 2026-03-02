@@ -227,8 +227,7 @@ function showKothPending() {
 
   const historyEl = document.getElementById('koth-history');
   if (historyEl) {
-    historyEl.innerHTML =
-      '<div class="ig-koth-row" style="color:var(--white-muted)">History endpoint pending</div>';
+    historyEl.innerHTML = '<div class="ig-koth-row ig-koth-pending">History endpoint pending</div>';
   }
 }
 
@@ -237,7 +236,7 @@ function showLeaderboardPending() {
   const body = document.getElementById('leaderboard-body');
   if (body) {
     body.innerHTML = `
-      <div class="ig-table-row" style="color:var(--white-muted);grid-column:1/-1;text-align:center;padding:24px">
+      <div class="ig-table-row ig-pending-msg">
         Leaderboard endpoint pending
       </div>`;
   }
@@ -248,7 +247,7 @@ function showRobinhoodPending() {
   const list = document.getElementById('robinhood-list');
   if (list) {
     list.innerHTML = `
-      <div style="color:var(--white-muted);padding:24px;text-align:center">
+      <div class="ig-pending-msg">
         Robinhood endpoint pending
       </div>`;
   }
@@ -262,7 +261,7 @@ function showPagsPending() {
   list.querySelectorAll('.ig-pags-row').forEach(row => row.remove());
 
   const pending = document.createElement('div');
-  pending.style.cssText = 'color:var(--white-muted);padding:12px 0';
+  pending.className = 'ig-pending-msg';
   pending.textContent = 'Designations endpoint pending';
   list.appendChild(pending);
 }

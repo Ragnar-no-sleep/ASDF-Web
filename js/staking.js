@@ -365,9 +365,9 @@ function renderLocks() {
         formatNumber(lock.amount) +
         ' ASDF</div>' +
         '<div class="staking-lock-progress">' +
-        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' +
+        '<div class="staking-progress-bar"><div class="staking-progress-fill" data-progress="' +
         pct +
-        '%"></div></div>' +
+        '"></div></div>' +
         '<div class="staking-lock-pct">' +
         pct +
         '% unlocked</div>' +
@@ -381,6 +381,12 @@ function renderLocks() {
       );
     })
     .join('');
+
+  // Apply progress widths via CSSOM
+  container.querySelectorAll('[data-progress]').forEach(el => {
+    el.style.setProperty('width', el.dataset.progress + '%');
+    el.removeAttribute('data-progress');
+  });
 }
 
 // ============================================

@@ -73,11 +73,11 @@ const ShopPreview = {
     const tierName = item.tierName || this.getTierName(tier);
 
     this.container.innerHTML = `
-            <div class="shop-preview-panel" style="--tier-color: ${tierColor}">
+            <div class="shop-preview-panel" data-tier-color="${tierColor}">
                 <!-- Header -->
                 <div class="preview-header">
                     <h3 class="preview-title">${this.escapeHtml(item.name)}</h3>
-                    <div class="preview-tier" style="color: ${tierColor}">${tierName}</div>
+                    <div class="preview-tier">${tierName}</div>
                 </div>
 
                 <!-- Canvas Preview -->
@@ -105,6 +105,16 @@ const ShopPreview = {
                 ${item.collection_id ? this.renderCollectionInfo(item) : ''}
             </div>
         `;
+
+    // Apply dynamic styles via CSSOM
+    this.container.querySelectorAll('[data-tier-color]').forEach(el => {
+      el.style.setProperty('--tier-color', el.dataset.tierColor);
+      el.removeAttribute('data-tier-color');
+    });
+    this.container.querySelectorAll('[data-progress]').forEach(el => {
+      el.style.setProperty('width', el.dataset.progress + '%');
+      el.removeAttribute('data-progress');
+    });
 
     this.bindEvents();
     this.renderCanvas();
@@ -185,7 +195,7 @@ const ShopPreview = {
       const percentage = (remaining / item.quantity_limit) * 100;
       html += `
                 <div class="stock-bar">
-                    <div class="stock-fill" style="width: ${percentage}%"></div>
+                    <div class="stock-fill" data-progress="${percentage}"></div>
                 </div>
                 <div class="stock-text">${remaining} of ${item.quantity_limit} remaining</div>
             `;
@@ -336,7 +346,7 @@ const ShopPreview = {
                     ? `
                     <div class="collection-progress">
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress.percentage}%"></div>
+                            <div class="progress-fill" data-progress="${progress.percentage}"></div>
                         </div>
                         <span class="progress-text">${progress.owned}/${progress.total}</span>
                     </div>

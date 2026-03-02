@@ -59,12 +59,16 @@ const OnboardingProgress = {
     progressElement.innerHTML = `
       <span class="onboarding-progress__label">Getting started</span>
       <div class="onboarding-progress__bar">
-        <div class="onboarding-progress__fill" style="width: ${progress}%"></div>
+        <div class="onboarding-progress__fill"></div>
       </div>
       <span class="onboarding-progress__text">${progress}%</span>
     `;
 
     document.body.appendChild(progressElement);
+
+    // Set initial progress width via CSSOM
+    const fillEl = progressElement.querySelector('.onboarding-progress__fill');
+    if (fillEl) fillEl.style.width = `${progress}%`;
 
     // Show with animation
     requestAnimationFrame(() => {

@@ -1238,6 +1238,17 @@ body {
 }
 
 /* ============================================
+   CSP Phase 2 — extracted from JS templates
+   ============================================ */
+
+/* Empty-state text (forecast.js updateLeaderboard) */
+.forecast-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--white-muted);
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {

@@ -140,7 +140,7 @@ function updateLeaderboard(leaderboard) {
   if (!leaderboard || leaderboard.length === 0) {
     body.innerHTML = `
       <div class="table-row">
-        <span style="grid-column:1/-1;text-align:center;color:var(--white-muted)">
+        <span class="forecast-empty">
           No predictions yet. Be the first!
         </span>
       </div>`;

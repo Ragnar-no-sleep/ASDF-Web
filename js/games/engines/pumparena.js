@@ -1729,54 +1729,51 @@ function startPumpArena(gameId) {
   }
 
   arena.innerHTML = `
-        <div style="width:100%;min-height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a0a1a 0%,#0f1a2a 100%);box-sizing:border-box;">
+        <div class="pa-shell">
 
             <!-- Top Bar -->
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:rgba(0,0,0,0.6);border-bottom:1px solid #333;">
-                <div style="display:flex;gap:20px;align-items:center;">
-                    <button id="pa-refresh-btn" style="padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.1);border:1px solid #444;color:#9ca3af;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;" title="Restart Game">
+            <div class="pa-topbar">
+                <div class="pa-topbar-group">
+                    <button id="pa-refresh-btn" class="pa-refresh-btn" title="Restart Game">
                         🔄 Restart
                     </button>
-                    <div style="width:1px;height:30px;background:#333;"></div>
+                    <div class="pa-divider"></div>
                     <div>
-                        <span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Influence</span>
-                        <div style="color:#fbbf24;font-size:20px;font-weight:bold;font-family:monospace;" id="pa-influence">⚡ 100</div>
+                        <span class="pa-stat-label">Influence</span>
+                        <div class="pa-stat-influence" id="pa-influence">⚡ 100</div>
                     </div>
-                    <div style="width:1px;height:30px;background:#333;"></div>
+                    <div class="pa-divider"></div>
                     <div>
-                        <span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Reputation</span>
-                        <div style="color:#22c55e;font-size:20px;font-weight:bold;font-family:monospace;" id="pa-reputation">⭐ 0</div>
+                        <span class="pa-stat-label">Reputation</span>
+                        <div class="pa-stat-reputation" id="pa-reputation">⭐ 0</div>
                     </div>
                 </div>
-                <div style="display:flex;gap:20px;align-items:center;">
-                    <div id="pa-partner-badge" style="display:none;padding:4px 10px;background:linear-gradient(90deg,#a855f7,#6366f1);border-radius:12px;font-size:11px;color:#fff;font-weight:bold;">
+                <div class="pa-topbar-group">
+                    <div id="pa-partner-badge" class="pa-partner-badge">
                         🤝 CORE BUILDER
                     </div>
-                    <div style="text-align:right;">
-                        <span style="color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Build Cycle</span>
-                        <div style="color:#a855f7;font-size:18px;font-weight:bold;"><span id="pa-round">1</span> / ${state.maxRounds}</div>
+                    <div class="pa-topbar-right">
+                        <span class="pa-stat-label">Build Cycle</span>
+                        <div class="pa-stat-round"><span id="pa-round">1</span> / ${state.maxRounds}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Main Game Area -->
-            <div style="flex:1;display:flex;flex-direction:column;padding:15px;padding-bottom:30px;">
+            <div class="pa-main">
                 <!-- Instructions -->
-                <div id="pa-instructions" style="text-align:center;margin-bottom:15px;"></div>
+                <div id="pa-instructions" class="pa-instructions"></div>
 
                 <!-- Project Type Selection -->
-                <div id="pa-type-select" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:600px;margin:0 auto;width:100%;">
+                <div id="pa-type-select" class="pa-type-grid">
                     ${Object.entries(projectTypes)
                       .map(
                         ([key, type]) => `
-                        <button class="type-btn" data-type="${key}" style="
-                            padding:15px;border-radius:8px;cursor:pointer;
-                            background:rgba(0,0,0,0.5);
-                            border:2px solid ${type.color};transition:all 0.2s;text-align:left;display:flex;gap:12px;align-items:center;color:#fff;font-family:inherit;">
-                            <div style="font-size:32px;width:50px;text-align:center;">${type.icon}</div>
-                            <div style="flex:1;">
-                                <div style="font-size:14px;font-weight:bold;color:${type.color};margin-bottom:3px;">${type.name}</div>
-                                <div style="font-size:11px;color:#9ca3af;line-height:1.3;">${type.desc}</div>
+                        <button class="type-btn pa-type-btn" data-type="${key}">
+                            <div class="pa-type-icon">${type.icon}</div>
+                            <div class="pa-type-body">
+                                <div class="pa-type-name">${type.name}</div>
+                                <div class="pa-type-desc">${type.desc}</div>
                             </div>
                         </button>
                     `
@@ -1785,38 +1782,38 @@ function startPumpArena(gameId) {
                 </div>
 
                 <!-- Builder Selection (hidden initially) -->
-                <div id="pa-builder-select" style="display:none;flex:1;"></div>
+                <div id="pa-builder-select" class="pa-panel-hidden pa-builder-select"></div>
 
                 <!-- Roadmap Display (hidden initially) -->
-                <div id="pa-roadmap" style="display:none;max-width:700px;margin:0 auto;width:100%;padding-bottom:20px;"></div>
+                <div id="pa-roadmap" class="pa-panel-hidden pa-roadmap-panel"></div>
 
                 <!-- Contribution Selection (hidden initially) -->
-                <div id="pa-contribute-select" style="display:none;text-align:center;max-width:500px;margin:0 auto;"></div>
+                <div id="pa-contribute-select" class="pa-panel-hidden pa-contribute-panel"></div>
 
                 <!-- Scenario/Narrative Display (hidden initially) -->
-                <div id="pa-scenario" style="display:none;max-width:600px;margin:0 auto;width:100%;"></div>
+                <div id="pa-scenario" class="pa-panel-hidden pa-scenario-panel"></div>
 
                 <!-- Result Display (hidden initially) -->
-                <div id="pa-result" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pa-result-icon" style="font-size:60px;margin-bottom:12px;"></div>
-                    <div id="pa-result-text" style="font-size:24px;font-weight:bold;margin-bottom:8px;"></div>
-                    <div id="pa-result-detail" style="font-size:14px;color:#6b7280;margin-bottom:20px;text-align:center;max-width:400px;"></div>
-                    <button id="pa-next-btn" class="btn" style="padding:10px 30px;font-size:14px;background:#fbbf24;border-color:#fbbf24;color:#000;">
+                <div id="pa-result" class="pa-panel-hidden pa-result-panel">
+                    <div id="pa-result-icon" class="pa-result-icon"></div>
+                    <div id="pa-result-text" class="pa-result-text"></div>
+                    <div id="pa-result-detail" class="pa-result-detail"></div>
+                    <button id="pa-next-btn" class="btn pa-next-btn">
                         Continue
                     </button>
                 </div>
 
                 <!-- Partnership Offer (hidden initially) -->
-                <div id="pa-partnership-offer" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;max-width:500px;margin:0 auto;"></div>
+                <div id="pa-partnership-offer" class="pa-panel-hidden pa-partnership-offer-panel"></div>
 
                 <!-- Partnership View - Roadmap Collaboration (hidden initially) -->
-                <div id="pa-partnership-view" style="display:none;flex:1;max-width:700px;margin:0 auto;width:100%;"></div>
+                <div id="pa-partnership-view" class="pa-panel-hidden pa-partnership-view-panel"></div>
 
                 <!-- Collaboration Decision (hidden initially) -->
-                <div id="pa-collab" style="display:none;flex:1;max-width:500px;margin:0 auto;width:100%;"></div>
+                <div id="pa-collab" class="pa-panel-hidden pa-collab-panel"></div>
             </div>
 
-            <canvas id="pa-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+            <canvas id="pa-canvas" class="pa-canvas"></canvas>
         </div>
     `;
 
@@ -1859,6 +1856,12 @@ function startPumpArena(gameId) {
   const collabEl = document.getElementById('pa-collab');
   const refreshBtn = document.getElementById('pa-refresh-btn');
 
+  // Set dynamic accent colors on initial type buttons
+  typeSelectEl.querySelectorAll('.pa-type-btn').forEach(btn => {
+    const type = projectTypes[btn.dataset.type];
+    btn.style.setProperty('--pa-accent', type.color);
+  });
+
   // Refresh button - restart game
   refreshBtn.addEventListener('click', () => {
     if (confirm('Restart? All progress will be lost.')) {
@@ -1894,40 +1897,43 @@ function startPumpArena(gameId) {
         return;
       }
       instructionsEl.innerHTML = `
-                <div style="font-size:18px;color:#fbbf24;font-weight:600;margin-bottom:6px;">🏗️ Choose a Project Category</div>
-                <div style="font-size:13px;color:#9ca3af;">Find teams to support and build with</div>
+                <div class="pa-instr-title">🏗️ Choose a Project Category</div>
+                <div class="pa-instr-sub">Find teams to support and build with</div>
             `;
       typeSelectEl.style.display = 'grid';
     } else if (phase === 'builder') {
       const type = projectTypes[state.selectedType];
+      instructionsEl.style.setProperty('--pa-accent', type.color);
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:${type.color};font-weight:600;margin-bottom:4px;">${type.icon} ${type.name}</div>
-                <div style="font-size:12px;color:#6b7280;">Review teams and find where you can contribute</div>
+                <div class="pa-instr-phase-title">${type.icon} ${type.name}</div>
+                <div class="pa-instr-phase-sub">Review teams and find where you can contribute</div>
             `;
       builderSelectEl.style.display = 'block';
       renderBuilders();
     } else if (phase === 'roadmap') {
       const type = projectTypes[state.selectedType];
       const builder = state.selectedBuilder;
+      instructionsEl.style.setProperty('--pa-accent', type.color);
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:${type.color};font-weight:600;margin-bottom:4px;">${builder.name}</div>
-                <div style="font-size:12px;color:#6b7280;">Review the roadmap and see how you can help</div>
+                <div class="pa-instr-phase-title">${builder.name}</div>
+                <div class="pa-instr-phase-sub">Review the roadmap and see how you can help</div>
             `;
       roadmapEl.style.display = 'block';
       renderRoadmap();
     } else if (phase === 'contribute') {
       const type = projectTypes[state.selectedType];
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:#fbbf24;font-weight:600;margin-bottom:4px;">🤝 Contribution Level</div>
-                <div style="font-size:12px;color:#6b7280;">${state.selectedBuilder.name} • Potential: ${Math.round(state.selectedBuilder.potential * 100)}%</div>
+                <div class="pa-instr-contrib-title">🤝 Contribution Level</div>
+                <div class="pa-instr-phase-sub">${state.selectedBuilder.name} • Potential: ${Math.round(state.selectedBuilder.potential * 100)}%</div>
             `;
       contributeSelectEl.style.display = 'block';
       renderContributeOptions();
     } else if (phase === 'scenario') {
       const type = projectTypes[state.selectedType];
+      instructionsEl.style.setProperty('--pa-accent', type.color);
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:${type.color};font-weight:600;margin-bottom:4px;">📖 ${state.selectedBuilder.name}</div>
-                <div style="font-size:12px;color:#6b7280;">A situation has emerged. Your choice matters.</div>
+                <div class="pa-instr-phase-title">📖 ${state.selectedBuilder.name}</div>
+                <div class="pa-instr-phase-sub">A situation has emerged. Your choice matters.</div>
             `;
       scenarioEl.style.display = 'block';
       renderScenario();
@@ -1940,17 +1946,19 @@ function startPumpArena(gameId) {
       renderPartnershipOffer();
     } else if (phase === 'partnership') {
       const type = projectTypes[state.partnership.type];
+      instructionsEl.style.setProperty('--pa-accent', type.color);
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:${type.color};font-weight:600;margin-bottom:4px;">🤝 ${state.partnership.builder.name} - Core Builder</div>
-                <div style="font-size:12px;color:#6b7280;">You are shaping the project's future together</div>
+                <div class="pa-instr-phase-title">🤝 ${state.partnership.builder.name} - Core Builder</div>
+                <div class="pa-instr-phase-sub">You are shaping the project's future together</div>
             `;
       partnershipViewEl.style.display = 'block';
       renderPartnershipView();
     } else if (phase === 'collab') {
       const type = projectTypes[state.partnership.type];
+      instructionsEl.style.setProperty('--pa-accent', type.color);
       instructionsEl.innerHTML = `
-                <div style="font-size:16px;color:${type.color};font-weight:600;margin-bottom:4px;">📋 Team Decision</div>
-                <div style="font-size:12px;color:#6b7280;">Your input will shape the project's direction</div>
+                <div class="pa-instr-phase-title">📋 Team Decision</div>
+                <div class="pa-instr-phase-sub">Your input will shape the project's direction</div>
             `;
       collabEl.style.display = 'block';
       renderCollabDecision();
@@ -1960,7 +1968,7 @@ function startPumpArena(gameId) {
   function renderBuilders() {
     const type = projectTypes[state.selectedType];
     builderSelectEl.innerHTML = `
-            <div style="display:flex;flex-direction:column;gap:10px;max-width:600px;margin:0 auto;">
+            <div class="pa-builder-list">
                 ${type.builders
                   .map((builder, idx) => {
                     const potentialPct = Math.round(builder.potential * 100);
@@ -1971,45 +1979,52 @@ function startPumpArena(gameId) {
                           ? '#3b82f6'
                           : '#22c55e';
                     return `
-                        <button class="builder-btn" data-idx="${idx}" style="
-                            padding:12px 15px;border-radius:8px;cursor:pointer;
-                            background:rgba(0,0,0,0.4);
-                            border:1px solid ${type.color}30;transition:all 0.2s;text-align:left;">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                        <button class="builder-btn pa-builder-btn" data-idx="${idx}" data-stage-color="${stageColor}">
+                            <div class="pa-builder-header">
                                 <div>
-                                    <div style="font-size:15px;font-weight:bold;color:#fff;margin-bottom:2px;">${builder.name}</div>
-                                    <div style="font-size:11px;color:#9ca3af;font-style:italic;">"${builder.vision}"</div>
+                                    <div class="pa-builder-name">${builder.name}</div>
+                                    <div class="pa-builder-vision">"${builder.vision}"</div>
                                 </div>
-                                <div style="text-align:right;">
-                                    <div style="font-size:12px;padding:3px 8px;background:${stageColor}30;border-radius:4px;color:${stageColor};font-weight:bold;">${builder.stage}</div>
+                                <div class="pa-builder-stage-wrap">
+                                    <div class="pa-builder-stage">${builder.stage}</div>
                                 </div>
                             </div>
-                            <div style="display:flex;gap:15px;font-size:10px;color:#9ca3af;flex-wrap:wrap;margin-bottom:8px;">
+                            <div class="pa-builder-meta">
                                 <span>👥 ${builder.team}</span>
                                 <span>🌐 ${builder.community}</span>
                             </div>
-                            <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">
-                                <span style="color:#a855f7;">Needs:</span> ${builder.needs.join(' • ')}
+                            <div class="pa-builder-needs">
+                                <span class="pa-builder-needs-label">Needs:</span> ${builder.needs.join(' • ')}
                             </div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div style="flex:1;height:4px;background:#1f2937;border-radius:2px;overflow:hidden;">
-                                    <div style="width:${potentialPct}%;height:100%;background:linear-gradient(90deg,#22c55e,#fbbf24);"></div>
+                            <div class="pa-builder-potential-row">
+                                <div class="pa-builder-potential-track">
+                                    <div class="pa-builder-potential-fill"></div>
                                 </div>
-                                <span style="font-size:10px;color:#22c55e;font-weight:bold;">${potentialPct}% potential</span>
+                                <span class="pa-builder-potential-label">${potentialPct}% potential</span>
                             </div>
                         </button>
                     `;
                   })
                   .join('')}
-                <button id="pa-back-type" style="margin-top:5px;padding:8px;border-radius:6px;background:transparent;border:1px solid #333;color:#6b7280;cursor:pointer;font-size:12px;">
+                <button id="pa-back-type" class="pa-back-btn">
                     ← Back to categories
                 </button>
             </div>
         `;
 
+    // Set dynamic colors via CSSOM (not restricted by CSP)
     builderSelectEl.querySelectorAll('.builder-btn').forEach(btn => {
+      const stageColor = btn.dataset.stageColor;
+      btn.style.setProperty('--pa-accent', type.color);
+      btn.style.setProperty('--pa-stage-color', stageColor);
+      btn.style.setProperty('--pa-stage-bg', stageColor + '30');
+      // Set potential bar width
+      const idx = parseInt(btn.dataset.idx);
+      const potentialPct = Math.round(type.builders[idx].potential * 100);
+      const fill = btn.querySelector('.pa-builder-potential-fill');
+      if (fill) fill.style.width = potentialPct + '%';
+
       btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.idx);
         state.selectedBuilderIdx = idx;
         state.selectedBuilder = projectTypes[state.selectedType].builders[idx];
         showPhase('roadmap');
@@ -2019,7 +2034,7 @@ function startPumpArena(gameId) {
         btn.style.background = 'rgba(0,0,0,0.6)';
       });
       btn.addEventListener('mouseleave', () => {
-        btn.style.borderColor = type.color + '30';
+        btn.style.borderColor = hexToRgba(type.color, 0.19);
         btn.style.background = 'rgba(0,0,0,0.4)';
       });
     });
@@ -2040,47 +2055,47 @@ function startPumpArena(gameId) {
           : '#22c55e';
 
     roadmapEl.innerHTML = `
-            <div style="background:rgba(0,0,0,0.4);border-radius:10px;border:1px solid ${type.color}30;overflow:hidden;">
+            <div class="pa-roadmap-card">
                 <!-- Project Header -->
-                <div style="padding:12px 15px;background:linear-gradient(135deg,${type.color}20,transparent);border-bottom:1px solid ${type.color}20;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <span style="font-size:28px;">${type.icon}</span>
+                <div class="pa-roadmap-header">
+                    <div class="pa-roadmap-header-row">
+                        <div class="pa-roadmap-header-left">
+                            <span class="pa-roadmap-icon">${type.icon}</span>
                             <div>
-                                <div style="font-size:16px;font-weight:bold;color:#fff;">${builder.name}</div>
-                                <div style="font-size:11px;color:${type.color};">${type.name}</div>
+                                <div class="pa-roadmap-title">${builder.name}</div>
+                                <div class="pa-roadmap-subtitle">${type.name}</div>
                             </div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:12px;padding:4px 10px;background:${stageColor}30;border-radius:6px;color:${stageColor};font-weight:bold;">${builder.stage}</div>
+                        <div class="pa-roadmap-stage-wrap">
+                            <div class="pa-roadmap-stage">${builder.stage}</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Project Stats -->
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#1f2937;border-bottom:1px solid #1f2937;">
-                    <div style="padding:10px;background:#0a0a1a;text-align:center;">
-                        <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">TEAM</div>
-                        <div style="font-size:11px;color:#fff;">${builder.team}</div>
+                <div class="pa-stats-grid">
+                    <div class="pa-stat-cell">
+                        <div class="pa-stat-cell-label">TEAM</div>
+                        <div class="pa-stat-cell-value">${builder.team}</div>
                     </div>
-                    <div style="padding:10px;background:#0a0a1a;text-align:center;">
-                        <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">COMMUNITY</div>
-                        <div style="font-size:11px;color:#22c55e;font-weight:bold;">${builder.community}</div>
+                    <div class="pa-stat-cell">
+                        <div class="pa-stat-cell-label">COMMUNITY</div>
+                        <div class="pa-stat-cell-value-green">${builder.community}</div>
                     </div>
-                    <div style="padding:10px;background:#0a0a1a;text-align:center;">
-                        <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">POTENTIAL</div>
-                        <div style="font-size:11px;color:#fbbf24;font-weight:bold;">${potentialPct}%</div>
+                    <div class="pa-stat-cell">
+                        <div class="pa-stat-cell-label">POTENTIAL</div>
+                        <div class="pa-stat-cell-value-gold">${potentialPct}%</div>
                     </div>
                 </div>
 
                 <!-- What They Need -->
-                <div style="padding:12px 15px;background:rgba(168,85,247,0.1);border-bottom:1px solid #1f2937;">
-                    <div style="font-size:11px;color:#a855f7;font-weight:bold;margin-bottom:8px;">🎯 HOW YOU CAN HELP</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <div class="pa-needs-section">
+                    <div class="pa-needs-title">🎯 HOW YOU CAN HELP</div>
+                    <div class="pa-needs-tags">
                         ${builder.needs
                           .map(
                             need => `
-                            <span style="padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:12px;font-size:10px;color:#d1d5db;">${need}</span>
+                            <span class="pa-needs-tag">${need}</span>
                         `
                           )
                           .join('')}
@@ -2088,16 +2103,16 @@ function startPumpArena(gameId) {
                 </div>
 
                 <!-- Roadmap Timeline -->
-                <div style="padding:12px 15px;">
-                    <div style="font-size:12px;color:#6b7280;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Project Roadmap</div>
-                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                <div class="pa-timeline-section">
+                    <div class="pa-timeline-heading">Project Roadmap</div>
+                    <div class="pa-timeline-grid">
                         ${roadmap
                           .map(
                             (phase, idx) => `
-                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border-left:2px solid ${type.color}${idx === 0 ? '' : '40'};">
-                                <div style="font-size:10px;color:${type.color};font-weight:bold;margin-bottom:4px;">${phase.phase}</div>
-                                <div style="font-size:11px;color:#fff;font-weight:500;margin-bottom:6px;">${phase.title}</div>
-                                <ul style="margin:0;padding-left:12px;font-size:9px;color:#9ca3af;line-height:1.5;">
+                            <div class="${idx === 0 ? 'pa-timeline-phase' : 'pa-timeline-phase-faded'}">
+                                <div class="pa-timeline-phase-label">${phase.phase}</div>
+                                <div class="pa-timeline-phase-title">${phase.title}</div>
+                                <ul class="pa-timeline-tasks">
                                     ${phase.tasks.map(task => `<li>${task}</li>`).join('')}
                                 </ul>
                             </div>
@@ -2109,15 +2124,22 @@ function startPumpArena(gameId) {
             </div>
 
             <!-- Action Buttons -->
-            <div style="display:flex;gap:10px;margin-top:12px;margin-bottom:20px;padding:10px;background:rgba(0,0,0,0.3);border-radius:8px;">
-                <button id="pa-back-builder" style="flex:1;padding:12px;border-radius:6px;background:rgba(255,255,255,0.1);border:1px solid #555;color:#fff;cursor:pointer;font-size:13px;font-weight:500;">
+            <div class="pa-action-row">
+                <button id="pa-back-builder" class="pa-back-btn-light">
                     ← Back
                 </button>
-                <button id="pa-join-btn" style="flex:2;padding:12px;border-radius:6px;background:linear-gradient(135deg,${type.color},${type.color}cc);border:none;color:#fff;cursor:pointer;font-size:14px;font-weight:bold;box-shadow:0 4px 15px ${type.color}40;">
+                <button id="pa-join-btn" class="pa-join-btn">
                     🤝 Join ${builder.name}
                 </button>
             </div>
         `;
+
+    // Set dynamic colors via CSSOM
+    const roadmapCard = roadmapEl.querySelector('.pa-roadmap-card');
+    roadmapCard.style.setProperty('--pa-accent', type.color);
+    roadmapCard.style.setProperty('--pa-stage-color', stageColor);
+    roadmapCard.style.setProperty('--pa-stage-bg', stageColor + '30');
+    roadmapEl.querySelector('.pa-join-btn').style.setProperty('--pa-accent', type.color);
 
     document
       .getElementById('pa-back-builder')
@@ -2162,38 +2184,34 @@ function startPumpArena(gameId) {
     const previousContribs = state.contributionsByBuilder[builderKey] || 0;
 
     contributeSelectEl.innerHTML = `
-            <div style="background:rgba(0,0,0,0.4);border-radius:10px;padding:15px;border:1px solid #333;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:12px;border-bottom:1px solid #1f2937;">
-                    <div style="text-align:left;">
-                        <div style="font-size:12px;color:#6b7280;">Contributing to</div>
-                        <div style="font-size:14px;color:#fff;font-weight:bold;">${builder.name}</div>
-                        ${previousContribs > 0 ? `<div style="font-size:10px;color:#a855f7;margin-top:2px;">Previous contributions: ${previousContribs}</div>` : ''}
+            <div class="pa-contrib-card">
+                <div class="pa-contrib-header">
+                    <div class="pa-contrib-header-left">
+                        <div class="pa-contrib-label">Contributing to</div>
+                        <div class="pa-contrib-name">${builder.name}</div>
+                        ${previousContribs > 0 ? `<div class="pa-contrib-prev">Previous contributions: ${previousContribs}</div>` : ''}
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:12px;color:#6b7280;">Your Influence</div>
-                        <div style="font-size:16px;color:#fbbf24;font-weight:bold;">⚡ ${state.influence}</div>
+                    <div class="pa-contrib-header-right">
+                        <div class="pa-contrib-label">Your Influence</div>
+                        <div class="pa-contrib-influence-value">⚡ ${state.influence}</div>
                     </div>
                 </div>
 
-                <div style="font-size:11px;color:#6b7280;margin-bottom:10px;text-align:left;">Choose your contribution level:</div>
+                <div class="pa-contrib-choose-label">Choose your contribution level:</div>
 
                 <!-- Contribution levels -->
-                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+                <div class="pa-contrib-list">
                     ${contributions
                       .map(
                         contrib => `
-                        <button class="contrib-btn" data-influence="${contrib.influence}" data-level="${contrib.level}" style="
-                            padding:12px 15px;border-radius:8px;cursor:pointer;
-                            background:${contrib.level === 'All-In' ? 'linear-gradient(135deg,#a855f7,#6366f1)' : 'rgba(255,255,255,0.05)'};
-                            border:1px solid ${contrib.level === 'All-In' ? '#a855f7' : '#333'};
-                            color:white;font-size:12px;transition:all 0.2s;text-align:left;display:flex;align-items:center;gap:12px;">
-                            <span style="font-size:24px;">${contrib.icon}</span>
-                            <div style="flex:1;">
-                                <div style="font-size:14px;font-weight:bold;margin-bottom:2px;">${contrib.level}</div>
-                                <div style="font-size:10px;color:#9ca3af;">${contrib.desc}</div>
+                        <button class="contrib-btn ${contrib.level === 'All-In' ? 'pa-contrib-btn-allin' : 'pa-contrib-btn'}" data-influence="${contrib.influence}" data-level="${contrib.level}">
+                            <span class="pa-contrib-icon">${contrib.icon}</span>
+                            <div class="pa-contrib-body">
+                                <div class="pa-contrib-level">${contrib.level}</div>
+                                <div class="pa-contrib-desc">${contrib.desc}</div>
                             </div>
-                            <div style="text-align:right;">
-                                <div style="font-size:14px;font-weight:bold;color:#fbbf24;">⚡ ${contrib.influence}</div>
+                            <div class="pa-contrib-cost-wrap">
+                                <div class="pa-contrib-cost">⚡ ${contrib.influence}</div>
                             </div>
                         </button>
                     `
@@ -2201,7 +2219,7 @@ function startPumpArena(gameId) {
                       .join('')}
                 </div>
 
-                <button id="pa-back-roadmap" style="width:100%;padding:8px;border-radius:6px;background:transparent;border:1px solid #333;color:#6b7280;cursor:pointer;font-size:11px;">
+                <button id="pa-back-roadmap" class="pa-back-btn-full">
                     ← Back to project details
                 </button>
             </div>
@@ -2254,38 +2272,33 @@ function startPumpArena(gameId) {
     const builder = state.selectedBuilder;
 
     scenarioEl.innerHTML = `
-            <div style="background:rgba(0,0,0,0.5);border-radius:12px;border:1px solid ${type.color}40;overflow:hidden;">
+            <div class="pa-scenario-card">
                 <!-- Scenario Header -->
-                <div style="padding:20px;background:linear-gradient(135deg,${type.color}20,transparent);border-bottom:1px solid ${type.color}20;">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px;">
-                        <span style="font-size:32px;">${type.icon}</span>
+                <div class="pa-scenario-header">
+                    <div class="pa-scenario-title-row">
+                        <span class="pa-scenario-icon">${type.icon}</span>
                         <div>
-                            <div style="font-size:11px;color:${type.color};text-transform:uppercase;letter-spacing:1px;">${builder.name}</div>
-                            <div style="font-size:18px;font-weight:bold;color:#fff;">${scenario.title}</div>
+                            <div class="pa-scenario-builder-name">${builder.name}</div>
+                            <div class="pa-scenario-title">${scenario.title}</div>
                         </div>
                     </div>
-                    <p style="color:#d1d5db;font-size:14px;line-height:1.7;margin:0;padding:15px;background:rgba(0,0,0,0.3);border-radius:8px;border-left:3px solid ${type.color};">
+                    <p class="pa-scenario-narrative">
                         ${scenario.narrative}
                     </p>
                 </div>
 
                 <!-- Choices -->
-                <div style="padding:20px;">
-                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">
+                <div class="pa-choices-section">
+                    <div class="pa-choices-label">
                         What do you recommend?
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div class="pa-choices-list">
                         ${scenario.choices
                           .map(
                             (choice, idx) => `
-                            <button class="scenario-choice" data-approach="${choice.approach}" style="
-                                padding:15px;border-radius:8px;cursor:pointer;
-                                background:rgba(255,255,255,0.05);
-                                border:1px solid #333;
-                                transition:all 0.2s;text-align:left;
-                                display:flex;flex-direction:column;gap:5px;">
-                                <div style="font-size:14px;font-weight:600;color:#fff;">${choice.text}</div>
-                                <div style="font-size:11px;color:#9ca3af;">${choice.desc}</div>
+                            <button class="scenario-choice pa-choice-btn" data-approach="${choice.approach}">
+                                <div class="pa-choice-text">${choice.text}</div>
+                                <div class="pa-choice-desc">${choice.desc}</div>
                             </button>
                         `
                           )
@@ -2294,14 +2307,17 @@ function startPumpArena(gameId) {
                 </div>
 
                 <!-- Contribution Info -->
-                <div style="padding:15px 20px;background:rgba(0,0,0,0.3);border-top:1px solid #1f2937;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:12px;color:#6b7280;">Your contribution</span>
-                        <span style="font-size:14px;font-weight:bold;color:#fbbf24;">⚡ ${state.currentContribution} influence</span>
+                <div class="pa-contrib-footer">
+                    <div class="pa-contrib-footer-row">
+                        <span class="pa-contrib-footer-label">Your contribution</span>
+                        <span class="pa-contrib-footer-value">⚡ ${state.currentContribution} influence</span>
                     </div>
                 </div>
             </div>
         `;
+
+    // Set dynamic accent color via CSSOM
+    scenarioEl.querySelector('.pa-scenario-card').style.setProperty('--pa-accent', type.color);
 
     // Choice button handlers
     scenarioEl.querySelectorAll('.scenario-choice').forEach(btn => {
@@ -2470,35 +2486,38 @@ function startPumpArena(gameId) {
     const safeName = escapeHtml(builder.name);
 
     partnershipOfferEl.innerHTML = `
-            <div style="background:linear-gradient(135deg,${safeColor}20,rgba(0,0,0,0.6));border-radius:12px;padding:25px;border:2px solid ${safeColor};text-align:center;">
-                <div style="font-size:50px;margin-bottom:15px;">🏗️</div>
-                <h3 style="color:${safeColor};font-size:20px;margin-bottom:10px;">Core Builder Invitation</h3>
-                <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;line-height:1.6;">
+            <div class="pa-offer-card">
+                <div class="pa-offer-emoji">🏗️</div>
+                <h3 class="pa-offer-title">Core Builder Invitation</h3>
+                <p class="pa-offer-desc">
                     The ${safeName} team has noticed your consistent contributions.<br>
-                    They're inviting you to become a <strong style="color:#fbbf24;">Core Builder</strong>!
+                    They're inviting you to become a <strong class="pa-offer-highlight">Core Builder</strong>!
                 </p>
 
-                <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:15px;margin-bottom:20px;text-align:left;">
-                    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-bottom:10px;">What this means</div>
-                    <ul style="margin:0;padding-left:20px;color:#d1d5db;font-size:12px;line-height:1.8;">
+                <div class="pa-offer-details">
+                    <div class="pa-offer-details-title">What this means</div>
+                    <ul class="pa-offer-list">
                         <li>Help shape the project's direction together</li>
                         <li>Make key strategic decisions as a team</li>
                         <li>Gain significant reputation for your commitment</li>
-                        <li><span style="color:#f59e0b;">⚠️ You'll focus only on this project</span></li>
+                        <li><span class="pa-offer-warning">⚠️ You'll focus only on this project</span></li>
                         <li>You can step back anytime to explore other projects</li>
                     </ul>
                 </div>
 
-                <div style="display:flex;gap:12px;">
-                    <button id="pa-decline-partnership" style="flex:1;padding:12px;border-radius:6px;background:transparent;border:1px solid #444;color:#9ca3af;cursor:pointer;font-size:13px;">
+                <div class="pa-offer-actions">
+                    <button id="pa-decline-partnership" class="pa-decline-btn">
                         Keep Exploring
                     </button>
-                    <button id="pa-accept-partnership" style="flex:1;padding:12px;border-radius:6px;background:linear-gradient(135deg,${safeColor},${safeColor}aa);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:bold;">
+                    <button id="pa-accept-partnership" class="pa-accept-btn">
                         🏗️ Become Core Builder
                     </button>
                 </div>
             </div>
         `;
+
+    // Set dynamic accent color via CSSOM
+    partnershipOfferEl.querySelector('.pa-offer-card').style.setProperty('--pa-accent', safeColor);
 
     document.getElementById('pa-decline-partnership').addEventListener('click', () => {
       showPhase('select');
@@ -2541,28 +2560,28 @@ function startPumpArena(gameId) {
     const decisionsRemaining = state.partnership.decisionsRemaining;
 
     partnershipViewEl.innerHTML = `
-            <div style="background:rgba(0,0,0,0.4);border-radius:10px;border:1px solid ${type.color}40;overflow:hidden;">
+            <div class="pa-pview-card">
                 <!-- Partner Header -->
-                <div style="padding:15px;background:linear-gradient(135deg,${type.color}30,transparent);border-bottom:1px solid ${type.color}20;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <span style="font-size:36px;">${type.icon}</span>
+                <div class="pa-pview-header">
+                    <div class="pa-pview-header-row">
+                        <div class="pa-pview-header-left">
+                            <span class="pa-pview-icon">${type.icon}</span>
                             <div>
-                                <div style="font-size:18px;font-weight:bold;color:#fff;">${builder.name}</div>
-                                <div style="font-size:12px;color:${type.color};">🤝 You are a Partner</div>
+                                <div class="pa-pview-title">${builder.name}</div>
+                                <div class="pa-pview-partner-label">🤝 You are a Partner</div>
                             </div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:10px;color:#6b7280;">Strategic Decisions Left</div>
-                            <div style="font-size:24px;font-weight:bold;color:#fbbf24;">${decisionsRemaining}</div>
+                        <div class="pa-pview-header-right">
+                            <div class="pa-pview-decisions-label">Strategic Decisions Left</div>
+                            <div class="pa-pview-decisions-count">${decisionsRemaining}</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Collaborative Roadmap -->
-                <div style="padding:15px;">
-                    <div style="font-size:12px;color:#6b7280;margin-bottom:10px;text-transform:uppercase;">Collaborative Roadmap</div>
-                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                <div class="pa-pview-roadmap-section">
+                    <div class="pa-pview-roadmap-label">Collaborative Roadmap</div>
+                    <div class="pa-pview-roadmap-grid">
                         ${roadmap
                           .map((phase, idx) => {
                             const isCompleted = idx < progress;
@@ -2573,17 +2592,22 @@ function startPumpArena(gameId) {
                             else if (isCurrent) statusIcon = '🔨';
                             else statusIcon = '⏳';
 
+                            const phaseClass = isCompleted
+                              ? 'pa-pview-phase-completed'
+                              : isCurrent
+                                ? 'pa-pview-phase-current'
+                                : isCollabPhase
+                                  ? 'pa-pview-phase-collab'
+                                  : 'pa-pview-phase-future';
+
                             return `
-                                <div style="background:${isCompleted ? 'rgba(34,197,94,0.1)' : isCurrent ? 'rgba(251,191,36,0.1)' : 'rgba(255,255,255,0.03)'};
-                                    border-radius:6px;padding:10px;
-                                    border:2px solid ${isCompleted ? '#22c55e40' : isCurrent ? '#fbbf24' : isCollabPhase ? type.color + '40' : '#33333380'};
-                                    ${isCurrent ? 'box-shadow:0 0 15px rgba(251,191,36,0.2);' : ''}">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                                        <span style="font-size:10px;color:${type.color};font-weight:bold;">${phase.phase}</span>
-                                        <span style="font-size:14px;">${statusIcon}</span>
+                                <div class="${phaseClass}">
+                                    <div class="pa-pview-phase-header">
+                                        <span class="pa-pview-phase-label">${phase.phase}</span>
+                                        <span class="pa-pview-phase-status">${statusIcon}</span>
                                     </div>
-                                    <div style="font-size:11px;color:#fff;font-weight:500;margin-bottom:4px;">${phase.title}</div>
-                                    ${isCollabPhase ? '<div style="font-size:9px;color:#a855f7;font-style:italic;">🤝 Co-built</div>' : ''}
+                                    <div class="pa-pview-phase-title">${phase.title}</div>
+                                    ${isCollabPhase ? '<div class="pa-pview-cobuilt">🤝 Co-built</div>' : ''}
                                 </div>
                             `;
                           })
@@ -2595,13 +2619,13 @@ function startPumpArena(gameId) {
                 ${
                   state.partnership.collabChoices.length > 0
                     ? `
-                    <div style="padding:0 15px 15px;">
-                        <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Your Decisions</div>
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <div class="pa-pview-choices-section">
+                        <div class="pa-pview-choices-label">Your Decisions</div>
+                        <div class="pa-pview-choices-wrap">
                             ${state.partnership.collabChoices
                               .map(
                                 choice => `
-                                <span style="padding:4px 10px;background:rgba(168,85,247,0.2);border-radius:12px;font-size:10px;color:#a855f7;">
+                                <span class="pa-pview-choice-tag">
                                     ${choice}
                                 </span>
                             `
@@ -2614,19 +2638,19 @@ function startPumpArena(gameId) {
                 }
 
                 <!-- Actions -->
-                <div style="padding:15px;background:rgba(0,0,0,0.3);border-top:1px solid #1f2937;display:flex;gap:10px;">
-                    <button id="pa-leave-partnership" style="flex:1;padding:10px;border-radius:6px;background:transparent;border:1px solid #ef444480;color:#ef4444;cursor:pointer;font-size:12px;">
+                <div class="pa-pview-actions">
+                    <button id="pa-leave-partnership" class="pa-leave-btn">
                         ❌ Leave Partnership
                     </button>
                     ${
                       decisionsRemaining > 0
                         ? `
-                        <button id="pa-make-decision" style="flex:2;padding:10px;border-radius:6px;background:linear-gradient(135deg,${type.color},${type.color}cc);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:bold;">
+                        <button id="pa-make-decision" class="pa-decision-btn">
                             📋 Make Strategic Decision
                         </button>
                     `
                         : `
-                        <button id="pa-finish-partnership" style="flex:2;padding:10px;border-radius:6px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:bold;">
+                        <button id="pa-finish-partnership" class="pa-finish-btn">
                             🏆 Complete Partnership
                         </button>
                     `
@@ -2634,6 +2658,11 @@ function startPumpArena(gameId) {
                 </div>
             </div>
         `;
+
+    // Set dynamic accent color via CSSOM
+    partnershipViewEl.querySelector('.pa-pview-card').style.setProperty('--pa-accent', type.color);
+    const decisionBtn = partnershipViewEl.querySelector('.pa-decision-btn');
+    if (decisionBtn) decisionBtn.style.setProperty('--pa-accent', type.color);
 
     document.getElementById('pa-leave-partnership').addEventListener('click', () => {
       if (confirm('Leave the partnership? You will return to being a regular investor.')) {
@@ -2683,23 +2712,19 @@ function startPumpArena(gameId) {
     const decision = options[decisionIndex] || options[0];
 
     collabEl.innerHTML = `
-            <div style="background:rgba(0,0,0,0.4);border-radius:10px;padding:20px;border:1px solid ${type.color}40;">
-                <div style="text-align:center;margin-bottom:20px;">
-                    <div style="font-size:40px;margin-bottom:10px;">📋</div>
-                    <h3 style="color:#fff;font-size:18px;margin-bottom:6px;">${decision.title}</h3>
-                    <p style="color:#9ca3af;font-size:12px;">${decision.desc}</p>
+            <div class="pa-collab-card">
+                <div class="pa-collab-header">
+                    <div class="pa-collab-emoji">📋</div>
+                    <h3 class="pa-collab-title">${decision.title}</h3>
+                    <p class="pa-collab-desc">${decision.desc}</p>
                 </div>
 
-                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:15px;">
+                <div class="pa-collab-options">
                     ${decision.options
                       .map(
                         (option, idx) => `
-                        <button class="collab-option" data-choice="${option}" style="
-                            padding:14px;border-radius:8px;cursor:pointer;
-                            background:rgba(255,255,255,0.05);
-                            border:1px solid #333;color:#fff;font-size:13px;
-                            text-align:left;transition:all 0.2s;">
-                            <span style="color:${type.color};margin-right:8px;">${idx + 1}.</span>
+                        <button class="collab-option pa-collab-option-btn" data-choice="${option}">
+                            <span class="pa-collab-option-num">${idx + 1}.</span>
                             ${option}
                         </button>
                     `
@@ -2707,11 +2732,14 @@ function startPumpArena(gameId) {
                       .join('')}
                 </div>
 
-                <button id="pa-back-to-partnership" style="width:100%;padding:8px;border-radius:6px;background:transparent;border:1px solid #333;color:#6b7280;cursor:pointer;font-size:11px;">
+                <button id="pa-back-to-partnership" class="pa-back-btn-full">
                     ← Back to partnership view
                 </button>
             </div>
         `;
+
+    // Set dynamic accent color via CSSOM
+    collabEl.querySelector('.pa-collab-card').style.setProperty('--pa-accent', type.color);
 
     collabEl.querySelectorAll('.collab-option').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2736,15 +2764,15 @@ function startPumpArena(gameId) {
 
         // Show outcome briefly then return to partnership view
         collabEl.innerHTML = `
-                    <div style="text-align:center;padding:30px;">
-                        <div style="font-size:50px;margin-bottom:15px;">${bonus > 0 ? '✅' : '🤔'}</div>
-                        <div style="font-size:18px;color:${bonus > 0 ? '#22c55e' : '#f59e0b'};font-weight:bold;margin-bottom:10px;">
+                    <div class="pa-collab-outcome">
+                        <div class="pa-collab-outcome-emoji">${bonus > 0 ? '✅' : '🤔'}</div>
+                        <div class="${bonus > 0 ? 'pa-collab-outcome-title-good' : 'pa-collab-outcome-title-neutral'}">
                             ${bonus > 0 ? 'Great Decision!' : 'Time Will Tell...'}
                         </div>
-                        <div style="font-size:13px;color:#9ca3af;margin-bottom:8px;">
+                        <div class="pa-collab-outcome-detail">
                             You chose: "${choice}"
                         </div>
-                        ${bonus > 0 ? `<div style="font-size:16px;color:#22c55e;font-weight:bold;">+$${bonus.toLocaleString()} bonus</div>` : ''}
+                        ${bonus > 0 ? `<div class="pa-collab-outcome-bonus">+$${bonus.toLocaleString()} bonus</div>` : ''}
                     </div>
                 `;
 

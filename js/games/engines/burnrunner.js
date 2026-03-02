@@ -214,39 +214,39 @@ const BurnRunner = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;">
-                <canvas id="br-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:15px;display:flex;flex-direction:column;gap:10px;">
-                    <div style="display:flex;gap:12px;">
-                        <div style="background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:8px;backdrop-filter:blur(4px);">
-                            <span style="color:#a78bfa;font-size:11px;">DISTANCE</span>
-                            <div style="color:#fbbf24;font-size:18px;font-weight:bold;" id="br-distance">0m</div>
+            <div class="br-container">
+                <canvas id="br-canvas" class="game-canvas"></canvas>
+                <div class="game-hud-top-left game-flex-col">
+                    <div class="br-hud-row">
+                        <div class="game-hud-stat">
+                            <span class="game-hud-stat-label">DISTANCE</span>
+                            <div class="br-stat-value--distance" id="br-distance">0m</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:8px;backdrop-filter:blur(4px);">
-                            <span style="color:#a78bfa;font-size:11px;">TOKENS</span>
-                            <div style="color:#f97316;font-size:18px;font-weight:bold;" id="br-tokens">0 &#128293;</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <div id="br-dash-ability" style="background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:8px;border:2px solid #3b82f6;min-width:55px;text-align:center;">
-                            <div style="font-size:16px;">&#128168;</div>
-                            <div style="font-size:8px;color:#3b82f6;font-weight:bold;">DASH [LMB]</div>
-                            <div id="br-dash-cd" style="font-size:10px;color:#22c55e;">READY</div>
-                        </div>
-                        <div id="br-shield-ability" style="background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:8px;border:2px solid #a855f7;min-width:55px;text-align:center;">
-                            <div style="font-size:16px;">&#128737;</div>
-                            <div style="font-size:8px;color:#a855f7;font-weight:bold;">SHIELD [RMB]</div>
-                            <div id="br-shield-cd" style="font-size:10px;color:#22c55e;">READY</div>
+                        <div class="game-hud-stat">
+                            <span class="game-hud-stat-label">TOKENS</span>
+                            <div class="br-stat-value--tokens" id="br-tokens">0 &#128293;</div>
                         </div>
                     </div>
-                </div>
-                <div style="position:absolute;top:15px;right:15px;display:flex;gap:10px;">
-                    <div style="background:rgba(0,0,0,0.6);padding:6px 12px;border-radius:8px;backdrop-filter:blur(4px);">
-                        <span style="color:#a78bfa;font-size:11px;">JUMPS</span>
-                        <div id="br-jumps" style="font-size:16px;">&#11014;&#11014;</div>
+                    <div class="br-abilities-row">
+                        <div id="br-dash-ability" class="br-ability br-ability--dash">
+                            <div class="br-ability-icon">&#128168;</div>
+                            <div class="br-ability-label--dash">DASH [LMB]</div>
+                            <div id="br-dash-cd" class="br-ability-cd">READY</div>
+                        </div>
+                        <div id="br-shield-ability" class="br-ability br-ability--shield">
+                            <div class="br-ability-icon">&#128737;</div>
+                            <div class="br-ability-label--shield">SHIELD [RMB]</div>
+                            <div id="br-shield-cd" class="br-ability-cd">READY</div>
+                        </div>
                     </div>
                 </div>
-                <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:#a78bfa;font-size:11px;background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:4px;">
+                <div class="br-jumps-hud">
+                    <div class="br-jumps-stat">
+                        <span class="br-jumps-label">JUMPS</span>
+                        <div id="br-jumps" class="br-jumps-value">&#11014;&#11014;</div>
+                    </div>
+                </div>
+                <div class="br-hint-bar">
                     SPACE: Jump (x2) | Left Click: Dash | Right Click: Shield
                 </div>
             </div>

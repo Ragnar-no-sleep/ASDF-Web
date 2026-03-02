@@ -264,8 +264,8 @@ class ProgressiveDisclosure {
     notification.className = 'disclosure-notification';
     notification.innerHTML = `
       <div class="disclosure-notification-header">
-        <span style="font-size: 20px; margin-right: 8px;">🔓</span>
-        <span style="font-weight: 600;">New Feature Unlocked!</span>
+        <span class="pd-notif-icon">🔓</span>
+        <span class="pd-notif-label">New Feature Unlocked!</span>
       </div>
       <div class="disclosure-notification-body">
         <div class="disclosure-notification-name">${feature.name}</div>
@@ -467,19 +467,19 @@ export function showOnboarding() {
   `;
 
   overlay.innerHTML = `
-    <div style="max-width: 500px; text-align: center; animation: scale-in 400ms ease-out;">
-      <div style="font-size: 80px; margin-bottom: 24px;">👋</div>
-      <div style="font-size: 32px; font-weight: 700; margin-bottom: 16px;">Welcome to ASDF</div>
-      <div style="font-size: 16px; color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; line-height: 1.6;">
+    <div class="pd-onboarding-inner">
+      <div class="pd-onboarding-icon">👋</div>
+      <div class="pd-onboarding-heading">Welcome to ASDF</div>
+      <div class="pd-onboarding-body">
         This is a living ecosystem. Features unlock as you explore.
         <br><br>
         No dark patterns. No tracking. Just building.
       </div>
-      <div style="display: flex; gap: 16px; justify-content: center;">
-        <button class="onboarding-skip" style="padding: 12px 24px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; border-radius: 8px; cursor: pointer; font-size: 14px;">
+      <div class="pd-onboarding-actions">
+        <button class="onboarding-skip pd-btn-skip">
           Skip
         </button>
-        <button class="onboarding-start" style="padding: 12px 24px; background: var(--color-fire); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+        <button class="onboarding-start pd-btn-start">
           Let's Go
         </button>
       </div>

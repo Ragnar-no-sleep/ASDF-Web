@@ -106,24 +106,24 @@ const DexDash = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a0a1a 0%,#1a1a3a 100%);">
-                <canvas id="dd-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:50%;transform:translateX(-50%);display:flex;gap:15px;">
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--text-muted);font-size:10px;">DISTANCE</span>
-                        <div style="color:var(--gold);font-size:16px;font-weight:bold;" id="dd-distance">0m</div>
+            <div class="dd-container">
+                <canvas id="dd-canvas" class="game-canvas"></canvas>
+                <div class="game-hud-top-center">
+                    <div class="game-hud-stat">
+                        <span class="dd-stat-label">DISTANCE</span>
+                        <div class="dd-stat-distance" id="dd-distance">0m</div>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--text-muted);font-size:10px;">SCORE</span>
-                        <div style="color:var(--green);font-size:16px;font-weight:bold;" id="dd-score">0</div>
+                    <div class="game-hud-stat">
+                        <span class="dd-stat-label">SCORE</span>
+                        <div class="dd-stat-score" id="dd-score">0</div>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--text-muted);font-size:10px;">SPEED</span>
-                        <div style="color:var(--purple);font-size:16px;font-weight:bold;" id="dd-speed">0</div>
+                    <div class="game-hud-stat">
+                        <span class="dd-stat-label">SPEED</span>
+                        <div class="dd-stat-speed" id="dd-speed">0</div>
                     </div>
                 </div>
-                <div id="dd-boost-status" style="position:absolute;top:70px;left:50%;transform:translateX(-50%);display:none;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:bold;text-shadow:0 0 10px currentColor;"></div>
-                <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:10px;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:8px;">
+                <div id="dd-boost-status" class="dd-boost-status"></div>
+                <div class="game-hint-bar game-hint-bar--lg">
                     WASD or Arrows = Move | &#129412; Boost | &#128679; Slow | &#128128; Game Over
                 </div>
             </div>

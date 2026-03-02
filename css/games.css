@@ -3148,3 +3148,81 @@ body.modal-open {
     max-width: 100%;
   }
 }
+
+/* ============================================
+   CSP PHASE 2 — Extracted inline style utilities
+   Replaces style="" attributes for style-src-attr hardening
+   ============================================ */
+
+.section-hidden {
+  display: none;
+}
+
+.container-xl {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.container-lg {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mb-5 {
+  margin-bottom: 20px;
+}
+
+.ml-2 {
+  margin-left: 10px;
+}
+
+.nav-logo-icon {
+  font-size: 20px;
+}
+
+.btn-danger {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.settings-reset-wrapper {
+  text-align: center;
+  padding: 20px;
+}
+
+/* ============================================
+   CSP Phase 2: Utility classes for JS templates
+   ============================================ */
+
+/* Game card clickable cursor (replaces style="cursor:pointer") */
+.game-card[data-action] {
+  cursor: pointer;
+}
+
+/* Grid error message (replaces inline style) */
+.grid-error-message {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* History empty cell (replaces inline style) */
+.history-empty-cell {
+  text-align: center;
+  color: var(--valhalla-steel, var(--text-muted));
+}
+
+/* Danger button styling (replaces inline style on clear-btn) */
+.btn-valhalla-secondary.btn-danger {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Mini leaderboard close button (replaces inline style) */
+.mini-leaderboard-close {
+  float: right;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 16px;
+}

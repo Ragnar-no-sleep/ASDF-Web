@@ -96,24 +96,24 @@ const StakeStacker = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#1a0a2e 0%,#2d1b4e 50%,#1a1a2e 100%);">
-                <canvas id="ss-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:50%;transform:translateX(-50%);display:flex;gap:15px;">
-                    <div style="background:rgba(0,0,0,0.5);padding:8px 14px;border-radius:8px;">
-                        <span style="color:var(--gold);">&#128176; <span id="ss-score">0</span></span>
+            <div class="ss-container">
+                <canvas id="ss-canvas" class="game-canvas"></canvas>
+                <div class="ss-hud-row">
+                    <div class="ss-hud-badge">
+                        <span class="ss-score-text">&#128176; <span id="ss-score">0</span></span>
                     </div>
-                    <div style="background:rgba(0,0,0,0.5);padding:8px 14px;border-radius:8px;">
-                        <span style="color:var(--purple);">&#127959; <span id="ss-level">0</span></span>
+                    <div class="ss-hud-badge">
+                        <span class="ss-level-text">&#127959; <span id="ss-level">0</span></span>
                     </div>
-                    <div id="ss-streak" style="display:none;background:linear-gradient(135deg,#f97316,#fbbf24);padding:8px 14px;border-radius:8px;">
-                        <span style="color:white;font-weight:bold;">&#128293; x<span id="ss-streak-count">0</span></span>
+                    <div id="ss-streak" class="ss-streak-badge">
+                        <span class="ss-streak-text">&#128293; x<span id="ss-streak-count">0</span></span>
                     </div>
                 </div>
-                <div id="ss-wind" style="position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.4);padding:4px 12px;border-radius:12px;font-size:11px;display:none;">
-                    <span style="color:#60a5fa;">&#127788; Wind: <span id="ss-wind-dir">←</span> <span id="ss-wind-strength">0</span></span>
+                <div id="ss-wind" class="ss-wind-indicator">
+                    <span class="ss-wind-text">&#127788; Wind: <span id="ss-wind-dir">&#8592;</span> <span id="ss-wind-strength">0</span></span>
                 </div>
-                <div id="ss-feedback" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:bold;opacity:0;transition:opacity 0.3s;pointer-events:none;text-shadow:0 0 20px currentColor;"></div>
-                <div style="position:absolute;bottom:15px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:12px;">
+                <div id="ss-feedback" class="ss-feedback"></div>
+                <div class="ss-hint">
                     CLICK or SPACE to drop block
                 </div>
             </div>

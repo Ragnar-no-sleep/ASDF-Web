@@ -117,54 +117,54 @@ const WhaleWatch = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;display:flex;gap:15px;background:linear-gradient(180deg,#0a1628 0%,#1a2744 100%);padding:15px;box-sizing:border-box;">
+            <div class="ww-container">
                 <!-- LEFT: Symbol Match with Legend -->
-                <div style="flex:1;display:flex;flex-direction:column;background:rgba(0,0,0,0.3);border-radius:12px;padding:15px;border:2px solid #333;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-size:14px;font-weight:bold;color:var(--gold);">&#127919; SYMBOL MATCH</div>
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <span style="color:var(--accent-fire);font-size:11px;">&#9202; <span id="sm-timer">45</span>s</span>
-                            <span style="color:var(--green);font-size:11px;"><span id="sm-found">0</span>/<span id="sm-total">0</span></span>
-                            <span style="color:#ef4444;font-size:11px;">&#10060; <span id="sm-mistakes">0</span>/3</span>
-                            <button id="hint-btn" style="background:#a855f7;border:none;border-radius:4px;padding:2px 8px;color:white;font-size:10px;cursor:pointer;">&#128161; <span id="hints-left">2</span></button>
+                <div class="ww-panel">
+                    <div class="ww-panel-header">
+                        <div class="ww-panel-title--gold">&#127919; SYMBOL MATCH</div>
+                        <div class="ww-stats-row">
+                            <span class="ww-stat-timer">&#9202; <span id="sm-timer">45</span>s</span>
+                            <span class="ww-stat-found"><span id="sm-found">0</span>/<span id="sm-total">0</span></span>
+                            <span class="ww-stat-mistakes">&#10060; <span id="sm-mistakes">0</span>/3</span>
+                            <button id="hint-btn" class="ww-hint-btn">&#128161; <span id="hints-left">2</span></button>
                         </div>
                     </div>
                     <!-- Combo indicator -->
-                    <div id="combo-display" style="display:none;position:absolute;top:50px;right:20px;background:linear-gradient(135deg,#f97316,#fbbf24);padding:4px 12px;border-radius:20px;font-size:14px;font-weight:bold;color:white;z-index:10;">
+                    <div id="combo-display" class="ww-combo-display">
                         x<span id="combo-count">0</span> COMBO!
                     </div>
                     <!-- Legend -->
-                    <div id="symbol-legend" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;padding:6px;background:rgba(0,0,0,0.4);border-radius:8px;font-size:10px;"></div>
+                    <div id="symbol-legend" class="ww-legend"></div>
                     <!-- Target description -->
-                    <div style="text-align:center;margin-bottom:8px;padding:8px;background:rgba(251,191,36,0.2);border-radius:8px;">
-                        <span style="font-size:11px;color:var(--text-muted);">Find all: </span>
-                        <span id="sm-target-name" style="font-size:16px;font-weight:bold;color:var(--gold);">Fire</span>
+                    <div class="ww-target-box">
+                        <span class="ww-target-label">Find all: </span>
+                        <span id="sm-target-name" class="ww-target-name">Fire</span>
                     </div>
-                    <div id="symbol-grid" style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;"></div>
+                    <div id="symbol-grid" class="ww-symbol-grid"></div>
                 </div>
                 <!-- RIGHT: Memory Game with Timer -->
-                <div style="flex:1;display:flex;flex-direction:column;background:rgba(0,0,0,0.3);border-radius:12px;padding:15px;border:2px solid #333;position:relative;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <div style="font-size:14px;font-weight:bold;color:var(--purple);">&#129504; MEMORY SEQUENCE</div>
-                        <div style="display:flex;gap:10px;">
-                            <span style="color:var(--cyan);font-size:12px;">Round: <span id="mem-round">1</span></span>
+                <div class="ww-panel ww-panel--relative">
+                    <div class="ww-panel-header">
+                        <div class="ww-panel-title--purple">&#129504; MEMORY SEQUENCE</div>
+                        <div class="ww-mem-stats">
+                            <span class="ww-mem-round">Round: <span id="mem-round">1</span></span>
                         </div>
                     </div>
                     <!-- Input Timer Bar -->
-                    <div style="margin-bottom:8px;height:8px;background:rgba(0,0,0,0.5);border-radius:4px;overflow:hidden;">
-                        <div id="mem-timer-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#fbbf24);transition:width 0.1s linear;"></div>
+                    <div class="ww-timer-bar-track">
+                        <div id="mem-timer-bar" class="ww-timer-bar-fill"></div>
                     </div>
-                    <div id="mem-status" style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:10px;">Watch the sequence!</div>
-                    <div id="mem-timer-display" style="text-align:center;font-size:18px;font-weight:bold;color:var(--green);margin-bottom:10px;display:none;">10s</div>
-                    <div id="memory-buttons" style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:15px;max-width:250px;margin:0 auto;"></div>
+                    <div id="mem-status" class="ww-mem-status">Watch the sequence!</div>
+                    <div id="mem-timer-display" class="ww-mem-timer-display">10s</div>
+                    <div id="memory-buttons" class="ww-memory-buttons"></div>
                 </div>
             </div>
-            <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:10;">
-                <div style="background:rgba(0,0,0,0.8);padding:8px 20px;border-radius:8px;border:2px solid var(--gold);">
-                    <span style="color:var(--gold);font-size:16px;font-weight:bold;">SCORE: <span id="ww-score">0</span></span>
+            <div class="game-score-bar">
+                <div class="game-score-badge game-score-badge--gold">
+                    <span class="ww-score-text">SCORE: <span id="ww-score">0</span></span>
                 </div>
-                <div style="background:rgba(0,0,0,0.8);padding:8px 20px;border-radius:8px;border:2px solid var(--purple);">
-                    <span style="color:var(--purple);font-size:16px;font-weight:bold;">LEVEL: <span id="ww-level">1</span></span>
+                <div class="game-score-badge game-score-badge--purple">
+                    <span class="ww-level-text">LEVEL: <span id="ww-level">1</span></span>
                 </div>
             </div>
         `;
@@ -178,9 +178,8 @@ const WhaleWatch = {
     legendEl.innerHTML = '';
     this.symbolLegend.forEach(item => {
       const legendItem = document.createElement('div');
-      legendItem.style.cssText =
-        'display:flex;align-items:center;gap:3px;padding:2px 4px;background:rgba(255,255,255,0.1);border-radius:4px;';
-      legendItem.innerHTML = `<span style="font-size:14px;">${item.symbol}</span><span style="color:#9ca3af;">${item.name}</span>`;
+      legendItem.className = 'ww-legend-item';
+      legendItem.innerHTML = `<span class="ww-legend-icon">${item.symbol}</span><span class="ww-legend-name">${item.name}</span>`;
       legendEl.appendChild(legendItem);
     });
   },

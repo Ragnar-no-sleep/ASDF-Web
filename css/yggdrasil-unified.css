@@ -4379,3 +4379,25 @@ body:has(.yggdrasil-cosmos) .viking-spirits {
   animation: level-up-glow 1s ease-in-out 3;
   border-color: rgba(255, 170, 68, 0.5);
 }
+
+/* ============================================
+   CSP PHASE 2 — Extracted inline styles
+   ============================================ */
+
+/* Error detail text (was inline: color:#666; font-size:12px; margin-top:8px) */
+.ygg-error-detail {
+  color: #666;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Legend color swatches — track-specific backgrounds (was inline style="background:") */
+.legend-color--dev {
+  background: #ff4444;
+}
+.legend-color--games {
+  background: #aa44ff;
+}
+.legend-color--content {
+  background: #44aaff;
+}

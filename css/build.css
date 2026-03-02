@@ -7305,3 +7305,11 @@ body {
   color: var(--text-muted);
   margin-left: 8px;
 }
+
+/* ============================================
+   CSP Phase 2: Dynamic styles applied via CSSOM
+   ============================================ */
+/* Formation panel: track-card uses --track-color set via CSSOM */
+/* Progress fill uses width + background set via CSSOM */
+/* track-start-btn uses background set via CSSOM */
+/* Module cards use animation-delay + --track-color set via CSSOM */

@@ -89,12 +89,12 @@ const GitHubTimeline = {
           <button class="timeline-refresh" title="Refresh">&#8635;</button>
         </div>
 
-        <div class="timeline-loading" style="display: none;">
+        <div class="timeline-loading hidden">
           <div class="loading-spinner"></div>
           <span>Loading activity...</span>
         </div>
 
-        <div class="timeline-error" style="display: none;">
+        <div class="timeline-error hidden">
           <span class="error-icon">&#9888;</span>
           <span class="error-message">Failed to load activity</span>
         </div>
@@ -209,7 +209,7 @@ const GitHubTimeline = {
         const author = sanitizeText(commit.author);
 
         return `
-        <li class="commit-item" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
+        <li class="commit-item" data-delay="${index * TIMELINE_CONFIG.animation.stagger}"
           <div class="commit-sha">
             <a href="${commit.url}" target="_blank" rel="noopener">${commit.sha}</a>
           </div>
@@ -224,6 +224,10 @@ const GitHubTimeline = {
       .join('');
 
     safeInnerHTML(this.commitsList, html);
+    this.commitsList.querySelectorAll('[data-delay]').forEach(el => {
+      el.style.setProperty('animation-delay', el.dataset.delay + 'ms');
+      el.removeAttribute('data-delay');
+    });
   },
 
   /**
@@ -244,7 +248,7 @@ const GitHubTimeline = {
         const login = sanitizeText(contrib.login);
 
         return `
-        <div class="contributor-card" data-login="${login}" style="animation-delay: ${index * TIMELINE_CONFIG.animation.stagger}ms">
+        <div class="contributor-card" data-login="${login}" data-delay="${index * TIMELINE_CONFIG.animation.stagger}"
           <div class="contributor-link" role="button" tabindex="0">
             <img
               src="${contrib.avatar}"
@@ -267,6 +271,10 @@ const GitHubTimeline = {
       .join('');
 
     safeInnerHTML(this.contributorsGrid, html);
+    this.contributorsGrid.querySelectorAll('[data-delay]').forEach(el => {
+      el.style.setProperty('animation-delay', el.dataset.delay + 'ms');
+      el.removeAttribute('data-delay');
+    });
 
     // Add click handler for builder profile
     $$('.contributor-card', this.contributorsGrid).forEach(card => {
@@ -317,13 +325,17 @@ const GitHubTimeline = {
       </div>
       <div class="stat-item completion">
         <div class="completion-bar">
-          <div class="completion-fill" style="width: ${completion || 0}%"></div>
+          <div class="completion-fill" data-progress="${completion || 0}"></div>
         </div>
         <span class="completion-label">${completion || 0}% Complete</span>
       </div>
     `;
 
     safeInnerHTML(this.statsSection, html);
+    this.statsSection.querySelectorAll('[data-progress]').forEach(el => {
+      el.style.setProperty('width', el.dataset.progress + '%');
+      el.removeAttribute('data-progress');
+    });
   },
 
   /**
@@ -331,9 +343,9 @@ const GitHubTimeline = {
    */
   showLoading() {
     this.isLoading = true;
-    if (this.loadingEl) this.loadingEl.style.display = 'flex';
-    if (this.contentEl) this.contentEl.style.display = 'none';
-    if (this.errorEl) this.errorEl.style.display = 'none';
+    if (this.loadingEl) this.loadingEl.classList.remove('hidden');
+    if (this.contentEl) this.contentEl.classList.add('hidden');
+    if (this.errorEl) this.errorEl.classList.add('hidden');
   },
 
   /**
@@ -341,8 +353,8 @@ const GitHubTimeline = {
    */
   hideLoading() {
     this.isLoading = false;
-    if (this.loadingEl) this.loadingEl.style.display = 'none';
-    if (this.contentEl) this.contentEl.style.display = 'block';
+    if (this.loadingEl) this.loadingEl.classList.add('hidden');
+    if (this.contentEl) this.contentEl.classList.remove('hidden');
   },
 
   /**
@@ -351,10 +363,10 @@ const GitHubTimeline = {
    */
   showError(message) {
     this.isLoading = false;
-    if (this.loadingEl) this.loadingEl.style.display = 'none';
-    if (this.contentEl) this.contentEl.style.display = 'none';
+    if (this.loadingEl) this.loadingEl.classList.add('hidden');
+    if (this.contentEl) this.contentEl.classList.add('hidden');
     if (this.errorEl) {
-      this.errorEl.style.display = 'flex';
+      this.errorEl.classList.remove('hidden');
       const msgEl = $('.error-message', this.errorEl);
       if (msgEl) msgEl.textContent = message || 'Failed to load activity';
     }

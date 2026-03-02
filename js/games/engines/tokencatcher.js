@@ -150,23 +150,23 @@ const TokenCatcher = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#1a0a2e 0%,#2d1b4e 50%,#1a1a2e 100%);">
-                <canvas id="tc-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:15px;display:flex;gap:20px;">
-                    <div style="background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--text-muted);font-size:12px;">SCORE</span>
-                        <div style="color:var(--gold);font-size:20px;font-weight:bold;" id="tc-score">0</div>
+            <div class="tc-container">
+                <canvas id="tc-canvas" class="game-canvas"></canvas>
+                <div class="game-hud-top-left game-hud-top-left--wide">
+                    <div class="game-hud-stat-lg">
+                        <span class="game-hud-stat-lg-label">SCORE</span>
+                        <div class="tc-score-value" id="tc-score">0</div>
                     </div>
-                    <div style="background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;">
-                        <span style="color:var(--text-muted);font-size:12px;">TIME</span>
-                        <div style="color:var(--accent-fire);font-size:20px;font-weight:bold;" id="tc-time">34</div>
+                    <div class="game-hud-stat-lg">
+                        <span class="game-hud-stat-lg-label">TIME</span>
+                        <div class="tc-time-value" id="tc-time">34</div>
                     </div>
-                    <div style="background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;" id="tc-combo-container">
-                        <span style="color:var(--text-muted);font-size:12px;">COMBO</span>
-                        <div style="color:#a855f7;font-size:20px;font-weight:bold;" id="tc-combo">0<span style="font-size:12px;color:var(--text-muted);">x</span></div>
+                    <div class="game-hud-stat-lg" id="tc-combo-container">
+                        <span class="game-hud-stat-lg-label">COMBO</span>
+                        <div class="tc-combo-value" id="tc-combo">0<span class="tc-combo-suffix">x</span></div>
                     </div>
                 </div>
-                <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:10px;text-align:center;background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:4px;">
+                <div class="tc-hint-bar">
                     QZSD/Arrows: Move | SPACE/Click: Shoot | &#128128; = Death!
                 </div>
             </div>
@@ -558,7 +558,7 @@ const TokenCatcher = {
     const containerEl = this.dom.comboContainer;
     if (comboEl) {
       const multiplier = this.getComboMultiplier();
-      comboEl.innerHTML = `${this.state.combo}<span style="font-size:12px;color:${multiplier > 1 ? '#fbbf24' : 'var(--text-muted)'};">x${multiplier}</span>`;
+      comboEl.innerHTML = `${this.state.combo}<span class="${multiplier > 1 ? 'tc-combo-suffix--active' : 'tc-combo-suffix'}">x${multiplier}</span>`;
 
       // Visual feedback for high combos
       if (containerEl) {

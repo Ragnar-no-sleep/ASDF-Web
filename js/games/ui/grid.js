@@ -24,7 +24,7 @@ const GridUI = {
         const highScore = appState.practiceScores[game.id] || 0;
 
         return `
-            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}" data-action="open-game" style="cursor: pointer;">
+            <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}" data-action="open-game">
                 <div class="game-icon">${game.icon}</div>
                 <h3 class="game-name">${escapeHtml(game.name)}</h3>
                 <p class="game-type">${escapeHtml(game.type)}</p>
@@ -39,8 +39,7 @@ const GridUI = {
       }).join('');
     } catch (e) {
       console.error('[GridUI] Render failed:', e);
-      grid.innerHTML =
-        '<p style="color:var(--text-muted);text-align:center;">Failed to load games grid.</p>';
+      grid.innerHTML = '<p class="grid-error-message">Failed to load games grid.</p>';
     }
   },
 };

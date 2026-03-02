@@ -466,7 +466,7 @@ const Profile = {
     if (this.data.history.length === 0) {
       this.elements.historyTable.innerHTML = `
                 <tr>
-                    <td colspan="4" style="text-align: center; color: var(--valhalla-steel);">
+                    <td colspan="4" class="history-empty-cell">
                         No transactions yet
                     </td>
                 </tr>
@@ -569,18 +569,26 @@ const Profile = {
                      data-item-id="${escapeHtml(item.id)}"
                      data-layer="${escapeHtml(item.layer)}"
                      title="${escapeHtml(item.name)}"
-                     style="--tier-color: ${tierColor}">
+                     data-tier-color="${tierColor}">
                     ${
                       item.asset_url
                         ? `<img src="${escapeHtml(item.asset_url)}" alt="${escapeHtml(item.name)}" loading="lazy">
-                         <div class="item-placeholder" style="display: none;">${this.getLayerIcon(item.layer)}</div>`
+                         <div class="item-placeholder hidden">${this.getLayerIcon(item.layer)}</div>`
                         : `<div class="item-placeholder">${this.getLayerIcon(item.layer)}</div>`
                     }
-                    <div class="item-tier-badge" style="color: ${tierColor}">${tierName}</div>
+                    <div class="item-tier-badge">${tierName}</div>
                 </div>
             `;
       })
       .join('');
+
+    // Apply dynamic styles via CSSOM
+    this.elements.inventoryGrid.querySelectorAll('[data-tier-color]').forEach(el => {
+      el.style.setProperty('--tier-color', el.dataset.tierColor);
+      const tierBadge = el.querySelector('.item-tier-badge');
+      if (tierBadge) tierBadge.style.setProperty('color', el.dataset.tierColor);
+      el.removeAttribute('data-tier-color');
+    });
 
     // Bind click events for equip
     this.elements.inventoryGrid.querySelectorAll('.profile-inventory-item').forEach(el => {
@@ -594,8 +602,8 @@ const Profile = {
     // Bind image error fallback (CSP-safe — no inline onerror)
     this.elements.inventoryGrid.querySelectorAll('img[loading="lazy"]').forEach(img => {
       img.addEventListener('error', () => {
-        img.style.display = 'none';
-        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
+        img.classList.add('hidden');
+        if (img.nextElementSibling) img.nextElementSibling.classList.remove('hidden');
       });
     });
   },
