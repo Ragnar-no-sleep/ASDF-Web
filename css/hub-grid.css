@@ -323,3 +323,19 @@
     transition: none;
   }
 }
+
+/* Mobile: auto-activate grid, hide orbital shell + toggle */
+@media (max-width: 480px) {
+  .hub {
+    display: none;
+  }
+  .hub-footer {
+    display: none;
+  }
+  .hub-grid-view {
+    display: block;
+  }
+  .hub-view-toggle {
+    display: none;
+  }
+}
