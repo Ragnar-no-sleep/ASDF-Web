@@ -1,7 +1,7 @@
 # ROADMAP-LIVE.md
 
-**Updated:** 2026-03-01
-**Status:** Phase 1.9 — Ralph loop complete (7 commits, 18/27 findings fixed)
+**Updated:** 2026-03-02
+**Status:** Phase 2.0 — P2 remaining (CSS quality + A11Y)
 **Owner:** CYNIC / ragnarnosleep + sollama58 + zeyxx
 
 ---
@@ -246,6 +246,15 @@ Rapid iteration through all 27 audit findings. 18 fixed, 2 false positives, 7 de
 
 **Tests:** 587/587 pass (26 suites). **Score: 22/27 fixed (81%), 2 false positives, 3 deferred.**
 
+### P2.0 — CSS Quality & Tests (2026-03-02)
+
+**P1-1**: CSP style-src hardened — styleSrcAttr 'none', ~430 inline style="" migrated.
+**P1-2**: Game test fixtures deduplicated → `tests/fixtures/game-mocks.js`.
+**P2-2**: CSS split — build.css (-50.7%), games.css (-37.8%), 7 new component files.
+**P2-3**: E2E Playwright — 5 user journey specs, 28 new tests (42 total).
+
+**Tests:** 635/635 unit (26 suites) + 42 E2E (7 specs).
+
 **Décisions 2026-02-27 (session 1)** :
 - HolDex backend = Option A (shell only) — PostgreSQL+Redis trop lourd à forker
 - Gouvernance staking supprimée (données hardcodées 62%/78% sans endpoint)
@@ -352,9 +361,9 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 - [~] **A11Y-2** `staking.html` — FALSE POSITIVE (staking.js already toggles aria-hidden at lines 403/411)
 - [~] **CSS-1** @keyframes dupes — CANNOT REMOVE: system.css not loaded by most pages (dupes are sole definitions). build.css within-file fadeIn dupe removed.
 
-### P2 — Medium (6/10 DONE)
+### P2 — Medium (7/10 DONE)
 
-- [ ] **ARCH-3** `engines/index.js:190-232` — legacy initializeGame() switch router → verify/remove
+- [x] **ARCH-3** `engines/index.js:190-232` — legacy initializeGame() switch router removed (a0725d8)
 - [x] **ARCH-4** 10 files — 11 console.log removed (init/loaded/ready messages)
 - [x] **ARCH-5** `timing-config.js` — window.ASDF deduped 4×→1×
 - [x] **PERF-1** `deep-learn.js` — fetchWithRetry fallback added
@@ -402,7 +411,7 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 
 | Métrique | Valeur |
 |----------|--------|
-| Tests | 566/566 pass (24 suites) |
+| Tests | 635/635 unit (26 suites) + 42 E2E (7 specs) |
 | Tool pages fork-ready | 5/5 ✓ |
 | Q-Score moyen tools | ~85 HOWL |
 | Q-Score global | 72 WAG |
@@ -417,7 +426,7 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 | sollama58 PRs | 2 (TVU #1 infra + #8 governance) |
 | sollama58 overviews | 4/4 repos covered |
 | sollama58 global Q | 81 HOWL |
-| Audit findings (2026-03-01) | 27 total → 18 fixed, 2 FP, 7 deferred |
+| Audit findings (2026-03-01) | 27 total → 19 fixed, 2 FP, 6 deferred |
 | Ralph loop commits | 7 atomic (P1.9) |
 | Deferred items | 13 |
 | Blocked items | 3 |
