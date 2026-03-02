@@ -361,17 +361,17 @@ Node.js 24.14.0 LTS installed. 485/485 tests confirmed green.
 - [~] **A11Y-2** `staking.html` — FALSE POSITIVE (staking.js already toggles aria-hidden at lines 403/411)
 - [~] **CSS-1** @keyframes dupes — CANNOT REMOVE: system.css not loaded by most pages (dupes are sole definitions). build.css within-file fadeIn dupe removed.
 
-### P2 — Medium (7/10 DONE)
+### P2 — Medium (10/10 DONE)
 
 - [x] **ARCH-3** `engines/index.js:190-232` — legacy initializeGame() switch router removed (a0725d8)
 - [x] **ARCH-4** 10 files — 11 console.log removed (init/loaded/ready messages)
 - [x] **ARCH-5** `timing-config.js` — window.ASDF deduped 4×→1×
 - [x] **PERF-1** `deep-learn.js` — fetchWithRetry fallback added
-- [ ] **CSS-3** 16 files — 84× !important overrides (high-risk, needs specificity analysis)
-- [ ] **CSS-4** `build.css` — non-Fibonacci animation timings (0.3s, 0.5s, 0.75s)
-- [ ] **CSS-5** `ecosystem.css` — z-index fragmentation (separate stacking context, needs visual testing)
-- [ ] **CSS-6** `build.css`, `learn.css` — ~25 hardcoded colors
-- [ ] **A11Y-3** `forecast.html`, `games.html` — color contrast issues (WCAG AA)
+- [x] **CSS-3** 3 files — 12 !important removed (arcade theme, timer, competitive, shop CTA)
+- [x] **CSS-4** 3 files — ~55 animation timings aligned to Fibonacci scale
+- [x] **CSS-5** 2 files — 15 z-index values → design tokens (ecosystem-map + ecosystem)
+- [x] **CSS-6** 3 files — 20 hardcoded colors → CSS vars (build, heartbeat, yggdrasil)
+- [x] **A11Y-3** 2 files — color contrast improved (forecast rgba + games #888→#aaa)
 - [x] **A11Y-4** `games.html` — `<div role="button">` → semantic `<button>` (4 arcade cards)
 
 ### P3 — Low / backlog (3/6 DONE)

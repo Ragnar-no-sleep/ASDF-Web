@@ -2060,7 +2060,7 @@ body {
    ============================================ */
 
 .sun-aura {
-  animation: sunAuraPulse 4s ease-in-out infinite;
+  animation: sunAuraPulse 5s ease-in-out infinite;
 }
 
 .sun-body {
@@ -2072,7 +2072,7 @@ body {
 }
 
 .sun-ring-inner {
-  animation: sunRingRotate 10s linear infinite;
+  animation: sunRingRotate 8s linear infinite;
   transform-origin: 400px 300px;
 }
 
@@ -2081,12 +2081,12 @@ body {
 }
 
 .corona-rays {
-  animation: coronaRotate 20s linear infinite;
+  animation: coronaRotate 21s linear infinite;
   transform-origin: 400px 300px;
 }
 
 .ray {
-  animation: rayFlicker 1.5s ease-in-out infinite;
+  animation: rayFlicker 2s ease-in-out infinite;
 }
 
 .ray-1,
@@ -2095,15 +2095,15 @@ body {
 }
 .ray-2,
 .ray-6 {
-  animation-delay: 0.2s;
+  animation-delay: 0.233s;
 }
 .ray-3,
 .ray-7 {
-  animation-delay: 0.4s;
+  animation-delay: 0.377s;
 }
 .ray-4,
 .ray-8 {
-  animation-delay: 0.6s;
+  animation-delay: 0.61s;
 }
 
 .ember {
@@ -2114,13 +2114,13 @@ body {
   animation-delay: 0s;
 }
 .ember-2 {
-  animation-delay: 0.5s;
+  animation-delay: 0.377s;
 }
 .ember-3 {
   animation-delay: 1s;
 }
 .ember-4 {
-  animation-delay: 1.5s;
+  animation-delay: 2s;
 }
 
 @keyframes sunAuraPulse {
@@ -2495,7 +2495,7 @@ body {
   font-size: var(--text-2xl);
   color: rgba(74, 222, 128, 0.12);
   font-family: serif;
-  animation: floatViking 15s ease-in-out infinite;
+  animation: floatViking 13s ease-in-out infinite;
   animation-delay: var(--delay);
   text-shadow: 0 0 15px rgba(74, 222, 128, 0.15);
 }
@@ -2527,12 +2527,12 @@ body {
 
 .viking-symbol:nth-child(3n) {
   font-size: var(--text-xl);
-  animation-duration: 18s;
+  animation-duration: 21s;
 }
 
 .viking-symbol:nth-child(4n) {
   font-size: var(--text-3xl);
-  animation-duration: 12s;
+  animation-duration: 13s;
 }
 
 /* ============================================

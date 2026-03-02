@@ -102,7 +102,7 @@
     transparent 100%
   );
   border-radius: 50%;
-  animation: heartbeatGlow 1.5s ease-in-out infinite;
+  animation: heartbeatGlow 2s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -138,7 +138,7 @@
   box-shadow:
     0 0 30px rgba(234, 88, 12, 0.6),
     inset 0 0 20px rgba(251, 146, 60, 0.3);
-  animation: heartbeatRing 1.5s ease-in-out infinite;
+  animation: heartbeatRing 2s ease-in-out infinite;
 }
 
 @keyframes heartbeatRing {
@@ -174,7 +174,7 @@
   box-shadow:
     0 0 40px rgba(251, 146, 60, 0.7),
     inset 0 0 20px rgba(234, 88, 12, 0.4);
-  animation: heartbeatCore 1.5s ease-in-out infinite;
+  animation: heartbeatCore 2s ease-in-out infinite;
 }
 
 @keyframes heartbeatCore {
@@ -202,7 +202,7 @@
 .heart-icon {
   font-size: var(--text-3xl);
   filter: drop-shadow(0 0 12px rgba(251, 146, 60, 0.9));
-  animation: heartbeatIcon 1.5s ease-in-out infinite;
+  animation: heartbeatIcon 2s ease-in-out infinite;
 }
 
 @keyframes heartbeatIcon {
@@ -236,7 +236,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: heartRunesRotate 40s linear infinite;
+  animation: heartRunesRotate 34s linear infinite;
   pointer-events: none;
 }
 
@@ -397,7 +397,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  animation: nodeRunesRotate 30s linear infinite;
+  animation: nodeRunesRotate 34s linear infinite;
   z-index: 1;
 }
 
@@ -420,19 +420,19 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  animation-delay: 0.75s;
+  animation-delay: 0.61s;
 }
 .node-runes span:nth-child(3) {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  animation-delay: 1.5s;
+  animation-delay: 2s;
 }
 .node-runes span:nth-child(4) {
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  animation-delay: 2.25s;
+  animation-delay: 3s;
 }
 
 /* Trunk runes - amber/brown color */
@@ -469,7 +469,7 @@
 
 /* Hover effect - runes glow brighter */
 .tree-node:hover .node-runes {
-  animation-duration: 15s;
+  animation-duration: 13s;
 }
 
 .tree-node:hover .node-runes span {
@@ -689,7 +689,7 @@
 .status-dot.heart {
   background: var(--accent-bright);
   box-shadow: 0 0 10px rgba(251, 146, 60, 0.6);
-  animation: heartbeatDot 1.5s ease-in-out infinite;
+  animation: heartbeatDot 2s ease-in-out infinite;
 }
 
 @keyframes heartbeatDot {
@@ -811,7 +811,7 @@
 
 /* Nordic Sun Animations */
 .nordic-sun .runic-rays {
-  animation: nordicSunRotate 60s linear infinite;
+  animation: nordicSunRotate 55s linear infinite;
   transform-origin: 400px 300px;
 }
 
@@ -820,12 +820,12 @@
 }
 
 .sun-ring-rune {
-  animation: runeRingRotate 30s linear infinite reverse;
+  animation: runeRingRotate 34s linear infinite reverse;
   transform-origin: 400px 300px;
 }
 
 .vegvisir-center {
-  animation: vegvisirPulse 4s ease-in-out infinite;
+  animation: vegvisirPulse 5s ease-in-out infinite;
   transform-origin: 400px 300px;
 }
 
@@ -996,7 +996,7 @@
 }
 
 .branch-phrases textPath {
-  animation: phraseGlow 4s ease-in-out infinite;
+  animation: phraseGlow 5s ease-in-out infinite;
 }
 
 @keyframes phraseGlow {
@@ -1011,7 +1011,7 @@
 
 /* Decorative branch leaves */
 .branch-leaves-decorative path {
-  animation: leafFloat 6s ease-in-out infinite;
+  animation: leafFloat 5s ease-in-out infinite;
 }
 
 .branch-leaves-decorative path:nth-child(odd) {
@@ -1021,7 +1021,7 @@
 
 .branch-leaves-decorative path:nth-child(3n) {
   animation-delay: 1s;
-  animation-duration: 7s;
+  animation-duration: 8s;
 }
 
 @keyframes leafFloat {
@@ -1040,7 +1040,7 @@
 }
 
 .canopy-leaves use:nth-child(odd) {
-  animation: leafSway 4s ease-in-out infinite;
+  animation: leafSway 5s ease-in-out infinite;
 }
 
 .canopy-leaves use:nth-child(even) {
@@ -1083,7 +1083,7 @@
 
 /* Nordic phrases around sun */
 .nordic-phrases text {
-  animation: phraseRotate 45s linear infinite;
+  animation: phraseRotate 55s linear infinite;
 }
 
 @keyframes phraseRotate {
@@ -1126,7 +1126,7 @@
   box-shadow:
     0 0 25px rgba(251, 146, 60, 0.6),
     inset 0 0 15px rgba(251, 146, 60, 0.2);
-  animation: heartEllipsePulse 1.5s ease-in-out infinite;
+  animation: heartEllipsePulse 2s ease-in-out infinite;
 }
 
 .node-ellipse.heart .node-text {
@@ -1211,7 +1211,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  animation: runeOrbit 20s linear infinite;
+  animation: runeOrbit 21s linear infinite;
 }
 
 .node-runes-simple span {
@@ -1237,7 +1237,7 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  animation-delay: 0.5s;
+  animation-delay: 0.377s;
 }
 
 .node-runes-simple span:nth-child(3) {
@@ -1251,7 +1251,7 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  animation-delay: 1.5s;
+  animation-delay: 2s;
 }
 
 @keyframes runeOrbit {
@@ -1281,7 +1281,7 @@
 .node-runes-simple.heart {
   width: 180px;
   height: 180px;
-  animation: runeOrbit 12s linear infinite;
+  animation: runeOrbit 13s linear infinite;
 }
 
 .node-runes-simple.heart span {
@@ -1293,7 +1293,7 @@
     0 0 40px rgba(251, 146, 60, 0.9),
     0 0 60px rgba(234, 88, 12, 0.7),
     0 0 80px rgba(220, 38, 38, 0.5);
-  animation: heartRuneFlicker 1.5s ease-in-out infinite;
+  animation: heartRuneFlicker 2s ease-in-out infinite;
 }
 
 @keyframes heartRuneFlicker {
@@ -1356,7 +1356,7 @@
     0 0 30px rgba(239, 68, 68, 0.7),
     0 0 60px rgba(251, 146, 60, 0.5),
     inset 0 0 20px rgba(251, 146, 60, 0.3);
-  animation: heartEllipsePulse 1.5s ease-in-out infinite;
+  animation: heartEllipsePulse 2s ease-in-out infinite;
 }
 
 @keyframes heartEllipsePulse {
@@ -1377,7 +1377,7 @@
 
 /* Slow down rotation on hover */
 .tree-node.simple:hover .node-runes-simple {
-  animation-duration: 10s;
+  animation-duration: 8s;
 }
 
 .tree-node.simple:hover .node-runes-simple span {

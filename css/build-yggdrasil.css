@@ -190,7 +190,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: runesRotate 60s linear infinite;
+  animation: runesRotate 55s linear infinite;
 }
 
 .tree-core .core-runes span {
@@ -275,7 +275,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   filter: blur(10px);
-  animation: nodeGlow 4s ease-in-out infinite;
+  animation: nodeGlow 5s ease-in-out infinite;
   z-index: -1;
 }
 
@@ -484,7 +484,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: realmPulse 4s ease-in-out infinite;
+  animation: realmPulse 5s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
   filter: blur(15px);
@@ -549,7 +549,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  animation: runesRotate 40s linear infinite;
+  animation: runesRotate 34s linear infinite;
   z-index: 3;
 }
 
@@ -640,7 +640,7 @@
   height: 45px;
   border-radius: 50%;
   border: 1px dashed rgba(212, 175, 55, 0.3);
-  animation: innerRingRotate 15s linear infinite reverse;
+  animation: innerRingRotate 13s linear infinite reverse;
 }
 
 /* Realm-specific border colors */
@@ -759,7 +759,7 @@
   height: 100%;
   border: 3px solid rgba(234, 88, 12, 0.6);
   border-radius: 50%;
-  animation: outerRingRotate 25s linear infinite;
+  animation: outerRingRotate 21s linear infinite;
 }
 
 /* Runic markers on outer ring */
@@ -804,7 +804,7 @@
   left: 7.5%;
   border: 2px dashed rgba(251, 146, 60, 0.5);
   border-radius: 50%;
-  animation: innerRingRotate 18s linear infinite reverse;
+  animation: innerRingRotate 21s linear infinite reverse;
 }
 
 @keyframes innerRingRotate {
@@ -927,7 +927,7 @@
   top: 0;
   left: 0;
   pointer-events: none;
-  animation: coreRunesRotate 35s linear infinite;
+  animation: coreRunesRotate 34s linear infinite;
 }
 
 @keyframes coreRunesRotate {
@@ -1162,19 +1162,19 @@
 }
 
 .branch-golden:nth-child(2) {
-  animation-delay: 0.3s;
+  animation-delay: 0.233s;
 }
 
 .branch-golden:nth-child(3) {
-  animation-delay: 0.6s;
+  animation-delay: 0.61s;
 }
 
 .branch-golden:nth-child(4) {
-  animation-delay: 0.9s;
+  animation-delay: 1s;
 }
 
 .branch-golden:nth-child(5) {
-  animation-delay: 1.2s;
+  animation-delay: 2s;
 }
 
 /* Golden root animation */
@@ -1191,7 +1191,7 @@
 }
 
 .branch-golden.root {
-  animation: goldenRootPulse 6s ease-in-out infinite;
+  animation: goldenRootPulse 5s ease-in-out infinite;
 }
 
 /* Legacy cyan animation */
@@ -1208,11 +1208,11 @@
 }
 
 .branch-path {
-  animation: branchPulse 4s ease-in-out infinite;
+  animation: branchPulse 5s ease-in-out infinite;
 }
 
 .branch-path:nth-child(2) {
-  animation-delay: 0.5s;
+  animation-delay: 0.377s;
 }
 
 .branch-path:nth-child(3) {
@@ -1241,6 +1241,6 @@
 }
 
 .realm:hover .realm-glow {
-  animation-duration: 1.5s;
+  animation-duration: 2s;
   filter: blur(15px);
 }
