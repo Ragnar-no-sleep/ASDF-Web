@@ -1,0 +1,1389 @@
+/**
+ * Build — Heartbeat Tree & Burn Pulse System
+ * Extracted from build.css (P2-2)
+ *
+ * Sections: Realm Hover Animations, Heart/Midgard/Trunk/Roots Layout,
+ *   Heart Burn Engine, Node Positions (Canopy/Trunk/Roots), Node Runes,
+ *   Simple Yggdrasil Ellipse Style, Burn Pulse System
+ */
+
+/* ============================================
+   ANIMATIONS - Realm Hover Effects
+   ============================================ */
+
+.realm:hover .realm-rune {
+  animation: runeGlow 0.5s ease;
+}
+
+@keyframes runeGlow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px var(--nordic-gold);
+  }
+}
+
+/* Connection line animation */
+@keyframes branchGrow {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.branch-line {
+  stroke-dasharray: 100;
+  animation: branchGrow 1s ease forwards;
+}
+
+/* ============================================
+   YGGDRASIL CANONICAL STRUCTURE
+   Heart/Midgard/Trunk/Roots Layout
+   ============================================ */
+
+.yggdrasil-canonical {
+  position: relative;
+  width: 100%;
+  height: 650px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  z-index: 15;
+  pointer-events: auto;
+}
+
+/* Tree SVG - Full size */
+.yggdrasil-canonical .tree-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ============================================
+   HEART - Burn Engine (Center Core)
+   Orange incandescent with heartbeat pulsation
+   ============================================ */
+
+.tree-heart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  z-index: 30;
+  cursor: pointer;
+}
+
+.tree-heart:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.heart-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(
+    circle,
+    rgba(251, 146, 60, 0.8) 0%,
+    rgba(234, 88, 12, 0.4) 40%,
+    rgba(154, 52, 18, 0.1) 70%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  animation: heartbeatGlow 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes heartbeatGlow {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.9;
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 1;
+  }
+}
+
+.heart-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110px;
+  height: 110px;
+  border: 4px solid rgba(251, 146, 60, 0.8);
+  border-radius: 50%;
+  box-shadow:
+    0 0 30px rgba(234, 88, 12, 0.6),
+    inset 0 0 20px rgba(251, 146, 60, 0.3);
+  animation: heartbeatRing 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeatRing {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-color: rgba(251, 146, 60, 0.8);
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1.05);
+    border-color: rgba(255, 200, 100, 1);
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(1.03);
+    border-color: rgba(255, 180, 80, 0.9);
+  }
+}
+
+.heart-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at 35% 35%, #2a1a0a 0%, #1a0f05 50%, #0f0804 100%);
+  border: 3px solid #fb923c;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 40px rgba(251, 146, 60, 0.7),
+    inset 0 0 20px rgba(234, 88, 12, 0.4);
+  animation: heartbeatCore 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeatCore {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow:
+      0 0 40px rgba(251, 146, 60, 0.7),
+      inset 0 0 20px rgba(234, 88, 12, 0.4);
+  }
+  15% {
+    transform: translate(-50%, -50%) scale(1.03);
+    box-shadow:
+      0 0 60px rgba(251, 146, 60, 0.9),
+      inset 0 0 30px rgba(234, 88, 12, 0.6);
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(1.02);
+    box-shadow:
+      0 0 50px rgba(251, 146, 60, 0.8),
+      inset 0 0 25px rgba(234, 88, 12, 0.5);
+  }
+}
+
+.heart-icon {
+  font-size: var(--text-3xl);
+  filter: drop-shadow(0 0 12px rgba(251, 146, 60, 0.9));
+  animation: heartbeatIcon 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeatIcon {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+}
+
+.heart-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: #fb923c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.8);
+}
+
+.heart-runes {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: heartRunesRotate 40s linear infinite;
+  pointer-events: none;
+}
+
+.heart-runes span {
+  position: absolute;
+  font-size: 12px;
+  color: #fb923c;
+  text-shadow: 0 0 8px #fb923c;
+  opacity: 0.8;
+}
+
+.heart-runes span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.heart-runes span:nth-child(2) {
+  top: 15%;
+  right: 10%;
+}
+.heart-runes span:nth-child(3) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+.heart-runes span:nth-child(4) {
+  bottom: 15%;
+  right: 10%;
+}
+.heart-runes span:nth-child(5) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.heart-runes span:nth-child(6) {
+  bottom: 15%;
+  left: 10%;
+}
+.heart-runes span:nth-child(7) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.heart-runes span:nth-child(8) {
+  top: 15%;
+  left: 10%;
+}
+
+@keyframes heartRunesRotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ============================================
+   ZONE LABELS
+   ============================================ */
+
+.zone-label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  z-index: 5;
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.zone-label.zone-midgard {
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+.zone-label.zone-trunk {
+  top: 50%;
+  right: -280px;
+  left: auto;
+  transform: translateY(-50%);
+  flex-direction: row;
+  color: #d4a574;
+  background: rgba(212, 165, 116, 0.15);
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  text-shadow: 0 0 10px rgba(212, 165, 116, 0.5);
+}
+
+.zone-label.zone-roots {
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+}
+
+/* ============================================
+   NODE POSITIONS - Canopy (Midgard/Live)
+   Green leafy zone - Top of tree
+   ============================================ */
+
+.tree-node.canopy {
+  z-index: 20;
+  cursor: pointer;
+}
+
+.tree-node.trunk,
+.tree-node.roots {
+  cursor: pointer;
+}
+
+.tree-node.canopy .node-glow.midgard {
+  background: rgba(74, 222, 128, 0.6);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+}
+
+.tree-node.canopy .node-medallion {
+  border-color: #4ade80;
+  box-shadow:
+    0 0 20px rgba(74, 222, 128, 0.5),
+    inset 0 0 10px rgba(74, 222, 128, 0.2);
+}
+
+.tree-node.canopy:hover .node-medallion {
+  border-color: #86efac;
+  box-shadow:
+    0 0 35px rgba(74, 222, 128, 0.7),
+    inset 0 0 15px rgba(74, 222, 128, 0.3);
+}
+
+/* Midgard medallion styling */
+.node-medallion.midgard {
+  border-color: #4ade80;
+  box-shadow:
+    0 0 20px rgba(74, 222, 128, 0.5),
+    inset 0 0 10px rgba(74, 222, 128, 0.2);
+}
+
+/* ============================================
+   NODE RUNES - Viking symbols around projects
+   ============================================ */
+
+.node-runes {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: nodeRunesRotate 30s linear infinite;
+  z-index: 1;
+}
+
+.node-runes span {
+  position: absolute;
+  font-size: var(--text-xs);
+  color: #4ade80;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.8);
+  opacity: 0.9;
+  animation: runeFlicker 3s ease-in-out infinite;
+}
+
+.node-runes span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+.node-runes span:nth-child(2) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  animation-delay: 0.75s;
+}
+.node-runes span:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 1.5s;
+}
+.node-runes span:nth-child(4) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  animation-delay: 2.25s;
+}
+
+/* Trunk runes - amber/brown color */
+.node-runes.trunk span {
+  color: #c4915c;
+  text-shadow: 0 0 8px rgba(196, 145, 92, 0.8);
+}
+
+/* Roots runes - purple color */
+.node-runes.roots span {
+  color: #a78bfa;
+  text-shadow: 0 0 8px rgba(167, 139, 250, 0.8);
+}
+
+@keyframes nodeRunesRotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes runeFlicker {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 12px currentColor;
+  }
+}
+
+/* Hover effect - runes glow brighter */
+.tree-node:hover .node-runes {
+  animation-duration: 15s;
+}
+
+.tree-node:hover .node-runes span {
+  opacity: 1;
+  text-shadow: 0 0 15px currentColor;
+}
+
+/* ============================================
+   CANOPY POSITIONS - Matching Celtic branch endpoints
+   ============================================ */
+
+/* Top center - Ecosystem (branch ends at ~400,0) */
+.tree-node.canopy.top {
+  top: -1%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-node.canopy.top:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* Left - Learn Platform (branch ends at ~15,30) */
+.tree-node.canopy.left {
+  top: 2%;
+  left: 0%;
+}
+
+/* Right - Games Platform (branch ends at ~785,30) */
+.tree-node.canopy.right {
+  top: 2%;
+  right: 0%;
+}
+
+/* Far left - Burn Tracker (branch ends at ~-25,45) */
+.tree-node.canopy.far-left {
+  top: 5%;
+  left: -2%;
+}
+
+/* Far right - Launcher (branch ends at ~825,45) */
+.tree-node.canopy.far-right {
+  top: 5%;
+  right: -2%;
+}
+
+/* ============================================
+   NODE POSITIONS - Trunk (Building)
+   Brown/amber wood zone - Middle of tree
+   ============================================ */
+
+.tree-node.trunk {
+  z-index: 18;
+}
+
+.tree-node.trunk .node-glow.building,
+.tree-node.trunk .node-glow.trunk {
+  background: rgba(212, 165, 116, 0.5);
+  box-shadow: 0 0 18px rgba(212, 165, 116, 0.4);
+}
+
+.tree-node.trunk .node-medallion {
+  border-color: #d4a574;
+  box-shadow:
+    0 0 18px rgba(212, 165, 116, 0.5),
+    inset 0 0 10px rgba(212, 165, 116, 0.2);
+}
+
+.tree-node.trunk:hover .node-medallion {
+  border-color: #e8c4a0;
+  box-shadow:
+    0 0 30px rgba(212, 165, 116, 0.7),
+    inset 0 0 15px rgba(212, 165, 116, 0.3);
+}
+
+/* Trunk medallion styling */
+.node-medallion.trunk {
+  border-color: #d4a574;
+  box-shadow:
+    0 0 18px rgba(212, 165, 116, 0.5),
+    inset 0 0 10px rgba(212, 165, 116, 0.2);
+}
+
+/* ============================================
+   TRUNK POSITIONS - Matching Celtic branch endpoints
+   ============================================ */
+
+/* Left upper - HolDEX (branch ends at ~30,530) */
+.tree-node.trunk.left {
+  top: 64%;
+  left: 1%;
+}
+
+/* Right upper - Oracle (branch ends at ~770,530) */
+.tree-node.trunk.right {
+  top: 64%;
+  right: 1%;
+}
+
+/* Lower left - RPC Monitor (branch ends at ~-10,690) */
+.tree-node.trunk.lower-left {
+  top: 84%;
+  left: -2%;
+}
+
+/* Lower right - Community (branch ends at ~810,690) */
+.tree-node.trunk.lower-right {
+  top: 84%;
+  right: -2%;
+}
+
+/* ============================================
+   NODE POSITIONS - Roots (Planned)
+   Blue/purple underground zone - Bottom
+   ============================================ */
+
+.tree-node.roots {
+  z-index: 16;
+}
+
+.tree-node.roots .node-glow.planned,
+.tree-node.roots .node-glow.roots {
+  background: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.4);
+}
+
+.tree-node.roots .node-medallion {
+  border-color: #8b5cf6;
+  box-shadow:
+    0 0 18px rgba(139, 92, 246, 0.5),
+    inset 0 0 10px rgba(139, 92, 246, 0.2);
+  opacity: 0.9;
+}
+
+.tree-node.roots:hover .node-medallion {
+  border-color: #a78bfa;
+  box-shadow:
+    0 0 30px rgba(139, 92, 246, 0.7),
+    inset 0 0 15px rgba(139, 92, 246, 0.3);
+  opacity: 1;
+}
+
+/* Roots medallion styling */
+.node-medallion.roots {
+  border-color: #8b5cf6;
+  box-shadow:
+    0 0 18px rgba(139, 92, 246, 0.5),
+    inset 0 0 10px rgba(139, 92, 246, 0.2);
+  opacity: 0.9;
+}
+
+/* ============================================
+   ROOTS POSITIONS - Matching Celtic branch endpoints
+   ============================================ */
+
+/* Left root - Security (branch ends at ~60,720) */
+.tree-node.roots.left {
+  top: 88%;
+  left: 5%;
+}
+
+/* Center root - Pipeline (branch ends at ~400,790) */
+.tree-node.roots.center {
+  top: 96%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-node.roots.center:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* Right root - Ambassadors (branch ends at ~740,720) */
+.tree-node.roots.right {
+  top: 88%;
+  right: 5%;
+}
+
+/* ============================================
+   LEGEND LORE STYLING
+   ============================================ */
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend-status {
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  color: var(--text-cream);
+}
+
+.legend-lore {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* Status dots with lore colors */
+.status-dot.midgard {
+  background: #4ade80;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-dot.trunk {
+  background: #d4a574;
+  box-shadow: 0 0 10px rgba(212, 165, 116, 0.6);
+}
+
+.status-dot.roots {
+  background: #8b5cf6;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+}
+
+.status-dot.heart {
+  background: #fb923c;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.6);
+  animation: heartbeatDot 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeatDot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  15% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   PROPOSE INLINE SECTION
+   ============================================ */
+
+.propose-inline {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+  position: relative;
+}
+
+.propose-card-mini {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 28px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(74, 222, 128, 0.05));
+  border: 2px dashed var(--green);
+  border-radius: var(--radius-full);
+  transition: all 0.3s ease;
+}
+
+.propose-card-mini:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(74, 222, 128, 0.1));
+  border-color: var(--green-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.2);
+}
+
+.propose-bulb {
+  font-size: var(--text-2xl);
+  animation: bulbGlow 2s ease-in-out infinite;
+}
+
+@keyframes bulbGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.8));
+  }
+}
+
+.propose-text {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--green);
+}
+
+.btn-propose {
+  background: var(--green);
+  border-color: var(--green-light);
+  color: #000;
+  font-weight: var(--font-bold);
+}
+
+.btn-propose:hover {
+  background: var(--green-light);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+}
+
+/* ============================================
+   SIMPLE YGGDRASIL - Ellipse Node Style
+   Clean vertical tree with pill-shaped nodes
+   ============================================ */
+
+/* Simple Heart - Center (aligned with Nordic Sun at y=300 in 600 viewbox) */
+.tree-heart.simple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  cursor: pointer;
+  pointer-events: auto;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-heart.simple .node-ellipse {
+  position: relative;
+  z-index: 2;
+}
+
+.tree-heart.simple .node-runes-simple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.tree-heart.simple:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+/* Nordic Sun Animations */
+.nordic-sun .runic-rays {
+  animation: nordicSunRotate 60s linear infinite;
+  transform-origin: 400px 300px;
+}
+
+.ray-rune {
+  animation: runeGlow 3s ease-in-out infinite;
+}
+
+.sun-ring-rune {
+  animation: runeRingRotate 30s linear infinite reverse;
+  transform-origin: 400px 300px;
+}
+
+.vegvisir-center {
+  animation: vegvisirPulse 4s ease-in-out infinite;
+  transform-origin: 400px 300px;
+}
+
+.branch-runes text {
+  animation: branchRuneFloat 5s ease-in-out infinite;
+}
+
+.branch-runes text:nth-child(odd) {
+  animation-delay: 0.5s;
+}
+
+.branch-runes text:nth-child(3n) {
+  animation-delay: 1s;
+}
+
+@keyframes nordicSunRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes runeGlow {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes runeRingRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vegvisirPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes branchRuneFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 0.8;
+  }
+}
+
+/* ============================================
+   BURN PULSE SYSTEM - Live Activity Animation
+   Intensity driven by API burn data
+   ============================================ */
+
+.burn-pulsing {
+  --burn-pulse-duration: 1500ms;
+  --burn-glow-opacity: 0.6;
+  --burn-intensity: 0.5;
+}
+
+/* Heart glow effect */
+.tree-heart.burn-pulsing {
+  animation: burnPulseHeart var(--burn-pulse-duration) ease-in-out infinite;
+  --heart-glow-size: 30px;
+}
+
+.tree-heart.burn-pulsing::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(251, 146, 60, calc(var(--burn-glow-opacity) * 0.4)) 0%,
+    rgba(234, 88, 12, calc(var(--burn-glow-opacity) * 0.2)) 40%,
+    transparent 70%
+  );
+  animation: burnGlowPulse var(--burn-pulse-duration) ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* SVG Nordic Sun pulse */
+.nordic-sun.burn-pulsing,
+.heart-layer.burn-pulsing {
+  animation: burnPulseSvg var(--burn-pulse-duration) ease-in-out infinite;
+  transform-origin: 400px 300px;
+}
+
+.sun-aura {
+  transition: opacity 0.5s ease;
+  opacity: var(--burn-glow-opacity, 0.7);
+}
+
+/* Keyframes */
+@keyframes burnPulseHeart {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes burnPulseSvg {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 10px rgba(251, 146, 60, 0.3));
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.1)
+      drop-shadow(0 0 20px rgba(251, 146, 60, calc(var(--burn-glow-opacity, 0.6))));
+  }
+}
+
+@keyframes burnGlowPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: var(--burn-glow-opacity, 0.8);
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .burn-pulsing,
+  .tree-heart.burn-pulsing,
+  .nordic-sun.burn-pulsing,
+  .heart-layer.burn-pulsing {
+    animation: none;
+  }
+  .tree-heart.burn-pulsing::before {
+    animation: none;
+  }
+}
+
+/* Branch phrases along paths */
+.branch-phrases text {
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+.branch-phrases textPath {
+  animation: phraseGlow 4s ease-in-out infinite;
+}
+
+@keyframes phraseGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Decorative branch leaves */
+.branch-leaves-decorative path {
+  animation: leafFloat 6s ease-in-out infinite;
+}
+
+.branch-leaves-decorative path:nth-child(odd) {
+  animation-delay: 0.5s;
+  animation-duration: 5s;
+}
+
+.branch-leaves-decorative path:nth-child(3n) {
+  animation-delay: 1s;
+  animation-duration: 7s;
+}
+
+@keyframes leafFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(5deg);
+  }
+}
+
+/* Yggdrasil Leaves Animation */
+.canopy-leaves {
+  animation: leavesBreeze 8s ease-in-out infinite;
+}
+
+.canopy-leaves use:nth-child(odd) {
+  animation: leafSway 4s ease-in-out infinite;
+}
+
+.canopy-leaves use:nth-child(even) {
+  animation: leafSway 5s ease-in-out infinite reverse;
+}
+
+.canopy-leaves use:nth-child(3n) {
+  animation-delay: 0.5s;
+}
+
+.canopy-leaves use:nth-child(5n) {
+  animation-delay: 1s;
+}
+
+@keyframes leavesBreeze {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes leafSway {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(3deg) scale(1.02);
+  }
+  75% {
+    transform: rotate(-3deg) scale(0.98);
+  }
+}
+
+/* Nordic phrases around sun */
+.nordic-phrases text {
+  animation: phraseRotate 45s linear infinite;
+}
+
+@keyframes phraseRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ellipse Node Base */
+.node-ellipse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(10, 10, 10, 0.98));
+  border: 3px solid;
+  font-family: var(--font-display);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.node-ellipse .node-icon {
+  font-size: var(--text-lg);
+}
+
+.node-ellipse .node-text {
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Ellipse Colors by Zone */
+.node-ellipse.heart {
+  border-color: #fb923c;
+  box-shadow:
+    0 0 25px rgba(251, 146, 60, 0.6),
+    inset 0 0 15px rgba(251, 146, 60, 0.2);
+  animation: heartEllipsePulse 1.5s ease-in-out infinite;
+}
+
+.node-ellipse.heart .node-text {
+  color: #fb923c;
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+}
+
+@keyframes heartEllipsePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 25px rgba(251, 146, 60, 0.6),
+      inset 0 0 15px rgba(251, 146, 60, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 40px rgba(251, 146, 60, 0.8),
+      inset 0 0 20px rgba(251, 146, 60, 0.3);
+  }
+}
+
+.node-ellipse.midgard {
+  border-color: #4ade80;
+  box-shadow:
+    0 0 20px rgba(74, 222, 128, 0.5),
+    inset 0 0 10px rgba(74, 222, 128, 0.15);
+}
+
+.node-ellipse.midgard .node-text {
+  color: #4ade80;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+.node-ellipse.trunk {
+  border-color: #d4a574;
+  box-shadow:
+    0 0 18px rgba(212, 165, 116, 0.5),
+    inset 0 0 10px rgba(212, 165, 116, 0.15);
+}
+
+.node-ellipse.trunk .node-text {
+  color: #d4a574;
+  text-shadow: 0 0 8px rgba(212, 165, 116, 0.4);
+}
+
+.node-ellipse.roots {
+  border-color: #8b5cf6;
+  box-shadow:
+    0 0 18px rgba(139, 92, 246, 0.5),
+    inset 0 0 10px rgba(139, 92, 246, 0.15);
+  opacity: 0.9;
+}
+
+.node-ellipse.roots .node-text {
+  color: #8b5cf6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+}
+
+/* Simple Node Base */
+.tree-node.simple {
+  position: absolute;
+  z-index: 20;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.tree-node.simple:hover {
+  transform: scale(1.1);
+}
+
+.tree-node.simple:hover .node-ellipse {
+  box-shadow: 0 0 35px currentColor;
+}
+
+/* Orbiting Runes around nodes */
+.node-runes-simple {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: runeOrbit 20s linear infinite;
+}
+
+.node-runes-simple span {
+  position: absolute;
+  font-size: var(--text-lg);
+  font-weight: bold;
+  color: #4ade80;
+  text-shadow:
+    0 0 12px rgba(74, 222, 128, 0.9),
+    0 0 20px rgba(74, 222, 128, 0.5);
+  animation: runeFlicker 3s ease-in-out infinite;
+}
+
+/* Position runes around the orbit */
+.node-runes-simple span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.node-runes-simple span:nth-child(2) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  animation-delay: 0.5s;
+}
+
+.node-runes-simple span:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 1s;
+}
+
+.node-runes-simple span:nth-child(4) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  animation-delay: 1.5s;
+}
+
+@keyframes runeOrbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.node-runes-simple.trunk span {
+  color: #d4a574;
+  text-shadow:
+    0 0 12px rgba(212, 165, 116, 0.9),
+    0 0 20px rgba(212, 165, 116, 0.5);
+}
+
+.node-runes-simple.roots span {
+  color: #8b5cf6;
+  text-shadow:
+    0 0 12px rgba(139, 92, 246, 0.9),
+    0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+/* BURN ENGINE - Powerful red-orange runes - MAJESTIC */
+.node-runes-simple.heart {
+  width: 180px;
+  height: 180px;
+  animation: runeOrbit 12s linear infinite;
+}
+
+.node-runes-simple.heart span {
+  font-size: var(--text-3xl);
+  font-weight: bold;
+  color: #ef4444;
+  text-shadow:
+    0 0 20px rgba(239, 68, 68, 1),
+    0 0 40px rgba(251, 146, 60, 0.9),
+    0 0 60px rgba(234, 88, 12, 0.7),
+    0 0 80px rgba(220, 38, 38, 0.5);
+  animation: heartRuneFlicker 1.5s ease-in-out infinite;
+}
+
+@keyframes heartRuneFlicker {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+    text-shadow:
+      0 0 20px rgba(239, 68, 68, 1),
+      0 0 40px rgba(251, 146, 60, 0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    text-shadow:
+      0 0 30px rgba(239, 68, 68, 1),
+      0 0 50px rgba(251, 146, 60, 1),
+      0 0 70px rgba(220, 38, 38, 0.8);
+  }
+}
+
+/* SVG Heart animations */
+.heart-corona {
+  animation: coronaPulse 3s ease-in-out infinite;
+}
+
+@keyframes coronaPulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform-origin: center;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.heart-ring-svg {
+  animation: ringRotate 8s linear infinite;
+  transform-origin: 400px 300px;
+}
+
+@keyframes ringRotate {
+  from {
+    transform: rotate(0deg);
+    stroke-dasharray: 20 10;
+  }
+  to {
+    transform: rotate(360deg);
+    stroke-dasharray: 20 10;
+  }
+}
+
+/* Burn Engine ellipse - red glow border */
+.node-ellipse.heart {
+  border-color: #ef4444;
+  box-shadow:
+    0 0 30px rgba(239, 68, 68, 0.7),
+    0 0 60px rgba(251, 146, 60, 0.5),
+    inset 0 0 20px rgba(251, 146, 60, 0.3);
+  animation: heartEllipsePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes heartEllipsePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 30px rgba(239, 68, 68, 0.7),
+      0 0 60px rgba(251, 146, 60, 0.5),
+      inset 0 0 20px rgba(251, 146, 60, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(239, 68, 68, 0.9),
+      0 0 80px rgba(251, 146, 60, 0.7),
+      inset 0 0 30px rgba(251, 146, 60, 0.4);
+  }
+}
+
+/* Slow down rotation on hover */
+.tree-node.simple:hover .node-runes-simple {
+  animation-duration: 10s;
+}
+
+.tree-node.simple:hover .node-runes-simple span {
+  text-shadow: 0 0 20px currentColor;
+}
+
+.tree-heart.simple:hover .node-runes-simple.heart {
+  animation-duration: 8s;
+}

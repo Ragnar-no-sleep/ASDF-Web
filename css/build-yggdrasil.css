@@ -1,0 +1,1246 @@
+/**
+ * Build — Yggdrasil World Tree (Radial Branch Design)
+ * Extracted from build.css (P2-2)
+ *
+ * Sections: Tree SVG, Central Core, Project Nodes, Node Positions,
+ *   Legacy Realm Variants, Midgard Core, SVG Branches, Tree Levels, Animations
+ */
+
+/* ============================================
+   YGGDRASIL WORLD TREE - RADIAL BRANCH DESIGN
+   Majestic golden tree with projects at branch ends
+   ============================================ */
+
+.tree-section {
+  padding: 20px 0;
+  overflow: hidden;
+  position: relative;
+  min-height: 650px;
+  /* Black background */
+  background: #0a0a0a;
+}
+
+/* Yggdrasil Tree Silhouette - White/Green on black */
+.tree-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 700'%3E%3Cdefs%3E%3ClinearGradient id='trunk' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234ade80'/%3E%3Cstop offset='50%25' stop-color='%23ffffff'/%3E%3Cstop offset='100%25' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3CradialGradient id='foliage' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%234ade80' stop-opacity='0.4'/%3E%3Cstop offset='50%25' stop-color='%2322c55e' stop-opacity='0.2'/%3E%3Cstop offset='100%25' stop-color='%234ade80' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='centerGlow' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.3'/%3E%3Cstop offset='50%25' stop-color='%23fb923c' stop-opacity='0.15'/%3E%3Cstop offset='100%25' stop-color='%23ea580c' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3C!-- Canopy foliage mass --%3E%3Cellipse cx='400' cy='100' rx='380' ry='100' fill='url(%23foliage)'/%3E%3Cellipse cx='300' cy='120' rx='200' ry='100' fill='url(%23foliage)'/%3E%3Cellipse cx='500' cy='120' rx='200' ry='100' fill='url(%23foliage)'/%3E%3Cellipse cx='400' cy='80' rx='280' ry='80' fill='url(%23foliage)'/%3E%3C!-- Center glow --%3E%3Ccircle cx='400' cy='320' r='80' fill='url(%23centerGlow)'/%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Main trunk --%3E%3Cpath d='M400,650 Q395,500 400,350 Q405,200 400,50' stroke='url(%23trunk)' stroke-width='25' opacity='0.3'/%3E%3Cpath d='M380,650 Q365,480 370,350 Q375,200 380,80' stroke='%23ffffff' stroke-width='8' opacity='0.15'/%3E%3Cpath d='M420,650 Q435,480 430,350 Q425,200 420,80' stroke='%23ffffff' stroke-width='8' opacity='0.15'/%3E%3C!-- Left canopy branches --%3E%3Cpath d='M400,280 Q320,220 200,140 Q100,80 0,40' stroke='%234ade80' stroke-width='10' opacity='0.25'/%3E%3Cpath d='M400,300 Q300,250 160,180 Q60,120 0,100' stroke='%2322c55e' stroke-width='7' opacity='0.2'/%3E%3Cpath d='M400,250 Q340,200 240,130 Q160,80 80,30' stroke='%234ade80' stroke-width='5' opacity='0.2'/%3E%3Cpath d='M400,320 Q280,280 140,240 Q40,210 0,200' stroke='%2322c55e' stroke-width='4' opacity='0.15'/%3E%3C!-- Right canopy branches --%3E%3Cpath d='M400,280 Q480,220 600,140 Q700,80 800,40' stroke='%234ade80' stroke-width='10' opacity='0.25'/%3E%3Cpath d='M400,300 Q500,250 640,180 Q740,120 800,100' stroke='%2322c55e' stroke-width='7' opacity='0.2'/%3E%3Cpath d='M400,250 Q460,200 560,130 Q640,80 720,30' stroke='%234ade80' stroke-width='5' opacity='0.2'/%3E%3Cpath d='M400,320 Q520,280 660,240 Q760,210 800,200' stroke='%2322c55e' stroke-width='4' opacity='0.15'/%3E%3C!-- Left roots --%3E%3Cpath d='M400,380 Q320,450 200,540 Q100,620 0,680' stroke='%23a78bfa' stroke-width='8' opacity='0.2'/%3E%3Cpath d='M400,400 Q280,480 140,580 Q40,650 0,700' stroke='%238b5cf6' stroke-width='6' opacity='0.15'/%3E%3Cpath d='M400,420 Q300,500 180,600 Q80,680 0,750' stroke='%23a78bfa' stroke-width='4' opacity='0.12'/%3E%3C!-- Right roots --%3E%3Cpath d='M400,380 Q480,450 600,540 Q700,620 800,680' stroke='%23a78bfa' stroke-width='8' opacity='0.2'/%3E%3Cpath d='M400,400 Q520,480 660,580 Q760,650 800,700' stroke='%238b5cf6' stroke-width='6' opacity='0.15'/%3E%3Cpath d='M400,420 Q500,500 620,600 Q720,680 800,750' stroke='%23a78bfa' stroke-width='4' opacity='0.12'/%3E%3C!-- Center root --%3E%3Cpath d='M400,380 Q400,500 400,650' stroke='%23a78bfa' stroke-width='6' opacity='0.15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Subtle glow in center */
+.tree-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse at center 45%, rgba(251, 146, 60, 0.1) 0%, transparent 30%),
+    radial-gradient(ellipse at center, rgba(74, 222, 128, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tree-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;
+  min-height: 600px;
+  margin: 0 auto;
+  padding: 0 20px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Radial Tree Container */
+.yggdrasil-radial {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main SVG Tree */
+.tree-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tree-svg path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ============================================
+   CENTRAL CORE - Burn Engine
+   ============================================ */
+
+.tree-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  z-index: var(--z-elevated);
+  cursor: pointer;
+  transition: transform var(--duration-normal) ease;
+}
+
+.tree-core:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.tree-core .core-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 107, 0, 0.6) 0%,
+    rgba(255, 69, 0, 0.3) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: coreGlowPulse 3s ease-in-out infinite;
+}
+
+@keyframes coreGlowPulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+.tree-core .core-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  border: 3px solid #d4af37;
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px rgba(212, 175, 55, 0.5),
+    inset 0 0 20px rgba(255, 107, 0, 0.3);
+}
+
+.tree-core .core-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(circle at 30% 30%, #2a1a0a 0%, #1a0f05 100%);
+  border: 2px solid #b8860b;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 30px rgba(255, 107, 0, 0.6),
+    inset 0 0 15px rgba(255, 107, 0, 0.2);
+}
+
+.tree-core .core-icon {
+  font-size: var(--text-2xl);
+  filter: drop-shadow(0 0 8px rgba(255, 107, 0, 0.8));
+}
+
+.tree-core .core-label {
+  font-size: 8px;
+  font-weight: var(--font-bold);
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.tree-core .core-runes {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: runesRotate 60s linear infinite;
+}
+
+.tree-core .core-runes span {
+  position: absolute;
+  font-size: 10px;
+  color: #d4af37;
+  text-shadow: 0 0 8px #d4af37;
+  opacity: 0.7;
+}
+
+.tree-core .core-runes span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-core .core-runes span:nth-child(2) {
+  top: 15%;
+  right: 15%;
+}
+.tree-core .core-runes span:nth-child(3) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+.tree-core .core-runes span:nth-child(4) {
+  bottom: 15%;
+  right: 15%;
+}
+.tree-core .core-runes span:nth-child(5) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-core .core-runes span:nth-child(6) {
+  bottom: 15%;
+  left: 15%;
+}
+.tree-core .core-runes span:nth-child(7) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.tree-core .core-runes span:nth-child(8) {
+  top: 15%;
+  left: 15%;
+}
+
+@keyframes runesRotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ============================================
+   PROJECT NODES - At Branch Ends
+   ============================================ */
+
+.tree-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: var(--z-content);
+  cursor: pointer;
+  transition: transform var(--duration-normal) ease;
+}
+
+.tree-node:hover {
+  transform: scale(1.15);
+  z-index: var(--z-elevated);
+}
+
+.tree-node .node-glow {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(10px);
+  animation: nodeGlow 4s ease-in-out infinite;
+  z-index: -1;
+}
+
+.tree-node .node-glow.live {
+  background: rgba(34, 197, 94, 0.5);
+}
+.tree-node .node-glow.building {
+  background: rgba(234, 88, 12, 0.5);
+}
+.tree-node .node-glow.planned {
+  background: rgba(168, 85, 247, 0.4);
+}
+
+@keyframes nodeGlow {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+.tree-node .node-medallion {
+  width: 45px;
+  height: 45px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(40, 40, 50, 0.95) 0%,
+    rgba(20, 20, 30, 1) 100%
+  );
+  border: 2px solid #d4af37;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+  transition: all var(--duration-normal) ease;
+}
+
+.tree-node:hover .node-medallion {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.8);
+  border-color: #ffd700;
+}
+
+.tree-node[data-status='live'] .node-medallion {
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+}
+
+.tree-node[data-status='building'] .node-medallion {
+  box-shadow: 0 0 15px rgba(234, 88, 12, 0.5);
+}
+
+.tree-node[data-status='planned'] .node-medallion {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  opacity: 0.8;
+}
+
+.tree-node .node-icon {
+  font-size: var(--text-lg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.tree-node .node-label {
+  margin-top: var(--space-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-2xs);
+  font-weight: var(--font-bold);
+  color: var(--text-cream);
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+}
+
+/* ============================================
+   NODE POSITIONS - Matching SVG branch ends
+   ============================================ */
+
+/* Top - Ecosystem */
+.tree-node.top-center {
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-node.top-center:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* Upper Left - Community */
+.tree-node.upper-left {
+  top: 18%;
+  left: 15%;
+}
+
+/* Upper Right - HolDEX */
+.tree-node.upper-right {
+  top: 18%;
+  right: 15%;
+}
+
+/* Mid Left - Learn */
+.tree-node.mid-left {
+  top: 32%;
+  left: 5%;
+}
+
+/* Mid Right - Oracle */
+.tree-node.mid-right {
+  top: 32%;
+  right: 5%;
+}
+
+/* Lower Left - Burn Tracker */
+.tree-node.lower-left {
+  top: 75%;
+  left: 8%;
+}
+
+/* Lower Right - RPC Monitor */
+.tree-node.lower-right {
+  top: 75%;
+  right: 8%;
+}
+
+/* Bottom Left - Launcher */
+.tree-node.bottom-left {
+  top: 88%;
+  left: 16%;
+}
+
+/* Bottom Center - Security */
+.tree-node.bottom-center {
+  top: 95%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tree-node.bottom-center:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* Bottom Right - Games */
+.tree-node.bottom-right {
+  top: 88%;
+  right: 16%;
+}
+
+/* ============================================
+   LEGACY STYLES (kept for compatibility)
+   ============================================ */
+
+.level-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 5px;
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  white-space: nowrap;
+  z-index: var(--z-content);
+}
+
+/* Realms Row */
+.realms-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg) 0;
+  gap: var(--space-lg);
+}
+
+/* Individual Realm (Medallion Style - Norse Reference) */
+.realm {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+  z-index: var(--z-content);
+}
+
+.realm:hover {
+  transform: scale(1.15);
+}
+
+.realm:hover .realm-medallion {
+  box-shadow: 0 0 50px var(--realm-color, var(--accent-fire));
+}
+
+.realm:hover .realm-outer-ring {
+  animation-duration: 8s;
+}
+
+/* Realm Glow Effect - Nebula style */
+.realm-glow {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: realmPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(15px);
+}
+
+.realm-glow.live {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.5) 0%, transparent 70%);
+}
+
+.realm-glow.building {
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.5) 0%, transparent 70%);
+}
+
+.realm-glow.planned {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+}
+
+/* Realm-specific nebula colors */
+.realm[data-realm='asgard'] .realm-glow {
+  background: radial-gradient(circle, rgba(192, 192, 192, 0.5) 0%, transparent 70%);
+}
+.realm[data-realm='vanaheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, transparent 70%);
+}
+.realm[data-realm='alfheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, transparent 70%);
+}
+.realm[data-realm='niflheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+}
+.realm[data-realm='muspelheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, transparent 70%);
+}
+.realm[data-realm='jotunheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, transparent 70%);
+}
+.realm[data-realm='nidavellir'] .realm-glow {
+  background: radial-gradient(circle, rgba(161, 98, 7, 0.4) 0%, transparent 70%);
+}
+.realm[data-realm='helheim'] .realm-glow {
+  background: radial-gradient(circle, rgba(100, 116, 139, 0.4) 0%, transparent 70%);
+}
+
+@keyframes realmPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+/* Realm Runes - Positioned in circle around medallion */
+.realm-runes {
+  position: absolute;
+  width: 65px;
+  height: 65px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: runesRotate 40s linear infinite;
+  z-index: 3;
+}
+
+.realm-runes span {
+  position: absolute;
+  font-size: 8px;
+  color: var(--nordic-gold);
+  text-shadow: 0 0 6px var(--nordic-gold);
+  opacity: 0.7;
+}
+
+/* Position runes in a circle (8 positions, 45° apart) */
+.realm-runes span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.realm-runes span:nth-child(2) {
+  top: 14%;
+  right: 14%;
+}
+.realm-runes span:nth-child(3) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+.realm-runes span:nth-child(4) {
+  bottom: 14%;
+  right: 14%;
+}
+.realm-runes span:nth-child(5) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.realm-runes span:nth-child(6) {
+  bottom: 14%;
+  left: 14%;
+}
+.realm-runes span:nth-child(7) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.realm-runes span:nth-child(8) {
+  top: 14%;
+  left: 14%;
+}
+
+@keyframes runesRotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Realm Medallion - Main circular element */
+.realm-medallion {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(60, 60, 80, 0.9) 0%,
+    rgba(30, 30, 50, 0.95) 50%,
+    rgba(20, 20, 35, 1) 100%
+  );
+  border: 2px solid rgba(212, 175, 55, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all var(--duration-normal) ease;
+  box-shadow:
+    0 0 15px rgba(0, 0, 0, 0.8),
+    inset 0 0 15px rgba(0, 0, 0, 0.5),
+    inset 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Inner decorative ring */
+.realm-medallion::before {
+  content: '';
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 1px dashed rgba(212, 175, 55, 0.3);
+  animation: innerRingRotate 15s linear infinite reverse;
+}
+
+/* Realm-specific border colors */
+.realm[data-realm='asgard'] .realm-medallion {
+  border-color: rgba(192, 192, 192, 0.8);
+  --realm-color: #c0c0c0;
+}
+.realm[data-realm='vanaheim'] .realm-medallion {
+  border-color: rgba(236, 72, 153, 0.8);
+  --realm-color: #ec4899;
+}
+.realm[data-realm='alfheim'] .realm-medallion {
+  border-color: rgba(147, 51, 234, 0.8);
+  --realm-color: #9333ea;
+}
+.realm[data-realm='niflheim'] .realm-medallion {
+  border-color: rgba(59, 130, 246, 0.8);
+  --realm-color: #3b82f6;
+}
+.realm[data-realm='midgard'] .realm-medallion {
+  border-color: rgba(234, 88, 12, 0.9);
+  --realm-color: #ea580c;
+}
+.realm[data-realm='muspelheim'] .realm-medallion {
+  border-color: rgba(239, 68, 68, 0.8);
+  --realm-color: #ef4444;
+}
+.realm[data-realm='jotunheim'] .realm-medallion {
+  border-color: rgba(251, 191, 36, 0.8);
+  --realm-color: #fbbf24;
+}
+.realm[data-realm='nidavellir'] .realm-medallion {
+  border-color: rgba(161, 98, 7, 0.8);
+  --realm-color: #a16207;
+}
+.realm[data-realm='helheim'] .realm-medallion {
+  border-color: rgba(100, 116, 139, 0.8);
+  --realm-color: #64748b;
+}
+
+.realm[data-status='live'] .realm-medallion {
+  box-shadow:
+    0 0 25px rgba(34, 197, 94, 0.4),
+    inset 0 0 15px rgba(34, 197, 94, 0.1);
+}
+
+.realm[data-status='building'] .realm-medallion {
+  box-shadow:
+    0 0 25px rgba(234, 88, 12, 0.4),
+    inset 0 0 15px rgba(234, 88, 12, 0.1);
+}
+
+.realm[data-status='planned'] .realm-medallion {
+  box-shadow:
+    0 0 25px rgba(168, 85, 247, 0.3),
+    inset 0 0 15px rgba(168, 85, 247, 0.1);
+  opacity: 0.85;
+}
+
+/* Realm Rune Icon (center) */
+.realm-icon {
+  font-size: var(--text-lg);
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Realm Name - Below medallion */
+.realm-name {
+  margin-top: var(--space-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-2xs);
+  font-weight: var(--font-bold);
+  color: var(--text-cream);
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-normal);
+}
+
+/* ============================================
+   MIDGARD - CORE REALM (Burn Engine)
+   The Heart of Yggdrasil
+   ============================================ */
+
+.tree-level.midgard {
+  padding: 8px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.core-realm {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+}
+
+.core-realm:hover {
+  transform: scale(1.08);
+}
+
+.core-realm:hover .core-medallion {
+  box-shadow:
+    0 0 80px rgba(234, 88, 12, 0.8),
+    0 0 120px rgba(234, 88, 12, 0.4),
+    inset 0 0 40px rgba(234, 88, 12, 0.3);
+}
+
+/* Outer rotating ring with runes */
+.core-outer-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid rgba(234, 88, 12, 0.6);
+  border-radius: 50%;
+  animation: outerRingRotate 25s linear infinite;
+}
+
+/* Runic markers on outer ring */
+.core-outer-ring::before,
+.core-outer-ring::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--accent-bright);
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--accent-fire);
+}
+
+.core-outer-ring::before {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.core-outer-ring::after {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes outerRingRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Inner rotating ring */
+.core-inner-ring {
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  top: 7.5%;
+  left: 7.5%;
+  border: 2px dashed rgba(251, 146, 60, 0.5);
+  border-radius: 50%;
+  animation: innerRingRotate 18s linear infinite reverse;
+}
+
+@keyframes innerRingRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Core glow - pulsing fire effect */
+.core-glow {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(
+    circle,
+    rgba(234, 88, 12, 0.5) 0%,
+    rgba(234, 88, 12, 0.2) 30%,
+    transparent 60%
+  );
+  animation: coreGlow 3s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(10px);
+}
+
+@keyframes coreGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* Main medallion */
+.core-medallion {
+  position: absolute;
+  width: 65%;
+  height: 65%;
+  top: 17.5%;
+  left: 17.5%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(80, 40, 20, 0.95) 0%,
+    rgba(40, 20, 10, 0.98) 50%,
+    rgba(30, 15, 8, 1) 100%
+  );
+  border: 4px solid var(--accent-fire);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow:
+    0 0 60px rgba(234, 88, 12, 0.6),
+    0 0 100px rgba(234, 88, 12, 0.3),
+    inset 0 0 30px rgba(234, 88, 12, 0.3),
+    inset 0 2px 10px rgba(255, 200, 150, 0.2);
+  z-index: 5;
+}
+
+/* Inner decorative border */
+.core-medallion::before {
+  content: '';
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 146, 60, 0.4);
+}
+
+.core-icon {
+  font-size: 22px;
+  animation: flicker 2s infinite;
+  filter: drop-shadow(0 0 8px rgba(234, 88, 12, 0.8));
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+  75% {
+    opacity: 0.95;
+  }
+}
+
+.core-name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--accent-bright);
+  text-align: center;
+  text-shadow: 0 0 8px rgba(234, 88, 12, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Floating runes around core */
+.core-runes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  animation: coreRunesRotate 35s linear infinite;
+}
+
+@keyframes coreRunesRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.core-runes span {
+  position: absolute;
+  font-size: 10px;
+  color: var(--nordic-gold);
+  text-shadow: 0 0 10px var(--nordic-gold);
+  opacity: 0.8;
+}
+
+.core-runes span:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.core-runes span:nth-child(2) {
+  top: 14%;
+  right: 14%;
+}
+.core-runes span:nth-child(3) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+.core-runes span:nth-child(4) {
+  bottom: 14%;
+  right: 14%;
+}
+.core-runes span:nth-child(5) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.core-runes span:nth-child(6) {
+  bottom: 14%;
+  left: 14%;
+}
+.core-runes span:nth-child(7) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+.core-runes span:nth-child(8) {
+  top: 14%;
+  left: 14%;
+}
+
+/* ============================================
+   SVG BRANCHES - Cyan/Teal geometric style
+   Inspired by second reference image
+   ============================================ */
+
+.tree-branches {
+  position: relative;
+  height: 25px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  z-index: 8;
+}
+
+.tree-branches svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Golden organic branches - Main style */
+.branch-golden {
+  fill: none;
+  stroke: url(#goldenBranchGradient);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+  opacity: 0.9;
+}
+
+.branch-golden.thin {
+  stroke-width: 1.2;
+  opacity: 0.5;
+}
+
+.branch-golden.root {
+  stroke: url(#goldenRootGradient);
+  filter: drop-shadow(0 0 3px rgba(161, 98, 7, 0.5));
+  opacity: 0.8;
+}
+
+.branch-golden.root.thin {
+  stroke-width: 1.2;
+  opacity: 0.45;
+}
+
+/* Legacy cyan branches (keep for compatibility) */
+.branch-path {
+  fill: none;
+  stroke: url(#branchGradient);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6));
+  opacity: 0.9;
+}
+
+.branch-path.root {
+  stroke: url(#rootGradient);
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+/* Branch glow nodes */
+.branch-node {
+  fill: rgba(212, 175, 55, 0.8);
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.8));
+}
+
+.branch-node.root {
+  fill: rgba(161, 98, 7, 0.8);
+  filter: drop-shadow(0 0 6px rgba(161, 98, 7, 0.8));
+}
+
+/* ============================================
+   TREE LEVELS - Norse Mythology Layout
+   ============================================ */
+
+/* Asgard - Top of the tree */
+.tree-level.asgard {
+  padding: 5px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.tree-level.asgard .realm {
+  transform: scale(1);
+}
+
+/* Upper Realms - Vanaheim, Alfheim, Niflheim */
+.tree-level.upper-realms {
+  padding: 3px 0;
+}
+
+/* Lower Realms - Muspelheim, Jotunheim */
+.tree-level.lower-realms {
+  padding: 3px 0;
+}
+
+/* Nidavellir/Svartalfheim - Dwarven forges */
+.tree-level.nidavellir {
+  padding: 3px 0;
+}
+
+/* Helheim - Bottom */
+.tree-level.helheim {
+  padding: 5px 0 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.tree-level.helheim .realm {
+  transform: scale(0.9);
+  opacity: 0.85;
+}
+
+/* Realms Row Layouts */
+.realms-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 0;
+}
+
+.realms-row.three-realms {
+  justify-content: space-between;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.realms-row.two-realms {
+  justify-content: center;
+  gap: 100px;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+/* Root realm styling */
+.realm.root .realm-medallion {
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(50, 50, 70, 0.9) 0%,
+    rgba(30, 30, 45, 0.95) 50%,
+    rgba(20, 20, 30, 1) 100%
+  );
+}
+
+/* Tree trunk positioning adjustments */
+.yggdrasil-tree {
+  position: relative;
+  min-height: auto;
+}
+
+.yggdrasil-tree .tree-trunk {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  bottom: 40px;
+}
+
+/* Golden branch animation */
+@keyframes goldenBranchPulse {
+  0%,
+  100% {
+    stroke-opacity: 0.75;
+    filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.4));
+  }
+  50% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+  }
+}
+
+.branch-golden {
+  animation: goldenBranchPulse 5s ease-in-out infinite;
+}
+
+.branch-golden:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.branch-golden:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.branch-golden:nth-child(4) {
+  animation-delay: 0.9s;
+}
+
+.branch-golden:nth-child(5) {
+  animation-delay: 1.2s;
+}
+
+/* Golden root animation */
+@keyframes goldenRootPulse {
+  0%,
+  100% {
+    stroke-opacity: 0.6;
+    filter: drop-shadow(0 0 3px rgba(161, 98, 7, 0.3));
+  }
+  50% {
+    stroke-opacity: 0.85;
+    filter: drop-shadow(0 0 8px rgba(161, 98, 7, 0.5));
+  }
+}
+
+.branch-golden.root {
+  animation: goldenRootPulse 6s ease-in-out infinite;
+}
+
+/* Legacy cyan animation */
+@keyframes branchPulse {
+  0%,
+  100% {
+    stroke-opacity: 0.7;
+    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.5));
+  }
+  50% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.8));
+  }
+}
+
+.branch-path {
+  animation: branchPulse 4s ease-in-out infinite;
+}
+
+.branch-path:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.branch-path:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes rootPulse {
+  0%,
+  100% {
+    stroke-opacity: 0.6;
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+  }
+  50% {
+    stroke-opacity: 0.9;
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.6));
+  }
+}
+
+.branch-path.root {
+  animation: rootPulse 5s ease-in-out infinite;
+}
+
+/* Realm hover lift effect */
+.realm:hover {
+  z-index: 20;
+}
+
+.realm:hover .realm-glow {
+  animation-duration: 1.5s;
+  filter: blur(15px);
+}
