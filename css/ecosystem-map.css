@@ -683,6 +683,39 @@ body::before {
   }
 }
 
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-container {
+    min-height: 300px;
+    height: calc(100vh - 200px);
+  }
+
+  .controls {
+    padding: 1rem;
+  }
+
+  .search-input {
+    font-size: 0.875rem;
+  }
+
+  .view-toggle {
+    flex-wrap: wrap;
+  }
+
+  .view-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .graph-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
 /* ============================================
    VIEW TOGGLE + GRAPH
    ============================================ */
