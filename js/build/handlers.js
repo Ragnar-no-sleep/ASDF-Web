@@ -7,12 +7,12 @@
 
 'use strict';
 
-import { EVENTS, SELECTORS, STATES } from './config.js';
+import { SELECTORS } from './config.js';
 import { BuildState } from './state.js';
 import { DataAdapter } from './data/adapter.js';
 import { ModalFactory } from './components/modal.js';
 import { TreeComponent } from './components/tree.js';
-import { $, $$, addClass, removeClass, on, delegate } from './utils/dom.js';
+import { $$, addClass, removeClass, on, delegate } from './utils/dom.js';
 
 // ============================================
 // HANDLER CHAIN
@@ -258,7 +258,7 @@ const KeyboardHandler = {
   },
 
   handle(type, data) {
-    const { key, ctrlKey, shiftKey, altKey } = data;
+    const { key, ctrlKey, shiftKey } = data;
 
     // Escape - close modals
     if (key === 'Escape') {
@@ -280,7 +280,6 @@ const KeyboardHandler = {
 
     // ? - show help (future)
     if (key === '?' && shiftKey) {
-      console.log('[Keyboard] Help requested');
       return true;
     }
 
@@ -297,7 +296,7 @@ const DeepLinkHandler = {
     return type === 'deeplink:init' || type === 'deeplink:change';
   },
 
-  handle(type, data) {
+  handle(_type, _data) {
     const hash = window.location.hash.replace('#', '');
     if (!hash) return false;
 
@@ -381,8 +380,6 @@ const EventHandlers = {
 
     // Initial deep link processing
     processEvent('deeplink:init', {});
-
-    console.log('[EventHandlers] Initialized with', handlerChain.length, 'handlers');
   },
 
   /**

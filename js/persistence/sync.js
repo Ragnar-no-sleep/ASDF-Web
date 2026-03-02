@@ -24,7 +24,7 @@
  * @module persistence/sync
  */
 
-import { redis, REDIS_EVENTS } from '../core/redis-client.js';
+import { redis } from '../core/redis-client.js';
 import { eventBus, EVENTS } from '../core/event-bus.js';
 import { createLogger } from '../core/debug.js';
 
@@ -37,13 +37,13 @@ const log = createLogger('Sync');
 const SYNC_CONFIG = {
   cachePrefix: 'asdf_',
   // Fibonacci-based background sync interval (ms)
-  backgroundSyncInterval: 21000,  // 21 seconds
+  backgroundSyncInterval: 21000, // 21 seconds
   // Fibonacci-based retry delays (ms)
   retryDelays: [1000, 1000, 2000, 3000, 5000, 8000, 13000],
   // Maximum retry attempts before dropping
   maxRetries: 5,
   // Queue storage key
-  queueKey: 'asdf_sync_queue'
+  queueKey: 'asdf_sync_queue',
 };
 
 // ============================================
@@ -109,7 +109,6 @@ class SyncManager {
 
       log.debug(`Redis write: ${key}`);
       eventBus.emit(EVENTS.PROGRESS_SYNCED, { key });
-
     } catch (error) {
       log.warn(`Redis write failed: ${key} - ${error.message}`);
 
@@ -137,7 +136,7 @@ class SyncManager {
           // Update localStorage cache
           try {
             localStorage.setItem(cacheKey, redisValue);
-          } catch (e) {
+          } catch (_e) {
             // Ignore localStorage errors
           }
 
@@ -172,7 +171,7 @@ class SyncManager {
     // Remove from localStorage
     try {
       localStorage.removeItem(cacheKey);
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
 
@@ -180,7 +179,7 @@ class SyncManager {
     if (this.online) {
       try {
         await redis.del(key);
-      } catch (error) {
+      } catch (_error) {
         log.warn(`Redis delete failed: ${key}`);
       }
     }
@@ -229,7 +228,7 @@ class SyncManager {
     return {
       pending: this.queue.length,
       syncing: this.syncing,
-      online: this.online
+      online: this.online,
     };
   }
 
@@ -285,7 +284,7 @@ class SyncManager {
         value,
         options,
         attempts: this.queue[existing].attempts,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     } else {
       // Add new entry
@@ -294,7 +293,7 @@ class SyncManager {
         value,
         options,
         attempts: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -329,7 +328,6 @@ class SyncManager {
 
       log.debug(`Synced from queue: ${item.key}`);
       eventBus.emit(EVENTS.PROGRESS_SYNCED, { key: item.key, fromQueue: true });
-
     } catch (error) {
       log.warn(`Queue sync failed: ${item.key} (attempt ${item.attempts})`);
 
@@ -342,7 +340,7 @@ class SyncManager {
         eventBus.emit(EVENTS.PROGRESS_CONFLICT, {
           key: item.key,
           error: error.message,
-          dropped: true
+          dropped: true,
         });
       }
     }
@@ -351,9 +349,8 @@ class SyncManager {
 
     // Process next item if any
     if (this.queue.length > 0) {
-      const delay = this.config.retryDelays[
-        Math.min(item.attempts, this.config.retryDelays.length - 1)
-      ];
+      const delay =
+        this.config.retryDelays[Math.min(item.attempts, this.config.retryDelays.length - 1)];
       setTimeout(() => this._processQueue(), delay);
     }
   }
@@ -368,7 +365,7 @@ class SyncManager {
         this.queue = JSON.parse(saved);
         log.debug(`Loaded ${this.queue.length} pending items from queue`);
       }
-    } catch (e) {
+    } catch (_e) {
       this.queue = [];
     }
   }
@@ -379,7 +376,7 @@ class SyncManager {
   _saveQueue() {
     try {
       localStorage.setItem(this.config.queueKey, JSON.stringify(this.queue));
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
   }

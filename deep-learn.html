@@ -1,697 +1,1104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Deep Learn ASDF — The Complete Guide</title>
-    <meta name="description" content="Complete guide to ASDF ecosystem. K-Score mechanics, phi philosophy, burn mechanisms, and building on ASDF.">
+    <meta
+      name="description"
+      content="Complete guide to ASDF ecosystem. K-Score mechanics, phi philosophy, burn mechanisms, and building on ASDF."
+    />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Deep Learn ASDF - The Complete Guide">
-    <meta property="og:description" content="Master the Optimistic Burn Protocol. K-Score, Phi ratios, This is Fine philosophy.">
-    <meta property="og:image" content="https://alonisthe.dev/og-learn.png">
+    <meta property="og:title" content="Deep Learn ASDF - The Complete Guide" />
+    <meta
+      property="og:description"
+      content="Master the Optimistic Burn Protocol. K-Score, Phi ratios, This is Fine philosophy."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-learn.png" />
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Deep Learn ASDF - The Complete Guide">
-    <meta name="twitter:description" content="Master the Optimistic Burn Protocol. K-Score, Phi ratios, This is Fine philosophy.">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Deep Learn ASDF - The Complete Guide" />
+    <meta
+      name="twitter:description"
+      content="Master the Optimistic Burn Protocol. K-Score, Phi ratios, This is Fine philosophy."
+    />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server.cjs - no meta tag needed -->
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Design System -->
-    <link rel="stylesheet" href="css/system.css">
-    <link rel="stylesheet" href="css/deep-learn.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/system.css" />
+    <link rel="stylesheet" href="css/deep-learn.css" />
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Main Layout -->
     <div class="deep-layout">
-        <!-- Sidebar -->
-        <aside class="deep-sidebar" id="deepSidebar">
-            <!-- Navigation Panel -->
-            <div class="sidebar-panel">
-                <div class="sidebar-title">Sections</div>
-                <nav class="nav-items" role="tablist" aria-label="Content sections">
-                    <button class="nav-item active" data-view="overview" role="tab" aria-selected="true" aria-controls="view-overview">
-                        <span class="nav-icon" aria-hidden="true">&#128293;</span>
-                        <span>Overview</span>
-                    </button>
-                    <button class="nav-item" data-view="mechanism" role="tab" aria-selected="false" aria-controls="view-mechanism">
-                        <span class="nav-icon" aria-hidden="true">&#9881;</span>
-                        <span>The Mechanism</span>
-                    </button>
-                    <button class="nav-item" data-view="philosophy" role="tab" aria-selected="false" aria-controls="view-philosophy">
-                        <span class="nav-icon" aria-hidden="true">&#128021;</span>
-                        <span>Philosophy</span>
-                    </button>
-                    <button class="nav-item" data-view="kscore" role="tab" aria-selected="false" aria-controls="view-kscore">
-                        <span class="nav-icon" aria-hidden="true">&#128200;</span>
-                        <span>K-Score</span>
-                    </button>
-                    <button class="nav-item" data-view="ecosystem" role="tab" aria-selected="false" aria-controls="view-ecosystem">
-                        <span class="nav-icon" aria-hidden="true">&#127793;</span>
-                        <span>Ecosystem</span>
-                    </button>
-                    <button class="nav-item" data-view="faq" role="tab" aria-selected="false" aria-controls="view-faq">
-                        <span class="nav-icon" aria-hidden="true">&#10067;</span>
-                        <span>FAQ & Glossary</span>
-                    </button>
-                </nav>
+      <!-- Sidebar -->
+      <aside class="deep-sidebar" id="deepSidebar">
+        <!-- Navigation Panel -->
+        <div class="sidebar-panel">
+          <div class="sidebar-title">Sections</div>
+          <nav class="nav-items" role="tablist" aria-label="Content sections">
+            <button
+              class="nav-item active"
+              data-view="overview"
+              role="tab"
+              aria-selected="true"
+              aria-controls="view-overview"
+            >
+              <span class="nav-icon" aria-hidden="true">&#128293;</span>
+              <span>Overview</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="mechanism"
+              role="tab"
+              aria-selected="false"
+              aria-controls="view-mechanism"
+            >
+              <span class="nav-icon" aria-hidden="true">&#9881;</span>
+              <span>The Mechanism</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="philosophy"
+              role="tab"
+              aria-selected="false"
+              aria-controls="view-philosophy"
+            >
+              <span class="nav-icon" aria-hidden="true">&#128021;</span>
+              <span>Philosophy</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="kscore"
+              role="tab"
+              aria-selected="false"
+              aria-controls="view-kscore"
+            >
+              <span class="nav-icon" aria-hidden="true">&#128200;</span>
+              <span>K-Score</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="ecosystem"
+              role="tab"
+              aria-selected="false"
+              aria-controls="view-ecosystem"
+            >
+              <span class="nav-icon" aria-hidden="true">&#127793;</span>
+              <span>Ecosystem</span>
+            </button>
+            <button
+              class="nav-item"
+              data-view="faq"
+              role="tab"
+              aria-selected="false"
+              aria-controls="view-faq"
+            >
+              <span class="nav-icon" aria-hidden="true">&#10067;</span>
+              <span>FAQ & Glossary</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="sidebar-panel">
+          <div class="sidebar-title">Live Stats</div>
+          <div class="quick-stats">
+            <div class="quick-stat">
+              <div class="quick-stat-value" id="sidebar-burned">--</div>
+              <div class="quick-stat-label">Burned</div>
             </div>
-
-            <!-- Quick Stats -->
-            <div class="sidebar-panel">
-                <div class="sidebar-title">Live Stats</div>
-                <div class="quick-stats">
-                    <div class="quick-stat">
-                        <div class="quick-stat-value" id="sidebar-burned">--</div>
-                        <div class="quick-stat-label">Burned</div>
-                    </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-value" id="sidebar-cycles">--</div>
-                        <div class="quick-stat-label">Cycles</div>
-                    </div>
-                </div>
-                <a href="/burns" class="btn btn-secondary" style="width: 100%; margin-top: var(--space-4); font-size: var(--text-sm);">View Burns</a>
+            <div class="quick-stat">
+              <div class="quick-stat-value" id="sidebar-cycles">--</div>
+              <div class="quick-stat-label">Cycles</div>
             </div>
+          </div>
+          <a
+            href="/burns"
+            class="btn btn-secondary"
+            style="width: 100%; margin-top: var(--space-4); font-size: var(--text-sm)"
+            >View Burns</a
+          >
+        </div>
+      </aside>
 
-        </aside>
+      <!-- Main Content -->
+      <main class="deep-content" id="main-content">
+        <!-- Hero -->
+        <div class="deep-hero">
+          <div class="deep-hero-badge">
+            <span>&#128214;</span>
+            Complete Guide
+          </div>
+          <h1>Deep Learn ASDF</h1>
+          <p class="deep-hero-pitch">
+            <strong style="color: var(--accent)"
+              >Trading fees buy tokens. Bought tokens get burned. Supply goes down.</strong
+            ><br />
+            THIS IS FINE.
+          </p>
+          <a href="/story" class="deep-hero-learn-link"
+            >New here? Start with the interactive journey &#8594;</a
+          >
+        </div>
 
-        <!-- Main Content -->
-        <main class="deep-content" id="main-content">
-            <!-- Hero -->
-            <div class="deep-hero">
-                <div class="deep-hero-badge">
-                    <span>&#128214;</span>
-                    Complete Guide
-                </div>
-                <h1>Deep Learn ASDF</h1>
-                <p class="deep-hero-pitch">
-                    <strong style="color: var(--accent);">Trading fees buy tokens. Bought tokens get burned. Supply goes down.</strong><br>
-                    THIS IS FINE.
-                </p>
-                <a href="/story" class="deep-hero-learn-link">New here? Start with the interactive journey &#8594;</a>
-            </div>
+        <!-- Section Tabs -->
+        <div class="section-tabs">
+          <button class="section-tab active" data-view="overview">Overview</button>
+          <button class="section-tab" data-view="mechanism">Mechanism</button>
+          <button class="section-tab" data-view="philosophy">Philosophy</button>
+          <button class="section-tab" data-view="kscore">K-Score</button>
+          <button class="section-tab" data-view="ecosystem">Ecosystem</button>
+          <button class="section-tab" data-view="faq">FAQ</button>
+        </div>
 
-            <!-- Section Tabs -->
-            <div class="section-tabs">
-                <button class="section-tab active" data-view="overview">Overview</button>
-                <button class="section-tab" data-view="mechanism">Mechanism</button>
-                <button class="section-tab" data-view="philosophy">Philosophy</button>
-                <button class="section-tab" data-view="kscore">K-Score</button>
-                <button class="section-tab" data-view="ecosystem">Ecosystem</button>
-                <button class="section-tab" data-view="faq">FAQ</button>
-            </div>
-
-            <!-- ================================
+        <!-- ================================
                  SECTION: OVERVIEW
                  ================================ -->
-            <div class="view-section active" id="view-overview">
-                <div class="content-block">
-                    <h2>&#128293; What is ASDF?</h2>
-                    <p>ASDF is a <strong>deflationary token</strong> on Solana. Every trade generates fees that automatically buy back and burn tokens - permanently reducing supply.</p>
+        <div class="view-section active" id="view-overview">
+          <div class="content-block">
+            <h2>&#128293; What is ASDF?</h2>
+            <p>
+              ASDF is a <strong>deflationary token</strong> on Solana. Every trade generates fees
+              that automatically buy back and burn tokens - permanently reducing supply.
+            </p>
 
-                    <div class="highlight-box">
-                        <strong>The Pitch in One Sentence:</strong> Trading fees buy tokens. Bought tokens get burned. Supply goes down. THIS IS FINE.
-                    </div>
-
-                    <p>You know the "This is Fine" meme - the dog sitting in a burning room. That's our mascot and philosophy. In crypto chaos, most tokens pump and dump. ASDF turns the chaos into fuel.</p>
-                </div>
-
-                <div class="content-block">
-                    <h3>&#9889; How It Works (30-Second Version)</h3>
-                    <div class="flywheel">
-                        <div class="flywheel-step">
-                            <div class="flywheel-icon">&#128260;</div>
-                            <div class="flywheel-label">Trade</div>
-                        </div>
-                        <span class="flywheel-arrow">&#8594;</span>
-                        <div class="flywheel-step">
-                            <div class="flywheel-icon">&#128176;</div>
-                            <div class="flywheel-label">Fees</div>
-                        </div>
-                        <span class="flywheel-arrow">&#8594;</span>
-                        <div class="flywheel-step">
-                            <div class="flywheel-icon">&#128722;</div>
-                            <div class="flywheel-label">Buyback</div>
-                        </div>
-                        <span class="flywheel-arrow">&#8594;</span>
-                        <div class="flywheel-step">
-                            <div class="flywheel-icon">&#128293;</div>
-                            <div class="flywheel-label">Burn</div>
-                        </div>
-                        <span class="flywheel-arrow">&#8594;</span>
-                        <div class="flywheel-step">
-                            <div class="flywheel-icon">&#128200;</div>
-                            <div class="flywheel-label">Scarcity</div>
-                        </div>
-                    </div>
-                    <p style="text-align: center; color: var(--text-tertiary); font-style: italic;">More trading &#8594; More fees &#8594; More burns &#8594; Less supply &#8594; More scarcity... repeat.</p>
-                </div>
-
-                <div class="content-block">
-                    <h3>&#128138; Key Numbers</h3>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4);">
-                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
-                            <div id="stat-burned" style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">--</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Already Burned</div>
-                        </div>
-                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">&#966;&#8315;&#185;</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Fee Ratio (61.8%)</div>
-                        </div>
-                        <div style="text-align: center; padding: var(--space-4); background: var(--bg-hover); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-size: var(--text-2xl); color: var(--accent); font-weight: var(--font-bold);">24/7</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-tertiary);">Automated</div>
-                        </div>
-                    </div>
-                    <p style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--space-3); text-align: center;">
-                        &#8594; <a href="/burns" style="color: var(--accent);">Check live burn stats</a>
-                    </p>
-                </div>
-
-                <div class="level-nav">
-                    <div></div>
-                    <button class="btn btn-primary" data-nav-view="mechanism">Learn the Mechanism &#8594;</button>
-                </div>
+            <div class="highlight-box">
+              <strong>The Pitch in One Sentence:</strong> Trading fees buy tokens. Bought tokens get
+              burned. Supply goes down. THIS IS FINE.
             </div>
 
-            <!-- ================================
+            <p>
+              You know the "This is Fine" meme - the dog sitting in a burning room. That's our
+              mascot and philosophy. In crypto chaos, most tokens pump and dump. ASDF turns the
+              chaos into fuel.
+            </p>
+          </div>
+
+          <div class="content-block">
+            <h3>&#9889; How It Works (30-Second Version)</h3>
+            <div class="flywheel">
+              <div class="flywheel-step">
+                <div class="flywheel-icon">&#128260;</div>
+                <div class="flywheel-label">Trade</div>
+              </div>
+              <span class="flywheel-arrow">&#8594;</span>
+              <div class="flywheel-step">
+                <div class="flywheel-icon">&#128176;</div>
+                <div class="flywheel-label">Fees</div>
+              </div>
+              <span class="flywheel-arrow">&#8594;</span>
+              <div class="flywheel-step">
+                <div class="flywheel-icon">&#128722;</div>
+                <div class="flywheel-label">Buyback</div>
+              </div>
+              <span class="flywheel-arrow">&#8594;</span>
+              <div class="flywheel-step">
+                <div class="flywheel-icon">&#128293;</div>
+                <div class="flywheel-label">Burn</div>
+              </div>
+              <span class="flywheel-arrow">&#8594;</span>
+              <div class="flywheel-step">
+                <div class="flywheel-icon">&#128200;</div>
+                <div class="flywheel-label">Scarcity</div>
+              </div>
+            </div>
+            <p style="text-align: center; color: var(--text-tertiary); font-style: italic">
+              More trading &#8594; More fees &#8594; More burns &#8594; Less supply &#8594; More
+              scarcity... repeat.
+            </p>
+          </div>
+
+          <div class="content-block">
+            <h3>&#128138; Key Numbers</h3>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--space-4);
+                margin-top: var(--space-4);
+              "
+            >
+              <div
+                style="
+                  text-align: center;
+                  padding: var(--space-4);
+                  background: var(--bg-hover);
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  id="stat-burned"
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: var(--text-2xl);
+                    color: var(--accent);
+                    font-weight: var(--font-bold);
+                  "
+                >
+                  --
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">
+                  Already Burned
+                </div>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  padding: var(--space-4);
+                  background: var(--bg-hover);
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: var(--text-2xl);
+                    color: var(--accent);
+                    font-weight: var(--font-bold);
+                  "
+                >
+                  &#966;&#8315;&#185;
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">
+                  Fee Ratio (61.8%)
+                </div>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  padding: var(--space-4);
+                  background: var(--bg-hover);
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: var(--text-2xl);
+                    color: var(--accent);
+                    font-weight: var(--font-bold);
+                  "
+                >
+                  24/7
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">Automated</div>
+              </div>
+            </div>
+            <p
+              style="
+                font-size: var(--text-xs);
+                color: var(--text-tertiary);
+                margin-top: var(--space-3);
+                text-align: center;
+              "
+            >
+              &#8594; <a href="/burns" style="color: var(--accent)">Check live burn stats</a>
+            </p>
+          </div>
+
+          <div class="level-nav">
+            <div></div>
+            <button class="btn btn-primary" data-nav-view="mechanism">
+              Learn the Mechanism &#8594;
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================
                  SECTION: MECHANISM
                  ================================ -->
-            <div class="view-section" id="view-mechanism">
-                <div class="content-block">
-                    <h2>&#9881; The Burn Mechanism</h2>
-                    <p>When you "burn" tokens, you send them to an address with no private key. They're gone forever. No one can access them - ever.</p>
-                    <p>Think of it like throwing money into a volcano. When supply decreases while demand stays constant, each remaining token becomes more scarce.</p>
-                    <p style="color: var(--accent);">All burns are on-chain and publicly verifiable on Solscan.</p>
-                </div>
+        <div class="view-section" id="view-mechanism">
+          <div class="content-block">
+            <h2>&#9881; The Burn Mechanism</h2>
+            <p>
+              When you "burn" tokens, you send them to an address with no private key. They're gone
+              forever. No one can access them - ever.
+            </p>
+            <p>
+              Think of it like throwing money into a volcano. When supply decreases while demand
+              stays constant, each remaining token becomes more scarce.
+            </p>
+            <p style="color: var(--accent)">
+              All burns are on-chain and publicly verifiable on Solscan.
+            </p>
+          </div>
 
-                <div class="content-block">
-                    <h3>&#129302; The Daemon</h3>
-                    <p>The "Daemon" is an automated program running 24/7. It's not a person - it's deterministic code that:</p>
-                    <ol style="color: var(--text-secondary); margin-left: var(--space-5);">
-                        <li style="margin-bottom: var(--space-2);">Detects accumulated fees in the treasury</li>
-                        <li style="margin-bottom: var(--space-2);">Collects and consolidates them</li>
-                        <li style="margin-bottom: var(--space-2);">Executes market buys for ASDF (via Jupiter)</li>
-                        <li style="margin-bottom: var(--space-2);">Sends purchased tokens to the burn address</li>
-                        <li style="margin-bottom: var(--space-2);">Logs everything on-chain</li>
-                    </ol>
-                </div>
+          <div class="content-block">
+            <h3>&#129302; The Daemon</h3>
+            <p>
+              The "Daemon" is an automated program running 24/7. It's not a person - it's
+              deterministic code that:
+            </p>
+            <ol style="color: var(--text-secondary); margin-left: var(--space-5)">
+              <li style="margin-bottom: var(--space-2)">
+                Detects accumulated fees in the treasury
+              </li>
+              <li style="margin-bottom: var(--space-2)">Collects and consolidates them</li>
+              <li style="margin-bottom: var(--space-2)">
+                Executes market buys for ASDF (via Jupiter)
+              </li>
+              <li style="margin-bottom: var(--space-2)">
+                Sends purchased tokens to the burn address
+              </li>
+              <li style="margin-bottom: var(--space-2)">Logs everything on-chain</li>
+            </ol>
+          </div>
 
-                <div class="content-block">
-                    <h3>&#128176; External Revenue Source</h3>
-                    <p>Most deflationary tokens take a percentage from each transfer. ASDF is different.</p>
+          <div class="content-block">
+            <h3>&#128176; External Revenue Source</h3>
+            <p>Most deflationary tokens take a percentage from each transfer. ASDF is different.</p>
 
-                    <div class="highlight-box">
-                        <strong>External Revenue:</strong> Burns are funded by creator fees from Pump.fun trading - not from your transfers. This means burns happen regardless of ASDF-specific activity.
-                    </div>
-
-                    <ul style="color: var(--text-secondary); margin-left: var(--space-5); margin-top: var(--space-4);">
-                        <li style="margin-bottom: var(--space-3);">Creator fees fuel buybacks, not developer wallets</li>
-                        <li style="margin-bottom: var(--space-3);">Selling generates burns too - sellers aren't enemies, they're fuel</li>
-                        <li style="margin-bottom: var(--space-3);">Building apps? Your fees contribute to the burn</li>
-                    </ul>
-                </div>
-
-                <div class="level-nav">
-                    <button class="btn btn-secondary" data-nav-view="overview">&#8592; Back</button>
-                    <button class="btn btn-primary" data-nav-view="philosophy">The Philosophy &#8594;</button>
-                </div>
+            <div class="highlight-box">
+              <strong>External Revenue:</strong> Burns are funded by creator fees from Pump.fun
+              trading - not from your transfers. This means burns happen regardless of ASDF-specific
+              activity.
             </div>
 
-            <!-- ================================
+            <ul
+              style="
+                color: var(--text-secondary);
+                margin-left: var(--space-5);
+                margin-top: var(--space-4);
+              "
+            >
+              <li style="margin-bottom: var(--space-3)">
+                Creator fees fuel buybacks, not developer wallets
+              </li>
+              <li style="margin-bottom: var(--space-3)">
+                Selling generates burns too - sellers aren't enemies, they're fuel
+              </li>
+              <li style="margin-bottom: var(--space-3)">
+                Building apps? Your fees contribute to the burn
+              </li>
+            </ul>
+          </div>
+
+          <div class="level-nav">
+            <button class="btn btn-secondary" data-nav-view="overview">&#8592; Back</button>
+            <button class="btn btn-primary" data-nav-view="philosophy">
+              The Philosophy &#8594;
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================
                  SECTION: PHILOSOPHY
                  ================================ -->
-            <div class="view-section" id="view-philosophy">
-                <!-- THIS IS FINE - 3 Layers -->
-                <div class="content-block" style="border-color: var(--accent);">
-                    <h2>&#128021;&#128293; "THIS IS FINE" - Three Layers Deep</h2>
-                    <p>Our mascot isn't just a meme. It's a philosophy with three levels of meaning:</p>
+        <div class="view-section" id="view-philosophy">
+          <!-- THIS IS FINE - 3 Layers -->
+          <div class="content-block" style="border-color: var(--accent)">
+            <h2>&#128021;&#128293; "THIS IS FINE" - Three Layers Deep</h2>
+            <p>Our mascot isn't just a meme. It's a philosophy with three levels of meaning:</p>
 
-                    <div class="layer-card surface" aria-label="Surface level: Acceptance of Chaos">
-                        <div class="layer-label" style="color: var(--text-tertiary);">Surface Level</div>
-                        <div class="layer-title">Acceptance of Chaos</div>
-                        <div class="layer-desc">Crypto markets are wild. Prices swing 50% in a day. Most panic. We accept the chaos as fuel.</div>
-                    </div>
-
-                    <div class="layer-card milieu" aria-label="Milieu level: Anti-Panic Conviction">
-                        <div class="layer-label" style="color: var(--accent);">Milieu</div>
-                        <div class="layer-title">Anti-Panic Conviction</div>
-                        <div class="layer-desc">Diamond hands through volatility. No FOMO, no FUD. The mechanism works regardless of short-term price.</div>
-                    </div>
-
-                    <div class="layer-card profond" aria-label="Deep level: Lucid Irony">
-                        <div class="layer-label" style="color: var(--accent);">Profond (Deep)</div>
-                        <div class="layer-title">Lucid Irony</div>
-                        <div class="layer-desc">We <em>know</em> everything is on fire. We build anyway. With mathematical rigor. With verifiable code. The dog drinks coffee because he understands - and builds through the flames.</div>
-                    </div>
-                </div>
-
-                <!-- PHI PHILOSOPHY -->
-                <div class="content-block" style="background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.05) 100%);">
-                    <h2 style="display: flex; align-items: center; gap: var(--space-3);">
-                        <span class="phi-display">&phi;</span>
-                        The Golden Ratio
-                    </h2>
-                    <p>Every ratio in the ASDF ecosystem is derived from <strong style="color: var(--accent);">&phi; (phi) = 1.618...</strong> - the golden ratio found in nature, from spiral galaxies to seashells.</p>
-
-                    <div class="highlight-box">
-                        <strong>No magic numbers.</strong> When you see 61.8%, it's 1/&phi;. When you see 38.2%, it's 1/&phi;&sup2;. Every parameter has mathematical elegance - not arbitrary human decisions.
-                    </div>
-
-                    <div class="phi-grid">
-                        <div class="phi-item">
-                            <div class="phi-formula">1/&phi;</div>
-                            <div class="phi-value">61.8%</div>
-                            <div class="phi-label">Primary ratio</div>
-                        </div>
-                        <div class="phi-item">
-                            <div class="phi-formula">1/&phi;&sup2;</div>
-                            <div class="phi-value">38.2%</div>
-                            <div class="phi-label">Secondary ratio</div>
-                        </div>
-                        <div class="phi-item">
-                            <div class="phi-formula">1/&phi;&sup3;</div>
-                            <div class="phi-value">23.6%</div>
-                            <div class="phi-label">Tertiary ratio</div>
-                        </div>
-                        <div class="phi-item">
-                            <div class="phi-formula">&phi;&sup2;</div>
-                            <div class="phi-value">2.618</div>
-                            <div class="phi-label">Builder multiplier</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BUILD > USE > HOLD -->
-                <div class="content-block">
-                    <h2>&#128736; Conviction Hierarchy: BUILD > USE > HOLD</h2>
-                    <p>Not all participation is equal. The ecosystem rewards active contribution with &phi;-weighted multipliers:</p>
-
-                    <div class="hierarchy-card build">
-                        <div class="hierarchy-icon">&#128736;</div>
-                        <div class="hierarchy-info">
-                            <div class="hierarchy-name" style="color: var(--accent);">BUILD</div>
-                            <div class="hierarchy-desc">Create tools, contribute code, generate ecosystem value</div>
-                        </div>
-                        <div class="hierarchy-multiplier" style="color: var(--accent);">&phi;&sup2; = 2.618x</div>
-                    </div>
-
-                    <div class="hierarchy-card use">
-                        <div class="hierarchy-icon">&#128295;</div>
-                        <div class="hierarchy-info">
-                            <div class="hierarchy-name">USE</div>
-                            <div class="hierarchy-desc">Active ecosystem participant, using tools generates fees</div>
-                        </div>
-                        <div class="hierarchy-multiplier" style="color: var(--text-secondary);">&phi; = 1.618x</div>
-                    </div>
-
-                    <div class="hierarchy-card hold">
-                        <div class="hierarchy-icon">&#128142;</div>
-                        <div class="hierarchy-info">
-                            <div class="hierarchy-name">HOLD</div>
-                            <div class="hierarchy-desc">Entry point - conviction demonstrated by holding</div>
-                        </div>
-                        <div class="hierarchy-multiplier" style="color: var(--text-tertiary);">1.0x</div>
-                    </div>
-
-                    <div class="highlight-box">
-                        <strong>Conviction > Speculation.</strong> Holding is the minimum. Building is the maximum. The ecosystem aligns incentives so that those who create the most value capture the most benefit.
-                    </div>
-                </div>
-
-                <div class="content-block">
-                    <h3>&#128161; Core Principles</h3>
-                    <div style="font-family: var(--font-mono); padding: var(--space-6); background: var(--bg-elevated); border-radius: var(--radius-md); color: var(--accent); line-height: 2;">
-                        Don't trust. Verify.<br>
-                        Don't extract. Burn.<br>
-                        Don't panic. Hold.<br>
-                        This is fine.
-                    </div>
-                </div>
-
-                <div class="level-nav">
-                    <button class="btn btn-secondary" data-nav-view="mechanism">&#8592; Back</button>
-                    <button class="btn btn-primary" data-nav-view="kscore">K-Score Explained &#8594;</button>
-                </div>
+            <div class="layer-card surface" aria-label="Surface level: Acceptance of Chaos">
+              <div class="layer-label" style="color: var(--text-tertiary)">Surface Level</div>
+              <div class="layer-title">Acceptance of Chaos</div>
+              <div class="layer-desc">
+                Crypto markets are wild. Prices swing 50% in a day. Most panic. We accept the chaos
+                as fuel.
+              </div>
             </div>
 
-            <!-- ================================
+            <div class="layer-card milieu" aria-label="Milieu level: Anti-Panic Conviction">
+              <div class="layer-label" style="color: var(--accent)">Milieu</div>
+              <div class="layer-title">Anti-Panic Conviction</div>
+              <div class="layer-desc">
+                Diamond hands through volatility. No FOMO, no FUD. The mechanism works regardless of
+                short-term price.
+              </div>
+            </div>
+
+            <div class="layer-card profond" aria-label="Deep level: Lucid Irony">
+              <div class="layer-label" style="color: var(--accent)">Profond (Deep)</div>
+              <div class="layer-title">Lucid Irony</div>
+              <div class="layer-desc">
+                We <em>know</em> everything is on fire. We build anyway. With mathematical rigor.
+                With verifiable code. The dog drinks coffee because he understands - and builds
+                through the flames.
+              </div>
+            </div>
+          </div>
+
+          <!-- PHI PHILOSOPHY -->
+          <div
+            class="content-block"
+            style="
+              background: linear-gradient(
+                135deg,
+                var(--bg-surface) 0%,
+                rgba(234, 78, 51, 0.05) 100%
+              );
+            "
+          >
+            <h2 style="display: flex; align-items: center; gap: var(--space-3)">
+              <span class="phi-display">&phi;</span>
+              The Golden Ratio
+            </h2>
+            <p>
+              Every ratio in the ASDF ecosystem is derived from
+              <strong style="color: var(--accent)">&phi; (phi) = 1.618...</strong> - the golden
+              ratio found in nature, from spiral galaxies to seashells.
+            </p>
+
+            <div class="highlight-box">
+              <strong>No magic numbers.</strong> When you see 61.8%, it's 1/&phi;. When you see
+              38.2%, it's 1/&phi;&sup2;. Every parameter has mathematical elegance - not arbitrary
+              human decisions.
+            </div>
+
+            <div class="phi-grid">
+              <div class="phi-item">
+                <div class="phi-formula">1/&phi;</div>
+                <div class="phi-value">61.8%</div>
+                <div class="phi-label">Primary ratio</div>
+              </div>
+              <div class="phi-item">
+                <div class="phi-formula">1/&phi;&sup2;</div>
+                <div class="phi-value">38.2%</div>
+                <div class="phi-label">Secondary ratio</div>
+              </div>
+              <div class="phi-item">
+                <div class="phi-formula">1/&phi;&sup3;</div>
+                <div class="phi-value">23.6%</div>
+                <div class="phi-label">Tertiary ratio</div>
+              </div>
+              <div class="phi-item">
+                <div class="phi-formula">&phi;&sup2;</div>
+                <div class="phi-value">2.618</div>
+                <div class="phi-label">Builder multiplier</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUILD > USE > HOLD -->
+          <div class="content-block">
+            <h2>&#128736; Conviction Hierarchy: BUILD > USE > HOLD</h2>
+            <p>
+              Not all participation is equal. The ecosystem rewards active contribution with
+              &phi;-weighted multipliers:
+            </p>
+
+            <div class="hierarchy-card build">
+              <div class="hierarchy-icon">&#128736;</div>
+              <div class="hierarchy-info">
+                <div class="hierarchy-name" style="color: var(--accent)">BUILD</div>
+                <div class="hierarchy-desc">
+                  Create tools, contribute code, generate ecosystem value
+                </div>
+              </div>
+              <div class="hierarchy-multiplier" style="color: var(--accent)">
+                &phi;&sup2; = 2.618x
+              </div>
+            </div>
+
+            <div class="hierarchy-card use">
+              <div class="hierarchy-icon">&#128295;</div>
+              <div class="hierarchy-info">
+                <div class="hierarchy-name">USE</div>
+                <div class="hierarchy-desc">
+                  Active ecosystem participant, using tools generates fees
+                </div>
+              </div>
+              <div class="hierarchy-multiplier" style="color: var(--text-secondary)">
+                &phi; = 1.618x
+              </div>
+            </div>
+
+            <div class="hierarchy-card hold">
+              <div class="hierarchy-icon">&#128142;</div>
+              <div class="hierarchy-info">
+                <div class="hierarchy-name">HOLD</div>
+                <div class="hierarchy-desc">Entry point - conviction demonstrated by holding</div>
+              </div>
+              <div class="hierarchy-multiplier" style="color: var(--text-tertiary)">1.0x</div>
+            </div>
+
+            <div class="highlight-box">
+              <strong>Conviction > Speculation.</strong> Holding is the minimum. Building is the
+              maximum. The ecosystem aligns incentives so that those who create the most value
+              capture the most benefit.
+            </div>
+          </div>
+
+          <div class="content-block">
+            <h3>&#128161; Core Principles</h3>
+            <div
+              style="
+                font-family: var(--font-mono);
+                padding: var(--space-6);
+                background: var(--bg-elevated);
+                border-radius: var(--radius-md);
+                color: var(--accent);
+                line-height: 2;
+              "
+            >
+              Don't trust. Verify.<br />
+              Don't extract. Burn.<br />
+              Don't panic. Hold.<br />
+              This is fine.
+            </div>
+          </div>
+
+          <div class="level-nav">
+            <button class="btn btn-secondary" data-nav-view="mechanism">&#8592; Back</button>
+            <button class="btn btn-primary" data-nav-view="kscore">
+              K-Score Explained &#8594;
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================
                  SECTION: K-SCORE
                  ================================ -->
-            <div class="view-section" id="view-kscore">
-                <div class="content-block">
-                    <h2>&#128200; K-Score: Measuring Conviction</h2>
-                    <p>The K-Score quantifies holder quality using a geometric mean formula. This ensures <strong>balanced quality</strong> - you can't compensate for weakness in one dimension with strength in another.</p>
+        <div class="view-section" id="view-kscore">
+          <div class="content-block">
+            <h2>&#128200; K-Score: Measuring Conviction</h2>
+            <p>
+              The K-Score quantifies holder quality using a geometric mean formula. This ensures
+              <strong>balanced quality</strong> - you can't compensate for weakness in one dimension
+              with strength in another.
+            </p>
 
-                    <div class="kscore-formula">
-                        <div class="kscore-formula-text">
-                            K = 100 &times; &sup3;&radic;(D &times; O &times; L)
-                        </div>
-                        <div class="kscore-formula-desc">
-                            Diamond &times; Organic &times; Longevity
-                        </div>
-                    </div>
+            <div class="kscore-formula">
+              <div class="kscore-formula-text">
+                K = 100 &times; &sup3;&radic;(D &times; O &times; L)
+              </div>
+              <div class="kscore-formula-desc">Diamond &times; Organic &times; Longevity</div>
+            </div>
+          </div>
+
+          <div class="content-block">
+            <h3>The Three Dimensions</h3>
+            <div class="kscore-grid">
+              <div class="kscore-item">
+                <div class="kscore-icon">&#128142;</div>
+                <div class="kscore-name">D (Diamond)</div>
+                <div class="kscore-desc">
+                  Holder conviction depth - how strongly do holders believe?
                 </div>
-
-                <div class="content-block">
-                    <h3>The Three Dimensions</h3>
-                    <div class="kscore-grid">
-                        <div class="kscore-item">
-                            <div class="kscore-icon">&#128142;</div>
-                            <div class="kscore-name">D (Diamond)</div>
-                            <div class="kscore-desc">Holder conviction depth - how strongly do holders believe?</div>
-                        </div>
-                        <div class="kscore-item">
-                            <div class="kscore-icon">&#127793;</div>
-                            <div class="kscore-name">O (Organic)</div>
-                            <div class="kscore-desc">Natural distribution - is ownership decentralized or whale-dominated?</div>
-                        </div>
-                        <div class="kscore-item">
-                            <div class="kscore-icon">&#9203;</div>
-                            <div class="kscore-name">L (Longevity)</div>
-                            <div class="kscore-desc">Time-tested survival - has the token survived market cycles?</div>
-                        </div>
-                    </div>
+              </div>
+              <div class="kscore-item">
+                <div class="kscore-icon">&#127793;</div>
+                <div class="kscore-name">O (Organic)</div>
+                <div class="kscore-desc">
+                  Natural distribution - is ownership decentralized or whale-dominated?
                 </div>
-
-                <div class="content-block">
-                    <h3>&#128274; Why Geometric Mean?</h3>
-                    <p>The geometric mean has a critical property: <strong>if any factor is zero, the entire result is zero.</strong></p>
-
-                    <div class="highlight-box">
-                        <strong>Critical:</strong> If D=0 (no conviction), K=0. If O=0 (all whales), K=0. If L=0 (brand new), K=0. This enforces <strong>balanced quality</strong> - you can't fake your way to a high score.
-                    </div>
-
-                    <p>Compare to arithmetic mean: a token with D=100, O=0, L=100 would get a score of 66.7. With geometric mean, it gets 0. No shortcuts.</p>
+              </div>
+              <div class="kscore-item">
+                <div class="kscore-icon">&#9203;</div>
+                <div class="kscore-name">L (Longevity)</div>
+                <div class="kscore-desc">
+                  Time-tested survival - has the token survived market cycles?
                 </div>
+              </div>
+            </div>
+          </div>
 
-                <div class="content-block">
-                    <h3>&#128202; K-Score Interpretation</h3>
-                    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, var(--bg-hover) 100%); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-weight: var(--font-bold); color: var(--success);">80-100</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Exceptional - Strong conviction across all dimensions</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, var(--bg-hover) 100%); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-weight: var(--font-bold); color: #3B82F6;">60-80</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Good - Solid fundamentals with minor weaknesses</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: linear-gradient(90deg, rgba(234, 179, 8, 0.2) 0%, var(--bg-hover) 100%); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-weight: var(--font-bold); color: #EAB308;">40-60</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Average - Needs improvement in one or more areas</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: linear-gradient(90deg, rgba(239, 68, 68, 0.2) 0%, var(--bg-hover) 100%); border-radius: var(--radius-md);">
-                            <div style="font-family: var(--font-mono); font-weight: var(--font-bold); color: var(--error);">0-40</div>
-                            <div style="font-size: var(--text-sm); color: var(--text-secondary);">Weak - Significant issues in multiple dimensions</div>
-                        </div>
-                    </div>
-                </div>
+          <div class="content-block">
+            <h3>&#128274; Why Geometric Mean?</h3>
+            <p>
+              The geometric mean has a critical property:
+              <strong>if any factor is zero, the entire result is zero.</strong>
+            </p>
 
-                <div class="level-nav">
-                    <button class="btn btn-secondary" data-nav-view="philosophy">&#8592; Back</button>
-                    <button class="btn btn-primary" data-nav-view="ecosystem">Explore Ecosystem &#8594;</button>
-                </div>
+            <div class="highlight-box">
+              <strong>Critical:</strong> If D=0 (no conviction), K=0. If O=0 (all whales), K=0. If
+              L=0 (brand new), K=0. This enforces <strong>balanced quality</strong> - you can't fake
+              your way to a high score.
             </div>
 
-            <!-- ================================
+            <p>
+              Compare to arithmetic mean: a token with D=100, O=0, L=100 would get a score of 66.7.
+              With geometric mean, it gets 0. No shortcuts.
+            </p>
+          </div>
+
+          <div class="content-block">
+            <h3>&#128202; K-Score Interpretation</h3>
+            <div style="display: flex; flex-direction: column; gap: var(--space-3)">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-4);
+                  padding: var(--space-4);
+                  background: linear-gradient(
+                    90deg,
+                    rgba(34, 197, 94, 0.2) 0%,
+                    var(--bg-hover) 100%
+                  );
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-weight: var(--font-bold);
+                    color: var(--success);
+                  "
+                >
+                  80-100
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+                  Exceptional - Strong conviction across all dimensions
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-4);
+                  padding: var(--space-4);
+                  background: linear-gradient(
+                    90deg,
+                    rgba(59, 130, 246, 0.2) 0%,
+                    var(--bg-hover) 100%
+                  );
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-weight: var(--font-bold);
+                    color: #3b82f6;
+                  "
+                >
+                  60-80
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+                  Good - Solid fundamentals with minor weaknesses
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-4);
+                  padding: var(--space-4);
+                  background: linear-gradient(
+                    90deg,
+                    rgba(234, 179, 8, 0.2) 0%,
+                    var(--bg-hover) 100%
+                  );
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-weight: var(--font-bold);
+                    color: #eab308;
+                  "
+                >
+                  40-60
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+                  Average - Needs improvement in one or more areas
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-4);
+                  padding: var(--space-4);
+                  background: linear-gradient(
+                    90deg,
+                    rgba(239, 68, 68, 0.2) 0%,
+                    var(--bg-hover) 100%
+                  );
+                  border-radius: var(--radius-md);
+                "
+              >
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-weight: var(--font-bold);
+                    color: var(--error);
+                  "
+                >
+                  0-40
+                </div>
+                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+                  Weak - Significant issues in multiple dimensions
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="level-nav">
+            <button class="btn btn-secondary" data-nav-view="philosophy">&#8592; Back</button>
+            <button class="btn btn-primary" data-nav-view="ecosystem">
+              Explore Ecosystem &#8594;
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================
                  SECTION: ECOSYSTEM
                  ================================ -->
-            <div class="view-section" id="view-ecosystem">
-                <div class="content-block">
-                    <h2>&#127793; The ASDF Ecosystem</h2>
-                    <p>ASDF is more than a token - it's an ecosystem of tools. Each tool generates fees that fuel the burn.</p>
-                </div>
+        <div class="view-section" id="view-ecosystem">
+          <div class="content-block">
+            <h2>&#127793; The ASDF Ecosystem</h2>
+            <p>
+              ASDF is more than a token - it's an ecosystem of tools. Each tool generates fees that
+              fuel the burn.
+            </p>
+          </div>
 
-                <div class="content-block">
-                    <h3>&#128295; Live Tools</h3>
-                    <div class="tools-grid">
-                        <a href="/burns" class="tool-card">
-                            <span class="tool-icon">&#128293;</span>
-                            <div>
-                                <div class="tool-name">Burns</div>
-                                <div class="tool-status">&#10003; Live</div>
-                            </div>
-                        </a>
-                        <a href="/forecast" class="tool-card">
-                            <span class="tool-icon">&#127919;</span>
-                            <div>
-                                <div class="tool-name">ASDForecast</div>
-                                <div class="tool-status">&#10003; Live</div>
-                            </div>
-                        </a>
-                        <a href="/holdex" class="tool-card">
-                            <span class="tool-icon">&#128200;</span>
-                            <div>
-                                <div class="tool-name">HolDex</div>
-                                <div class="tool-status">&#10003; Live</div>
-                            </div>
-                        </a>
-                        <a href="/staking" class="tool-card">
-                            <span class="tool-icon">&#128274;</span>
-                            <div>
-                                <div class="tool-name">Staking</div>
-                                <div class="tool-status">&#10003; Live</div>
-                            </div>
-                        </a>
-                        <a href="/ignition" class="tool-card">
-                            <span class="tool-icon">&#128640;</span>
-                            <div>
-                                <div class="tool-name">Ignition</div>
-                                <div class="tool-status">&#10003; Live</div>
-                            </div>
-                        </a>
-                    </div>
+          <div class="content-block">
+            <h3>&#128295; Live Tools</h3>
+            <div class="tools-grid">
+              <a href="/burns" class="tool-card">
+                <span class="tool-icon">&#128293;</span>
+                <div>
+                  <div class="tool-name">Burns</div>
+                  <div class="tool-status">&#10003; Live</div>
                 </div>
-
-                <div class="content-block">
-                    <h3>&#128161; Technical Advantages</h3>
-                    <ul style="color: var(--text-secondary); margin-left: var(--space-5);">
-                        <li style="margin-bottom: var(--space-3);"><strong>Automated:</strong> The daemon runs 24/7, no human intervention needed</li>
-                        <li style="margin-bottom: var(--space-3);"><strong>Transparent:</strong> All transactions on-chain, verifiable on Solscan</li>
-                        <li style="margin-bottom: var(--space-3);"><strong>Open Source:</strong> Code is public on GitHub - audit it yourself</li>
-                        <li style="margin-bottom: var(--space-3);"><strong>Ecosystem Revenue:</strong> Multiple apps contribute fees, not just trading</li>
-                    </ul>
+              </a>
+              <a href="/forecast" class="tool-card">
+                <span class="tool-icon">&#127919;</span>
+                <div>
+                  <div class="tool-name">ASDForecast</div>
+                  <div class="tool-status">&#10003; Live</div>
                 </div>
-
-                <div class="content-block" style="background: var(--accent-soft); border-color: var(--accent);">
-                    <h3 style="color: var(--accent);">&#128270; Verify Yourself</h3>
-                    <p>True to "Don't Trust, Verify" - check every transaction on-chain:</p>
-                    <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-4);">
-                        <a href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
-                            &#128293; Burn Address
-                        </a>
-                        <a href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
-                            &#128187; GitHub
-                        </a>
-                        <a href="/burns" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--space-2);">
-                            &#128200; Full Burns Page
-                        </a>
-                    </div>
+              </a>
+              <a href="/holdex" class="tool-card">
+                <span class="tool-icon">&#128200;</span>
+                <div>
+                  <div class="tool-name">HolDex</div>
+                  <div class="tool-status">&#10003; Live</div>
                 </div>
-
-                <div class="level-nav">
-                    <button class="btn btn-secondary" data-nav-view="kscore">&#8592; Back</button>
-                    <button class="btn btn-primary" data-nav-view="faq">FAQ & Glossary &#8594;</button>
+              </a>
+              <a href="/staking" class="tool-card">
+                <span class="tool-icon">&#128274;</span>
+                <div>
+                  <div class="tool-name">Staking</div>
+                  <div class="tool-status">&#10003; Live</div>
                 </div>
+              </a>
+              <a href="/ignition" class="tool-card">
+                <span class="tool-icon">&#128640;</span>
+                <div>
+                  <div class="tool-name">Ignition</div>
+                  <div class="tool-status">&#10003; Live</div>
+                </div>
+              </a>
             </div>
+          </div>
 
-            <!-- ================================
+          <div class="content-block">
+            <h3>&#128161; Technical Advantages</h3>
+            <ul style="color: var(--text-secondary); margin-left: var(--space-5)">
+              <li style="margin-bottom: var(--space-3)">
+                <strong>Automated:</strong> The daemon runs 24/7, no human intervention needed
+              </li>
+              <li style="margin-bottom: var(--space-3)">
+                <strong>Transparent:</strong> All transactions on-chain, verifiable on Solscan
+              </li>
+              <li style="margin-bottom: var(--space-3)">
+                <strong>Open Source:</strong> Code is public on GitHub - audit it yourself
+              </li>
+              <li style="margin-bottom: var(--space-3)">
+                <strong>Ecosystem Revenue:</strong> Multiple apps contribute fees, not just trading
+              </li>
+            </ul>
+          </div>
+
+          <div
+            class="content-block"
+            style="background: var(--accent-soft); border-color: var(--accent)"
+          >
+            <h3 style="color: var(--accent)">&#128270; Verify Yourself</h3>
+            <p>True to "Don't Trust, Verify" - check every transaction on-chain:</p>
+            <div
+              style="
+                display: flex;
+                gap: var(--space-4);
+                flex-wrap: wrap;
+                margin-top: var(--space-4);
+              "
+            >
+              <a
+                href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-secondary"
+                style="display: inline-flex; align-items: center; gap: var(--space-2)"
+              >
+                &#128293; Burn Address
+              </a>
+              <a
+                href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-secondary"
+                style="display: inline-flex; align-items: center; gap: var(--space-2)"
+              >
+                &#128187; GitHub
+              </a>
+              <a
+                href="/burns"
+                class="btn btn-primary"
+                style="display: inline-flex; align-items: center; gap: var(--space-2)"
+              >
+                &#128200; Full Burns Page
+              </a>
+            </div>
+          </div>
+
+          <div class="level-nav">
+            <button class="btn btn-secondary" data-nav-view="kscore">&#8592; Back</button>
+            <button class="btn btn-primary" data-nav-view="faq">FAQ & Glossary &#8594;</button>
+          </div>
+        </div>
+
+        <!-- ================================
                  SECTION: FAQ & GLOSSARY
                  ================================ -->
-            <div class="view-section" id="view-faq">
-                <div class="content-block">
-                    <h2>&#10067; Frequently Asked Questions</h2>
+        <div class="view-section" id="view-faq">
+          <div class="content-block">
+            <h2>&#10067; Frequently Asked Questions</h2>
+          </div>
+
+          <div class="faq-list">
+            <div class="faq-item">
+              <div class="faq-question">
+                What is the burn address? Is it really inaccessible?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  The burn address is a Solana address with no known private key. Once tokens are
+                  sent there, they cannot be recovered by anyone - ever. You can verify this on
+                  Solscan by checking that the address has never signed any transactions.
                 </div>
-
-                <div class="faq-list">
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            What is the burn address? Is it really inaccessible?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                The burn address is a Solana address with no known private key. Once tokens are sent there, they cannot be recovered by anyone - ever. You can verify this on Solscan by checking that the address has never signed any transactions.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            How often do burns happen?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                Burns happen in "cycles" when accumulated fees reach a threshold. During high activity, burns can happen multiple times per day. You can monitor cycles via the /burns page.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            Can the team "rug" or stop the burns?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                The daemon is automated code running independently. All transactions are transparent and on-chain. The code is open-source - anyone can audit it on GitHub.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            What's the total supply and how much has been burned?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                Initial supply was 1 billion tokens. Approximately 8% has been burned. Check real-time stats at <a href="/burns" style="color: var(--accent);">alonisthe.dev/burns</a>.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            What is the K-Score and why does it matter?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                The K-Score measures holder quality using geometric mean of Diamond (conviction), Organic (distribution), and Longevity (time). It prevents gaming because if any dimension is zero, the whole score is zero. High K-Score = healthy token.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            Why does ASDF use the golden ratio (&phi;)?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                &phi; (1.618...) provides mathematical elegance and removes arbitrary decisions. Instead of "let's use 60%", we use 1/&phi; = 61.8%. It's found throughout nature and creates aesthetically balanced ratios. Every parameter in ASDF derives from &phi;.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            Is this a good investment?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                We don't give financial advice. ASDF is a memecoin with experimental tokenomics. Do your own research, understand the risks, and never invest more than you can afford to lose.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            How can I contribute?
-                            <span class="faq-arrow">&#9660;</span>
-                        </div>
-                        <div class="faq-answer">
-                            <div class="faq-answer-inner">
-                                All code is open-source on GitHub! You can contribute code, build apps that integrate with the burn mechanism, or simply spread the word. Remember: BUILD > USE > HOLD - builders get &phi;&sup2; multiplier.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Glossary -->
-                <div class="content-block" style="margin-top: var(--space-8);">
-                    <h2 id="glossary-heading">&#128214; Glossary</h2>
-                    <label for="glossary-search" class="visually-hidden">Search glossary terms</label>
-                    <input type="text" class="glossary-search" id="glossary-search" placeholder="Search terms..." aria-labelledby="glossary-heading">
-                </div>
-
-                <div class="glossary-grid" id="glossary-grid">
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128293; Burn</div>
-                        <div class="glossary-def">Permanently removing tokens by sending to an inaccessible address.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128722; Buyback</div>
-                        <div class="glossary-def">Using fees to purchase tokens from the market before burning.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#129302; Daemon</div>
-                        <div class="glossary-def">Automated 24/7 program executing the burn mechanism.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128176; Creator Fees</div>
-                        <div class="glossary-def">Percentage of each Pump.fun trade going to token creator.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128260; Flywheel</div>
-                        <div class="glossary-def">Self-reinforcing cycle: trade &#8594; fees &#8594; burn &#8594; scarcity &#8594; trade.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#127974; Treasury</div>
-                        <div class="glossary-def">Wallet where fees accumulate before buybacks.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#9203; Cycle</div>
-                        <div class="glossary-def">Complete execution of collect &#8594; buyback &#8594; burn sequence.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128201; Deflationary</div>
-                        <div class="glossary-def">Tokenomics where total supply decreases over time.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&phi; Phi</div>
-                        <div class="glossary-def">Golden ratio (1.618...) - the mathematical basis for all ASDF parameters.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128200; K-Score</div>
-                        <div class="glossary-def">Geometric mean of Diamond, Organic, and Longevity metrics.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128142; Diamond Hands</div>
-                        <div class="glossary-def">Holders who don't sell during volatility - conviction over panic.</div>
-                    </div>
-                    <div class="glossary-item">
-                        <div class="glossary-term">&#128736; Builder</div>
-                        <div class="glossary-def">Contributors who create tools/code for the ecosystem (&phi;&sup2; multiplier).</div>
-                    </div>
-                </div>
-
-                <div class="level-nav" style="margin-top: var(--space-8);">
-                    <button class="btn btn-secondary" data-nav-view="ecosystem">&#8592; Back</button>
-                    <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-                        <a href="/build" class="btn btn-primary">Start Building &#127795;</a>
-                        <a href="/burns" class="btn btn-secondary">Track Burns &#128293;</a>
-                    </div>
-                </div>
+              </div>
             </div>
 
-        </main>
+            <div class="faq-item">
+              <div class="faq-question">
+                How often do burns happen?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  Burns happen in "cycles" when accumulated fees reach a threshold. During high
+                  activity, burns can happen multiple times per day. You can monitor cycles via the
+                  /burns page.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                Can the team "rug" or stop the burns?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  The daemon is automated code running independently. All transactions are
+                  transparent and on-chain. The code is open-source - anyone can audit it on GitHub.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                What's the total supply and how much has been burned?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  Initial supply was 1 billion tokens. Approximately 8% has been burned. Check
+                  real-time stats at
+                  <a href="/burns" style="color: var(--accent)">alonisthe.dev/burns</a>.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                What is the K-Score and why does it matter?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  The K-Score measures holder quality using geometric mean of Diamond (conviction),
+                  Organic (distribution), and Longevity (time). It prevents gaming because if any
+                  dimension is zero, the whole score is zero. High K-Score = healthy token.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                Why does ASDF use the golden ratio (&phi;)?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  &phi; (1.618...) provides mathematical elegance and removes arbitrary decisions.
+                  Instead of "let's use 60%", we use 1/&phi; = 61.8%. It's found throughout nature
+                  and creates aesthetically balanced ratios. Every parameter in ASDF derives from
+                  &phi;.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                Is this a good investment?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  We don't give financial advice. ASDF is a memecoin with experimental tokenomics.
+                  Do your own research, understand the risks, and never invest more than you can
+                  afford to lose.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">
+                How can I contribute?
+                <span class="faq-arrow">&#9660;</span>
+              </div>
+              <div class="faq-answer">
+                <div class="faq-answer-inner">
+                  All code is open-source on GitHub! You can contribute code, build apps that
+                  integrate with the burn mechanism, or simply spread the word. Remember: BUILD >
+                  USE > HOLD - builders get &phi;&sup2; multiplier.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Glossary -->
+          <div class="content-block" style="margin-top: var(--space-8)">
+            <h2 id="glossary-heading">&#128214; Glossary</h2>
+            <label for="glossary-search" class="visually-hidden">Search glossary terms</label>
+            <input
+              type="text"
+              class="glossary-search"
+              id="glossary-search"
+              placeholder="Search terms..."
+              aria-labelledby="glossary-heading"
+            />
+          </div>
+
+          <div class="glossary-grid" id="glossary-grid" aria-live="polite">
+            <div class="glossary-item">
+              <div class="glossary-term">&#128293; Burn</div>
+              <div class="glossary-def">
+                Permanently removing tokens by sending to an inaccessible address.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128722; Buyback</div>
+              <div class="glossary-def">
+                Using fees to purchase tokens from the market before burning.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#129302; Daemon</div>
+              <div class="glossary-def">Automated 24/7 program executing the burn mechanism.</div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128176; Creator Fees</div>
+              <div class="glossary-def">
+                Percentage of each Pump.fun trade going to token creator.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128260; Flywheel</div>
+              <div class="glossary-def">
+                Self-reinforcing cycle: trade &#8594; fees &#8594; burn &#8594; scarcity &#8594;
+                trade.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#127974; Treasury</div>
+              <div class="glossary-def">Wallet where fees accumulate before buybacks.</div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#9203; Cycle</div>
+              <div class="glossary-def">
+                Complete execution of collect &#8594; buyback &#8594; burn sequence.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128201; Deflationary</div>
+              <div class="glossary-def">Tokenomics where total supply decreases over time.</div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&phi; Phi</div>
+              <div class="glossary-def">
+                Golden ratio (1.618...) - the mathematical basis for all ASDF parameters.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128200; K-Score</div>
+              <div class="glossary-def">
+                Geometric mean of Diamond, Organic, and Longevity metrics.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128142; Diamond Hands</div>
+              <div class="glossary-def">
+                Holders who don't sell during volatility - conviction over panic.
+              </div>
+            </div>
+            <div class="glossary-item">
+              <div class="glossary-term">&#128736; Builder</div>
+              <div class="glossary-def">
+                Contributors who create tools/code for the ecosystem (&phi;&sup2; multiplier).
+              </div>
+            </div>
+          </div>
+
+          <div class="level-nav" style="margin-top: var(--space-8)">
+            <button class="btn btn-secondary" data-nav-view="ecosystem">&#8592; Back</button>
+            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap">
+              <a href="/build" class="btn btn-primary">Start Building &#127795;</a>
+              <a href="/burns" class="btn btn-secondary">Track Burns &#128293;</a>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-brand">Open source. Verifiable on-chain. THIS IS FINE.</div>
-            </div>
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-brand">Open source. Verifiable on-chain. THIS IS FINE.</div>
         </div>
+      </div>
     </footer>
 
     <script type="module" src="js/deep-learn.js"></script>
     <script src="js/consent/index.js"></script>
-</body>
+  </body>
 </html>

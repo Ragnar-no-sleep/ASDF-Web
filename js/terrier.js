@@ -23,7 +23,7 @@
 
   triggers.forEach(trigger => {
     trigger.addEventListener('mouseenter', () => activateTrigger(trigger));
-    trigger.addEventListener('keydown', (e) => {
+    trigger.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         activateTrigger(trigger);
@@ -36,7 +36,7 @@
     overlay.addEventListener('click', () => {
       overlay.classList.add('hidden');
     });
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
         overlay.classList.add('hidden');
       }

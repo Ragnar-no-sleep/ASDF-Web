@@ -74,26 +74,26 @@ Typography: Inter (body), JetBrains Mono (code)
 
 ## Routes
 
-| Route                    | File            | Purpose                                   |
-| ------------------------ | --------------- | ----------------------------------------- |
-| `/`                      | index.html      | P1 — Landing hub (orbital system)         |
-| `/story`, `/quick-start` | learn.html      | P2 — Philosophy & intro                   |
-| `/deep-learn`            | deep-learn.html | P3 — Technical deep dive                  |
-| `/build`                 | build.html      | P4 — Builder hub (formations + ecosystem) |
-| `/ignition`              | ignition.html   | P1 — Game arcade                          |
-| `/burns`                 | burns.html      | P1 — Burn tracker                         |
-| `/forecast`              | forecast.html   | P1 — Predictions terminal                 |
-| `/holdex`                | holdex.html     | P1 — Token holder dashboard               |
-| `/staking`               | staking.html    | P1 — Delegation interface                 |
-| `/games`                 | games.html      | P2 — Full game suite                      |
-| `/privacy`               | privacy.html    | Legal — Privacy policy                    |
-| `/me`                    | me.html         | User profile & settings                   |
-| `/tools`                 | → redirect `/`  | Tools redirect (integrated into landing)  |
-| `/terrier`               | terrier.html    | CYNIC companion chatbot                   |
-| `/widget`                | widget.html     | Embeddable widget                         |
-| `/asdforecast`           | forecast.html   | Forecast alias (legacy URL)               |
-| `/ecosystem-map`         | ecosystem-map.html | Dev ecosystem dashboard                |
-| `/health`                | — (JSON)        | API health check endpoint                 |
+| Route                    | File               | Purpose                                   |
+| ------------------------ | ------------------ | ----------------------------------------- |
+| `/`                      | index.html         | P1 — Landing hub (orbital system)         |
+| `/story`, `/quick-start` | learn.html         | P2 — Philosophy & intro                   |
+| `/deep-learn`            | deep-learn.html    | P3 — Technical deep dive                  |
+| `/build`                 | build.html         | P4 — Builder hub (formations + ecosystem) |
+| `/ignition`              | ignition.html      | P1 — Game arcade                          |
+| `/burns`                 | burns.html         | P1 — Burn tracker                         |
+| `/forecast`              | forecast.html      | P1 — Predictions terminal                 |
+| `/holdex`                | holdex.html        | P1 — Token holder dashboard               |
+| `/staking`               | staking.html       | P1 — Delegation interface                 |
+| `/games`                 | games.html         | P2 — Full game suite                      |
+| `/privacy`               | privacy.html       | Legal — Privacy policy                    |
+| `/me`                    | me.html            | User profile & settings                   |
+| `/tools`                 | → redirect `/`     | Tools redirect (integrated into landing)  |
+| `/terrier`               | terrier.html       | CYNIC companion chatbot                   |
+| `/widget`                | widget.html        | Embeddable widget                         |
+| `/asdforecast`           | forecast.html      | Forecast alias (legacy URL)               |
+| `/ecosystem-map`         | ecosystem-map.html | Dev ecosystem dashboard                   |
+| `/health`                | — (JSON)           | API health check endpoint                 |
 
 ## Git Workflow (CRITICAL — read before any push)
 

@@ -83,7 +83,6 @@ const ShareButton = {
    */
   init() {
     this.bindEvents();
-    console.log('[ShareButton] Initialized');
   },
 
   /**

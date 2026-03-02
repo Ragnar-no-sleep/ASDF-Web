@@ -1,269 +1,282 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ASDF Contextual Animations Demo</title>
 
-    <link rel="stylesheet" href="css/design-tokens.css">
-    <link rel="stylesheet" href="css/interactions.css">
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/interactions.css" />
 
     <style>
-        body {
-            background: var(--color-bg-primary);
-            color: var(--color-text-primary);
-            font-family: 'Inter', sans-serif;
-            padding: var(--space-2xl);
-            line-height: var(--leading-normal);
-        }
+      body {
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-family: 'Inter', sans-serif;
+        padding: var(--space-2xl);
+        line-height: var(--leading-normal);
+      }
 
-        .demo-section {
-            margin-bottom: var(--space-3xl);
-            padding: var(--space-xl);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            backdrop-filter: var(--glass-blur);
-        }
+      .demo-section {
+        margin-bottom: var(--space-3xl);
+        padding: var(--space-xl);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: var(--glass-blur);
+      }
 
-        .demo-section h2 {
-            color: var(--color-fire);
-            margin-bottom: var(--space-lg);
-            font-size: var(--text-2xl);
-        }
+      .demo-section h2 {
+        color: var(--color-fire);
+        margin-bottom: var(--space-lg);
+        font-size: var(--text-2xl);
+      }
 
-        .demo-section p {
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-md);
-            font-size: var(--text-sm);
-        }
+      .demo-section p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-md);
+        font-size: var(--text-sm);
+      }
 
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-lg);
-            margin-top: var(--space-lg);
-        }
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+      }
 
-        .demo-button {
-            padding: var(--space-md) var(--space-lg);
-            background: var(--color-fire);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: var(--font-semibold);
-            cursor: pointer;
-            font-size: var(--text-base);
-            transition: var(--transition-all);
-            position: relative;
-        }
+      .demo-button {
+        padding: var(--space-md) var(--space-lg);
+        background: var(--color-fire);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        font-size: var(--text-base);
+        transition: var(--transition-all);
+        position: relative;
+      }
 
-        .demo-button:hover {
-            background: var(--color-fire-light);
-            transform: translateY(-2px);
-        }
+      .demo-button:hover {
+        background: var(--color-fire-light);
+        transform: translateY(-2px);
+      }
 
-        .demo-card {
-            padding: var(--space-xl);
-            background: var(--color-bg-surface);
-            border: 1px solid var(--color-border-default);
-            border-radius: var(--radius-md);
-            text-align: center;
-        }
+      .demo-card {
+        padding: var(--space-xl);
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        text-align: center;
+      }
 
-        .k-score-display {
-            font-size: var(--text-5xl);
-            font-weight: var(--font-bold);
-            color: var(--color-fire);
-            margin: var(--space-lg) 0;
-            font-variant-numeric: tabular-nums;
-            position: relative;
-        }
+      .k-score-display {
+        font-size: var(--text-5xl);
+        font-weight: var(--font-bold);
+        color: var(--color-fire);
+        margin: var(--space-lg) 0;
+        font-variant-numeric: tabular-nums;
+        position: relative;
+      }
 
-        .chart-container {
-            width: 100%;
-            height: 200px;
-            background: var(--color-bg-surface);
-            border-radius: var(--radius-md);
-            padding: var(--space-md);
-            position: relative;
-        }
+      .chart-container {
+        width: 100%;
+        height: 200px;
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        position: relative;
+      }
 
-        .bar {
-            display: inline-block;
-            width: 40px;
-            background: linear-gradient(to top, var(--color-fire), var(--color-fire-light));
-            margin: 0 4px;
-            vertical-align: bottom;
-            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-            transition: height 1s ease-out;
-        }
+      .bar {
+        display: inline-block;
+        width: 40px;
+        background: linear-gradient(to top, var(--color-fire), var(--color-fire-light));
+        margin: 0 4px;
+        vertical-align: bottom;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        transition: height 1s ease-out;
+      }
 
-        .status-badge {
-            display: inline-block;
-            padding: var(--space-xs) var(--space-md);
-            background: var(--color-success-bg);
-            color: var(--color-success);
-            border-radius: var(--radius-full);
-            font-size: var(--text-xs);
-            margin-left: var(--space-sm);
-        }
+      .status-badge {
+        display: inline-block;
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-success-bg);
+        color: var(--color-success);
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
+        margin-left: var(--space-sm);
+      }
     </style>
-</head>
-<body>
-
-    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl);">
-        🔥 ASDF Contextual Animations Demo
+  </head>
+  <body>
+    <h1 style="text-align: center; font-size: var(--text-4xl); margin-bottom: var(--space-3xl)">
+      🔥 ASDF Contextual Animations Demo
     </h1>
 
     <!-- Burn Animation -->
     <section class="demo-section">
-        <h2>1. Burn Animation <span class="status-badge">Fire & Particles</span></h2>
-        <p>Click to trigger a burn animation with flame burst and rising particles. Intensity scales with amount.</p>
+      <h2>1. Burn Animation <span class="status-badge">Fire & Particles</span></h2>
+      <p>
+        Click to trigger a burn animation with flame burst and rising particles. Intensity scales
+        with amount.
+      </p>
 
-        <div class="demo-grid">
-            <button class="demo-button" id="burnSmall">Burn 10 Tokens</button>
-            <button class="demo-button" id="burnMedium">Burn 100 Tokens</button>
-            <button class="demo-button" id="burnLarge">Burn 1000 Tokens</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" id="burnSmall">Burn 10 Tokens</button>
+        <button class="demo-button" id="burnMedium">Burn 100 Tokens</button>
+        <button class="demo-button" id="burnLarge">Burn 1000 Tokens</button>
+      </div>
     </section>
 
     <!-- Stake Animation -->
     <section class="demo-section">
-        <h2>2. Stake/Lock Animation <span class="status-badge">Lock Effect</span></h2>
-        <p>Lock icon animation with glow effect. Green for stake, orange for unstake.</p>
+      <h2>2. Stake/Lock Animation <span class="status-badge">Lock Effect</span></h2>
+      <p>Lock icon animation with glow effect. Green for stake, orange for unstake.</p>
 
-        <div class="demo-grid">
-            <button class="demo-button" id="stake">Stake Tokens 🔒</button>
-            <button class="demo-button" id="unstake">Unstake Tokens 🔓</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" id="stake">Stake Tokens 🔒</button>
+        <button class="demo-button" id="unstake">Unstake Tokens 🔓</button>
+      </div>
     </section>
 
     <!-- K-Score Animation -->
     <section class="demo-section">
-        <h2>3. K-Score Update <span class="status-badge">Progressive Counter</span></h2>
-        <p>K-Score updates with progressive counter, delta badge, and color pulse.</p>
+      <h2>3. K-Score Update <span class="status-badge">Progressive Counter</span></h2>
+      <p>K-Score updates with progressive counter, delta badge, and color pulse.</p>
 
-        <div class="k-score-display" id="kScoreDisplay">42</div>
+      <div class="k-score-display" id="kScoreDisplay">42</div>
 
-        <div class="demo-grid">
-            <button class="demo-button" onclick="updateKScore(10)">+10 K-Score</button>
-            <button class="demo-button" onclick="updateKScore(100)">+100 K-Score</button>
-            <button class="demo-button" onclick="updateKScore(-20)">-20 K-Score</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" onclick="updateKScore(10)">+10 K-Score</button>
+        <button class="demo-button" onclick="updateKScore(100)">+100 K-Score</button>
+        <button class="demo-button" onclick="updateKScore(-20)">-20 K-Score</button>
+      </div>
     </section>
 
     <!-- Chart Animations -->
     <section class="demo-section">
-        <h2>4. Chart Draw Animation <span class="status-badge">SVG Path</span></h2>
-        <p>SVG paths draw smoothly from start to finish.</p>
+      <h2>4. Chart Draw Animation <span class="status-badge">SVG Path</span></h2>
+      <p>SVG paths draw smoothly from start to finish.</p>
 
-        <svg width="100%" height="200" style="background: var(--color-bg-surface); border-radius: var(--radius-md);">
-            <path id="chartPath" d="M 10 150 Q 100 50, 200 100 T 400 80 T 600 120"
-                  stroke="var(--color-fire)" stroke-width="3" fill="none"/>
-        </svg>
+      <svg
+        width="100%"
+        height="200"
+        style="background: var(--color-bg-surface); border-radius: var(--radius-md)"
+      >
+        <path
+          id="chartPath"
+          d="M 10 150 Q 100 50, 200 100 T 400 80 T 600 120"
+          stroke="var(--color-fire)"
+          stroke-width="3"
+          fill="none"
+        />
+      </svg>
 
-        <button class="demo-button" style="margin-top: var(--space-lg);" onclick="drawChart()">
-            Draw Chart
-        </button>
+      <button class="demo-button" style="margin-top: var(--space-lg)" onclick="drawChart()">
+        Draw Chart
+      </button>
     </section>
 
     <!-- Bar Chart Animation -->
     <section class="demo-section">
-        <h2>5. Bar Chart Growth <span class="status-badge">Staggered</span></h2>
-        <p>Bars grow from bottom with staggered timing.</p>
+      <h2>5. Bar Chart Growth <span class="status-badge">Staggered</span></h2>
+      <p>Bars grow from bottom with staggered timing.</p>
 
-        <div class="chart-container" style="display: flex; align-items: flex-end; justify-content: center; gap: 8px;">
-            <div class="bar" data-height="120px" style="height: 0;"></div>
-            <div class="bar" data-height="180px" style="height: 0;"></div>
-            <div class="bar" data-height="90px" style="height: 0;"></div>
-            <div class="bar" data-height="150px" style="height: 0;"></div>
-            <div class="bar" data-height="200px" style="height: 0;"></div>
-            <div class="bar" data-height="110px" style="height: 0;"></div>
-            <div class="bar" data-height="170px" style="height: 0;"></div>
-        </div>
+      <div
+        class="chart-container"
+        style="display: flex; align-items: flex-end; justify-content: center; gap: 8px"
+      >
+        <div class="bar" data-height="120px" style="height: 0"></div>
+        <div class="bar" data-height="180px" style="height: 0"></div>
+        <div class="bar" data-height="90px" style="height: 0"></div>
+        <div class="bar" data-height="150px" style="height: 0"></div>
+        <div class="bar" data-height="200px" style="height: 0"></div>
+        <div class="bar" data-height="110px" style="height: 0"></div>
+        <div class="bar" data-height="170px" style="height: 0"></div>
+      </div>
 
-        <button class="demo-button" style="margin-top: var(--space-lg);" onclick="growBars()">
-            Grow Bars
-        </button>
+      <button class="demo-button" style="margin-top: var(--space-lg)" onclick="growBars()">
+        Grow Bars
+      </button>
     </section>
 
     <!-- Success/Error Overlays -->
     <section class="demo-section">
-        <h2>6. Transaction Feedback <span class="status-badge">Success/Error</span></h2>
-        <p>Full-screen success animation with confetti, or error toast with shake.</p>
+      <h2>6. Transaction Feedback <span class="status-badge">Success/Error</span></h2>
+      <p>Full-screen success animation with confetti, or error toast with shake.</p>
 
-        <div class="demo-grid">
-            <button class="demo-button" onclick="showSuccess()">Show Success ✓</button>
-            <button class="demo-button" onclick="showError()">Show Error ⚠️</button>
-        </div>
+      <div class="demo-grid">
+        <button class="demo-button" onclick="showSuccess()">Show Success ✓</button>
+        <button class="demo-button" onclick="showError()">Show Error ⚠️</button>
+      </div>
     </section>
 
     <script type="module">
-        import {
-            triggerBurnAnimation,
-            triggerStakeAnimation,
-            animateKScore,
-            animateChartDraw,
-            animateBarChart,
-            showSuccessAnimation,
-            showErrorAnimation
-        } from './js/utils/contextual-animations.js';
+      import {
+        triggerBurnAnimation,
+        triggerStakeAnimation,
+        animateKScore,
+        animateChartDraw,
+        animateBarChart,
+        showSuccessAnimation,
+        showErrorAnimation,
+      } from './js/utils/contextual-animations.js';
 
-        // Burn animations
-        document.getElementById('burnSmall').addEventListener('click', function(e) {
-            triggerBurnAnimation(this, 10);
-        });
+      // Burn animations
+      document.getElementById('burnSmall').addEventListener('click', function (e) {
+        triggerBurnAnimation(this, 10);
+      });
 
-        document.getElementById('burnMedium').addEventListener('click', function(e) {
-            triggerBurnAnimation(this, 100);
-        });
+      document.getElementById('burnMedium').addEventListener('click', function (e) {
+        triggerBurnAnimation(this, 100);
+      });
 
-        document.getElementById('burnLarge').addEventListener('click', function(e) {
-            triggerBurnAnimation(this, 1000);
-        });
+      document.getElementById('burnLarge').addEventListener('click', function (e) {
+        triggerBurnAnimation(this, 1000);
+      });
 
-        // Stake animations
-        document.getElementById('stake').addEventListener('click', function(e) {
-            triggerStakeAnimation(this, true);
-        });
+      // Stake animations
+      document.getElementById('stake').addEventListener('click', function (e) {
+        triggerStakeAnimation(this, true);
+      });
 
-        document.getElementById('unstake').addEventListener('click', function(e) {
-            triggerStakeAnimation(this, false);
-        });
+      document.getElementById('unstake').addEventListener('click', function (e) {
+        triggerStakeAnimation(this, false);
+      });
 
-        // K-Score updates
-        window.updateKScore = (delta) => {
-            const display = document.getElementById('kScoreDisplay');
-            const currentValue = parseInt(display.textContent);
-            const newValue = Math.max(0, currentValue + delta);
+      // K-Score updates
+      window.updateKScore = delta => {
+        const display = document.getElementById('kScoreDisplay');
+        const currentValue = parseInt(display.textContent);
+        const newValue = Math.max(0, currentValue + delta);
 
-            animateKScore(display, currentValue, newValue);
-        };
+        animateKScore(display, currentValue, newValue);
+      };
 
-        // Chart draw
-        window.drawChart = () => {
-            const path = document.getElementById('chartPath');
-            animateChartDraw(path, 2000);
-        };
+      // Chart draw
+      window.drawChart = () => {
+        const path = document.getElementById('chartPath');
+        animateChartDraw(path, 2000);
+      };
 
-        // Bar chart
-        window.growBars = () => {
-            const bars = document.querySelectorAll('.bar');
-            animateBarChart(Array.from(bars), 100, 1000);
-        };
+      // Bar chart
+      window.growBars = () => {
+        const bars = document.querySelectorAll('.bar');
+        animateBarChart(Array.from(bars), 100, 1000);
+      };
 
-        // Success/Error
-        window.showSuccess = () => {
-            showSuccessAnimation('Transaction Successful!', { confetti: true });
-        };
+      // Success/Error
+      window.showSuccess = () => {
+        showSuccessAnimation('Transaction Successful!', { confetti: true });
+      };
 
-        window.showError = () => {
-            showErrorAnimation('Transaction failed. Please try again.');
-        };
+      window.showError = () => {
+        showErrorAnimation('Transaction failed. Please try again.');
+      };
 
-        console.log('🔥 Contextual Animations Demo loaded');
+      console.log('🔥 Contextual Animations Demo loaded');
     </script>
-
-</body>
+  </body>
 </html>

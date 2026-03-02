@@ -344,7 +344,7 @@ const YggdrasilCosmos = {
   /**
    * Open project modal with details
    */
-  openProjectModal(projectId, highlightSkillId = null) {
+  openProjectModal(projectId, _highlightSkillId = null) {
     const mappedId = this.mapProjectId(projectId);
     const project = this.projectsData[mappedId];
     const ecosystemProject = ECOSYSTEM_PROJECTS.find(p => p.id === projectId);
@@ -419,7 +419,7 @@ const YggdrasilCosmos = {
           .map(
             c => `
                 <a href="https://github.com/${c.github}" target="_blank" rel="noopener" class="ygg-builder-card">
-                    <img src="${c.avatar}" alt="${c.name}" class="builder-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22>${c.name.charAt(0)}</text></svg>'">
+                    <img src="${c.avatar}" alt="${c.name}" class="builder-avatar">
                     <div class="builder-info">
                         <span class="builder-name">${c.name}</span>
                         <span class="builder-role">${c.role}</span>
@@ -525,6 +525,14 @@ const YggdrasilCosmos = {
               this.refreshProfilePanel();
             }
           }
+        });
+      });
+
+      // Image error fallback for builder avatars (CSP-safe — no inline onerror)
+      this.projectModal.querySelectorAll('.builder-avatar').forEach(img => {
+        img.addEventListener('error', () => {
+          const initial = encodeURIComponent(img.alt?.charAt(0) || '?');
+          img.src = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22>${initial}</text></svg>`;
         });
       });
 
@@ -2237,7 +2245,6 @@ const YggdrasilCosmos = {
    * Connect wallet (placeholder)
    */
   connectWallet() {
-    console.log('[YggdrasilCosmos] Connect wallet requested');
     window.dispatchEvent(new CustomEvent('wallet:connect'));
   },
 
@@ -2273,6 +2280,9 @@ const YggdrasilCosmos = {
     // Fetch initial data and start polling
     this.updateBurnStats();
     this.startBurnPolling();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => this.stopBurnPolling());
   },
 
   /**
@@ -2647,7 +2657,6 @@ const YggdrasilCosmos = {
     this.toggleLeftPanel(false);
 
     // TODO: Animate camera to track's projects
-    console.log('[YggdrasilCosmos] Selected track:', trackId);
   },
 
   /**

@@ -9,8 +9,7 @@
 
 import { BuildState } from '../state.js';
 import { GitHubApiService } from '../services/github-api.js';
-import { $, $$, addClass, removeClass, on, safeInnerHTML } from '../utils/dom.js';
-import { sanitizeText } from '../utils/security.js';
+import { $, addClass, removeClass, on } from '../utils/dom.js';
 
 // ============================================
 // BUILDER PROFILE CONFIGURATION
@@ -87,8 +86,6 @@ const BuilderProfile = {
 
     // Bind events
     this.bindEvents();
-
-    console.log('[BuilderProfile] Initialized');
   },
 
   /**
@@ -383,12 +380,9 @@ const BuilderProfile = {
    * Render ASDF contributions
    * @param {string} username
    */
-  async renderContributions(username) {
+  async renderContributions(_username) {
     const container = $('.contributions-list', this.contentEl);
     if (!container) return;
-
-    // Check which projects this user has contributed to
-    const contributions = [];
 
     // For now, show placeholder
     // In production, this would query the GitHub API for each project

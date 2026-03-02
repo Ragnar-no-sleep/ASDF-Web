@@ -27,8 +27,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 50,
     criteria: {
       type: 'quest_count',
-      count: 1
-    }
+      count: 1,
+    },
   },
   {
     id: 'quest-hunter',
@@ -40,8 +40,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 200,
     criteria: {
       type: 'quest_count',
-      count: 10
-    }
+      count: 10,
+    },
   },
   {
     id: 'quest-master',
@@ -53,8 +53,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 500,
     criteria: {
       type: 'quest_count',
-      count: 50
-    }
+      count: 50,
+    },
   },
   {
     id: 'quest-legend',
@@ -66,8 +66,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 1000,
     criteria: {
       type: 'quest_count',
-      count: 100
-    }
+      count: 100,
+    },
   },
 
   // ==========================================
@@ -83,8 +83,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 100,
     criteria: {
       type: 'module_count',
-      count: 1
-    }
+      count: 1,
+    },
   },
   {
     id: 'module-apprentice',
@@ -96,8 +96,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 300,
     criteria: {
       type: 'module_count',
-      count: 5
-    }
+      count: 5,
+    },
   },
   {
     id: 'module-scholar',
@@ -109,8 +109,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 750,
     criteria: {
       type: 'module_count',
-      count: 15
-    }
+      count: 15,
+    },
   },
 
   // ==========================================
@@ -126,8 +126,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 1000,
     criteria: {
       type: 'track_complete',
-      track: 'dev'
-    }
+      track: 'dev',
+    },
   },
   {
     id: 'track-gaming-complete',
@@ -139,8 +139,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 1000,
     criteria: {
       type: 'track_complete',
-      track: 'gaming'
-    }
+      track: 'gaming',
+    },
   },
   {
     id: 'track-content-complete',
@@ -152,8 +152,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 1000,
     criteria: {
       type: 'track_complete',
-      track: 'content'
-    }
+      track: 'content',
+    },
   },
   {
     id: 'polymath',
@@ -165,11 +165,11 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 5000,
     criteria: {
       type: 'custom',
-      check: (ctx) => {
+      check: ctx => {
         const tracks = ctx.trackProgress || {};
         return tracks.dev >= 100 && tracks.gaming >= 100 && tracks.content >= 100;
-      }
-    }
+      },
+    },
   },
 
   // ==========================================
@@ -185,8 +185,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 100,
     criteria: {
       type: 'level',
-      level: 5
-    }
+      level: 5,
+    },
   },
   {
     id: 'level-10',
@@ -198,8 +198,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 250,
     criteria: {
       type: 'level',
-      level: 10
-    }
+      level: 10,
+    },
   },
   {
     id: 'level-25',
@@ -211,8 +211,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 500,
     criteria: {
       type: 'level',
-      level: 25
-    }
+      level: 25,
+    },
   },
   {
     id: 'level-50',
@@ -224,8 +224,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 2000,
     criteria: {
       type: 'level',
-      level: 50
-    }
+      level: 50,
+    },
   },
   {
     id: 'xp-1000',
@@ -237,8 +237,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 50,
     criteria: {
       type: 'xp_total',
-      amount: 1000
-    }
+      amount: 1000,
+    },
   },
   {
     id: 'xp-10000',
@@ -250,8 +250,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 200,
     criteria: {
       type: 'xp_total',
-      amount: 10000
-    }
+      amount: 10000,
+    },
   },
   {
     id: 'xp-100000',
@@ -263,8 +263,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 1000,
     criteria: {
       type: 'xp_total',
-      amount: 100000
-    }
+      amount: 100000,
+    },
   },
 
   // ==========================================
@@ -280,8 +280,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 50,
     criteria: {
       type: 'streak',
-      days: 3
-    }
+      days: 3,
+    },
   },
   {
     id: 'streak-7',
@@ -293,8 +293,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 150,
     criteria: {
       type: 'streak',
-      days: 7
-    }
+      days: 7,
+    },
   },
   {
     id: 'streak-21',
@@ -306,8 +306,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 500,
     criteria: {
       type: 'streak',
-      days: 21
-    }
+      days: 21,
+    },
   },
   {
     id: 'streak-30',
@@ -319,8 +319,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 750,
     criteria: {
       type: 'streak',
-      days: 30
-    }
+      days: 30,
+    },
   },
   {
     id: 'streak-100',
@@ -332,8 +332,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 3000,
     criteria: {
       type: 'streak',
-      days: 100
-    }
+      days: 100,
+    },
   },
 
   // ==========================================
@@ -349,8 +349,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 500,
     criteria: {
       type: 'first_action',
-      action: 'betaUser'
-    }
+      action: 'betaUser',
+    },
   },
   {
     id: 'first-burn',
@@ -362,8 +362,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 100,
     criteria: {
       type: 'first_action',
-      action: 'tokenBurn'
-    }
+      action: 'tokenBurn',
+    },
   },
   {
     id: 'perfect-quiz',
@@ -375,8 +375,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 200,
     criteria: {
       type: 'first_action',
-      action: 'perfectQuiz'
-    }
+      action: 'perfectQuiz',
+    },
   },
   {
     id: 'speed-demon',
@@ -388,8 +388,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 300,
     criteria: {
       type: 'first_action',
-      action: 'speedModule'
-    }
+      action: 'speedModule',
+    },
   },
   {
     id: 'night-owl',
@@ -401,8 +401,8 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 50,
     criteria: {
       type: 'first_action',
-      action: 'nightOwl'
-    }
+      action: 'nightOwl',
+    },
   },
   {
     id: 'community-helper',
@@ -414,9 +414,9 @@ export const BADGE_DEFINITIONS = [
     xpBonus: 200,
     criteria: {
       type: 'first_action',
-      action: 'helpedOther'
-    }
-  }
+      action: 'helpedOther',
+    },
+  },
 ];
 
 // ============================================
@@ -427,28 +427,28 @@ export const TIER_METADATA = {
   [BADGE_TIERS.BRONZE]: {
     name: 'Bronze',
     color: '#CD7F32',
-    rarity: 'Common'
+    rarity: 'Common',
   },
   [BADGE_TIERS.SILVER]: {
     name: 'Silver',
     color: '#C0C0C0',
-    rarity: 'Uncommon'
+    rarity: 'Uncommon',
   },
   [BADGE_TIERS.GOLD]: {
     name: 'Gold',
     color: '#FFD700',
-    rarity: 'Rare'
+    rarity: 'Rare',
   },
   [BADGE_TIERS.PLATINUM]: {
     name: 'Platinum',
     color: '#E5E4E2',
-    rarity: 'Epic'
+    rarity: 'Epic',
   },
   [BADGE_TIERS.LEGENDARY]: {
     name: 'Legendary',
     color: '#FF6B35',
-    rarity: 'Legendary'
-  }
+    rarity: 'Legendary',
+  },
 };
 
 // ============================================
@@ -459,38 +459,38 @@ export const CATEGORY_METADATA = {
   [BADGE_CATEGORIES.QUEST]: {
     name: 'Quests',
     icon: '\u{1F3AF}',
-    description: 'Earned by completing quests'
+    description: 'Earned by completing quests',
   },
   [BADGE_CATEGORIES.MODULE]: {
     name: 'Learning',
     icon: '\u{1F4DA}',
-    description: 'Earned by completing modules'
+    description: 'Earned by completing modules',
   },
   [BADGE_CATEGORIES.TRACK]: {
     name: 'Tracks',
     icon: '\u{1F6E4}',
-    description: 'Earned by completing entire tracks'
+    description: 'Earned by completing entire tracks',
   },
   [BADGE_CATEGORIES.XP]: {
     name: 'Experience',
     icon: '\u{2B50}',
-    description: 'Earned by gaining XP and levels'
+    description: 'Earned by gaining XP and levels',
   },
   [BADGE_CATEGORIES.STREAK]: {
     name: 'Streaks',
     icon: '\u{1F525}',
-    description: 'Earned by maintaining daily streaks'
+    description: 'Earned by maintaining daily streaks',
   },
   [BADGE_CATEGORIES.COMMUNITY]: {
     name: 'Community',
     icon: '\u{1F465}',
-    description: 'Earned through community participation'
+    description: 'Earned through community participation',
   },
   [BADGE_CATEGORIES.SPECIAL]: {
     name: 'Special',
     icon: '\u{2728}',
-    description: 'Rare and unique achievements'
-  }
+    description: 'Rare and unique achievements',
+  },
 };
 
 export default BADGE_DEFINITIONS;

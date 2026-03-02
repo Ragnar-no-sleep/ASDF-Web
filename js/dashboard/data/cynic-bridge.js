@@ -111,7 +111,7 @@ export const CynicBridge = {
   /**
    * Fetch from CYNIC MCP
    */
-  async fetchFromCynic(endpoint) {
+  async fetchFromCynic(_endpoint) {
     // This would connect to CYNIC MCP server
     // Implementation depends on how MCP is exposed (HTTP, WebSocket, etc.)
     throw new Error('CYNIC MCP not configured');

@@ -78,6 +78,35 @@ function init() {
     GameEngines.init();
   }
 
+  // Subscribe to GameStore events for UI reactions
+  if (typeof GameEvents !== 'undefined') {
+    GameEvents.on('store:wallet-connected', ({ wallet }) => {
+      updateWalletUI(wallet);
+    });
+    GameEvents.on('store:wallet-disconnected', () => {
+      updateWalletUI(null);
+      updateAccessUI();
+      renderGamesGrid();
+    });
+    GameEvents.on('store:balance-changed', () => {
+      updateAccessUI();
+      renderGamesGrid();
+    });
+    GameEvents.on('score:updated', ({ gameId, score }) => {
+      const el = document.getElementById(`score-${gameId}`);
+      if (el) el.textContent = score;
+    });
+    GameEvents.on('score:best', ({ gameId, score }) => {
+      const el = document.getElementById(`best-${gameId}`);
+      if (el) el.textContent = score;
+    });
+  }
+
+  // Wire CompetitiveUI event subscribers (must be after GameEvents is defined)
+  if (typeof CompetitiveUI !== 'undefined') {
+    CompetitiveUI.init();
+  }
+
   loadState();
   checkDailyReset(); // Check if competitive time should reset for new day
   updateFeaturedGame();
@@ -86,11 +115,17 @@ function init() {
   updateCountdown();
   renderLeaderboards(); // Load global leaderboard
 
+  // Track page-level intervals via IntervalManager for cleanup
+  const pageTimers = IntervalManager.create();
+
   // Update countdown every second
-  setInterval(updateCountdown, 1000);
+  pageTimers.setInterval(updateCountdown, 1000);
 
   // Update competitive timers every second
-  setInterval(updateAllCompetitiveTimers, 1000);
+  pageTimers.setInterval(updateAllCompetitiveTimers, 1000);
+
+  // Cleanup on page exit
+  window.addEventListener('beforeunload', () => pageTimers.cleanup());
 
   // Reconnect wallet if previously connected
   if (appState.wallet) {
@@ -108,11 +143,9 @@ function init() {
             checkTokenBalance(connectedWallet);
           } else {
             // Wallet changed - clear old state and reconnect
-            appState.wallet = connectedWallet;
-            appState.isHolder = false;
-            appState.balance = 0;
+            GameStore.setWallet(connectedWallet);
+            GameStore.resetBalance();
             saveState();
-            updateWalletUI(connectedWallet);
             checkTokenBalance(connectedWallet);
           }
         })
@@ -127,36 +160,18 @@ function init() {
   const provider = getPhantomProvider();
   if (provider) {
     provider.on('disconnect', () => {
-      // End any active competitive session
-      endCompetitiveSession();
-      appState.wallet = null;
-      appState.isHolder = false;
-      appState.balance = 0;
-      // Clear API auth cache on disconnect
-      if (typeof ApiClient !== 'undefined' && ApiClient.clearAuthCache) {
-        ApiClient.clearAuthCache();
-      }
+      // Provider already disconnected — just clear state
+      GameStore.clearWallet();
       saveState();
-      updateWalletUI(null);
-      updateAccessUI();
-      renderGamesGrid();
     });
 
     provider.on('accountChanged', publicKey => {
       if (publicKey) {
         const newWallet = publicKey.toString();
-        // End competitive session when switching accounts
         endCompetitiveSession();
-        appState.wallet = newWallet;
-        // SECURITY: Reset holder status until verified
-        appState.isHolder = false;
-        appState.balance = 0;
-        // Clear old auth cache
-        if (typeof ApiClient !== 'undefined' && ApiClient.clearAuthCache) {
-          ApiClient.clearAuthCache();
-        }
+        GameStore.setWallet(newWallet);
+        GameStore.resetBalance(); // Security: silent reset before async verify
         saveState();
-        updateWalletUI(newWallet);
         checkTokenBalance(newWallet);
       } else {
         disconnectWallet();

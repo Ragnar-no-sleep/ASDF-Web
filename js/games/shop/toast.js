@@ -43,8 +43,6 @@ const Toast = {
     this.container.setAttribute('aria-live', 'polite');
     this.container.setAttribute('aria-label', 'Notifications');
     document.body.appendChild(this.container);
-
-    console.log('[Toast] Initialized');
   },
 
   /**

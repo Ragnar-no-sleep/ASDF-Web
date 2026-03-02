@@ -3,8 +3,6 @@
    The World Tree - Vertical Medallion Layout
    ============================================ */
 
-@import url('./design-tokens.css');
-
 :root {
   /* Fire Palette */
   --bg-void: #0a0a0f;
@@ -277,15 +275,6 @@ body {
 
 .view-section.active {
   display: block;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 /* ============================================
@@ -2921,7 +2910,7 @@ body {
    RESPONSIVE
    ============================================ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .realm-medallion {
     width: 55px;
     height: 55px;
@@ -4592,7 +4581,7 @@ body {
    RESPONSIVE - Canonical Tree
    ============================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .yggdrasil-canonical {
     height: 700px;
   }
@@ -5565,7 +5554,7 @@ body {
   gap: 24px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .journey-content {
     grid-template-columns: 1fr;
   }

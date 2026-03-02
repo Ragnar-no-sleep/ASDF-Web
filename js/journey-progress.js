@@ -6,8 +6,6 @@
  * Philosophy: Don't trust. Verify. Build.
  */
 
-/* eslint-disable no-unused-vars */
-
 const JOURNEY_STORAGE_KEY = 'asdf_journey_progress';
 
 // ============================================
@@ -249,7 +247,10 @@ function checkJourneySkillPackCompletion(skillPackId, skillPack) {
     return progress.lessons[id] && progress.lessons[id].completed;
   });
 
-  if (allCompleted && (!progress.skillPacks[skillPackId] || !progress.skillPacks[skillPackId].completed)) {
+  if (
+    allCompleted &&
+    (!progress.skillPacks[skillPackId] || !progress.skillPacks[skillPackId].completed)
+  ) {
     if (!progress.skillPacks[skillPackId]) {
       progress.skillPacks[skillPackId] = {
         skillPackId: skillPackId,
@@ -326,7 +327,8 @@ function getJourneyModuleStats(module) {
     });
   });
 
-  const percentComplete = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const percentComplete =
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return {
     totalLessons: totalLessons,

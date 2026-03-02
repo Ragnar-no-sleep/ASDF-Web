@@ -36,7 +36,7 @@ export const FREQUENCIES = {
   highMid: BASE_FREQ * 1.25, // 540 Hz
   high: BASE_FREQ * PHI, // 698.7 Hz
   higher: BASE_FREQ * PHI * 1.25, // 873.4 Hz
-  highest: BASE_FREQ * PHI * PHI // 1130.5 Hz
+  highest: BASE_FREQ * PHI * PHI, // 1130.5 Hz
 };
 
 /**
@@ -66,7 +66,7 @@ export const PROFILES = {
     freq: FREQUENCIES.base,
     duration: 0.08,
     type: 'sine',
-    description: 'Standard click feedback'
+    description: 'Standard click feedback',
   },
 
   /**
@@ -76,7 +76,7 @@ export const PROFILES = {
     freq: FREQUENCIES.highMid,
     duration: 0.05,
     type: 'sine',
-    description: 'Subtle hover feedback'
+    description: 'Subtle hover feedback',
   },
 
   /**
@@ -86,7 +86,7 @@ export const PROFILES = {
     freq: FREQUENCIES.mid,
     duration: 0.06,
     type: 'sine',
-    description: 'Focus indicator'
+    description: 'Focus indicator',
   },
 
   /**
@@ -96,7 +96,7 @@ export const PROFILES = {
     freq: FREQUENCIES.high,
     duration: 0.1,
     type: 'triangle',
-    description: 'Toggle to on state'
+    description: 'Toggle to on state',
   },
 
   /**
@@ -106,7 +106,7 @@ export const PROFILES = {
     freq: FREQUENCIES.lowMid,
     duration: 0.1,
     type: 'triangle',
-    description: 'Toggle to off state'
+    description: 'Toggle to off state',
   },
 
   // ============================================
@@ -120,7 +120,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.2,
     type: 'triangle',
-    description: 'Success confirmation'
+    description: 'Success confirmation',
   },
 
   /**
@@ -130,7 +130,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiInverse,
     duration: 0.3,
     type: 'sawtooth',
-    description: 'Error alert'
+    description: 'Error alert',
   },
 
   /**
@@ -140,7 +140,7 @@ export const PROFILES = {
     freq: FREQUENCIES.base,
     duration: 0.15,
     type: 'square',
-    description: 'Warning alert'
+    description: 'Warning alert',
   },
 
   /**
@@ -150,7 +150,7 @@ export const PROFILES = {
     freq: FREQUENCIES.high,
     duration: 0.12,
     type: 'sine',
-    description: 'Information notification'
+    description: 'Information notification',
   },
 
   // ============================================
@@ -164,7 +164,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.25,
     type: 'triangle',
-    description: 'Wallet connected'
+    description: 'Wallet connected',
   },
 
   /**
@@ -174,7 +174,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiInverse,
     duration: 0.2,
     type: 'sine',
-    description: 'Wallet disconnected'
+    description: 'Wallet disconnected',
   },
 
   /**
@@ -184,7 +184,7 @@ export const PROFILES = {
     freq: FREQUENCIES.mid,
     duration: 0.15,
     type: 'triangle',
-    description: 'Transaction pending'
+    description: 'Transaction pending',
   },
 
   /**
@@ -194,7 +194,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquared,
     duration: 0.3,
     type: 'triangle',
-    description: 'Transaction confirmed'
+    description: 'Transaction confirmed',
   },
 
   /**
@@ -204,7 +204,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquaredInverse,
     duration: 0.35,
     type: 'sawtooth',
-    description: 'Transaction failed'
+    description: 'Transaction failed',
   },
 
   // ============================================
@@ -218,7 +218,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.1,
     type: 'triangle',
-    description: 'Score points'
+    description: 'Score points',
   },
 
   /**
@@ -228,7 +228,7 @@ export const PROFILES = {
     freq: FREQUENCIES.higher,
     duration: 0.15,
     type: 'sine',
-    description: 'Bonus points'
+    description: 'Bonus points',
   },
 
   /**
@@ -238,7 +238,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquared,
     duration: 0.4,
     type: 'sine',
-    description: 'Level up'
+    description: 'Level up',
   },
 
   /**
@@ -248,7 +248,7 @@ export const PROFILES = {
     freq: FREQUENCIES.high,
     duration: 0.3,
     type: 'triangle',
-    description: 'Game start'
+    description: 'Game start',
   },
 
   /**
@@ -258,7 +258,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquaredInverse,
     duration: 0.5,
     type: 'sawtooth',
-    description: 'Game over'
+    description: 'Game over',
   },
 
   /**
@@ -268,7 +268,7 @@ export const PROFILES = {
     freq: FREQUENCIES.mid,
     duration: 0.08,
     type: 'square',
-    description: 'Countdown tick'
+    description: 'Countdown tick',
   },
 
   /**
@@ -278,7 +278,7 @@ export const PROFILES = {
     freq: FREQUENCIES.highMid,
     duration: 0.1,
     type: 'sine',
-    description: 'Item collected'
+    description: 'Item collected',
   },
 
   /**
@@ -288,7 +288,7 @@ export const PROFILES = {
     freq: FREQUENCIES.low,
     duration: 0.15,
     type: 'triangle',
-    description: 'Missed target'
+    description: 'Missed target',
   },
 
   // ============================================
@@ -302,7 +302,7 @@ export const PROFILES = {
     freq: FREQUENCIES.mid,
     duration: 0.1,
     type: 'sine',
-    description: 'Navigation'
+    description: 'Navigation',
   },
 
   /**
@@ -312,7 +312,7 @@ export const PROFILES = {
     freq: FREQUENCIES.highMid,
     duration: 0.08,
     type: 'sine',
-    description: 'Tab change'
+    description: 'Tab change',
   },
 
   /**
@@ -322,7 +322,7 @@ export const PROFILES = {
     freq: FREQUENCIES.high,
     duration: 0.12,
     type: 'sine',
-    description: 'Modal open'
+    description: 'Modal open',
   },
 
   /**
@@ -332,7 +332,7 @@ export const PROFILES = {
     freq: FREQUENCIES.lowMid,
     duration: 0.1,
     type: 'sine',
-    description: 'Modal close'
+    description: 'Modal close',
   },
 
   // ============================================
@@ -346,7 +346,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.15,
     type: 'sine',
-    description: 'Notification'
+    description: 'Notification',
   },
 
   /**
@@ -356,7 +356,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquared,
     duration: 0.35,
     type: 'triangle',
-    description: 'Achievement unlocked'
+    description: 'Achievement unlocked',
   },
 
   /**
@@ -366,7 +366,7 @@ export const PROFILES = {
     freq: FREQUENCIES.high,
     duration: 0.1,
     type: 'sine',
-    description: 'New message'
+    description: 'New message',
   },
 
   // ============================================
@@ -380,7 +380,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquared,
     duration: 0.3,
     type: 'triangle',
-    description: 'Purchase complete'
+    description: 'Purchase complete',
   },
 
   /**
@@ -390,7 +390,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.15,
     type: 'sine',
-    description: 'Item equipped'
+    description: 'Item equipped',
   },
 
   // ============================================
@@ -404,7 +404,7 @@ export const PROFILES = {
     freq: FREQUENCIES.phi,
     duration: 0.4,
     type: 'triangle',
-    description: 'Token burn'
+    description: 'Token burn',
   },
 
   /**
@@ -414,8 +414,8 @@ export const PROFILES = {
     freq: FREQUENCIES.phiSquared,
     duration: 0.6,
     type: 'triangle',
-    description: 'Massive burn event'
-  }
+    description: 'Massive burn event',
+  },
 };
 
 /**
@@ -443,9 +443,7 @@ export function getProfileNames() {
 export function getProfilesByCategory(category) {
   const prefix = category.toLowerCase();
   return Object.fromEntries(
-    Object.entries(PROFILES).filter(([key]) =>
-      key.toLowerCase().startsWith(prefix)
-    )
+    Object.entries(PROFILES).filter(([key]) => key.toLowerCase().startsWith(prefix))
   );
 }
 

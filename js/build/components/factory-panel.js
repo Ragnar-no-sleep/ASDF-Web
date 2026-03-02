@@ -11,16 +11,14 @@
 import { TRACKS, EVENTS } from '../config.js';
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
-import { sanitizeText, escapeHtml } from '../utils/security.js';
+import { escapeHtml } from '../utils/security.js';
 import {
   $,
-  $$,
   addClass,
   removeClass,
   on,
   off,
   createElement,
-  setStyles,
   waitForTransition,
 } from '../utils/dom.js';
 
@@ -219,8 +217,6 @@ const FactoryPanelComponent = {
         }, 300);
       }
     });
-
-    console.log('[FactoryPanelComponent] Initialized');
   },
 
   /**

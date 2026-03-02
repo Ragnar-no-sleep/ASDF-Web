@@ -4,8 +4,6 @@
 // Converted from React/TypeScript to Vanilla JS
 // ============================================
 
-/* eslint-disable no-unused-vars */
-
 // ============================================
 // LEVELS & PROGRESSION
 // ============================================
@@ -91,7 +89,7 @@ const MODULE_1_FOUNDATIONS = {
             {
               type: 'theory',
               content:
-                '# What is Blockchain?\n\n## Don\'t Trust. Verify.\n\nImagine a world where you don\'t need to trust banks, governments, or corporations to verify that you own something. That\'s the promise of blockchain.\n\n### The Problem with Traditional Systems\n\nIn traditional systems, we rely on **trusted intermediaries**:\n- Banks verify your balance\n- Governments verify your identity\n- Companies verify your purchases\n\nBut what if these intermediaries:\n- Make mistakes?\n- Get hacked?\n- Act against your interests?\n\n### The Blockchain Solution\n\nA blockchain is a **distributed ledger** - a database that\'s:\n\n| Traditional Database | Blockchain |\n|---------------------|------------|\n| Stored in one place | Copied across thousands of computers |\n| Controlled by one entity | Controlled by no one (or everyone) |\n| Can be modified by admin | Immutable once written |\n| Trust the operator | Trust the math |\n\n> **This is fine.** &#128021;&#128293;\n>\n> Even if half the network burns down, your data survives.',
+                "# What is Blockchain?\n\n## Don't Trust. Verify.\n\nImagine a world where you don't need to trust banks, governments, or corporations to verify that you own something. That's the promise of blockchain.\n\n### The Problem with Traditional Systems\n\nIn traditional systems, we rely on **trusted intermediaries**:\n- Banks verify your balance\n- Governments verify your identity\n- Companies verify your purchases\n\nBut what if these intermediaries:\n- Make mistakes?\n- Get hacked?\n- Act against your interests?\n\n### The Blockchain Solution\n\nA blockchain is a **distributed ledger** - a database that's:\n\n| Traditional Database | Blockchain |\n|---------------------|------------|\n| Stored in one place | Copied across thousands of computers |\n| Controlled by one entity | Controlled by no one (or everyone) |\n| Can be modified by admin | Immutable once written |\n| Trust the operator | Trust the math |\n\n> **This is fine.** &#128021;&#128293;\n>\n> Even if half the network burns down, your data survives.",
             },
             {
               type: 'theory',
@@ -184,7 +182,7 @@ const MODULE_1_FOUNDATIONS = {
             {
               type: 'theory',
               content:
-                "# Why Solana?\n\n## The Speed Problem\n\nMost blockchains face a trilemma:\n\n```\n      Security\n         /\\\n        /  \\\n       /    \\\n      /______\\\nDecentralization  Scalability\n```\n\n**Traditional blockchains** sacrifice scalability:\n- Bitcoin: ~7 TPS (transactions per second)\n- Ethereum: ~15-30 TPS\n\n**Solana's approach**: Solve the trilemma with innovation.\n\n### Proof of History (PoH) &#9200;\n\n> \"Time is the most decentralized resource we have.\"\n\nTraditional consensus:\n1. Validator receives transaction\n2. Validator asks other validators: \"What time did this happen?\"\n3. Everyone agrees on order\n4. **Slow!**\n\nSolana's PoH:\n1. Cryptographic timestamps are built into each block\n2. Validators can verify order **without communication**\n3. **Fast!**",
+                '# Why Solana?\n\n## The Speed Problem\n\nMost blockchains face a trilemma:\n\n```\n      Security\n         /\\\n        /  \\\n       /    \\\n      /______\\\nDecentralization  Scalability\n```\n\n**Traditional blockchains** sacrifice scalability:\n- Bitcoin: ~7 TPS (transactions per second)\n- Ethereum: ~15-30 TPS\n\n**Solana\'s approach**: Solve the trilemma with innovation.\n\n### Proof of History (PoH) &#9200;\n\n> "Time is the most decentralized resource we have."\n\nTraditional consensus:\n1. Validator receives transaction\n2. Validator asks other validators: "What time did this happen?"\n3. Everyone agrees on order\n4. **Slow!**\n\nSolana\'s PoH:\n1. Cryptographic timestamps are built into each block\n2. Validators can verify order **without communication**\n3. **Fast!**',
             },
             {
               type: 'theory',
@@ -211,12 +209,12 @@ const MODULE_1_FOUNDATIONS = {
                   id: 'c',
                   text: 'A consensus mechanism like Proof of Work',
                   explanation:
-                    "PoH is not a consensus mechanism - it works alongside Tower BFT consensus.",
+                    'PoH is not a consensus mechanism - it works alongside Tower BFT consensus.',
                 },
                 {
                   id: 'd',
                   text: 'A way to store historical data',
-                  explanation: "PoH is about time-ordering, not storage.",
+                  explanation: 'PoH is about time-ordering, not storage.',
                 },
               ],
               correctAnswer: 'b',
@@ -334,7 +332,7 @@ const MODULE_1_FOUNDATIONS = {
             {
               type: 'theory',
               content:
-                '### Creating a Keypair\n\n**Option 1: Solana CLI (for development)**\n\n```bash\n# Generate a new keypair\nsolana-keygen new --outfile ~/.config/solana/devnet-wallet.json\n\n# You\'ll see:\n# Generating a new keypair\n# Wrote new keypair to ~/.config/solana/devnet-wallet.json\n# pubkey: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\n#\n# Save this seed phrase: word1 word2 word3 ... word12\n```\n\n### Set as Default Wallet\n\n```bash\nsolana config set --keypair ~/.config/solana/devnet-wallet.json\n```\n\n### Check Your Address\n\n```bash\nsolana address\n# Output: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\n```\n\n### Security Best Practices\n\n| Do | Don\'t |\n|----|-------|\n| &#10004; Use hardware wallets for real funds | &#10008; Store keys in plain text |\n| &#10004; Keep seed phrase offline | &#10008; Share seed phrase with anyone |\n| &#10004; Use separate wallets for dev/prod | &#10008; Use mainnet wallet for testing |',
+                "### Creating a Keypair\n\n**Option 1: Solana CLI (for development)**\n\n```bash\n# Generate a new keypair\nsolana-keygen new --outfile ~/.config/solana/devnet-wallet.json\n\n# You'll see:\n# Generating a new keypair\n# Wrote new keypair to ~/.config/solana/devnet-wallet.json\n# pubkey: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\n#\n# Save this seed phrase: word1 word2 word3 ... word12\n```\n\n### Set as Default Wallet\n\n```bash\nsolana config set --keypair ~/.config/solana/devnet-wallet.json\n```\n\n### Check Your Address\n\n```bash\nsolana address\n# Output: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\n```\n\n### Security Best Practices\n\n| Do | Don't |\n|----|-------|\n| &#10004; Use hardware wallets for real funds | &#10008; Store keys in plain text |\n| &#10004; Keep seed phrase offline | &#10008; Share seed phrase with anyone |\n| &#10004; Use separate wallets for dev/prod | &#10008; Use mainnet wallet for testing |",
             },
             {
               type: 'quiz',
@@ -483,12 +481,12 @@ const MODULE_1_FOUNDATIONS = {
             {
               type: 'theory',
               content:
-                '# Sending Your First Transaction\n\n## Transaction Anatomy\n\nEvery Solana transaction has these components:\n\n```\n+------------------------------------------+\n|              TRANSACTION                  |\n+------------------------------------------+\n|  Signatures: [sig1, sig2, ...]           | <- Proves authorization\n|  Message:                                 |\n|    +-- Header                            | <- Metadata\n|    +-- Account Keys: [pubkey1, ...]      | <- Who\'s involved\n|    +-- Recent Blockhash                  | <- Prevents replay\n|    +-- Instructions: [                   | <- What to do\n|         {                                |\n|           programId: SystemProgram       | <- Which program\n|           keys: [from, to]               | <- Accounts needed\n|           data: [transfer, amount]       | <- What action\n|         }                                |\n|       ]                                  |\n+------------------------------------------+\n```\n\n### Key Concepts\n\n| Concept | Description |\n|---------|-------------|\n| **Instruction** | A single operation (transfer, mint, etc.) |\n| **Program** | Smart contract that executes instructions |\n| **Account** | Storage unit on Solana |\n| **Blockhash** | Recent hash to prevent replay attacks |\n| **Signature** | Cryptographic proof of authorization |',
+                "# Sending Your First Transaction\n\n## Transaction Anatomy\n\nEvery Solana transaction has these components:\n\n```\n+------------------------------------------+\n|              TRANSACTION                  |\n+------------------------------------------+\n|  Signatures: [sig1, sig2, ...]           | <- Proves authorization\n|  Message:                                 |\n|    +-- Header                            | <- Metadata\n|    +-- Account Keys: [pubkey1, ...]      | <- Who's involved\n|    +-- Recent Blockhash                  | <- Prevents replay\n|    +-- Instructions: [                   | <- What to do\n|         {                                |\n|           programId: SystemProgram       | <- Which program\n|           keys: [from, to]               | <- Accounts needed\n|           data: [transfer, amount]       | <- What action\n|         }                                |\n|       ]                                  |\n+------------------------------------------+\n```\n\n### Key Concepts\n\n| Concept | Description |\n|---------|-------------|\n| **Instruction** | A single operation (transfer, mint, etc.) |\n| **Program** | Smart contract that executes instructions |\n| **Account** | Storage unit on Solana |\n| **Blockhash** | Recent hash to prevent replay attacks |\n| **Signature** | Cryptographic proof of authorization |",
             },
             {
               type: 'theory',
               content:
-                '### Sending SOL with CLI\n\n```bash\n# Send 0.5 SOL to another address\nsolana transfer <RECIPIENT_ADDRESS> 0.5\n\n# With confirmation level\nsolana transfer <RECIPIENT_ADDRESS> 0.5 --commitment confirmed\n\n# Output:\n# Signature: 5UfgJ...xyz\n```\n\n### Verifying on Explorer\n\nAfter sending, always verify:\n\n1. Go to explorer.solana.com\n2. Switch to **Devnet** (top right)\n3. Paste your signature\n4. Check:\n   - &#10004; Status: Success\n   - &#10004; Fee: ~0.000005 SOL\n   - &#10004; From/To addresses match\n   - &#10004; Amount correct\n\n> **Don\'t trust. Verify.** Always check the explorer.',
+                "### Sending SOL with CLI\n\n```bash\n# Send 0.5 SOL to another address\nsolana transfer <RECIPIENT_ADDRESS> 0.5\n\n# With confirmation level\nsolana transfer <RECIPIENT_ADDRESS> 0.5 --commitment confirmed\n\n# Output:\n# Signature: 5UfgJ...xyz\n```\n\n### Verifying on Explorer\n\nAfter sending, always verify:\n\n1. Go to explorer.solana.com\n2. Switch to **Devnet** (top right)\n3. Paste your signature\n4. Check:\n   - &#10004; Status: Success\n   - &#10004; Fee: ~0.000005 SOL\n   - &#10004; From/To addresses match\n   - &#10004; Amount correct\n\n> **Don't trust. Verify.** Always check the explorer.",
             },
             {
               type: 'quiz',

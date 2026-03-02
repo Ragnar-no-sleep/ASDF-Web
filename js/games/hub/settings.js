@@ -32,7 +32,7 @@ function validateSettingValue(key, value, defaults) {
     case 'boolean':
       return typeof value === 'boolean' ? value : defaultValue;
 
-    case 'number':
+    case 'number': {
       const num = Number(value);
       if (!Number.isFinite(num)) return defaultValue;
       // For volume settings, clamp to 0-1
@@ -40,6 +40,7 @@ function validateSettingValue(key, value, defaults) {
         return Math.max(0, Math.min(1, num));
       }
       return num;
+    }
 
     case 'string':
       if (typeof value !== 'string') return defaultValue;
@@ -127,8 +128,6 @@ const Settings = {
    * Initialize settings
    */
   init() {
-    console.log('[Settings] Initializing...');
-
     // Load settings
     this.load();
 
@@ -276,8 +275,6 @@ const Settings = {
       console.error('[Settings] Failed to load:', e);
       this.current = { ...this.defaults };
     }
-
-    console.log('[Settings] Loaded (validated):', this.current);
   },
 
   /**
@@ -286,7 +283,6 @@ const Settings = {
   save() {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.current));
-      console.log('[Settings] Saved');
     } catch (e) {
       console.error('[Settings] Failed to save:', e);
     }
@@ -345,9 +341,7 @@ const Settings = {
     this.applyAll();
     this.render();
 
-    if (window.Hub) {
-      window.Hub.showNotification('Settings reset to defaults', 'info');
-    }
+    GameEvents.emit('notify', { msg: 'Settings reset to defaults' });
   },
 
   // ============================================
@@ -376,12 +370,13 @@ const Settings = {
         document.body.classList.toggle('no-animations', !value);
         break;
 
-      case 'particles':
+      case 'particles': {
         const particles = document.querySelector('.valhalla-particles');
         if (particles) {
           particles.style.display = value ? 'block' : 'none';
         }
         break;
+      }
 
       case 'reducedMotion':
         document.body.classList.toggle('reduced-motion', value);
@@ -670,9 +665,7 @@ const Settings = {
     a.click();
     URL.revokeObjectURL(url);
 
-    if (window.Hub) {
-      window.Hub.showNotification('Data exported successfully', 'success');
-    }
+    GameEvents.emit('notify', { msg: 'Data exported successfully' });
   },
 
   /**
@@ -695,9 +688,7 @@ const Settings = {
 
     keys.forEach(key => localStorage.removeItem(key));
 
-    if (window.Hub) {
-      window.Hub.showNotification('All data cleared', 'info');
-    }
+    GameEvents.emit('notify', { msg: 'All data cleared' });
 
     // Reload page
     setTimeout(() => {

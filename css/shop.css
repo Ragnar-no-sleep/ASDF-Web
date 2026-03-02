@@ -6,8 +6,6 @@
  * @version 2.0.0
  */
 
-@import url('./design-tokens.css');
-
 /* ============================================
    CSS VARIABLES
    ============================================ */
@@ -164,13 +162,13 @@
   min-height: 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .shop-main {
     grid-template-columns: 200px 1fr 300px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .shop-main {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
@@ -982,7 +980,7 @@
    RESPONSIVE
    ============================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .shop-filters {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1010,7 +1008,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .shop-header {
     flex-direction: column;
     gap: var(--space-md);

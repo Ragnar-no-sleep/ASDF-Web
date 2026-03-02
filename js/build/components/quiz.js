@@ -13,7 +13,6 @@ import { sanitizeText } from '../utils/security.js';
 import {
   $,
   $$,
-  byId,
   addClass,
   removeClass,
   show,
@@ -69,8 +68,6 @@ const QuizComponent = {
     if (BuildState.data.quizResult) {
       this.showResult(BuildState.data.quizResult);
     }
-
-    console.log('[QuizComponent] Initialized');
   },
 
   /**

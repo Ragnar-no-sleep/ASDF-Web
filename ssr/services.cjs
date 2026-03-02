@@ -93,22 +93,84 @@ class GameService {
 
   defineGames() {
     return [
-      { id: 'tokencatcher', name: 'Token Catcher', icon: '🪙', type: 'Arcade', description: 'Catch falling tokens, avoid scam coins!' },
-      { id: 'burnrunner', name: 'Burn Runner', icon: '🔥', type: 'Endless Runner', description: 'Run through the burn, collect what remains.' },
-      { id: 'scamblaster', name: 'Scam Blaster', icon: '🎯', type: 'Shooter', description: 'Blast the scams, protect the community.' },
-      { id: 'cryptoheist', name: 'Crypto Heist', icon: '💎', type: 'Stealth', description: 'Infiltrate the exchange, secure the bags.' },
-      { id: 'whalewatch', name: 'Whale Watch', icon: '🐋', type: 'Strategy', description: 'Track the whales, predict the moves.' },
-      { id: 'stakestacker', name: 'Stake Stacker', icon: '📊', type: 'Puzzle', description: 'Stack your stakes, maximize returns.' },
-      { id: 'dexdash', name: 'DEX Dash', icon: '💹', type: 'Racing', description: 'Race across DEXes, find the best routes.' },
-      { id: 'burnorhold', name: 'Burn or HODL', icon: '🎰', type: 'Decision', description: 'Quick decisions: burn it or hold it?' },
-      { id: 'liquiditymaze', name: 'Liquidity Maze', icon: '🌊', type: 'Maze', description: 'Navigate pools, avoid impermanent loss.' },
+      {
+        id: 'tokencatcher',
+        name: 'Token Catcher',
+        icon: '🪙',
+        type: 'Arcade',
+        description: 'Catch falling tokens, avoid scam coins!',
+      },
+      {
+        id: 'burnrunner',
+        name: 'Burn Runner',
+        icon: '🔥',
+        type: 'Endless Runner',
+        description: 'Run through the burn, collect what remains.',
+      },
+      {
+        id: 'scamblaster',
+        name: 'Scam Blaster',
+        icon: '🎯',
+        type: 'Shooter',
+        description: 'Blast the scams, protect the community.',
+      },
+      {
+        id: 'cryptoheist',
+        name: 'Crypto Heist',
+        icon: '💎',
+        type: 'Stealth',
+        description: 'Infiltrate the exchange, secure the bags.',
+      },
+      {
+        id: 'whalewatch',
+        name: 'Whale Watch',
+        icon: '🐋',
+        type: 'Strategy',
+        description: 'Track the whales, predict the moves.',
+      },
+      {
+        id: 'stakestacker',
+        name: 'Stake Stacker',
+        icon: '📊',
+        type: 'Puzzle',
+        description: 'Stack your stakes, maximize returns.',
+      },
+      {
+        id: 'dexdash',
+        name: 'DEX Dash',
+        icon: '💹',
+        type: 'Racing',
+        description: 'Race across DEXes, find the best routes.',
+      },
+      {
+        id: 'burnorhold',
+        name: 'Burn or HODL',
+        icon: '🎰',
+        type: 'Decision',
+        description: 'Quick decisions: burn it or hold it?',
+      },
+      {
+        id: 'liquiditymaze',
+        name: 'Liquidity Maze',
+        icon: '🌊',
+        type: 'Maze',
+        description: 'Navigate pools, avoid impermanent loss.',
+      },
     ];
   }
 
-  all() { return this.games; }
-  find(id) { return this.games.find((g) => g.id === id) || null; }
-  validIds() { return this.games.map((g) => g.id); }
-  isValid(id) { return this.validIds().includes(id); }
+  all() {
+    return this.games;
+  }
+  find(id) {
+    return this.games.find(g => g.id === id) || null;
+  }
+  validIds() {
+    return this.games.map(g => g.id);
+  }
+  isValid(id) {
+    return this.validIds().includes(id);
+  }
 
   getCurrentWeekIndex() {
     const epoch = new Date(this.config.get('ROTATION_EPOCH')).getTime();
@@ -118,7 +180,9 @@ class GameService {
     return weeksSinceEpoch % this.config.get('CYCLE_WEEKS');
   }
 
-  getCurrentGame() { return this.games[this.getCurrentWeekIndex()]; }
+  getCurrentGame() {
+    return this.games[this.getCurrentWeekIndex()];
+  }
 
   getNextRotationTime() {
     const now = new Date();
@@ -130,8 +194,12 @@ class GameService {
     return nextMonday;
   }
 
-  getRewardSlots() { return { 1: 5, 2: 2, 3: 1 }; }
-  toJson() { return JSON.stringify(this.games); }
+  getRewardSlots() {
+    return { 1: 5, 2: 2, 3: 1 };
+  }
+  toJson() {
+    return JSON.stringify(this.games);
+  }
 }
 
 // =============================================================================
@@ -193,17 +261,25 @@ class LeaderboardService {
     if (!leaderboard || leaderboard.length === 0) {
       return '<div class="leaderboard-empty">No scores yet</div>';
     }
-    return leaderboard.map((entry) => {
-      const rank = entry.rank || 0;
-      const player = this.escapeHtml(entry.player || '');
-      const value = type === 'cycle' ? `${entry.slots || 0} slots` : (entry.score || 0).toLocaleString();
-      const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-      return `<div class="leaderboard-item"><div class="leaderboard-rank ${rankClass}">${rank}</div><div class="leaderboard-player">${player}</div><div class="leaderboard-score">${value}</div></div>`;
-    }).join('');
+    return leaderboard
+      .map(entry => {
+        const rank = entry.rank || 0;
+        const player = this.escapeHtml(entry.player || '');
+        const value =
+          type === 'cycle' ? `${entry.slots || 0} slots` : (entry.score || 0).toLocaleString();
+        const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+        return `<div class="leaderboard-item"><div class="leaderboard-rank ${rankClass}">${rank}</div><div class="leaderboard-player">${player}</div><div class="leaderboard-score">${value}</div></div>`;
+      })
+      .join('');
   }
 
   escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }
 
@@ -236,4 +312,10 @@ function generateHydrationScript() {
   return `<script>window.__ASDF_SSR__ = ${JSON.stringify(data)};</script>`;
 }
 
-module.exports = { ConfigService, GameService, LeaderboardService, getContainer, generateHydrationScript };
+module.exports = {
+  ConfigService,
+  GameService,
+  LeaderboardService,
+  getContainer,
+  generateHydrationScript,
+};

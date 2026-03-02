@@ -41,5 +41,5 @@ module.exports = {
   debug,
   debugWarn,
   debugError,
-  startup
+  startup,
 };

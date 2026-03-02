@@ -22,19 +22,15 @@ const GameLifecycle = {
     if (isCompetitive) {
       // Verify we can still play competitive and start session
       if (typeof canPlayCompetitive === 'function' && !canPlayCompetitive(gameId)) {
-        alert('Mode competitif non disponible. Basculement vers le mode entrainement.');
-        activeGameModes[gameId] = 'practice';
-        const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-        const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-        if (competitiveBtn) competitiveBtn.classList.remove('active');
-        if (practiceBtn) practiceBtn.classList.add('active');
+        GameEvents.emit('notify', {
+          msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.',
+        });
+        GameEvents.emit('game:mode-fallback', { gameId });
       } else if (typeof startCompetitiveSession === 'function' && !startCompetitiveSession()) {
-        alert("Temps competitif epuise pour aujourd'hui! Basculement vers le mode entrainement.");
-        activeGameModes[gameId] = 'practice';
-        const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-        const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-        if (competitiveBtn) competitiveBtn.classList.remove('active');
-        if (practiceBtn) practiceBtn.classList.add('active');
+        GameEvents.emit('notify', {
+          msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement.",
+        });
+        GameEvents.emit('game:mode-fallback', { gameId });
       }
     }
 
@@ -50,12 +46,14 @@ const GameLifecycle = {
     if (overlay) overlay.classList.add('hidden');
 
     requestAnimationFrame(() => {
-      // Delegate to GameEngines coordinator if available
-      if (typeof GameEngines !== 'undefined' && GameEngines.initialized) {
+      // Read mode AFTER fallback logic (may have changed from competitive to practice)
+      const actualMode =
+        typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
+      GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
+
+      // Delegate to GameEngines coordinator
+      if (typeof GameEngines !== 'undefined') {
         GameEngines.start(gameId);
-      } else if (typeof initializeGame === 'function') {
-        // Fallback to legacy function
-        initializeGame(gameId);
       }
     });
   },
@@ -133,8 +131,9 @@ const GameLifecycle = {
           if (apiResult.isNewBest) {
             appState.practiceScores[gameId] = apiResult.bestScore;
             if (typeof saveState === 'function') saveState();
-            const bestEl = document.getElementById(`best-${gameId}`);
-            if (bestEl) bestEl.textContent = apiResult.bestScore;
+            if (typeof GameEvents !== 'undefined') {
+              GameEvents.emit('score:best', { gameId, score: apiResult.bestScore });
+            }
           }
         }
       } catch (error) {
@@ -154,6 +153,8 @@ const GameLifecycle = {
 
     // Render game over UI
     this.renderGameOver(gameId, safeScore, xpResult, apiResult, submitError, isCompetitive);
+
+    GameEvents.emit('game:ended', { gameId, score: safeScore, isCompetitive });
   },
 
   /**
@@ -229,20 +230,6 @@ const GameLifecycle = {
       errorDiv.className = 'game-over-error';
       errorDiv.textContent = `(Score saved locally - ${submitError})`;
       gameOverDiv.appendChild(errorDiv);
-    }
-
-    // Show achievements unlocked from this game
-    if (apiResult?.newAchievements && apiResult.newAchievements.length > 0) {
-      if (typeof GameRewards !== 'undefined') {
-        GameRewards.processScoreResponse(apiResult, gameId);
-
-        const achievementsSection = GameRewards.createGameOverAchievements(
-          apiResult.newAchievements
-        );
-        if (achievementsSection) {
-          gameOverDiv.appendChild(achievementsSection);
-        }
-      }
     }
 
     const restartBtn = document.createElement('button');

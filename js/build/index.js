@@ -11,7 +11,7 @@
 // IMPORTS
 // ============================================
 
-import { DEFAULTS, EVENTS, SELECTORS } from './config.js';
+import { EVENTS, SELECTORS } from './config.js';
 import { BuildState } from './state.js';
 import { DataAdapter } from './data/adapter.js';
 import { ModalFactory } from './components/modal.js';
@@ -34,7 +34,7 @@ import { RendererFactory } from './renderer/index.js';
 import { Animations } from './renderer/animations.js';
 import { EventHandlers } from './handlers.js';
 import { escapeHtml, sanitizeHtml, safeInnerHTML, safeTextContent } from './utils/security.js';
-import { $, $$, on, delegate } from './utils/dom.js';
+import { $, on, delegate } from './utils/dom.js';
 import { DURATION, DELAY } from './config/timing.js';
 
 // ============================================
@@ -89,7 +89,6 @@ const BuildApp = {
       return;
     }
 
-    console.log('[BuildApp] Initializing v' + this.version);
     const loadingEl = $('#app-loading');
 
     try {
@@ -99,7 +98,6 @@ const BuildApp = {
       // 2. Pre-load data
       this._updateLoadingText(loadingEl, 'Loading project data...');
       await DataAdapter.getProjects();
-      console.log('[BuildApp] Data loaded');
 
       // 3. Initialize modal factory
       ModalFactory.init();
@@ -112,12 +110,6 @@ const BuildApp = {
 
       // 4c. Initialize renderer (progressive enhancement)
       const treeContainer = $('.tree-container');
-      console.log(
-        '[BuildApp] Tree container found:',
-        !!treeContainer,
-        'enableRenderer:',
-        options.enableRenderer
-      );
       if (treeContainer && options.enableRenderer !== false) {
         try {
           this._updateLoadingText(loadingEl, 'Rendering Yggdrasil cosmos...');
@@ -151,8 +143,6 @@ const BuildApp = {
       // 9. Initialize Yggdrasil 3D components
       FormationPanel.init(SELECTORS.FORMATION_PANEL_ROOT);
       BuilderProfile.init(SELECTORS.BUILDER_PROFILE_ROOT);
-      console.log('[BuildApp] Formation panel and builder profile initialized');
-
       // 10. Initialize event handlers
       EventHandlers.init();
 
@@ -179,8 +169,6 @@ const BuildApp = {
 
       // Hide loading overlay with fade
       this._hideLoading(loadingEl);
-
-      console.log('[BuildApp] Initialization complete');
     } catch (error) {
       console.error('[BuildApp] Initialization failed:', error);
       this._showLoadingError(loadingEl, error);
@@ -232,11 +220,13 @@ const BuildApp = {
         <div class="error-icon">&#9888;</div>
         <p class="error-title">Failed to load Yggdrasil</p>
         <p class="error-message">${escapeHtml(error.message || 'Unknown error')}</p>
-        <button class="btn-retry" onclick="location.reload()">
+        <button class="btn-retry">
           <span>&#8635;</span> Retry
         </button>
       </div>`
     );
+    const retryBtn = el.querySelector('.btn-retry');
+    if (retryBtn) retryBtn.addEventListener('click', () => location.reload());
   },
 
   /**
@@ -303,7 +293,6 @@ const BuildApp = {
 
     // Renderer ready event - sync initial state
     BuildState.subscribe('renderer:ready', data => {
-      console.log(`[BuildApp] Renderer ready: ${data.type}`);
       // Sync current filter if any
       if (TreeComponent.getCurrentFilter() !== 'all') {
         RendererFactory.getRenderer()?.update({
@@ -326,7 +315,6 @@ const BuildApp = {
     // Renderer skill click event - open formation for skill
     BuildState.subscribe('renderer:skillClick', data => {
       const { skillId, skill } = data;
-      console.log(`[BuildApp] Skill clicked: ${skillId}`, skill);
       // TODO: Open formation panel for skill
     });
 
@@ -390,6 +378,13 @@ const BuildApp = {
         this.toggleDebugOverlay();
       }
     });
+
+    // Cleanup WebGL context + resources on page unload
+    on(window, 'beforeunload', () => {
+      RendererFactory.dispose();
+      TreeComponent.pauseBurnPulse();
+      StreakCounter.destroy();
+    });
   },
 
   /**
@@ -401,8 +396,6 @@ const BuildApp = {
 
     const container = $('.tree-container');
     if (!container) return;
-
-    console.log(`[BuildApp] Switching renderer: ${currentType} -> ${newType}`);
 
     try {
       await RendererFactory.switchRenderer(newType, container);
@@ -500,7 +493,6 @@ const BuildApp = {
     ModalFactory.closeAll();
     IntroComponent.reset();
     QuizComponent.reset();
-    console.log('[BuildApp] State reset');
   },
 
   /**

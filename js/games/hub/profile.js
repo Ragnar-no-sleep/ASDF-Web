@@ -94,8 +94,6 @@ const Profile = {
    * Initialize profile module
    */
   init() {
-    console.log('[Profile] Initializing...');
-
     // Cache DOM elements
     this.cacheElements();
 
@@ -186,8 +184,11 @@ const Profile = {
    */
   loadFromLocalStorage() {
     try {
-      // Load wallet with validation
-      const wallet = localStorage.getItem('connectedWallet');
+      // Load wallet: prefer appState (games context), fall back to localStorage
+      const wallet =
+        typeof appState !== 'undefined' && appState.wallet
+          ? appState.wallet
+          : localStorage.getItem('connectedWallet');
       if (wallet && isValidWallet(wallet)) {
         this.data.wallet = wallet;
         this.data.walletShort = wallet.slice(0, 4) + '...' + wallet.slice(-4);
@@ -342,8 +343,6 @@ const Profile = {
    * Refresh profile data from server
    */
   async refresh() {
-    console.log('[Profile] Refreshing...');
-
     // Show loading state
     if (this.elements.refreshBtn) {
       this.elements.refreshBtn.disabled = true;
@@ -573,8 +572,7 @@ const Profile = {
                      style="--tier-color: ${tierColor}">
                     ${
                       item.asset_url
-                        ? `<img src="${escapeHtml(item.asset_url)}" alt="${escapeHtml(item.name)}" loading="lazy"
-                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        ? `<img src="${escapeHtml(item.asset_url)}" alt="${escapeHtml(item.name)}" loading="lazy">
                          <div class="item-placeholder" style="display: none;">${this.getLayerIcon(item.layer)}</div>`
                         : `<div class="item-placeholder">${this.getLayerIcon(item.layer)}</div>`
                     }
@@ -590,6 +588,14 @@ const Profile = {
         const itemId = el.dataset.itemId;
         const layer = el.dataset.layer;
         this.equipItem(itemId, layer);
+      });
+    });
+
+    // Bind image error fallback (CSP-safe — no inline onerror)
+    this.elements.inventoryGrid.querySelectorAll('img[loading="lazy"]').forEach(img => {
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
       });
     });
   },
@@ -635,9 +641,7 @@ const Profile = {
     this.renderAvatar();
 
     // Show feedback
-    if (window.Hub) {
-      window.Hub.showNotification('Equipment updated!', 'success');
-    }
+    GameEvents.emit('notify', { msg: 'Equipment updated!' });
   },
 
   /**
@@ -792,9 +796,7 @@ const Profile = {
     localStorage.setItem('asdf_achievements', JSON.stringify(unlocked));
 
     // Show notification
-    if (window.Hub) {
-      window.Hub.showNotification(`Achievement Unlocked: ${achievement.name}!`, 'success');
-    }
+    GameEvents.emit('notify', { msg: `Achievement Unlocked: ${achievement.name}!` });
 
     // Re-render
     this.renderAchievements();

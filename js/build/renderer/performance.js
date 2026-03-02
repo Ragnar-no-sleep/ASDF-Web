@@ -134,8 +134,6 @@ const PerformanceManager = {
     // This allows shaders to compile and textures to load without false downgrades
     this.adaptation.lastChange = performance.now();
 
-    console.log(`[Performance] Initialized with preset: ${this.currentPreset}`);
-
     return this.getSettings();
   },
 
@@ -238,9 +236,6 @@ const PerformanceManager = {
 
       if (currentIndex > 0) {
         const newPreset = presetOrder[currentIndex - 1];
-        console.log(
-          `[Performance] Downgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`
-        );
         this.setPreset(newPreset);
         this.adaptation.lastChange = now;
       }
@@ -252,9 +247,6 @@ const PerformanceManager = {
       // Wait for stable FPS before upgrading (10 checks = 20 seconds at 2s interval)
       if (this.adaptation.stableCount >= 10 && currentIndex < presetOrder.length - 1) {
         const newPreset = presetOrder[currentIndex + 1];
-        console.log(
-          `[Performance] Upgrading: ${this.currentPreset} -> ${newPreset} (FPS: ${this.fps.current.toFixed(1)})`
-        );
         this.setPreset(newPreset);
         this.adaptation.stableCount = 0;
         this.adaptation.lastChange = now;
@@ -382,7 +374,6 @@ const LODManager = {
    */
   init(camera) {
     this.camera = camera;
-    console.log('[LOD] Initialized');
   },
 
   /**
@@ -415,7 +406,7 @@ const LODManager = {
 
     const cameraPos = this.camera.position;
 
-    for (const [id, entry] of this.objects) {
+    for (const [_id, entry] of this.objects) {
       if (!entry.object || !entry.object.position) continue;
 
       const distance = cameraPos.distanceTo(entry.object.position);
@@ -499,8 +490,6 @@ const MemoryManager = {
     this.resources.geometries.clear();
     this.resources.materials.clear();
     this.resources.textures.clear();
-
-    console.log('[Memory] Disposed all tracked resources');
   },
 
   /**

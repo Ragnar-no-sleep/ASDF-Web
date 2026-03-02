@@ -502,7 +502,7 @@ const CryptoHeist = {
           targetY = enemy.lastSeenPlayer.y + (Math.random() - 0.5) * 50;
         }
         break;
-      case 'patrol':
+      case 'patrol': {
         const point = enemy.patrolPoints[enemy.patrolIndex];
         targetX = point.x;
         targetY = point.y;
@@ -514,6 +514,7 @@ const CryptoHeist = {
           enemy.patrolIndex = (enemy.patrolIndex + 1) % enemy.patrolPoints.length;
         }
         break;
+      }
       default:
         // Idle - wander slightly
         targetX = enemy.x + (Math.random() - 0.5) * 20;

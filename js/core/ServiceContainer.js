@@ -59,7 +59,9 @@ export class ServiceContainer {
 
       return instance;
     } catch (error) {
-      throw new Error(`Failed to instantiate service '${name}': ${error.message}`);
+      throw new Error(`Failed to instantiate service '${name}': ${error.message}`, {
+        cause: error,
+      });
     }
   }
 

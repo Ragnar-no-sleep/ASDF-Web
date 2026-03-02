@@ -5,8 +5,6 @@
  * @version 1.0.0
  */
 
-@import url('./design-tokens.css');
-
 /* ============================================
    VALHALLA CSS VARIABLES
    ============================================ */
@@ -657,7 +655,7 @@
   margin: 0 auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .profile-container {
     grid-template-columns: 1fr;
   }
@@ -970,6 +968,7 @@
 
 .inv-filter-btn {
   padding: var(--space-sm) var(--space-md);
+  min-height: 44px;
   background: var(--valhalla-stone);
   border: 1px solid var(--valhalla-iron);
   border-radius: var(--radius-full);

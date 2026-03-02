@@ -144,7 +144,6 @@ const ShopFavorites = {
         }
       }
 
-      console.log('[ShopFavorites] Synced with server:', merged.length, 'favorites');
       return merged;
     } catch (error) {
       console.error('[ShopFavorites] Sync failed:', error);

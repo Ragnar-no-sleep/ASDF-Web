@@ -85,7 +85,6 @@ const ShopFilters = {
     this.container = container;
     this.onFilterChange = onChange;
     this.render();
-    console.log('[ShopFilters] Initialized');
   },
 
   /**
@@ -507,7 +506,7 @@ const ShopFilters = {
     const { field, asc } = sortOption;
 
     return [...items].sort((a, b) => {
-      let comparison = 0;
+      let comparison;
 
       switch (field) {
         case 'tier':

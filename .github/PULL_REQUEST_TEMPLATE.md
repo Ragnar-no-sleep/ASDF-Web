@@ -2,21 +2,19 @@
 
 <!-- What changed and why? Be concise but complete. -->
 
-
-
 ## 📁 Changes
 
 <!-- List the key files modified and their purpose -->
 
 | File | Change |
-|------|--------|
-|  |  |
+| ---- | ------ |
+|      |        |
 
 ---
 
 ## ✅ Verify (Don't trust)
 
-> *"Don't trust. Verify."* — Every assumption must be tested.
+> _"Don't trust. Verify."_ — Every assumption must be tested.
 
 - [ ] Tests pass locally (`npm test`)
 - [ ] No ESLint/Prettier warnings (`npm run lint`)
@@ -26,7 +24,7 @@
 
 ## 🔥 Burn (Don't extract)
 
-> *"Don't extract. Burn."* — Remove the unnecessary, keep only what's essential.
+> _"Don't extract. Burn."_ — Remove the unnecessary, keep only what's essential.
 
 - [ ] No dead code added
 - [ ] No unnecessary dependencies
@@ -36,7 +34,7 @@
 
 ## 💎 Hold (Don't panic)
 
-> *"Don't panic. Hold."* — Stability over speed, quality over quantity.
+> _"Don't panic. Hold."_ — Stability over speed, quality over quantity.
 
 - [ ] Breaking changes documented below
 - [ ] Rollback plan considered
@@ -63,4 +61,4 @@ None
 
 ---
 
-*This is fine.* 🐕‍🦺🔥
+_This is fine._ 🐕‍🦺🔥

@@ -13,7 +13,6 @@ const { app } = require('../../../server.cjs');
 // ============================================
 
 describe('server.cjs routes', () => {
-
   // ------------------------------------------
   // Health check
   // ------------------------------------------
@@ -37,17 +36,17 @@ describe('server.cjs routes', () => {
   // ------------------------------------------
   describe('page routes', () => {
     const pageRoutes = [
-      { path: '/burns',          expected: 'burns.html' },
-      { path: '/forecast',       expected: 'forecast.html' },
-      { path: '/holdex',         expected: 'holdex.html' },
-      { path: '/staking',        expected: 'staking.html' },
-      { path: '/ignition',       expected: 'ignition.html' },
-      { path: '/privacy',        expected: 'privacy.html' },
-      { path: '/build',          expected: 'build.html' },
-      { path: '/me',             expected: 'me.html' },
-      { path: '/terrier',        expected: 'terrier.html' },
-      { path: '/deep-learn',     expected: 'deep-learn.html' },
-      { path: '/ecosystem-map',  expected: 'ecosystem-map.html' },
+      { path: '/burns', expected: 'burns.html' },
+      { path: '/forecast', expected: 'forecast.html' },
+      { path: '/holdex', expected: 'holdex.html' },
+      { path: '/staking', expected: 'staking.html' },
+      { path: '/ignition', expected: 'ignition.html' },
+      { path: '/privacy', expected: 'privacy.html' },
+      { path: '/build', expected: 'build.html' },
+      { path: '/me', expected: 'me.html' },
+      { path: '/terrier', expected: 'terrier.html' },
+      { path: '/deep-learn', expected: 'deep-learn.html' },
+      { path: '/ecosystem-map', expected: 'ecosystem-map.html' },
     ];
 
     for (const route of pageRoutes) {
@@ -177,6 +176,12 @@ describe('security headers', () => {
     expect(csp).toContain('https://lock-verifier.onrender.com');
   });
 
+  it('CSP blocks inline event handlers (script-src-attr none)', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toContain("script-src-attr 'none'");
+  });
+
   it('sets X-Content-Type-Options', async () => {
     const res = await request(app).get('/health');
     expect(res.headers['x-content-type-options']).toBe('nosniff');
@@ -190,6 +195,37 @@ describe('security headers', () => {
   it('does not expose X-Powered-By', async () => {
     const res = await request(app).get('/health');
     expect(res.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('CSP style-src-elem does NOT contain unsafe-inline', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    // Extract style-src-elem directive
+    const elemMatch = csp.match(/style-src-elem ([^;]+)/);
+    expect(elemMatch).not.toBeNull();
+    expect(elemMatch[1]).not.toContain("'unsafe-inline'");
+  });
+
+  it('CSP style-src-elem contains sha256 hashes for FOUC blocks', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    const elemMatch = csp.match(/style-src-elem ([^;]+)/);
+    expect(elemMatch).not.toBeNull();
+    expect(elemMatch[1]).toContain("'sha256-");
+  });
+
+  it('CSP style-src-attr contains unsafe-inline (Phase 1 contract)', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toContain("style-src-attr 'unsafe-inline'");
+  });
+
+  it('CSP has no bare style-src directive (split into elem + attr)', async () => {
+    const res = await request(app).get('/health');
+    const csp = res.headers['content-security-policy'];
+    // Should NOT have a bare "style-src" — only style-src-elem and style-src-attr
+    const bareMatch = csp.match(/(?<![a-z-])style-src(?!-)/);
+    expect(bareMatch).toBeNull();
   });
 
   it('sets Permissions-Policy header', async () => {
@@ -218,9 +254,7 @@ describe('POST /api/redis', () => {
   it('returns 400 when method is missing', async () => {
     // In dev mode without REDIS_API_KEY, endpoint is unprotected
     // but still requires method
-    const res = await request(app)
-      .post('/api/redis')
-      .send({});
+    const res = await request(app).post('/api/redis').send({});
     // Either auth fails or bad request
     expect([400, 401, 403, 503]).toContain(res.status);
   });
@@ -246,17 +280,13 @@ describe('error handler', () => {
 
 describe('bot detection (via /games SSR)', () => {
   it('serves HTML without X-SSR header for normal user agent', async () => {
-    const res = await request(app)
-      .get('/games')
-      .set('User-Agent', 'Mozilla/5.0 Chrome/120');
+    const res = await request(app).get('/games').set('User-Agent', 'Mozilla/5.0 Chrome/120');
     expect(res.status).toBe(200);
     expect(res.headers['x-ssr']).toBeUndefined();
   });
 
   it('serves SSR with X-SSR header for Googlebot', async () => {
-    const res = await request(app)
-      .get('/games')
-      .set('User-Agent', 'Googlebot/2.1');
+    const res = await request(app).get('/games').set('User-Agent', 'Googlebot/2.1');
     expect(res.status).toBe(200);
     // X-SSR set if SSR succeeds, otherwise falls back to static
     // Either way, should get 200 HTML
@@ -264,9 +294,7 @@ describe('bot detection (via /games SSR)', () => {
   });
 
   it('?ssr=1 forces SSR mode', async () => {
-    const res = await request(app)
-      .get('/games?ssr=1')
-      .set('User-Agent', 'Mozilla/5.0 Chrome/120');
+    const res = await request(app).get('/games?ssr=1').set('User-Agent', 'Mozilla/5.0 Chrome/120');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/html/);
   });

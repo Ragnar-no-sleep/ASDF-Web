@@ -4,8 +4,6 @@
  * Fibonacci spacing: 8, 13, 21, 34, 55, 89, 144px
  */
 
-@import url('./design-tokens.css');
-
 /* ============================================
    CSS VARIABLES
    ============================================ */
@@ -659,7 +657,12 @@ a:hover {
 }
 
 [data-variant='2'] .heat-haze {
-  background: linear-gradient(to top, rgba(var(--gold-rgb), 0.2), rgba(var(--ember-rgb), 0.08), transparent);
+  background: linear-gradient(
+    to top,
+    rgba(var(--gold-rgb), 0.2),
+    rgba(var(--ember-rgb), 0.08),
+    transparent
+  );
 }
 
 [data-variant='2'] .ember {
@@ -1363,7 +1366,12 @@ a:hover {
 [data-variant='2'] .flame {
   opacity: 0.9;
   animation-duration: 0.5s;
-  background: linear-gradient(to top, rgba(var(--gold-rgb), 0.6), rgba(var(--ember-rgb), 0.35), transparent);
+  background: linear-gradient(
+    to top,
+    rgba(var(--gold-rgb), 0.6),
+    rgba(var(--ember-rgb), 0.35),
+    transparent
+  );
 }
 
 /* More intense glow circles */

@@ -689,7 +689,7 @@ export const Yggdrasil = {
    */
   on(event, callback) {
     const key = `on${event.charAt(0).toUpperCase() + event.slice(1)}`;
-    if (Object.prototype.hasOwnProperty.call(this.callbacks, key)) {
+    if (Object.hasOwn(this.callbacks, key)) {
       this.callbacks[key] = callback;
     }
   },

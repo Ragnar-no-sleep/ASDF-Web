@@ -26,6 +26,9 @@ const WalletStandard = {
   /** @type {Function[]} Event listeners */
   listeners: [],
 
+  /** @type {number|null} Poll timer ID */
+  _pollTimer: null,
+
   /** @type {boolean} Initialization state */
   initialized: false,
 
@@ -140,13 +143,26 @@ const WalletStandard = {
    */
   _setupListeners() {
     // Poll for new wallets
-    setInterval(() => {
+    this._pollTimer = setInterval(() => {
       const prevCount = this.wallets.size;
       this._discoverWallets();
       if (this.wallets.size !== prevCount) {
         this._emit('walletsChanged', this.getWallets());
       }
     }, 5000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => this.destroy());
+  },
+
+  /**
+   * Destroy and clean up resources
+   */
+  destroy() {
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = null;
+    }
   },
 
   /**
@@ -215,7 +231,7 @@ const WalletStandard = {
       return { address, wallet: walletName };
     } catch (error) {
       if (error.message?.includes('User rejected')) {
-        throw new Error('Connection rejected by user');
+        throw new Error('Connection rejected by user', { cause: error });
       }
       throw error;
     }

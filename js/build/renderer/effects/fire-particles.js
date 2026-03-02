@@ -15,7 +15,7 @@ const FIRE_CONFIG = {
   // Particle counts by performance tier
   counts: {
     desktop: 2000,
-    mobile: 500
+    mobile: 500,
   },
   // Particle behavior
   particle: {
@@ -24,21 +24,21 @@ const FIRE_CONFIG = {
     minLife: 0.5,
     maxLife: 2.0,
     minSpeed: 0.5,
-    maxSpeed: 2.0
+    maxSpeed: 2.0,
   },
   // Emission area
   emission: {
     radius: 3,
     height: 8,
-    spread: 0.3
+    spread: 0.3,
   },
   // Colors (gradient from core to edge)
   colors: {
-    core: 0xffffff,      // White hot center
-    mid: 0xff6b35,       // Orange
-    outer: 0xff4400,     // Red-orange
-    smoke: 0x331100      // Dark smoke
-  }
+    core: 0xffffff, // White hot center
+    mid: 0xff6b35, // Orange
+    outer: 0xff4400, // Red-orange
+    smoke: 0x331100, // Dark smoke
+  },
 };
 
 // ============================================
@@ -78,9 +78,9 @@ class FireParticles {
    * @returns {number}
    */
   getParticleCount() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    ) || window.innerWidth < 768;
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.innerWidth < 768;
 
     return isMobile ? this.options.counts.mobile : this.options.counts.desktop;
   }
@@ -118,14 +118,14 @@ class FireParticles {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pixelRatio: { value: window.devicePixelRatio }
+        pixelRatio: { value: window.devicePixelRatio },
       },
       vertexShader: this.getVertexShader(),
       fragmentShader: this.getFragmentShader(),
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       transparent: true,
-      vertexColors: true
+      vertexColors: true,
     });
 
     // Create points
@@ -171,7 +171,8 @@ class FireParticles {
     this.sizes[index] = particle.minSize + Math.random() * (particle.maxSize - particle.minSize);
 
     // Lifetime
-    this.maxLifetimes[index] = particle.minLife + Math.random() * (particle.maxLife - particle.minLife);
+    this.maxLifetimes[index] =
+      particle.minLife + Math.random() * (particle.maxLife - particle.minLife);
     this.lifetimes[index] = Math.random() * this.maxLifetimes[index]; // Stagger start
   }
 
@@ -183,7 +184,7 @@ class FireParticles {
   update(deltaTime, intensity = 1.0) {
     if (!this.particles) return;
 
-    const { colors, emission } = this.options;
+    const { colors } = this.options;
     this.time += deltaTime;
 
     // Update shader uniform
@@ -233,7 +234,7 @@ class FireParticles {
       this.colors[i3 + 2] = color.b;
 
       // Update size (shrink as particle ages)
-      const baseSizeRatio = 1.0 - (lifeRatio * 0.5);
+      const baseSizeRatio = 1.0 - lifeRatio * 0.5;
       this.sizes[i] = this.options.particle.maxSize * baseSizeRatio * intensity;
     }
 

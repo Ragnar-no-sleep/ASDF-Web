@@ -20,29 +20,40 @@
  * Usage: node scripts/scan-ecosystem.cjs
  */
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const ROOT   = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'js', 'ecosystem-data.js');
 
 // ============================================================
 // CONSTANTS
 // ============================================================
 const EdgeType = Object.freeze({
-  IMPORT:         'import',
+  IMPORT: 'import',
   SCRIPT_INCLUDE: 'script_include',
-  CSS_INCLUDE:    'css_include',
-  API_CALL:       'api_call',
-  EVENT_EMIT:     'event_emit',
-  EVENT_LISTEN:   'event_listen',
+  CSS_INCLUDE: 'css_include',
+  API_CALL: 'api_call',
+  EVENT_EMIT: 'event_emit',
+  EVENT_LISTEN: 'event_listen',
 });
 
 const SKIP_DIRS = new Set([
-  'node_modules', '_archive', '.git', 'dist', 'coverage',
-  'playwright-report', 'test-results', 'public', 'ssr',
-  'tests', 'asdf-game-store', 'scripts', 'demos', 'ASDF-Web',
+  'node_modules',
+  '_archive',
+  '.git',
+  'dist',
+  'coverage',
+  'playwright-report',
+  'test-results',
+  'public',
+  'ssr',
+  'tests',
+  'asdf-game-store',
+  'scripts',
+  'demos',
+  'ASDF-Web',
 ]);
 
 const SKIP_FILE_PATTERNS = [
@@ -64,9 +75,7 @@ const SKIP_FILE_PATTERNS = [
 
 /** Strips JS line and block comments to reduce false positives. */
 function stripComments(src) {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/\/\/[^\n]*/g, '');
+  return src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, '');
 }
 
 /** Normalises a windows/unix path to forward-slash relative. */
@@ -116,7 +125,7 @@ class ScriptIncludeDetector {
   detect(content, _rel) {
     const edges = [];
     const scriptRe = /script[^>]+src=['"]([^'"#?]+)['"]/g;
-    const cssRe    = /link[^>]+href=['"]([^'"#?]+\.css)['"]/g;
+    const cssRe = /link[^>]+href=['"]([^'"#?]+\.css)['"]/g;
     let m;
     while ((m = scriptRe.exec(content)) !== null) {
       const t = m[1];
@@ -161,12 +170,12 @@ class ApiCallDetector {
       let m;
       while ((m = re.exec(src)) !== null) {
         const endpoint = m[1];
-        const target   = this.endpointMap.get(endpoint) ?? null;
+        const target = this.endpointMap.get(endpoint) ?? null;
         edges.push({
-          type:       EdgeType.API_CALL,
-          rawTarget:  target,
+          type: EdgeType.API_CALL,
+          rawTarget: target,
           endpoint,
-          confidence: target ? 0.88 : 0.70,
+          confidence: target ? 0.88 : 0.7,
           unresolved: !target,
         });
       }
@@ -200,7 +209,12 @@ class EventDetector {
     while ((m = listenRe.exec(src)) !== null) {
       const name = m[1];
       if (name.includes(':')) {
-        edges.push({ type: EdgeType.EVENT_LISTEN, eventName: name, rawTarget: null, confidence: 0.88 });
+        edges.push({
+          type: EdgeType.EVENT_LISTEN,
+          eventName: name,
+          rawTarget: null,
+          confidence: 0.88,
+        });
       }
     }
 
@@ -215,7 +229,7 @@ class EventDetector {
 class PathResolver {
   /** @param {string[]} knownRels — all scanned rel paths */
   constructor(knownRels) {
-    this._byRel      = new Map(knownRels.map(r => [r, r]));
+    this._byRel = new Map(knownRels.map(r => [r, r]));
     this._byBasename = new Map();
     for (const rel of knownRels) {
       const bn = path.basename(rel);
@@ -237,28 +251,30 @@ class PathResolver {
     // URL-like: /js/foo.js
     if (rawTarget.startsWith('/')) {
       const stripped = rawTarget.replace(/^\//, '');
-      return this._byRel.get(stripped)
-          ?? this._byRel.get(stripped + '.js')
-          ?? this._byRel.get(stripped + '.css')
-          ?? null;
+      return (
+        this._byRel.get(stripped) ??
+        this._byRel.get(stripped + '.js') ??
+        this._byRel.get(stripped + '.css') ??
+        null
+      );
     }
 
     // Relative: ./foo or ../bar/baz
     if (rawTarget.startsWith('.')) {
-      const fromDir  = path.dirname(fromRel).replace(/\\/g, '/');
+      const fromDir = path.dirname(fromRel).replace(/\\/g, '/');
       const resolved = path.posix.normalize(fromDir + '/' + rawTarget);
-      return this._byRel.get(resolved)
-          ?? this._byRel.get(resolved + '.js')
-          ?? this._byRel.get(resolved + '.css')
-          ?? this._byRel.get(resolved + '/index.js')
-          ?? null;
+      return (
+        this._byRel.get(resolved) ??
+        this._byRel.get(resolved + '.js') ??
+        this._byRel.get(resolved + '.css') ??
+        this._byRel.get(resolved + '/index.js') ??
+        null
+      );
     }
 
     // Basename fallback
     const bn = path.basename(rawTarget);
-    return this._byBasename.get(bn)
-        ?? this._byBasename.get(bn + '.js')
-        ?? null;
+    return this._byBasename.get(bn) ?? this._byBasename.get(bn + '.js') ?? null;
   }
 }
 
@@ -303,7 +319,7 @@ function extractRoutes() {
     const mountRe = /app\.use\s*\(\s*['"]([^'"]+)['"]\s*,\s*require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
     let m;
     while ((m = mountRe.exec(src)) !== null) {
-      const prefix  = m[1];
+      const prefix = m[1];
       const modPath = m[2].replace(/^\.\//, '');
       mountPrefixes.set(modPath, prefix);
     }
@@ -313,21 +329,27 @@ function extractRoutes() {
   const routesDir = path.join(ROOT, 'api', 'routes');
   if (!fs.existsSync(routesDir)) return endpointMap;
 
-  const routeFiles = fs.readdirSync(routesDir)
+  const routeFiles = fs
+    .readdirSync(routesDir)
     .filter(f => f.endsWith('.js') && !f.includes('helpers'))
     .map(f => ({ file: f, rel: `api/routes/${f}` }));
 
   for (const { file, rel } of routeFiles) {
     const fullPath = path.join(routesDir, file);
     let content;
-    try { content = fs.readFileSync(fullPath, 'utf8'); } catch { continue; }
+    try {
+      content = fs.readFileSync(fullPath, 'utf8');
+    } catch {
+      continue;
+    }
     const src = stripComments(content);
 
     // Determine mount prefix for this file
-    const modKey  = `routes/${path.basename(file, '.js')}`;
-    const prefix  = mountPrefixes.get(modKey)
-                 ?? mountPrefixes.get(`./routes/${path.basename(file, '.js')}`)
-                 ?? '/api';
+    const modKey = `routes/${path.basename(file, '.js')}`;
+    const prefix =
+      mountPrefixes.get(modKey) ??
+      mountPrefixes.get(`./routes/${path.basename(file, '.js')}`) ??
+      '/api';
 
     const routeRe = /router\s*\.\s*(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g;
     let m;
@@ -390,7 +412,12 @@ function loadGitMetadata() {
       if (trimmed.startsWith('COMMIT|')) {
         const [, hash, date, author] = trimmed.split('|');
         const daysOld = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
-        current = { hash: hash.slice(0, 7), date: date.slice(0, 10), author: author.trim(), daysOld };
+        current = {
+          hash: hash.slice(0, 7),
+          date: date.slice(0, 10),
+          author: author.trim(),
+          daysOld,
+        };
       } else if (current && !trimmed.startsWith('COMMIT')) {
         const rel = trimmed.replace(/\\/g, '/');
         if (!map.has(rel)) map.set(rel, current);
@@ -411,9 +438,9 @@ function loadCoverage() {
       if (file === 'total') continue;
       const rel = path.relative(ROOT, file).replace(/\\/g, '/');
       map.set(rel, {
-        lines:      Math.round(stats.lines?.pct ?? 0),
-        branches:   Math.round(stats.branches?.pct ?? 0),
-        functions:  Math.round(stats.functions?.pct ?? 0),
+        lines: Math.round(stats.lines?.pct ?? 0),
+        branches: Math.round(stats.branches?.pct ?? 0),
+        functions: Math.round(stats.functions?.pct ?? 0),
         statements: Math.round(stats.statements?.pct ?? 0),
       });
     }
@@ -427,18 +454,25 @@ function loadCoverage() {
 function detectCategory(rel) {
   const ext = path.extname(rel);
   if (ext === '.html') return 'pages';
-  if (ext === '.css')  return 'css';
-  if (ext !== '.js')   return null;
+  if (ext === '.css') return 'css';
+  if (ext !== '.js') return null;
   if (/^js\/games\//.test(rel)) return 'games';
-  if (/^api\//.test(rel))       return 'api';
-  if (/^js\//.test(rel))        return 'js';
+  if (/^api\//.test(rel)) return 'api';
+  if (/^js\//.test(rel)) return 'js';
   return null;
 }
 
 function cyclomaticComplexity(content) {
   const patterns = [
-    /\bif\s*\(/g, /\belse\s+if\s*\(/g, /\bfor\s*\(/g, /\bwhile\s*\(/g,
-    /\bcase\s+/g, /\bcatch\s*\(/g, /&&/g, /\|\|/g, /\?\s*[^:?]/g,
+    /\bif\s*\(/g,
+    /\belse\s+if\s*\(/g,
+    /\bfor\s*\(/g,
+    /\bwhile\s*\(/g,
+    /\bcase\s+/g,
+    /\bcatch\s*\(/g,
+    /&&/g,
+    /\|\|/g,
+    /\?\s*[^:?]/g,
   ];
   let complexity = 1;
   for (const p of patterns) {
@@ -450,74 +484,83 @@ function cyclomaticComplexity(content) {
 
 function godScore(loc, complexity, depCount, bytes) {
   let score = 0;
-  if (loc > 5000)        score += 4;
-  else if (loc > 2000)   score += 2;
-  else if (loc > 1000)   score += 1;
+  if (loc > 5000) score += 4;
+  else if (loc > 2000) score += 2;
+  else if (loc > 1000) score += 1;
   if (complexity !== null) {
     if (complexity > 300) score += 3;
     else if (complexity > 150) score += 2;
-    else if (complexity > 80)  score += 1;
+    else if (complexity > 80) score += 1;
   }
-  if (depCount > 20)      score += 2;
+  if (depCount > 20) score += 2;
   else if (depCount > 10) score += 1;
-  if (bytes > 200_000)    score += 2;
+  if (bytes > 200_000) score += 2;
   else if (bytes > 80_000) score += 1;
   return score;
 }
 
 function detectStatus(rel, loc, complexity, depCount, bytes) {
   const score = godScore(loc, complexity, depCount, bytes);
-  if (score >= 4)                            return 'god';
+  if (score >= 4) return 'god';
   if (/ignition|squarespace|legacy/i.test(rel)) return 'dev';
-  if (/-demo\.html$/.test(rel))              return 'demo';
+  if (/-demo\.html$/.test(rel)) return 'demo';
   return 'prod';
 }
 
 const KNOWN_DESC = {
-  'index.html':             'Hub Majestic — landing page avec fire particles',
-  'learn.html':             'Quick Start — intro interactive en 5 étapes',
-  'deep-learn.html':        'Complete Guide — K-Score, philosophie, mécanique',
-  'build.html':             'Builder Hub — Yggdrasil paths, formations, ecosystem',
-  'games.html':             'Arcade Hub — collection de 9 mini-jeux',
-  'burns.html':             'Hall of Flames — tracker de burns $asdfasdfa',
-  'forecast.html':          'Predictions — interface de paris',
-  'holdex.html':            'Token Tracker — intégration HolDex',
-  'staking.html':           'Interface de staking $asdfasdfa',
-  'me.html':                'Profil utilisateur',
-  'analytics.html':         'Dashboard analytique',
-  'ecosystem-map.html':     'Command Center — carte interactive de l\'écosystème',
-  'js/ecosystem.js':        'ASDF Ecosystem Shell — nav drawer, themes, density',
-  'js/hub-majestic.js':     'Landing page — particle effects et interactions',
+  'index.html': 'Hub Majestic — landing page avec fire particles',
+  'learn.html': 'Quick Start — intro interactive en 5 étapes',
+  'deep-learn.html': 'Complete Guide — K-Score, philosophie, mécanique',
+  'build.html': 'Builder Hub — Yggdrasil paths, formations, ecosystem',
+  'games.html': 'Arcade Hub — collection de 9 mini-jeux',
+  'burns.html': 'Hall of Flames — tracker de burns $asdfasdfa',
+  'forecast.html': 'Predictions — interface de paris',
+  'holdex.html': 'Token Tracker — intégration HolDex',
+  'staking.html': 'Interface de staking $asdfasdfa',
+  'me.html': 'Profil utilisateur',
+  'analytics.html': 'Dashboard analytique',
+  'ecosystem-map.html': "Command Center — carte interactive de l'écosystème",
+  'js/ecosystem.js': 'ASDF Ecosystem Shell — nav drawer, themes, density',
+  'js/hub-majestic.js': 'Landing page — particle effects et interactions',
   'api/services/helius.js': 'Helius RPC client (audit score: A-)',
-  'api/index.js':           'Main Express server — GOD FILE',
-  'js/games/engine.js':     'Main game engine — GOD FILE',
+  'api/index.js': 'Main Express server — GOD FILE',
+  'js/games/engine.js': 'Main game engine — GOD FILE',
 };
 
 function autoDesc(rel) {
   if (KNOWN_DESC[rel]) return KNOWN_DESC[rel];
-  const base  = path.basename(rel, path.extname(rel));
-  const words = base.split(/[-_.]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  if (rel.startsWith('api/routes/'))   return `Route ${words}`;
+  const base = path.basename(rel, path.extname(rel));
+  const words = base
+    .split(/[-_.]/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+  if (rel.startsWith('api/routes/')) return `Route ${words}`;
   if (rel.startsWith('api/services/')) return `Service ${words}`;
-  if (rel.endsWith('.html'))           return `Page ${words}`;
-  if (rel.endsWith('.css'))            return `Styles ${words}`;
-  if (rel.startsWith('js/games/'))     return `Module jeu ${words}`;
+  if (rel.endsWith('.html')) return `Page ${words}`;
+  if (rel.endsWith('.css')) return `Styles ${words}`;
+  if (rel.startsWith('js/games/')) return `Module jeu ${words}`;
   return `Module ${words}`;
 }
 
 function walk(dir, items = []) {
   let entries;
-  try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
-  catch { return items; }
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return items;
+  }
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
     if (SKIP_DIRS.has(entry.name)) continue;
 
     const fullPath = path.join(dir, entry.name);
-    const rel      = toRel(fullPath);
+    const rel = toRel(fullPath);
 
-    if (entry.isDirectory()) { walk(fullPath, items); continue; }
+    if (entry.isDirectory()) {
+      walk(fullPath, items);
+      continue;
+    }
     if (!entry.isFile()) continue;
     if (SKIP_FILE_PATTERNS.some(p => p.test(entry.name))) continue;
 
@@ -528,7 +571,11 @@ function walk(dir, items = []) {
     if (!category) continue;
 
     let content = '';
-    try { content = fs.readFileSync(fullPath, 'utf8'); } catch { continue; }
+    try {
+      content = fs.readFileSync(fullPath, 'utf8');
+    } catch {
+      continue;
+    }
 
     items.push({ rel, ext, content });
   }
@@ -547,7 +594,7 @@ console.log(`  ✓ ${endpointMap.size} endpoints mapped`);
 
 // --- Metadata ---
 console.log('  Loading git metadata...');
-const gitMeta  = loadGitMetadata();
+const gitMeta = loadGitMetadata();
 console.log(`  ✓ ${gitMeta.size} file histories loaded`);
 
 console.log('  Loading test coverage...');
@@ -573,9 +620,9 @@ const ORDER = { pages: 0, css: 1, js: 2, games: 3, api: 4 };
 const items = rawFiles
   .sort((a, b) => (ORDER[detectCategory(a.rel)] ?? 5) - (ORDER[detectCategory(b.rel)] ?? 5))
   .map(({ rel, ext, content }) => {
-    const category   = detectCategory(rel);
-    const bytes      = Buffer.byteLength(content, 'utf8');
-    const loc        = content.split('\n').filter(l => l.trim()).length;
+    const category = detectCategory(rel);
+    const bytes = Buffer.byteLength(content, 'utf8');
+    const loc = content.split('\n').filter(l => l.trim()).length;
     const complexity = ext === '.js' ? cyclomaticComplexity(content) : null;
 
     // Scan through all detectors
@@ -588,16 +635,23 @@ const items = rawFiles
     }));
 
     // Backward-compat: dependencies[] (resolved basenames, no dupes)
-    const dependencies = [...new Set(
-      edges
-        .filter(e => e.target && e.type !== EdgeType.API_CALL)
-        .map(e => path.basename(e.target))
-    )];
+    const dependencies = [
+      ...new Set(
+        edges
+          .filter(e => e.target && e.type !== EdgeType.API_CALL)
+          .map(e => path.basename(e.target))
+      ),
+    ];
 
     // Unresolved: import/script edges that couldn't be resolved
     const knownRels = new Set(rawFiles.map(f => f.rel));
     const unresolvedDeps = edges
-      .filter(e => (e.type === EdgeType.IMPORT || e.type === EdgeType.SCRIPT_INCLUDE) && !e.target && e.rawTarget)
+      .filter(
+        e =>
+          (e.type === EdgeType.IMPORT || e.type === EdgeType.SCRIPT_INCLUDE) &&
+          !e.target &&
+          e.rawTarget
+      )
       .map(e => path.basename(e.rawTarget));
 
     // Unresolved API calls
@@ -605,22 +659,22 @@ const items = rawFiles
       .filter(e => e.type === EdgeType.API_CALL && e.unresolved)
       .map(e => e.endpoint);
 
-    const score  = godScore(loc, complexity, dependencies.length, bytes);
+    const score = godScore(loc, complexity, dependencies.length, bytes);
     const status = detectStatus(rel, loc, complexity, dependencies.length, bytes);
-    const git    = gitMeta.get(rel) ?? null;
-    const cov    = coverage.get(rel) ?? null;
+    const git = gitMeta.get(rel) ?? null;
+    const cov = coverage.get(rel) ?? null;
 
     return {
-      name:               rel,
+      name: rel,
       category,
       status,
       loc,
       bytes,
       complexity,
-      godScore:           score,
-      description:        autoDesc(rel),
+      godScore: score,
+      description: autoDesc(rel),
       // Typed edges (rich)
-      edges:              edges.map(e => {
+      edges: edges.map(e => {
         // Strip internal rawTarget from output (already resolved to .target)
         const { rawTarget, ...rest } = e;
         return rest;
@@ -629,9 +683,9 @@ const items = rawFiles
       dependencies,
       unresolvedDeps,
       unresolvedApiCalls,
-      path:               rel,
+      path: rel,
       git,
-      coverage:           cov,
+      coverage: cov,
     };
   });
 
@@ -645,10 +699,10 @@ for (const item of items) {
   for (const edge of item.edges) {
     if (edge.target && edge.target !== item.name) {
       links.push({
-        source:    item.name,
-        target:    edge.target,
-        type:      edge.type,
-        endpoint:  edge.endpoint  ?? null,
+        source: item.name,
+        target: edge.target,
+        type: edge.type,
+        endpoint: edge.endpoint ?? null,
         eventName: edge.eventName ?? null,
         confidence: edge.confidence ?? 1.0,
       });
@@ -657,9 +711,9 @@ for (const item of items) {
     if (edge.type === EdgeType.EVENT_EMIT && edge.targets) {
       for (const t of edge.targets) {
         links.push({
-          source:    item.name,
-          target:    t,
-          type:      EdgeType.EVENT_EMIT,
+          source: item.name,
+          target: t,
+          type: EdgeType.EVENT_EMIT,
           eventName: edge.eventName,
           confidence: edge.confidence,
         });
@@ -671,11 +725,11 @@ for (const item of items) {
 // ============================================================
 // STATS
 // ============================================================
-const godFiles     = items.filter(i => i.status === 'god');
+const godFiles = items.filter(i => i.status === 'god');
 const complexFiles = items.filter(i => i.godScore >= 2 && i.godScore < 4);
-const staleFiles   = items.filter(i => i.git && i.git.daysOld > 90);
-const uncovered    = items.filter(i => i.coverage && i.coverage.lines < 50);
-const isolated     = items.filter(i => i.edges.filter(e => e.target || e.targets?.length).length === 0);
+const staleFiles = items.filter(i => i.git && i.git.daysOld > 90);
+const uncovered = items.filter(i => i.coverage && i.coverage.lines < 50);
+const isolated = items.filter(i => i.edges.filter(e => e.target || e.targets?.length).length === 0);
 
 // Count ALL detected edges (incl. unresolved), not just resolved links
 const edgesByType = {};
@@ -692,30 +746,30 @@ for (const l of links) {
 const unresolvedApiTotal = items.reduce((s, i) => s + (i.unresolvedApiCalls?.length ?? 0), 0);
 
 const stats = {
-  generated:          new Date().toISOString(),
-  total:              items.length,
-  pages:              items.filter(i => i.category === 'pages').length,
-  css:                items.filter(i => i.category === 'css').length,
-  js:                 items.filter(i => i.category === 'js').length,
-  games:              items.filter(i => i.category === 'games').length,
-  api:                items.filter(i => i.category === 'api').length,
-  godFiles:           godFiles.length,
-  complexFiles:       complexFiles.length,
-  staleFiles:         staleFiles.length,
-  coveredFiles:       coverage.size,
-  uncoveredFiles:     uncovered.length,
-  isolatedFiles:      isolated.length,
-  totalLOC:           items.reduce((s, i) => s + i.loc, 0),
-  totalBytes:         items.reduce((s, i) => s + i.bytes, 0),
-  avgComplexity:      Math.round(
+  generated: new Date().toISOString(),
+  total: items.length,
+  pages: items.filter(i => i.category === 'pages').length,
+  css: items.filter(i => i.category === 'css').length,
+  js: items.filter(i => i.category === 'js').length,
+  games: items.filter(i => i.category === 'games').length,
+  api: items.filter(i => i.category === 'api').length,
+  godFiles: godFiles.length,
+  complexFiles: complexFiles.length,
+  staleFiles: staleFiles.length,
+  coveredFiles: coverage.size,
+  uncoveredFiles: uncovered.length,
+  isolatedFiles: isolated.length,
+  totalLOC: items.reduce((s, i) => s + i.loc, 0),
+  totalBytes: items.reduce((s, i) => s + i.bytes, 0),
+  avgComplexity: Math.round(
     items.filter(i => i.complexity !== null).reduce((s, i) => s + i.complexity, 0) /
-    Math.max(1, items.filter(i => i.complexity !== null).length)
+      Math.max(1, items.filter(i => i.complexity !== null).length)
   ),
-  totalEdges:         items.reduce((s, i) => s + i.edges.length, 0),
-  resolvedLinks:      links.length,
-  edgesByType,           // all detected (incl. unresolved)
-  resolvedEdgesByType,   // only edges with a resolved target
-  endpointsMapped:    endpointMap.size,
+  totalEdges: items.reduce((s, i) => s + i.edges.length, 0),
+  resolvedLinks: links.length,
+  edgesByType, // all detected (incl. unresolved)
+  resolvedEdgesByType, // only edges with a resolved target
+  endpointsMapped: endpointMap.size,
   unresolvedApiCalls: unresolvedApiTotal,
 };
 
@@ -737,11 +791,17 @@ fs.writeFileSync(OUTPUT, output, 'utf8');
 
 const mb = (stats.totalBytes / 1024 / 1024).toFixed(2);
 console.log(`\n✅ Scan complete — ${items.length} items`);
-console.log(`   📄 ${stats.pages} pages · 🎨 ${stats.css} CSS · 📦 ${stats.js} JS · 🎮 ${stats.games} games · 🔌 ${stats.api} API`);
+console.log(
+  `   📄 ${stats.pages} pages · 🎨 ${stats.css} CSS · 📦 ${stats.js} JS · 🎮 ${stats.games} games · 🔌 ${stats.api} API`
+);
 console.log(`   📊 ${stats.totalLOC.toLocaleString()} LOC · ${mb} MB`);
 console.log(`   🧠 complexité moy: ${stats.avgComplexity}`);
-console.log(`   🔴 ${stats.godFiles} god files · 🟡 ${stats.complexFiles} complex · 🏝 ${stats.isolatedFiles} isolated`);
+console.log(
+  `   🔴 ${stats.godFiles} god files · 🟡 ${stats.complexFiles} complex · 🏝 ${stats.isolatedFiles} isolated`
+);
 console.log(`   🔗 ${stats.totalEdges} edges detected: ${JSON.stringify(edgesByType)}`);
 console.log(`   ✓  ${stats.resolvedLinks} resolved links: ${JSON.stringify(resolvedEdgesByType)}`);
-console.log(`   🔌 ${stats.endpointsMapped} API endpoints · ⚠ ${stats.unresolvedApiCalls} unresolved API calls`);
+console.log(
+  `   🔌 ${stats.endpointsMapped} API endpoints · ⚠ ${stats.unresolvedApiCalls} unresolved API calls`
+);
 console.log(`\n   → ${OUTPUT}\n`);

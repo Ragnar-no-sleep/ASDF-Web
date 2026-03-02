@@ -33,7 +33,7 @@ export const BADGE_TIERS = {
   SILVER: 'silver',
   GOLD: 'gold',
   PLATINUM: 'platinum',
-  LEGENDARY: 'legendary'
+  LEGENDARY: 'legendary',
 };
 
 // ============================================
@@ -47,7 +47,7 @@ export const BADGE_CATEGORIES = {
   XP: 'xp',
   STREAK: 'streak',
   COMMUNITY: 'community',
-  SPECIAL: 'special'
+  SPECIAL: 'special',
 };
 
 // ============================================
@@ -59,7 +59,7 @@ const BADGE_CONFIG = {
   // cNFT settings (Helius)
   cnftEnabled: false, // Enable when ready for production
   cnftCollection: null, // Metaplex collection address
-  heliusApiKey: null
+  heliusApiKey: null,
 };
 
 // ============================================
@@ -141,7 +141,7 @@ class BadgeManager {
         badges.push({
           ...definition,
           ...userBadge,
-          earned: true
+          earned: true,
         });
       }
     });
@@ -163,7 +163,7 @@ class BadgeManager {
         badges.push({
           ...def,
           ...userBadge,
-          earned: !!userBadge
+          earned: !!userBadge,
         });
       }
     });
@@ -202,7 +202,7 @@ class BadgeManager {
       earnedAt: Date.now(),
       metadata,
       cnftMinted: false,
-      cnftAddress: null
+      cnftAddress: null,
     };
 
     this.userBadges.set(badgeId, userBadge);
@@ -211,7 +211,7 @@ class BadgeManager {
     // Emit badge earned event
     eventBus.emit(EVENTS.BADGE_EARNED, {
       userId: this.userId,
-      badge: { ...definition, ...userBadge }
+      badge: { ...definition, ...userBadge },
     });
 
     // Award XP bonus if defined
@@ -220,7 +220,7 @@ class BadgeManager {
         userId: this.userId,
         amount: definition.xpBonus,
         source: 'badge',
-        badgeId
+        badgeId,
       });
     }
 
@@ -233,7 +233,7 @@ class BadgeManager {
 
     return {
       success: true,
-      badge: { ...definition, ...userBadge }
+      badge: { ...definition, ...userBadge },
     };
   }
 
@@ -255,7 +255,7 @@ class BadgeManager {
       if (eligible) {
         const result = await this.awardBadge(badgeId, {
           autoAwarded: true,
-          context
+          context,
         });
 
         if (result.success) {
@@ -288,8 +288,8 @@ class BadgeManager {
     const criteria = definition.criteria;
     if (!criteria) return { earned: false, progress: 0 };
 
-    let current = 0;
-    let target = 1;
+    let current;
+    let target;
 
     switch (criteria.type) {
       case 'quest_count':
@@ -332,7 +332,7 @@ class BadgeManager {
       earned: false,
       progress,
       current,
-      target
+      target,
     };
   }
 
@@ -350,7 +350,7 @@ class BadgeManager {
       [BADGE_TIERS.PLATINUM]: 1,
       [BADGE_TIERS.GOLD]: 2,
       [BADGE_TIERS.SILVER]: 3,
-      [BADGE_TIERS.BRONZE]: 4
+      [BADGE_TIERS.BRONZE]: 4,
     };
 
     return badges
@@ -386,7 +386,7 @@ class BadgeManager {
       earned,
       percentage: total > 0 ? Math.round((earned / total) * 100) : 0,
       byTier,
-      byCategory
+      byCategory,
     };
   }
 
@@ -400,28 +400,28 @@ class BadgeManager {
    */
   _subscribeToEvents() {
     // Quest completed
-    eventBus.on(EVENTS.QUEST_COMPLETED, async (data) => {
+    eventBus.on(EVENTS.QUEST_COMPLETED, async data => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ questCompleted: data.questId });
       }
     });
 
     // Module completed
-    eventBus.on(EVENTS.MODULE_COMPLETED, async (data) => {
+    eventBus.on(EVENTS.MODULE_COMPLETED, async data => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ moduleCompleted: data.moduleId });
       }
     });
 
     // Level up
-    eventBus.on(EVENTS.XP_LEVEL_UP, async (data) => {
+    eventBus.on(EVENTS.XP_LEVEL_UP, async data => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ level: data.newLevel });
       }
     });
 
     // Streak update
-    eventBus.on(EVENTS.XP_STREAK, async (data) => {
+    eventBus.on(EVENTS.XP_STREAK, async data => {
       if (data.userId === this.userId) {
         await this.checkAchievements({ streak: data.streak });
       }
@@ -480,7 +480,7 @@ class BadgeManager {
    * Mint cNFT for badge (future Helius integration)
    * @private
    */
-  async _mintCNFT(badgeId, userBadge) {
+  async _mintCNFT(badgeId, _userBadge) {
     if (!this.config.cnftEnabled || !this.config.heliusApiKey) {
       return;
     }

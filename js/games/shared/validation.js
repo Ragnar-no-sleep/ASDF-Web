@@ -46,10 +46,6 @@ const GameValidation = {
     if (typeof VALID_GAME_IDS !== 'undefined') {
       return VALID_GAME_IDS.has(gameId);
     }
-    // Fallback to GAMES array if VALID_GAME_IDS not loaded
-    if (typeof GAMES !== 'undefined') {
-      return GAMES.some(g => g.id === gameId);
-    }
     return false;
   },
 };

@@ -1,59 +1,85 @@
-<!DOCTYPE html>
-<html lang="en" style="background:#020812">
-<head>
-    <style>html{background:#020812!important}body{background:transparent!important}</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin">
+<!doctype html>
+<html lang="en" style="background: #020812">
+  <head>
+    <style>
+      html {
+        background: #020812 !important;
+      }
+      body {
+        background: transparent !important;
+      }
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="view-transition" content="same-origin" />
     <title>Build | ASDF Ecosystem</title>
-    <meta name="description" content="Yggdrasil - The World Tree of ASDF projects. Builders Marketplace.">
+    <meta
+      name="description"
+      content="Yggdrasil - The World Tree of ASDF projects. Builders Marketplace."
+    />
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://alonisthe.dev/build">
-    <meta property="og:title" content="Build - ASDF Ecosystem">
-    <meta property="og:description" content="Yggdrasil and Marketplace - The ASDF builders ecosystem.">
-    <meta property="og:image" content="https://alonisthe.dev/og-image.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Build - ASDF Ecosystem">
-    <meta name="twitter:description" content="Yggdrasil and Marketplace - The ASDF builders ecosystem.">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://alonisthe.dev/build" />
+    <meta property="og:title" content="Build - ASDF Ecosystem" />
+    <meta
+      property="og:description"
+      content="Yggdrasil and Marketplace - The ASDF builders ecosystem."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Build - ASDF Ecosystem" />
+    <meta
+      name="twitter:description"
+      content="Yggdrasil and Marketplace - The ASDF builders ecosystem."
+    />
 
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" />
 
     <!-- CSP handled by server.cjs Helmet -->
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <link rel="stylesheet" href="css/build.css">
-    <link rel="stylesheet" href="css/journey.css">
-    <link rel="preload" href="css/viking-bg.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="css/viking-bg.css"></noscript>
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/build.css" />
+    <link rel="stylesheet" href="css/journey.css" />
+    <link rel="preload" href="css/viking-bg.css" as="style" id="viking-bg-preload" />
+    <noscript><link rel="stylesheet" href="css/viking-bg.css" /></noscript>
+    <script>
+      var vbg = document.getElementById('viking-bg-preload');
+      vbg.addEventListener('load', function () {
+        vbg.rel = 'stylesheet';
+      });
+    </script>
     <!-- Yggdrasil 3D Components -->
-    <link rel="stylesheet" href="css/formation-panel.css">
-    <link rel="stylesheet" href="css/skill-tree.css">
-    <link rel="stylesheet" href="css/builder-profile.css">
-    <link rel="stylesheet" href="css/github-timeline.css">
+    <link rel="stylesheet" href="css/formation-panel.css" />
+    <link rel="stylesheet" href="css/skill-tree.css" />
+    <link rel="stylesheet" href="css/builder-profile.css" />
+    <link rel="stylesheet" href="css/github-timeline.css" />
     <!-- Learn & Build Dashboard -->
-    <link rel="stylesheet" href="css/learn-build.css">
+    <link rel="stylesheet" href="css/learn-build.css" />
     <!-- Unified Yggdrasil Dashboard -->
-    <link rel="stylesheet" href="css/yggdrasil-unified.css">
+    <link rel="stylesheet" href="css/yggdrasil-unified.css" />
     <!-- Dashboard Components (extracted inline styles) -->
-    <link rel="stylesheet" href="css/dashboard-components.css">
+    <link rel="stylesheet" href="css/dashboard-components.css" />
 
     <!-- Three.js ES Module Import Map -->
     <script type="importmap">
-    {
+      {
         "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
-    }
+      }
     </script>
 
-    </script>
-</head>
-<body>
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
     <a href="#yggdrasil-cosmos" class="skip-link">Skip to main content</a>
 
     <!-- Yggdrasil Viking Background -->
@@ -61,740 +87,1236 @@
     <div class="nordic-mist" aria-hidden="true"></div>
     <div class="viking-symbols" aria-hidden="true"></div>
     <div class="viking-spirits" aria-hidden="true">
-        <div class="spirit-cyan"></div>
-        <div class="spirit-gold"></div>
-        <div class="spirit-pink"></div>
+      <div class="spirit-cyan"></div>
+      <div class="spirit-gold"></div>
+      <div class="spirit-pink"></div>
     </div>
 
     <!-- ============================================
          YGGDRASIL COSMOS - Full Screen Immersive
          ============================================ -->
     <main class="yggdrasil-cosmos" id="yggdrasil-cosmos">
-        <!-- Loading Overlay - shown during initialization -->
-        <div id="app-loading" class="loading-overlay" aria-busy="true" aria-label="Loading Yggdrasil">
-            <div class="spinner spinner-lg spinner-fire"></div>
-            <p class="loading-text">Awakening Yggdrasil...</p>
-        </div>
+      <!-- Loading Overlay - shown during initialization -->
+      <div id="app-loading" class="loading-overlay" aria-busy="true" aria-label="Loading Yggdrasil">
+        <div class="spinner spinner-lg spinner-fire"></div>
+        <p class="loading-text">Awakening Yggdrasil...</p>
+      </div>
 
-        <!-- Three.js Cosmos - populated by init script -->
+      <!-- Three.js Cosmos - populated by init script -->
 
-        <!-- SVG Fallback for non-WebGL browsers -->
-        <section class="tree-section yggdrasil-svg-fallback" id="yggdrasil-svg-fallback">
-            <div class="tree-container">
-                <div class="yggdrasil-canonical">
+      <!-- SVG Fallback for non-WebGL browsers -->
+      <section class="tree-section yggdrasil-svg-fallback" id="yggdrasil-svg-fallback">
+        <div class="tree-container">
+          <div class="yggdrasil-canonical">
+            <!-- SVG Tree Structure - Simple Yggdrasil Style -->
+            <svg
+              class="tree-svg"
+              viewBox="0 0 800 600"
+              preserveAspectRatio="xMidYMid meet"
+              role="img"
+              aria-labelledby="ygg-title ygg-desc"
+            >
+              <title id="ygg-title">Yggdrasil Project Tree</title>
+              <desc id="ygg-desc">
+                Interactive visualization of ASDF ecosystem projects. Live projects in green canopy,
+                building projects in amber trunk, planned projects in purple roots.
+              </desc>
+              <defs>
+                <!-- Gradients -->
+                <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#4ade80" />
+                  <stop offset="40%" stop-color="#a67c52" />
+                  <stop offset="100%" stop-color="#7c3aed" />
+                </linearGradient>
+                <radialGradient id="heartGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#fff7ed" stop-opacity="1" />
+                  <stop offset="30%" stop-color="#fb923c" stop-opacity="0.9" />
+                  <stop offset="60%" stop-color="#ea580c" stop-opacity="0.6" />
+                  <stop offset="100%" stop-color="#7c2d12" stop-opacity="0" />
+                </radialGradient>
+              </defs>
 
-                    <!-- SVG Tree Structure - Simple Yggdrasil Style -->
-                    <svg class="tree-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ygg-title ygg-desc">
-                        <title id="ygg-title">Yggdrasil Project Tree</title>
-                        <desc id="ygg-desc">Interactive visualization of ASDF ecosystem projects. Live projects in green canopy, building projects in amber trunk, planned projects in purple roots.</desc>
-                        <defs>
-                            <!-- Gradients -->
-                            <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color: #4ade80"/>
-                                <stop offset="40%" style="stop-color: #a67c52"/>
-                                <stop offset="100%" style="stop-color: #7c3aed"/>
-                            </linearGradient>
-                            <radialGradient id="heartGlow" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color: #fff7ed; stop-opacity: 1"/>
-                                <stop offset="30%" style="stop-color: #fb923c; stop-opacity: 0.9"/>
-                                <stop offset="60%" style="stop-color: #ea580c; stop-opacity: 0.6"/>
-                                <stop offset="100%" style="stop-color: #7c2d12; stop-opacity: 0"/>
-                            </radialGradient>
-                        </defs>
-
-                        <!-- ═══════════════════════════════════════════
+              <!-- ═══════════════════════════════════════════
                              MAIN TRUNK - Simple Vertical Line
                              ═══════════════════════════════════════════ -->
-                        <line x1="400" y1="60" x2="400" y2="540" stroke="url(#trunkGradient)" stroke-width="8" stroke-linecap="round"/>
+              <line
+                x1="400"
+                y1="60"
+                x2="400"
+                y2="540"
+                stroke="url(#trunkGradient)"
+                stroke-width="8"
+                stroke-linecap="round"
+              />
 
-                        <!-- ═══════════════════════════════════════════
+              <!-- ═══════════════════════════════════════════
                              BRANCHES - All connecting from CENTER (300)
                              Curved organic branches like Yggdrasil
                              ═══════════════════════════════════════════ -->
-                        <!-- CANOPY BRANCHES (Green - Live) - From center UP - 7 branches -->
-                        <defs>
-                            <!-- Branch paths for text -->
-                            <path id="branchLearn" d="M400,300 Q350,250 300,200 Q250,150 150,110"/>
-                            <path id="branchGames" d="M400,300 Q450,250 500,200 Q550,150 650,110"/>
-                            <path id="branchBurn" d="M400,300 Q320,270 240,220 Q160,170 80,150"/>
-                            <path id="branchLauncher" d="M400,300 Q480,270 560,220 Q640,170 720,150"/>
-                            <path id="branchHoldex" d="M400,300 Q340,260 280,230 Q220,200 120,200"/>
-                            <path id="branchForecast" d="M400,300 Q460,260 520,230 Q580,200 680,200"/>
-                            <path id="branchIgnition" d="M400,300 Q390,260 380,220 Q370,180 365,140"/>
-                            <path id="branchOracle" d="M400,300 Q480,295 560,285 Q640,275 700,270"/>
-                            <path id="branchRpc" d="M400,300 Q340,320 280,340 Q200,360 90,350"/>
-                            <path id="branchCommunity" d="M400,300 Q460,320 520,340 Q600,360 710,350"/>
-                            <path id="branchSecurity" d="M400,300 Q350,380 280,440 Q200,500 120,490"/>
-                            <path id="branchPipeline" d="M400,300 Q400,400 400,520"/>
-                            <path id="branchAmbassadors" d="M400,300 Q450,380 520,440 Q600,500 680,490"/>
-                        </defs>
+              <!-- CANOPY BRANCHES (Green - Live) - From center UP - 7 branches -->
+              <defs>
+                <!-- Branch paths for text -->
+                <path id="branchLearn" d="M400,300 Q350,250 300,200 Q250,150 150,110" />
+                <path id="branchGames" d="M400,300 Q450,250 500,200 Q550,150 650,110" />
+                <path id="branchBurn" d="M400,300 Q320,270 240,220 Q160,170 80,150" />
+                <path id="branchLauncher" d="M400,300 Q480,270 560,220 Q640,170 720,150" />
+                <path id="branchHoldex" d="M400,300 Q340,260 280,230 Q220,200 120,200" />
+                <path id="branchForecast" d="M400,300 Q460,260 520,230 Q580,200 680,200" />
+                <path id="branchIgnition" d="M400,300 Q390,260 380,220 Q370,180 365,140" />
+                <path id="branchOracle" d="M400,300 Q480,295 560,285 Q640,275 700,270" />
+                <path id="branchRpc" d="M400,300 Q340,320 280,340 Q200,360 90,350" />
+                <path id="branchCommunity" d="M400,300 Q460,320 520,340 Q600,360 710,350" />
+                <path id="branchSecurity" d="M400,300 Q350,380 280,440 Q200,500 120,490" />
+                <path id="branchPipeline" d="M400,300 Q400,400 400,520" />
+                <path id="branchAmbassadors" d="M400,300 Q450,380 520,440 Q600,500 680,490" />
+              </defs>
 
-                        <g class="branches-canopy" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round">
-                            <use href="#branchLearn"/>
-                            <use href="#branchGames"/>
-                            <use href="#branchBurn"/>
-                            <use href="#branchLauncher"/>
-                            <use href="#branchHoldex"/>
-                            <use href="#branchForecast"/>
-                            <use href="#branchIgnition"/>
-                        </g>
+              <g
+                class="branches-canopy"
+                stroke="#4ade80"
+                stroke-width="4"
+                fill="none"
+                stroke-linecap="round"
+              >
+                <use href="#branchLearn" />
+                <use href="#branchGames" />
+                <use href="#branchBurn" />
+                <use href="#branchLauncher" />
+                <use href="#branchHoldex" />
+                <use href="#branchForecast" />
+                <use href="#branchIgnition" />
+              </g>
 
-                        <!-- Nordic phrases along canopy branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="36" fill="#0f3d0f" opacity="1" font-weight="bold" stroke="#22c55e" stroke-width="1" aria-hidden="true">
-                            <!-- Learn branch - Wisdom & Knowledge -->
-                            <text><textPath href="#branchLearn" startOffset="2%">ᚠᚱᛟᛞᛚᛖᛁᚲᛁ</textPath></text>
-                            <text><textPath href="#branchLearn" startOffset="22%">ᚹᛁᛊᛞᛟᛗᚱ</textPath></text>
-                            <text><textPath href="#branchLearn" startOffset="42%">ᛚᛖᚱᚨ</textPath></text>
-                            <text><textPath href="#branchLearn" startOffset="58%">ᚲᚢᚾᚾᚨᛏᛏᚨ</textPath></text>
-                            <text><textPath href="#branchLearn" startOffset="78%">ᚺᚢᚷᚱ</textPath></text>
-                            <text><textPath href="#branchLearn" startOffset="92%">ᛗᛁᚾᚾᛁ</textPath></text>
-                            <!-- Games branch - Play & Victory -->
-                            <text><textPath href="#branchGames" startOffset="2%">ᛚᛖᛁᚲᚱ</textPath></text>
-                            <text><textPath href="#branchGames" startOffset="18%">ᚷᛚᛖᛞᛁ</textPath></text>
-                            <text><textPath href="#branchGames" startOffset="35%">ᛊᛈᛁᛚᚨ</textPath></text>
-                            <text><textPath href="#branchGames" startOffset="52%">ᛊᛁᚷᚱ</textPath></text>
-                            <text><textPath href="#branchGames" startOffset="68%">ᚷᚨᛗᚨᚾ</textPath></text>
-                            <text><textPath href="#branchGames" startOffset="85%">ᚦᚱᛟᛏᛏ</textPath></text>
-                            <!-- Burn branch - Fire & Flames -->
-                            <text><textPath href="#branchBurn" startOffset="2%">ᛖᛚᛞᚢᚱ</textPath></text>
-                            <text><textPath href="#branchBurn" startOffset="18%">ᛒᚱᛖᚾᚾᚢᚱ</textPath></text>
-                            <text><textPath href="#branchBurn" startOffset="38%">ᛒᚱᛖᚾᚾᚨ</textPath></text>
-                            <text><textPath href="#branchBurn" startOffset="55%">ᛖᛚᛞ</textPath></text>
-                            <text><textPath href="#branchBurn" startOffset="68%">ᛚᛟᚷᛁ</textPath></text>
-                            <text><textPath href="#branchBurn" startOffset="82%">ᛊᚢᚱᛏᚱ</textPath></text>
-                            <!-- Launcher branch - Launch & Stars -->
-                            <text><textPath href="#branchLauncher" startOffset="2%">ᚢᛈᛈᚺᚨᚠ</textPath></text>
-                            <text><textPath href="#branchLauncher" startOffset="18%">ᛊᛏᛃᚨᚱᚾᚨ</textPath></text>
-                            <text><textPath href="#branchLauncher" startOffset="38%">ᚠᛚᛃᚢᚷᚨ</textPath></text>
-                            <text><textPath href="#branchLauncher" startOffset="55%">ᚺᛁᛗᛁᚾ</textPath></text>
-                            <text><textPath href="#branchLauncher" startOffset="72%">ᚨᛊᚷᚨᚱᛞᚱ</textPath></text>
-                            <text><textPath href="#branchLauncher" startOffset="90%">ᛒᛁᚠᚱᛟᛊᛏ</textPath></text>
-                            <!-- HolDex branch - Hold & Gold -->
-                            <text><textPath href="#branchHoldex" startOffset="2%">ᚺᚨᛚᛞᚨ</textPath></text>
-                            <text><textPath href="#branchHoldex" startOffset="18%">ᚠᛖᛊᛏ</textPath></text>
-                            <text><textPath href="#branchHoldex" startOffset="35%">ᚷᚢᛚᛚ</textPath></text>
-                            <text><textPath href="#branchHoldex" startOffset="52%">ᚨᚢᛞᚱ</textPath></text>
-                            <text><textPath href="#branchHoldex" startOffset="68%">ᚠᛖ</textPath></text>
-                            <text><textPath href="#branchHoldex" startOffset="82%">ᛞᚱᚨᚢᛈᚾᛁᚱ</textPath></text>
-                            <!-- Forecast branch - See & Fate -->
-                            <text><textPath href="#branchForecast" startOffset="2%">ᛊᛈᚨ</textPath></text>
-                            <text><textPath href="#branchForecast" startOffset="15%">ᚠᚱᚨᛗᛏᛁᛞ</textPath></text>
-                            <text><textPath href="#branchForecast" startOffset="35%">ᛊᛃᚨ</textPath></text>
-                            <text><textPath href="#branchForecast" startOffset="50%">ᚢᚱᛞᚱ</textPath></text>
-                            <text><textPath href="#branchForecast" startOffset="65%">ᛊᚲᛟᛈ</textPath></text>
-                            <text><textPath href="#branchForecast" startOffset="80%">ᚾᛟᚱᚾᛁᚱ</textPath></text>
-                            <!-- Ignition branch - Spark & Light -->
-                            <text><textPath href="#branchIgnition" startOffset="8%">ᚲᚹᛖᛁᚲᛃᚨ</textPath></text>
-                            <text><textPath href="#branchIgnition" startOffset="30%">ᛖᛚᛞ</textPath></text>
-                            <text><textPath href="#branchIgnition" startOffset="48%">ᚢᛈᛈᚺᚨᚠ</textPath></text>
-                            <text><textPath href="#branchIgnition" startOffset="68%">ᛒᛃᚨᚱᛏ</textPath></text>
-                            <text><textPath href="#branchIgnition" startOffset="85%">ᛚᛃᛟᛊ</textPath></text>
-                        </g>
+              <!-- Nordic phrases along canopy branches - MASSIVE & HIGHLY VISIBLE -->
+              <g
+                class="branch-phrases"
+                font-family="serif"
+                font-size="36"
+                fill="#0f3d0f"
+                opacity="1"
+                font-weight="bold"
+                stroke="#22c55e"
+                stroke-width="1"
+                aria-hidden="true"
+              >
+                <!-- Learn branch - Wisdom & Knowledge -->
+                <text><textPath href="#branchLearn" startOffset="2%">ᚠᚱᛟᛞᛚᛖᛁᚲᛁ</textPath></text>
+                <text><textPath href="#branchLearn" startOffset="22%">ᚹᛁᛊᛞᛟᛗᚱ</textPath></text>
+                <text><textPath href="#branchLearn" startOffset="42%">ᛚᛖᚱᚨ</textPath></text>
+                <text><textPath href="#branchLearn" startOffset="58%">ᚲᚢᚾᚾᚨᛏᛏᚨ</textPath></text>
+                <text><textPath href="#branchLearn" startOffset="78%">ᚺᚢᚷᚱ</textPath></text>
+                <text><textPath href="#branchLearn" startOffset="92%">ᛗᛁᚾᚾᛁ</textPath></text>
+                <!-- Games branch - Play & Victory -->
+                <text><textPath href="#branchGames" startOffset="2%">ᛚᛖᛁᚲᚱ</textPath></text>
+                <text><textPath href="#branchGames" startOffset="18%">ᚷᛚᛖᛞᛁ</textPath></text>
+                <text><textPath href="#branchGames" startOffset="35%">ᛊᛈᛁᛚᚨ</textPath></text>
+                <text><textPath href="#branchGames" startOffset="52%">ᛊᛁᚷᚱ</textPath></text>
+                <text><textPath href="#branchGames" startOffset="68%">ᚷᚨᛗᚨᚾ</textPath></text>
+                <text><textPath href="#branchGames" startOffset="85%">ᚦᚱᛟᛏᛏ</textPath></text>
+                <!-- Burn branch - Fire & Flames -->
+                <text><textPath href="#branchBurn" startOffset="2%">ᛖᛚᛞᚢᚱ</textPath></text>
+                <text><textPath href="#branchBurn" startOffset="18%">ᛒᚱᛖᚾᚾᚢᚱ</textPath></text>
+                <text><textPath href="#branchBurn" startOffset="38%">ᛒᚱᛖᚾᚾᚨ</textPath></text>
+                <text><textPath href="#branchBurn" startOffset="55%">ᛖᛚᛞ</textPath></text>
+                <text><textPath href="#branchBurn" startOffset="68%">ᛚᛟᚷᛁ</textPath></text>
+                <text><textPath href="#branchBurn" startOffset="82%">ᛊᚢᚱᛏᚱ</textPath></text>
+                <!-- Launcher branch - Launch & Stars -->
+                <text><textPath href="#branchLauncher" startOffset="2%">ᚢᛈᛈᚺᚨᚠ</textPath></text>
+                <text><textPath href="#branchLauncher" startOffset="18%">ᛊᛏᛃᚨᚱᚾᚨ</textPath></text>
+                <text><textPath href="#branchLauncher" startOffset="38%">ᚠᛚᛃᚢᚷᚨ</textPath></text>
+                <text><textPath href="#branchLauncher" startOffset="55%">ᚺᛁᛗᛁᚾ</textPath></text>
+                <text><textPath href="#branchLauncher" startOffset="72%">ᚨᛊᚷᚨᚱᛞᚱ</textPath></text>
+                <text><textPath href="#branchLauncher" startOffset="90%">ᛒᛁᚠᚱᛟᛊᛏ</textPath></text>
+                <!-- HolDex branch - Hold & Gold -->
+                <text><textPath href="#branchHoldex" startOffset="2%">ᚺᚨᛚᛞᚨ</textPath></text>
+                <text><textPath href="#branchHoldex" startOffset="18%">ᚠᛖᛊᛏ</textPath></text>
+                <text><textPath href="#branchHoldex" startOffset="35%">ᚷᚢᛚᛚ</textPath></text>
+                <text><textPath href="#branchHoldex" startOffset="52%">ᚨᚢᛞᚱ</textPath></text>
+                <text><textPath href="#branchHoldex" startOffset="68%">ᚠᛖ</textPath></text>
+                <text><textPath href="#branchHoldex" startOffset="82%">ᛞᚱᚨᚢᛈᚾᛁᚱ</textPath></text>
+                <!-- Forecast branch - See & Fate -->
+                <text><textPath href="#branchForecast" startOffset="2%">ᛊᛈᚨ</textPath></text>
+                <text><textPath href="#branchForecast" startOffset="15%">ᚠᚱᚨᛗᛏᛁᛞ</textPath></text>
+                <text><textPath href="#branchForecast" startOffset="35%">ᛊᛃᚨ</textPath></text>
+                <text><textPath href="#branchForecast" startOffset="50%">ᚢᚱᛞᚱ</textPath></text>
+                <text><textPath href="#branchForecast" startOffset="65%">ᛊᚲᛟᛈ</textPath></text>
+                <text><textPath href="#branchForecast" startOffset="80%">ᚾᛟᚱᚾᛁᚱ</textPath></text>
+                <!-- Ignition branch - Spark & Light -->
+                <text><textPath href="#branchIgnition" startOffset="8%">ᚲᚹᛖᛁᚲᛃᚨ</textPath></text>
+                <text><textPath href="#branchIgnition" startOffset="30%">ᛖᛚᛞ</textPath></text>
+                <text><textPath href="#branchIgnition" startOffset="48%">ᚢᛈᛈᚺᚨᚠ</textPath></text>
+                <text><textPath href="#branchIgnition" startOffset="68%">ᛒᛃᚨᚱᛏ</textPath></text>
+                <text><textPath href="#branchIgnition" startOffset="85%">ᛚᛃᛟᛊ</textPath></text>
+              </g>
 
-                        <!-- TRUNK BRANCHES (Amber - Building) - From center to SIDES -->
-                        <g class="branches-trunk" stroke="#a67c52" stroke-width="4" fill="none" stroke-linecap="round">
-                            <use href="#branchOracle"/>
-                            <use href="#branchRpc"/>
-                            <use href="#branchCommunity"/>
-                        </g>
+              <!-- TRUNK BRANCHES (Amber - Building) - From center to SIDES -->
+              <g
+                class="branches-trunk"
+                stroke="#a67c52"
+                stroke-width="4"
+                fill="none"
+                stroke-linecap="round"
+              >
+                <use href="#branchOracle" />
+                <use href="#branchRpc" />
+                <use href="#branchCommunity" />
+              </g>
 
-                        <!-- Nordic phrases along trunk branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#2a1a08" opacity="1" font-weight="bold" stroke="#f59e0b" stroke-width="1" aria-hidden="true">
-                            <!-- Oracle branch - Prophecy & Vision -->
-                            <text><textPath href="#branchOracle" startOffset="2%">ᛊᛈᚨᛞᛟᛗᚱ</textPath></text>
-                            <text><textPath href="#branchOracle" startOffset="18%">ᚹᛁᛏᚨ</textPath></text>
-                            <text><textPath href="#branchOracle" startOffset="32%">ᛊᛃᚨ</textPath></text>
-                            <text><textPath href="#branchOracle" startOffset="48%">ᚠᚱᛖᛗᛞᚨᚱ</textPath></text>
-                            <text><textPath href="#branchOracle" startOffset="68%">ᛗᛁᛗᛁᚱ</textPath></text>
-                            <text><textPath href="#branchOracle" startOffset="85%">ᛟᛞᛁᚾ</textPath></text>
-                            <!-- RPC branch - Connection & Network -->
-                            <text><textPath href="#branchRpc" startOffset="2%">ᛊᚨᛗᛒᚨᚾᛞ</textPath></text>
-                            <text><textPath href="#branchRpc" startOffset="18%">ᚾᛖᛏ</textPath></text>
-                            <text><textPath href="#branchRpc" startOffset="32%">ᛒᛁᚾᛞᚨ</textPath></text>
-                            <text><textPath href="#branchRpc" startOffset="48%">ᚦᚱᚨᛞᚱ</textPath></text>
-                            <text><textPath href="#branchRpc" startOffset="65%">ᚷᛚᛖᛁᛈᚾᛁᚱ</textPath></text>
-                            <text><textPath href="#branchRpc" startOffset="85%">ᚲᛖᛞᛃᚨ</textPath></text>
-                            <!-- Community branch - People & Build -->
-                            <text><textPath href="#branchCommunity" startOffset="2%">ᛊᚨᛗᚠᛖᛚᚨᚷ</textPath></text>
-                            <text><textPath href="#branchCommunity" startOffset="18%">ᚠᛟᛚᚲ</textPath></text>
-                            <text><textPath href="#branchCommunity" startOffset="32%">ᛒᛃᚷᚷᛃᚨ</textPath></text>
-                            <text><textPath href="#branchCommunity" startOffset="48%">ᛖᛁᚾᛁᚾᚷ</textPath></text>
-                            <text><textPath href="#branchCommunity" startOffset="65%">ᛒᚱᛟᛞᚢᚱ</textPath></text>
-                            <text><textPath href="#branchCommunity" startOffset="82%">ᚠᛃᛟᛚᛞ</textPath></text>
-                        </g>
+              <!-- Nordic phrases along trunk branches - MASSIVE & HIGHLY VISIBLE -->
+              <g
+                class="branch-phrases"
+                font-family="serif"
+                font-size="34"
+                fill="#2a1a08"
+                opacity="1"
+                font-weight="bold"
+                stroke="#f59e0b"
+                stroke-width="1"
+                aria-hidden="true"
+              >
+                <!-- Oracle branch - Prophecy & Vision -->
+                <text><textPath href="#branchOracle" startOffset="2%">ᛊᛈᚨᛞᛟᛗᚱ</textPath></text>
+                <text><textPath href="#branchOracle" startOffset="18%">ᚹᛁᛏᚨ</textPath></text>
+                <text><textPath href="#branchOracle" startOffset="32%">ᛊᛃᚨ</textPath></text>
+                <text><textPath href="#branchOracle" startOffset="48%">ᚠᚱᛖᛗᛞᚨᚱ</textPath></text>
+                <text><textPath href="#branchOracle" startOffset="68%">ᛗᛁᛗᛁᚱ</textPath></text>
+                <text><textPath href="#branchOracle" startOffset="85%">ᛟᛞᛁᚾ</textPath></text>
+                <!-- RPC branch - Connection & Network -->
+                <text><textPath href="#branchRpc" startOffset="2%">ᛊᚨᛗᛒᚨᚾᛞ</textPath></text>
+                <text><textPath href="#branchRpc" startOffset="18%">ᚾᛖᛏ</textPath></text>
+                <text><textPath href="#branchRpc" startOffset="32%">ᛒᛁᚾᛞᚨ</textPath></text>
+                <text><textPath href="#branchRpc" startOffset="48%">ᚦᚱᚨᛞᚱ</textPath></text>
+                <text><textPath href="#branchRpc" startOffset="65%">ᚷᛚᛖᛁᛈᚾᛁᚱ</textPath></text>
+                <text><textPath href="#branchRpc" startOffset="85%">ᚲᛖᛞᛃᚨ</textPath></text>
+                <!-- Community branch - People & Build -->
+                <text><textPath href="#branchCommunity" startOffset="2%">ᛊᚨᛗᚠᛖᛚᚨᚷ</textPath></text>
+                <text><textPath href="#branchCommunity" startOffset="18%">ᚠᛟᛚᚲ</textPath></text>
+                <text><textPath href="#branchCommunity" startOffset="32%">ᛒᛃᚷᚷᛃᚨ</textPath></text>
+                <text><textPath href="#branchCommunity" startOffset="48%">ᛖᛁᚾᛁᚾᚷ</textPath></text>
+                <text><textPath href="#branchCommunity" startOffset="65%">ᛒᚱᛟᛞᚢᚱ</textPath></text>
+                <text><textPath href="#branchCommunity" startOffset="82%">ᚠᛃᛟᛚᛞ</textPath></text>
+              </g>
 
-                        <!-- ROOT BRANCHES (Purple - Planned) - From center DOWN -->
-                        <g class="branches-roots" stroke="#7c3aed" stroke-width="4" fill="none" stroke-linecap="round">
-                            <use href="#branchSecurity"/>
-                            <use href="#branchPipeline"/>
-                            <use href="#branchAmbassadors"/>
-                        </g>
+              <!-- ROOT BRANCHES (Purple - Planned) - From center DOWN -->
+              <g
+                class="branches-roots"
+                stroke="#7c3aed"
+                stroke-width="4"
+                fill="none"
+                stroke-linecap="round"
+              >
+                <use href="#branchSecurity" />
+                <use href="#branchPipeline" />
+                <use href="#branchAmbassadors" />
+              </g>
 
-                        <!-- Nordic phrases along root branches - MASSIVE & HIGHLY VISIBLE -->
-                        <g class="branch-phrases" font-family="serif" font-size="34" fill="#1e0a4a" opacity="1" font-weight="bold" stroke="#c4b5fd" stroke-width="1" aria-hidden="true">
-                            <!-- Security branch - Protection & Shield -->
-                            <text><textPath href="#branchSecurity" startOffset="2%">ᚹᛟᚱᛞ</textPath></text>
-                            <text><textPath href="#branchSecurity" startOffset="15%">ᛊᚲᛃᛟᛚᛞᚱ</textPath></text>
-                            <text><textPath href="#branchSecurity" startOffset="32%">ᚹᚨᚱᛞᚨ</textPath></text>
-                            <text><textPath href="#branchSecurity" startOffset="48%">ᛊᚲᛃᛚᛞ</textPath></text>
-                            <text><textPath href="#branchSecurity" startOffset="65%">ᚺᛚᛁᚠ</textPath></text>
-                            <text><textPath href="#branchSecurity" startOffset="82%">ᚺᛖᛁᛗᛞᚨᛚᛚᚱ</textPath></text>
-                            <!-- Pipeline branch - Root & Forge -->
-                            <text><textPath href="#branchPipeline" startOffset="8%">ᛒᚱᚨᚢᛏ</textPath></text>
-                            <text><textPath href="#branchPipeline" startOffset="25%">ᛊᛗᛁᛞᛃᚨ</textPath></text>
-                            <text><textPath href="#branchPipeline" startOffset="42%">ᚱᛟᛏ</textPath></text>
-                            <text><textPath href="#branchPipeline" startOffset="58%">ᛞᛃᚢᛈ</textPath></text>
-                            <text><textPath href="#branchPipeline" startOffset="72%">ᚾᛁᛞᚺᛟᚷᚷᚱ</textPath></text>
-                            <text><textPath href="#branchPipeline" startOffset="90%">ᚺᛖᛚ</textPath></text>
-                            <!-- Ambassadors branch - Messengers & Voice -->
-                            <text><textPath href="#branchAmbassadors" startOffset="2%">ᛊᛖᚾᛞᛁᛒᛟᛞᚨᚱ</textPath></text>
-                            <text><textPath href="#branchAmbassadors" startOffset="22%">ᚺᛖᚱᚨᛚᛞ</textPath></text>
-                            <text><textPath href="#branchAmbassadors" startOffset="38%">ᛒᛟᛞ</textPath></text>
-                            <text><textPath href="#branchAmbassadors" startOffset="52%">ᚱᛟᛞᛞ</textPath></text>
-                            <text><textPath href="#branchAmbassadors" startOffset="68%">ᚺᚢᚷᛁᚾ</textPath></text>
-                            <text><textPath href="#branchAmbassadors" startOffset="85%">ᛗᚢᚾᛁᚾ</textPath></text>
-                        </g>
+              <!-- Nordic phrases along root branches - MASSIVE & HIGHLY VISIBLE -->
+              <g
+                class="branch-phrases"
+                font-family="serif"
+                font-size="34"
+                fill="#1e0a4a"
+                opacity="1"
+                font-weight="bold"
+                stroke="#c4b5fd"
+                stroke-width="1"
+                aria-hidden="true"
+              >
+                <!-- Security branch - Protection & Shield -->
+                <text><textPath href="#branchSecurity" startOffset="2%">ᚹᛟᚱᛞ</textPath></text>
+                <text><textPath href="#branchSecurity" startOffset="15%">ᛊᚲᛃᛟᛚᛞᚱ</textPath></text>
+                <text><textPath href="#branchSecurity" startOffset="32%">ᚹᚨᚱᛞᚨ</textPath></text>
+                <text><textPath href="#branchSecurity" startOffset="48%">ᛊᚲᛃᛚᛞ</textPath></text>
+                <text><textPath href="#branchSecurity" startOffset="65%">ᚺᛚᛁᚠ</textPath></text>
+                <text><textPath href="#branchSecurity" startOffset="82%">ᚺᛖᛁᛗᛞᚨᛚᛚᚱ</textPath></text>
+                <!-- Pipeline branch - Root & Forge -->
+                <text><textPath href="#branchPipeline" startOffset="8%">ᛒᚱᚨᚢᛏ</textPath></text>
+                <text><textPath href="#branchPipeline" startOffset="25%">ᛊᛗᛁᛞᛃᚨ</textPath></text>
+                <text><textPath href="#branchPipeline" startOffset="42%">ᚱᛟᛏ</textPath></text>
+                <text><textPath href="#branchPipeline" startOffset="58%">ᛞᛃᚢᛈ</textPath></text>
+                <text><textPath href="#branchPipeline" startOffset="72%">ᚾᛁᛞᚺᛟᚷᚷᚱ</textPath></text>
+                <text><textPath href="#branchPipeline" startOffset="90%">ᚺᛖᛚ</textPath></text>
+                <!-- Ambassadors branch - Messengers & Voice -->
+                <text>
+                  <textPath href="#branchAmbassadors" startOffset="2%">ᛊᛖᚾᛞᛁᛒᛟᛞᚨᚱ</textPath>
+                </text>
+                <text><textPath href="#branchAmbassadors" startOffset="22%">ᚺᛖᚱᚨᛚᛞ</textPath></text>
+                <text><textPath href="#branchAmbassadors" startOffset="38%">ᛒᛟᛞ</textPath></text>
+                <text><textPath href="#branchAmbassadors" startOffset="52%">ᚱᛟᛞᛞ</textPath></text>
+                <text><textPath href="#branchAmbassadors" startOffset="68%">ᚺᚢᚷᛁᚾ</textPath></text>
+                <text><textPath href="#branchAmbassadors" startOffset="85%">ᛗᚢᚾᛁᚾ</textPath></text>
+              </g>
 
-                        <!-- Simple elegant leaves along branches - STATIC -->
-                        <g class="simple-leaves" opacity="0.8">
-                            <!-- Canopy leaves (green) -->
-                            <g fill="#4ade80" stroke="none">
-                                <!-- Learn branch -->
-                                <ellipse cx="340" cy="230" rx="4" ry="8" transform="rotate(-25 340 230)"/>
-                                <ellipse cx="280" cy="190" rx="3" ry="6" transform="rotate(-35 280 190)"/>
-                                <ellipse cx="220" cy="160" rx="3" ry="7" transform="rotate(-40 220 160)"/>
-                                <!-- Games branch -->
-                                <ellipse cx="460" cy="230" rx="4" ry="8" transform="rotate(25 460 230)"/>
-                                <ellipse cx="520" cy="190" rx="3" ry="6" transform="rotate(35 520 190)"/>
-                                <ellipse cx="580" cy="160" rx="3" ry="7" transform="rotate(40 580 160)"/>
-                                <!-- Burn tracker branch -->
-                                <ellipse cx="300" cy="240" rx="4" ry="8" transform="rotate(-30 300 240)"/>
-                                <ellipse cx="220" cy="200" rx="3" ry="6" transform="rotate(-40 220 200)"/>
-                                <ellipse cx="150" cy="170" rx="3" ry="7" transform="rotate(-45 150 170)"/>
-                                <!-- Launcher branch -->
-                                <ellipse cx="500" cy="240" rx="4" ry="8" transform="rotate(30 500 240)"/>
-                                <ellipse cx="580" cy="200" rx="3" ry="6" transform="rotate(40 580 200)"/>
-                                <ellipse cx="650" cy="170" rx="3" ry="7" transform="rotate(45 650 170)"/>
-                                <!-- HolDex branch -->
-                                <ellipse cx="320" cy="245" rx="3" ry="6" transform="rotate(-20 320 245)"/>
-                                <ellipse cx="240" cy="220" rx="4" ry="7" transform="rotate(-25 240 220)"/>
-                                <ellipse cx="170" cy="205" rx="3" ry="6" transform="rotate(-30 170 205)"/>
-                                <!-- Forecast branch -->
-                                <ellipse cx="480" cy="245" rx="3" ry="6" transform="rotate(20 480 245)"/>
-                                <ellipse cx="560" cy="220" rx="4" ry="7" transform="rotate(25 560 220)"/>
-                                <ellipse cx="630" cy="205" rx="3" ry="6" transform="rotate(30 630 205)"/>
-                                <!-- Ignition branch -->
-                                <ellipse cx="385" cy="210" rx="4" ry="8" transform="rotate(-10 385 210)"/>
-                                <ellipse cx="365" cy="160" rx="3" ry="6" transform="rotate(-15 365 160)"/>
-                                <ellipse cx="350" cy="120" rx="3" ry="7" transform="rotate(-8 350 120)"/>
-                            </g>
-                            <!-- Darker accent leaves -->
-                            <g fill="#22c55e" stroke="none">
-                                <ellipse cx="310" cy="220" rx="2" ry="5" transform="rotate(-28 310 220)"/>
-                                <ellipse cx="490" cy="220" rx="2" ry="5" transform="rotate(28 490 220)"/>
-                                <ellipse cx="200" cy="180" rx="2" ry="5" transform="rotate(-38 200 180)"/>
-                                <ellipse cx="600" cy="180" rx="2" ry="5" transform="rotate(38 600 180)"/>
-                                <ellipse cx="375" cy="180" rx="2" ry="5" transform="rotate(-12 375 180)"/>
-                            </g>
-                            <!-- Trunk leaves (amber) -->
-                            <g fill="#d97706" stroke="none" opacity="0.7">
-                                <ellipse cx="500" cy="295" rx="3" ry="6" transform="rotate(10 500 295)"/>
-                                <ellipse cx="580" cy="285" rx="3" ry="5" transform="rotate(15 580 285)"/>
-                                <ellipse cx="300" cy="330" rx="3" ry="6" transform="rotate(-15 300 330)"/>
-                                <ellipse cx="220" cy="345" rx="3" ry="5" transform="rotate(-20 220 345)"/>
-                            </g>
-                            <!-- Root leaves (purple) -->
-                            <g fill="#a78bfa" stroke="none" opacity="0.6">
-                                <ellipse cx="320" cy="420" rx="3" ry="6" transform="rotate(-25 320 420)"/>
-                                <ellipse cx="250" cy="470" rx="3" ry="5" transform="rotate(-35 250 470)"/>
-                                <ellipse cx="480" cy="420" rx="3" ry="6" transform="rotate(25 480 420)"/>
-                                <ellipse cx="550" cy="470" rx="3" ry="5" transform="rotate(35 550 470)"/>
-                            </g>
-                        </g>
+              <!-- Simple elegant leaves along branches - STATIC -->
+              <g class="simple-leaves" opacity="0.8">
+                <!-- Canopy leaves (green) -->
+                <g fill="#4ade80" stroke="none">
+                  <!-- Learn branch -->
+                  <ellipse cx="340" cy="230" rx="4" ry="8" transform="rotate(-25 340 230)" />
+                  <ellipse cx="280" cy="190" rx="3" ry="6" transform="rotate(-35 280 190)" />
+                  <ellipse cx="220" cy="160" rx="3" ry="7" transform="rotate(-40 220 160)" />
+                  <!-- Games branch -->
+                  <ellipse cx="460" cy="230" rx="4" ry="8" transform="rotate(25 460 230)" />
+                  <ellipse cx="520" cy="190" rx="3" ry="6" transform="rotate(35 520 190)" />
+                  <ellipse cx="580" cy="160" rx="3" ry="7" transform="rotate(40 580 160)" />
+                  <!-- Burn tracker branch -->
+                  <ellipse cx="300" cy="240" rx="4" ry="8" transform="rotate(-30 300 240)" />
+                  <ellipse cx="220" cy="200" rx="3" ry="6" transform="rotate(-40 220 200)" />
+                  <ellipse cx="150" cy="170" rx="3" ry="7" transform="rotate(-45 150 170)" />
+                  <!-- Launcher branch -->
+                  <ellipse cx="500" cy="240" rx="4" ry="8" transform="rotate(30 500 240)" />
+                  <ellipse cx="580" cy="200" rx="3" ry="6" transform="rotate(40 580 200)" />
+                  <ellipse cx="650" cy="170" rx="3" ry="7" transform="rotate(45 650 170)" />
+                  <!-- HolDex branch -->
+                  <ellipse cx="320" cy="245" rx="3" ry="6" transform="rotate(-20 320 245)" />
+                  <ellipse cx="240" cy="220" rx="4" ry="7" transform="rotate(-25 240 220)" />
+                  <ellipse cx="170" cy="205" rx="3" ry="6" transform="rotate(-30 170 205)" />
+                  <!-- Forecast branch -->
+                  <ellipse cx="480" cy="245" rx="3" ry="6" transform="rotate(20 480 245)" />
+                  <ellipse cx="560" cy="220" rx="4" ry="7" transform="rotate(25 560 220)" />
+                  <ellipse cx="630" cy="205" rx="3" ry="6" transform="rotate(30 630 205)" />
+                  <!-- Ignition branch -->
+                  <ellipse cx="385" cy="210" rx="4" ry="8" transform="rotate(-10 385 210)" />
+                  <ellipse cx="365" cy="160" rx="3" ry="6" transform="rotate(-15 365 160)" />
+                  <ellipse cx="350" cy="120" rx="3" ry="7" transform="rotate(-8 350 120)" />
+                </g>
+                <!-- Darker accent leaves -->
+                <g fill="#22c55e" stroke="none">
+                  <ellipse cx="310" cy="220" rx="2" ry="5" transform="rotate(-28 310 220)" />
+                  <ellipse cx="490" cy="220" rx="2" ry="5" transform="rotate(28 490 220)" />
+                  <ellipse cx="200" cy="180" rx="2" ry="5" transform="rotate(-38 200 180)" />
+                  <ellipse cx="600" cy="180" rx="2" ry="5" transform="rotate(38 600 180)" />
+                  <ellipse cx="375" cy="180" rx="2" ry="5" transform="rotate(-12 375 180)" />
+                </g>
+                <!-- Trunk leaves (amber) -->
+                <g fill="#d97706" stroke="none" opacity="0.7">
+                  <ellipse cx="500" cy="295" rx="3" ry="6" transform="rotate(10 500 295)" />
+                  <ellipse cx="580" cy="285" rx="3" ry="5" transform="rotate(15 580 285)" />
+                  <ellipse cx="300" cy="330" rx="3" ry="6" transform="rotate(-15 300 330)" />
+                  <ellipse cx="220" cy="345" rx="3" ry="5" transform="rotate(-20 220 345)" />
+                </g>
+                <!-- Root leaves (purple) -->
+                <g fill="#a78bfa" stroke="none" opacity="0.6">
+                  <ellipse cx="320" cy="420" rx="3" ry="6" transform="rotate(-25 320 420)" />
+                  <ellipse cx="250" cy="470" rx="3" ry="5" transform="rotate(-35 250 470)" />
+                  <ellipse cx="480" cy="420" rx="3" ry="6" transform="rotate(25 480 420)" />
+                  <ellipse cx="550" cy="470" rx="3" ry="5" transform="rotate(35 550 470)" />
+                </g>
+              </g>
 
-                        <!-- ═══════════════════════════════════════════
+              <!-- ═══════════════════════════════════════════
                              NORDIC SUN - SÓLHVERFING (Sun Wheel)
                              With Runic Symbols - Center of Yggdrasil
                              ═══════════════════════════════════════════ -->
-                        <defs>
-                            <!-- Nordic sun gradient - deep bronze/copper tones -->
-                            <radialGradient id="nordicSunCore" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color: #fef3c7; stop-opacity: 1"/>
-                                <stop offset="30%" style="stop-color: #d97706; stop-opacity: 1"/>
-                                <stop offset="60%" style="stop-color: #b45309; stop-opacity: 0.9"/>
-                                <stop offset="100%" style="stop-color: #78350f; stop-opacity: 0.8"/>
-                            </radialGradient>
-                            <!-- Outer mystical glow -->
-                            <radialGradient id="nordicAura" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" style="stop-color: #fbbf24; stop-opacity: 0.4"/>
-                                <stop offset="40%" style="stop-color: #b45309; stop-opacity: 0.2"/>
-                                <stop offset="100%" style="stop-color: #451a03; stop-opacity: 0"/>
-                            </radialGradient>
-                        </defs>
-                        <g class="heart-layer nordic-sun">
-                            <!-- Outer mystical aura -->
-                            <circle cx="400" cy="300" r="120" fill="url(#nordicAura)" class="sun-aura" opacity="0.7"/>
+              <defs>
+                <!-- Nordic sun gradient - deep bronze/copper tones -->
+                <radialGradient id="nordicSunCore" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#fef3c7" stop-opacity="1" />
+                  <stop offset="30%" stop-color="#d97706" stop-opacity="1" />
+                  <stop offset="60%" stop-color="#b45309" stop-opacity="0.9" />
+                  <stop offset="100%" stop-color="#78350f" stop-opacity="0.8" />
+                </radialGradient>
+                <!-- Outer mystical glow -->
+                <radialGradient id="nordicAura" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.4" />
+                  <stop offset="40%" stop-color="#b45309" stop-opacity="0.2" />
+                  <stop offset="100%" stop-color="#451a03" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <g class="heart-layer nordic-sun">
+                <!-- Outer mystical aura -->
+                <circle
+                  cx="400"
+                  cy="300"
+                  r="120"
+                  fill="url(#nordicAura)"
+                  class="sun-aura"
+                  opacity="0.7"
+                />
 
-                            <!-- Runic rays with Elder Futhark symbols -->
-                            <g class="runic-rays" font-family="serif" font-size="16" font-weight="bold" aria-hidden="true">
-                                <!-- 8 rays with runes at the tips -->
-                                <line x1="400" y1="300" x2="400" y2="190" stroke="#d97706" stroke-width="3" opacity="0.8"/>
-                                <text x="400" y="178" text-anchor="middle" fill="#fbbf24" class="ray-rune">ᚠ</text>
+                <!-- Runic rays with Elder Futhark symbols -->
+                <g
+                  class="runic-rays"
+                  font-family="serif"
+                  font-size="16"
+                  font-weight="bold"
+                  aria-hidden="true"
+                >
+                  <!-- 8 rays with runes at the tips -->
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="400"
+                    y2="190"
+                    stroke="#d97706"
+                    stroke-width="3"
+                    opacity="0.8"
+                  />
+                  <text x="400" y="178" text-anchor="middle" fill="#fbbf24" class="ray-rune">
+                    ᚠ
+                  </text>
 
-                                <line x1="400" y1="300" x2="400" y2="410" stroke="#d97706" stroke-width="3" opacity="0.8"/>
-                                <text x="400" y="432" text-anchor="middle" fill="#fbbf24" class="ray-rune">ᚢ</text>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="400"
+                    y2="410"
+                    stroke="#d97706"
+                    stroke-width="3"
+                    opacity="0.8"
+                  />
+                  <text x="400" y="432" text-anchor="middle" fill="#fbbf24" class="ray-rune">
+                    ᚢ
+                  </text>
 
-                                <line x1="400" y1="300" x2="290" y2="300" stroke="#d97706" stroke-width="3" opacity="0.8"/>
-                                <text x="270" y="305" text-anchor="middle" fill="#fbbf24" class="ray-rune">ᚦ</text>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="290"
+                    y2="300"
+                    stroke="#d97706"
+                    stroke-width="3"
+                    opacity="0.8"
+                  />
+                  <text x="270" y="305" text-anchor="middle" fill="#fbbf24" class="ray-rune">
+                    ᚦ
+                  </text>
 
-                                <line x1="400" y1="300" x2="510" y2="300" stroke="#d97706" stroke-width="3" opacity="0.8"/>
-                                <text x="530" y="305" text-anchor="middle" fill="#fbbf24" class="ray-rune">ᚨ</text>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="510"
+                    y2="300"
+                    stroke="#d97706"
+                    stroke-width="3"
+                    opacity="0.8"
+                  />
+                  <text x="530" y="305" text-anchor="middle" fill="#fbbf24" class="ray-rune">
+                    ᚨ
+                  </text>
 
-                                <!-- Diagonal rays -->
-                                <line x1="400" y1="300" x2="322" y2="222" stroke="#b45309" stroke-width="2.5" opacity="0.7"/>
-                                <text x="305" y="210" text-anchor="middle" fill="#d97706" class="ray-rune">ᚱ</text>
+                  <!-- Diagonal rays -->
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="322"
+                    y2="222"
+                    stroke="#b45309"
+                    stroke-width="2.5"
+                    opacity="0.7"
+                  />
+                  <text x="305" y="210" text-anchor="middle" fill="#d97706" class="ray-rune">
+                    ᚱ
+                  </text>
 
-                                <line x1="400" y1="300" x2="478" y2="378" stroke="#b45309" stroke-width="2.5" opacity="0.7"/>
-                                <text x="495" y="398" text-anchor="middle" fill="#d97706" class="ray-rune">ᚲ</text>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="478"
+                    y2="378"
+                    stroke="#b45309"
+                    stroke-width="2.5"
+                    opacity="0.7"
+                  />
+                  <text x="495" y="398" text-anchor="middle" fill="#d97706" class="ray-rune">
+                    ᚲ
+                  </text>
 
-                                <line x1="400" y1="300" x2="322" y2="378" stroke="#b45309" stroke-width="2.5" opacity="0.7"/>
-                                <text x="305" y="398" text-anchor="middle" fill="#d97706" class="ray-rune">ᚷ</text>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="322"
+                    y2="378"
+                    stroke="#b45309"
+                    stroke-width="2.5"
+                    opacity="0.7"
+                  />
+                  <text x="305" y="398" text-anchor="middle" fill="#d97706" class="ray-rune">
+                    ᚷ
+                  </text>
 
-                                <line x1="400" y1="300" x2="478" y2="222" stroke="#b45309" stroke-width="2.5" opacity="0.7"/>
-                                <text x="495" y="210" text-anchor="middle" fill="#d97706" class="ray-rune">ᚹ</text>
-                            </g>
+                  <line
+                    x1="400"
+                    y1="300"
+                    x2="478"
+                    y2="222"
+                    stroke="#b45309"
+                    stroke-width="2.5"
+                    opacity="0.7"
+                  />
+                  <text x="495" y="210" text-anchor="middle" fill="#d97706" class="ray-rune">
+                    ᚹ
+                  </text>
+                </g>
 
-                            <!-- Outer ring with runic border -->
-                            <circle cx="400" cy="300" r="85" fill="none" stroke="#92400e" stroke-width="4" class="sun-ring-outer" opacity="0.6"/>
-                            <circle cx="400" cy="300" r="80" fill="none" stroke="#d97706" stroke-width="1" stroke-dasharray="8,4" class="sun-ring-rune" opacity="0.5"/>
+                <!-- Outer ring with runic border -->
+                <circle
+                  cx="400"
+                  cy="300"
+                  r="85"
+                  fill="none"
+                  stroke="#92400e"
+                  stroke-width="4"
+                  class="sun-ring-outer"
+                  opacity="0.6"
+                />
+                <circle
+                  cx="400"
+                  cy="300"
+                  r="80"
+                  fill="none"
+                  stroke="#d97706"
+                  stroke-width="1"
+                  stroke-dasharray="8,4"
+                  class="sun-ring-rune"
+                  opacity="0.5"
+                />
 
-                            <!-- Main sun body - Nordic bronze -->
-                            <circle cx="400" cy="300" r="65" fill="url(#nordicSunCore)" class="sun-body"/>
+                <!-- Main sun body - Nordic bronze -->
+                <circle cx="400" cy="300" r="65" fill="url(#nordicSunCore)" class="sun-body" />
 
-                            <!-- Inner decorative ring -->
-                            <circle cx="400" cy="300" r="50" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.8"/>
+                <!-- Inner decorative ring -->
+                <circle
+                  cx="400"
+                  cy="300"
+                  r="50"
+                  fill="none"
+                  stroke="#fbbf24"
+                  stroke-width="2"
+                  opacity="0.8"
+                />
 
-                            <!-- Nordic phrases around inner periphery -->
-                            <g class="nordic-phrases" font-family="serif" font-size="8" fill="#92400e" opacity="0.7">
-                                <text transform="translate(400,300)">
-                                    <textPath href="#phraseCircle" startOffset="0%">✦ EINN MEÐR ÖLLU ✦ STYRK Í BRENNU ✦ VÉR ERUM ELDUR ✦ ASKR YGGDRASILS ✦</textPath>
-                                </text>
-                            </g>
-                            <defs>
-                                <path id="phraseCircle" d="M400,300 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" fill="none"/>
-                            </defs>
+                <!-- Nordic phrases around inner periphery -->
+                <g
+                  class="nordic-phrases"
+                  font-family="serif"
+                  font-size="8"
+                  fill="#92400e"
+                  opacity="0.7"
+                >
+                  <text transform="translate(400,300)">
+                    <textPath href="#phraseCircle" startOffset="0%">
+                      ✦ EINN MEÐR ÖLLU ✦ STYRK Í BRENNU ✦ VÉR ERUM ELDUR ✦ ASKR YGGDRASILS ✦
+                    </textPath>
+                  </text>
+                </g>
+                <defs>
+                  <path
+                    id="phraseCircle"
+                    d="M400,300 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0"
+                    fill="none"
+                  />
+                </defs>
 
-                            <!-- Vegvísir-inspired center pattern -->
-                            <g class="vegvisir-center" stroke="#78350f" stroke-width="1.5" fill="none" opacity="0.6">
-                                <line x1="400" y1="270" x2="400" y2="330"/>
-                                <line x1="370" y1="300" x2="430" y2="300"/>
-                                <line x1="379" y1="279" x2="421" y2="321"/>
-                                <line x1="379" y1="321" x2="421" y2="279"/>
-                            </g>
+                <!-- Vegvísir-inspired center pattern -->
+                <g
+                  class="vegvisir-center"
+                  stroke="#78350f"
+                  stroke-width="1.5"
+                  fill="none"
+                  opacity="0.6"
+                >
+                  <line x1="400" y1="270" x2="400" y2="330" />
+                  <line x1="370" y1="300" x2="430" y2="300" />
+                  <line x1="379" y1="279" x2="421" y2="321" />
+                  <line x1="379" y1="321" x2="421" y2="279" />
+                </g>
 
-                            <!-- Central bright core -->
-                            <circle cx="400" cy="300" r="25" fill="#fef3c7" opacity="0.7" class="sun-core-bright"/>
-                            <circle cx="400" cy="300" r="15" fill="#fbbf24" opacity="0.5"/>
-                        </g>
+                <!-- Central bright core -->
+                <circle
+                  cx="400"
+                  cy="300"
+                  r="25"
+                  fill="#fef3c7"
+                  opacity="0.7"
+                  class="sun-core-bright"
+                />
+                <circle cx="400" cy="300" r="15" fill="#fbbf24" opacity="0.5" />
+              </g>
 
-                        <!-- ═══════════════════════════════════════════
+              <!-- ═══════════════════════════════════════════
                              YGGDRASIL LEAVES ON BRANCHES
                              ═══════════════════════════════════════════ -->
-                        <!-- Leaf shape definitions -->
-                        <defs>
-                            <g id="leaf-green">
-                                <path d="M0,0 Q3,-8 0,-15 Q-3,-8 0,0" fill="#4ade80" opacity="0.8"/>
-                                <line x1="0" y1="0" x2="0" y2="-12" stroke="#22c55e" stroke-width="0.5"/>
-                            </g>
-                            <g id="leaf-dark-green">
-                                <path d="M0,0 Q3,-8 0,-15 Q-3,-8 0,0" fill="#22c55e" opacity="0.9"/>
-                                <line x1="0" y1="0" x2="0" y2="-12" stroke="#16a34a" stroke-width="0.5"/>
-                            </g>
-                            <g id="leaf-cluster">
-                                <use href="#leaf-green" transform="rotate(-30)"/>
-                                <use href="#leaf-green" transform="rotate(0)"/>
-                                <use href="#leaf-green" transform="rotate(30)"/>
-                            </g>
-                        </defs>
+              <!-- Leaf shape definitions -->
+              <defs>
+                <g id="leaf-green">
+                  <path d="M0,0 Q3,-8 0,-15 Q-3,-8 0,0" fill="#4ade80" opacity="0.8" />
+                  <line x1="0" y1="0" x2="0" y2="-12" stroke="#22c55e" stroke-width="0.5" />
+                </g>
+                <g id="leaf-dark-green">
+                  <path d="M0,0 Q3,-8 0,-15 Q-3,-8 0,0" fill="#22c55e" opacity="0.9" />
+                  <line x1="0" y1="0" x2="0" y2="-12" stroke="#16a34a" stroke-width="0.5" />
+                </g>
+                <g id="leaf-cluster">
+                  <use href="#leaf-green" transform="rotate(-30)" />
+                  <use href="#leaf-green" transform="rotate(0)" />
+                  <use href="#leaf-green" transform="rotate(30)" />
+                </g>
+              </defs>
 
-                        <!-- Canopy leaves (green) - scattered on green branches -->
-                        <g class="canopy-leaves" opacity="0.85">
-                            <!-- Left branch leaves -->
-                            <use href="#leaf-cluster" transform="translate(260,180) scale(0.9)"/>
-                            <use href="#leaf-dark-green" transform="translate(200,155) rotate(-20) scale(0.8)"/>
-                            <use href="#leaf-cluster" transform="translate(180,140) scale(0.7) rotate(15)"/>
-                            <use href="#leaf-green" transform="translate(140,125) rotate(-35) scale(0.9)"/>
-                            <use href="#leaf-dark-green" transform="translate(110,130) rotate(10) scale(0.8)"/>
+              <!-- Canopy leaves (green) - scattered on green branches -->
+              <g class="canopy-leaves" opacity="0.85">
+                <!-- Left branch leaves -->
+                <use href="#leaf-cluster" transform="translate(260,180) scale(0.9)" />
+                <use
+                  href="#leaf-dark-green"
+                  transform="translate(200,155) rotate(-20) scale(0.8)"
+                />
+                <use href="#leaf-cluster" transform="translate(180,140) scale(0.7) rotate(15)" />
+                <use href="#leaf-green" transform="translate(140,125) rotate(-35) scale(0.9)" />
+                <use href="#leaf-dark-green" transform="translate(110,130) rotate(10) scale(0.8)" />
 
-                            <!-- Upper left leaves -->
-                            <use href="#leaf-cluster" transform="translate(320,210) scale(0.8) rotate(-10)"/>
-                            <use href="#leaf-green" transform="translate(240,195) rotate(25) scale(0.7)"/>
-                            <use href="#leaf-dark-green" transform="translate(160,160) rotate(-15) scale(0.85)"/>
+                <!-- Upper left leaves -->
+                <use href="#leaf-cluster" transform="translate(320,210) scale(0.8) rotate(-10)" />
+                <use href="#leaf-green" transform="translate(240,195) rotate(25) scale(0.7)" />
+                <use
+                  href="#leaf-dark-green"
+                  transform="translate(160,160) rotate(-15) scale(0.85)"
+                />
 
-                            <!-- Right branch leaves -->
-                            <use href="#leaf-cluster" transform="translate(540,180) scale(0.9) rotate(-15)"/>
-                            <use href="#leaf-dark-green" transform="translate(600,155) rotate(20) scale(0.8)"/>
-                            <use href="#leaf-cluster" transform="translate(620,140) scale(0.7) rotate(-10)"/>
-                            <use href="#leaf-green" transform="translate(660,125) rotate(35) scale(0.9)"/>
-                            <use href="#leaf-dark-green" transform="translate(690,130) rotate(-10) scale(0.8)"/>
+                <!-- Right branch leaves -->
+                <use href="#leaf-cluster" transform="translate(540,180) scale(0.9) rotate(-15)" />
+                <use href="#leaf-dark-green" transform="translate(600,155) rotate(20) scale(0.8)" />
+                <use href="#leaf-cluster" transform="translate(620,140) scale(0.7) rotate(-10)" />
+                <use href="#leaf-green" transform="translate(660,125) rotate(35) scale(0.9)" />
+                <use
+                  href="#leaf-dark-green"
+                  transform="translate(690,130) rotate(-10) scale(0.8)"
+                />
 
-                            <!-- Upper right leaves -->
-                            <use href="#leaf-cluster" transform="translate(480,210) scale(0.8) rotate(10)"/>
-                            <use href="#leaf-green" transform="translate(560,195) rotate(-25) scale(0.7)"/>
-                            <use href="#leaf-dark-green" transform="translate(640,160) rotate(15) scale(0.85)"/>
+                <!-- Upper right leaves -->
+                <use href="#leaf-cluster" transform="translate(480,210) scale(0.8) rotate(10)" />
+                <use href="#leaf-green" transform="translate(560,195) rotate(-25) scale(0.7)" />
+                <use
+                  href="#leaf-dark-green"
+                  transform="translate(640,160) rotate(15) scale(0.85)"
+                />
 
-                            <!-- Top branch leaves (Ignition path) -->
-                            <use href="#leaf-cluster" transform="translate(360,150) scale(0.75)"/>
-                            <use href="#leaf-green" transform="translate(345,100) rotate(-10) scale(0.8)"/>
-                            <use href="#leaf-dark-green" transform="translate(330,70) rotate(15) scale(0.7)"/>
+                <!-- Top branch leaves (Ignition path) -->
+                <use href="#leaf-cluster" transform="translate(360,150) scale(0.75)" />
+                <use href="#leaf-green" transform="translate(345,100) rotate(-10) scale(0.8)" />
+                <use href="#leaf-dark-green" transform="translate(330,70) rotate(15) scale(0.7)" />
 
-                            <!-- Mid-left (HolDex) leaves -->
-                            <use href="#leaf-cluster" transform="translate(200,210) scale(0.8) rotate(-20)"/>
-                            <use href="#leaf-green" transform="translate(160,205) rotate(10) scale(0.75)"/>
+                <!-- Mid-left (HolDex) leaves -->
+                <use href="#leaf-cluster" transform="translate(200,210) scale(0.8) rotate(-20)" />
+                <use href="#leaf-green" transform="translate(160,205) rotate(10) scale(0.75)" />
 
-                            <!-- Mid-right (Forecast) leaves -->
-                            <use href="#leaf-cluster" transform="translate(600,210) scale(0.8) rotate(20)"/>
-                            <use href="#leaf-green" transform="translate(640,205) rotate(-10) scale(0.75)"/>
-                        </g>
+                <!-- Mid-right (Forecast) leaves -->
+                <use href="#leaf-cluster" transform="translate(600,210) scale(0.8) rotate(20)" />
+                <use href="#leaf-green" transform="translate(640,205) rotate(-10) scale(0.75)" />
+              </g>
 
-                        <!-- Runic symbols on branches -->
-                        <g class="branch-runes" font-family="serif" font-size="18" opacity="0.7" aria-hidden="true">
-                            <!-- Canopy branch runes (green) -->
-                            <text x="220" y="180" fill="#4ade80">ᛃ</text>
-                            <text x="280" y="160" fill="#4ade80">ᛇ</text>
-                            <text x="520" y="160" fill="#4ade80">ᛈ</text>
-                            <text x="580" y="180" fill="#4ade80">ᛉ</text>
-                            <text x="160" y="130" fill="#22c55e">ᛊ</text>
-                            <text x="640" y="130" fill="#22c55e">ᛏ</text>
+              <!-- Runic symbols on branches -->
+              <g
+                class="branch-runes"
+                font-family="serif"
+                font-size="18"
+                opacity="0.7"
+                aria-hidden="true"
+              >
+                <!-- Canopy branch runes (green) -->
+                <text x="220" y="180" fill="#4ade80">ᛃ</text>
+                <text x="280" y="160" fill="#4ade80">ᛇ</text>
+                <text x="520" y="160" fill="#4ade80">ᛈ</text>
+                <text x="580" y="180" fill="#4ade80">ᛉ</text>
+                <text x="160" y="130" fill="#22c55e">ᛊ</text>
+                <text x="640" y="130" fill="#22c55e">ᛏ</text>
 
-                            <!-- Trunk branch runes (amber) -->
-                            <text x="180" y="290" fill="#d97706">ᛒ</text>
-                            <text x="260" y="280" fill="#d97706">ᛖ</text>
-                            <text x="540" y="280" fill="#d97706">ᛗ</text>
-                            <text x="620" y="290" fill="#d97706">ᛚ</text>
-                            <text x="200" y="355" fill="#a67c52">ᛝ</text>
-                            <text x="600" y="355" fill="#a67c52">ᛟ</text>
+                <!-- Trunk branch runes (amber) -->
+                <text x="180" y="290" fill="#d97706">ᛒ</text>
+                <text x="260" y="280" fill="#d97706">ᛖ</text>
+                <text x="540" y="280" fill="#d97706">ᛗ</text>
+                <text x="620" y="290" fill="#d97706">ᛚ</text>
+                <text x="200" y="355" fill="#a67c52">ᛝ</text>
+                <text x="600" y="355" fill="#a67c52">ᛟ</text>
 
-                            <!-- Root branch runes (purple) -->
-                            <text x="300" y="420" fill="#8b5cf6">ᛞ</text>
-                            <text x="500" y="420" fill="#8b5cf6">ᚠ</text>
-                            <text x="200" y="480" fill="#7c3aed">ᚢ</text>
-                            <text x="600" y="480" fill="#7c3aed">ᚦ</text>
-                        </g>
+                <!-- Root branch runes (purple) -->
+                <text x="300" y="420" fill="#8b5cf6">ᛞ</text>
+                <text x="500" y="420" fill="#8b5cf6">ᚠ</text>
+                <text x="200" y="480" fill="#7c3aed">ᚢ</text>
+                <text x="600" y="480" fill="#7c3aed">ᚦ</text>
+              </g>
 
-                        <!-- ═══════════════════════════════════════════
+              <!-- ═══════════════════════════════════════════
                              VIKING SYMBOLS - Mjolnir, Valknut, Ravens
                              ═══════════════════════════════════════════ -->
-                        <g class="viking-symbols" opacity="0.6">
-                            <!-- Valknut symbol (Odin's knot) - top left -->
-                            <g transform="translate(100, 100) scale(0.4)" fill="none" stroke="#4ade80" stroke-width="3">
-                                <polygon points="20,0 40,35 0,35"/>
-                                <polygon points="20,10 35,40 5,40"/>
-                                <polygon points="20,20 30,45 10,45"/>
-                            </g>
-                            <!-- Valknut - top right -->
-                            <g transform="translate(680, 100) scale(0.4)" fill="none" stroke="#4ade80" stroke-width="3">
-                                <polygon points="20,0 40,35 0,35"/>
-                                <polygon points="20,10 35,40 5,40"/>
-                                <polygon points="20,20 30,45 10,45"/>
-                            </g>
+              <g class="viking-symbols" opacity="0.6">
+                <!-- Valknut symbol (Odin's knot) - top left -->
+                <g
+                  transform="translate(100, 100) scale(0.4)"
+                  fill="none"
+                  stroke="#4ade80"
+                  stroke-width="3"
+                >
+                  <polygon points="20,0 40,35 0,35" />
+                  <polygon points="20,10 35,40 5,40" />
+                  <polygon points="20,20 30,45 10,45" />
+                </g>
+                <!-- Valknut - top right -->
+                <g
+                  transform="translate(680, 100) scale(0.4)"
+                  fill="none"
+                  stroke="#4ade80"
+                  stroke-width="3"
+                >
+                  <polygon points="20,0 40,35 0,35" />
+                  <polygon points="20,10 35,40 5,40" />
+                  <polygon points="20,20 30,45 10,45" />
+                </g>
 
-                            <!-- Mjolnir (Thor's hammer) - left side -->
-                            <g transform="translate(50, 250) scale(0.5)" fill="#d97706" opacity="0.5">
-                                <rect x="15" y="0" width="10" height="25" rx="2"/>
-                                <rect x="5" y="25" width="30" height="20" rx="3"/>
-                                <rect x="0" y="30" width="40" height="10" rx="2"/>
-                            </g>
-                            <!-- Mjolnir - right side -->
-                            <g transform="translate(720, 250) scale(0.5)" fill="#d97706" opacity="0.5">
-                                <rect x="15" y="0" width="10" height="25" rx="2"/>
-                                <rect x="5" y="25" width="30" height="20" rx="3"/>
-                                <rect x="0" y="30" width="40" height="10" rx="2"/>
-                            </g>
+                <!-- Mjolnir (Thor's hammer) - left side -->
+                <g transform="translate(50, 250) scale(0.5)" fill="#d97706" opacity="0.5">
+                  <rect x="15" y="0" width="10" height="25" rx="2" />
+                  <rect x="5" y="25" width="30" height="20" rx="3" />
+                  <rect x="0" y="30" width="40" height="10" rx="2" />
+                </g>
+                <!-- Mjolnir - right side -->
+                <g transform="translate(720, 250) scale(0.5)" fill="#d97706" opacity="0.5">
+                  <rect x="15" y="0" width="10" height="25" rx="2" />
+                  <rect x="5" y="25" width="30" height="20" rx="3" />
+                  <rect x="0" y="30" width="40" height="10" rx="2" />
+                </g>
 
-                            <!-- Huginn & Muninn (Odin's ravens) - top -->
-                            <g transform="translate(340, 50) scale(0.6)" fill="#1e293b">
-                                <!-- Raven left -->
-                                <ellipse cx="0" cy="0" rx="12" ry="8"/>
-                                <polygon points="12,0 25,-3 12,3"/>
-                                <ellipse cx="-5" cy="-3" rx="2" ry="2" fill="#fff"/>
-                            </g>
-                            <g transform="translate(440, 55) scale(0.6)" fill="#1e293b">
-                                <!-- Raven right -->
-                                <ellipse cx="0" cy="0" rx="12" ry="8"/>
-                                <polygon points="-12,0 -25,-3 -12,3"/>
-                                <ellipse cx="5" cy="-3" rx="2" ry="2" fill="#fff"/>
-                            </g>
+                <!-- Huginn & Muninn (Odin's ravens) - top -->
+                <g transform="translate(340, 50) scale(0.6)" fill="#1e293b">
+                  <!-- Raven left -->
+                  <ellipse cx="0" cy="0" rx="12" ry="8" />
+                  <polygon points="12,0 25,-3 12,3" />
+                  <ellipse cx="-5" cy="-3" rx="2" ry="2" fill="#fff" />
+                </g>
+                <g transform="translate(440, 55) scale(0.6)" fill="#1e293b">
+                  <!-- Raven right -->
+                  <ellipse cx="0" cy="0" rx="12" ry="8" />
+                  <polygon points="-12,0 -25,-3 -12,3" />
+                  <ellipse cx="5" cy="-3" rx="2" ry="2" fill="#fff" />
+                </g>
 
-                            <!-- Helm of Awe (Ægishjálmur) - bottom center -->
-                            <g transform="translate(400, 560) scale(0.35)" stroke="#7c3aed" stroke-width="2" fill="none">
-                                <line x1="0" y1="-30" x2="0" y2="30"/>
-                                <line x1="-30" y1="0" x2="30" y2="0"/>
-                                <line x1="-21" y1="-21" x2="21" y2="21"/>
-                                <line x1="-21" y1="21" x2="21" y2="-21"/>
-                                <circle cx="0" cy="0" r="8"/>
-                                <!-- Forks at ends -->
-                                <path d="M0,-30 L-5,-25 M0,-30 L5,-25"/>
-                                <path d="M0,30 L-5,25 M0,30 L5,25"/>
-                                <path d="M-30,0 L-25,-5 M-30,0 L-25,5"/>
-                                <path d="M30,0 L25,-5 M30,0 L25,5"/>
-                            </g>
+                <!-- Helm of Awe (Ægishjálmur) - bottom center -->
+                <g
+                  transform="translate(400, 560) scale(0.35)"
+                  stroke="#7c3aed"
+                  stroke-width="2"
+                  fill="none"
+                >
+                  <line x1="0" y1="-30" x2="0" y2="30" />
+                  <line x1="-30" y1="0" x2="30" y2="0" />
+                  <line x1="-21" y1="-21" x2="21" y2="21" />
+                  <line x1="-21" y1="21" x2="21" y2="-21" />
+                  <circle cx="0" cy="0" r="8" />
+                  <!-- Forks at ends -->
+                  <path d="M0,-30 L-5,-25 M0,-30 L5,-25" />
+                  <path d="M0,30 L-5,25 M0,30 L5,25" />
+                  <path d="M-30,0 L-25,-5 M-30,0 L-25,5" />
+                  <path d="M30,0 L25,-5 M30,0 L25,5" />
+                </g>
 
-                            <!-- Nordic Compass (Vegvísir) elements on branches -->
-                            <circle cx="150" cy="180" r="6" stroke="#4ade80" stroke-width="1.5" fill="none"/>
-                            <circle cx="650" cy="180" r="6" stroke="#4ade80" stroke-width="1.5" fill="none"/>
-                            <circle cx="100" cy="350" r="6" stroke="#a67c52" stroke-width="1.5" fill="none"/>
-                            <circle cx="700" cy="350" r="6" stroke="#a67c52" stroke-width="1.5" fill="none"/>
+                <!-- Nordic Compass (Vegvísir) elements on branches -->
+                <circle cx="150" cy="180" r="6" stroke="#4ade80" stroke-width="1.5" fill="none" />
+                <circle cx="650" cy="180" r="6" stroke="#4ade80" stroke-width="1.5" fill="none" />
+                <circle cx="100" cy="350" r="6" stroke="#a67c52" stroke-width="1.5" fill="none" />
+                <circle cx="700" cy="350" r="6" stroke="#a67c52" stroke-width="1.5" fill="none" />
 
-                            <!-- Additional rune stones scattered -->
-                            <rect x="180" y="150" width="12" height="16" rx="2" fill="#374151" opacity="0.4"/>
-                            <text x="183" y="162" font-size="10" fill="#4ade80">ᚨ</text>
-                            <rect x="600" y="150" width="12" height="16" rx="2" fill="#374151" opacity="0.4"/>
-                            <text x="603" y="162" font-size="10" fill="#4ade80">ᚱ</text>
-                            <rect x="120" y="300" width="12" height="16" rx="2" fill="#374151" opacity="0.4"/>
-                            <text x="123" y="312" font-size="10" fill="#d97706">ᚲ</text>
-                            <rect x="660" y="300" width="12" height="16" rx="2" fill="#374151" opacity="0.4"/>
-                            <text x="663" y="312" font-size="10" fill="#d97706">ᚷ</text>
-                        </g>
+                <!-- Additional rune stones scattered -->
+                <rect x="180" y="150" width="12" height="16" rx="2" fill="#374151" opacity="0.4" />
+                <text x="183" y="162" font-size="10" fill="#4ade80">ᚨ</text>
+                <rect x="600" y="150" width="12" height="16" rx="2" fill="#374151" opacity="0.4" />
+                <text x="603" y="162" font-size="10" fill="#4ade80">ᚱ</text>
+                <rect x="120" y="300" width="12" height="16" rx="2" fill="#374151" opacity="0.4" />
+                <text x="123" y="312" font-size="10" fill="#d97706">ᚲ</text>
+                <rect x="660" y="300" width="12" height="16" rx="2" fill="#374151" opacity="0.4" />
+                <text x="663" y="312" font-size="10" fill="#d97706">ᚷ</text>
+              </g>
 
-                        <!-- Additional leaves for fuller canopy -->
-                        <g class="extra-leaves" opacity="0.75">
-                            <!-- More green leaves on canopy -->
-                            <ellipse cx="130" cy="115" rx="5" ry="10" fill="#4ade80" transform="rotate(-50 130 115)"/>
-                            <ellipse cx="670" cy="115" rx="5" ry="10" fill="#4ade80" transform="rotate(50 670 115)"/>
-                            <ellipse cx="190" cy="140" rx="4" ry="9" fill="#22c55e" transform="rotate(-40 190 140)"/>
-                            <ellipse cx="610" cy="140" rx="4" ry="9" fill="#22c55e" transform="rotate(40 610 140)"/>
-                            <ellipse cx="250" cy="170" rx="5" ry="10" fill="#4ade80" transform="rotate(-30 250 170)"/>
-                            <ellipse cx="550" cy="170" rx="5" ry="10" fill="#4ade80" transform="rotate(30 550 170)"/>
-                            <ellipse cx="370" cy="160" rx="4" ry="8" fill="#22c55e" transform="rotate(-15 370 160)"/>
-                            <ellipse cx="430" cy="165" rx="4" ry="8" fill="#22c55e" transform="rotate(15 430 165)"/>
-                            <!-- Ignition branch leaves -->
-                            <ellipse cx="375" cy="180" rx="4" ry="9" fill="#4ade80" transform="rotate(-5 375 180)"/>
-                            <ellipse cx="385" cy="195" rx="3" ry="7" fill="#22c55e" transform="rotate(10 385 195)"/>
-                            <!-- Trunk area leaves (amber) -->
-                            <ellipse cx="140" cy="340" rx="4" ry="8" fill="#d97706" transform="rotate(-25 140 340)" opacity="0.6"/>
-                            <ellipse cx="660" cy="340" rx="4" ry="8" fill="#d97706" transform="rotate(25 660 340)" opacity="0.6"/>
-                            <!-- Root area leaves (purple) -->
-                            <ellipse cx="180" cy="460" rx="3" ry="7" fill="#a78bfa" transform="rotate(-35 180 460)" opacity="0.5"/>
-                            <ellipse cx="620" cy="460" rx="3" ry="7" fill="#a78bfa" transform="rotate(35 620 460)" opacity="0.5"/>
-                        </g>
-                    </svg>
+              <!-- Additional leaves for fuller canopy -->
+              <g class="extra-leaves" opacity="0.75">
+                <!-- More green leaves on canopy -->
+                <ellipse
+                  cx="130"
+                  cy="115"
+                  rx="5"
+                  ry="10"
+                  fill="#4ade80"
+                  transform="rotate(-50 130 115)"
+                />
+                <ellipse
+                  cx="670"
+                  cy="115"
+                  rx="5"
+                  ry="10"
+                  fill="#4ade80"
+                  transform="rotate(50 670 115)"
+                />
+                <ellipse
+                  cx="190"
+                  cy="140"
+                  rx="4"
+                  ry="9"
+                  fill="#22c55e"
+                  transform="rotate(-40 190 140)"
+                />
+                <ellipse
+                  cx="610"
+                  cy="140"
+                  rx="4"
+                  ry="9"
+                  fill="#22c55e"
+                  transform="rotate(40 610 140)"
+                />
+                <ellipse
+                  cx="250"
+                  cy="170"
+                  rx="5"
+                  ry="10"
+                  fill="#4ade80"
+                  transform="rotate(-30 250 170)"
+                />
+                <ellipse
+                  cx="550"
+                  cy="170"
+                  rx="5"
+                  ry="10"
+                  fill="#4ade80"
+                  transform="rotate(30 550 170)"
+                />
+                <ellipse
+                  cx="370"
+                  cy="160"
+                  rx="4"
+                  ry="8"
+                  fill="#22c55e"
+                  transform="rotate(-15 370 160)"
+                />
+                <ellipse
+                  cx="430"
+                  cy="165"
+                  rx="4"
+                  ry="8"
+                  fill="#22c55e"
+                  transform="rotate(15 430 165)"
+                />
+                <!-- Ignition branch leaves -->
+                <ellipse
+                  cx="375"
+                  cy="180"
+                  rx="4"
+                  ry="9"
+                  fill="#4ade80"
+                  transform="rotate(-5 375 180)"
+                />
+                <ellipse
+                  cx="385"
+                  cy="195"
+                  rx="3"
+                  ry="7"
+                  fill="#22c55e"
+                  transform="rotate(10 385 195)"
+                />
+                <!-- Trunk area leaves (amber) -->
+                <ellipse
+                  cx="140"
+                  cy="340"
+                  rx="4"
+                  ry="8"
+                  fill="#d97706"
+                  transform="rotate(-25 140 340)"
+                  opacity="0.6"
+                />
+                <ellipse
+                  cx="660"
+                  cy="340"
+                  rx="4"
+                  ry="8"
+                  fill="#d97706"
+                  transform="rotate(25 660 340)"
+                  opacity="0.6"
+                />
+                <!-- Root area leaves (purple) -->
+                <ellipse
+                  cx="180"
+                  cy="460"
+                  rx="3"
+                  ry="7"
+                  fill="#a78bfa"
+                  transform="rotate(-35 180 460)"
+                  opacity="0.5"
+                />
+                <ellipse
+                  cx="620"
+                  cy="460"
+                  rx="3"
+                  ry="7"
+                  fill="#a78bfa"
+                  transform="rotate(35 620 460)"
+                  opacity="0.5"
+                />
+              </g>
+            </svg>
 
-                    <!-- ═══════════════════════════════════════════
+            <!-- ═══════════════════════════════════════════
                          HEART - Burn Engine (Center)
                          ═══════════════════════════════════════════ -->
-                    <div class="tree-heart simple" data-project="burn-engine">
-                        <div class="node-ellipse heart">
-                            <span class="node-icon">🔥</span>
-                            <span class="node-text">Burn Engine</span>
-                        </div>
-                        <div class="node-runes-simple heart">
-                            <span>ᚠ</span><span>ᚢ</span><span>ᚦ</span><span>ᚨ</span>
-                        </div>
-                    </div>
+            <div class="tree-heart simple" data-project="burn-engine">
+              <div class="node-ellipse heart">
+                <span class="node-icon">🔥</span>
+                <span class="node-text">Burn Engine</span>
+              </div>
+              <div class="node-runes-simple heart">
+                <span>ᚠ</span><span>ᚢ</span><span>ᚦ</span><span>ᚨ</span>
+              </div>
+            </div>
 
-                    <!-- ═══════════════════════════════════════════
+            <!-- ═══════════════════════════════════════════
                          MIDGARD - Live Projects (Canopy) - Ellipse Nodes
                          ═══════════════════════════════════════════ -->
-                    <div class="zone-label zone-midgard">
-                        <svg class="zone-branch zone-branch-left" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet">
-                            <path d="M40,10 Q25,5 15,8 Q5,11 0,5" stroke="#4ade80" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M38,12 Q28,15 18,12 Q8,9 2,15" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>🌿 Midgard / Live</span>
-                        <svg class="zone-branch zone-branch-right" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet">
-                            <path d="M0,10 Q15,5 25,8 Q35,11 40,5" stroke="#4ade80" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M2,12 Q12,15 22,12 Q32,9 38,15" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                    </div>
+            <div class="zone-label zone-midgard">
+              <svg
+                class="zone-branch zone-branch-left"
+                viewBox="0 0 40 20"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M40,10 Q25,5 15,8 Q5,11 0,5"
+                  stroke="#4ade80"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M38,12 Q28,15 18,12 Q8,9 2,15"
+                  stroke="#22c55e"
+                  stroke-width="1.5"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>🌿 Midgard / Live</span>
+              <svg
+                class="zone-branch zone-branch-right"
+                viewBox="0 0 40 20"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M0,10 Q15,5 25,8 Q35,11 40,5"
+                  stroke="#4ade80"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M2,12 Q12,15 22,12 Q32,9 38,15"
+                  stroke="#22c55e"
+                  stroke-width="1.5"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
 
-                    <div class="tree-node simple canopy-left" data-project="learn-platform" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">📚</span>
-                            <span class="node-text">Learn & Play</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᚱ</span><span>ᛁ</span><span>ᚦ</span><span>ᚢ</span></div>
-                    </div>
+            <div
+              class="tree-node simple canopy-left"
+              data-project="learn-platform"
+              data-status="live"
+            >
+              <div class="node-ellipse midgard">
+                <span class="node-icon">📚</span>
+                <span class="node-text">Learn & Play</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᚱ</span><span>ᛁ</span><span>ᚦ</span><span>ᚢ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-right" data-project="games-platform" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">🎮</span>
-                            <span class="node-text">Games</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᚲ</span><span>ᚷ</span><span>ᚹ</span><span>ᚺ</span></div>
-                    </div>
+            <div
+              class="tree-node simple canopy-right"
+              data-project="games-platform"
+              data-status="live"
+            >
+              <div class="node-ellipse midgard">
+                <span class="node-icon">🎮</span>
+                <span class="node-text">Games</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᚲ</span><span>ᚷ</span><span>ᚹ</span><span>ᚺ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-far-left" data-project="burn-tracker" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">📊</span>
-                            <span class="node-text">Burn Tracker</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᛃ</span><span>ᛇ</span><span>ᛈ</span><span>ᛉ</span></div>
-                    </div>
+            <div
+              class="tree-node simple canopy-far-left"
+              data-project="burn-tracker"
+              data-status="live"
+            >
+              <div class="node-ellipse midgard">
+                <span class="node-icon">📊</span>
+                <span class="node-text">Burn Tracker</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᛃ</span><span>ᛇ</span><span>ᛈ</span><span>ᛉ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-far-right" data-project="token-launcher" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">🚀</span>
-                            <span class="node-text">Launcher</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᛋ</span><span>ᛏ</span><span>ᛒ</span><span>ᛖ</span></div>
-                    </div>
+            <div
+              class="tree-node simple canopy-far-right"
+              data-project="token-launcher"
+              data-status="live"
+            >
+              <div class="node-ellipse midgard">
+                <span class="node-icon">🚀</span>
+                <span class="node-text">Launcher</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᛋ</span><span>ᛏ</span><span>ᛒ</span><span>ᛖ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-mid-left" data-project="holdex" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">💹</span>
-                            <span class="node-text">HolDEX</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᛗ</span><span>ᛚ</span><span>ᛝ</span><span>ᛟ</span></div>
-                    </div>
+            <div class="tree-node simple canopy-mid-left" data-project="holdex" data-status="live">
+              <div class="node-ellipse midgard">
+                <span class="node-icon">💹</span>
+                <span class="node-text">HolDEX</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᛗ</span><span>ᛚ</span><span>ᛝ</span><span>ᛟ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-mid-right" data-project="forecast" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">📈</span>
-                            <span class="node-text">Forecast</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᚠ</span><span>ᚱ</span><span>ᚲ</span><span>ᛊ</span></div>
-                    </div>
+            <div
+              class="tree-node simple canopy-mid-right"
+              data-project="forecast"
+              data-status="live"
+            >
+              <div class="node-ellipse midgard">
+                <span class="node-icon">📈</span>
+                <span class="node-text">Forecast</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᚠ</span><span>ᚱ</span><span>ᚲ</span><span>ᛊ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple canopy-top" data-project="ignition" data-status="live">
-                        <div class="node-ellipse midgard">
-                            <span class="node-icon">🔥</span>
-                            <span class="node-text">Ignition</span>
-                        </div>
-                        <div class="node-runes-simple"><span>ᛁ</span><span>ᚷ</span><span>ᚾ</span><span>ᛏ</span></div>
-                    </div>
+            <div class="tree-node simple canopy-top" data-project="ignition" data-status="live">
+              <div class="node-ellipse midgard">
+                <span class="node-icon">🔥</span>
+                <span class="node-text">Ignition</span>
+              </div>
+              <div class="node-runes-simple">
+                <span>ᛁ</span><span>ᚷ</span><span>ᚾ</span><span>ᛏ</span>
+              </div>
+            </div>
 
-                    <!-- ═══════════════════════════════════════════
+            <!-- ═══════════════════════════════════════════
                          TRUNK - Building Projects - Ellipse Nodes
                          ═══════════════════════════════════════════ -->
-                    <div class="zone-label zone-trunk">
-                        <svg class="zone-branch zone-branch-vertical" viewBox="0 0 20 50" preserveAspectRatio="xMidYMid meet">
-                            <path d="M10,0 Q5,15 8,25 Q11,35 5,50" stroke="#D4A574" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M12,2 Q15,18 12,28 Q9,38 15,48" stroke="#a67c52" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>🪵 Stamm / Building</span>
-                    </div>
+            <div class="zone-label zone-trunk">
+              <svg
+                class="zone-branch zone-branch-vertical"
+                viewBox="0 0 20 50"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M10,0 Q5,15 8,25 Q11,35 5,50"
+                  stroke="#D4A574"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12,2 Q15,18 12,28 Q9,38 15,48"
+                  stroke="#a67c52"
+                  stroke-width="1.5"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>🪵 Stamm / Building</span>
+            </div>
 
-                    <div class="tree-node simple trunk-right" data-project="oracle" data-status="building">
-                        <div class="node-ellipse trunk">
-                            <span class="node-icon">🔮</span>
-                            <span class="node-text">Oracle</span>
-                        </div>
-                        <div class="node-runes-simple trunk"><span>ᛞ</span><span>ᚠ</span><span>ᚢ</span><span>ᚦ</span></div>
-                    </div>
+            <div class="tree-node simple trunk-right" data-project="oracle" data-status="building">
+              <div class="node-ellipse trunk">
+                <span class="node-icon">🔮</span>
+                <span class="node-text">Oracle</span>
+              </div>
+              <div class="node-runes-simple trunk">
+                <span>ᛞ</span><span>ᚠ</span><span>ᚢ</span><span>ᚦ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple trunk-lower-left" data-project="rpc-monitor" data-status="building">
-                        <div class="node-ellipse trunk">
-                            <span class="node-icon">📡</span>
-                            <span class="node-text">RPC Monitor</span>
-                        </div>
-                        <div class="node-runes-simple trunk"><span>ᚨ</span><span>ᚱ</span><span>ᚲ</span><span>ᚷ</span></div>
-                    </div>
+            <div
+              class="tree-node simple trunk-lower-left"
+              data-project="rpc-monitor"
+              data-status="building"
+            >
+              <div class="node-ellipse trunk">
+                <span class="node-icon">📡</span>
+                <span class="node-text">RPC Monitor</span>
+              </div>
+              <div class="node-runes-simple trunk">
+                <span>ᚨ</span><span>ᚱ</span><span>ᚲ</span><span>ᚷ</span>
+              </div>
+            </div>
 
-                    <div class="tree-node simple trunk-lower-right" data-project="community-hub" data-status="building">
-                        <div class="node-ellipse trunk">
-                            <span class="node-icon">🌸</span>
-                            <span class="node-text">Community</span>
-                        </div>
-                        <div class="node-runes-simple trunk"><span>ᚹ</span><span>ᚺ</span><span>ᚾ</span><span>ᛁ</span></div>
-                    </div>
+            <div
+              class="tree-node simple trunk-lower-right"
+              data-project="community-hub"
+              data-status="building"
+            >
+              <div class="node-ellipse trunk">
+                <span class="node-icon">🌸</span>
+                <span class="node-text">Community</span>
+              </div>
+              <div class="node-runes-simple trunk">
+                <span>ᚹ</span><span>ᚺ</span><span>ᚾ</span><span>ᛁ</span>
+              </div>
+            </div>
 
-                    <!-- ═══════════════════════════════════════════
+            <!-- ═══════════════════════════════════════════
                          ROOTS - Planned Projects - Ellipse Nodes
                          ═══════════════════════════════════════════ -->
-                    <div class="zone-label zone-roots">
-                        <svg class="zone-branch zone-branch-left" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet">
-                            <path d="M40,10 Q25,15 15,12 Q5,9 0,15" stroke="#7c3aed" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M38,8 Q28,5 18,8 Q8,11 2,5" stroke="#8b5cf6" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                        <span>🌱 Roots / Planned</span>
-                        <svg class="zone-branch zone-branch-right" viewBox="0 0 40 20" preserveAspectRatio="xMidYMid meet">
-                            <path d="M0,10 Q15,15 25,12 Q35,9 40,15" stroke="#7c3aed" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M2,8 Q12,5 22,8 Q32,11 38,5" stroke="#8b5cf6" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-
-                    <div class="tree-node simple roots-left" data-project="security-audit" data-status="planned">
-                        <div class="node-ellipse roots">
-                            <span class="node-icon">🛡️</span>
-                            <span class="node-text">Security</span>
-                        </div>
-                        <div class="node-runes-simple roots"><span>ᛃ</span><span>ᛇ</span><span>ᛈ</span><span>ᛉ</span></div>
-                    </div>
-
-                    <div class="tree-node simple roots-center" data-project="deploy-pipeline" data-status="planned">
-                        <div class="node-ellipse roots">
-                            <span class="node-icon">🔧</span>
-                            <span class="node-text">Pipeline</span>
-                        </div>
-                        <div class="node-runes-simple roots"><span>ᛊ</span><span>ᛏ</span><span>ᛒ</span><span>ᛖ</span></div>
-                    </div>
-
-                    <div class="tree-node simple roots-right" data-project="ambassador-program" data-status="planned">
-                        <div class="node-ellipse roots">
-                            <span class="node-icon">🎖️</span>
-                            <span class="node-text">Ambassadors</span>
-                        </div>
-                        <div class="node-runes-simple roots"><span>ᛗ</span><span>ᛚ</span><span>ᛝ</span><span>ᛞ</span></div>
-                    </div>
-
-                </div>
+            <div class="zone-label zone-roots">
+              <svg
+                class="zone-branch zone-branch-left"
+                viewBox="0 0 40 20"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M40,10 Q25,15 15,12 Q5,9 0,15"
+                  stroke="#7c3aed"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M38,8 Q28,5 18,8 Q8,11 2,5"
+                  stroke="#8b5cf6"
+                  stroke-width="1.5"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>🌱 Roots / Planned</span>
+              <svg
+                class="zone-branch zone-branch-right"
+                viewBox="0 0 40 20"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M0,10 Q15,15 25,12 Q35,9 40,15"
+                  stroke="#7c3aed"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M2,8 Q12,5 22,8 Q32,11 38,5"
+                  stroke="#8b5cf6"
+                  stroke-width="1.5"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
             </div>
 
-        </section>
-
-        <!-- Legend + Propose Combined -->
-        <section class="legend-section">
-            <div class="container">
-                <div class="legend-propose-row">
-                    <div class="legend-box">
-                        <div class="legend-items">
-                            <div class="legend-item">
-                                <span class="status-dot midgard"></span>
-                                <div class="legend-text">
-                                    <span class="legend-status">Midgard</span>
-                                    <span class="legend-lore">Live</span>
-                                </div>
-                            </div>
-                            <div class="legend-item">
-                                <span class="status-dot trunk"></span>
-                                <div class="legend-text">
-                                    <span class="legend-status">Stamm</span>
-                                    <span class="legend-lore">Building</span>
-                                </div>
-                            </div>
-                            <div class="legend-item">
-                                <span class="status-dot roots"></span>
-                                <div class="legend-text">
-                                    <span class="legend-status">Roots</span>
-                                    <span class="legend-lore">Planned</span>
-                                </div>
-                            </div>
-                            <div class="legend-item heart-legend">
-                                <span class="status-dot heart"></span>
-                                <div class="legend-text">
-                                    <span class="legend-status">Heart</span>
-                                    <span class="legend-lore">Core</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="propose-card-mini">
-                        <span class="propose-bulb">💡</span>
-                        <span class="propose-text">Propose a New Realm</span>
-                        <a href="https://github.com/Ragnar-no-sleep/ASDF-Builders/discussions/new?category=ideas" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-propose">🌱 Submit Idea</a>
-                    </div>
-                </div>
+            <div
+              class="tree-node simple roots-left"
+              data-project="security-audit"
+              data-status="planned"
+            >
+              <div class="node-ellipse roots">
+                <span class="node-icon">🛡️</span>
+                <span class="node-text">Security</span>
+              </div>
+              <div class="node-runes-simple roots">
+                <span>ᛃ</span><span>ᛇ</span><span>ᛈ</span><span>ᛉ</span>
+              </div>
             </div>
-        </section>
+
+            <div
+              class="tree-node simple roots-center"
+              data-project="deploy-pipeline"
+              data-status="planned"
+            >
+              <div class="node-ellipse roots">
+                <span class="node-icon">🔧</span>
+                <span class="node-text">Pipeline</span>
+              </div>
+              <div class="node-runes-simple roots">
+                <span>ᛊ</span><span>ᛏ</span><span>ᛒ</span><span>ᛖ</span>
+              </div>
+            </div>
+
+            <div
+              class="tree-node simple roots-right"
+              data-project="ambassador-program"
+              data-status="planned"
+            >
+              <div class="node-ellipse roots">
+                <span class="node-icon">🎖️</span>
+                <span class="node-text">Ambassadors</span>
+              </div>
+              <div class="node-runes-simple roots">
+                <span>ᛗ</span><span>ᛚ</span><span>ᛝ</span><span>ᛞ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Legend + Propose Combined -->
+      <section class="legend-section">
+        <div class="container">
+          <div class="legend-propose-row">
+            <div class="legend-box">
+              <div class="legend-items">
+                <div class="legend-item">
+                  <span class="status-dot midgard"></span>
+                  <div class="legend-text">
+                    <span class="legend-status">Midgard</span>
+                    <span class="legend-lore">Live</span>
+                  </div>
+                </div>
+                <div class="legend-item">
+                  <span class="status-dot trunk"></span>
+                  <div class="legend-text">
+                    <span class="legend-status">Stamm</span>
+                    <span class="legend-lore">Building</span>
+                  </div>
+                </div>
+                <div class="legend-item">
+                  <span class="status-dot roots"></span>
+                  <div class="legend-text">
+                    <span class="legend-status">Roots</span>
+                    <span class="legend-lore">Planned</span>
+                  </div>
+                </div>
+                <div class="legend-item heart-legend">
+                  <span class="status-dot heart"></span>
+                  <div class="legend-text">
+                    <span class="legend-status">Heart</span>
+                    <span class="legend-lore">Core</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="propose-card-mini">
+              <span class="propose-bulb">💡</span>
+              <span class="propose-text">Propose a New Realm</span>
+              <a
+                href="https://github.com/Ragnar-no-sleep/ASDF-Builders/discussions/new?category=ideas"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-sm btn-propose"
+                >🌱 Submit Idea</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Sliding Panels (overlays) -->
     <aside class="ygg-panel-overlay ygg-panel-left" id="ygg-panel-tracks">
-        <!-- Tracks panel - populated by JS -->
+      <!-- Tracks panel - populated by JS -->
     </aside>
     <aside class="ygg-panel-overlay ygg-panel-right" id="ygg-panel-profile">
-        <!-- Profile panel - populated by JS -->
+      <!-- Profile panel - populated by JS -->
     </aside>
 
     <!-- ============================================
@@ -808,10 +1330,12 @@
     <div id="builder-profile-root"></div>
 
     <!-- DOMPurify for XSS protection -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
-            integrity="sha512-5g2Nj3mqLOgClHi20oat1COW7jWvf7SyqnvwWUsMDwhjHeqeTl0C+uzjucLweruQxHbhDwiPLXlm8HBO0011pA=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"
+      integrity="sha512-5g2Nj3mqLOgClHi20oat1COW7jWvf7SyqnvwWUsMDwhjHeqeTl0C+uzjucLweruQxHbhDwiPLXlm8HBO0011pA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <!-- Journey Learning System -->
     <script src="js/shared/security.js"></script>
     <script src="js/journey-data.js"></script>
@@ -822,38 +1346,8 @@
     <script type="module" src="js/build/index.js"></script>
 
     <!-- Yggdrasil Cosmos - Full Screen Immersive -->
-    <script type="module">
-        import { YggdrasilCosmos } from './js/build/yggdrasil-unified.js';
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const cosmos = document.getElementById('yggdrasil-cosmos');
-            const svgFallback = document.getElementById('yggdrasil-svg-fallback');
-
-            if (!cosmos) return;
-
-            // Check WebGL support
-            const canvas = document.createElement('canvas');
-            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-
-            if (!gl) {
-                cosmos.classList.add('webgl-fallback');
-                if (svgFallback) svgFallback.style.display = 'flex';
-                console.log('[Cosmos] WebGL not supported, using SVG fallback');
-                return;
-            }
-
-            // Hide SVG fallback
-            if (svgFallback) svgFallback.style.display = 'none';
-
-            // Initialize cosmos
-            YggdrasilCosmos.init(cosmos).catch(err => {
-                console.error('[Cosmos] Init failed:', err);
-                cosmos.classList.add('webgl-fallback');
-                if (svgFallback) svgFallback.style.display = 'flex';
-            });
-        });
-    </script>
+    <script type="module" src="js/build/cosmos-init.js"></script>
 
     <script src="js/consent/index.js"></script>
-</body>
+  </body>
 </html>

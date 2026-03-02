@@ -97,7 +97,9 @@ describe('PageLifecycle', () => {
   describe('clearTimer', () => {
     test('should clear and remove a specific timer', () => {
       let count = 0;
-      const id = setInterval(() => { count++; }, 100);
+      const id = setInterval(() => {
+        count++;
+      }, 100);
       lifecycle.registerTimer('counter', id);
 
       lifecycle.clearTimer('counter');
@@ -114,9 +116,14 @@ describe('PageLifecycle', () => {
 
   describe('cleanup', () => {
     test('should clear all timers', () => {
-      let a = 0, b = 0;
-      const id1 = setInterval(() => { a++; }, 100);
-      const id2 = setInterval(() => { b++; }, 200);
+      let a = 0,
+        b = 0;
+      const id1 = setInterval(() => {
+        a++;
+      }, 100);
+      const id2 = setInterval(() => {
+        b++;
+      }, 200);
       lifecycle.registerTimer('a', id1);
       lifecycle.registerTimer('b', id2);
 
@@ -145,7 +152,10 @@ describe('PageLifecycle', () => {
     });
 
     test('should be safe to call twice', () => {
-      lifecycle.registerTimer('x', setInterval(() => {}, 100));
+      lifecycle.registerTimer(
+        'x',
+        setInterval(() => {}, 100)
+      );
       lifecycle.cleanup();
       expect(() => lifecycle.cleanup()).not.toThrow();
       expect(lifecycle._timers.size).toBe(0);

@@ -25,17 +25,17 @@ describe('Audio Module', () => {
         start: jest.fn(),
         stop: jest.fn(),
         disconnect: jest.fn(),
-        onended: null
+        onended: null,
       };
 
       mockGainNode = {
         gain: {
           setValueAtTime: jest.fn(),
           linearRampToValueAtTime: jest.fn(),
-          exponentialRampToValueAtTime: jest.fn()
+          exponentialRampToValueAtTime: jest.fn(),
         },
         connect: jest.fn(),
-        disconnect: jest.fn()
+        disconnect: jest.fn(),
       };
 
       mockAudioContext = {
@@ -45,7 +45,7 @@ describe('Audio Module', () => {
         createOscillator: jest.fn(() => mockOscillator),
         createGain: jest.fn(() => mockGainNode),
         resume: jest.fn().mockResolvedValue(undefined),
-        close: jest.fn().mockResolvedValue(undefined)
+        close: jest.fn().mockResolvedValue(undefined),
       };
 
       // Mock window.AudioContext
@@ -237,7 +237,7 @@ describe('Audio Module', () => {
       base: BASE_FREQ,
       phi: BASE_FREQ * PHI,
       phiInverse: BASE_FREQ / PHI,
-      phiSquared: BASE_FREQ * PHI * PHI
+      phiSquared: BASE_FREQ * PHI * PHI,
     };
 
     const PROFILES = {
@@ -245,7 +245,7 @@ describe('Audio Module', () => {
       success: { freq: FREQUENCIES.phi, duration: 0.2, type: 'triangle' },
       error: { freq: FREQUENCIES.phiInverse, duration: 0.3, type: 'sawtooth' },
       gameStart: { freq: FREQUENCIES.phi, duration: 0.3, type: 'triangle' },
-      gameOver: { freq: FREQUENCIES.phiInverse, duration: 0.5, type: 'sawtooth' }
+      gameOver: { freq: FREQUENCIES.phiInverse, duration: 0.5, type: 'sawtooth' },
     };
 
     test('should have phi constant correctly defined', () => {
@@ -259,7 +259,7 @@ describe('Audio Module', () => {
     });
 
     test('should have required profile properties', () => {
-      Object.values(PROFILES).forEach((profile) => {
+      Object.values(PROFILES).forEach(profile => {
         expect(profile).toHaveProperty('freq');
         expect(profile).toHaveProperty('duration');
         expect(profile).toHaveProperty('type');
@@ -272,19 +272,19 @@ describe('Audio Module', () => {
     test('should have valid waveform types', () => {
       const validTypes = ['sine', 'square', 'triangle', 'sawtooth'];
 
-      Object.values(PROFILES).forEach((profile) => {
+      Object.values(PROFILES).forEach(profile => {
         expect(validTypes).toContain(profile.type);
       });
     });
 
     test('should have positive frequencies', () => {
-      Object.values(FREQUENCIES).forEach((freq) => {
+      Object.values(FREQUENCIES).forEach(freq => {
         expect(freq).toBeGreaterThan(0);
       });
     });
 
     test('should have positive durations', () => {
-      Object.values(PROFILES).forEach((profile) => {
+      Object.values(PROFILES).forEach(profile => {
         expect(profile.duration).toBeGreaterThan(0);
         expect(profile.duration).toBeLessThan(5); // Reasonable max duration
       });
@@ -333,10 +333,10 @@ describe('Audio Module', () => {
     test('getProfile should return profile or default', () => {
       const PROFILES = {
         click: { freq: 432, duration: 0.08, type: 'sine' },
-        success: { freq: 698.7, duration: 0.2, type: 'triangle' }
+        success: { freq: 698.7, duration: 0.2, type: 'triangle' },
       };
 
-      const getProfile = (name) => PROFILES[name] || PROFILES.click;
+      const getProfile = name => PROFILES[name] || PROFILES.click;
 
       expect(getProfile('success')).toEqual(PROFILES.success);
       expect(getProfile('nonexistent')).toEqual(PROFILES.click);
@@ -346,7 +346,7 @@ describe('Audio Module', () => {
       const PROFILES = {
         click: {},
         success: {},
-        error: {}
+        error: {},
       };
 
       const getProfileNames = () => Object.keys(PROFILES);
@@ -364,15 +364,13 @@ describe('Audio Module', () => {
         gameOver: {},
         gameScore: {},
         walletConnected: {},
-        click: {}
+        click: {},
       };
 
-      const getProfilesByCategory = (category) => {
+      const getProfilesByCategory = category => {
         const prefix = category.toLowerCase();
         return Object.fromEntries(
-          Object.entries(PROFILES).filter(([key]) =>
-            key.toLowerCase().startsWith(prefix)
-          )
+          Object.entries(PROFILES).filter(([key]) => key.toLowerCase().startsWith(prefix))
         );
       };
 

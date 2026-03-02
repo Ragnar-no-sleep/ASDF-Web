@@ -439,7 +439,7 @@ function validateActionSequence(replay) {
 
   // Game-specific sequence validation
   switch (gameType) {
-    case 'flappy':
+    case 'flappy': {
       // Can't flap if game hasn't started
       const flapBeforeStart =
         actions.findIndex(a => a.a === 'flap') < actions.findIndex(a => a.a === 'start');
@@ -448,8 +448,9 @@ function validateActionSequence(replay) {
         penalty += 30;
       }
       break;
+    }
 
-    case 'snake':
+    case 'snake': {
       // Can't reverse direction instantly
       let reverseCount = 0;
       const opposites = { up: 'down', down: 'up', left: 'right', right: 'left' };
@@ -463,6 +464,7 @@ function validateActionSequence(replay) {
         penalty += Math.min(30, reverseCount * 5);
       }
       break;
+    }
 
     case 'tetris':
       // Can't act after hard drop until next piece
@@ -584,11 +586,12 @@ function validateScorePlausibility(replay, reportedScore) {
       );
       break;
 
-    case 'snake':
+    case 'snake': {
       // Each food = 10 points, growth affects movement speed
       const moves = actions.filter(a => ['up', 'down', 'left', 'right'].includes(a.a)).length;
       maxPossibleScore = Math.min(moves * 10, (duration / 1000) * 50);
       break;
+    }
 
     case 'tetris':
       // Line clears, combos, etc. Complex calculation

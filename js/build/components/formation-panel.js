@@ -16,9 +16,8 @@ import {
   calculateTrackProgress,
   getNextModule,
 } from '../data/formations-data.js';
-import { $, $$, addClass, removeClass, on, delegate, safeInnerHTML } from '../utils/dom.js';
+import { $, addClass, removeClass, on, delegate, safeInnerHTML } from '../utils/dom.js';
 import { sanitizeText } from '../utils/security.js';
-import { phiDelays } from '../utils/phi.js';
 
 // ============================================
 // FORMATION PANEL CONFIGURATION
@@ -85,8 +84,6 @@ const FormationPanel = {
 
     // Bind events
     this.bindEvents();
-
-    console.log('[FormationPanel] Initialized');
   },
 
   /**

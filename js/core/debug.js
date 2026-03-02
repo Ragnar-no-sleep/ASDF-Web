@@ -27,10 +27,7 @@ function getDebugSetting() {
     const setting = localStorage.getItem('DEBUG');
     if (!setting) {
       // Auto-enable on localhost
-      return (
-        window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1'
-      );
+      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     }
     return setting === 'true' ? true : setting;
   } catch {
@@ -52,7 +49,7 @@ function shouldLog(module) {
   // Check if module is in the list
   const enabledModules = String(setting)
     .split(',')
-    .map((m) => m.trim().toLowerCase());
+    .map(m => m.trim().toLowerCase());
   return enabledModules.includes(module.toLowerCase());
 }
 
@@ -158,9 +155,9 @@ export function createLogger(module) {
     warn: (...args) => debugWarn(module, ...args),
     error: (...args) => debugError(module, ...args),
     info: (...args) => debugInfo(module, ...args),
-    table: (data) => debugTable(module, data),
-    group: (label) => debugGroup(module, label),
-    groupEnd: () => debugGroupEnd(module)
+    table: data => debugTable(module, data),
+    group: label => debugGroup(module, label),
+    groupEnd: () => debugGroupEnd(module),
   };
 }
 

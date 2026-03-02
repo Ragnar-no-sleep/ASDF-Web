@@ -22,13 +22,13 @@ describe('UI Module', () => {
       // Mock eventBus
       mockEventBus = {
         emit: jest.fn(),
-        on: jest.fn(() => () => {})
+        on: jest.fn(() => () => {}),
       };
 
       // Mock audio
       mockAudio = {
         isEnabled: jest.fn(() => true),
-        play: jest.fn()
+        play: jest.fn(),
       };
 
       // Create ToastManager class for testing
@@ -47,8 +47,8 @@ describe('UI Module', () => {
               success: { icon: '✓', color: '#10b981', sound: 'success' },
               error: { icon: '✕', color: '#ef4444', sound: 'error' },
               warning: { icon: '⚠', color: '#f59e0b', sound: 'warning' },
-              info: { icon: 'ℹ', color: '#3b82f6', sound: 'info' }
-            }
+              info: { icon: 'ℹ', color: '#3b82f6', sound: 'info' },
+            },
           };
           this.initialized = false;
         }
@@ -72,9 +72,7 @@ describe('UI Module', () => {
         show(options) {
           this.init();
 
-          const opts = typeof options === 'string'
-            ? { message: options }
-            : { ...options };
+          const opts = typeof options === 'string' ? { message: options } : { ...options };
 
           const {
             message,
@@ -82,7 +80,7 @@ describe('UI Module', () => {
             type = 'info',
             duration = this.config.defaultDuration,
             icon = null,
-            closable = true
+            closable = true,
           } = opts;
 
           const typeConfig = this.config.types[type] || this.config.types.info;
@@ -194,7 +192,7 @@ describe('UI Module', () => {
       const id = toastManager.show({
         message: 'Test message',
         title: 'Test Title',
-        type: 'success'
+        type: 'success',
       });
 
       expect(id).toBe('toast-1');
@@ -211,7 +209,7 @@ describe('UI Module', () => {
       expect(mockEventBus.emit).toHaveBeenCalledWith('toast:shown', {
         id,
         type: 'success',
-        message: 'Success!'
+        message: 'Success!',
       });
     });
 
@@ -298,7 +296,7 @@ describe('UI Module', () => {
 
       mockEventBus = {
         emit: jest.fn(),
-        on: jest.fn(() => () => {})
+        on: jest.fn(() => () => {}),
       };
 
       ModalManager = class {
@@ -316,8 +314,8 @@ describe('UI Module', () => {
             sizes: {
               sm: '400px',
               md: '500px',
-              lg: '700px'
-            }
+              lg: '700px',
+            },
           };
         }
 
@@ -329,13 +327,7 @@ describe('UI Module', () => {
         open(options = {}) {
           this.init();
 
-          const {
-            title = '',
-            content = '',
-            size = 'md',
-            closable = true,
-            actions = []
-          } = options;
+          const { title = '', content = '', size = 'md', closable = true, actions = [] } = options;
 
           if (this.currentModal) {
             this.close('replace');
@@ -382,7 +374,7 @@ describe('UI Module', () => {
 
           mockEventBus.emit('modal:opened', { id, title });
 
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             this.resolvePromise = resolve;
           });
         }
@@ -410,9 +402,7 @@ describe('UI Module', () => {
             content: `<p>${opts.message}</p>`,
             size: 'sm',
             closable: false,
-            actions: [
-              { label: 'OK', action: 'ok', primary: true }
-            ]
+            actions: [{ label: 'OK', action: 'ok', primary: true }],
           });
         }
 
@@ -426,8 +416,8 @@ describe('UI Module', () => {
             closable: false,
             actions: [
               { label: 'Cancel', action: 'cancel' },
-              { label: 'Confirm', action: 'confirm', primary: true }
-            ]
+              { label: 'Confirm', action: 'confirm', primary: true },
+            ],
           });
 
           return result === 'confirm';
@@ -455,7 +445,7 @@ describe('UI Module', () => {
     test('should open modal', async () => {
       const promise = modalManager.open({
         title: 'Test Modal',
-        content: '<p>Test content</p>'
+        content: '<p>Test content</p>',
       });
 
       expect(modalManager.isOpen()).toBe(true);
@@ -484,8 +474,8 @@ describe('UI Module', () => {
         title: 'Test',
         actions: [
           { label: 'Cancel', action: 'cancel' },
-          { label: 'OK', action: 'ok' }
-        ]
+          { label: 'OK', action: 'ok' },
+        ],
       });
 
       const okBtn = document.querySelector('[data-action="ok"]');
@@ -498,7 +488,7 @@ describe('UI Module', () => {
     test('should show alert dialog', async () => {
       const promise = modalManager.alert({
         title: 'Alert Title',
-        message: 'Alert message'
+        message: 'Alert message',
       });
 
       expect(document.querySelector('.modal-title').textContent).toBe('Alert Title');
@@ -515,7 +505,7 @@ describe('UI Module', () => {
     test('should show confirm dialog and return true on confirm', async () => {
       const promise = modalManager.confirm({
         title: 'Confirm',
-        message: 'Are you sure?'
+        message: 'Are you sure?',
       });
 
       const confirmBtn = document.querySelector('[data-action="confirm"]');
@@ -528,7 +518,7 @@ describe('UI Module', () => {
     test('should show confirm dialog and return false on cancel', async () => {
       const promise = modalManager.confirm({
         title: 'Confirm',
-        message: 'Are you sure?'
+        message: 'Are you sure?',
       });
 
       const cancelBtn = document.querySelector('[data-action="cancel"]');
@@ -552,7 +542,7 @@ describe('UI Module', () => {
     test('should apply size class', () => {
       modalManager.open({
         title: 'Large Modal',
-        size: 'lg'
+        size: 'lg',
       });
 
       expect(document.querySelector('.modal-backdrop').className).toContain('modal-lg');
@@ -569,7 +559,7 @@ describe('UI Module', () => {
       const events = [];
       const mockBus = {
         emit: (event, data) => events.push({ event, data }),
-        on: jest.fn()
+        on: jest.fn(),
       };
 
       mockBus.emit('toast:shown', { id: 'toast-1', type: 'success' });

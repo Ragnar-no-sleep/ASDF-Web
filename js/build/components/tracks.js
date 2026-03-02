@@ -15,7 +15,6 @@ import {
   $$,
   addClass,
   removeClass,
-  hasClass,
   on,
   delegate,
   setStyles,
@@ -114,8 +113,6 @@ const TracksComponent = {
     if (BuildState.data.selectedTrack) {
       this.selectTrack(BuildState.data.selectedTrack, false);
     }
-
-    console.log('[TracksComponent] Initialized');
   },
 
   /**
@@ -318,7 +315,6 @@ const TracksComponent = {
 
     if (module.status === 'locked') {
       // Show locked message
-      console.log('[TracksComponent] Module locked:', module.name);
       return;
     }
 
@@ -330,7 +326,6 @@ const TracksComponent = {
     });
 
     // TODO: Navigate to module content
-    console.log('[TracksComponent] Module clicked:', module.name);
   },
 
   /**

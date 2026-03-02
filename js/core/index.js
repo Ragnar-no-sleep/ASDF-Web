@@ -25,7 +25,7 @@ export {
   createError,
   isASDFError,
   getSeverityColor,
-  getSeverityIcon
+  getSeverityIcon,
 } from './errors.js';
 
 // Configuration
@@ -39,7 +39,7 @@ export {
   isFeatureEnabled,
   getTiming,
   getPhi,
-  DEFAULTS
+  DEFAULTS,
 } from './config.js';
 
 // Debug utilities
@@ -53,7 +53,7 @@ export {
   debugGroupEnd,
   createLogger,
   enableDebug,
-  disableDebug
+  disableDebug,
 } from './debug.js';
 
 // Redis client
@@ -86,7 +86,7 @@ export async function initCore(options = {}) {
   // Emit ready event
   eventBus.emit('core:ready', {
     timestamp: Date.now(),
-    debug: options.debug || false
+    debug: options.debug || false,
   });
 
   console.log('[Core] Initialized');

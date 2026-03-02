@@ -127,7 +127,7 @@ const SpriteCache = {
 function deepFreeze(obj) {
   if (obj === null || typeof obj !== 'object') return obj;
   Object.keys(obj).forEach(key => {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       deepFreeze(obj[key]);
     }
   });
@@ -493,5 +493,6 @@ const AntiCheat = {
   },
 };
 
-// Periodic cleanup
-setInterval(() => AntiCheat.cleanup(), 5 * 60 * 1000);
+// Periodic cleanup (stored for beforeunload cleanup since IntervalManager loads later)
+const antiCheatTimerId = setInterval(() => AntiCheat.cleanup(), 5 * 60 * 1000);
+window.addEventListener('beforeunload', () => clearInterval(antiCheatTimerId));

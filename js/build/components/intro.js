@@ -7,19 +7,15 @@
 
 'use strict';
 
-import { STATES, EVENTS, DEFAULTS } from '../config.js';
 import { BuildState } from '../state.js';
 import { sanitizeText } from '../utils/security.js';
 import {
   $,
-  $$,
-  byId,
   addClass,
   removeClass,
   show,
   hide,
   on,
-  once,
   createElement,
   setStyles,
   waitForTransition,
@@ -90,7 +86,6 @@ const IntroComponent = {
   init(container = '#intro-container') {
     // Check if intro was already completed
     if (BuildState.data.introCompleted) {
-      console.log('[IntroComponent] Intro already completed, skipping');
       return false;
     }
 
@@ -107,7 +102,6 @@ const IntroComponent = {
     // Bind events
     this.bindEvents();
 
-    console.log('[IntroComponent] Initialized');
     return true;
   },
 
@@ -458,8 +452,6 @@ const IntroComponent = {
 
     // Emit completion event
     BuildState.emit('intro:complete', {});
-
-    console.log('[IntroComponent] Completed');
   },
 
   /**

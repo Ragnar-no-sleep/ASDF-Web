@@ -25,8 +25,7 @@
  * @module core/redis-client
  */
 
-import { eventBus, EVENTS } from './event-bus.js';
-import { getConfig } from './config.js';
+import { eventBus } from './event-bus.js';
 import { createError } from './errors.js';
 
 // ============================================
@@ -41,26 +40,69 @@ const REDIS_CONFIG = {
   retryDelays: [1000, 1000, 2000, 3000, 5000],
   // Cache settings
   cachePrefix: 'asdf_redis_',
-  cacheTTL: 300000 // 5 minutes in-memory cache
+  cacheTTL: 300000, // 5 minutes in-memory cache
 };
 
 // Allowed Redis methods (whitelist for security)
 const ALLOWED_METHODS = [
   // Strings
-  'GET', 'SET', 'DEL', 'INCR', 'INCRBY', 'DECR', 'DECRBY',
-  'MGET', 'MSET', 'SETNX', 'SETEX', 'TTL', 'EXPIRE',
+  'GET',
+  'SET',
+  'DEL',
+  'INCR',
+  'INCRBY',
+  'DECR',
+  'DECRBY',
+  'MGET',
+  'MSET',
+  'SETNX',
+  'SETEX',
+  'TTL',
+  'EXPIRE',
   // Hashes
-  'HGET', 'HSET', 'HDEL', 'HGETALL', 'HMGET', 'HMSET',
-  'HINCRBY', 'HEXISTS', 'HKEYS', 'HVALS', 'HLEN',
+  'HGET',
+  'HSET',
+  'HDEL',
+  'HGETALL',
+  'HMGET',
+  'HMSET',
+  'HINCRBY',
+  'HEXISTS',
+  'HKEYS',
+  'HVALS',
+  'HLEN',
   // Sets
-  'SADD', 'SREM', 'SMEMBERS', 'SISMEMBER', 'SCARD', 'SUNION', 'SINTER',
+  'SADD',
+  'SREM',
+  'SMEMBERS',
+  'SISMEMBER',
+  'SCARD',
+  'SUNION',
+  'SINTER',
   // Lists
-  'LPUSH', 'RPUSH', 'LPOP', 'RPOP', 'LRANGE', 'LLEN', 'LINDEX',
+  'LPUSH',
+  'RPUSH',
+  'LPOP',
+  'RPOP',
+  'LRANGE',
+  'LLEN',
+  'LINDEX',
   // Sorted Sets (leaderboards)
-  'ZADD', 'ZREM', 'ZSCORE', 'ZRANK', 'ZREVRANK',
-  'ZRANGE', 'ZREVRANGE', 'ZRANGEBYSCORE', 'ZCOUNT', 'ZCARD',
+  'ZADD',
+  'ZREM',
+  'ZSCORE',
+  'ZRANK',
+  'ZREVRANK',
+  'ZRANGE',
+  'ZREVRANGE',
+  'ZRANGEBYSCORE',
+  'ZCOUNT',
+  'ZCARD',
   // Keys
-  'EXISTS', 'KEYS', 'TYPE', 'SCAN'
+  'EXISTS',
+  'KEYS',
+  'TYPE',
+  'SCAN',
 ];
 
 // ============================================
@@ -125,13 +167,13 @@ class RedisClient {
       const response = await fetch(this.config.apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           method: upperMethod,
-          params
+          params,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -151,7 +193,6 @@ class RedisClient {
       }
 
       return result;
-
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -568,7 +609,7 @@ export const REDIS_EVENTS = {
   CONNECTED: 'redis:connected',
   DISCONNECTED: 'redis:disconnected',
   ERROR: 'redis:error',
-  RETRY: 'redis:retry'
+  RETRY: 'redis:retry',
 };
 
 // ============================================

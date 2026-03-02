@@ -3,11 +3,13 @@
 Délègue une recherche approfondie au librarian agent.
 
 ## Usage
+
 ```
 /deep-research <topic>
 ```
 
 ## Exemples
+
 ```
 /deep-research Helius webhooks setup
 /deep-research Solana token extensions
@@ -15,17 +17,20 @@ Délègue une recherche approfondie au librarian agent.
 ```
 
 ## Comportement
+
 1. Parse le topic de la commande
 2. Spawn le librarian agent avec le topic
 3. Librarian utilise context7 + WebSearch + Grep
 4. Retourne un résumé concis avec sources
 
 ## Économie
+
 - Délègue au subagent = ~80% tokens économisés
 - Résumé retourné = actionnable immédiatement
 - Sources citées = vérifiable
 
 ## Template de Prompt pour Librarian
+
 ```
 Recherche approfondie: {topic}
 

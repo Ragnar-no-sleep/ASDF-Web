@@ -121,15 +121,7 @@ const GameEngines = {
       }
       engine.start(gameId);
     } else {
-      // Fallback to legacy initializeGame function
-      if (typeof initializeGame === 'function') {
-        if (this.config.debug) {
-          console.log(`[GameEngines] Falling back to legacy initializeGame for ${gameId}`);
-        }
-        initializeGame(gameId);
-      } else {
-        console.warn(`[GameEngines] No engine found for: ${gameId}`);
-      }
+      console.warn(`[GameEngines] No engine found for: ${gameId}`);
     }
   },
 
@@ -184,52 +176,6 @@ const GameEngines = {
     };
   },
 };
-
-// Legacy compatibility: initializeGame router
-// This will be called by GameLifecycle.startGame if GameEngines is not initialized
-function initializeGame(gameId) {
-  // If new engines are loaded, use them
-  if (GameEngines.initialized && GameEngines.hasEngine(gameId)) {
-    GameEngines.start(gameId);
-    return;
-  }
-
-  // Fallback to legacy switch for games not yet extracted
-  switch (gameId) {
-    case 'tokencatcher':
-      if (typeof startTokenCatcher === 'function') startTokenCatcher(gameId);
-      break;
-    case 'burnrunner':
-      if (typeof startBurnRunner === 'function') startBurnRunner(gameId);
-      break;
-    case 'scamblaster':
-      if (typeof startScamBlaster === 'function') startScamBlaster(gameId);
-      break;
-    case 'cryptoheist':
-      if (typeof startCryptoHeist === 'function') startCryptoHeist(gameId);
-      break;
-    case 'pumparena':
-      if (typeof startPumpArena === 'function') startPumpArena(gameId);
-      break;
-    case 'whalewatch':
-      if (typeof startWhaleWatch === 'function') startWhaleWatch(gameId);
-      break;
-    case 'stakestacker':
-      if (typeof startStakeStacker === 'function') startStakeStacker(gameId);
-      break;
-    case 'dexdash':
-      if (typeof startDexDash === 'function') startDexDash(gameId);
-      break;
-    case 'burnorhold':
-      if (typeof startBurnOrHold === 'function') startBurnOrHold(gameId);
-      break;
-    case 'liquiditymaze':
-      if (typeof startLiquidityMaze === 'function') startLiquidityMaze(gameId);
-      break;
-    default:
-      console.warn(`[initializeGame] Unknown game: ${gameId}`);
-  }
-}
 
 // Export for module systems
 if (typeof window !== 'undefined') {

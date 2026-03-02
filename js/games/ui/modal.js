@@ -194,15 +194,7 @@ const ModalUI = {
     // End competitive session if active
     if (activeGameModes[gameId] === 'competitive') {
       endCompetitiveSession();
-      // Reset to practice mode for next time
-      activeGameModes[gameId] = 'practice';
-      const competitiveBtn = document.getElementById(`competitive-btn-${gameId}`);
-      const practiceBtn = document.getElementById(`practice-btn-${gameId}`);
-      if (competitiveBtn) competitiveBtn.classList.remove('active');
-      if (practiceBtn) practiceBtn.classList.add('active');
-      // Hide timer
-      const timerStat = document.getElementById(`timer-stat-${gameId}`);
-      if (timerStat) timerStat.style.display = 'none';
+      CompetitiveUI.resetToPractice(gameId);
     }
 
     stopGame(gameId);

@@ -50,8 +50,6 @@ const ShopCollections = {
 
     // Calculate progress from inventory
     this.calculateProgress(inventory);
-
-    console.log(`[ShopCollections] Initialized with ${this.definitions.size} collections`);
   },
 
   /**
@@ -334,8 +332,6 @@ const ShopCollections = {
    * @param {Object} shopState - Shop state reference
    */
   onCollectionComplete(collection, shopState) {
-    console.log(`[ShopCollections] Collection complete: ${collection.name}`);
-
     // Emit event
     if (shopState && shopState.emit) {
       shopState.emit('collection-complete', {
@@ -344,13 +340,10 @@ const ShopCollections = {
       });
     }
 
-    // Could trigger notification, achievement, etc.
-    if (window.Hub && window.Hub.showNotification) {
-      window.Hub.showNotification(
-        `Collection Complete: ${collection.name}! ${collection.bonus ? 'Bonus unlocked!' : ''}`,
-        'success'
-      );
-    }
+    // Notify collection completion
+    GameEvents.emit('notify', {
+      msg: `Collection Complete: ${collection.name}!${collection.bonus ? ' Bonus unlocked!' : ''}`,
+    });
   },
 };
 

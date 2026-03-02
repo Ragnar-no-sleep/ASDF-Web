@@ -45,7 +45,6 @@ const GameUI = {
     }
 
     this.initialized = true;
-    console.log('[GameUI] Initialized with modules:', this.getLoadedModules());
   },
 
   /**

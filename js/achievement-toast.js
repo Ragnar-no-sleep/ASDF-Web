@@ -15,95 +15,6 @@
   'use strict';
 
   // ============================================
-  // CSS — injected once
-  // ============================================
-
-  const CSS = [
-    '.asdf-toast {',
-    '  position: fixed;',
-    '  top: 21px;' /* F8 — Fibonacci */,
-    '  right: 21px;',
-    '  z-index: 9998;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 13px;' /* F7 */,
-    '  padding: 13px 21px;' /* F7 F8 */,
-    '  background: rgba(13, 9, 6, 0.95);',
-    '  border: 1px solid rgba(234, 179, 8, 0.5);',
-    '  border-radius: 13px;',
-    '  backdrop-filter: blur(8px);',
-    '  box-shadow: 0 0 34px rgba(234, 179, 8, 0.15);',
-    '  font-family: "JetBrains Mono", monospace;',
-    '  color: #faf8f5;',
-    '  pointer-events: none;',
-    '  transform: translateX(calc(100% + 34px));',
-    '  transition: transform 0.5s cubic-bezier(0.618, 0, 0.382, 1),',
-    '              opacity 0.5s cubic-bezier(0.618, 0, 0.382, 1);',
-    '  opacity: 0;',
-    '  will-change: transform, opacity;',
-    '}',
-    '.asdf-toast.visible {',
-    '  transform: translateX(0);',
-    '  opacity: 1;',
-    '}',
-    '.asdf-toast-icon {',
-    '  font-size: 24px;',
-    '  line-height: 1;',
-    '  flex-shrink: 0;',
-    '}',
-    '.asdf-toast-body {',
-    '  display: flex;',
-    '  flex-direction: column;',
-    '  gap: 3px;',
-    '}',
-    '.asdf-toast-title {',
-    '  font-size: 11px;',
-    '  font-weight: 600;',
-    '  letter-spacing: 0.1em;',
-    '  text-transform: uppercase;',
-    '  color: rgba(234, 179, 8, 0.6);',
-    '}',
-    '.asdf-toast-label {',
-    '  font-size: 16px;',
-    '  font-weight: 600;',
-    '  color: #eab308;',
-    '}',
-    '.asdf-toast-sub {',
-    '  font-size: 11px;',
-    '  color: rgba(250, 248, 245, 0.55);',
-    '  font-family: "Inter", sans-serif;',
-    '  margin-top: 2px;',
-    '}',
-    '.asdf-toast-progress {',
-    '  margin-top: 8px;',
-    '  height: 2px;',
-    '  background: rgba(234, 179, 8, 0.12);',
-    '  border-radius: 1px;',
-    '  overflow: hidden;',
-    '}',
-    '.asdf-toast-progress-fill {',
-    '  height: 100%;',
-    '  background: linear-gradient(90deg, #eab308, #f59e0b);',
-    '  transition: width 0.8s cubic-bezier(0.618, 0, 0.382, 1);',
-    '  width: 0%;',
-    '}',
-    '@media (prefers-reduced-motion: reduce) {',
-    '  .asdf-toast { transition: opacity 0.2s; transform: translateX(0); }',
-    '}',
-  ].join('\n');
-
-  let cssInjected = false;
-
-  function injectCSS() {
-    if (cssInjected) return;
-    const style = document.createElement('style');
-    style.id = 'asdf-achievement-toast-css';
-    style.textContent = CSS;
-    document.head.appendChild(style);
-    cssInjected = true;
-  }
-
-  // ============================================
   // TOAST ELEMENT
   // ============================================
 
@@ -203,8 +114,6 @@
    * Call once per page load.
    */
   function init() {
-    injectCSS();
-
     document.addEventListener(
       global.AchievementEngine ? global.AchievementEngine.EVENT_NAME : 'asdf:achievement-unlocked',
       function (e) {

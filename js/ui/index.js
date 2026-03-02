@@ -28,7 +28,7 @@ export {
   showWarning,
   showInfo,
   dismissToast,
-  dismissAllToasts
+  dismissAllToasts,
 } from './toast.js';
 
 // Modal System
@@ -39,7 +39,7 @@ export {
   closeModal,
   showAlert,
   showConfirm,
-  showPrompt
+  showPrompt,
 } from './modal.js';
 
 /**
@@ -47,7 +47,7 @@ export {
  * @param {Object} options - Init options
  * @returns {Object} UI instance
  */
-export function initUI(options = {}) {
+export function initUI(_options = {}) {
   const { toast: toastModule } = require('./toast.js');
   const { modal: modalModule } = require('./modal.js');
 
@@ -56,7 +56,7 @@ export function initUI(options = {}) {
 
   return {
     toast: toastModule,
-    modal: modalModule
+    modal: modalModule,
   };
 }
 

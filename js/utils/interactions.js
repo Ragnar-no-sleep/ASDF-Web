@@ -269,7 +269,6 @@ function init(config) {
   if (config.glowHover) {
     initGlowHover(config.glowHoverSelector);
   }
-
 }
 
 // Auto-init if data attribute present

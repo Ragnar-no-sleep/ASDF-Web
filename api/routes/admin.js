@@ -320,7 +320,7 @@ router.get('/admin/analytics', authMiddleware, requireAdmin, async (req, res) =>
 router.get('/admin/analytics/metrics', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const interval = req.query.interval || 'hour';
-    const count = Math.min(parseInt(req.query.count) || 24, 168);
+    const count = Math.max(1, Math.min(parseInt(req.query.count) || 24, 168));
 
     const metrics = getAggregatedMetrics(interval, count);
     res.json({ interval, metrics });
@@ -656,8 +656,8 @@ router.get('/admin/audit/search', authMiddleware, requireAdmin, async (req, res)
       actor: req.query.actor || null,
       startTime: req.query.startTime ? parseInt(req.query.startTime) : null,
       endTime: req.query.endTime ? parseInt(req.query.endTime) : null,
-      limit: Math.min(parseInt(req.query.limit) || 50, 500),
-      offset: parseInt(req.query.offset) || 0,
+      limit: Math.max(1, Math.min(parseInt(req.query.limit) || 50, 500)),
+      offset: Math.max(0, parseInt(req.query.offset) || 0),
     };
 
     const results = searchAudit(query);

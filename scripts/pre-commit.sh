@@ -3,6 +3,9 @@
 # Philosophy: Don't trust. Verify.
 # Sans lint-staged (cause des bugs index.lock sur Windows)
 
+# Ensure Node.js is on PATH (Windows Git Bash may not inherit it)
+export PATH="/c/Program Files/nodejs:$PATH"
+
 echo "🔍 Running pre-commit checks..."
 
 # Get staged files
@@ -12,16 +15,16 @@ STAGED_OTHER=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(jso
 # ESLint + Prettier on JS files
 if [ -n "$STAGED_JS" ]; then
   echo "📝 Checking JS/TS files..."
-  npx eslint $STAGED_JS --fix --quiet 2>/dev/null || true
-  npx prettier --write $STAGED_JS 2>/dev/null || true
-  git add $STAGED_JS 2>/dev/null || true
+  npx eslint $STAGED_JS --fix --quiet || exit 1
+  npx prettier --write $STAGED_JS 2>/dev/null
+  git add $STAGED_JS 2>/dev/null
 fi
 
 # Prettier on other files
 if [ -n "$STAGED_OTHER" ]; then
   echo "✨ Formatting other files..."
-  npx prettier --write $STAGED_OTHER 2>/dev/null || true
-  git add $STAGED_OTHER 2>/dev/null || true
+  npx prettier --write $STAGED_OTHER 2>/dev/null
+  git add $STAGED_OTHER 2>/dev/null
 fi
 
 echo "✅ Pre-commit checks passed"

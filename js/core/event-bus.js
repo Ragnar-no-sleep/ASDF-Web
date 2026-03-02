@@ -89,7 +89,7 @@ class EventBus {
     const listeners = this.listeners.get(event);
     if (!listeners) return;
 
-    const index = listeners.findIndex((l) => l.callback === callback);
+    const index = listeners.findIndex(l => l.callback === callback);
     if (index > -1) {
       listeners.splice(index, 1);
       if (this.debug) {
@@ -108,7 +108,7 @@ class EventBus {
     this.history.push({
       event,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Trim history if needed
@@ -150,7 +150,7 @@ class EventBus {
    */
   getHistory(event) {
     if (event) {
-      return this.history.filter((entry) => entry.event === event);
+      return this.history.filter(entry => entry.event === event);
     }
     return [...this.history];
   }
@@ -292,7 +292,7 @@ export const EVENTS = {
   // Progress sync events
   PROGRESS_SYNCED: 'progress:synced',
   PROGRESS_CONFLICT: 'progress:conflict',
-  PROGRESS_OFFLINE: 'progress:offline'
+  PROGRESS_OFFLINE: 'progress:offline',
 };
 
 // Global access for non-module scripts

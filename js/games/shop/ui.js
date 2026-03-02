@@ -58,8 +58,6 @@ const ShopUI = {
 
     // Initial render
     this.render();
-
-    console.log('[ShopUI] Initialized');
   },
 
   /**
@@ -595,7 +593,7 @@ const ShopUI = {
     this.canvasInstance.init(canvas, {
       size: 300,
       interactive: true,
-      onLoad: () => console.log('[ShopUI] Canvas loaded'),
+      onLoad: () => {},
       onError: err => console.error('[ShopUI] Canvas error:', err),
     });
 
@@ -724,6 +722,14 @@ const ShopUI = {
         e.stopPropagation();
         const itemId = btn.dataset.favorite;
         this.handleFavoriteToggle(itemId);
+      });
+    });
+
+    // Image error fallbacks (CSP-safe — no inline onerror)
+    this.container.querySelectorAll('.shop-item img[loading="lazy"]').forEach(img => {
+      img.addEventListener('error', () => {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
       });
     });
   },

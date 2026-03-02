@@ -15,7 +15,7 @@ const SNOW_CONFIG = {
   // Particle counts by performance tier
   counts: {
     desktop: 10000,
-    mobile: 2500
+    mobile: 2500,
   },
   // Particle behavior
   particle: {
@@ -23,28 +23,28 @@ const SNOW_CONFIG = {
     maxSize: 0.2,
     minSpeed: 0.3,
     maxSpeed: 1.0,
-    drift: 0.5,       // Horizontal drift
-    turbulence: 0.2   // Wind turbulence
+    drift: 0.5, // Horizontal drift
+    turbulence: 0.2, // Wind turbulence
   },
   // Spawn area
   area: {
     width: 100,
     height: 80,
-    depth: 100
+    depth: 100,
   },
   // Colors
   colors: {
-    snow: 0xe8f4ff,    // Light blue-white
-    ice: 0xb0e0ff,     // Ice blue
-    frost: 0x88ccff    // Frost highlight
+    snow: 0xe8f4ff, // Light blue-white
+    ice: 0xb0e0ff, // Ice blue
+    frost: 0x88ccff, // Frost highlight
   },
   // Wind
   wind: {
     baseX: -0.3,
     baseZ: 0.1,
     gustStrength: 0.5,
-    gustFrequency: 0.1
-  }
+    gustFrequency: 0.1,
+  },
 };
 
 // ============================================
@@ -82,9 +82,9 @@ class SnowParticles {
    * @returns {number}
    */
   getParticleCount() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    ) || window.innerWidth < 768;
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.innerWidth < 768;
 
     return isMobile ? this.options.counts.mobile : this.options.counts.desktop;
   }
@@ -158,14 +158,14 @@ class SnowParticles {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pixelRatio: { value: window.devicePixelRatio }
+        pixelRatio: { value: window.devicePixelRatio },
       },
       vertexShader: this.getVertexShader(),
       fragmentShader: this.getFragmentShader(),
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       transparent: true,
-      vertexColors: true
+      vertexColors: true,
     });
 
     // Create points
@@ -215,10 +215,10 @@ class SnowParticles {
 
       // Wrap horizontal bounds
       if (Math.abs(this.positions[i3]) > area.width / 2) {
-        this.positions[i3] = -Math.sign(this.positions[i3]) * area.width / 2;
+        this.positions[i3] = (-Math.sign(this.positions[i3]) * area.width) / 2;
       }
       if (Math.abs(this.positions[i3 + 2]) > area.depth / 2) {
-        this.positions[i3 + 2] = -Math.sign(this.positions[i3 + 2]) * area.depth / 2;
+        this.positions[i3 + 2] = (-Math.sign(this.positions[i3 + 2]) * area.depth) / 2;
       }
     }
 

@@ -255,14 +255,14 @@ export const queryBuilder = {
    */
   select: table => ({
     table,
-    columns: ['*'],
+    _columns: ['*'],
     conditions: [],
     joins: [],
     orderByClause: '',
     limitClause: '',
 
     columns(cols) {
-      this.columns = Array.isArray(cols) ? cols : [cols];
+      this._columns = Array.isArray(cols) ? cols : [cols];
       return this;
     },
 
@@ -282,7 +282,7 @@ export const queryBuilder = {
     },
 
     async execute() {
-      let sql = `SELECT ${this.columns.join(', ')} FROM ${this.table}`;
+      let sql = `SELECT ${this._columns.join(', ')} FROM ${this.table}`;
 
       const values = [];
       if (this.conditions.length > 0) {

@@ -201,7 +201,6 @@ const BurnRunner = {
     this.setupInput();
     this.preloadSprites();
     this.gameLoop();
-    console.log(`[BurnRunner v${this.version}] Started - Phi-based difficulty`);
 
     if (typeof activeGames !== 'undefined') {
       activeGames[gameId] = {

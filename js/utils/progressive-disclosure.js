@@ -147,7 +147,6 @@ class ProgressiveDisclosure {
 
     // Check for new reveals
     this.checkReveals();
-
   }
 
   /**
@@ -501,71 +500,3 @@ export function showOnboarding() {
     // Could start a guided tour here
   });
 }
-
-// ============================================
-// CSS INJECTION
-// ============================================
-
-const style = document.createElement('style');
-style.textContent = `
-  .disclosure-notification {
-    font-family: 'Inter', sans-serif;
-  }
-
-  .disclosure-notification-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    color: var(--color-fire);
-  }
-
-  .disclosure-notification-name {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .disclosure-notification-desc {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .smart-tooltip {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .smart-tooltip-message {
-    margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .smart-tooltip-close {
-    width: 100%;
-    padding: 6px 12px;
-    background: var(--color-fire);
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .smart-tooltip-close:hover {
-    background: var(--color-fire-light);
-  }
-
-  .smart-tooltip-arrow {
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-bottom: 6px solid var(--color-fire);
-  }
-`;
-document.head.appendChild(style);

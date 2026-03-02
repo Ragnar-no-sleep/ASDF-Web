@@ -10,7 +10,12 @@
 const { getContainer, generateHydrationScript } = require('./services.cjs');
 
 function escapeHtml(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function padZero(num, len = 2) {
@@ -35,10 +40,13 @@ async function renderGamesPage() {
   const weeklyHtml = leaderboard.renderHtml(weeklyLeaderboard.leaderboard || [], 'weekly');
   const cycleHtml = leaderboard.renderHtml(cycleLeaderboard.leaderboard || [], 'cycle');
 
-  const gamesGridHtml = games.all().map((game) => {
-    const isFeatured = game.id === currentGame.id;
-    return `<div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}"><div class="game-icon">${game.icon}</div><h3 class="game-name">${escapeHtml(game.name)}</h3><p class="game-type">${escapeHtml(game.type)}</p><button class="btn game-play-btn" data-action="open-game" data-game="${game.id}">Play</button></div>`;
-  }).join('');
+  const gamesGridHtml = games
+    .all()
+    .map(game => {
+      const isFeatured = game.id === currentGame.id;
+      return `<div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}"><div class="game-icon">${game.icon}</div><h3 class="game-name">${escapeHtml(game.name)}</h3><p class="game-type">${escapeHtml(game.type)}</p><button class="btn game-play-btn" data-action="open-game" data-game="${game.id}">Play</button></div>`;
+    })
+    .join('');
 
   const hydrationScript = generateHydrationScript();
 
@@ -93,13 +101,12 @@ async function renderGamesPage() {
         <noscript><div class="noscript-warning" style="padding:2rem;text-align:center;background:#1a1a2e;color:#fff;margin:2rem;"><h2>JavaScript Required</h2><p>Please enable JavaScript to play games.</p></div></noscript>
     </main>
     <div id="game-modals"></div>
-    <script src="/js/games/core/container.js"></script>
-    <script src="/js/games/core/facades.js"></script>
-    <script src="/js/games/core/bootstrap.js"></script>
     <script src="/js/games/utils.js"></script>
     <script src="/js/games/config.js"></script>
     <script src="/js/games/state.js"></script>
     <script src="/js/games/api.js"></script>
+    <script src="/js/games/shared/events.js"></script>
+    <script src="/js/games/shared/store.js"></script>
     <script src="/js/games/ui/rotation.js"></script>
     <script src="/js/games/ui/leaderboard.js"></script>
     <script src="/js/games/ui/competitive.js"></script>

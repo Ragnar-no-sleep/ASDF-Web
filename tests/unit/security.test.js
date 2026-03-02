@@ -20,7 +20,7 @@ const HTML_ENTITY_MAP = {
   "'": '&#039;',
   '/': '&#x2F;',
   '`': '&#x60;',
-  '=': '&#x3D;'
+  '=': '&#x3D;',
 };
 
 function escapeHtml(text) {

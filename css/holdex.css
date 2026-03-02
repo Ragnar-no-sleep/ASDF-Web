@@ -3,8 +3,6 @@
  * Style: Refined Pokedex-inspired UI
  */
 
-@import url('./design-tokens.css');
-
 /* ============================================
    CSS Variables
    ============================================ */
@@ -102,8 +100,16 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(var(--holdex-secondary-rgb), 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(var(--holdex-secondary-rgb), 0.02) 0%, transparent 50%);
+    radial-gradient(
+      ellipse 80% 50% at 20% 20%,
+      rgba(var(--holdex-secondary-rgb), 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 80%,
+      rgba(var(--holdex-secondary-rgb), 0.02) 0%,
+      transparent 50%
+    );
 }
 
 .bg-grid {
@@ -1025,8 +1031,16 @@ body {
 
 [data-variant='2'] .bg-gradient {
   background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(var(--holdex-accent-rgb), 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(var(--holdex-accent-rgb), 0.03) 0%, transparent 50%);
+    radial-gradient(
+      ellipse 80% 50% at 20% 20%,
+      rgba(var(--holdex-accent-rgb), 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 80%,
+      rgba(var(--holdex-accent-rgb), 0.03) 0%,
+      transparent 50%
+    );
 }
 
 [data-variant='2'] .bg-glow {
@@ -1077,8 +1091,16 @@ body {
 
 [data-variant='3'] .bg-gradient {
   background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(var(--holdex-accent-rgb), 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(var(--holdex-accent-rgb), 0.02) 0%, transparent 50%);
+    radial-gradient(
+      ellipse 80% 50% at 20% 20%,
+      rgba(var(--holdex-accent-rgb), 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 80%,
+      rgba(var(--holdex-accent-rgb), 0.02) 0%,
+      transparent 50%
+    );
 }
 
 [data-variant='3'] .bg-glow {
@@ -1114,7 +1136,7 @@ body {
 /* ============================================
    Responsive
    ============================================ */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .main {
     grid-template-columns: 200px 1fr 200px;
   }

@@ -8,7 +8,6 @@
 'use strict';
 
 import { LearnBuild } from '../index.js';
-import { learnBuildUI } from '../ui-controller.js';
 
 // ============================================
 // DASHBOARD COMPONENT
@@ -20,9 +19,7 @@ export class DashboardComponent {
    * @param {string|Element} container - Container selector or element
    */
   constructor(container) {
-    this.container = typeof container === 'string'
-      ? document.querySelector(container)
-      : container;
+    this.container = typeof container === 'string' ? document.querySelector(container) : container;
 
     if (!this.container) {
       console.warn('[DashboardComponent] Container not found');
@@ -146,9 +143,11 @@ export class DashboardComponent {
           <span class="lb-streak-label">${streak === 1 ? 'day' : 'days'}</span>
         </div>
         <p class="lb-streak-message">
-          ${isActive
-            ? 'Keep it up! Learn daily to maintain your streak.'
-            : 'Start learning today to begin a streak!'}
+          ${
+            isActive
+              ? 'Keep it up! Learn daily to maintain your streak.'
+              : 'Start learning today to begin a streak!'
+          }
         </p>
       </div>
     `;
@@ -215,13 +214,18 @@ export class DashboardComponent {
           <span class="lb-badge-count">${badges.earned || 0}/${badges.total || 0}</span>
         </div>
         <div class="lb-badge-showcase">
-          ${showcase.length > 0
-            ? showcase.map(b => `
+          ${
+            showcase.length > 0
+              ? showcase
+                  .map(
+                    b => `
                 <div class="lb-badge" data-badge-id="${b.id}" data-tier="${b.tier}" title="${b.name}">
                   <span class="lb-badge-icon">${b.icon}</span>
                 </div>
-              `).join('')
-            : '<p class="lb-empty-state">Complete quests to earn badges!</p>'
+              `
+                  )
+                  .join('')
+              : '<p class="lb-empty-state">Complete quests to earn badges!</p>'
           }
         </div>
       </div>
@@ -241,7 +245,9 @@ export class DashboardComponent {
       <div class="lb-section lb-milestones-section">
         <h3 class="lb-section-title">Next Milestones</h3>
         <div class="lb-milestones">
-          ${milestones.map(m => `
+          ${milestones
+            .map(
+              m => `
             <div class="lb-milestone" data-type="${m.type}">
               ${m.icon ? `<span class="lb-milestone-icon">${m.icon}</span>` : ''}
               <div class="lb-milestone-content">
@@ -252,7 +258,9 @@ export class DashboardComponent {
                 <span class="lb-milestone-text">${m.current}/${m.target}</span>
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
       </div>
     `;
@@ -269,8 +277,11 @@ export class DashboardComponent {
       <div class="lb-section lb-quests-section">
         <h3 class="lb-section-title">Active Quests</h3>
         <div class="lb-active-quests">
-          ${quests.length > 0
-            ? quests.map(q => `
+          ${
+            quests.length > 0
+              ? quests
+                  .map(
+                    q => `
                 <div class="lb-quest-card" data-quest-id="${q.id}" data-state="${q.state}">
                   <div class="lb-quest-header">
                     <span class="lb-quest-name">${q.definition?.name || 'Quest'}</span>
@@ -281,8 +292,10 @@ export class DashboardComponent {
                     Continue \u2192
                   </button>
                 </div>
-              `).join('')
-            : `
+              `
+                  )
+                  .join('')
+              : `
               <div class="lb-empty-quests">
                 <span class="lb-empty-icon">\u{1F3AF}</span>
                 <p>No active quests</p>
@@ -302,7 +315,7 @@ export class DashboardComponent {
   _bindEvents() {
     // Quest buttons
     this.container.querySelectorAll('.lb-quest-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', e => {
         const card = e.target.closest('.lb-quest-card');
         const questId = card?.dataset.questId;
         if (questId) {
@@ -336,9 +349,11 @@ export class DashboardComponent {
    */
   _onQuestContinue(questId) {
     // Emit event for parent to handle
-    window.dispatchEvent(new CustomEvent('learnbuild:quest:continue', {
-      detail: { questId }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('learnbuild:quest:continue', {
+        detail: { questId },
+      })
+    );
   }
 
   /**
@@ -354,9 +369,11 @@ export class DashboardComponent {
    * @private
    */
   _onTrackClick(trackId) {
-    window.dispatchEvent(new CustomEvent('learnbuild:track:select', {
-      detail: { trackId }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('learnbuild:track:select', {
+        detail: { trackId },
+      })
+    );
   }
 
   /**

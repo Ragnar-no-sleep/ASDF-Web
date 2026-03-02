@@ -10,8 +10,7 @@
 
 import { BuildState } from '../../state.js';
 import { DataAdapter } from '../../data/adapter.js';
-import { SkillNode, SkillNodeFactory, calculatePhiSpiralPositions } from '../objects/skill-node.js';
-import { PHI, GOLDEN_ANGLE } from '../../utils/phi.js';
+import { SkillNode, calculatePhiSpiralPositions } from '../objects/skill-node.js';
 
 // ============================================
 // PROJECT TREE CONFIGURATION
@@ -21,25 +20,25 @@ const PROJECT_TREE_CONFIG = {
   // Central project display
   project: {
     titleOffset: { x: 0, y: 4, z: 0 },
-    iconScale: 2
+    iconScale: 2,
   },
   // Skill node spiral
   spiral: {
     centerRadius: 4,
     maxRadius: 14,
-    verticalSpread: 3
+    verticalSpread: 3,
   },
   // Connection lines between skills
   connections: {
     color: 0x4488ff,
     opacity: 0.3,
-    lineWidth: 1
+    lineWidth: 1,
   },
   // Animation
   animation: {
-    staggerDelay: 100,  // ms between node appearances
-    fadeInDuration: 500
-  }
+    staggerDelay: 100, // ms between node appearances
+    fadeInDuration: 500,
+  },
 };
 
 // ============================================
@@ -95,7 +94,7 @@ class ProjectTreeScene {
 
     // Get project data
     this.currentProjectId = projectId;
-    this.currentProject = projectData || await DataAdapter.getProject(projectId);
+    this.currentProject = projectData || (await DataAdapter.getProject(projectId));
 
     if (!this.currentProject) {
       console.error('[ProjectTreeScene] Project not found:', projectId);
@@ -118,10 +117,8 @@ class ProjectTreeScene {
     BuildState.emit('projectTree:loaded', {
       projectId,
       project: this.currentProject,
-      skillCount: skills.length
+      skillCount: skills.length,
     });
-
-    console.log(`[ProjectTreeScene] Loaded project: ${projectId} with ${skills.length} skills`);
   }
 
   /**
@@ -150,7 +147,7 @@ class ProjectTreeScene {
         xp: module.xpReward || 0,
         state: this.getSkillState(module),
         order: index,
-        prerequisites: module.prerequisites || []
+        prerequisites: module.prerequisites || [],
       }));
     }
 
@@ -163,7 +160,7 @@ class ProjectTreeScene {
         xp: 100,
         state: 'available',
         order: index,
-        prerequisites: index > 0 ? [`${projectId}-skill-${index - 1}`] : []
+        prerequisites: index > 0 ? [`${projectId}-skill-${index - 1}`] : [],
       }));
     }
 
@@ -173,7 +170,7 @@ class ProjectTreeScene {
       { id: `${projectId}-setup`, title: 'Setup', state: 'locked', order: 1 },
       { id: `${projectId}-basics`, title: 'Basics', state: 'locked', order: 2 },
       { id: `${projectId}-advanced`, title: 'Advanced', state: 'locked', order: 3 },
-      { id: `${projectId}-mastery`, title: 'Mastery', state: 'locked', order: 4 }
+      { id: `${projectId}-mastery`, title: 'Mastery', state: 'locked', order: 4 },
     ];
   }
 
@@ -262,16 +259,13 @@ class ProjectTreeScene {
 
         if (!fromNode || !toNode) return;
 
-        const points = [
-          fromNode.getPosition(),
-          toNode.getPosition()
-        ];
+        const points = [fromNode.getPosition(), toNode.getPosition()];
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({
           color: connections.color,
           transparent: true,
-          opacity: connections.opacity
+          opacity: connections.opacity,
         });
 
         const line = new THREE.Line(geometry, material);
@@ -294,13 +288,13 @@ class ProjectTreeScene {
       emissive: 0x00d9ff,
       emissiveIntensity: 0.5,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.6,
     });
 
     const centerSphere = new THREE.Mesh(geometry, material);
     centerSphere.userData = {
       type: 'projectCenter',
-      projectId: this.currentProjectId
+      projectId: this.currentProjectId,
     };
 
     this.group.add(centerSphere);
@@ -406,7 +400,7 @@ class ProjectTreeScene {
         BuildState.emit('projectTree:skillClick', {
           skillId,
           skill: node.skill,
-          projectId: this.currentProjectId
+          projectId: this.currentProjectId,
         });
 
         return node;

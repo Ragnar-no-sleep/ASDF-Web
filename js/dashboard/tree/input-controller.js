@@ -99,7 +99,7 @@ export const InputController = {
    */
   on(event, callback) {
     const key = `on${event.charAt(0).toUpperCase() + event.slice(1)}`;
-    if (Object.prototype.hasOwnProperty.call(this._handlers, key)) {
+    if (Object.hasOwn(this._handlers, key)) {
       this._handlers[key] = callback;
     }
   },

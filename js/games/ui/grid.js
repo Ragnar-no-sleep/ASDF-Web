@@ -15,14 +15,15 @@ const GridUI = {
     const grid = document.getElementById('games-grid');
     if (!grid) return;
 
-    const currentGame = getCurrentGame();
+    try {
+      const currentGame = getCurrentGame();
 
-    grid.innerHTML = GAMES.map(game => {
-      const isFeatured = game.id === currentGame.id;
-      // All games accessible - no holder restriction
-      const highScore = appState.practiceScores[game.id] || 0;
+      grid.innerHTML = GAMES.map(game => {
+        const isFeatured = game.id === currentGame.id;
+        // All games accessible - no holder restriction
+        const highScore = appState.practiceScores[game.id] || 0;
 
-      return `
+        return `
             <div class="game-card ${isFeatured ? 'featured' : ''}" data-game="${game.id}" data-action="open-game" style="cursor: pointer;">
                 <div class="game-icon">${game.icon}</div>
                 <h3 class="game-name">${escapeHtml(game.name)}</h3>
@@ -35,7 +36,12 @@ const GridUI = {
                 </button>
             </div>
         `;
-    }).join('');
+      }).join('');
+    } catch (e) {
+      console.error('[GridUI] Render failed:', e);
+      grid.innerHTML =
+        '<p style="color:var(--text-muted);text-align:center;">Failed to load games grid.</p>';
+    }
   },
 };
 

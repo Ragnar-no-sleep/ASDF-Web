@@ -17,26 +17,26 @@ const BURN_CORE_CONFIG = {
     radius: 3,
     segments: 32,
     color: 0xff6b35,
-    emissiveIntensity: 0.8
+    emissiveIntensity: 0.8,
   },
   // Outer shell
   shell: {
     radius: 4,
     segments: 24,
     color: 0xff4400,
-    opacity: 0.3
+    opacity: 0.3,
   },
   // Inner glow
   innerGlow: {
     color: 0xffffff,
     intensity: 2,
-    distance: 20
+    distance: 20,
   },
   // Outer glow
   outerGlow: {
     color: 0xff6b35,
     intensity: 1.5,
-    distance: 50
+    distance: 50,
   },
   // Rings
   rings: {
@@ -44,14 +44,14 @@ const BURN_CORE_CONFIG = {
     baseRadius: 5,
     tubeRadius: 0.2,
     color: 0xff8844,
-    opacity: 0.4
+    opacity: 0.4,
   },
   // Animation
   animation: {
     pulseSpeed: 1.5,
     pulseAmplitude: 0.2,
-    rotationSpeed: 0.3
-  }
+    rotationSpeed: 0.3,
+  },
 };
 
 // ============================================
@@ -119,7 +119,7 @@ class BurnCore {
       emissiveIntensity: core.emissiveIntensity,
       transparent: true,
       opacity: 0.95,
-      shininess: 50
+      shininess: 50,
     });
 
     this.coreMesh = new THREE.Mesh(geometry, material);
@@ -144,7 +144,7 @@ class BurnCore {
       transparent: true,
       opacity: shell.opacity,
       wireframe: true,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     this.shellMesh = new THREE.Mesh(geometry, material);
@@ -188,18 +188,13 @@ class BurnCore {
     for (let i = 0; i < rings.count; i++) {
       const radius = rings.baseRadius + i * 1.5;
 
-      const geometry = new THREE.TorusGeometry(
-        radius,
-        rings.tubeRadius,
-        8,
-        64
-      );
+      const geometry = new THREE.TorusGeometry(radius, rings.tubeRadius, 8, 64);
 
       const material = new THREE.MeshBasicMaterial({
         color: rings.color,
         transparent: true,
         opacity: rings.opacity - i * 0.1,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       });
 
       const ring = new THREE.Mesh(geometry, material);
@@ -210,7 +205,7 @@ class BurnCore {
 
       ring.userData = {
         rotationSpeed: (0.2 + Math.random() * 0.3) * (i % 2 === 0 ? 1 : -1),
-        wobblePhase: Math.random() * Math.PI * 2
+        wobblePhase: Math.random() * Math.PI * 2,
       };
 
       this.rings.push(ring);
@@ -246,7 +241,7 @@ class BurnCore {
       map: texture,
       transparent: true,
       blending: THREE.AdditiveBlending,
-      depthWrite: false
+      depthWrite: false,
     });
 
     this.glowSprite = new THREE.Sprite(material);
@@ -289,7 +284,7 @@ class BurnCore {
     }
 
     // Ring rotation
-    this.rings.forEach((ring) => {
+    this.rings.forEach(ring => {
       const { rotationSpeed, wobblePhase } = ring.userData;
       ring.rotation.z += deltaTime * rotationSpeed;
       ring.rotation.x = Math.PI / 2 + Math.sin(this.time + wobblePhase) * 0.1;

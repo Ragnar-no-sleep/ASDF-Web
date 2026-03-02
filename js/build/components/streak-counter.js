@@ -8,7 +8,7 @@
 'use strict';
 
 import { BuildState } from '../state.js';
-import { addClass, removeClass, setStyles } from '../utils/dom.js';
+import { addClass, removeClass } from '../utils/dom.js';
 import { INTERVAL, GAMIFICATION } from '../config/timing.js';
 
 // ============================================
@@ -58,8 +58,6 @@ const StreakCounter = {
 
     // Start countdown timer
     this.startCountdown();
-
-    console.log('[StreakCounter] Initialized', streakData);
   },
 
   /**

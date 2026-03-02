@@ -86,7 +86,7 @@ export const FireParticles = {
   },
 
   update(delta) {
-    const { fire, tree } = CONFIG;
+    const { fire } = CONFIG;
     const count = fire.count;
 
     for (let i = 0; i < count; i++) {
@@ -105,9 +105,7 @@ export const FireParticles = {
       this.positions[i3 + 1] += this.velocities[i3 + 1] * delta;
       this.positions[i3 + 2] += this.velocities[i3 + 2] * delta;
 
-      // Fade color based on lifetime
-      const lifeFactor = this.lifetimes[i] / fire.lifetime;
-      // Particles get darker/redder as they age
+      // Fade color based on lifetime (particles get darker/redder as they age)
       this.colors[i3] *= 0.999;
       this.colors[i3 + 1] *= 0.995;
       this.colors[i3 + 2] *= 0.99;
@@ -552,7 +550,7 @@ export const ConnectionParticles = {
   },
 
   update(delta) {
-    for (const [id, system] of this.systems) {
+    for (const [_id, system] of this.systems) {
       const { positions, progress, from, to, count, geometry } = system;
       const speed = 0.3;
 

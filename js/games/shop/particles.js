@@ -178,31 +178,32 @@ const ShopParticles = {
         x = bounds.x + bounds.width / 2;
         y = bounds.y + bounds.height / 2;
         break;
-      case 'orbit':
+      case 'orbit': {
         const angle = Math.random() * Math.PI * 2;
         const radius = bounds.width * 0.3 + Math.random() * bounds.width * 0.2;
         x = bounds.x + bounds.width / 2 + Math.cos(angle) * radius;
         y = bounds.y + bounds.height / 2 + Math.sin(angle) * radius;
         break;
+      }
       default: // random
         x = bounds.x + Math.random() * bounds.width;
         y = bounds.y + Math.random() * bounds.height;
     }
 
     // Calculate velocity
-    let vx = 0,
-      vy = 0;
+    let vx, vy;
     switch (config.direction) {
       case 'up':
         vx = (Math.random() - 0.5) * config.spread * 2;
         vy = -config.speed - Math.random() * config.speed * 0.5;
         break;
-      case 'radial':
+      case 'radial': {
         const radAngle = Math.random() * Math.PI * 2;
         vx = Math.cos(radAngle) * config.speed;
         vy = Math.sin(radAngle) * config.speed;
         break;
-      case 'orbit':
+      }
+      case 'orbit': {
         // Perpendicular to radius
         const cx = bounds.x + bounds.width / 2;
         const cy = bounds.y + bounds.height / 2;
@@ -211,6 +212,7 @@ const ShopParticles = {
         vx = -dy * config.speed * 0.01;
         vy = dx * config.speed * 0.01;
         break;
+      }
       default: // random
         vx = (Math.random() - 0.5) * config.speed * 2;
         vy = (Math.random() - 0.5) * config.speed * 2;

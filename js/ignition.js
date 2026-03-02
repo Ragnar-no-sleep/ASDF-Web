@@ -20,6 +20,7 @@ import { AudioFeedback } from './utils/audio-feedback.js';
 import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet } from './utils/format.js';
+import { ANIMATION, TIME_MS } from './config/timing.js';
 
 // API_BASE ready for when backend is deployed
 // eslint-disable-next-line no-unused-vars
@@ -80,7 +81,9 @@ function startCountdown(targetMs) {
 
   if (!targetMs) {
     // [API] No target until backend provides real airdrop schedule
-    els.forEach(el => { if (el) el.textContent = '--'; });
+    els.forEach(el => {
+      if (el) el.textContent = '--';
+    });
     return;
   }
 
@@ -88,23 +91,31 @@ function startCountdown(targetMs) {
     const diff = Math.max(0, targetMs - Date.now());
     const [dEl, hEl, mEl, sEl] = els;
 
-    if (dEl) dEl.textContent = pad(Math.floor(diff / 86_400_000));
-    if (hEl) hEl.textContent = pad(Math.floor((diff % 86_400_000) / 3_600_000));
-    if (mEl) mEl.textContent = pad(Math.floor((diff % 3_600_000) / 60_000));
-    if (sEl) sEl.textContent = pad(Math.floor((diff % 60_000) / 1000));
+    if (dEl) dEl.textContent = pad(Math.floor(diff / TIME_MS.DAY));
+    if (hEl) hEl.textContent = pad(Math.floor((diff % TIME_MS.DAY) / TIME_MS.HOUR));
+    if (mEl) mEl.textContent = pad(Math.floor((diff % TIME_MS.HOUR) / TIME_MS.MINUTE));
+    if (sEl) sEl.textContent = pad(Math.floor((diff % TIME_MS.MINUTE) / TIME_MS.SECOND));
 
-    if (diff <= 0) els.forEach(el => { if (el) el.textContent = '00'; });
+    if (diff <= 0) {
+      els.forEach(el => {
+        if (el) {
+          el.textContent = '00';
+        }
+      });
+    }
   }
 
   tick();
   const timer = setInterval(() => {
     if (Date.now() >= targetMs) {
       clearInterval(timer);
-      els.forEach(el => { if (el) el.textContent = '00'; });
+      els.forEach(el => {
+        if (el) el.textContent = '00';
+      });
       return;
     }
     tick();
-  }, 1000);
+  }, ANIMATION.TICK);
 
   PageLifecycle.registerTimer('ignition-countdown', timer);
 }
@@ -266,7 +277,9 @@ function initForms() {
     launcherForm.addEventListener('submit', e => {
       e.preventDefault();
       // [API] TODO: POST /ignition/launch — wallet + 0.02 SOL transaction
-      window.showNotice('Token launch requires wallet connection and Solana integration — coming soon.');
+      window.showNotice(
+        'Token launch requires wallet connection and Solana integration — coming soon.'
+      );
     });
   }
 

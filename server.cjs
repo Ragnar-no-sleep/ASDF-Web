@@ -4,6 +4,31 @@ const path = require('path');
 const crypto = require('crypto');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const pino = require('pino');
+const pinoHttp = require('pino-http');
+const promClient = require('prom-client');
+
+// Structured logger — JSON in prod, pretty in dev
+const logger = pino({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  ...(process.env.NODE_ENV !== 'production' && {
+    transport: { target: 'pino/file', options: { destination: 1 } },
+  }),
+});
+
+// Prometheus metrics — default Node.js + custom HTTP histograms
+promClient.collectDefaultMetrics({ prefix: 'asdf_' });
+const httpRequestDuration = new promClient.Histogram({
+  name: 'asdf_http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+});
+const httpRequestsTotal = new promClient.Counter({
+  name: 'asdf_http_requests_total',
+  help: 'Total HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+});
 
 // SSR renderer for games page
 const { renderGamesPage } = require('./ssr/games.cjs');
@@ -58,7 +83,7 @@ function isBot(req) {
   const ua = (req.headers['user-agent'] || '').toLowerCase();
 
   // Check for known bots
-  if (BOT_USER_AGENTS.some((bot) => ua.includes(bot))) {
+  if (BOT_USER_AGENTS.some(bot => ua.includes(bot))) {
     return true;
   }
 
@@ -87,11 +112,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Validate environment at startup
 if (isProduction && !process.env.NODE_ENV) {
-  console.error('[Server] NODE_ENV not set in production');
+  logger.fatal('NODE_ENV not set in production');
   process.exit(1);
 }
 if (process.env.REDIS_URL && !/^rediss?:\/\//.test(process.env.REDIS_URL)) {
-  console.error('[Server] REDIS_URL format invalid');
+  logger.fatal('REDIS_URL format invalid');
   process.exit(1);
 }
 
@@ -108,6 +133,19 @@ if (isProduction) {
   app.set('trust proxy', 1);
 }
 
+// Prometheus HTTP metrics middleware
+app.use((req, res, next) => {
+  if (req.path === '/health' || req.path === '/metrics') return next();
+  const end = httpRequestDuration.startTimer();
+  res.on('finish', () => {
+    const route = req.route?.path || req.path;
+    const labels = { method: req.method, route, status: res.statusCode };
+    end(labels);
+    httpRequestsTotal.inc(labels);
+  });
+  next();
+});
+
 // Rate limiting - 400 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -119,6 +157,15 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Request logging — structured JSON with request ID
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: req => req.url === '/health' },
+    genReqId: req => req.headers['x-request-id'] || crypto.randomUUID(),
+  })
+);
+
 // Security headers
 app.use(
   helmet({
@@ -126,10 +173,30 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         // Scripts: self + CDNs for Solana Kit (esm.sh) and DOMPurify (with SRI validation)
-        scriptSrc: ["'self'", 'https://unpkg.com', 'https://cdnjs.cloudflare.com', 'https://esm.sh'],
-        // Allow inline event handlers (onclick etc) for games.html
-        scriptSrcAttr: ["'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        scriptSrc: [
+          "'self'",
+          'https://unpkg.com',
+          'https://cdnjs.cloudflare.com',
+          'https://esm.sh',
+        ],
+        // Inline event handlers (onclick etc) removed from all production pages
+        // Remaining onclick in demo/lab are gated behind !isProduction check
+        scriptSrcAttr: ["'none'"],
+        // Disable bare style-src default — split into elem + attr below
+        styleSrc: null,
+        // Style tags: self + Google Fonts + FOUC anti-flash hashes (no unsafe-inline)
+        // Phase 2 will harden styleSrcAttr (inline style="" attributes)
+        styleSrcElem: [
+          "'self'",
+          'https://fonts.googleapis.com',
+          // FOUC anti-flash hashes — one per unique background color
+          "'sha256-g3zsE0Awsc4wfprhpe8YVZsqibeu2d4QukNDGbZkTHU='", // burns/forecast/ignition: html,body{background:#000!important}
+          "'sha256-UHB+MUGZC1RRhZqst+ys56opHmhRowJfMs9fGojrpJc='", // holdex: html,body{background:#0a0a0f!important}
+          "'sha256-VbU/423YJlS9/qfLYSz/0kkQJXKiizihJm3+NnDKEb4='", // staking: html,body{background:#06080f!important}
+          "'sha256-0lYMvYgiXsuAzDHBwjoj5n8jQ+Cv8pZbw11OmC2nhqc='", // build/games: html{background:#020812!important}body{background:transparent!important}
+          "'sha256-Eq449Zo+s3RjCHExwk5rAbkCNOYez04lqw5SYD5QKh4='", // index: html,body{background:#0d0906!important}
+        ],
+        styleSrcAttr: ["'unsafe-inline'"], // Phase 1: style="" attributes still allowed
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
@@ -139,9 +206,9 @@ app.use(
           ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
-          'https://alonisthe.dev',              // Proxy: burns, holdex, ignition
-          'https://asdforecast.onrender.com',   // Forecast (direct, not proxied yet)
-          'https://asdf-api.onrender.com',      // Central API gateway
+          'https://alonisthe.dev', // Proxy: burns, holdex, ignition
+          'https://asdforecast.onrender.com', // Forecast (direct, not proxied yet)
+          'https://asdf-api.onrender.com', // Central API gateway
           'https://lock-verifier.onrender.com', // Staking / TVU (direct)
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
@@ -263,6 +330,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Prometheus metrics endpoint — internal monitoring
+app.get('/metrics', async (req, res) => {
+  // In production, require API key to prevent scraping
+  if (isProduction && req.headers['x-metrics-key'] !== process.env.METRICS_API_KEY) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
+
 // ============================================
 // REDIS PROXY API
 // ============================================
@@ -277,15 +354,15 @@ function getRedisClient() {
       maxRetriesPerRequest: 3,
       retryDelayOnFailover: 100,
       enableReadyCheck: true,
-      lazyConnect: true
+      lazyConnect: true,
     });
 
-    redisClient.on('error', (err) => {
-      console.error('[Redis] Connection error:', err.message);
+    redisClient.on('error', err => {
+      logger.error({ err: err.message }, 'Redis connection error');
     });
 
     redisClient.on('connect', () => {
-      console.log('[Redis] Connected');
+      logger.info('Redis connected');
     });
   }
   return redisClient;
@@ -293,13 +370,57 @@ function getRedisClient() {
 
 // Allowed Redis methods (whitelist for security)
 const REDIS_ALLOWED_METHODS = [
-  'GET', 'SET', 'DEL', 'INCR', 'INCRBY', 'DECR', 'DECRBY',
-  'MGET', 'MSET', 'SETNX', 'SETEX', 'TTL', 'EXPIRE', 'EXISTS',
-  'HGET', 'HSET', 'HDEL', 'HGETALL', 'HMGET', 'HMSET', 'HINCRBY', 'HEXISTS', 'HKEYS', 'HVALS', 'HLEN',
-  'SADD', 'SREM', 'SMEMBERS', 'SISMEMBER', 'SCARD', 'SUNION', 'SINTER',
-  'LPUSH', 'RPUSH', 'LPOP', 'RPOP', 'LRANGE', 'LLEN', 'LINDEX',
-  'ZADD', 'ZREM', 'ZSCORE', 'ZRANK', 'ZREVRANK', 'ZRANGE', 'ZREVRANGE', 'ZRANGEBYSCORE', 'ZCOUNT', 'ZCARD',
-  'TYPE', 'SCAN'  // KEYS removed: O(N) blocking operation, use SCAN instead
+  'GET',
+  'SET',
+  'DEL',
+  'INCR',
+  'INCRBY',
+  'DECR',
+  'DECRBY',
+  'MGET',
+  'MSET',
+  'SETNX',
+  'SETEX',
+  'TTL',
+  'EXPIRE',
+  'EXISTS',
+  'HGET',
+  'HSET',
+  'HDEL',
+  'HGETALL',
+  'HMGET',
+  'HMSET',
+  'HINCRBY',
+  'HEXISTS',
+  'HKEYS',
+  'HVALS',
+  'HLEN',
+  'SADD',
+  'SREM',
+  'SMEMBERS',
+  'SISMEMBER',
+  'SCARD',
+  'SUNION',
+  'SINTER',
+  'LPUSH',
+  'RPUSH',
+  'LPOP',
+  'RPOP',
+  'LRANGE',
+  'LLEN',
+  'LINDEX',
+  'ZADD',
+  'ZREM',
+  'ZSCORE',
+  'ZRANK',
+  'ZREVRANK',
+  'ZRANGE',
+  'ZREVRANGE',
+  'ZRANGEBYSCORE',
+  'ZCOUNT',
+  'ZCARD',
+  'TYPE',
+  'SCAN', // KEYS removed: O(N) blocking operation, use SCAN instead
 ];
 
 // Redis proxy endpoint - INTERNAL USE ONLY
@@ -310,14 +431,13 @@ app.post('/api/redis', async (req, res) => {
   const expectedKey = process.env.REDIS_API_KEY;
 
   if (!expectedKey) {
-    // If no key configured, disable endpoint entirely in production
-    if (isProduction) {
-      return res.status(403).json({ error: 'Redis API disabled in production without REDIS_API_KEY' });
-    }
-    console.warn('[Redis API] No REDIS_API_KEY configured - endpoint unprotected in dev mode');
+    return res.status(403).json({ error: 'Redis API disabled without REDIS_API_KEY' });
   } else {
     // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
-    const a = crypto.createHash('sha256').update(String(apiKey || '')).digest();
+    const a = crypto
+      .createHash('sha256')
+      .update(String(apiKey || ''))
+      .digest();
     const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
     if (!crypto.timingSafeEqual(a, b)) {
       return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
@@ -329,7 +449,7 @@ app.post('/api/redis', async (req, res) => {
   if (!client) {
     return res.status(503).json({
       error: 'Redis not configured',
-      message: 'Set REDIS_URL environment variable'
+      message: 'Set REDIS_URL environment variable',
     });
   }
 
@@ -350,9 +470,8 @@ app.post('/api/redis', async (req, res) => {
     // Execute Redis command
     const result = await client[upperMethod.toLowerCase()](...params);
     res.json(result);
-
   } catch (error) {
-    console.error('[Redis API] Error:', error.message);
+    logger.error({ err: error.message }, 'Redis API error');
     res.status(500).json({
       error: 'Redis operation failed',
       ...(isProduction ? {} : { message: error.message }),
@@ -386,7 +505,7 @@ async function serveGamesPage(req, res) {
       res.set('X-SSR', 'true'); // Debug header
       return res.send(html);
     } catch (err) {
-      console.error('[SSR] Games page error:', err.message);
+      logger.error({ err: err.message }, 'SSR games page error');
       // Fall through to static file
     }
   }
@@ -478,32 +597,32 @@ app.get('*', (req, res) => {
 // Global error handler — prevent stack trace leakage
 app.use((err, req, res, next) => {
   const status = err.status || 500;
-  console.error('[Server] Unhandled error:', err.message);
+  logger.error({ err: err.message, status }, 'Unhandled server error');
   res.status(status).json({
     error: isProduction ? 'Internal server error' : err.message,
   });
 });
 
 // Start server unless imported for testing
-const server = require.main === module
-  ? app.listen(PORT, () => {
-      console.log(`ASDF Web running on port ${PORT}`);
-      console.log(`   http://localhost:${PORT}`);
-    })
-  : null;
+const server =
+  require.main === module
+    ? app.listen(PORT, () => {
+        logger.info({ port: PORT }, 'ASDF Web running');
+      })
+    : null;
 
-// Export for supertest
-module.exports = { app };
+// Export for supertest + shared logging
+module.exports = { app, logger };
 
 // Graceful shutdown — clean up Redis + close server
 function gracefulShutdown(signal) {
-  console.log(`[Server] ${signal} received, shutting down...`);
+  logger.info({ signal }, 'Graceful shutdown initiated');
   if (redisClient) {
     redisClient.quit().catch(() => {});
   }
   if (server) {
     server.close(() => {
-      console.log('[Server] HTTP server closed');
+      logger.info('HTTP server closed');
       process.exit(0);
     });
   } else {

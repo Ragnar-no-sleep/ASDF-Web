@@ -10,15 +10,15 @@
 
 import { BuildState } from '../state.js';
 import { DataAdapter } from '../data/adapter.js';
-import { PHI, GOLDEN_ANGLE, calculatePhiPositions, calculateFermatSpiral } from '../utils/phi.js';
+import { calculateFermatSpiral } from '../utils/phi.js';
 
 // Import 3D components
 import { FireParticles } from './effects/fire-particles.js';
 import { SnowParticles } from './effects/snow-particles.js';
 import { YggdrasilTree } from './objects/yggdrasil-tree.js';
-import { StoneIsland, StoneIslandFactory } from './objects/stone-island.js';
+import { StoneIsland } from './objects/stone-island.js';
 import { BurnCore } from './objects/burn-core.js';
-import { CameraController, CAMERA_STATES } from './camera/camera-controller.js';
+import { CameraController } from './camera/camera-controller.js';
 import { PostProcessing } from './effects/post-processing.js';
 import { PerformanceManager } from './performance.js';
 import { ProjectTreeScene } from './scenes/project-tree.js';
@@ -67,7 +67,7 @@ const THREE_CONFIG = {
 };
 
 // Status colors
-const STATUS_COLORS = {
+const _STATUS_COLORS = {
   live: 0x00ff88,
   building: 0xffaa00,
   planned: 0x8855cc,
@@ -95,7 +95,7 @@ let burnCore = null;
 let fireParticles = null;
 let snowParticles = null;
 let cameraController = null;
-let islands = new Map();
+const islands = new Map();
 
 // Scene management
 let projectTreeScene = null;
@@ -146,7 +146,7 @@ const ThreeRenderer = {
    * @param {HTMLElement} containerEl - Container element
    * @param {Object} options - Configuration options
    */
-  async init(containerEl, options = {}) {
+  async init(containerEl, _options = {}) {
     if (isInitialized) {
       console.warn('[ThreeRenderer] Already initialized');
       return;
@@ -190,7 +190,6 @@ const ThreeRenderer = {
           bloom: { strength: performanceSettings.bloom || 0.8 },
         });
         await postProcessing.init();
-        console.log('[ThreeRenderer] Post-processing enabled');
       } catch (error) {
         console.warn('[ThreeRenderer] Post-processing failed:', error);
         postProcessing = null;
@@ -204,8 +203,6 @@ const ThreeRenderer = {
     this.startLoop();
 
     isInitialized = true;
-    console.log('[ThreeRenderer] Initialized with immersive 3D');
-
     return this;
   },
 
@@ -356,7 +353,6 @@ const ThreeRenderer = {
       const projects = projectsData ? Object.values(projectsData) : [];
       if (projects.length > 0) {
         await this.createProjectIslands(projects);
-        console.log(`[ThreeRenderer] Created world with ${projects.length} project islands`);
       } else {
         console.warn('[ThreeRenderer] No projects to display');
       }
@@ -367,7 +363,6 @@ const ThreeRenderer = {
     // Initialize Project Tree Scene (L1 view)
     try {
       projectTreeScene = new ProjectTreeScene(THREE, scene);
-      console.log('[ThreeRenderer] ProjectTreeScene initialized');
     } catch (error) {
       console.warn('[ThreeRenderer] Failed to create ProjectTreeScene:', error.message);
     }
@@ -389,7 +384,7 @@ const ThreeRenderer = {
       const posData = positions[index];
 
       // Add vertical variation based on status
-      let yOffset = 0;
+      let yOffset;
       if (project.status === 'live') yOffset = 8;
       else if (project.status === 'building') yOffset = 3;
       else yOffset = -2;
@@ -545,8 +540,6 @@ const ThreeRenderer = {
    * @param {string} projectId
    */
   onIslandHover(projectId) {
-    console.log('[ThreeRenderer] Island hover:', projectId);
-
     // Unhover previous
     if (hoveredIsland) {
       hoveredIsland.setHovered(false);
@@ -584,7 +577,7 @@ const ThreeRenderer = {
    * Handle click
    * @param {MouseEvent} e
    */
-  onClick(e) {
+  onClick(_e) {
     // Ignore click if it was a drag
     if (isDragging) {
       isDragging = false;
@@ -647,8 +640,6 @@ const ThreeRenderer = {
    * @param {Object} project
    */
   async enterProjectTreeView(projectId, project) {
-    console.log('[ThreeRenderer] Entering PROJECT_TREE view for:', projectId);
-
     if (!projectTreeScene) {
       console.warn('[ThreeRenderer] ProjectTreeScene not initialized');
       return;
@@ -757,7 +748,6 @@ const ThreeRenderer = {
    * @returns {Object}
    */
   getScreenPosition(position) {
-    const { THREE } = this;
     const vector = position.clone();
     vector.project(camera);
 
@@ -826,7 +816,7 @@ const ThreeRenderer = {
    * @param {string} status
    */
   applyFilter(status) {
-    islands.forEach((island, id) => {
+    islands.forEach((island, _id) => {
       const project = island.project;
       const visible = status === 'all' || project?.status === status;
 
@@ -941,7 +931,6 @@ const ThreeRenderer = {
     };
 
     animate(performance.now());
-    console.log('[ThreeRenderer] Render loop started');
   },
 
   /**
@@ -950,8 +939,6 @@ const ThreeRenderer = {
    */
   onQualityChange(data) {
     const { newPreset, settings } = data;
-    console.log(`[ThreeRenderer] Quality changed to: ${newPreset}`);
-
     // Update post-processing
     if (postProcessing) {
       if (settings.postProcessing) {
@@ -985,7 +972,6 @@ const ThreeRenderer = {
    */
   pause() {
     isPaused = true;
-    console.log('[ThreeRenderer] Paused');
   },
 
   /**
@@ -994,7 +980,6 @@ const ThreeRenderer = {
   resume() {
     isPaused = false;
     clock.getDelta(); // Reset delta
-    console.log('[ThreeRenderer] Resumed');
   },
 
   /**
@@ -1096,8 +1081,6 @@ const ThreeRenderer = {
     isPaused = false;
     hoveredIsland = null;
     selectedIsland = null;
-
-    console.log('[ThreeRenderer] Disposed');
   },
 };
 

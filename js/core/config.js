@@ -35,21 +35,21 @@ const DEFAULTS = {
     baseUrl: '/api',
     timeout: 30000,
     retries: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   },
 
   // Audio Configuration
   audio: {
     enabled: true,
     volume: 0.3,
-    baseFrequency: 432
+    baseFrequency: 432,
   },
 
   // Game Configuration
   game: {
     maxScore: 999999,
     sessionTimeout: 300000, // 5 minutes
-    antiCheatEnabled: true
+    antiCheatEnabled: true,
   },
 
   // UI Configuration
@@ -57,14 +57,14 @@ const DEFAULTS = {
     theme: 'dark',
     animations: true,
     toastDuration: 3000,
-    modalAnimationDuration: 300
+    modalAnimationDuration: 300,
   },
 
   // Solana Configuration
   solana: {
     network: 'mainnet-beta',
     commitment: 'confirmed',
-    confirmTimeout: 60000
+    confirmTimeout: 60000,
   },
 
   // Timing Configuration (Fibonacci-based)
@@ -74,21 +74,21 @@ const DEFAULTS = {
     medium: 500, // Medium animation
     slow: 800, // Slow animation
     slower: 1300, // Slower animation
-    slowest: 2100 // Slowest animation
+    slowest: 2100, // Slowest animation
   },
 
   // Debug Configuration
   debug: {
     enabled: false,
     logLevel: 'warn', // 'debug', 'info', 'warn', 'error'
-    showEventBus: false
+    showEventBus: false,
   },
 
   // Feature Flags
   features: {
     audioFeedback: true,
     websocketReconnect: true,
-    offlineMode: false
+    offlineMode: false,
   },
 
   // Phi Constants (for calculations)
@@ -96,8 +96,8 @@ const DEFAULTS = {
     value: PHI,
     inverse: 1 / PHI, // 0.618...
     squared: PHI * PHI, // 2.618...
-    inverseSquared: 1 / (PHI * PHI) // 0.382...
-  }
+    inverseSquared: 1 / (PHI * PHI), // 0.382...
+  },
 };
 
 /**
@@ -117,7 +117,7 @@ function deepClone(obj) {
 
   const cloned = {};
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       cloned[key] = deepClone(obj[key]);
     }
   }
@@ -136,7 +136,7 @@ function deepMerge(target, source) {
   const output = deepClone(target);
 
   for (const key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
+    if (Object.hasOwn(source, key)) {
       const sourceValue = source[key];
       const targetValue = output[key];
 
@@ -318,6 +318,6 @@ if (typeof window !== 'undefined') {
     isFeatureEnabled,
     getTiming,
     getPhi,
-    DEFAULTS
+    DEFAULTS,
   };
 }

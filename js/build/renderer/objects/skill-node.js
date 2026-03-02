@@ -18,35 +18,35 @@ const SKILL_NODE_CONFIG = {
   // Geometry
   geometry: {
     radius: 0.8,
-    detail: 1  // Icosahedron detail level
+    detail: 1, // Icosahedron detail level
   },
   // State colors
   stateColors: {
     locked: 0x333344,
     available: 0x4488ff,
     inProgress: 0xffaa00,
-    completed: 0x00ff88
+    completed: 0x00ff88,
   },
   // Emissive intensities
   emissive: {
     locked: 0.1,
     available: 0.3,
     inProgress: 0.5,
-    completed: 0.6
+    completed: 0.6,
   },
   // Animation
   animation: {
     floatAmplitude: 0.15,
     floatSpeed: 1.5,
     pulseSpeed: 2.0,
-    hoverScale: 1.2
+    hoverScale: 1.2,
   },
   // Phi-spiral positioning
   spiral: {
-    centerRadius: 3,   // Distance from center to first node
-    maxRadius: 12,     // Maximum spiral radius
-    verticalSpread: 2  // Y-axis variation
-  }
+    centerRadius: 3, // Distance from center to first node
+    maxRadius: 12, // Maximum spiral radius
+    verticalSpread: 2, // Y-axis variation
+  },
 };
 
 // ============================================
@@ -57,7 +57,7 @@ const SKILL_STATES = {
   LOCKED: 'locked',
   AVAILABLE: 'available',
   IN_PROGRESS: 'inProgress',
-  COMPLETED: 'completed'
+  COMPLETED: 'completed',
 };
 
 // ============================================
@@ -82,7 +82,7 @@ class SkillNode {
     this.group.userData = {
       type: 'skillNode',
       skillId: skill.id,
-      skill: skill
+      skill: skill,
     };
 
     // References
@@ -136,7 +136,7 @@ class SkillNode {
       transparent: true,
       opacity: 0.9,
       shininess: 100,
-      flatShading: true
+      flatShading: true,
     });
 
     this.coreMesh = new THREE.Mesh(geo, material);
@@ -155,7 +155,7 @@ class SkillNode {
       color: this.options.stateColors[this.state],
       transparent: true,
       opacity: 0.25,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
 
     this.glowMesh = new THREE.Sprite(spriteMaterial);
@@ -175,7 +175,7 @@ class SkillNode {
       color: this.options.stateColors.inProgress,
       transparent: true,
       opacity: 0,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
     });
 
     this.ringMesh = new THREE.Mesh(ringGeo, ringMat);
@@ -359,7 +359,7 @@ function calculatePhiSpiralPositions(skills, config = {}) {
   const {
     centerRadius = SKILL_NODE_CONFIG.spiral.centerRadius,
     maxRadius = SKILL_NODE_CONFIG.spiral.maxRadius,
-    verticalSpread = SKILL_NODE_CONFIG.spiral.verticalSpread
+    verticalSpread = SKILL_NODE_CONFIG.spiral.verticalSpread,
   } = config;
 
   return skills.map((skill, i) => {
@@ -378,9 +378,9 @@ function calculatePhiSpiralPositions(skills, config = {}) {
       position: {
         x: Math.cos(theta) * r,
         y: y,
-        z: Math.sin(theta) * r
+        z: Math.sin(theta) * r,
       },
-      order: i
+      order: i,
     };
   });
 }
@@ -418,7 +418,7 @@ const SkillNodeFactory = {
     const node = new SkillNode(THREE, skill);
     node.init(position);
     return node;
-  }
+  },
 };
 
 // ============================================
@@ -430,6 +430,6 @@ export {
   SkillNodeFactory,
   SKILL_NODE_CONFIG,
   SKILL_STATES,
-  calculatePhiSpiralPositions
+  calculatePhiSpiralPositions,
 };
 export default SkillNodeFactory;

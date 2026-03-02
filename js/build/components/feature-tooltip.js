@@ -72,8 +72,6 @@ const FeatureTooltip = {
 
     // Subscribe to events
     this.bindEvents();
-
-    console.log('[FeatureTooltip] Initialized');
   },
 
   /**

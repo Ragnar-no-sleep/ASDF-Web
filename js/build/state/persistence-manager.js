@@ -55,7 +55,7 @@ const PersistenceManager = {
       let data;
       try {
         data = JSON.parse(saved);
-      } catch (parseError) {
+      } catch (_parseError) {
         console.warn('[PersistenceManager] Corrupted data, clearing');
         this.clear();
         return null;
@@ -63,7 +63,6 @@ const PersistenceManager = {
 
       // Version check
       if (!data || data.version !== this.version) {
-        console.log('[PersistenceManager] Version mismatch, migrating...');
         return this._migrate(data);
       }
 
@@ -136,8 +135,6 @@ const PersistenceManager = {
 
       // Save migrated data
       this.save(migrated);
-      console.log('[PersistenceManager] Migration complete');
-
       return migrated;
     } catch (e) {
       console.warn('[PersistenceManager] Migration failed:', e);
@@ -177,7 +174,7 @@ const PersistenceManager = {
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   },

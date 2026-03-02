@@ -42,7 +42,7 @@ describe('Core Module', () => {
         off(event, callback) {
           const listeners = this.listeners.get(event);
           if (!listeners) return;
-          const index = listeners.findIndex((l) => l.callback === callback);
+          const index = listeners.findIndex(l => l.callback === callback);
           if (index > -1) listeners.splice(index, 1);
         }
 
@@ -69,7 +69,7 @@ describe('Core Module', () => {
         }
 
         getHistory(event) {
-          if (event) return this.history.filter((e) => e.event === event);
+          if (event) return this.history.filter(e => e.event === event);
           return [...this.history];
         }
 
@@ -202,26 +202,26 @@ describe('Core Module', () => {
         name: 'Wallet Required',
         message: 'Please connect your wallet to continue.',
         action: 'connect',
-        severity: 'warning'
+        severity: 'warning',
       },
       UNKNOWN: {
         code: 'UNKNOWN',
         name: 'Unknown Error',
         message: 'Something went wrong.',
         action: 'retry',
-        severity: 'error'
-      }
+        severity: 'error',
+      },
     };
 
-    const getError = (code) => errors[code] || errors.UNKNOWN;
+    const getError = code => errors[code] || errors.UNKNOWN;
 
     const createError = (code, context = {}) => ({
       ...getError(code),
       context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
-    const isASDFError = (obj) => {
+    const isASDFError = obj => {
       if (!obj || typeof obj !== 'object') return false;
       return (
         typeof obj.code === 'string' &&
@@ -269,21 +269,17 @@ describe('Core Module', () => {
     const DEFAULTS = {
       api: { timeout: 30000, retries: 3 },
       audio: { enabled: true, volume: 0.3 },
-      phi: { value: PHI }
+      phi: { value: PHI },
     };
 
     let config;
 
-    const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+    const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
     const deepMerge = (target, source) => {
       const output = deepClone(target);
       for (const key in source) {
-        if (
-          source[key] &&
-          typeof source[key] === 'object' &&
-          !Array.isArray(source[key])
-        ) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           output[key] = deepMerge(output[key] || {}, source[key]);
         } else {
           output[key] = source[key];
@@ -441,7 +437,7 @@ describe('Core Module', () => {
         }
         emit(event, data) {
           const listeners = this.listeners.get(event) || [];
-          listeners.forEach((cb) => cb(data));
+          listeners.forEach(cb => cb(data));
         }
       };
 
@@ -449,8 +445,8 @@ describe('Core Module', () => {
       const errors = {
         WALLET_NOT_CONNECTED: {
           code: 'WALLET_NOT_CONNECTED',
-          message: 'Connect wallet'
-        }
+          message: 'Connect wallet',
+        },
       };
 
       const errorHandler = jest.fn();
@@ -462,7 +458,7 @@ describe('Core Module', () => {
 
     test('config and debug work together', () => {
       const config = { debug: { enabled: true } };
-      const getConfig = (path) => {
+      const getConfig = path => {
         const keys = path.split('.');
         let value = config;
         for (const key of keys) {
@@ -488,11 +484,11 @@ describe('EVENTS constants', () => {
     WALLET_DISCONNECTED: 'wallet:disconnected',
     GAME_START: 'game:start',
     GAME_END: 'game:end',
-    APP_READY: 'app:ready'
+    APP_READY: 'app:ready',
   };
 
   test('should have consistent naming convention', () => {
-    Object.values(EVENTS).forEach((event) => {
+    Object.values(EVENTS).forEach(event => {
       expect(event).toMatch(/^[a-z]+:[a-z:]+$/);
     });
   });

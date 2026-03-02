@@ -30,7 +30,9 @@ global.fetch = mockFetch;
 global.AbortController = class {
   constructor() {
     this.signal = { aborted: false };
-    this.abort = () => { this.signal.aborted = true; };
+    this.abort = () => {
+      this.signal.aborted = true;
+    };
   }
 };
 
@@ -70,7 +72,9 @@ describe('fetchWithRetry', () => {
     test('should not leak retry config into fetch options', async () => {
       mockFetch.mockResolvedValueOnce(okResponse());
       await fetchWithRetry('https://api.test/data', {
-        retries: 5, timeout: 3000, backoff: 100,
+        retries: 5,
+        timeout: 3000,
+        backoff: 100,
       });
       const callOpts = mockFetch.mock.calls[0][1];
       expect(callOpts.retries).toBeUndefined();
@@ -81,9 +85,7 @@ describe('fetchWithRetry', () => {
 
   describe('retry logic', () => {
     test('should retry on network error then succeed', async () => {
-      mockFetch
-        .mockRejectedValueOnce(new Error('network'))
-        .mockResolvedValueOnce(okResponse());
+      mockFetch.mockRejectedValueOnce(new Error('network')).mockResolvedValueOnce(okResponse());
 
       const res = await fetchWithRetry('https://api.test/data', { backoff: 1 });
       expect(res.ok).toBe(true);
@@ -91,9 +93,7 @@ describe('fetchWithRetry', () => {
     });
 
     test('should retry on HTTP error status', async () => {
-      mockFetch
-        .mockResolvedValueOnce(errResponse(503))
-        .mockResolvedValueOnce(okResponse());
+      mockFetch.mockResolvedValueOnce(errResponse(503)).mockResolvedValueOnce(okResponse());
 
       const res = await fetchWithRetry('https://api.test/data', { backoff: 1 });
       expect(res.ok).toBe(true);
@@ -134,9 +134,7 @@ describe('fetchWithRetry', () => {
     test('should default to 2 retries (3 total attempts)', async () => {
       mockFetch.mockResolvedValue(errResponse(500));
 
-      await expect(
-        fetchWithRetry('https://api.test/data', { backoff: 1 })
-      ).rejects.toThrow();
+      await expect(fetchWithRetry('https://api.test/data', { backoff: 1 })).rejects.toThrow();
       expect(mockFetch).toHaveBeenCalledTimes(3);
     });
 
@@ -148,9 +146,7 @@ describe('fetchWithRetry', () => {
 
   describe('AbortController', () => {
     test('should pass signal to every fetch call', async () => {
-      mockFetch
-        .mockRejectedValueOnce(new Error('timeout'))
-        .mockResolvedValueOnce(okResponse());
+      mockFetch.mockRejectedValueOnce(new Error('timeout')).mockResolvedValueOnce(okResponse());
 
       await fetchWithRetry('https://api.test/data', { backoff: 1 });
 
@@ -160,9 +156,7 @@ describe('fetchWithRetry', () => {
     });
 
     test('should create fresh AbortController per attempt', async () => {
-      mockFetch
-        .mockRejectedValueOnce(new Error('fail'))
-        .mockResolvedValueOnce(okResponse());
+      mockFetch.mockRejectedValueOnce(new Error('fail')).mockResolvedValueOnce(okResponse());
 
       await fetchWithRetry('https://api.test/data', { backoff: 1 });
 

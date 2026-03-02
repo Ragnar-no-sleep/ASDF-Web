@@ -219,7 +219,7 @@ test.describe('Cross-Page Consistency', () => {
 
       await page.setViewportSize({ width: 375, height: 667 });
 
-      let response = await page.goto(path, { timeout: 15000 });
+      const response = await page.goto(path, { timeout: 15000 });
 
       // Retry for rate limiting
       if (response?.status() === 429) {

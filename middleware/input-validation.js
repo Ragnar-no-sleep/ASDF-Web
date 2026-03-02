@@ -174,7 +174,7 @@ export function sanitizeString(str) {
 export function validateAndSanitize(schema) {
   return (req, res, next) => {
     try {
-      let body = req.body;
+      const body = req.body;
 
       // Recursively sanitize string values
       if (typeof body === 'object' && body !== null) {

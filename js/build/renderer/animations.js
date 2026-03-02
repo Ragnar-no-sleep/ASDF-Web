@@ -7,7 +7,6 @@
 
 'use strict';
 
-import { BuildState } from '../state.js';
 import { PHI, PHI_INVERSE, phiDelays } from '../utils/phi.js';
 
 // ============================================
@@ -83,8 +82,6 @@ async function loadGSAP() {
     script.onload = () => {
       gsap = window.gsap;
       isLoaded = true;
-      console.log('[Animations] GSAP loaded');
-
       // Try to load ScrollTrigger
       const scrollScript = document.createElement('script');
       scrollScript.src = 'https://unpkg.com/gsap@3.12.4/dist/ScrollTrigger.min.js';
@@ -175,11 +172,6 @@ const Animations = {
 
     // Check for reduced motion preference
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    console.log('[Animations] Initialized', {
-      gsap: !!gsap,
-      reducedMotion: this.reducedMotion,
-    });
   },
 
   /**
@@ -616,37 +608,7 @@ const Animations = {
   },
 };
 
-// ============================================
-// CSS KEYFRAMES INJECTION
-// ============================================
-
-// Inject fallback keyframes if needed
-const injectKeyframes = () => {
-  if (document.getElementById('anim-keyframes')) return;
-
-  const style = document.createElement('style');
-  style.id = 'anim-keyframes';
-  style.textContent = `
-    @keyframes burnPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    @keyframes particleFloat {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(5px, 10px); }
-    }
-  `;
-  document.head.appendChild(style);
-};
-
-// Inject on load
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectKeyframes);
-  } else {
-    injectKeyframes();
-  }
-}
+// CSS keyframes extracted to css/runtime-components.css
 
 // ============================================
 // EXPORTS

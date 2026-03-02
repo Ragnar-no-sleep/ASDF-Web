@@ -16,6 +16,7 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
+import { POLL_INTERVAL, DEBOUNCE } from './config/timing.js';
 
 const API_BASE = ASDF_ENDPOINTS.holdex;
 
@@ -295,7 +296,7 @@ function setupEventListeners() {
     });
   }
 
-  // Search — debounced 300ms
+  // Search — debounced
   const searchInput = document.getElementById('search-input');
   let searchTimeout;
   if (searchInput) {
@@ -306,7 +307,7 @@ function setupEventListeners() {
         const tokens = query.length >= 2 ? await searchTokens(query) : await fetchTokens();
         renderTokenList(tokens);
         updateSidebar(tokens);
-      }, 300);
+      }, DEBOUNCE.SEARCH);
     });
   }
 
@@ -315,9 +316,17 @@ function setupEventListeners() {
   if (modalClose) modalClose.addEventListener('click', closeTokenModal);
 
   const modal = document.getElementById('token-modal');
-  if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeTokenModal(); });
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        closeTokenModal();
+      }
+    });
+  }
 
-  PageLifecycle.registerListener(document, 'keydown', e => { if (e.key === 'Escape') closeTokenModal(); });
+  PageLifecycle.registerListener(document, 'keydown', e => {
+    if (e.key === 'Escape') closeTokenModal();
+  });
 }
 
 // ============================================
@@ -340,7 +349,7 @@ async function init() {
       state.tokens = tokens;
       renderTokenList(tokens);
       updateSidebar(tokens);
-    }, 60000)
+    }, POLL_INTERVAL.SLOW)
   );
 }
 

@@ -50,7 +50,6 @@ const GameShared = {
     }
 
     this.initialized = true;
-    console.log('[GameShared] Initialized');
   },
 
   /**

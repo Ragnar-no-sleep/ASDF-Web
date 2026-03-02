@@ -14,13 +14,11 @@ import { GitHubApiService } from '../services/github-api.js';
 import { sanitizeText, escapeHtml } from '../utils/security.js';
 import {
   $,
-  $$,
   addClass,
   removeClass,
   on,
   off,
   createElement,
-  setStyles,
   waitForTransition,
 } from '../utils/dom.js';
 
@@ -28,7 +26,7 @@ import {
 // PANEL CONFIGURATION
 // ============================================
 
-const PANEL_CONFIG = {
+const _PANEL_CONFIG = {
   width: '400px',
   maxWidth: '90vw',
   animationDuration: 300,
@@ -57,12 +55,10 @@ const ProjectPanelComponent = {
     this.bindEvents();
 
     // Subscribe to project selection events
-    BuildState.subscribe(EVENTS.TREE_NODE_CLICK, data => {
+    BuildState.subscribe(EVENTS.TREE_NODE_CLICK, _data => {
       // Panel opens via explicit call, not auto on tree click
       // This allows the modal system to work alongside
     });
-
-    console.log('[ProjectPanelComponent] Initialized');
   },
 
   /**
@@ -323,8 +319,6 @@ const ProjectPanelComponent = {
     const progressText = $('.progress-percentage', panelElement);
     const starsCount = $('.stars-count', panelElement);
     const issuesCount = $('.issues-count', panelElement);
-    const contributorsCount = $('.contributors-count', panelElement);
-
     if (progressFill) {
       progressFill.style.width = `${completion}%`;
       // Color based on completion

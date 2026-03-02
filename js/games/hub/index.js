@@ -44,8 +44,6 @@ const Hub = {
   init() {
     if (this.initialized) return;
 
-    console.log('[Hub] Initializing...');
-
     // Cache section elements
     this.cacheSections();
 
@@ -70,8 +68,14 @@ const Hub = {
     // Listen for hash changes
     window.addEventListener('hashchange', () => this.handleHashChange());
 
+    // Subscribe to GameEvents notifications
+    if (typeof GameEvents !== 'undefined') {
+      GameEvents.on('notify', ({ msg }) => {
+        if (window.showNotice) window.showNotice(msg);
+      });
+    }
+
     this.initialized = true;
-    console.log('[Hub] Initialized');
   },
 
   /**
@@ -146,8 +150,6 @@ const Hub = {
       console.warn('[Hub] Unknown view:', view);
       return;
     }
-
-    console.log('[Hub] Navigating to:', view);
 
     // Hide all sections
     this.hideAllSections();

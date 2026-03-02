@@ -123,7 +123,7 @@ const ShopSync = {
         }
         url = endpoint;
       } catch (e) {
-        throw new Error('Invalid endpoint URL');
+        throw new Error('Invalid endpoint URL', { cause: e });
       }
     } else {
       url = `${API_V2}${endpoint}`;
@@ -412,8 +412,6 @@ const ShopSync = {
       state.lastSync = Date.now();
       state.saveToLocal();
       state.emit('sync-complete');
-
-      console.log('[ShopSync] Full sync complete');
     } catch (error) {
       console.error('[ShopSync] Sync failed:', error);
       state.setError(error.message);

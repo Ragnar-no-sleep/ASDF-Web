@@ -57,8 +57,6 @@ const ShopV2 = {
     // Merge options
     Object.assign(this.config, options);
 
-    console.log('[ShopV2] Initializing...');
-
     try {
       // Get module references
       this.state = window.ShopStateV2;
@@ -114,8 +112,10 @@ const ShopV2 = {
       // Setup event listeners
       this.setupEventListeners();
 
+      // Cleanup on page unload
+      window.addEventListener('beforeunload', () => this.destroy());
+
       this.initialized = true;
-      console.log('[ShopV2] Initialized successfully');
 
       // Emit ready event
       this.state.emit('shop-ready');
@@ -185,8 +185,6 @@ const ShopV2 = {
       if (this.collections && this.state.collections.length > 0) {
         this.collections.init(this.state.collections, this.state.inventory);
       }
-
-      console.log('[ShopV2] Sync complete, data enriched');
     } catch (error) {
       console.error('[ShopV2] Sync failed:', error);
     }
@@ -566,7 +564,6 @@ const ShopV2 = {
     }
 
     this.initialized = false;
-    console.log('[ShopV2] Destroyed');
   },
 };
 

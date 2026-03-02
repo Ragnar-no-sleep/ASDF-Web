@@ -43,8 +43,6 @@
         }
       });
     });
-
-    console.log('[ArcadeHub] Ready');
   }
 
   init();

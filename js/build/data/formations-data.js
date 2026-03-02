@@ -27,8 +27,8 @@ export const TRACKS = {
       'dev-token-mastery',
       'dev-anchor-deep',
       'dev-helius-integration',
-      'dev-security-audit'
-    ]
+      'dev-security-audit',
+    ],
   },
   gaming: {
     id: 'gaming',
@@ -43,8 +43,8 @@ export const TRACKS = {
       'gaming-canvas',
       'gaming-mechanics',
       'gaming-web3',
-      'gaming-tokenomics'
-    ]
+      'gaming-tokenomics',
+    ],
   },
   content: {
     id: 'content',
@@ -65,9 +65,9 @@ export const TRACKS = {
       'growth-analytics',
       'growth-viral-loops',
       'growth-community',
-      'growth-tokenomics'
-    ]
-  }
+      'growth-tokenomics',
+    ],
+  },
 };
 
 // ============================================
@@ -89,8 +89,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'HTML/CSS Crash Course', duration: '2h' },
       { type: 'article', title: 'JavaScript Essentials', duration: '45min' },
-      { type: 'project', title: 'Build a Token Dashboard', duration: '3h' }
-    ]
+      { type: 'project', title: 'Build a Token Dashboard', duration: '3h' },
+    ],
   },
   'dev-solana-basics': {
     id: 'dev-solana-basics',
@@ -105,8 +105,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'Solana Architecture Deep Dive', duration: '3h' },
       { type: 'article', title: 'Understanding Accounts', duration: '1h' },
-      { type: 'project', title: 'Connect Wallet & Read Data', duration: '4h' }
-    ]
+      { type: 'project', title: 'Connect Wallet & Read Data', duration: '4h' },
+    ],
   },
   'dev-token-mastery': {
     id: 'dev-token-mastery',
@@ -121,8 +121,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'SPL Token Program Explained', duration: '2h' },
       { type: 'article', title: 'Token-2022 Features', duration: '1h' },
-      { type: 'project', title: 'Build a Token Launcher', duration: '6h' }
-    ]
+      { type: 'project', title: 'Build a Token Launcher', duration: '6h' },
+    ],
   },
   'dev-anchor-deep': {
     id: 'dev-anchor-deep',
@@ -137,8 +137,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'Anchor Framework Masterclass', duration: '5h' },
       { type: 'article', title: 'Testing Anchor Programs', duration: '1.5h' },
-      { type: 'project', title: 'Build a Staking Program', duration: '8h' }
-    ]
+      { type: 'project', title: 'Build a Staking Program', duration: '8h' },
+    ],
   },
   'dev-helius-integration': {
     id: 'dev-helius-integration',
@@ -153,8 +153,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'Helius RPC Features', duration: '2h' },
       { type: 'article', title: 'Setting Up Webhooks', duration: '45min' },
-      { type: 'project', title: 'Real-time Transaction Monitor', duration: '5h' }
-    ]
+      { type: 'project', title: 'Real-time Transaction Monitor', duration: '5h' },
+    ],
   },
   'dev-security-audit': {
     id: 'dev-security-audit',
@@ -169,8 +169,8 @@ export const MODULES = {
     resources: [
       { type: 'video', title: 'Common Solana Vulnerabilities', duration: '3h' },
       { type: 'article', title: 'Security Checklist', duration: '1h' },
-      { type: 'project', title: 'Audit a Sample Program', duration: '4h' }
-    ]
+      { type: 'project', title: 'Audit a Sample Program', duration: '4h' },
+    ],
   },
 
   // Growth Modules (merged into Content track as of 2026-01-21)
@@ -186,8 +186,8 @@ export const MODULES = {
     prerequisites: ['content-fundamentals'],
     resources: [
       { type: 'video', title: 'Growth Mindset', duration: '1h' },
-      { type: 'article', title: 'Metrics That Matter', duration: '30min' }
-    ]
+      { type: 'article', title: 'Metrics That Matter', duration: '30min' },
+    ],
   },
   'growth-analytics': {
     id: 'growth-analytics',
@@ -201,8 +201,8 @@ export const MODULES = {
     prerequisites: ['growth-fundamentals'],
     resources: [
       { type: 'video', title: 'Setting Up Analytics', duration: '2h' },
-      { type: 'project', title: 'Build a Metrics Dashboard', duration: '4h' }
-    ]
+      { type: 'project', title: 'Build a Metrics Dashboard', duration: '4h' },
+    ],
   },
   'growth-viral-loops': {
     id: 'growth-viral-loops',
@@ -216,8 +216,8 @@ export const MODULES = {
     prerequisites: ['growth-analytics'],
     resources: [
       { type: 'video', title: 'Viral Loop Design', duration: '2h' },
-      { type: 'article', title: 'Case Studies', duration: '1h' }
-    ]
+      { type: 'article', title: 'Case Studies', duration: '1h' },
+    ],
   },
   'growth-community': {
     id: 'growth-community',
@@ -231,8 +231,8 @@ export const MODULES = {
     prerequisites: ['growth-fundamentals'],
     resources: [
       { type: 'video', title: 'Discord & Twitter Strategy', duration: '2h' },
-      { type: 'article', title: 'Community Playbook', duration: '45min' }
-    ]
+      { type: 'article', title: 'Community Playbook', duration: '45min' },
+    ],
   },
   'growth-tokenomics': {
     id: 'growth-tokenomics',
@@ -246,8 +246,8 @@ export const MODULES = {
     prerequisites: ['growth-viral-loops'],
     resources: [
       { type: 'video', title: 'Token Incentive Design', duration: '2h' },
-      { type: 'project', title: 'Design a Token Model', duration: '3h' }
-    ]
+      { type: 'project', title: 'Design a Token Model', duration: '3h' },
+    ],
   },
 
   // Gaming Track
@@ -263,8 +263,8 @@ export const MODULES = {
     prerequisites: [],
     resources: [
       { type: 'video', title: 'Game Design Fundamentals', duration: '2h' },
-      { type: 'article', title: 'Player Motivation', duration: '30min' }
-    ]
+      { type: 'article', title: 'Player Motivation', duration: '30min' },
+    ],
   },
   'gaming-canvas': {
     id: 'gaming-canvas',
@@ -278,8 +278,8 @@ export const MODULES = {
     prerequisites: ['gaming-fundamentals'],
     resources: [
       { type: 'video', title: 'Canvas API Deep Dive', duration: '3h' },
-      { type: 'project', title: 'Build Snake Game', duration: '4h' }
-    ]
+      { type: 'project', title: 'Build Snake Game', duration: '4h' },
+    ],
   },
   'gaming-mechanics': {
     id: 'gaming-mechanics',
@@ -293,8 +293,8 @@ export const MODULES = {
     prerequisites: ['gaming-canvas'],
     resources: [
       { type: 'video', title: 'Physics for Games', duration: '2h' },
-      { type: 'project', title: 'Build Platformer', duration: '6h' }
-    ]
+      { type: 'project', title: 'Build Platformer', duration: '6h' },
+    ],
   },
   'gaming-web3': {
     id: 'gaming-web3',
@@ -308,8 +308,8 @@ export const MODULES = {
     prerequisites: ['gaming-mechanics'],
     resources: [
       { type: 'video', title: 'Web3 Gaming Patterns', duration: '3h' },
-      { type: 'project', title: 'Add NFT Rewards', duration: '5h' }
-    ]
+      { type: 'project', title: 'Add NFT Rewards', duration: '5h' },
+    ],
   },
   'gaming-tokenomics': {
     id: 'gaming-tokenomics',
@@ -323,8 +323,8 @@ export const MODULES = {
     prerequisites: ['gaming-web3'],
     resources: [
       { type: 'video', title: 'Game Economy Design', duration: '2h' },
-      { type: 'project', title: 'Design Token Economy', duration: '4h' }
-    ]
+      { type: 'project', title: 'Design Token Economy', duration: '4h' },
+    ],
   },
 
   // Content Track
@@ -340,8 +340,8 @@ export const MODULES = {
     prerequisites: [],
     resources: [
       { type: 'video', title: 'Content Strategy 101', duration: '1h' },
-      { type: 'article', title: 'Finding Your Voice', duration: '30min' }
-    ]
+      { type: 'article', title: 'Finding Your Voice', duration: '30min' },
+    ],
   },
   'content-storytelling': {
     id: 'content-storytelling',
@@ -355,8 +355,8 @@ export const MODULES = {
     prerequisites: ['content-fundamentals'],
     resources: [
       { type: 'video', title: 'Crypto Storytelling', duration: '2h' },
-      { type: 'project', title: 'Write Project Story', duration: '3h' }
-    ]
+      { type: 'project', title: 'Write Project Story', duration: '3h' },
+    ],
   },
   'content-video': {
     id: 'content-video',
@@ -370,8 +370,8 @@ export const MODULES = {
     prerequisites: ['content-storytelling'],
     resources: [
       { type: 'video', title: 'Video Editing Basics', duration: '3h' },
-      { type: 'project', title: 'Create Explainer Video', duration: '5h' }
-    ]
+      { type: 'project', title: 'Create Explainer Video', duration: '5h' },
+    ],
   },
   'content-community': {
     id: 'content-community',
@@ -385,9 +385,9 @@ export const MODULES = {
     prerequisites: ['content-fundamentals'],
     resources: [
       { type: 'video', title: 'Community Engagement', duration: '1.5h' },
-      { type: 'article', title: 'Content Calendar', duration: '30min' }
-    ]
-  }
+      { type: 'article', title: 'Content Calendar', duration: '30min' },
+    ],
+  },
 };
 
 // ============================================
@@ -451,9 +451,7 @@ export function getNextModule(trackId, completedModules = []) {
     if (completedModules.includes(module.id)) continue;
 
     // Check if prerequisites are met
-    const prereqsMet = module.prerequisites.every(prereq =>
-      completedModules.includes(prereq)
-    );
+    const prereqsMet = module.prerequisites.every(prereq => completedModules.includes(prereq));
 
     if (prereqsMet) {
       return module;
@@ -474,5 +472,5 @@ export default {
   getModule,
   getTrackModules,
   calculateTrackProgress,
-  getNextModule
+  getNextModule,
 };

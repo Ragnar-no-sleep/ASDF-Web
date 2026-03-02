@@ -94,7 +94,7 @@ class LearnBuildSystem {
         questManager.init(userId),
         moduleManager.init(userId),
         xpManager.init(userId),
-        badgeManager.init(userId)
+        badgeManager.init(userId),
       ]);
 
       // Register default badge definitions
@@ -125,21 +125,20 @@ class LearnBuildSystem {
       eventBus.emit(EVENTS.DATA_LOADED, {
         type: 'learn-build',
         userId,
-        duration
+        duration,
       });
 
       return {
         success: true,
         userId,
         duration,
-        profile: this.getProfile()
+        profile: this.getProfile(),
       };
-
     } catch (error) {
       log.warn(`Initialization failed: ${error.message}`);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -162,13 +161,13 @@ class LearnBuildSystem {
       quests: questProgress,
       badges: {
         ...badgeStats,
-        showcase
+        showcase,
       },
       tracks: {
         dev: moduleManager.getTrackProgress('dev'),
         gaming: moduleManager.getTrackProgress('gaming'),
-        content: moduleManager.getTrackProgress('content')
-      }
+        content: moduleManager.getTrackProgress('content'),
+      },
     };
   }
 
@@ -189,8 +188,8 @@ class LearnBuildSystem {
       dailyProgress: {
         xpToday: profile.xp?.todayXP || 0,
         dailyLimit: 5000,
-        streak: profile.xp?.streak || 0
-      }
+        streak: profile.xp?.streak || 0,
+      },
     };
   }
 
@@ -275,8 +274,8 @@ class LearnBuildSystem {
       trackProgress: {
         dev: moduleManager.getTrackProgress('dev')?.percentage || 0,
         gaming: moduleManager.getTrackProgress('gaming')?.percentage || 0,
-        content: moduleManager.getTrackProgress('content')?.percentage || 0
-      }
+        content: moduleManager.getTrackProgress('content')?.percentage || 0,
+      },
     };
   }
 
@@ -298,7 +297,10 @@ class LearnBuildSystem {
 
     questManager.definitions.forEach((def, questId) => {
       const status = questManager.getQuestStatus(questId);
-      if (status && (status.state === QUEST_STATES.ACTIVE || status.state === QUEST_STATES.PENDING)) {
+      if (
+        status &&
+        (status.state === QUEST_STATES.ACTIVE || status.state === QUEST_STATES.PENDING)
+      ) {
         active.push(status);
       }
     });
@@ -321,7 +323,7 @@ class LearnBuildSystem {
         name: `Level ${profile.level + 1}`,
         current: profile.xpInLevel,
         target: profile.xpForLevel,
-        progress: profile.progress
+        progress: profile.progress,
       });
 
       // Next streak milestone
@@ -333,7 +335,7 @@ class LearnBuildSystem {
           name: `${nextStreak}-Day Streak`,
           current: profile.streak,
           target: nextStreak,
-          progress: Math.round((profile.streak / nextStreak) * 100)
+          progress: Math.round((profile.streak / nextStreak) * 100),
         });
       }
     }
@@ -360,7 +362,7 @@ class LearnBuildSystem {
         current: closestBadge.current,
         target: closestBadge.target,
         progress: closestBadge.progress,
-        icon: closestBadge.icon
+        icon: closestBadge.icon,
       });
     }
 
@@ -390,8 +392,8 @@ class LearnBuildSystem {
       trackProgress: {
         dev: moduleManager.getTrackProgress('dev')?.percentage || 0,
         gaming: moduleManager.getTrackProgress('gaming')?.percentage || 0,
-        content: moduleManager.getTrackProgress('content')?.percentage || 0
-      }
+        content: moduleManager.getTrackProgress('content')?.percentage || 0,
+      },
     };
   }
 }
@@ -434,7 +436,7 @@ export {
   // Core
   sync,
   eventBus,
-  EVENTS
+  EVENTS,
 };
 
 // ============================================

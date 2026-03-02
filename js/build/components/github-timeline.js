@@ -9,7 +9,7 @@
 
 import { BuildState } from '../state.js';
 import { GitHubApiService } from '../services/github-api.js';
-import { $, $$, addClass, removeClass, on, safeInnerHTML } from '../utils/dom.js';
+import { $, $$, on, safeInnerHTML } from '../utils/dom.js';
 import { sanitizeText } from '../utils/security.js';
 
 // ============================================
@@ -73,8 +73,6 @@ const GitHubTimeline = {
 
     // Bind events
     this.bindEvents();
-
-    console.log('[GitHubTimeline] Initialized');
   },
 
   /**

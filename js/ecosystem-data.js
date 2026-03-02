@@ -2,7 +2,7 @@
 // Source: scripts/scan-ecosystem.cjs  (SOLID v3)
 // Run: npm run scan
 // Generated: 2026-02-24T13:08:11.042Z
-/* eslint-disable */
+
 window.ECOSYSTEM_DATA = [
   {
     name: 'build.html',

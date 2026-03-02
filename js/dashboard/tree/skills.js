@@ -7,7 +7,7 @@
 'use strict';
 
 import * as THREE from 'three';
-import { SKILLS, GOLDEN_ANGLE, PHI } from '../config.js';
+import { SKILLS } from '../config.js';
 
 /**
  * Nordic rune color palette - fire/ice mystical
@@ -160,7 +160,7 @@ export const SkillNodes = {
   /**
    * Create a glowing orb skill node
    */
-  createHolographicNode(skill, index) {
+  createHolographicNode(skill) {
     const group = new THREE.Group();
 
     // Size based on difficulty
@@ -433,7 +433,7 @@ export const SkillNodes = {
   /**
    * Update (call each frame)
    */
-  update(delta, camera) {
+  update(delta) {
     if (!this.isVisible && !this.animating) return;
 
     this.time += delta;
@@ -444,7 +444,7 @@ export const SkillNodes = {
 
       if (this.showAnimation) {
         // Showing - scale up with stagger
-        for (const [skillId, data] of this.nodes) {
+        for (const [_skillId, data] of this.nodes) {
           const delay = data.index * 0.08;
           const t = Math.max(0, Math.min(1, this.animationProgress - delay));
           const eased = this.easeOutBack(t);
@@ -452,7 +452,7 @@ export const SkillNodes = {
         }
 
         // Fade in rings
-        this.rings.forEach((ring, i) => {
+        this.rings.forEach(ring => {
           const t = Math.max(0, Math.min(1, this.animationProgress - 0.2));
           if (ring.material) {
             ring.material.opacity = t * (ring.material.userData?.baseOpacity || 0.3);
@@ -474,7 +474,7 @@ export const SkillNodes = {
         const t = Math.min(1, this.animationProgress);
         const scale = 1 - this.easeInBack(t);
 
-        for (const [skillId, data] of this.nodes) {
+        for (const [_skillId, data] of this.nodes) {
           data.mesh.scale.setScalar(Math.max(0.01, scale));
         }
 
@@ -498,7 +498,7 @@ export const SkillNodes = {
     }
 
     // Animate nodes
-    for (const [skillId, data] of this.nodes) {
+    for (const [_skillId, data] of this.nodes) {
       const mesh = data.mesh;
 
       // Gentle rotation
@@ -537,7 +537,7 @@ export const SkillNodes = {
 
     // Get all core meshes for intersection
     const meshes = [];
-    for (const [skillId, data] of this.nodes) {
+    for (const [_skillId, data] of this.nodes) {
       if (data.mesh.userData.core) {
         meshes.push(data.mesh.userData.core);
         data.mesh.userData.core.userData.parentGroup = data.mesh;
@@ -645,7 +645,7 @@ export const SkillNodes = {
    */
   on(event, callback) {
     const key = `on${event.charAt(0).toUpperCase() + event.slice(1)}`;
-    if (this.callbacks.hasOwnProperty(key)) {
+    if (Object.hasOwn(this.callbacks, key)) {
       this.callbacks[key] = callback;
     }
   },

@@ -63,8 +63,6 @@ const RendererFactory = {
    * @returns {Promise<Object>} The initialized renderer
    */
   async init(container, options = {}) {
-    console.log('[RendererFactory] Detecting capabilities...');
-
     // Detect all capabilities
     await this.detectCapabilities();
 
@@ -72,12 +70,10 @@ const RendererFactory = {
     const useThree = this.shouldUseThree(options);
 
     if (useThree) {
-      console.log('[RendererFactory] Using Three.js renderer');
       this.type = 'three';
       const { ThreeRenderer } = await import('./three-renderer.js');
       this.current = ThreeRenderer;
     } else {
-      console.log('[RendererFactory] Using SVG renderer (fallback)');
       this.type = 'svg';
       const { SVGRenderer } = await import('./svg-renderer.js');
       this.current = SVGRenderer;
@@ -85,7 +81,6 @@ const RendererFactory = {
       // This prevents persisting fallback as a "preference"
       const savedPref = localStorage.getItem('asdf-renderer-preference');
       if (savedPref === 'svg') {
-        console.log('[RendererFactory] Clearing stale SVG preference');
         localStorage.removeItem('asdf-renderer-preference');
       }
     }
@@ -147,8 +142,6 @@ const RendererFactory = {
     // Check WebGL support
     this.capabilities.webgl = this.detectWebGL(1);
     this.capabilities.webgl2 = this.detectWebGL(2);
-
-    console.log('[RendererFactory] Capabilities:', this.capabilities);
   },
 
   /**
@@ -201,12 +194,6 @@ const RendererFactory = {
     const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
-    console.log(
-      '[RendererFactory] Mobile UA check:',
-      isMobileUA,
-      'UA:',
-      navigator.userAgent.substring(0, 50)
-    );
     return isMobileUA;
   },
 
@@ -221,7 +208,7 @@ const RendererFactory = {
         const battery = await navigator.getBattery();
         // Consider low power if battery < 20% and not charging
         return battery.level < 0.2 && !battery.charging;
-      } catch (e) {
+      } catch (_e) {
         // Battery API not supported or blocked
       }
     }
@@ -245,12 +232,8 @@ const RendererFactory = {
    * @returns {boolean}
    */
   shouldUseThree(options = {}) {
-    console.log('[RendererFactory] shouldUseThree() checking with options:', options);
-    console.log('[RendererFactory] Current capabilities:', this.capabilities);
-
     // User can force a specific renderer
     if (options.forceRenderer) {
-      console.log('[RendererFactory] Forced renderer:', options.forceRenderer);
       return options.forceRenderer === 'three';
     }
 
@@ -258,49 +241,41 @@ const RendererFactory = {
     const urlParams = new URLSearchParams(window.location.search);
     const rendererParam = urlParams.get('renderer');
     if (rendererParam === 'three') {
-      console.log('[RendererFactory] URL param forces Three.js');
       return true;
     }
     if (rendererParam === 'svg') {
-      console.log('[RendererFactory] URL param forces SVG');
       return false;
     }
 
     // Check localStorage preference
     if (RENDERER_CONFIG.allowUserOverride) {
       const savedPref = localStorage.getItem('asdf-renderer-preference');
-      console.log('[RendererFactory] localStorage preference:', savedPref);
       if (savedPref === 'three') return true;
       if (savedPref === 'svg') return false;
     }
 
     // Respect reduced motion preference
     if (RENDERER_CONFIG.respectReducedMotion && this.capabilities.reducedMotion) {
-      console.log('[RendererFactory] Reduced motion preferred, using SVG');
       return false;
     }
 
     // Skip Three.js on low power mode
     if (this.capabilities.lowPower) {
-      console.log('[RendererFactory] Low power mode, using SVG');
       return false;
     }
 
     // Need at least WebGL 1
     if (!this.capabilities.webgl) {
-      console.log('[RendererFactory] No WebGL support, using SVG');
       return false;
     }
 
     // On mobile, prefer SVG for better battery life
     // unless explicitly enabled
     if (this.capabilities.mobile && !options.mobileThree) {
-      console.log('[RendererFactory] Mobile device, using SVG for battery');
       return false;
     }
 
     // All checks passed, use Three.js
-    console.log('[RendererFactory] All checks passed -> using Three.js');
     return true;
   },
 
@@ -311,8 +286,6 @@ const RendererFactory = {
    */
   async switchRenderer(type, container) {
     if (type === this.type) return;
-
-    console.log(`[RendererFactory] Switching to ${type} renderer`);
 
     // Dispose current renderer
     if (this.current && this.current.dispose) {
