@@ -1125,7 +1125,21 @@ body.modal-open {
 
 @media (max-width: 768px) {
   .nav-links {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: var(--space-xs);
+    max-width: 70vw;
+  }
+
+  .nav-links::-webkit-scrollbar {
     display: none;
+  }
+
+  .nav-link {
+    font-size: var(--text-xs);
+    padding: var(--space-xs) var(--space-sm);
+    white-space: nowrap;
   }
 
   .hero-countdown {
