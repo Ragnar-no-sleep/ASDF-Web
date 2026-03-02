@@ -401,13 +401,16 @@
    ============================================ */
 .arcade-cards {
   display: grid;
-  grid-template-columns: repeat(2, 240px);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 240px));
   gap: var(--space-lg);
+  justify-content: center;
 }
 
 @media (max-width: 480px) {
   .arcade-cards {
-    grid-template-columns: 260px;
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    margin: 0 auto;
   }
 }
 
