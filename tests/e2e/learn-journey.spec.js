@@ -6,28 +6,18 @@ import { setupErrorCollector, filterCriticalErrors, gotoWithRetry } from './fixt
  * Learn Page — Interactive Journey
  *
  * Tests 5-phase interactive learning flow: observe, drag, burn, type, explore.
- * Uses a shared page (single load) to stay within rate limits.
+ * Each test navigates independently — no cascade on failure.
  * This is fine.
  */
 
 test.setTimeout(30000);
 
 test.describe('Learn Journey', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  /** @type {import('@playwright/test').Page} */
-  let page;
-
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     await gotoWithRetry(page, '/learn.html');
   });
 
-  test.afterAll(async () => {
-    await page.close();
-  });
-
-  test('learn page loads with Phase 1 active', async () => {
+  test('learn page loads with Phase 1 active', async ({ page }) => {
     const errors = setupErrorCollector(page);
 
     const phase1 = page.locator('#phase-1');
@@ -41,7 +31,7 @@ test.describe('Learn Journey', () => {
     expect(critical).toHaveLength(0);
   });
 
-  test('progress bar exists and starts at minimum', async () => {
+  test('progress bar exists and starts at minimum', async ({ page }) => {
     const progressBar = page.locator('.progress[role="progressbar"]');
     await expect(progressBar).toBeVisible();
     await expect(progressBar).toHaveAttribute('aria-valuenow', '0');
@@ -51,7 +41,7 @@ test.describe('Learn Journey', () => {
     await expect(fill).toBeAttached();
   });
 
-  test('drag slider elements exist in Phase 2', async () => {
+  test('drag slider elements exist in Phase 2', async ({ page }) => {
     const handle = page.locator('#drag-handle');
     const slider = page.locator('#drag-slider');
 
@@ -64,7 +54,7 @@ test.describe('Learn Journey', () => {
     await expect(success).toBeAttached();
   });
 
-  test('burn box elements exist in Phase 3', async () => {
+  test('burn box elements exist in Phase 3', async ({ page }) => {
     const burnBox = page.locator('#burn-box');
     const burnCount = page.locator('#burn-count');
     const burnDots = page.locator('.burn-dot');
@@ -78,7 +68,7 @@ test.describe('Learn Journey', () => {
     await expect(burnDone).toBeAttached();
   });
 
-  test('type input field exists in Phase 4', async () => {
+  test('type input field exists in Phase 4', async ({ page }) => {
     const typeInput = page.locator('#type-input');
     await expect(typeInput).toBeAttached();
 
@@ -87,7 +77,7 @@ test.describe('Learn Journey', () => {
     await expect(typeDone).toBeAttached();
   });
 
-  test('Phase 5 shows all 5 tool explore items', async () => {
+  test('Phase 5 shows all 5 tool explore items', async ({ page }) => {
     const exploreItems = page.locator('.explore-item[data-tool]');
     await expect(exploreItems).toHaveCount(5);
 

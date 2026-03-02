@@ -6,28 +6,18 @@ import { setupErrorCollector, filterCriticalErrors, gotoWithRetry } from './fixt
  * Build Page — Explorer Journey
  *
  * Tests Yggdrasil tree, node statuses, SVG fallback, propose CTA.
- * Uses a shared page (single load) to stay within rate limits.
+ * Each test navigates independently — no cascade on failure.
  * This is fine.
  */
 
 test.setTimeout(30000);
 
 test.describe('Build Explorer Journey', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  /** @type {import('@playwright/test').Page} */
-  let page;
-
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     await gotoWithRetry(page, '/build.html');
   });
 
-  test.afterAll(async () => {
-    await page.close();
-  });
-
-  test('build page loads without critical errors', async () => {
+  test('build page loads without critical errors', async ({ page }) => {
     const errors = setupErrorCollector(page);
 
     // Cosmos container should be visible
@@ -38,7 +28,7 @@ test.describe('Build Explorer Journey', () => {
     expect(critical).toHaveLength(0);
   });
 
-  test('tree nodes are visible with data-project attributes', async () => {
+  test('tree nodes are visible with data-project attributes', async ({ page }) => {
     const treeNodes = page.locator('.tree-node[data-project]');
     const count = await treeNodes.count();
     expect(count).toBeGreaterThan(0);
@@ -51,7 +41,7 @@ test.describe('Build Explorer Journey', () => {
     }
   });
 
-  test('tree nodes have correct status indicators', async () => {
+  test('tree nodes have correct status indicators', async ({ page }) => {
     const liveNodes = page.locator('.tree-node[data-status="live"]');
     const liveCount = await liveNodes.count();
     expect(liveCount).toBeGreaterThan(0);
@@ -65,12 +55,12 @@ test.describe('Build Explorer Journey', () => {
     expect(plannedCount).toBeGreaterThan(0);
   });
 
-  test('SVG fallback tree section exists', async () => {
+  test('SVG fallback tree section exists', async ({ page }) => {
     const fallback = page.locator('#yggdrasil-svg-fallback.tree-section');
     await expect(fallback).toBeAttached();
   });
 
-  test('propose CTA button exists and links correctly', async () => {
+  test('propose CTA button exists and links correctly', async ({ page }) => {
     const proposeBtn = page.locator('.btn-propose');
     await expect(proposeBtn).toBeAttached();
     await expect(proposeBtn).toHaveAttribute('href', /github\.com/);

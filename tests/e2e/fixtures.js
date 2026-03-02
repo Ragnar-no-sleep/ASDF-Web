@@ -83,3 +83,13 @@ export async function dismissCookieConsent(page) {
     // Banner may not exist if consent was already given
   }
 }
+
+/**
+ * Check if the current page viewport is mobile-width (< 480px).
+ * @param {import('@playwright/test').Page} page
+ * @returns {boolean}
+ */
+export function isMobileViewport(page) {
+  const viewport = page.viewportSize();
+  return viewport ? viewport.width < 480 : false;
+}

@@ -6,28 +6,18 @@ import { setupErrorCollector, filterCriticalErrors, gotoWithRetry } from './fixt
  * Burns Page — Explorer Journey
  *
  * Tests hero, stats, leaderboard tabs, eco-nav, live feed.
- * Uses a shared page (single load) to stay within rate limits.
+ * Each test navigates independently — no cascade on failure.
  * This is fine.
  */
 
 test.setTimeout(30000);
 
 test.describe('Burns Explorer Journey', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  /** @type {import('@playwright/test').Page} */
-  let page;
-
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     await gotoWithRetry(page, '/burns.html');
   });
 
-  test.afterAll(async () => {
-    await page.close();
-  });
-
-  test('burns page loads with hero and stats visible', async () => {
+  test('burns page loads with hero and stats visible', async ({ page }) => {
     const errors = setupErrorCollector(page);
 
     const hero = page.locator('.burns-hero');
@@ -43,7 +33,7 @@ test.describe('Burns Explorer Journey', () => {
     expect(critical).toHaveLength(0);
   });
 
-  test('leaderboard tabs switch periods', async () => {
+  test('leaderboard tabs switch periods', async ({ page }) => {
     const tabs = page.locator('.tab-btn[data-period]');
     await expect(tabs).toHaveCount(3);
 
@@ -63,16 +53,14 @@ test.describe('Burns Explorer Journey', () => {
     const weeklyTab = page.locator('.tab-btn[data-period="weekly"]');
     await weeklyTab.click();
     await expect(weeklyTab).toHaveClass(/active/);
-  });
 
-  test('active tab has correct active state', async () => {
-    // "This Week" is active from previous test
+    // Verify exactly one active tab
     const activeTab = page.locator('.tab-btn.active');
     await expect(activeTab).toHaveCount(1);
     await expect(activeTab).toHaveAttribute('data-period', 'weekly');
   });
 
-  test('eco-nav links navigate to other tools', async () => {
+  test('eco-nav links navigate to other tools', async ({ page }) => {
     const ecoLinks = page.locator('.eco-nav-link');
     const count = await ecoLinks.count();
     expect(count).toBe(5);
@@ -89,7 +77,7 @@ test.describe('Burns Explorer Journey', () => {
     await expect(holdexLink).toBeVisible();
   });
 
-  test('live feed container has ARIA log role', async () => {
+  test('live feed container has ARIA log role', async ({ page }) => {
     const feed = page.locator('#burns-feed');
     await expect(feed).toBeAttached();
     await expect(feed).toHaveAttribute('role', 'log');

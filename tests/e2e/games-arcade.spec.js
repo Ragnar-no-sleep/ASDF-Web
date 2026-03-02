@@ -13,29 +13,19 @@ import {
  * Tests hub navigation, arcade card nav, game grid, settings, wallet, profile.
  * Note: .nav-tabs are display:none — arcade cards are the primary navigation.
  * Note: data-hub-back buttons exist only in settings/shop/profile (not games).
- * Uses a shared page (single load) to stay within rate limits.
+ * Each test navigates independently — no cascade on failure.
  * This is fine.
  */
 
 test.setTimeout(30000);
 
 test.describe('Games Arcade Journey', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  /** @type {import('@playwright/test').Page} */
-  let page;
-
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     await gotoWithRetry(page, '/games.html');
     await dismissCookieConsent(page);
   });
 
-  test.afterAll(async () => {
-    await page.close();
-  });
-
-  test('games page loads with hub section visible', async () => {
+  test('games page loads with hub section visible', async ({ page }) => {
     const errors = setupErrorCollector(page);
 
     const hubSection = page.locator('#hub-section');
@@ -50,13 +40,13 @@ test.describe('Games Arcade Journey', () => {
     expect(critical).toHaveLength(0);
   });
 
-  test('wallet button exists', async () => {
+  test('wallet button exists', async ({ page }) => {
     const walletBtn = page.locator('#wallet-btn');
     await expect(walletBtn).toBeAttached();
     await expect(walletBtn).toHaveAttribute('aria-label', /wallet/i);
   });
 
-  test('arcade cards navigate to games view', async () => {
+  test('arcade cards navigate to games view', async ({ page }) => {
     const gamesCard = page.locator('.arcade-card[data-hub-view="games"]');
     await expect(gamesCard).toBeVisible();
     await gamesCard.click();
@@ -64,19 +54,9 @@ test.describe('Games Arcade Journey', () => {
     // Games grid should become visible
     const gamesGrid = page.locator('#games-grid');
     await expect(gamesGrid).toBeVisible({ timeout: 5000 });
-
-    // Navigate back to hub for next tests
-    await page.evaluate(() => {
-      if (window.Hub && typeof window.Hub.navigateTo === 'function') {
-        window.Hub.navigateTo('hub');
-      }
-    });
-    await expect(page.locator('#hub-section')).toBeVisible({
-      timeout: 5000,
-    });
   });
 
-  test('settings back-to-hub button works', async () => {
+  test('settings back-to-hub button works', async ({ page }) => {
     // Navigate to settings via arcade card
     await page.locator('.arcade-card[data-hub-view="settings"]').click();
 
@@ -93,7 +73,7 @@ test.describe('Games Arcade Journey', () => {
     });
   });
 
-  test('settings toggles are interactive', async () => {
+  test('settings toggles are interactive', async ({ page }) => {
     // Navigate to settings
     await page.locator('.arcade-card[data-hub-view="settings"]').click();
 
@@ -110,15 +90,9 @@ test.describe('Games Arcade Journey', () => {
     // State should change
     const newState = await toggle.getAttribute('aria-checked');
     expect(newState).not.toBe(initialState);
-
-    // Return to hub
-    await page.locator('#settings-section [data-hub-back]').click();
-    await expect(page.locator('#hub-section')).toBeVisible({
-      timeout: 5000,
-    });
   });
 
-  test('profile section shows stats structure', async () => {
+  test('profile section shows stats structure', async ({ page }) => {
     // Navigate to profile via arcade card
     await page.locator('.arcade-card[data-hub-view="profile"]').click();
 
