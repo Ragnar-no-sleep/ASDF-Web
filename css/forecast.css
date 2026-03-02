@@ -467,7 +467,7 @@ body {
 }
 
 .separator {
-  color: rgba(var(--forecast-secondary-rgb), 0.3);
+  color: rgba(var(--forecast-secondary-rgb), 0.5);
 }
 .page-name {
   color: var(--white);
@@ -836,12 +836,12 @@ body {
 }
 
 .amount-input::placeholder {
-  color: rgba(var(--forecast-secondary-rgb), 0.3);
+  color: rgba(var(--forecast-secondary-rgb), 0.5);
 }
 
 .amount-currency {
   font-size: var(--text-xs);
-  color: rgba(var(--forecast-secondary-rgb), 0.5);
+  color: rgba(var(--forecast-secondary-rgb), 0.65);
 }
 
 .amount-presets {
