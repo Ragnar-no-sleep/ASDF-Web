@@ -2564,7 +2564,7 @@ body {
 }
 
 .ragnar-easter-egg:hover .ragnar-silhouette {
-  color: #fbbf24;
+  color: var(--gold);
   filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
   animation: ragnarGlow 1s ease-in-out infinite;
 }

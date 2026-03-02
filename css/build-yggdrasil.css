@@ -143,7 +143,7 @@
   transform: translate(-50%, -50%);
   width: 90px;
   height: 90px;
-  border: 3px solid #d4af37;
+  border: 3px solid var(--nordic-gold);
   border-radius: 50%;
   box-shadow:
     0 0 20px rgba(212, 175, 55, 0.5),
@@ -196,8 +196,8 @@
 .tree-core .core-runes span {
   position: absolute;
   font-size: 10px;
-  color: #d4af37;
-  text-shadow: 0 0 8px #d4af37;
+  color: var(--nordic-gold);
+  text-shadow: 0 0 8px var(--nordic-gold);
   opacity: 0.7;
 }
 
@@ -309,7 +309,7 @@
     rgba(40, 40, 50, 0.95) 0%,
     rgba(20, 20, 30, 1) 100%
   );
-  border: 2px solid #d4af37;
+  border: 2px solid var(--nordic-gold);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -666,11 +666,11 @@
 }
 .realm[data-realm='muspelheim'] .realm-medallion {
   border-color: rgba(239, 68, 68, 0.8);
-  --realm-color: #ef4444;
+  --realm-color: var(--red);
 }
 .realm[data-realm='jotunheim'] .realm-medallion {
   border-color: rgba(251, 191, 36, 0.8);
-  --realm-color: #fbbf24;
+  --realm-color: var(--gold);
 }
 .realm[data-realm='nidavellir'] .realm-medallion {
   border-color: rgba(161, 98, 7, 0.8);
