@@ -718,14 +718,10 @@ body.hub-majestic {
 }
 
 .hub-orbit--inner {
-  width: 240px;
-  height: calc(240px / var(--phi));
   animation: orbit-rotate 90s linear infinite;
 }
 
 .hub-orbit--outer {
-  width: calc(240px * var(--phi));
-  height: 240px;
   animation: orbit-rotate 140s linear infinite reverse;
 }
 
@@ -734,24 +730,6 @@ body.hub-majestic {
     transform: rotate(360deg);
   }
 }
-
-/* ============================================
-   CENTER CORE - Removed, Tools now at center
-   ============================================ */
-
-@keyframes glow-breathe {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.65;
-    transform: scale(1.1);
-  }
-}
-
-/* hub-node + hub-tools removed — now handled by orbital-system.css */
 
 /* ============================================
    FOOTER
@@ -798,15 +776,6 @@ body.hub-majestic {
    ============================================ */
 
 @media (max-width: 768px) {
-  .hub-orbit--inner {
-    width: 180px;
-    height: calc(180px / var(--phi));
-  }
-  .hub-orbit--outer {
-    width: calc(180px * var(--phi));
-    height: 180px;
-  }
-
   /* Reduce particle visibility on mobile for performance */
   .hub-cells i {
     opacity: 0 !important;
@@ -838,15 +807,6 @@ body.hub-majestic {
 }
 
 @media (max-height: 600px) {
-  .hub-orbit--inner {
-    width: 140px;
-    height: calc(140px / var(--phi));
-  }
-  .hub-orbit--outer {
-    width: calc(140px * var(--phi));
-    height: 140px;
-  }
-
   .hub-cells,
   .hub-synapses {
     display: none;

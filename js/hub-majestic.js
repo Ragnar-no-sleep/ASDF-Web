@@ -34,84 +34,6 @@ import { initInteractions } from './utils/interactions.js';
     document.addEventListener('mousemove', handleMove, { passive: true });
   };
 
-  // --- Glow follow on nodes ---
-  const initNodeGlow = () => {
-    document.querySelectorAll('.hub-node:not(.hub-node--disabled)').forEach(node => {
-      let rect = null;
-
-      node.addEventListener('mouseenter', () => {
-        rect = node.getBoundingClientRect();
-      });
-
-      node.addEventListener(
-        'mousemove',
-        throttle(e => {
-          if (!rect) rect = node.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 100;
-          const y = ((e.clientY - rect.top) / rect.height) * 100;
-          node.style.setProperty('--glow-x', `${x}%`);
-          node.style.setProperty('--glow-y', `${y}%`);
-        }),
-        { passive: true }
-      );
-
-      node.addEventListener('mouseleave', () => {
-        rect = null;
-        node.style.removeProperty('--glow-x');
-        node.style.removeProperty('--glow-y');
-      });
-    });
-  };
-
-  // --- Tools interactive expansion ---
-  const initTools = () => {
-    const tools = document.getElementById('hubTools');
-    const trigger = document.getElementById('toolsTrigger');
-    if (!tools || !trigger) return;
-
-    let isExpanded = false;
-    let closeTimeout = null;
-
-    const expand = () => {
-      clearTimeout(closeTimeout);
-      if (!isExpanded && tools && trigger) {
-        tools.classList.add('expanded');
-        trigger.setAttribute('aria-expanded', 'true');
-        isExpanded = true;
-      }
-    };
-
-    const collapse = () => {
-      closeTimeout = setTimeout(() => {
-        if (tools && trigger) {
-          tools.classList.remove('expanded');
-          trigger.setAttribute('aria-expanded', 'false');
-          isExpanded = false;
-        }
-      }, 300);
-    };
-
-    // Expand on hover
-    trigger.addEventListener('mouseenter', expand);
-    tools.addEventListener('mouseenter', expand);
-
-    // Collapse when leaving the tools area
-    tools.addEventListener('mouseleave', collapse);
-
-    // Also support click toggle for touch devices
-    trigger.addEventListener('click', e => {
-      e.preventDefault();
-      if (isExpanded && tools && trigger) {
-        clearTimeout(closeTimeout);
-        tools.classList.remove('expanded');
-        trigger.setAttribute('aria-expanded', 'false');
-        isExpanded = false;
-      } else {
-        expand();
-      }
-    });
-  };
-
   // --- Respect reduced motion ---
   const checkReducedMotion = () => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -316,8 +238,6 @@ import { initInteractions } from './utils/interactions.js';
   const init = () => {
     checkReducedMotion();
     initParallax();
-    initNodeGlow();
-    initTools();
     initViewToggle();
     initFullscreenPrompt();
     initEasterEgg();
