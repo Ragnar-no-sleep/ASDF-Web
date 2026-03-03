@@ -127,6 +127,10 @@ coverage/
 playwright-report/
 test-results/
 
+# Ralph-loop temp files
+ralph-fix-summary.txt
+ralph-fix-pattern.txt
+
 # Debug
 debug/
 *.debug
@@ -140,3 +144,7 @@ keypair.json
 # Test files (moved from root)
 tests/html/
 tests/js/test-*.js
+
+# Internal audit documents (not for public repos)
+docs/audits/sollama58/
+docs/AUDIT-SOLLAMA58.md

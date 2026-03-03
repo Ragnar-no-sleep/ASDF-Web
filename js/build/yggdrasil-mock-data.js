@@ -286,7 +286,7 @@ export const MOCK_CONTRIBUTORS = {
   'burn-engine': [
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Core Dev',
       commits: 127,
       additions: 4521,
@@ -294,7 +294,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'zeyxx',
-      avatar: '🔥',
+      avatar: '&#x1F525;',
       role: 'Smart Contracts',
       commits: 89,
       additions: 2340,
@@ -302,7 +302,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'cryptobuilder',
-      avatar: '🛠️',
+      avatar: '&#x1F6E0;&#xFE0F;',
       role: 'Testing',
       commits: 45,
       additions: 1200,
@@ -312,7 +312,7 @@ export const MOCK_CONTRIBUTORS = {
   'burn-tracker': [
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Backend',
       commits: 67,
       additions: 2100,
@@ -320,7 +320,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'webdev42',
-      avatar: '🌐',
+      avatar: '&#x1F310;',
       role: 'Frontend',
       commits: 52,
       additions: 1800,
@@ -330,7 +330,7 @@ export const MOCK_CONTRIBUTORS = {
   'token-launcher': [
     {
       name: 'zeyxx',
-      avatar: '🔥',
+      avatar: '&#x1F525;',
       role: 'Lead Dev',
       commits: 98,
       additions: 3200,
@@ -338,7 +338,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Integration',
       commits: 34,
       additions: 920,
@@ -348,7 +348,7 @@ export const MOCK_CONTRIBUTORS = {
   'games-platform': [
     {
       name: 'gamedev_mike',
-      avatar: '🎮',
+      avatar: '&#x1F3AE;',
       role: 'Game Engine',
       commits: 156,
       additions: 8200,
@@ -356,7 +356,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Backend',
       commits: 78,
       additions: 2800,
@@ -364,7 +364,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'pixelartist',
-      avatar: '🎨',
+      avatar: '&#x1F3A8;',
       role: 'Assets',
       commits: 23,
       additions: 450,
@@ -374,7 +374,7 @@ export const MOCK_CONTRIBUTORS = {
   'learn-platform': [
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Full Stack',
       commits: 142,
       additions: 5200,
@@ -382,7 +382,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'educator_jen',
-      avatar: '📚',
+      avatar: '&#x1F4DA;',
       role: 'Content',
       commits: 67,
       additions: 2100,
@@ -392,7 +392,7 @@ export const MOCK_CONTRIBUTORS = {
   holdex: [
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Lead Dev',
       commits: 98,
       additions: 3600,
@@ -400,7 +400,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'ui_designer',
-      avatar: '🎨',
+      avatar: '&#x1F3A8;',
       role: 'UI/UX',
       commits: 34,
       additions: 890,
@@ -410,7 +410,7 @@ export const MOCK_CONTRIBUTORS = {
   forecast: [
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Backend',
       commits: 76,
       additions: 2800,
@@ -418,7 +418,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'stats_wizard',
-      avatar: '📊',
+      avatar: '&#x1F4CA;',
       role: 'Analytics',
       commits: 45,
       additions: 1500,
@@ -428,7 +428,7 @@ export const MOCK_CONTRIBUTORS = {
   'token-factory': [
     {
       name: 'zeyxx',
-      avatar: '🔥',
+      avatar: '&#x1F525;',
       role: 'Smart Contracts',
       commits: 112,
       additions: 4200,
@@ -436,7 +436,7 @@ export const MOCK_CONTRIBUTORS = {
     },
     {
       name: 'sollama58',
-      avatar: '🦙',
+      avatar: '&#x1F999;',
       role: 'Integration',
       commits: 45,
       additions: 1300,

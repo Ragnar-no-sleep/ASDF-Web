@@ -18,6 +18,7 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet, formatTimeAgo } from './utils/format.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, ANIMATION } from './config/timing.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
 
 const API_BASE = ASDF_ENDPOINTS.forecast;
 
@@ -63,9 +64,7 @@ async function fetchState(userPubkey = null) {
     const url = userPubkey
       ? `${API_BASE}/api/state?user=${encodeURIComponent(userPubkey)}`
       : `${API_BASE}/api/state`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    return await response.json();
+    return await fetchWithRetry(url, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching state:', error);
     return null;
@@ -74,9 +73,7 @@ async function fetchState(userPubkey = null) {
 
 async function fetchWallet() {
   try {
-    const response = await fetch(`${API_BASE}/api/wallet`);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    return await response.json();
+    return await fetchWithRetry(`${API_BASE}/api/wallet`, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching wallet data:', error);
     return null;

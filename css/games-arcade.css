@@ -409,7 +409,7 @@
 @media (max-width: 480px) {
   .arcade-cards {
     grid-template-columns: 1fr;
-    max-width: 300px;
+    max-width: calc(100vw - 2 * var(--space-lg));
     margin: 0 auto;
   }
 }

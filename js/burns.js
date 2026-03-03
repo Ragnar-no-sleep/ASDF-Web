@@ -169,7 +169,8 @@ async function updateWalletStats() {
 
   // Enrich hero badge title with live price
   const badge = document.querySelector('.hero-badge');
-  if (badge) badge.setAttribute('title', `API connected \u00b7 $${data.tokenPriceUsd}`);
+  if (badge)
+    badge.setAttribute('title', `API connected \u00b7 $${Number(data.tokenPriceUsd) || 0}`);
 }
 
 function showLeaderboardPending() {

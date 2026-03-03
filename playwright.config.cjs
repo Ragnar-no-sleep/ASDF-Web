@@ -40,6 +40,7 @@ module.exports = defineConfig({
     {
       name: 'mobile',
       use: { ...devices['iPhone 13'] },
+      dependencies: ['chromium'],
     },
   ],
 
