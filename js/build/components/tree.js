@@ -155,6 +155,17 @@ const TreeComponent = {
       });
     }
 
+    // Keyboard activation (Enter/Space on focused tree nodes)
+    delegate(treeContainer, 'keydown', '.tree-node, .realm', (e, node) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const projectId = getData(node, 'project');
+        if (projectId && isValidProjectId(projectId)) {
+          this.onNodeClick(projectId);
+        }
+      }
+    });
+
     // Hover effects
     delegate(treeContainer, 'mouseenter', '.tree-node, .realm', (e, node) => {
       _hoveredNode = getData(node, 'project');

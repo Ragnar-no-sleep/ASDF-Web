@@ -366,3 +366,6 @@ document.addEventListener('click', e => {
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// Named exports for unit testing (pure functions only)
+export { getKRank, getCreditRating, formatUSD, formatPrice, formatPercent, formatHolders };

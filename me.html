@@ -70,12 +70,12 @@
 
         <!-- Daily Streak -->
         <div class="card">
-          <h2 class="card-title">Daily Streak 🔥</h2>
+          <h2 class="card-title">Daily Streak <span aria-hidden="true">&#x1F525;</span></h2>
           <div class="streak-display">
             <div class="streak-value" id="streakValue">0</div>
             <div class="streak-label">days in a row</div>
           </div>
-          <div class="streak-calendar" id="streakCalendar"></div>
+          <div class="streak-calendar" id="streakCalendar" role="grid" aria-label="28-day streak calendar"></div>
         </div>
       </div>
 
@@ -172,10 +172,10 @@
           <div
             class="heatmap-grid"
             id="heatmapGrid"
-            role="img"
+            role="grid"
             aria-label="Activity heatmap showing contribution levels over the past year"
           ></div>
-          <div class="heatmap-legend">
+          <div class="heatmap-legend" aria-hidden="true">
             <span>Less</span>
             <div class="heatmap-cell" data-level="0"></div>
             <div class="heatmap-cell" data-level="1"></div>
@@ -191,7 +191,7 @@
       <!-- Recent Achievements -->
       <div class="card">
         <h2 class="card-title">Recent Achievements</h2>
-        <div class="achievement-showcase" id="achievementShowcase"></div>
+        <div class="achievement-showcase" id="achievementShowcase" role="list" aria-label="Achievement badges"></div>
       </div>
 
       <!-- Quick Actions -->

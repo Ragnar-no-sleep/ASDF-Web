@@ -172,11 +172,12 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        // Scripts: self + CDNs for Solana Kit (esm.sh) and DOMPurify (with SRI validation)
+        // Scripts: self + CDNs for Solana Kit (esm.sh), DOMPurify, D3.js (all with SRI)
         scriptSrc: [
           "'self'",
           'https://unpkg.com',
           'https://cdnjs.cloudflare.com',
+          'https://cdn.jsdelivr.net',
           'https://esm.sh',
         ],
         // Inline event handlers (onclick etc) removed from all production pages

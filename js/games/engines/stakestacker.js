@@ -84,12 +84,10 @@ const StakeStacker = {
       this.gameLoop();
     }, 50);
 
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
-      };
-    }
+    this.registerActiveGame(gameId);
   },
+
+  registerActiveGame: GameEngineBase.registerActiveGame,
 
   /**
    * Create arena HTML
@@ -594,22 +592,12 @@ const StakeStacker = {
   },
 
   /**
-   * Game loop
+   * Game loop — delegated to GameEngineBase
    */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  },
+  gameLoop: GameEngineBase.gameLoop,
 
   /**
-   * Setup input handlers
+   * Setup input handlers — uses tracked handlers for auto-cleanup
    */
   setupInput() {
     const self = this;
@@ -620,23 +608,18 @@ const StakeStacker = {
       self.dropBlock();
     };
 
-    document.addEventListener('keydown', this.handleInput);
-    this.canvas.addEventListener('click', this.handleInput);
+    this.trackHandler(document, 'keydown', this.handleInput);
+    this.trackHandler(this.canvas, 'click', this.handleInput);
   },
 
   /**
-   * Stop the game
+   * Stop the game — delegates cleanup to GameEngineBase
    */
-  stop() {
-    this.state.gameOver = true;
-    document.removeEventListener('keydown', this.handleInput);
-    if (this.canvas) {
-      this.canvas.removeEventListener('click', this.handleInput);
-    }
-    this.canvas = null;
-    this.ctx = null;
-    this.state = null;
-  },
+  stop: GameEngineBase.stop,
+
+  // Mixin utilities
+  trackHandler: GameEngineBase.trackHandler,
+  cleanupHandlers: GameEngineBase.cleanupHandlers,
 };
 
 // Export

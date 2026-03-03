@@ -42,6 +42,7 @@ function startPumpArena(gameId) {
     selectedBuilderIdx: 0,
     particles: [],
     history: [],
+    _timeouts: [], // Track setTimeout IDs for cleanup
     // Partnership tracking
     contributionsByBuilder: {}, // Track contributions per builder
     partnership: null,
@@ -2776,9 +2777,11 @@ function startPumpArena(gameId) {
                     </div>
                 `;
 
-        setTimeout(() => {
-          showPhase('partnership');
-        }, GAME_TIMING.EFFECT.VERY_SLOW);
+        state._timeouts.push(
+          setTimeout(() => {
+            showPhase('partnership');
+          }, GAME_TIMING.EFFECT.VERY_SLOW)
+        );
       });
 
       btn.addEventListener('mouseenter', () => {
@@ -2856,12 +2859,16 @@ function startPumpArena(gameId) {
   activeGames[gameId] = {
     cleanup: () => {
       state.gameOver = true;
+      // Clear tracked timeouts
+      state._timeouts.forEach(id => clearTimeout(id));
+      state._timeouts.length = 0;
     },
   };
 }
 
 // Pump Arena RPG
 let pumpArenaMode = 'rpg';
+let _openTimeout = null;
 
 function openPumpArena(mode = 'rpg') {
   pumpArenaMode = mode;
@@ -2875,7 +2882,7 @@ function openPumpArena(mode = 'rpg') {
     // Initialize RPG mode
     if (window.PumpArenaRPG) {
       // Small delay to ensure modal is visible
-      setTimeout(() => {
+      _openTimeout = setTimeout(() => {
         window.PumpArenaRPG.init('arena-pumparena');
       }, 100);
     } else {
@@ -2891,9 +2898,21 @@ function closePumpArena() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
 
+    // Clean up open timeout
+    if (_openTimeout) {
+      clearTimeout(_openTimeout);
+      _openTimeout = null;
+    }
+
     // Clean up RPG
     if (window.PumpArenaRPG) {
       window.PumpArenaRPG.close();
+    }
+
+    // Clean up classic game
+    if (typeof activeGames !== 'undefined' && activeGames.pumparena) {
+      activeGames.pumparena.cleanup();
+      delete activeGames.pumparena;
     }
   }
 }
@@ -2922,6 +2941,10 @@ const PumpArena = {
    * @param {string} gameId - The game ID
    */
   stop(gameId) {
+    if (_openTimeout) {
+      clearTimeout(_openTimeout);
+      _openTimeout = null;
+    }
     if (typeof activeGames !== 'undefined' && activeGames[gameId]) {
       activeGames[gameId].cleanup();
       delete activeGames[gameId];

@@ -627,3 +627,15 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// Named exports for unit testing (pure functions only)
+export {
+  normalizeLock,
+  getCachedData,
+  setCachedData,
+  getDemoLocks,
+  formatDate,
+  getProgress,
+  getCountdown,
+  STATUS_MAP,
+};

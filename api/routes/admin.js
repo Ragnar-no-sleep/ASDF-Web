@@ -21,7 +21,7 @@ const router = express.Router();
 const { sanitizeError, paginate } = require('./helpers');
 
 // Auth & Security
-const { authMiddleware, optionalAuthMiddleware } = require('../services/auth');
+const { authMiddleware } = require('../services/auth');
 const { requireAdmin, getSecurityMetrics, isAdmin } = require('../services/security');
 
 // Services
@@ -30,11 +30,7 @@ const { getHealthStatus: getDbHealth } = require('../services/database');
 const { logAudit, getAuditLog, syncFromBlockchain } = require('../services/leaderboard');
 const { invalidateTag, getStats: getCacheStats } = require('../services/cache');
 const { getJob, getJobsByStatus, getQueueStats } = require('../services/queue');
-const {
-  getAggregatedMetrics,
-  getFunnelAnalysis,
-  getAnalyticsMetrics,
-} = require('../services/analytics');
+// Analytics: extracted to admin-analytics.js
 const {
   getAllTasks,
   getHistory: getTaskHistory,
@@ -48,7 +44,7 @@ const {
 } = require('../services/ratelimit');
 const { getStats: getValidatorStats } = require('../services/validator');
 const {
-  evaluateFlag,
+  // evaluateFlag: extracted to admin-flags-public.js
   getAllFlags,
   setFlagEnabled,
   setFlagPercentage,
@@ -297,55 +293,9 @@ router.get('/admin/queue/jobs/:id', authMiddleware, requireAdmin, async (req, re
 });
 
 // ============================================
-// ADMIN - ANALYTICS ROUTES
+// ADMIN - ANALYTICS ROUTES (extracted to admin-analytics.js)
 // ============================================
-
-/**
- * Get analytics overview (admin only)
- * GET /admin/analytics
- */
-router.get('/admin/analytics', authMiddleware, requireAdmin, async (req, res) => {
-  try {
-    const metrics = getAnalyticsMetrics();
-    res.json(metrics);
-  } catch (error) {
-    res.status(500).json({ error: sanitizeError(error, 'analytics') });
-  }
-});
-
-/**
- * Get aggregated metrics (admin only)
- * GET /admin/analytics/metrics
- */
-router.get('/admin/analytics/metrics', authMiddleware, requireAdmin, async (req, res) => {
-  try {
-    const interval = req.query.interval || 'hour';
-    const count = Math.max(1, Math.min(parseInt(req.query.count) || 24, 168));
-
-    const metrics = getAggregatedMetrics(interval, count);
-    res.json({ interval, metrics });
-  } catch (error) {
-    res.status(500).json({ error: sanitizeError(error, 'analytics-metrics') });
-  }
-});
-
-/**
- * Get funnel analysis (admin only)
- * GET /admin/analytics/funnel/:name
- */
-router.get('/admin/analytics/funnel/:name', authMiddleware, requireAdmin, async (req, res) => {
-  try {
-    const analysis = getFunnelAnalysis(req.params.name);
-
-    if (!analysis) {
-      return res.status(404).json({ error: 'Funnel not found' });
-    }
-
-    res.json(analysis);
-  } catch (error) {
-    res.status(500).json({ error: sanitizeError(error, 'funnel-analysis') });
-  }
-});
+router.use(require('./admin-analytics'));
 
 // ============================================
 // ADMIN - SCHEDULER ROUTES
@@ -588,36 +538,8 @@ router.get('/admin/flags/history', authMiddleware, requireAdmin, async (req, res
   }
 });
 
-/**
- * Evaluate flag for context (public, for client-side feature checks)
- * POST /flags/evaluate
- */
-router.post('/flags/evaluate', optionalAuthMiddleware, async (req, res) => {
-  try {
-    const { flags } = req.body;
-
-    if (!Array.isArray(flags)) {
-      return res.status(400).json({ error: 'flags array required' });
-    }
-
-    const context = {
-      wallet: req.user?.wallet,
-      tier: req.user?.tier,
-      tierIndex: req.user?.tierIndex,
-      environment: isProduction ? 'production' : 'development',
-    };
-
-    const results = {};
-    for (const key of flags.slice(0, 50)) {
-      // Limit to 50 flags per request
-      results[key] = evaluateFlag(key, context);
-    }
-
-    res.json({ flags: results });
-  } catch (error) {
-    res.status(500).json({ error: sanitizeError(error, 'evaluate-flags') });
-  }
-});
+// POST /flags/evaluate — extracted to admin-flags-public.js
+router.use(require('./admin-flags-public'));
 
 // ============================================
 // ADMIN - AUDIT TRAIL ROUTES

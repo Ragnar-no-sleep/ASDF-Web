@@ -1194,12 +1194,20 @@
   pointer-events: auto;
 }
 
-.tree-node.simple:hover {
+.tree-node.simple:hover,
+.tree-node.simple:focus-visible {
   transform: scale(1.1);
 }
 
-.tree-node.simple:hover .node-ellipse {
+.tree-node.simple:hover .node-ellipse,
+.tree-node.simple:focus-visible .node-ellipse {
   box-shadow: 0 0 35px currentColor;
+}
+
+.tree-node.simple:focus-visible {
+  outline: 2px solid var(--accent-fire);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 /* Orbiting Runes around nodes */
@@ -1376,11 +1384,13 @@
 }
 
 /* Slow down rotation on hover */
-.tree-node.simple:hover .node-runes-simple {
+.tree-node.simple:hover .node-runes-simple,
+.tree-node.simple:focus-visible .node-runes-simple {
   animation-duration: 8s;
 }
 
-.tree-node.simple:hover .node-runes-simple span {
+.tree-node.simple:hover .node-runes-simple span,
+.tree-node.simple:focus-visible .node-runes-simple span {
   text-shadow: 0 0 20px currentColor;
 }
 

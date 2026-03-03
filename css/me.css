@@ -211,9 +211,16 @@ body {
   background: rgba(255, 69, 0, 1);
 }
 
-.heatmap-cell:hover {
+.heatmap-cell:hover,
+.heatmap-cell:focus-visible {
   transform: scale(1.5);
   z-index: 10;
+}
+
+.heatmap-cell:focus-visible {
+  outline: 2px solid var(--color-fire);
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 
 .heatmap-legend {
@@ -271,9 +278,15 @@ body {
   transition: all 300ms ease;
 }
 
-.achievement-badge:hover {
+.achievement-badge:hover,
+.achievement-badge:focus-visible {
   transform: scale(1.05);
   border-color: var(--color-fire);
+}
+
+.achievement-badge:focus-visible {
+  outline: 2px solid var(--color-fire);
+  outline-offset: 2px;
 }
 
 .achievement-badge.unlocked {

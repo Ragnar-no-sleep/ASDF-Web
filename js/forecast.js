@@ -385,3 +385,6 @@ async function init() {
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// Named exports for unit testing (pure functions only)
+export { formatCompact, formatTime };

@@ -1,42 +1,16 @@
 /**
  * Format Utilities Tests
- * 100% coverage target — pure functions, no side effects
+ * Tests the REAL source at js/utils/format.js (not inline copies)
  */
 
-// Inline implementations for jest compatibility (no module transform needed)
-// These mirror /js/utils/format.js exactly
-function formatNumber(n, decimals = 1) {
-  if (n === null || n === undefined || n === 0) return '0';
-  if (n < 1e3) return n.toString();
-  if (n < 1e6) return (n / 1e3).toFixed(decimals) + 'K';
-  if (n < 1e9) return (n / 1e6).toFixed(decimals) + 'M';
-  return (n / 1e9).toFixed(decimals) + 'B';
-}
-
-function formatWallet(address, start = 8, end = 4) {
-  if (!address || address.length <= start + end) return address;
-  return address.slice(0, start) + '...' + address.slice(-end);
-}
-
-function formatTimeAgo(timestamp) {
-  const diff = Date.now() - timestamp;
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) return days + 'd ago';
-  if (hours > 0) return hours + 'h ago';
-  if (minutes > 0) return minutes + 'm ago';
-  return 'now';
-}
-
-function formatDuration(ms) {
-  const total = Math.floor(ms / 1000);
-  const mins = Math.floor(total / 60);
-  const secs = total % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
+import {
+  formatNumber,
+  formatWallet,
+  formatTimeAgo,
+  formatDuration,
+  formatPeriod,
+  formatTimeLeft,
+} from '../../../js/utils/format.js';
 
 // ============================================
 
@@ -122,6 +96,11 @@ describe('formatTimeAgo', () => {
     expect(formatTimeAgo(now - 1 * 24 * 60 * 60 * 1000)).toBe('1d ago');
     expect(formatTimeAgo(now - 5 * 24 * 60 * 60 * 1000)).toBe('5d ago');
   });
+
+  it('accepts ISO 8601 string timestamps', () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    expect(formatTimeAgo(twoHoursAgo)).toBe('2h ago');
+  });
 });
 
 // ============================================
@@ -146,5 +125,42 @@ describe('formatDuration', () => {
   it('zero-pads seconds', () => {
     expect(formatDuration(65000)).toBe('1:05');
     expect(formatDuration(120000)).toBe('2:00');
+  });
+});
+
+// ============================================
+
+describe('formatPeriod', () => {
+  it('formats days and hours', () => {
+    expect(formatPeriod(90000)).toBe('1d 1h');
+  });
+
+  it('formats hours only', () => {
+    expect(formatPeriod(7200)).toBe('2h');
+  });
+
+  it('formats minutes for < 1 hour', () => {
+    expect(formatPeriod(300)).toBe('5m');
+  });
+});
+
+// ============================================
+
+describe('formatTimeLeft', () => {
+  it('returns "Now" for 0 or negative', () => {
+    expect(formatTimeLeft(0)).toBe('Now');
+    expect(formatTimeLeft(-1000)).toBe('Now');
+  });
+
+  it('formats days + hours + minutes', () => {
+    expect(formatTimeLeft(90061000)).toBe('1d 1h 1m');
+  });
+
+  it('formats hours + minutes', () => {
+    expect(formatTimeLeft(3660000)).toBe('1h 1m');
+  });
+
+  it('formats minutes only', () => {
+    expect(formatTimeLeft(300000)).toBe('5m');
   });
 });
