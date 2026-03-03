@@ -43,6 +43,7 @@ function startPumpArena(gameId) {
     particles: [],
     history: [],
     _timeouts: [], // Track setTimeout IDs for cleanup
+    _handlers: [], // Track addEventListener calls for cleanup
     // Partnership tracking
     contributionsByBuilder: {}, // Track contributions per builder
     partnership: null,
@@ -58,6 +59,12 @@ function startPumpArena(gameId) {
     selectedChoice: null,
     usedScenarios: {}, // Track used scenarios per category
   };
+
+  // Helper: track addEventListener for cleanup on game stop/restart
+  function track(target, event, handler) {
+    target.addEventListener(event, handler);
+    state._handlers.push({ target, event, handler });
+  }
 
   // Project roadmap templates per category
   const roadmapTemplates = {
@@ -1864,7 +1871,7 @@ function startPumpArena(gameId) {
   });
 
   // Refresh button - restart game
-  refreshBtn.addEventListener('click', () => {
+  track(refreshBtn, 'click', () => {
     if (confirm('Restart? All progress will be lost.')) {
       stopGame(gameId);
       startPumpArena(gameId);
@@ -1880,6 +1887,8 @@ function startPumpArena(gameId) {
   }
 
   function showPhase(phase) {
+    // Purge handlers on DOM nodes destroyed by previous innerHTML re-renders
+    state._handlers = state._handlers.filter(h => h.target.isConnected);
     state.phase = phase;
     typeSelectEl.style.display = 'none';
     builderSelectEl.style.display = 'none';
@@ -2025,22 +2034,22 @@ function startPumpArena(gameId) {
       const fill = btn.querySelector('.pa-builder-potential-fill');
       if (fill) fill.style.width = potentialPct + '%';
 
-      btn.addEventListener('click', () => {
+      track(btn, 'click', () => {
         state.selectedBuilderIdx = idx;
         state.selectedBuilder = projectTypes[state.selectedType].builders[idx];
         showPhase('roadmap');
       });
-      btn.addEventListener('mouseenter', () => {
+      track(btn, 'mouseenter', () => {
         btn.style.borderColor = type.color;
         btn.style.background = 'rgba(0,0,0,0.6)';
       });
-      btn.addEventListener('mouseleave', () => {
+      track(btn, 'mouseleave', () => {
         btn.style.borderColor = hexToRgba(type.color, 0.19);
         btn.style.background = 'rgba(0,0,0,0.4)';
       });
     });
 
-    document.getElementById('pa-back-type').addEventListener('click', () => showPhase('select'));
+    track(document.getElementById('pa-back-type'), 'click', () => showPhase('select'));
   }
 
   function renderRoadmap() {
@@ -2142,10 +2151,8 @@ function startPumpArena(gameId) {
     roadmapCard.style.setProperty('--pa-stage-bg', stageColor + '30');
     roadmapEl.querySelector('.pa-join-btn').style.setProperty('--pa-accent', type.color);
 
-    document
-      .getElementById('pa-back-builder')
-      .addEventListener('click', () => showPhase('builder'));
-    document.getElementById('pa-join-btn').addEventListener('click', () => showPhase('contribute'));
+    track(document.getElementById('pa-back-builder'), 'click', () => showPhase('builder'));
+    track(document.getElementById('pa-join-btn'), 'click', () => showPhase('contribute'));
   }
 
   function renderContributeOptions() {
@@ -2228,7 +2235,7 @@ function startPumpArena(gameId) {
 
     // Contribution buttons
     contributeSelectEl.querySelectorAll('.contrib-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      track(btn, 'click', () => {
         state.currentContribution = parseInt(btn.dataset.influence);
         // Select a random scenario for this category
         const categoryScenarios = scenarios[state.selectedType];
@@ -2251,20 +2258,18 @@ function startPumpArena(gameId) {
 
         showPhase('scenario');
       });
-      btn.addEventListener('mouseenter', () => {
+      track(btn, 'mouseenter', () => {
         btn.style.transform = 'scale(1.02)';
         btn.style.borderColor = type.color;
       });
-      btn.addEventListener('mouseleave', () => {
+      track(btn, 'mouseleave', () => {
         const isAllIn = btn.dataset.level === 'All-In';
         btn.style.transform = 'scale(1)';
         btn.style.borderColor = isAllIn ? '#a855f7' : '#333';
       });
     });
 
-    document
-      .getElementById('pa-back-roadmap')
-      .addEventListener('click', () => showPhase('roadmap'));
+    track(document.getElementById('pa-back-roadmap'), 'click', () => showPhase('roadmap'));
   }
 
   function renderScenario() {
@@ -2322,16 +2327,16 @@ function startPumpArena(gameId) {
 
     // Choice button handlers
     scenarioEl.querySelectorAll('.scenario-choice').forEach(btn => {
-      btn.addEventListener('click', () => {
+      track(btn, 'click', () => {
         state.selectedChoice = btn.dataset.approach;
         playRound();
       });
-      btn.addEventListener('mouseenter', () => {
+      track(btn, 'mouseenter', () => {
         btn.style.borderColor = type.color;
         btn.style.background = hexToRgba(type.color, 0.15);
         btn.style.transform = 'translateX(5px)';
       });
-      btn.addEventListener('mouseleave', () => {
+      track(btn, 'mouseleave', () => {
         btn.style.borderColor = '#333';
         btn.style.background = 'rgba(255,255,255,0.05)';
         btn.style.transform = 'translateX(0)';
@@ -2520,11 +2525,11 @@ function startPumpArena(gameId) {
     // Set dynamic accent color via CSSOM
     partnershipOfferEl.querySelector('.pa-offer-card').style.setProperty('--pa-accent', safeColor);
 
-    document.getElementById('pa-decline-partnership').addEventListener('click', () => {
+    track(document.getElementById('pa-decline-partnership'), 'click', () => {
       showPhase('select');
     });
 
-    document.getElementById('pa-accept-partnership').addEventListener('click', () => {
+    track(document.getElementById('pa-accept-partnership'), 'click', () => {
       // Create partnership
       state.isPartner = true;
       state.partnership = {
@@ -2665,7 +2670,7 @@ function startPumpArena(gameId) {
     const decisionBtn = partnershipViewEl.querySelector('.pa-decision-btn');
     if (decisionBtn) decisionBtn.style.setProperty('--pa-accent', type.color);
 
-    document.getElementById('pa-leave-partnership').addEventListener('click', () => {
+    track(document.getElementById('pa-leave-partnership'), 'click', () => {
       if (confirm('Leave the partnership? You will return to being a regular investor.')) {
         state.isPartner = false;
         state.partnership = null;
@@ -2675,11 +2680,11 @@ function startPumpArena(gameId) {
     });
 
     if (decisionsRemaining > 0) {
-      document.getElementById('pa-make-decision').addEventListener('click', () => {
+      track(document.getElementById('pa-make-decision'), 'click', () => {
         showPhase('collab');
       });
     } else {
-      document.getElementById('pa-finish-partnership').addEventListener('click', () => {
+      track(document.getElementById('pa-finish-partnership'), 'click', () => {
         // Partnership completed successfully - bonus reward
         const bonus = Math.floor(state.cash * 0.5);
         state.cash += bonus;
@@ -2743,7 +2748,7 @@ function startPumpArena(gameId) {
     collabEl.querySelector('.pa-collab-card').style.setProperty('--pa-accent', type.color);
 
     collabEl.querySelectorAll('.collab-option').forEach(btn => {
-      btn.addEventListener('click', () => {
+      track(btn, 'click', () => {
         const choice = btn.dataset.choice;
         state.partnership.collabChoices.push(choice);
         state.partnership.decisionsRemaining--;
@@ -2784,17 +2789,17 @@ function startPumpArena(gameId) {
         );
       });
 
-      btn.addEventListener('mouseenter', () => {
+      track(btn, 'mouseenter', () => {
         btn.style.borderColor = type.color;
         btn.style.background = hexToRgba(type.color, 0.15);
       });
-      btn.addEventListener('mouseleave', () => {
+      track(btn, 'mouseleave', () => {
         btn.style.borderColor = '#333';
         btn.style.background = 'rgba(255,255,255,0.05)';
       });
     });
 
-    document.getElementById('pa-back-to-partnership').addEventListener('click', () => {
+    track(document.getElementById('pa-back-to-partnership'), 'click', () => {
       showPhase('partnership');
     });
   }
@@ -2802,17 +2807,17 @@ function startPumpArena(gameId) {
   // Type selection event listeners
   const typeButtons = typeSelectEl.querySelectorAll('.type-btn');
   typeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    track(btn, 'click', () => {
       state.selectedType = btn.dataset.type;
       showPhase('builder');
     });
-    btn.addEventListener('mouseenter', () => {
+    track(btn, 'mouseenter', () => {
       const type = projectTypes[btn.dataset.type];
       btn.style.borderColor = type.color;
       btn.style.background = hexToRgba(type.color, 0.2);
       btn.style.transform = 'scale(1.02)';
     });
-    btn.addEventListener('mouseleave', () => {
+    track(btn, 'mouseleave', () => {
       const type = projectTypes[btn.dataset.type];
       btn.style.borderColor = type.color;
       btn.style.background = 'rgba(0,0,0,0.5)';
@@ -2862,6 +2867,11 @@ function startPumpArena(gameId) {
       // Clear tracked timeouts
       state._timeouts.forEach(id => clearTimeout(id));
       state._timeouts.length = 0;
+      // Remove tracked event listeners
+      state._handlers.forEach(({ target, event, handler }) => {
+        target.removeEventListener(event, handler);
+      });
+      state._handlers.length = 0;
     },
   };
 }
