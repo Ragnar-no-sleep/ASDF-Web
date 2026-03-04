@@ -73,6 +73,7 @@
     <link rel="stylesheet" href="css/valhalla.css" />
     <link rel="stylesheet" href="css/pumparena.css" />
     <link rel="stylesheet" href="css/game-engines.css" />
+    <link rel="stylesheet" href="css/spaceshooter.css" />
 
     <link rel="stylesheet" href="css/runtime-components.css" />
   </head>
@@ -247,7 +248,7 @@
           <div class="section-header">
             <h2 class="section-title" id="games-section-title">All Games</h2>
             <p class="section-subtitle">
-              9 unique mini-games. Play, earn XP, climb the leaderboards!
+              11 unique mini-games. Play, earn XP, climb the leaderboards!
             </p>
           </div>
 
@@ -980,14 +981,41 @@
     <script defer src="js/games/shared/juice.js"></script>
     <script defer src="js/games/shared/index.js"></script>
 
+    <!-- ASDF Game Framework (Sprint 2 SOLID Hardening) — Load order critical -->
+    <script defer src="js/games/framework/registry.js"></script>
+    <script defer src="js/games/framework/entity.js"></script>
+    <script defer src="js/games/framework/entity-schema.js"></script>
+    <script defer src="js/games/framework/scene.js"></script>
+    <script defer src="js/games/framework/assets.js"></script>
+    <script defer src="js/games/framework/hud.js"></script>
+    <script defer src="js/games/framework/camera.js"></script>
+    <script defer src="js/games/framework/renderer.js"></script>
+    <script defer src="js/games/framework/game-lifecycle.js"></script>
+    <script defer src="js/games/framework/game-kit.js"></script>
+
     <!-- Game Engines (Modular) -->
     <script defer src="js/games/engines/game-engine-base.js"></script>
+
+    <!-- Space Shooter Modules -->
+    <script defer src="js/games/engines/spaceshooter/particles.js"></script>
+    <script defer src="js/games/engines/spaceshooter/audio.js"></script>
+    <script defer src="js/games/engines/spaceshooter/parallax.js"></script>
+    <script defer src="js/games/engines/spaceshooter/entities.js"></script>
+    <script defer src="js/games/engines/spaceshooter/waves.js"></script>
+    <script defer src="js/games/engines/spaceshooter/upgrades.js"></script>
+    <script defer src="js/games/engines/spaceshooter/renderer.js"></script>
+    <script defer src="js/games/engines/spaceshooter/index.js"></script>
+
+    <!-- StakeStacker Modules (Modular Rewrite) -->
+    <script defer src="js/games/engines/stakestacker/entities.js"></script>
+    <script defer src="js/games/engines/stakestacker/renderer.js"></script>
+    <script defer src="js/games/engines/stakestacker/index.js"></script>
+
     <script defer src="js/games/engines/tokencatcher.js"></script>
     <script defer src="js/games/engines/burnrunner.js"></script>
     <script defer src="js/games/engines/scamblaster.js"></script>
     <script defer src="js/games/engines/cryptoheist.js"></script>
     <script defer src="js/games/engines/whalewatch.js"></script>
-    <script defer src="js/games/engines/stakestacker.js"></script>
     <script defer src="js/games/engines/dexdash.js"></script>
     <script defer src="js/games/engines/burnorhold.js"></script>
     <script defer src="js/games/engines/liquiditymaze.js"></script>
