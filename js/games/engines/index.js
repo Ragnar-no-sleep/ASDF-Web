@@ -67,27 +67,13 @@ const GameEngines = {
    * @returns {string[]} Array of loaded game IDs
    */
   getLoadedEngines() {
-    const engines = [];
-    const gameIds = [
-      'tokencatcher',
-      'burnrunner',
-      'scamblaster',
-      'cryptoheist',
-      'pumparena',
-      'whalewatch',
-      'stakestacker',
-      'dexdash',
-      'burnorhold',
-      'liquiditymaze',
-      'spaceshooter',
-    ];
-
-    for (const id of gameIds) {
-      if (this[id] !== null) {
-        engines.push(id);
-      }
+    if (typeof GameRegistry !== 'undefined') {
+      return GameRegistry.getAll();
     }
-    return engines;
+    // Fallback: scan own properties for engine objects
+    return Object.keys(this).filter(
+      k => this[k] !== null && typeof this[k] === 'object' && typeof this[k].start === 'function'
+    );
   },
 
   /**
@@ -167,7 +153,7 @@ const GameEngines = {
     return {
       initialized: this.initialized,
       loadedEngines: this.getLoadedEngines(),
-      totalEngines: 11,
+      totalEngines: this.getLoadedEngines().length,
       sharedModulesLoaded: this.shared !== null && this.shared.initialized,
     };
   },
