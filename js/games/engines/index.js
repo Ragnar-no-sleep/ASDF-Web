@@ -22,6 +22,7 @@ const GameEngines = {
   dexdash: null,
   burnorhold: null,
   liquiditymaze: null,
+  spaceshooter: null,
 
   // Shared modules
   shared: null,
@@ -48,17 +49,11 @@ const GameEngines = {
       GameShared.init();
     }
 
-    // Register game engines from window
-    this.tokencatcher = typeof TokenCatcher !== 'undefined' ? TokenCatcher : null;
-    this.burnrunner = typeof BurnRunner !== 'undefined' ? BurnRunner : null;
-    this.scamblaster = typeof ScamBlaster !== 'undefined' ? ScamBlaster : null;
-    this.cryptoheist = typeof CryptoHeist !== 'undefined' ? CryptoHeist : null;
-    this.pumparena = typeof PumpArena !== 'undefined' ? PumpArena : null;
-    this.whalewatch = typeof WhaleWatch !== 'undefined' ? WhaleWatch : null;
-    this.stakestacker = typeof StakeStacker !== 'undefined' ? StakeStacker : null;
-    this.dexdash = typeof DexDash !== 'undefined' ? DexDash : null;
-    this.burnorhold = typeof BurnOrHold !== 'undefined' ? BurnOrHold : null;
-    this.liquiditymaze = typeof LiquidityMaze !== 'undefined' ? LiquidityMaze : null;
+    // Flush GameRegistry entries into this object (single source of truth)
+    if (typeof GameRegistry !== 'undefined') {
+      GameRegistry.flush();
+      GameRegistry.lock(); // Prevent post-init registration (SOLID: O)
+    }
 
     this.initialized = true;
 
@@ -84,6 +79,7 @@ const GameEngines = {
       'dexdash',
       'burnorhold',
       'liquiditymaze',
+      'spaceshooter',
     ];
 
     for (const id of gameIds) {
@@ -171,7 +167,7 @@ const GameEngines = {
     return {
       initialized: this.initialized,
       loadedEngines: this.getLoadedEngines(),
-      totalEngines: 10,
+      totalEngines: 11,
       sharedModulesLoaded: this.shared !== null && this.shared.initialized,
     };
   },
