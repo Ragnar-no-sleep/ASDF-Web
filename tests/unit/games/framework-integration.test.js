@@ -12,28 +12,12 @@
 
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
+const { loadModule } = require('../../fixtures/load-module');
 
 // Load real framework modules into global scope (they use window.X pattern)
 const frameworkDir = path.join(__dirname, '../../../js/games/framework');
 const enginesDir = path.join(__dirname, '../../../js/games/engines');
-
-function loadModule(filePath) {
-  const code = fs.readFileSync(filePath, 'utf-8');
-  // Convert window-based IIFE modules to global assignments for Jest
-  // 1. Replace window.X = Y with global.X = Y in export blocks
-  // 2. Replace `const X = {` with `global.X = {` so the variable is on global scope
-  const adapted = code
-    .replace(/'use strict';/g, '')
-    .replace(/\bconst\s+(\w+)\s*=\s*\{/g, 'global.$1 = {')
-    .replace(/if \(typeof window[\s\S]*$/g, '')
-    .replace(/window\.(ASDF\s*=\s*window\.ASDF\s*\|\|\s*\{\};?)/g, 'global.$1')
-    .replace(/window\.ASDF\./g, 'global.ASDF.')
-    .replace(/window\./g, 'global.');
-  // eslint-disable-next-line no-eval
-  eval(adapted);
-}
 
 beforeAll(() => {
   // Load framework modules in dependency order

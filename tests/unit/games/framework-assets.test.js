@@ -1,222 +1,144 @@
 /**
  * Tests for AssetLoader (games/framework/assets.js)
- * Lazy-load images with caching + geometry fallback
+ * Loads REAL source module — no inline replicas.
  */
 
 'use strict';
 
+const path = require('path');
+const { loadModule } = require('../../fixtures/load-module');
+
+beforeAll(() => {
+  loadModule(path.join(__dirname, '../../../js/games/framework/assets.js'));
+});
+
+const AL = () => global.AssetLoader;
+
 describe('AssetLoader', () => {
-  let AssetLoader;
-
-  beforeEach(() => {
-    // Inline replica matching assets.js contract
-    AssetLoader = {
-      _images: new Map(),
-      _loading: new Map(),
-      _baseUrl: 'assets/games/',
-
-      setBaseUrl(url) {
-        this._baseUrl = url;
-      },
-
-      async loadImage(id, url) {
-        if (this._images.has(id)) {
-          return this._images.get(id);
-        }
-        if (this._loading.has(id)) {
-          return this._loading.get(id);
-        }
-
-        const promise = new Promise(resolve => {
-          // Simulate image loading in test env
-          const img = { src: '', width: 100, height: 100, _loaded: true };
-          img.src = url;
-          this._images.set(id, img);
-          this._loading.delete(id);
-          resolve(img);
-        });
-
-        this._loading.set(id, promise);
-        return promise;
-      },
-
-      async load(manifest = {}) {
-        const promises = [];
-        for (const [id, url] of Object.entries(manifest)) {
-          promises.push(this.loadImage(id, url));
-        }
-        await Promise.all(promises);
-      },
-
-      get(id) {
-        return this._images.get(id) || null;
-      },
-
-      async preload(ids = []) {
-        const promises = [];
-        for (const id of ids) {
-          const url = `${this._baseUrl}${id}.png`;
-          promises.push(this.loadImage(id, url));
-        }
-        await Promise.all(promises);
-      },
-
-      drawOrFallback(ctx, id, x, y, w, h, drawFn) {
-        if (!ctx) return;
-        const img = this.get(id);
-        if (img) {
-          ctx.drawImage(img, x, y, w, h);
-        } else if (drawFn && typeof drawFn === 'function') {
-          drawFn(ctx, x, y, w, h);
-        }
-      },
-
-      clear() {
-        this._images.clear();
-        this._loading.clear();
-      },
-
-      getStats() {
-        return {
-          loadedCount: this._images.size,
-          loadingCount: this._loading.size,
-        };
-      },
-    };
-  });
-
   afterEach(() => {
-    AssetLoader.clear();
+    AL().clear();
+    AL().setBaseUrl('assets/games/');
   });
 
-  describe('create and defaults', () => {
+  describe('defaults', () => {
     it('should start with empty caches', () => {
-      const stats = AssetLoader.getStats();
+      const stats = AL().getStats();
       expect(stats.loadedCount).toBe(0);
       expect(stats.loadingCount).toBe(0);
     });
 
     it('should have default base URL', () => {
-      expect(AssetLoader._baseUrl).toBe('assets/games/');
+      expect(AL()._baseUrl).toBe('assets/games/');
     });
 
     it('should allow changing base URL', () => {
-      AssetLoader.setBaseUrl('/sprites/');
-      expect(AssetLoader._baseUrl).toBe('/sprites/');
+      AL().setBaseUrl('/sprites/');
+      expect(AL()._baseUrl).toBe('/sprites/');
     });
   });
 
   describe('loadImage', () => {
-    it('should load and cache an image', async () => {
-      const img = await AssetLoader.loadImage('hero', '/sprites/hero.png');
-      expect(img).toBeTruthy();
-      expect(img.src).toBe('/sprites/hero.png');
-      expect(AssetLoader.getStats().loadedCount).toBe(1);
+    it('should create Image and set src', () => {
+      // jsdom Image never fires onload/onerror (no network)
+      // so we test the synchronous setup, not the async resolution
+      const promise = AL().loadImage('test', '/test.png');
+      expect(promise).toBeInstanceOf(Promise);
+      expect(AL()._loading.has('test')).toBe(true);
     });
 
-    it('should return cached image on second load', async () => {
-      const img1 = await AssetLoader.loadImage('hero', '/sprites/hero.png');
-      const img2 = await AssetLoader.loadImage('hero', '/sprites/hero.png');
-      expect(img1).toBe(img2);
+    it('should cache and return same result on second call', async () => {
+      // Manually inject into cache to test cache path
+      const fakeImg = { src: '/hero.png', width: 64, height: 64 };
+      AL()._images.set('hero', fakeImg);
+
+      const result = await AL().loadImage('hero', '/hero.png');
+      expect(result).toBe(fakeImg);
     });
 
-    it('should deduplicate concurrent loads', async () => {
-      const p1 = AssetLoader.loadImage('hero', '/sprites/hero.png');
-      const p2 = AssetLoader.loadImage('hero', '/sprites/hero.png');
-      const [img1, img2] = await Promise.all([p1, p2]);
-      expect(img1).toBe(img2);
-    });
-  });
+    it('should deduplicate concurrent loads', () => {
+      // Inject loading promise — async loadImage returns awaited version
+      const pending = new Promise(() => {}); // Never resolves
+      AL()._loading.set('dup', pending);
 
-  describe('load (manifest)', () => {
-    it('should load multiple assets from manifest', async () => {
-      await AssetLoader.load({
-        hero: '/sprites/hero.png',
-        enemy: '/sprites/enemy.png',
-        bg: '/sprites/bg.png',
-      });
-      expect(AssetLoader.getStats().loadedCount).toBe(3);
-      expect(AssetLoader.get('hero')).toBeTruthy();
-      expect(AssetLoader.get('enemy')).toBeTruthy();
-      expect(AssetLoader.get('bg')).toBeTruthy();
-    });
-
-    it('should handle empty manifest', async () => {
-      await AssetLoader.load({});
-      expect(AssetLoader.getStats().loadedCount).toBe(0);
+      const result = AL().loadImage('dup', '/dup.png');
+      // Result is a new promise (async wrapper) but _loading entry unchanged
+      expect(result).toBeInstanceOf(Promise);
+      expect(AL()._loading.get('dup')).toBe(pending);
     });
   });
 
   describe('get', () => {
     it('should return null for unknown asset', () => {
-      expect(AssetLoader.get('nonexistent')).toBeNull();
+      expect(AL().get('nonexistent')).toBeNull();
     });
 
-    it('should return cached image', async () => {
-      await AssetLoader.loadImage('test', '/test.png');
-      expect(AssetLoader.get('test')).toBeTruthy();
+    it('should return cached image', () => {
+      AL()._images.set('cached', { src: '/x.png' });
+      expect(AL().get('cached')).toBeTruthy();
+    });
+  });
+
+  describe('load (manifest)', () => {
+    it('should call loadImage for each entry', async () => {
+      const spy = jest.spyOn(AL(), 'loadImage').mockResolvedValue(null);
+      await AL().load({ a: '/a.png', b: '/b.png', c: '/c.png' });
+      expect(spy).toHaveBeenCalledTimes(3);
+      expect(spy).toHaveBeenCalledWith('a', '/a.png');
+      spy.mockRestore();
+    });
+
+    it('should handle empty manifest', async () => {
+      await AL().load({});
+      expect(AL().getStats().loadedCount).toBe(0);
     });
   });
 
   describe('preload', () => {
-    it('should preload using base URL + .png extension', async () => {
-      await AssetLoader.preload(['ship', 'bullet']);
-      expect(AssetLoader.get('ship')).toBeTruthy();
-      expect(AssetLoader.get('ship').src).toBe('assets/games/ship.png');
-      expect(AssetLoader.get('bullet').src).toBe('assets/games/bullet.png');
-    });
-
-    it('should handle empty array', async () => {
-      await AssetLoader.preload([]);
-      expect(AssetLoader.getStats().loadedCount).toBe(0);
+    it('should construct URLs from baseUrl + id + .png', async () => {
+      const spy = jest.spyOn(AL(), 'loadImage').mockResolvedValue(null);
+      await AL().preload(['ship', 'bullet']);
+      expect(spy).toHaveBeenCalledWith('ship', 'assets/games/ship.png');
+      expect(spy).toHaveBeenCalledWith('bullet', 'assets/games/bullet.png');
+      spy.mockRestore();
     });
   });
 
   describe('drawOrFallback', () => {
-    it('should draw image if cached', async () => {
+    it('should draw image if cached', () => {
       const ctx = { drawImage: jest.fn() };
-      await AssetLoader.loadImage('sprite', '/sprite.png');
+      const img = { src: '/sprite.png' };
+      AL()._images.set('sprite', img);
 
-      AssetLoader.drawOrFallback(ctx, 'sprite', 10, 20, 32, 32);
-      expect(ctx.drawImage).toHaveBeenCalledWith(expect.anything(), 10, 20, 32, 32);
+      AL().drawOrFallback(ctx, 'sprite', 10, 20, 32, 32);
+      expect(ctx.drawImage).toHaveBeenCalledWith(img, 10, 20, 32, 32);
     });
 
-    it('should call fallback function if image not cached', () => {
+    it('should call fallback when image missing', () => {
       const ctx = { drawImage: jest.fn() };
       const fallback = jest.fn();
 
-      AssetLoader.drawOrFallback(ctx, 'missing', 10, 20, 32, 32, fallback);
+      AL().drawOrFallback(ctx, 'missing', 10, 20, 32, 32, fallback);
       expect(ctx.drawImage).not.toHaveBeenCalled();
       expect(fallback).toHaveBeenCalledWith(ctx, 10, 20, 32, 32);
     });
 
-    it('should do nothing if no image and no fallback', () => {
+    it('should do nothing without image or fallback', () => {
       const ctx = { drawImage: jest.fn() };
-      AssetLoader.drawOrFallback(ctx, 'missing', 10, 20, 32, 32);
+      AL().drawOrFallback(ctx, 'missing', 0, 0, 1, 1);
       expect(ctx.drawImage).not.toHaveBeenCalled();
     });
 
-    it('should do nothing if ctx is null', () => {
-      expect(() => AssetLoader.drawOrFallback(null, 'x', 0, 0, 1, 1)).not.toThrow();
+    it('should handle null ctx', () => {
+      expect(() => AL().drawOrFallback(null, 'x', 0, 0, 1, 1)).not.toThrow();
     });
   });
 
   describe('clear', () => {
-    it('should empty all caches', async () => {
-      await AssetLoader.load({ a: '/a.png', b: '/b.png' });
-      expect(AssetLoader.getStats().loadedCount).toBe(2);
-
-      AssetLoader.clear();
-      expect(AssetLoader.getStats().loadedCount).toBe(0);
-      expect(AssetLoader.get('a')).toBeNull();
-    });
-  });
-
-  describe('getStats', () => {
-    it('should track loaded count', async () => {
-      await AssetLoader.loadImage('x', '/x.png');
-      await AssetLoader.loadImage('y', '/y.png');
-      expect(AssetLoader.getStats().loadedCount).toBe(2);
+    it('should empty all caches', () => {
+      AL()._images.set('a', {});
+      AL()._loading.set('b', Promise.resolve());
+      AL().clear();
+      expect(AL().getStats()).toEqual({ loadedCount: 0, loadingCount: 0 });
     });
   });
 });
