@@ -30,14 +30,13 @@ const StakeStacker = {
 
     // Input handlers
     this.kit.input.on('action', () => this.dropBlock());
-    this.trackHandler(() =>
-      document.addEventListener('keydown', e => {
-        if (e.code === 'Space') {
-          e.preventDefault();
-          this.dropBlock();
-        }
-      })
-    );
+    const keyHandler = e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        this.dropBlock();
+      }
+    };
+    this.trackHandler(document, 'keydown', keyHandler);
 
     // Game loop
     this.gameLoop = () => {
@@ -61,11 +60,11 @@ const StakeStacker = {
   },
 
   async stop() {
-    // Cleanup
+    this.cleanupHandlers();
     if (this.kit) {
       this.kit.destroy();
     }
-    this.state.gameOver = true;
+    if (this.state) this.state.gameOver = true;
   },
 
   /**
@@ -205,13 +204,7 @@ const StakeStacker = {
     }
   },
 
-  // GameEngineBase mixin methods (spread these in)
-  gameLoop: null,
-  trackHandler(fn) {
-    // Track event handler for cleanup
-    if (!this._handlers) this._handlers = [];
-    this._handlers.push(fn);
-  },
+  // GameEngineBase mixin overrides
   registerActiveGame() {
     if (typeof GameStore !== 'undefined') {
       GameStore.setActiveGame(this.gameId);
