@@ -1,294 +1,144 @@
 /**
- * ASDF Game Framework — Renderer Tests (SOLID: D — Dependency Inversion)
- * @module tests/unit/games/framework-renderer
+ * Tests for RendererFactory (games/framework/renderer.js)
+ * Loads REAL source module — no inline replicas.
  */
 
 'use strict';
 
+const path = require('path');
+const { loadModule } = require('../../fixtures/load-module');
+
+beforeAll(() => {
+  loadModule(path.join(__dirname, '../../../js/games/framework/renderer.js'));
+});
+
+const RF = () => global.RendererFactory;
+
+// jsdom doesn't implement canvas.getContext — mock it
+function createMockCanvas() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 600;
+  const ctx = {
+    fillStyle: '',
+    strokeStyle: '',
+    font: '',
+    textAlign: 'left',
+    lineWidth: 1,
+    globalAlpha: 1,
+    fillRect: jest.fn(),
+    strokeRect: jest.fn(),
+    clearRect: jest.fn(),
+    drawImage: jest.fn(),
+    fillText: jest.fn(),
+    save: jest.fn(),
+    restore: jest.fn(),
+    translate: jest.fn(),
+    rotate: jest.fn(),
+    beginPath: jest.fn(),
+    arc: jest.fn(),
+    fill: jest.fn(),
+  };
+  canvas.getContext = jest.fn(() => ctx);
+  return { canvas, ctx };
+}
+
 describe('RendererFactory (SOLID: Dependency Inversion)', () => {
-  let canvas;
+  let canvas, ctx;
 
   beforeEach(() => {
-    canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
+    ({ canvas, ctx } = createMockCanvas());
   });
 
-  describe('create 2D renderer', () => {
-    let mockCtx;
-
-    beforeEach(() => {
-      mockCtx = {
-        fillStyle: '',
-        font: '',
-        textAlign: 'left',
-        globalAlpha: 1,
-        fillRect: jest.fn(),
-        drawImage: jest.fn(),
-        save: jest.fn(),
-        restore: jest.fn(),
-        translate: jest.fn(),
-        rotate: jest.fn(),
-        beginPath: jest.fn(),
-        arc: jest.fn(),
-        fill: jest.fn(),
-        fillText: jest.fn(),
-      };
-    });
-
-    it('should create 2D canvas renderer', () => {
-      const renderer = {
-        type: '2d',
-        canvas,
-        ctx: mockCtx,
-        width: 800,
-        height: 600,
-
-        clear() {
-          this.ctx.fillStyle = '#000';
-          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        },
-
-        draw(image, x, y, w, h, rotation = 0, alpha = 1) {
-          if (!image) return;
-          this.ctx.save();
-          this.ctx.globalAlpha = alpha;
-          if (rotation !== 0) {
-            this.ctx.translate(x + w / 2, y + h / 2);
-            this.ctx.rotate(rotation);
-            this.ctx.drawImage(image, -w / 2, -h / 2, w, h);
-          } else {
-            this.ctx.drawImage(image, x, y, w, h);
-          }
-          this.ctx.restore();
-        },
-
-        drawRect(x, y, w, h, color = '#fff') {
-          this.ctx.fillStyle = color;
-          this.ctx.fillRect(x, y, w, h);
-        },
-
-        drawText(text, x, y, style = {}) {
-          const { color = '#fff', font = '16px Arial', align = 'left' } = style;
-          this.ctx.fillStyle = color;
-          this.ctx.font = font;
-          this.ctx.textAlign = align;
-          this.ctx.fillText(text, x, y);
-        },
-      };
-
+  describe('create', () => {
+    it('should create 2D renderer with valid canvas', () => {
+      const renderer = RF().create('2d', { canvas });
+      expect(renderer).toBeTruthy();
       expect(renderer.type).toBe('2d');
       expect(renderer.canvas).toBe(canvas);
-      expect(renderer.ctx).toBeDefined();
+      expect(renderer.ctx).toBeTruthy();
+    });
+
+    it('should default to 2D type', () => {
+      const renderer = RF().create(undefined, { canvas });
+      expect(renderer.type).toBe('2d');
+    });
+
+    it('should return null for unknown type', () => {
+      const spy = jest.spyOn(console, 'error').mockImplementation();
+      expect(RF().create('webgl', { canvas })).toBeNull();
+      expect(RF().create('phaser', { canvas })).toBeNull();
+      spy.mockRestore();
+    });
+
+    it('should return null without canvas', () => {
+      const spy = jest.spyOn(console, 'error').mockImplementation();
+      expect(RF().create('2d', {})).toBeNull();
+      spy.mockRestore();
+    });
+
+    it('should set width and height from config', () => {
+      const renderer = RF().create('2d', { canvas, width: 1920, height: 1080 });
+      expect(renderer.width).toBe(1920);
+      expect(renderer.height).toBe(1080);
+    });
+  });
+
+  describe('2D renderer methods', () => {
+    let renderer;
+
+    beforeEach(() => {
+      renderer = RF().create('2d', { canvas });
+    });
+
+    it('should have all interface methods', () => {
       expect(typeof renderer.clear).toBe('function');
       expect(typeof renderer.draw).toBe('function');
       expect(typeof renderer.drawRect).toBe('function');
+      expect(typeof renderer.drawStrokeRect).toBe('function');
+      expect(typeof renderer.drawCircle).toBe('function');
       expect(typeof renderer.drawText).toBe('function');
+      expect(typeof renderer.applyCamera).toBe('function');
+      expect(typeof renderer.resetCamera).toBe('function');
     });
 
-    it('should clear canvas', () => {
-      const renderer = {
-        type: '2d',
-        canvas,
-        ctx: mockCtx,
-
-        clear() {
-          this.ctx.fillStyle = '#000';
-          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        },
-      };
-
-      expect(() => renderer.clear()).not.toThrow();
-      expect(mockCtx.fillRect).toHaveBeenCalled();
+    it('clear should fill canvas with black', () => {
+      renderer.clear();
+      expect(renderer.ctx.fillStyle).toBe('#000');
+      expect(renderer.ctx.fillRect).toHaveBeenCalledWith(0, 0, canvas.width, canvas.height);
     });
 
-    it('should draw rectangle', () => {
-      const renderer = {
-        type: '2d',
-        canvas,
-        ctx: mockCtx,
-
-        drawRect(x, y, w, h, color = '#fff') {
-          this.ctx.fillStyle = color;
-          this.ctx.fillRect(x, y, w, h);
-        },
-      };
-
-      expect(() => renderer.drawRect(0, 0, 100, 100, '#ff0000')).not.toThrow();
-      expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 100, 100);
+    it('drawRect should fill rectangle', () => {
+      renderer.drawRect(10, 20, 100, 50, '#ff0000');
+      expect(renderer.ctx.fillRect).toHaveBeenCalledWith(10, 20, 100, 50);
+      expect(renderer.ctx.fillStyle).toBe('#ff0000');
     });
 
-    it('should draw circle', () => {
-      const renderer = {
-        type: '2d',
-        canvas,
-        ctx: mockCtx,
-
-        drawCircle(x, y, radius, color = '#fff') {
-          this.ctx.fillStyle = color;
-          this.ctx.beginPath();
-          this.ctx.arc(x, y, radius, 0, Math.PI * 2);
-          this.ctx.fill();
-        },
-      };
-
-      expect(() => renderer.drawCircle(50, 50, 20, '#00ff00')).not.toThrow();
-      expect(mockCtx.arc).toHaveBeenCalledWith(50, 50, 20, 0, Math.PI * 2);
+    it('drawCircle should draw arc', () => {
+      renderer.drawCircle(50, 50, 20, '#00ff00');
+      expect(renderer.ctx.arc).toHaveBeenCalledWith(50, 50, 20, 0, Math.PI * 2);
     });
 
-    it('should draw text', () => {
-      const renderer = {
-        type: '2d',
-        canvas,
-        ctx: mockCtx,
-
-        drawText(text, x, y, style = {}) {
-          const { color = '#fff', font = '16px Arial', align = 'left' } = style;
-          this.ctx.fillStyle = color;
-          this.ctx.font = font;
-          this.ctx.textAlign = align;
-          this.ctx.fillText(text, x, y);
-        },
-      };
-
-      expect(() =>
-        renderer.drawText('Score: 100', 10, 10, { color: '#fff', font: '20px Arial' })
-      ).not.toThrow();
-      expect(mockCtx.fillText).toHaveBeenCalledWith('Score: 100', 10, 10);
-    });
-  });
-
-  describe('renderer interface', () => {
-    it('should have type property', () => {
-      const renderer = { type: '2d' };
-      expect(renderer.type).toBeDefined();
+    it('drawText should render text', () => {
+      renderer.drawText('Score: 100', 10, 20, { color: '#fff', font: '20px Arial' });
+      expect(renderer.ctx.fillText).toHaveBeenCalledWith('Score: 100', 10, 20);
     });
 
-    it('should have clear method', () => {
-      const renderer = { clear: () => {} };
-      expect(typeof renderer.clear).toBe('function');
+    it('draw should skip null image', () => {
+      renderer.draw(null, 0, 0, 10, 10);
+      expect(renderer.ctx.drawImage).not.toHaveBeenCalled();
     });
 
-    it('should have draw method', () => {
-      const renderer = { draw: () => {} };
-      expect(typeof renderer.draw).toBe('function');
+    it('applyCamera should save and translate', () => {
+      renderer.applyCamera(100, 50);
+      expect(renderer.ctx.save).toHaveBeenCalled();
+      expect(renderer.ctx.translate).toHaveBeenCalledWith(-100, -50);
     });
 
-    it('should have drawRect method', () => {
-      const renderer = { drawRect: () => {} };
-      expect(typeof renderer.drawRect).toBe('function');
-    });
-
-    it('should have drawText method', () => {
-      const renderer = { drawText: () => {} };
-      expect(typeof renderer.drawText).toBe('function');
-    });
-  });
-
-  describe('unknown renderer types', () => {
-    it('should reject unknown type via factory create()', () => {
-      const factory = {
-        create(type = '2d', config = {}) {
-          if (type === '2d') return { type: '2d' };
-          return null;
-        },
-      };
-
-      expect(factory.create('2d')).toBeTruthy();
-      expect(factory.create('phaser')).toBeNull();
-      expect(factory.create('webgl')).toBeNull();
-      expect(factory.create('unknown')).toBeNull();
-    });
-  });
-
-  describe('SOLID: Dependency Inversion', () => {
-    it('game code depends on Renderer interface, not Canvas API', () => {
-      // Game only calls renderer.draw(), not ctx.drawImage()
-      const renderer = {
-        draw: (image, x, y, w, h) => {
-          // Implementation hidden
-        },
-      };
-
-      // Game code is agnostic to underlying renderer type
-      expect(typeof renderer.draw).toBe('function');
-    });
-
-    it('swapping renderers requires zero game code changes', () => {
-      // Game code:
-      const gameCode = renderer => {
-        renderer.clear();
-        renderer.drawRect(10, 10, 100, 100, '#ff0000');
-        renderer.drawText('Score: 100', 10, 20);
-      };
-
-      // Works with any renderer implementing interface
-      const canvas2D = {
-        clear: () => {},
-        drawRect: () => {},
-        drawText: () => {},
-      };
-
-      const phaser = {
-        clear: () => {},
-        drawRect: () => {},
-        drawText: () => {},
-      };
-
-      expect(() => gameCode(canvas2D)).not.toThrow();
-      expect(() => gameCode(phaser)).not.toThrow();
-    });
-
-    it('should support renderer abstraction for future backends', () => {
-      const rendererTypes = {
-        canvas2D: 'production ready',
-        phaser: 'planned',
-        webgl: 'planned',
-      };
-
-      expect(Object.keys(rendererTypes).length).toBe(3);
-      expect(rendererTypes.canvas2D).toBe('production ready');
-    });
-  });
-
-  describe('Camera transforms', () => {
-    it('should apply camera transform', () => {
-      const mockCtx = {
-        save: jest.fn(),
-        translate: jest.fn(),
-      };
-
-      const renderer = {
-        type: '2d',
-        ctx: mockCtx,
-
-        applyCamera(cameraX = 0, cameraY = 0) {
-          this.ctx.save();
-          this.ctx.translate(-cameraX, -cameraY);
-        },
-      };
-
-      expect(() => renderer.applyCamera(100, 50)).not.toThrow();
-      expect(mockCtx.save).toHaveBeenCalled();
-      expect(mockCtx.translate).toHaveBeenCalledWith(-100, -50);
-    });
-
-    it('should reset camera transform', () => {
-      const mockCtx = {
-        restore: jest.fn(),
-      };
-
-      const renderer = {
-        type: '2d',
-        ctx: mockCtx,
-
-        resetCamera() {
-          this.ctx.restore();
-        },
-      };
-
-      expect(() => renderer.resetCamera()).not.toThrow();
-      expect(mockCtx.restore).toHaveBeenCalled();
+    it('resetCamera should restore context', () => {
+      renderer.applyCamera(0, 0);
+      renderer.resetCamera();
+      expect(renderer.ctx.restore).toHaveBeenCalled();
     });
   });
 });
