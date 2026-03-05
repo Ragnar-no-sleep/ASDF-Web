@@ -1127,10 +1127,11 @@ const LiquidityMaze = {
     // Mini-map toggle
     const minimapToggle = document.getElementById('lm-minimap-toggle');
     if (minimapToggle) {
-      minimapToggle.addEventListener('click', () => {
+      this.handleMinimapToggle = () => {
         self.state.showMiniMap = !self.state.showMiniMap;
         minimapToggle.textContent = self.state.showMiniMap ? 'MAP: ON' : 'MAP: OFF';
-      });
+      };
+      minimapToggle.addEventListener('click', this.handleMinimapToggle);
     }
   },
 
@@ -1145,6 +1146,10 @@ const LiquidityMaze = {
     if (this.canvas) {
       this.canvas.removeEventListener('touchstart', this.handleTouchStart);
       this.canvas.removeEventListener('touchmove', this.handleTouchMove);
+    }
+    const minimapToggle = document.getElementById('lm-minimap-toggle');
+    if (minimapToggle && this.handleMinimapToggle) {
+      minimapToggle.removeEventListener('click', this.handleMinimapToggle);
     }
     this.canvas = null;
     this.ctx = null;
