@@ -45,7 +45,7 @@ const DEFAULT_CONFIG = {
 
   // Rotation settings
   ROTATION_EPOCH: '2024-01-01T00:00:00Z',
-  CYCLE_WEEKS: 9,
+  CYCLE_WEEKS: 10,
 };
 
 // ============================================
@@ -84,7 +84,7 @@ const CONFIG = {
 
   // Rotation settings
   ROTATION_EPOCH: new Date(DEFAULT_CONFIG.ROTATION_EPOCH),
-  CYCLE_WEEKS: DEFAULT_CONFIG.CYCLE_WEEKS,
+  CYCLE_WEEKS: 10,
 
   // Config state
   _loaded: false,
@@ -283,6 +283,14 @@ const GAMES = [
     type: 'Navigation',
     description:
       'Navigate the DeFi maze to find the deepest liquidity pools. Avoid fee traps and dead ends!',
+  },
+  {
+    id: 'spaceshooter',
+    name: 'Space Shooter',
+    icon: '🚀',
+    type: 'Arcade Shooter',
+    description:
+      'Classic vertical shmup! Pilot your starship, dodge enemy fire, collect power-ups, and conquer 5 boss waves!',
   },
 ];
 
