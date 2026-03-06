@@ -35,8 +35,7 @@ const { logAudit } = require('../audit');
 const WS_CONFIG = {
   // Connection settings
   url:
-    process.env.HELIUS_WS_URL ||
-    `wss://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
+    process.env.HELIUS_WS_URL || `wss://beta.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
 
   // Reconnection settings (Fibonacci backoff)
   reconnectDelays: [1000, 2000, 3000, 5000, 8000, 13000, 21000, 34000],

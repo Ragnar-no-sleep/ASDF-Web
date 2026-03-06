@@ -25,10 +25,10 @@ import {
 // ============================================
 
 const RPC_CONFIG = {
-  // Helius mainnet (API key loaded from env/config)
+  // Helius Gatekeeper (edge gateway, lower latency — beta)
   mainnet: {
-    http: 'https://mainnet.helius-rpc.com/?api-key=',
-    ws: 'wss://mainnet.helius-rpc.com/?api-key=',
+    http: 'https://beta.helius-rpc.com/?api-key=',
+    ws: 'wss://beta.helius-rpc.com/?api-key=',
   },
   // Devnet for testing
   devnet: {
@@ -223,9 +223,9 @@ const SolanaClient = {
   async confirmTransaction(signature, blockhashContext) {
     if (!this.rpc) throw new Error('SolanaClient not initialized');
 
-    // Poll for confirmation
+    // Poll for confirmation (Fibonacci-based backoff)
+    const FIB_DELAYS = [233, 377, 610, 987, 1597, 2584, 4181];
     const maxRetries = 30;
-    const retryDelay = 1000;
 
     for (let i = 0; i < maxRetries; i++) {
       const result = await this.rpc.getSignatureStatuses([signature]).send();
@@ -252,10 +252,45 @@ const SolanaClient = {
         return { err: 'BlockhashExpired' };
       }
 
-      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      await new Promise(resolve =>
+        setTimeout(resolve, FIB_DELAYS[Math.min(i, FIB_DELAYS.length - 1)])
+      );
     }
 
     return { err: 'ConfirmationTimeout' };
+  },
+
+  /**
+   * Get priority fee estimate via Helius getPriorityFeeEstimate
+   * @param {Object} [options]
+   * @param {string} [options.priorityLevel='Medium'] - Min|Low|Medium|High|VeryHigh|UnsafeMax
+   * @returns {Promise<number>} Fee in microLamports per compute unit
+   */
+  async getPriorityFeeEstimate(options = {}) {
+    if (!this.rpc) throw new Error('SolanaClient not initialized');
+
+    const { priorityLevel = 'Medium' } = options;
+    const rpcUrl = RPC_CONFIG[this.cluster]?.http;
+    if (!rpcUrl || !this.apiKey) return 1000; // fallback
+
+    try {
+      const response = await fetch(rpcUrl + this.apiKey, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'priority-fee',
+          method: 'getPriorityFeeEstimate',
+          params: [{ options: { priorityLevel, recommended: true } }],
+        }),
+      });
+
+      if (!response.ok) return 1000;
+      const data = await response.json();
+      return data.result?.priorityFeeEstimate || 1000;
+    } catch {
+      return 1000; // safe fallback
+    }
   },
 
   /**

@@ -32,9 +32,9 @@ const HELIUS_WEBHOOK_SECRET = process.env.HELIUS_WEBHOOK_SECRET;
 
 // API endpoints
 const HELIUS_API = {
-  RPC: process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+  RPC: process.env.HELIUS_RPC_URL || `https://beta.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
   REST: 'https://api.helius.xyz',
-  DAS: 'https://mainnet.helius-rpc.com',
+  DAS: 'https://beta.helius-rpc.com',
 };
 
 // DAS API configuration

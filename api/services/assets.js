@@ -25,7 +25,7 @@ const DAS_CONFIG = {
   // Helius DAS RPC endpoint
   rpcUrl:
     process.env.HELIUS_RPC_URL ||
-    `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
+    `https://beta.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
 
   // Cache settings (Fibonacci-based TTLs)
   cache: {

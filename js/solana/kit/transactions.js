@@ -22,6 +22,12 @@ import {
 // System Program for SOL transfers
 import { getTransferSolInstruction } from 'https://esm.sh/@solana-program/system@0.7';
 
+// Compute Budget for priority fees
+import {
+  getSetComputeUnitLimitInstruction,
+  getSetComputeUnitPriceInstruction,
+} from 'https://esm.sh/@solana-program/compute-budget@0.7';
+
 // Token Program for SPL transfers
 import {
   getTransferInstruction,
@@ -62,6 +68,13 @@ export async function buildSolTransfer({ from, to, amountSOL }) {
   const toAddr = address(to);
   const amountLamports = solToLamports(amountSOL);
 
+  // Get dynamic priority fee
+  const priorityFee = await SolanaClient.getPriorityFeeEstimate();
+
+  // Compute budget instructions
+  const computeLimitIx = getSetComputeUnitLimitInstruction({ units: 100_000 });
+  const computePriceIx = getSetComputeUnitPriceInstruction({ microLamports: priorityFee });
+
   // Build the transfer instruction
   const transferIx = getTransferSolInstruction({
     source: fromAddr,
@@ -69,11 +82,13 @@ export async function buildSolTransfer({ from, to, amountSOL }) {
     amount: amountLamports,
   });
 
-  // Create transaction message
+  // Create transaction message (order: compute limit, price, then transfer)
   const message = pipe(
     createTransactionMessage({ version: 0 }),
     tx => setTransactionMessageFeePayer(fromAddr, tx),
     tx => setTransactionMessageLifetimeUsingBlockhash({ blockhash, lastValidBlockHeight }, tx),
+    tx => appendTransactionMessageInstruction(computeLimitIx, tx),
+    tx => appendTransactionMessageInstruction(computePriceIx, tx),
     tx => appendTransactionMessageInstruction(transferIx, tx)
   );
 
@@ -81,6 +96,7 @@ export async function buildSolTransfer({ from, to, amountSOL }) {
     message,
     blockhash,
     lastValidBlockHeight,
+    priorityFee,
   };
 }
 
@@ -139,6 +155,13 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
   const mintAddr = address(mint);
   const rawAmount = BigInt(Math.round(amount * Math.pow(10, decimals)));
 
+  // Get dynamic priority fee
+  const priorityFee = await SolanaClient.getPriorityFeeEstimate();
+
+  // Compute budget instructions
+  const computeLimitIx = getSetComputeUnitLimitInstruction({ units: 200_000 });
+  const computePriceIx = getSetComputeUnitPriceInstruction({ microLamports: priorityFee });
+
   // Find Associated Token Accounts (ATAs)
   const [fromAta] = await findAssociatedTokenPda({
     owner: fromAddr,
@@ -152,17 +175,18 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
     tokenProgram: TOKEN_PROGRAM_ADDRESS,
   });
 
-  // Start building transaction message
+  // Start building transaction message (compute budget first)
   let message = pipe(
     createTransactionMessage({ version: 0 }),
     tx => setTransactionMessageFeePayer(fromAddr, tx),
-    tx => setTransactionMessageLifetimeUsingBlockhash({ blockhash, lastValidBlockHeight }, tx)
+    tx => setTransactionMessageLifetimeUsingBlockhash({ blockhash, lastValidBlockHeight }, tx),
+    tx => appendTransactionMessageInstruction(computeLimitIx, tx),
+    tx => appendTransactionMessageInstruction(computePriceIx, tx)
   );
 
   // Check if destination ATA exists, create if not
   const toAtaInfo = await SolanaClient.getAccountInfo(toAta.toString());
   if (!toAtaInfo) {
-    // Create ATA instruction (idempotent - won't fail if already exists)
     const createAtaIx = getCreateAssociatedTokenIdempotentInstruction({
       payer: fromAddr,
       owner: toAddr,
@@ -185,6 +209,7 @@ export async function buildTokenTransfer({ from, to, mint, amount, decimals = TO
     message,
     blockhash,
     lastValidBlockHeight,
+    priorityFee,
   };
 }
 

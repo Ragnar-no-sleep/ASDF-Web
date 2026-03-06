@@ -28,11 +28,13 @@ const { logAudit } = require('../../audit');
 
 const RATE_LIMIT_CONFIG = {
   // Helius tier limits (requests per second)
+  // Updated 2026-03: Helius moved to credit-based model but still enforces rps caps.
+  // These are conservative caps; actual limits depend on plan credits.
   tiers: {
     free: { rps: 10, burst: 20 },
     developer: { rps: 50, burst: 100 },
-    business: { rps: 200, burst: 500 },
-    enterprise: { rps: 1000, burst: 2000 },
+    business: { rps: 200, burst: 400 },
+    professional: { rps: 500, burst: 1000 },
   },
 
   // Current tier (from env or default)

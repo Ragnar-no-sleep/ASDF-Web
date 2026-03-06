@@ -28,7 +28,7 @@ const { logAudit } = require('../../audit');
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
 const RPC_URL =
-  process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+  process.env.HELIUS_RPC_URL || `https://beta.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 
 const BATCHER_CONFIG = {
   // Batch settings

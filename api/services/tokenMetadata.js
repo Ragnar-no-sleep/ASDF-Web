@@ -30,7 +30,7 @@ const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
 const METADATA_CONFIG = {
   // API endpoints
   apiBase: 'https://api.helius.xyz',
-  rpcUrl: process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+  rpcUrl: process.env.HELIUS_RPC_URL || `https://beta.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
 
   // Cache TTLs (Fibonacci-based in ms)
   cacheTTL: {

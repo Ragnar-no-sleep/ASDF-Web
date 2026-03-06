@@ -36,7 +36,7 @@ const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
  * @returns {string}
  */
 function getHeliusRpcUrl() {
-  return process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+  return process.env.HELIUS_RPC_URL || `https://beta.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 }
 
 /**
@@ -609,7 +609,7 @@ async function buildBurnTransaction(walletAddress, amount) {
       transaction: serialized.toString('base64'),
       blockhash: blockhash,
       lastValidBlockHeight: lastValidBlockHeight,
-      priorityFee: PRIORITY_FEE_CONFIG.default,
+      priorityFee,
     };
   }, 'buildBurnTransaction');
 }
