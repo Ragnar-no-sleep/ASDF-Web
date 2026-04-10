@@ -14,6 +14,9 @@
 
 # ASDF-Web — Project Instructions
 
+`WORKFLOW.md` defines the universal engineering method.
+This file defines the ASDF-Web local adaptation: stack, deployment rules, branch policy, style constraints, and project-specific operating instructions.
+
 ## Stack
 
 Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | Render deploy (paused)
@@ -165,11 +168,10 @@ Scopes: hub | learn | build | games | burns | api | ecosystem
 
 - Philosophy: `docs/PHILOSOPHY.md`
 - Architecture: `docs/ARCHITECTURE.md`
-- Roadmap: `docs/ROADMAP-LIVE.md` (living doc, updated per sprint)
-- Audit findings: `docs/AUDIT.md`
-- Security: `docs/SECURITY-ASSESSMENT.md`
+- Roadmap: `docs/ROADMAP.md` (open items, metrics, decisions)
+- Architecture: `docs/ARCHITECTURE.md` (system design, security posture, debt)
 - Privacy: `docs/PRIVACY-POLICY.md`
-- Archive: `_archive/` (historical docs dated by month)
+- Archive: `_archive/docs-2026-02/` (historical docs)
 
 ## Agents
 

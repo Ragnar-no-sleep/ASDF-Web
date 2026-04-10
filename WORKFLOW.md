@@ -2,6 +2,9 @@
 
 This document defines a practical engineering workflow for software work in any repository.
 
+In this repository, this file is the universal method layer.
+Project-specific operating rules, stack constraints, deploy policy, and local conventions belong in `CLAUDE.md`.
+
 It is intended to be universal:
 
 - small team or solo project
