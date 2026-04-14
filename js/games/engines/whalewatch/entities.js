@@ -220,8 +220,9 @@ const WhaleWatchEntities = {
     if (grid.length === 0) throw new Error('Grid cannot be empty');
     grid.forEach((cell, idx) => {
       if (typeof cell.symbol !== 'string') throw new Error(`Cell ${idx}: symbol must be string`);
-      if (typeof cell.isTarget !== 'boolean')
+      if (typeof cell.isTarget !== 'boolean') {
         throw new Error(`Cell ${idx}: isTarget must be boolean`);
+      }
       if (typeof cell.found !== 'boolean') throw new Error(`Cell ${idx}: found must be boolean`);
     });
   },

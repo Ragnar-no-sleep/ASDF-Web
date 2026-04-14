@@ -170,8 +170,9 @@ const WhaleWatch = {
       );
       this.state.score += bonus;
       document.getElementById('ww-score').textContent = this.state.score;
-      if (typeof recordScoreUpdate === 'function')
+      if (typeof recordScoreUpdate === 'function') {
         recordScoreUpdate(this.gameId, this.state.score, bonus);
+      }
 
       // Check completion
       if (this.state.symbolMatch.foundCount >= this.state.symbolMatch.totalTargets) {
@@ -462,8 +463,9 @@ const WhaleWatch = {
     const bonus = 5 * this.state.memoryGame.round;
     this.state.score += bonus;
     document.getElementById('ww-score').textContent = this.state.score;
-    if (typeof recordScoreUpdate === 'function')
+    if (typeof recordScoreUpdate === 'function') {
       recordScoreUpdate(this.gameId, this.state.score, bonus);
+    }
 
     if (this.state.memoryGame.playerSequence.length === this.state.memoryGame.sequence.length) {
       if (this.memoryTimerInterval) clearInterval(this.memoryTimerInterval);
