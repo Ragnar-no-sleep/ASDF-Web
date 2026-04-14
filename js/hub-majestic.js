@@ -234,11 +234,83 @@ import { initInteractions } from './utils/interactions.js';
     }
   };
 
+  // --- First-visit: "New here?" on planet center ---
+  const VISITED_KEY = 'asdf_has_visited';
+
+  const initNewcomerHook = () => {
+    try {
+      if (localStorage.getItem(VISITED_KEY)) return;
+    } catch (_e) {
+      return; // private browsing
+    }
+
+    const label = document.getElementById('planetLabel');
+    const planet = document.getElementById('hubPlanet');
+    if (!label || !planet) return;
+
+    // Swap label to "New here?"
+    label.textContent = 'New here?';
+    label.classList.add('is-newcomer');
+
+    const handlePlanetClick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      showNewcomerOverlay();
+      planet.removeEventListener('click', handlePlanetClick);
+    };
+
+    planet.addEventListener('click', handlePlanetClick);
+  };
+
+  const showNewcomerOverlay = () => {
+    const overlay = document.createElement('div');
+    overlay.className = 'newcomer-overlay';
+    overlay.innerHTML = `
+      <div class="newcomer-card">
+        <p>A token on <strong>Solana</strong>. Created on pump.fun.</p>
+        <p>Every fee earned by a creator <strong>automatically burns</strong> $asdfasdfa tokens. Forever.</p>
+        <p>Less supply. No promises. Just code that runs.</p>
+        <button class="newcomer-card-cta">Got it</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const dismiss = () => {
+      overlay.remove();
+      // Restore planet label
+      const label = document.getElementById('planetLabel');
+      if (label) {
+        label.textContent = '$ASDF';
+        label.classList.remove('is-newcomer');
+      }
+      // Mark as visited
+      try {
+        localStorage.setItem(VISITED_KEY, '1');
+      } catch (_e) {
+        /* private browsing */
+      }
+      // Pulse the hero CTA
+      const cta = document.getElementById('hubHeroCta');
+      if (cta) {
+        cta.classList.add('is-pulsing');
+        cta.addEventListener('animationend', () => cta.classList.remove('is-pulsing'), {
+          once: true,
+        });
+      }
+    };
+
+    overlay.querySelector('.newcomer-card-cta').addEventListener('click', dismiss);
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) dismiss();
+    });
+  };
+
   // --- Init ---
   const init = () => {
     checkReducedMotion();
     initParallax();
     initViewToggle();
+    initNewcomerHook();
     initFullscreenPrompt();
     initEasterEgg();
 

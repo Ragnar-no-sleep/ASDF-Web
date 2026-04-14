@@ -1,0 +1,232 @@
+# Ralph-Loop: Auto-Healing CI Pipeline
+# Triggered when CI fails on develop (push only).
+# Analyzes failure patterns and applies deterministic fixes.
+#
+# Safety: max 2 iterations, concurrency lock, push-only trigger.
+# Philosophy: Don't panic. Hold. This is fine.
+
+name: Ralph-Loop
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [develop]
+
+concurrency:
+  group: ralph-loop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auto-fix:
+    name: Auto-Fix CI Failure
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'push'
+
+    permissions:
+      contents: write
+      actions: read
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 10
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Guard - Check iteration count
+        id: guard
+        run: |
+          COUNT=$(git log --oneline -10 | grep -c '\[ralph-loop\]' || true)
+          echo "iteration_count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Ralph-loop commits in last 10: $COUNT"
+          if [ "$COUNT" -ge 2 ]; then
+            echo "max_reached=true" >> "$GITHUB_OUTPUT"
+            echo "Max iterations reached (2). Stopping."
+          else
+            echo "max_reached=false" >> "$GITHUB_OUTPUT"
+            echo "Iteration $((COUNT + 1))/2 — proceeding."
+          fi
+
+      - name: Create issue (max iterations)
+        if: steps.guard.outputs.max_reached == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'ralph-loop,ci-failure',
+              state: 'open',
+            });
+            if (existing.data.length > 0) {
+              console.log('Issue already exists:', existing.data[0].html_url);
+              return;
+            }
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'CI auto-fix failed after 2 iterations',
+              body: [
+                '## Ralph-Loop Exhausted',
+                '',
+                `**Failed run:** ${context.payload.workflow_run.html_url}`,
+                `**Branch:** develop`,
+                `**Iterations:** 2/2`,
+                '',
+                'Ralph could not auto-fix this CI failure after 2 attempts.',
+                'Manual investigation required.',
+                '',
+                '### Recent commits',
+                '```',
+                'See git log --oneline -10 on develop',
+                '```',
+              ].join('\n'),
+              labels: ['ralph-loop', 'ci-failure'],
+            });
+            console.log('Issue created:', issue.data.html_url);
+
+      - name: Stop if max iterations
+        if: steps.guard.outputs.max_reached == 'true'
+        run: |
+          echo "Stopping — max ralph-loop iterations reached."
+          exit 0
+
+      - name: Setup Node.js
+        if: steps.guard.outputs.max_reached == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.guard.outputs.max_reached == 'false'
+        run: npm ci
+
+      - name: Download Playwright report
+        if: steps.guard.outputs.max_reached == 'false'
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Identify failed jobs
+        if: steps.guard.outputs.max_reached == 'false'
+        id: jobs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            const failed = jobs.data.jobs
+              .filter(j => j.conclusion === 'failure')
+              .map(j => j.name);
+            const result = failed.join(', ');
+            core.setOutput('failed_jobs', result);
+            console.log('Failed jobs:', result);
+
+      - name: Run Ralph analyzer
+        if: steps.guard.outputs.max_reached == 'false'
+        id: analyze
+        run: |
+          node scripts/ralph-analyze.cjs \
+            --report-dir playwright-report \
+            --failed-jobs "${{ steps.jobs.outputs.failed_jobs }}"
+        continue-on-error: true
+
+      - name: Commit and push fix
+        if: >
+          steps.guard.outputs.max_reached == 'false' &&
+          steps.analyze.outcome == 'success'
+        run: |
+          PATTERN=$(cat ralph-fix-pattern.txt 2>/dev/null || echo "unknown")
+          SUMMARY=$(cat ralph-fix-summary.txt 2>/dev/null || echo "Auto-fix applied")
+          ITERATION=${{ steps.guard.outputs.iteration_count }}
+          NEXT=$((ITERATION + 1))
+          RUN_URL="${{ github.event.workflow_run.html_url }}"
+
+          git config user.name "ralph-loop[bot]"
+          git config user.email "ralph-loop[bot]@users.noreply.github.com"
+
+          git add -A
+          # Exclude ralph output files from commit
+          git reset -- ralph-fix-summary.txt ralph-fix-pattern.txt 2>/dev/null || true
+
+          # Check if there are actual changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit. Fix was already applied."
+            exit 0
+          fi
+
+          git commit -m "$(cat <<EOF
+          fix(ci): [ralph-loop] ${SUMMARY}
+
+          Auto-fix iteration ${NEXT}/2
+          Failed CI run: ${RUN_URL}
+          Pattern: ${PATTERN}
+          EOF
+          )"
+
+          git push origin develop
+
+      - name: Create issue (no fix found)
+        if: >
+          steps.guard.outputs.max_reached == 'false' &&
+          steps.analyze.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let diagnosis = 'No diagnosis available.';
+            try {
+              diagnosis = fs.readFileSync('ralph-fix-summary.txt', 'utf8');
+            } catch {}
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'ralph-loop,ci-failure',
+              state: 'open',
+            });
+            if (existing.data.length > 0) {
+              // Add comment to existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body: [
+                  '## New CI Failure (no auto-fix)',
+                  '',
+                  `**Run:** ${context.payload.workflow_run.html_url}`,
+                  '',
+                  diagnosis,
+                ].join('\n'),
+              });
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'CI failure requires manual fix',
+              body: [
+                '## Ralph Analysis',
+                '',
+                `**Failed run:** ${context.payload.workflow_run.html_url}`,
+                `**Branch:** develop`,
+                `**Failed jobs:** ${{ steps.jobs.outputs.failed_jobs }}`,
+                '',
+                diagnosis,
+              ].join('\n'),
+              labels: ['ralph-loop', 'ci-failure'],
+            });
