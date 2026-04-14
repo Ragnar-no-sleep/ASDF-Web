@@ -20,7 +20,10 @@ Opus (analyse complexe requise)
 - Grep - Rechercher patterns
 - Bash (git, node, npm)
 - WebFetch - Documentation Helius
-- context7 - Docs Solana/Helius
+- Helius MCP (60+ tools) - DAS, RPC, transfers, webhooks, wallet analysis, streaming
+- DFlow MCP - Trading APIs (spot swaps, prediction markets)
+- /helius-build - Routing skill vers les bons MCP tools
+- /helius-svm - Solana protocol knowledge (SIMD, source code, docs)
 
 ## Stack Reference
 
