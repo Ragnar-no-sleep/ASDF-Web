@@ -48,7 +48,7 @@ body.forest-evening {
 }
 
 .main-title {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 56px;
   font-weight: 400;
   text-align: center;
@@ -95,7 +95,7 @@ body.forest-evening {
   bottom: -40px;
   width: 100%;
   text-align: center;
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-style: italic;
   color: var(--amber-500);
   opacity: 0;
@@ -120,7 +120,7 @@ body.forest-evening {
 }
 
 .section-title {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 32px;
   margin-bottom: 10px;
 }
@@ -155,7 +155,7 @@ body.forest-evening {
 }
 
 .archetype-name {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-size: 84px;
   margin: 0;
   color: var(--amber-500);
@@ -163,7 +163,7 @@ body.forest-evening {
 }
 
 .archetype-tagline {
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-style: italic;
   font-size: 24px;
   opacity: 0.8;
@@ -207,7 +207,7 @@ body.forest-evening {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
 }
 
 .brand-signature {
@@ -228,6 +228,7 @@ body.forest-evening {
 .footer-simple a {
   color: var(--amber-500);
   text-decoration: none;
-  font-family: 'Fraunces', serif;
+  font-family: "Fraunces", serif;
   font-style: italic;
 }
+
