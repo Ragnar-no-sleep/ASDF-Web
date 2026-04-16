@@ -19,7 +19,7 @@ This file defines the ASDF-Web local adaptation: stack, deployment rules, branch
 
 ## Stack
 
-Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | Render deploy (paused)
+Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | **Vercel deploy** (fresh foundation 2026-04-16)
 
 ## Structure
 
@@ -108,18 +108,20 @@ Typography: Inter (body), JetBrains Mono (code)
 
 ### Branches
 
-| Branch    | Deploys to           | URL                                                           |
-| --------- | -------------------- | ------------------------------------------------------------- |
-| `develop` | Render: asdf-web-dev | https://asdf-web-dev.onrender.com                             |
-| `main`    | Render: asdf-gateway | https://hub.alonisthe.dev / https://asdf-gateway.onrender.com |
+| Branch    | Deploys to         | URL                                                          |
+| --------- | ------------------ | ------------------------------------------------------------ |
+| `develop` | Vercel: preview    | https://asdf-web-{commit-hash}-stasiufrs-projects.vercel.app |
+| `main`    | Vercel: production | https://asdf-web.vercel.app / https://hub.alonisthe.dev      |
 
 ### Rules
 
-- **Default**: Always push to `develop`. Every feature, fix, or advancement.
-- **To prod**: ONLY push to `main` when the user explicitly says so.
+- **Default**: Always push to `develop`. Every feature, fix, or advancement → preview auto-deploys.
+- **To prod**: ONLY push to `main` when the user explicitly says so → production auto-deploys.
 - **PR required**: main deploys are done via Pull Request from develop → main.
 - **NEVER** push to main without explicit instruction from user.
-- `alonisthe.dev` is managed on Squarespace by another developer — no DNS changes.
+- **Vercel**: Auto-deploy on push to either branch. Project linked via `.vercel/project.json` (committed).
+- **DNS**: `alonisthe.dev` is managed on Squarespace by gcr — Vercel handles `asdf-web.vercel.app`.
+- **Fresh foundation**: No env vars imported from Render. Configure all secrets on Vercel Dashboard.
 
 ### Commit convention
 
