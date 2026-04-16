@@ -1,8 +1,8 @@
 :root {
-  --forest-950: #0F1410;
-  --forest-700: #2A3A30;
-  --amber-500: #C89B5E;
-  --cream-50: #F4EEE2;
+  --forest-950: #0f1410;
+  --forest-700: #2a3a30;
+  --amber-500: #c89b5e;
+  --cream-50: #f4eee2;
 }
 
 body.forest-evening {
@@ -17,7 +17,7 @@ body.forest-evening {
 .grain-overlay {
   position: fixed;
   inset: 0;
-  background-image: url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   background-blend-mode: overlay;
   opacity: 0.05;
   pointer-events: none;
@@ -48,7 +48,7 @@ body.forest-evening {
 }
 
 .main-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 56px;
   font-weight: 400;
   text-align: center;
@@ -82,8 +82,13 @@ body.forest-evening {
   justify-content: center;
 }
 
-.cell.light { background-color: var(--amber-500); opacity: 0.1; }
-.cell.dark { background-color: var(--forest-700); }
+.cell.light {
+  background-color: var(--amber-500);
+  opacity: 0.1;
+}
+.cell.dark {
+  background-color: var(--forest-700);
+}
 
 .piece {
   font-size: 40px;
@@ -95,7 +100,7 @@ body.forest-evening {
   bottom: -40px;
   width: 100%;
   text-align: center;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   color: var(--amber-500);
   opacity: 0;
@@ -120,7 +125,7 @@ body.forest-evening {
 }
 
 .section-title {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 32px;
   margin-bottom: 10px;
 }
@@ -155,7 +160,7 @@ body.forest-evening {
 }
 
 .archetype-name {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-size: 84px;
   margin: 0;
   color: var(--amber-500);
@@ -163,7 +168,7 @@ body.forest-evening {
 }
 
 .archetype-tagline {
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 24px;
   opacity: 0.8;
@@ -207,7 +212,7 @@ body.forest-evening {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
 }
 
 .brand-signature {
@@ -216,8 +221,14 @@ body.forest-evening {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .footer-simple {
@@ -228,7 +239,6 @@ body.forest-evening {
 .footer-simple a {
   color: var(--amber-500);
   text-decoration: none;
-  font-family: "Fraunces", serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
 }
-
