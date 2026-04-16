@@ -428,6 +428,11 @@ app.get('/games', (req, res) => {
   res.sendFile(path.join(__dirname, 'games.html'));
 });
 
+// Route /personality
+app.get('/personality', (req, res) => {
+  res.sendFile(path.join(__dirname, 'personality.html'));
+});
+
 // Route /ignition — airdrop platform (separate from games)
 app.get('/ignition', (req, res) => {
   res.sendFile(path.join(__dirname, 'ignition.html'));
@@ -547,3 +552,4 @@ function gracefulShutdown(signal) {
 }
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
