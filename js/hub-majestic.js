@@ -305,6 +305,19 @@ import { initInteractions } from './utils/interactions.js';
     });
   };
 
+  // --- Gap G3: Stage Bridge (Hero's Journey) ---
+  const syncHubStage = () => {
+    const hub = document.getElementById('main-hub');
+    if (!hub || !window.AchievementEngine) return;
+    const stage = window.AchievementEngine.getProgress().stage;
+    hub.dataset.stage = stage;
+    console.log('*sniff* Hub stage synced:', stage);
+  };
+
+  const initStageBridge = () => {
+    syncHubStage();
+    document.addEventListener('asdf:achievement-unlocked', syncHubStage);
+  };
   // --- Init ---
   const init = () => {
     checkReducedMotion();
@@ -313,6 +326,7 @@ import { initInteractions } from './utils/interactions.js';
     initNewcomerHook();
     initFullscreenPrompt();
     initEasterEgg();
+    initStageBridge();
 
     // Achievement init (deferred scripts loaded before DOMContentLoaded)
     if (window.AchievementToast) window.AchievementToast.init();
