@@ -13,6 +13,7 @@ import { disclosureSystem } from './utils/progressive-disclosure.js';
 import { initEasterEggs } from './utils/easter-eggs.js';
 import { triggerBurnAnimation } from './utils/contextual-animations.js';
 import { badgeManager } from './badge/manager.js';
+import { streakManager } from './utils/streak-manager.js';
 
 // ============================================
 // AUTO-INITIALIZATION
@@ -176,4 +177,5 @@ window.ASDF = {
   soundSystem,
   achievementSystem,
   disclosureSystem,
+  streakManager,
 };
