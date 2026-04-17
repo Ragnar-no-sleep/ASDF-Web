@@ -271,3 +271,37 @@ body.forest-evening {
   border-color: #4ade80;
   color: #4ade80;
 }
+
+/* *sniff* Mobile Hardening (Axiome 2) */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 32px;
+    margin-bottom: 40px;
+  }
+
+  .chess-board-preview {
+    width: 280px;
+    height: 280px;
+  }
+
+  .piece {
+    font-size: 28px;
+  }
+
+  .personality-card {
+    width: 100vw;
+    height: auto;
+    min-height: 525px;
+    padding: 40px 20px;
+    transform: scale(0.9);
+  }
+
+  .archetype-name {
+    font-size: 48px;
+  }
+
+  .decorative-line {
+    left: 20px;
+    right: 20px;
+  }
+}
