@@ -242,3 +242,32 @@ body.forest-evening {
   font-family: 'Fraunces', serif;
   font-style: italic;
 }
+
+.top-nav {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  z-index: 1000;
+}
+
+.wallet-btn {
+  background: transparent;
+  border: 1px solid rgba(200, 155, 94, 0.3);
+  color: var(--amber-500);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.wallet-btn:hover {
+  background: rgba(200, 155, 94, 0.1);
+  border-color: var(--amber-500);
+}
+
+.wallet-btn.connected {
+  border-color: #4ade80;
+  color: #4ade80;
+}

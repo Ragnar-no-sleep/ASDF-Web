@@ -1,4 +1,5 @@
 import ASDF_ENDPOINTS from './config/endpoints.js';
+import ASDFSolana from './solana/index.js';
 
 const ARCHETYPES = {
   philosophe: {
@@ -17,7 +18,62 @@ class PersonalityEngine {
     this.board = document.querySelector('.board-grid');
     this.gameView = document.getElementById('game-view');
     this.resultView = document.getElementById('result-view');
+
+    // Ancrage Réalité : userId persistant
+    this.userId = localStorage.getItem('asdf_user_id');
+    if (!this.userId) {
+      this.userId = 'u' + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem('asdf_user_id', this.userId);
+    }
+
     this.init();
+    this.initWallet();
+  }
+
+  async initWallet() {
+    try {
+      await ASDFSolana.init({ cluster: 'mainnet-beta' });
+
+      const connectBtn = document.getElementById('wallet-connect');
+      if (connectBtn) {
+        // Mise à jour de l'état initial
+        if (ASDFSolana.isConnected()) {
+          this.updateWalletUI(ASDFSolana.getAddress());
+        }
+
+        connectBtn.addEventListener('click', async () => {
+          if (ASDFSolana.isConnected()) {
+            await ASDFSolana.disconnect();
+            this.updateWalletUI(null);
+          } else {
+            const wallets = ASDFSolana.getWallets();
+            // Pour faire simple dans la V0, on prend le premier dispo (Phantom/Backpack)
+            if (wallets.length > 0) {
+              const { address } = await ASDFSolana.connect(wallets[0].name);
+              this.updateWalletUI(address);
+            }
+          }
+        });
+      }
+
+      ASDFSolana.on('connect', addr => this.updateWalletUI(addr));
+      ASDFSolana.on('disconnect', () => this.updateWalletUI(null));
+    } catch (e) {
+      console.warn('GROWL: Wallet system offline', e);
+    }
+  }
+
+  updateWalletUI(address) {
+    const btn = document.getElementById('wallet-connect');
+    if (!btn) return;
+
+    if (address) {
+      btn.textContent = address.substring(0, 4) + '...' + address.substring(address.length - 4);
+      btn.classList.add('connected');
+    } else {
+      btn.textContent = 'Connecter';
+      btn.classList.remove('connected');
+    }
   }
 
   init() {
@@ -50,13 +106,26 @@ class PersonalityEngine {
       const r = await fetch('https://blitz-and-chill-web.vercel.app/api/personality');
       if (!r.ok) throw new Error();
       const d = await r.json();
-      this.renderResult(d);
+
+      // Real Badge Check si wallet connecté
+      let isHolder = false;
+      if (ASDFSolana.isConnected()) {
+        const addr = ASDFSolana.getAddress();
+        const bResp = await fetch(
+          `https://blitz-and-chill-web.vercel.app/api/personality/badge?address=${addr}`
+        );
+        const bData = await bResp.json();
+        isHolder = bData.isHolder;
+      }
+
+      this.renderResult({ ...d, isHolder });
     } catch (e) {
       setTimeout(() => {
         this.renderResult({
           archetype: ARCHETYPES.philosophe,
           confidence: 0.9,
           stats: ARCHETYPES.philosophe.stats,
+          isHolder: false,
         });
       }, 1500);
     }
@@ -66,13 +135,18 @@ class PersonalityEngine {
     const b = document.getElementById('share-x');
     if (b) {
       b.onclick = () => {
-        const t =
-          'Je suis "' + d.archetype.name + '" sur Blitz & Chill. ' + d.archetype.tagline + ' ♟️✨';
+        const shareUrl = window.location.origin + '/personality?u=' + this.userId;
+        const text =
+          'Je suis "' +
+          d.archetype.name +
+          '" sur Blitz & Chill. ' +
+          d.archetype.tagline +
+          ' ♟️✨\n\nDécouvre ton identité chess ici :';
         window.open(
           'https://twitter.com/intent/tweet?text=' +
-            encodeURIComponent(t) +
+            encodeURIComponent(text) +
             '&url=' +
-            encodeURIComponent(window.location.href),
+            encodeURIComponent(shareUrl),
           '_blank'
         );
       };
@@ -85,7 +159,6 @@ class PersonalityEngine {
     this.resultView.classList.add('active');
 
     const c = d.confidence > 0.8 ? 'Révélé sur 12 parties' : 'Révélé sur 3 parties';
-
     const sHtml = d.stats
       .map(
         x => `
@@ -106,9 +179,18 @@ class PersonalityEngine {
       <div class="personality-card">
         <div class="decorative-line"></div>
         <div class="card-content">
-          <header>
-            <h2 class="archetype-name">${d.archetype.name}</h2>
-            <p class="archetype-tagline">"${d.archetype.tagline}"</p>
+          <header style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h2 class="archetype-name">${d.archetype.name}</h2>
+              <p class="archetype-tagline">"${d.archetype.tagline}"</p>
+            </div>
+            ${
+              d.isHolder
+                ? `
+              <div class="asdf-badge" title="Membre $ASDF" style="border: 1px solid var(--amber-500); color: var(--amber-500); padding: 4px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ASDF Member</div>
+            `
+                : ''
+            }
           </header>
           <div class="stats-section">${sHtml}</div>
           <footer class="card-footer">

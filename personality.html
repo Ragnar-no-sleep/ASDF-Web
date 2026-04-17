@@ -20,9 +20,18 @@
     
     <link rel="stylesheet" href="css/design-tokens.css" />
     <link rel="stylesheet" href="css/personality.css" />
-  </head>
+      <script>
+      // *sniff* Dynamisation des meta OG pour la boucle virale
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('u') || 'guest';
+      const ogImageUrl = 'https://blitz-and-chill-web.vercel.app/api/og/personality/' + userId;
+      
+      document.querySelector('meta[property=\"og:image\"]').setAttribute('content', ogImageUrl);
+      document.querySelector('meta[name=\"twitter:image\"]').setAttribute('content', ogImageUrl);
+    </script>
+  <\/head>
   <body class="forest-evening">
-    <div class="grain-overlay"></div>
+    <div class=\"grain-overlay\"><\/div>`n    <nav class=\"top-nav\">`n      <button id=\"wallet-connect\" class=\"wallet-btn\">Connecter<\/button>`n    <\/nav>
     
     <main class="personality-container">
       <div id="game-view" class="view active">
@@ -57,5 +66,7 @@
     <script type="module" src="js/personality.js"></script>
   </body>
 </html>
+
+
 
 
