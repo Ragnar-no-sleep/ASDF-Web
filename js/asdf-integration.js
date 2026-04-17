@@ -12,6 +12,7 @@ import { achievementSystem } from './utils/achievements.js';
 import { disclosureSystem } from './utils/progressive-disclosure.js';
 import { initEasterEggs } from './utils/easter-eggs.js';
 import { triggerBurnAnimation } from './utils/contextual-animations.js';
+import { badgeManager } from './badge/manager.js';
 
 // ============================================
 // AUTO-INITIALIZATION
@@ -40,9 +41,14 @@ function initASDF() {
   // 3. Easter eggs (Konami, secrets, etc.)
   initEasterEggs();
 
-  // 4. Track page visit
+  // 4. Trackers (The Multi-Engine Sync)
   achievementSystem.track('page_visit');
   disclosureSystem.track('page_visit');
+
+  // Hero's Journey auto-start
+  if (window.AchievementEngine) {
+    window.AchievementEngine.autoArrival();
+  }
 
   // 5. Track scroll to bottom
   trackScrollToBottom();
@@ -92,9 +98,14 @@ function trackScrollToBottom() {
  * Triggers animation + achievement + disclosure tracking
  */
 export function trackBurn(amount, element = null) {
-  // Track in systems
+  // *sniff* Synchro Triple-Moteur
   achievementSystem.track('burn_tokens', { amount });
   disclosureSystem.track('burn_tokens', { amount });
+
+  if (window.AchievementEngine) {
+    // Stage update: Burn = BELIEVER potential
+    if (amount >= 1000) window.AchievementEngine.unlock('BELIEVER');
+  }
 
   // Play sound
   soundSystem.play('burn');
@@ -111,6 +122,10 @@ export function trackBurn(amount, element = null) {
 export function trackStake(amount, _element = null) {
   achievementSystem.track('stake_tokens', { amount });
   disclosureSystem.track('stake_tokens', { amount });
+
+  if (window.AchievementEngine) {
+    window.AchievementEngine.unlock('VERIFIED');
+  }
 
   soundSystem.play('stake');
 }

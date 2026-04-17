@@ -274,6 +274,20 @@ class AchievementSystem {
     }
 
     this.saveProgress();
+    // *sniff* Gap G4 Bridge: Feed the Hero's Journey
+    if (window.AchievementEngine) {
+      const stageMap = {
+        first_visit: 'ARRIVAL',
+        explorer: 'LEARNED',
+        first_burn: 'VERIFIED',
+        pyromaniac: 'BELIEVER',
+        builder: 'BUILDER',
+      };
+      const journeyId = stageMap[achievement.id];
+      if (journeyId) {
+        window.AchievementEngine.unlock(journeyId);
+      }
+    }
 
     // Check for achievement unlocks
     this.checkUnlocks();
@@ -339,6 +353,20 @@ class AchievementSystem {
   unlock(achievement) {
     this.unlocked.push(achievement.id);
     this.saveProgress();
+    // *sniff* Gap G4 Bridge: Feed the Hero's Journey
+    if (window.AchievementEngine) {
+      const stageMap = {
+        first_visit: 'ARRIVAL',
+        explorer: 'LEARNED',
+        first_burn: 'VERIFIED',
+        pyromaniac: 'BELIEVER',
+        builder: 'BUILDER',
+      };
+      const journeyId = stageMap[achievement.id];
+      if (journeyId) {
+        window.AchievementEngine.unlock(journeyId);
+      }
+    }
 
     // Play sound
     soundSystem.play('success');
