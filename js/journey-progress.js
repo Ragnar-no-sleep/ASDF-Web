@@ -22,6 +22,19 @@ function getJourneyProgress() {
     if (stored) {
       const progress = JSON.parse(stored);
       progress.lastActiveAt = new Date().toISOString();
+
+      // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+      if (window.ASDF && window.ASDF.achievementSystem) {
+        window.ASDF.achievementSystem.track('complete_course', { lessonId });
+      }
+
+      if (window.AchievementEngine) {
+        // 3 lessons completed = BUILDER stage unlock
+        const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+        if (totalCompleted >= 3) {
+          window.AchievementEngine.unlock('BUILDER');
+        }
+      }
       saveJourneyProgress(progress);
       return progress;
     }
@@ -95,6 +108,19 @@ function startJourneyLesson(lessonId) {
       quizAnswers: {},
       challengeCompleted: false,
     };
+
+    // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+    if (window.ASDF && window.ASDF.achievementSystem) {
+      window.ASDF.achievementSystem.track('complete_course', { lessonId });
+    }
+
+    if (window.AchievementEngine) {
+      // 3 lessons completed = BUILDER stage unlock
+      const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+      if (totalCompleted >= 3) {
+        window.AchievementEngine.unlock('BUILDER');
+      }
+    }
     saveJourneyProgress(progress);
   }
 
@@ -115,6 +141,19 @@ function markJourneyContentCompleted(lessonId, blockId) {
   }
 
   progress.lessons[lessonId].contentProgress[blockId] = true;
+
+  // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+  if (window.ASDF && window.ASDF.achievementSystem) {
+    window.ASDF.achievementSystem.track('complete_course', { lessonId });
+  }
+
+  if (window.AchievementEngine) {
+    // 3 lessons completed = BUILDER stage unlock
+    const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+    if (totalCompleted >= 3) {
+      window.AchievementEngine.unlock('BUILDER');
+    }
+  }
   saveJourneyProgress(progress);
 }
 
@@ -137,6 +176,19 @@ function recordJourneyQuizAnswer(lessonId, quizId, answerId, correct) {
     answerId: answerId,
     correct: correct,
   };
+
+  // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+  if (window.ASDF && window.ASDF.achievementSystem) {
+    window.ASDF.achievementSystem.track('complete_course', { lessonId });
+  }
+
+  if (window.AchievementEngine) {
+    // 3 lessons completed = BUILDER stage unlock
+    const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+    if (totalCompleted >= 3) {
+      window.AchievementEngine.unlock('BUILDER');
+    }
+  }
   saveJourneyProgress(progress);
 }
 
@@ -153,6 +205,19 @@ function markJourneyChallengeCompleted(lessonId) {
   }
 
   progress.lessons[lessonId].challengeCompleted = true;
+
+  // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+  if (window.ASDF && window.ASDF.achievementSystem) {
+    window.ASDF.achievementSystem.track('complete_course', { lessonId });
+  }
+
+  if (window.AchievementEngine) {
+    // 3 lessons completed = BUILDER stage unlock
+    const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+    if (totalCompleted >= 3) {
+      window.AchievementEngine.unlock('BUILDER');
+    }
+  }
   saveJourneyProgress(progress);
 }
 
@@ -184,6 +249,18 @@ function completeJourneyLesson(lessonId, xpReward) {
       // Could trigger level-up notification here
     }
 
+    // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+    if (window.ASDF && window.ASDF.achievementSystem) {
+      window.ASDF.achievementSystem.track('complete_course', { lessonId });
+    }
+
+    if (window.AchievementEngine) {
+      // 3 lessons completed = BUILDER stage unlock
+      const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+      if (totalCompleted >= 3) {
+        window.AchievementEngine.unlock('BUILDER');
+      }
+    }
     saveJourneyProgress(progress);
   }
 }
@@ -260,6 +337,19 @@ function checkJourneySkillPackCompletion(skillPackId, skillPack) {
     }
     progress.skillPacks[skillPackId].completed = true;
     progress.skillPacks[skillPackId].completedAt = new Date().toISOString();
+
+    // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+    if (window.ASDF && window.ASDF.achievementSystem) {
+      window.ASDF.achievementSystem.track('complete_course', { lessonId });
+    }
+
+    if (window.AchievementEngine) {
+      // 3 lessons completed = BUILDER stage unlock
+      const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+      if (totalCompleted >= 3) {
+        window.AchievementEngine.unlock('BUILDER');
+      }
+    }
     saveJourneyProgress(progress);
   }
 
@@ -292,6 +382,19 @@ function checkJourneyModuleCompletion(moduleId, module) {
     }
     progress.modules[moduleId].completed = true;
     progress.modules[moduleId].completedAt = new Date().toISOString();
+
+    // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+    if (window.ASDF && window.ASDF.achievementSystem) {
+      window.ASDF.achievementSystem.track('complete_course', { lessonId });
+    }
+
+    if (window.AchievementEngine) {
+      // 3 lessons completed = BUILDER stage unlock
+      const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+      if (totalCompleted >= 3) {
+        window.AchievementEngine.unlock('BUILDER');
+      }
+    }
     saveJourneyProgress(progress);
   }
 
@@ -373,6 +476,19 @@ function exportJourneyProgress() {
 function importJourneyProgress(json) {
   try {
     const progress = JSON.parse(json);
+
+    // *sniff* Gap G9 Bridge: Learned lessons feed the Hero's Journey
+    if (window.ASDF && window.ASDF.achievementSystem) {
+      window.ASDF.achievementSystem.track('complete_course', { lessonId });
+    }
+
+    if (window.AchievementEngine) {
+      // 3 lessons completed = BUILDER stage unlock
+      const totalCompleted = Object.values(progress.lessons).filter(l => l.completed).length;
+      if (totalCompleted >= 3) {
+        window.AchievementEngine.unlock('BUILDER');
+      }
+    }
     saveJourneyProgress(progress);
     return true;
   } catch (e) {
