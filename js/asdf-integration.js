@@ -1,3 +1,4 @@
+import storage from './utils/storage.js';
 /**
  * ASDF Global Integration
  * Auto-loads all immersion systems on every page
@@ -90,12 +91,12 @@ function trackScrollToBottom() {
         isAtBottom = true;
 
         // Mark page as scrolled
-        const scrolledPages = JSON.parse(localStorage.getItem('asdf_scrolled_pages') || '[]');
+        const scrolledPages = storage.get('scrolled_pages', []);
         const currentPage = window.location.pathname;
 
         if (!scrolledPages.includes(currentPage)) {
           scrolledPages.push(currentPage);
-          localStorage.setItem('asdf_scrolled_pages', JSON.stringify(scrolledPages));
+          storage.set('scrolled_pages', scrolledPages);
 
           disclosureSystem.track('scroll_bottom');
         }

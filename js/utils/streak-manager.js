@@ -1,10 +1,11 @@
+import storage from './storage.js';
 /**
  * ASDF Unified Streak Manager
  * Single source of truth for daily engagement tracking
  * Logic: 48h rolling window for streak maintenance
  */
 
-'use strict';
+('use strict');
 
 const STORAGE_KEY = 'asdf_streak_unified';
 const TIMEOUT = 48 * 60 * 60 * 1000; // 48 hours
@@ -17,7 +18,7 @@ class StreakManager {
 
   load() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = storage.get('streak_unified');
       return stored
         ? JSON.parse(stored)
         : {
@@ -32,9 +33,9 @@ class StreakManager {
   }
 
   save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    storage.set('streak_unified', this.data);
     // Bridge Legacy keys for backward compatibility
-    localStorage.setItem('asdf_daily_streak', this.data.current.toString());
+    // Legacy key handled by storage manager;
   }
 
   init() {
