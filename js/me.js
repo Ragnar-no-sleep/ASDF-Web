@@ -46,13 +46,20 @@ function calculateDepth() {
   const featuresUnlocked = disclosureSystem.unlockedFeatures.length;
   const achievementsUnlocked = achievementSystem.unlocked.length;
 
+  // *sniff* Gap G12: Hero's Journey integration
+  let journeyScore = 0;
+  if (window.AchievementEngine) {
+    const progress = window.AchievementEngine.getProgress();
+    journeyScore = (progress.index + 1) / progress.total;
+  }
+
   // Normalize to 0-1 range
   const pageScore = Math.min(pagesVisited / 10, 1); // 10 pages = max
   const featureScore = Math.min(featuresUnlocked / 9, 1); // 9 features = max
   const achievementScore = Math.min(achievementsUnlocked / 20, 1); // 20 achievements = max
 
-  // Weighted average
-  const depth = pageScore * 0.3 + featureScore * 0.3 + achievementScore * 0.4;
+  // Weighted average (including Journey)
+  const depth = pageScore * 0.2 + featureScore * 0.2 + achievementScore * 0.3 + journeyScore * 0.3;
 
   return Math.round(depth * 100) / 100; // Round to 2 decimals
 }
@@ -167,7 +174,7 @@ function renderStreakCalendar() {
 
     const dateStr = day.toDateString();
     cell.title = dateStr;
-    cell.setAttribute('aria-label', `${dateStr}${isActive ? ' \u2014 active' : ''}`);
+    cell.setAttribute('aria-label', `${dateStr}${isActive ? ' — active' : ''}`);
     calendarEl.appendChild(cell);
   }
 }
@@ -316,7 +323,7 @@ function renderAchievements() {
     badge.setAttribute('tabindex', '0');
     badge.setAttribute('role', 'listitem');
 
-    const iconText = achievement.unlocked ? achievement.icon : '&#x1F512;';
+    const iconText = achievement.unlocked ? achievement.icon : '🔒';
     const nameText = achievement.unlocked ? achievement.name : '???';
     badge.innerHTML = `
       <div class="achievement-icon" aria-hidden="true">${iconText}</div>
@@ -332,6 +339,34 @@ function renderAchievements() {
     }
 
     showcase.appendChild(badge);
+  });
+}
+
+/**
+ * Render Hero's Journey progress (Gap G12)
+ */
+function renderHeroJourney() {
+  if (!window.AchievementEngine) return;
+
+  const progress = window.AchievementEngine.getProgress();
+  const info = progress.current;
+
+  const iconEl = document.getElementById('journeyIcon');
+  const labelEl = document.getElementById('journeyLabel');
+  const subtitleEl = document.getElementById('journeySubtitle');
+
+  if (iconEl) iconEl.textContent = info.icon;
+  if (labelEl) labelEl.textContent = info.label;
+  if (subtitleEl) subtitleEl.textContent = info.subtitle;
+
+  const steps = document.querySelectorAll('.journey-step');
+  steps.forEach((step, i) => {
+    step.classList.remove('active', 'completed');
+    if (i < progress.index) {
+      step.classList.add('completed');
+    } else if (i === progress.index) {
+      step.classList.add('active');
+    }
   });
 }
 
@@ -353,6 +388,7 @@ function init() {
   renderStats();
   renderHeatmap();
   renderAchievements();
+  renderHeroJourney();
 
   // Auto-refresh every 5 seconds
   const refreshId = setInterval(() => {
@@ -362,6 +398,7 @@ function init() {
     renderStats();
     renderHeatmap();
     renderAchievements();
+    renderHeroJourney();
   }, 5000);
   PageLifecycle.registerTimer('me-dashboard-refresh', refreshId);
 }

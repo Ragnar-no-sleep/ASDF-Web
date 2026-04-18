@@ -13,6 +13,7 @@ import { disclosureSystem } from './utils/progressive-disclosure.js';
 import { initEasterEggs } from './utils/easter-eggs.js';
 import { triggerBurnAnimation } from './utils/contextual-animations.js';
 import { badgeManager } from './badge/manager.js';
+import ASDFSolana from './solana/index.js';
 import { streakManager } from './utils/streak-manager.js';
 
 // ============================================
@@ -43,7 +44,7 @@ function initASDF() {
   initEasterEggs();
 
   // 4. Trackers (The Multi-Engine Sync)
-  achievementSystem.track('page_visit');
+  // achievementSystem.track('page_visit'); // G6: Handled in achievementSystem.init()
   disclosureSystem.track('page_visit');
 
   // Hero's Journey auto-start
@@ -53,6 +54,20 @@ function initASDF() {
 
   // 5. Track scroll to bottom
   trackScrollToBottom();
+  // 6. Badge Manager (Gap G11)
+  const initBadges = async addr => {
+    if (!addr) return;
+    console.log('*sniff* Initializing BadgeManager for:', addr);
+    await badgeManager.init(addr);
+    await badgeManager.checkAchievements();
+  };
+
+  if (ASDFSolana) {
+    ASDFSolana.on('connect', addr => initBadges(addr));
+    if (ASDFSolana.isConnected()) {
+      initBadges(ASDFSolana.getAddress());
+    }
+  }
 }
 
 // ============================================
