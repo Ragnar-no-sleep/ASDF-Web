@@ -1,3 +1,4 @@
+import storage from './storage.js';
 /**
  * ASDF Progressive Disclosure System
  * Gradually reveal features as users explore and engage
@@ -153,7 +154,7 @@ class ProgressiveDisclosure {
    * Load progress from localStorage
    */
   loadProgress() {
-    const stored = localStorage.getItem('asdf_disclosure_progress');
+    const stored = storage.get('disclosure_progress');
     return stored ? JSON.parse(stored) : {};
   }
 
@@ -161,7 +162,7 @@ class ProgressiveDisclosure {
    * Load unlocked features
    */
   loadUnlockedFeatures() {
-    const stored = localStorage.getItem('asdf_unlocked_features');
+    const stored = storage.get('unlocked_features');
     return stored ? JSON.parse(stored) : [];
   }
 
@@ -169,7 +170,7 @@ class ProgressiveDisclosure {
    * Load shown tips
    */
   loadShownTips() {
-    const stored = localStorage.getItem('asdf_shown_tips');
+    const stored = storage.get('shown_tips');
     return stored ? JSON.parse(stored) : [];
   }
 
@@ -177,9 +178,9 @@ class ProgressiveDisclosure {
    * Save progress
    */
   saveProgress() {
-    localStorage.setItem('asdf_disclosure_progress', JSON.stringify(this.progress));
+    storage.set('disclosure_progress', this.progress);
     localStorage.setItem('asdf_unlocked_features', JSON.stringify(this.unlockedFeatures));
-    localStorage.setItem('asdf_shown_tips', JSON.stringify(this.shownTips));
+    storage.set('shown_tips', this.shownTips);
   }
 
   /**
