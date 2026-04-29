@@ -95,7 +95,28 @@ const GameEngines = {
       this.init();
     }
 
-    const engine = this[gameId];
+    let engine = this[gameId];
+
+    // Fallback for games not yet using GameRegistry
+    if (!engine && typeof window !== 'undefined') {
+      const classMap = {
+        'tokencatcher': 'TokenCatcher',
+        'burnrunner': 'BurnRunner',
+        'scamblaster': 'ScamBlaster',
+        'cryptoheist': 'CryptoHeist',
+        'dexdash': 'DexDash',
+        'burnorhold': 'BurnOrHold',
+        'liquiditymaze': 'LiquidityMaze',
+        'pumparena': 'PumpArena'
+      };
+      
+      const className = classMap[gameId];
+      if (className && window[className]) {
+        engine = window[className];
+        // Auto-register for next time
+        this.register(gameId, engine);
+      }
+    }
 
     if (engine && typeof engine.start === 'function') {
       if (this.config.debug) {

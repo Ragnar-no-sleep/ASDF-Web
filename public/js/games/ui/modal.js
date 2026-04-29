@@ -105,7 +105,7 @@ const ModalUI = {
                                 <h3>${escapeHtml(game.name)}</h3>
                                 <p>${escapeHtml(game.description)}</p>
                             </div>
-                            <button class="btn btn-primary start-game-btn" data-action="start-game" data-game="${game.id}">
+                            <button class="btn btn-primary" data-action="start-game" data-game="${game.id}">
                                 START GAME
                             </button>
                         </div>
@@ -161,7 +161,6 @@ const ModalUI = {
     const modal = document.getElementById(`modal-${gameId}`);
     if (modal) {
       modal.classList.add('active');
-      modal.style.zIndex = '2000'; // High z-index to be above fixed nav (1000)
       // Set up focus trap for accessibility
       this._setupFocusTrap(modal);
     }

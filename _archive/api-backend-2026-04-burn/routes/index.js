@@ -21,6 +21,7 @@ const formations = require('./formations');
 const transactions = require('./transactions');
 const data = require('./data');
 const referrals = require('./referrals');
+const mint = require('./mint');
 const createMiscRouter = require('./misc');
 
 module.exports = {
@@ -37,5 +38,6 @@ module.exports = {
   transactions,
   data,
   referrals,
+  mint,
   createMiscRouter,
 };

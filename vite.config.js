@@ -103,6 +103,6 @@ export default defineConfig({
 
   // Optimize deps
   optimizeDeps: {
-    include: ['three', 'gsap'],
+    include: ['three'],
   },
 });

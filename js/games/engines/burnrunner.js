@@ -283,9 +283,14 @@ const BurnRunner = {
    * Resize canvas
    */
   resizeCanvas() {
+    if (!this.canvas || !this.canvas.parentElement) return;
+    
     const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    
+    // Fallback for hidden modals during initialization (avoids 0x0 canvas)
+    this.canvas.width = rect.width > 0 ? rect.width : 800;
+    this.canvas.height = rect.height > 0 ? rect.height : 400;
+    
     this.state.ground = this.canvas.height - 80;
     this.state.player.y = this.state.ground - this.state.player.height;
     this.initBackground();

@@ -766,8 +766,9 @@ app.use('/api', routes.helius); // webhooks, DAS API, assets, token metadata
 app.use('/api', routes.notifications); // notifications, push, preferences
 app.use('/api', routes.formations); // learning tracks, modules, progress
 app.use('/api', routes.transactions); // transaction builder, monitor, priority fees
-app.use('/api', routes.data); // data export/delete, sessions, devices
-app.use('/api', routes.referrals); // referral system
+app.use('/api/data', routes.data); // data export/delete, sessions, devices
+app.use('/api/referrals', routes.referrals); // referral system
+app.use('/api/mint', routes.mint); // Anti-Sybil mint permit system
 app.use('/api', routes.createMiscRouter(app)); // metrics, security, docs, version, batch
 
 // ============================================

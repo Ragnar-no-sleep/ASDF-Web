@@ -69,6 +69,21 @@ function initASDF() {
       initBadges(ASDFSolana.getAddress());
     }
   }
+
+  // 7. Dynamic Game Hub Loader (Fix for 'Orange Screen')
+  if (window.location.pathname.includes('ignition') || document.querySelector('[data-orbit-id="games"]')) {
+    console.log('*sniff* Pre-warming Game Engine (delegated to HTML script tags)...');
+    /* 
+     * DISABLED: Mixing <script defer> and import() causes "Identifier has already been declared" errors.
+     * The game page handles its own script loading.
+     * 
+    import('./games/utils.js').then(() => {
+        import('./games/shared/lifecycle.js').then(() => {
+            console.log('*tail wag* Game Lifecycle Ready.');
+        });
+    });
+    */
+  }
 }
 
 // ============================================
@@ -184,7 +199,7 @@ if (document.readyState === 'loading') {
 // EXPOSE GLOBALS (for non-module scripts)
 // ============================================
 
-window.ASDF = {
+window.ASDF = Object.assign(window.ASDF || {}, {
   trackBurn,
   trackStake,
   trackGamePlay,
@@ -194,4 +209,4 @@ window.ASDF = {
   achievementSystem,
   disclosureSystem,
   streakManager,
-};
+});

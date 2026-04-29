@@ -7,38 +7,13 @@
 
 'use strict';
 
-const SharedLifecycle = {
+const GameLifecycle = {
   /**
    * Start a game session
    * @param {string} gameId - The game ID to start
    */
   startGame(gameId) {
-    console.log(`[SharedLifecycle] Attempting to start game: ${gameId}`);
-    
-    if (!isValidGameId(gameId)) {
-      console.error(`[SharedLifecycle] Invalid gameId: ${gameId}`);
-      return;
-    }
-
-    // Hide overlay IMMEDIATELY (brute force)
-    const overlay = document.getElementById(`overlay-${gameId}`);
-    if (overlay) {
-      console.log(`[SharedLifecycle] Hiding overlay for ${gameId}`);
-      overlay.classList.add('hidden');
-      overlay.style.setProperty('display', 'none', 'important');
-      overlay.setAttribute('aria-hidden', 'true');
-    } else {
-      console.warn(`[SharedLifecycle] Overlay not found for ${gameId}`);
-      // Try to find any start overlay in this modal
-      const modal = document.getElementById(`modal-${gameId}`);
-      if (modal) {
-        const anyOverlay = modal.querySelector('.game-start-overlay');
-        if (anyOverlay) {
-          anyOverlay.classList.add('hidden');
-          anyOverlay.style.setProperty('display', 'none', 'important');
-        }
-      }
-    }
+    if (!isValidGameId(gameId)) return;
 
     // Check if starting in competitive mode
     const isCompetitive =
@@ -47,19 +22,15 @@ const SharedLifecycle = {
     if (isCompetitive) {
       // Verify we can still play competitive and start session
       if (typeof canPlayCompetitive === 'function' && !canPlayCompetitive(gameId)) {
-        if (typeof GameEvents !== 'undefined') {
-          GameEvents.emit('notify', {
-            msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.',
-          });
-          GameEvents.emit('game:mode-fallback', { gameId });
-        }
+        GameEvents.emit('notify', {
+          msg: 'Mode comp\u00e9titif non disponible. Basculement vers le mode entra\u00eenement.',
+        });
+        GameEvents.emit('game:mode-fallback', { gameId });
       } else if (typeof startCompetitiveSession === 'function' && !startCompetitiveSession()) {
-        if (typeof GameEvents !== 'undefined') {
-          GameEvents.emit('notify', {
-            msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement.",
-          });
-          GameEvents.emit('game:mode-fallback', { gameId });
-        }
+        GameEvents.emit('notify', {
+          msg: "Temps comp\u00e9titif \u00e9puis\u00e9 pour aujourd'hui! Basculement vers le mode entra\u00eenement.",
+        });
+        GameEvents.emit('game:mode-fallback', { gameId });
       }
     }
 
@@ -71,35 +42,18 @@ const SharedLifecycle = {
       }
     }
 
-    // Start engine in next frame to allow DOM updates
+    const overlay = document.getElementById(`overlay-${gameId}`);
+    if (overlay) overlay.classList.add('hidden');
+
     requestAnimationFrame(() => {
       // Read mode AFTER fallback logic (may have changed from competitive to practice)
       const actualMode =
         typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
-      
-      if (typeof GameEvents !== 'undefined') {
-        GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
-      }
+      GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
 
       // Delegate to GameEngines coordinator
-      console.log(`[SharedLifecycle] Calling GameEngines.start(${gameId})`);
       if (typeof GameEngines !== 'undefined') {
-        try {
-          GameEngines.start(gameId);
-        } catch (e) {
-          console.error(`[SharedLifecycle] Failed to start engine for ${gameId}:`, e);
-          // Show overlay again if engine failed to load
-          if (overlay) {
-            overlay.classList.remove('hidden');
-            overlay.style.display = '';
-          }
-        }
-      } else {
-        console.error('[SharedLifecycle] GameEngines coordinator not found');
-        // Legacy fallback
-        if (typeof window.startLegacyGame === 'function') {
-           window.startLegacyGame(gameId);
-        }
+        GameEngines.start(gameId);
       }
     });
   },
@@ -294,20 +248,20 @@ const SharedLifecycle = {
 
 // Legacy function exports for backwards compatibility
 function startGame(gameId) {
-  return SharedLifecycle.startGame(gameId);
+  return GameLifecycle.startGame(gameId);
 }
 
 function stopGame(gameId) {
-  return SharedLifecycle.stopGame(gameId);
+  return GameLifecycle.stopGame(gameId);
 }
 
 async function endGame(gameId, finalScore) {
-  return SharedLifecycle.endGame(gameId, finalScore);
+  return GameLifecycle.endGame(gameId, finalScore);
 }
 
 // Export for module systems
 if (typeof window !== 'undefined') {
   window.ASDF = window.ASDF || {};
-  window.ASDF.SharedLifecycle = SharedLifecycle;
-  window.SharedLifecycle = window.ASDF.SharedLifecycle;
+  window.ASDF.GameLifecycle = GameLifecycle;
+  window.GameLifecycle = window.ASDF.GameLifecycle;
 }
