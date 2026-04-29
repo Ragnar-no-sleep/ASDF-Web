@@ -41,14 +41,54 @@ const GameEngineBase = {
    */
   gameLoop() {
     const self = this;
+    const fpsInterval = 1000 / 60; // Cap to 60 FPS
+    let then = performance.now();
+
     function loop(timestamp) {
       if (!self.state || self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
       requestAnimationFrame(loop);
+
+      const elapsed = timestamp - then;
+      if (elapsed >= fpsInterval) {
+        then = timestamp - (elapsed % fpsInterval);
+        const dt = self.timing.tick(timestamp);
+        self.update(dt);
+        self.draw();
+      }
     }
     requestAnimationFrame(loop);
+  },
+
+  /**
+   * Object Pool properties
+   */
+  _pools: null,
+
+  /**
+   * Get or create a pool for a specific object type
+   */
+  getPool(type) {
+    if (!this._pools) this._pools = {};
+    if (!this._pools[type]) this._pools[type] = [];
+    return this._pools[type];
+  },
+
+  /**
+   * Request an object from the pool or create a new one
+   */
+  spawn(type, props) {
+    const pool = this.getPool(type);
+    let obj = pool.pop();
+    if (!obj) obj = { type };
+    return Object.assign(obj, props);
+  },
+
+  /**
+   * Return an object to its pool
+   */
+  recycle(obj) {
+    if (!obj.type) return;
+    this.getPool(obj.type).push(obj);
   },
 
   /**
@@ -96,8 +136,13 @@ const GameEngineBase = {
     if (!this.canvas) return;
     const parent = this.canvas.parentElement;
     if (!parent) return;
-    this.canvas.width = parent.clientWidth;
-    this.canvas.height = parent.clientHeight;
+
+    // Support for hidden/animating parents - use fallback if 0
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+
+    this.canvas.width = w > 0 ? w : 800;
+    this.canvas.height = h > 0 ? h : 600;
   },
 
   /**
@@ -117,13 +162,22 @@ const GameEngineBase = {
    * @returns {Array} Filtered particles (alive only)
    */
   updateParticles(particles, dt) {
-    return particles.filter(p => {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
       p.x += (p.vx || 0) * dt;
       p.y += (p.vy || 0) * dt;
       p.life -= dt;
       if (p.vy !== undefined) p.vy += (p.gravity || 0) * dt;
-      return p.life > 0;
-    });
+
+      if (p.life <= 0) {
+        const last = particles.pop();
+        if (i < particles.length) {
+          particles[i] = last;
+        }
+        if (this.recycle) this.recycle(p);
+      }
+    }
+    return particles;
   },
 };
 
