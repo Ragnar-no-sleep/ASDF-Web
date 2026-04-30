@@ -10,7 +10,8 @@
 'use strict';
 
 const ScamBlaster = {
-  version: '1.2.0', // Boss waves + weapons + combo system
+  ...GameEngineBase,
+  version: '1.2.1', // Zero-allocation update
   gameId: 'scamblaster',
   state: null,
   canvas: null,
@@ -91,9 +92,13 @@ const ScamBlaster = {
    * Start the game
    */
   start(gameId) {
-    this.gameId = gameId;
     const arena = document.getElementById(`arena-${gameId}`);
     if (!arena) return;
+
+    this.createArena(arena);
+    const canvas = document.getElementById('sb-canvas');
+    this.init(gameId, canvas);
+    this.resizeCanvas();
 
     this.state = {
       score: 0,
@@ -104,9 +109,20 @@ const ScamBlaster = {
       countdown: 3,
       gameMode: null,
       crosshair: { x: 0, y: 0 },
-      enemies: [],
-      explosions: [],
-      powerUps: [],
+
+      // Initialize Typed Object Pools (Zero-Allocation 2026 Standard)
+      // enemyPool itemSize 9: x, y, vy, type, hp, maxHp, size, slowed, lifespan
+      enemyPool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(100, 9) : null,
+      enemies: [], // fallback
+
+      // explosionPool itemSize 4: x, y, life, type
+      explosionPool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(200, 4) : null,
+      explosions: [], // fallback
+
+      // powerUpPool itemSize 5: x, y, vy, life, type
+      powerUpPool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(20, 5) : null,
+      powerUps: [], // fallback
+
       spawnTimer: 0,
       spawnRate: 89, // fib[10]
       baseSpeed: 1.618, // PHI
@@ -133,24 +149,27 @@ const ScamBlaster = {
       lastKillFrame: 0,
     };
 
-    this.createArena(arena);
-    this.canvas = document.getElementById('sb-canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.resizeCanvas();
-
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
     this.setupModeSelection();
     this.setupInput();
     this.preloadSprites();
-    this.gameLoop();
 
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
-      };
+    // Initialize Fixed Timestep Loop (2026 Standard)
+    if (typeof FixedTimestepLoop !== 'undefined') {
+      this.physicsLoop = new FixedTimestepLoop(
+        60, // 60 updates per second
+        dt => this.update(dt),
+        alpha => this.draw(alpha)
+      );
+      this.physicsLoop.start();
+    } else {
+      console.warn('[ScamBlaster] FixedTimestepLoop missing, falling back to legacy loop');
+      this.gameLoop();
     }
+
+    this.registerActiveGame(gameId);
   },
 
   /**
@@ -286,42 +305,97 @@ const ScamBlaster = {
       self.shoot(self.state.crosshair.x, self.state.crosshair.y);
     };
 
-    this.canvas.addEventListener('mousemove', this.handleMove);
-    this.canvas.addEventListener('click', this.handleClick);
-    this.canvas.addEventListener('touchmove', this.handleMove);
-    this.canvas.addEventListener('touchstart', this.handleClick);
+    this.track(this.canvas, 'mousemove', this.handleMove);
+    this.track(this.canvas, 'click', this.handleClick);
+    this.track(this.canvas, 'touchmove', this.handleMove, { passive: false });
+    this.track(this.canvas, 'touchstart', this.handleClick, { passive: false });
   },
 
   /**
-   * Spawn enemy
+   * Add explosion effect (Zero-Allocation using TypedObjectPool)
+   */
+  addExplosion(x, y, life, icon) {
+    if (this.state.explosionPool) {
+      const idx = this.state.explosionPool.acquire();
+      if (idx !== -1) {
+        const offset = idx * this.state.explosionPool.itemSize;
+        const data = this.state.explosionPool.data;
+        const iconMap = { '💥': 0, '🎆': 1, '✨': 2, '💔': 3, '💨': 4 };
+        data[offset + 0] = x;
+        data[offset + 1] = y;
+        data[offset + 2] = life;
+        data[offset + 3] = iconMap[icon] || 0;
+      }
+    } else {
+      this.state.explosions.push({ x, y, life, icon });
+    }
+  },
+
+  /**
+   * Spawn enemy (Zero-Allocation)
    */
   spawnEnemy() {
-    // Limit regular enemies - skip if too many (Fib-based limit)
-    const maxEnemies = 13 + this.state.wave * 2;
-    if (this.state.enemies.length >= maxEnemies) return;
+    if (this.state.enemyPool) {
+      // Limit regular enemies - skip if too many (Fib-based limit)
+      const maxEnemies = 13 + this.state.wave * 2;
+      if (this.state.enemyPool.activeCount >= maxEnemies) return;
 
-    // Choose enemy type based on wave (higher waves unlock harder enemies)
-    const maxTypeIndex = Math.min(this.state.wave + 2, this.enemyTypes.length - 1);
-    const type = this.enemyTypes[Math.floor(Math.random() * (maxTypeIndex + 1))];
+      // Choose enemy type based on wave (higher waves unlock harder enemies)
+      const maxTypeIndex = Math.min(this.state.wave + 2, this.enemyTypes.length - 1);
+      const typeIndex = Math.floor(Math.random() * (maxTypeIndex + 1));
+      const type = this.enemyTypes[typeIndex];
 
-    const enemy = {
-      ...type,
-      hp: type.hp || 1,
-      maxHp: type.hp || 1,
-    };
+      const idx = this.state.enemyPool.acquire();
+      if (idx !== -1) {
+        const offset = idx * this.state.enemyPool.itemSize;
+        const data = this.state.enemyPool.data;
+        // itemSize 9: x, y, vy, type, hp, maxHp, size, slowed, lifespan
 
-    if (this.state.gameMode === 'fall') {
-      enemy.x = Math.random() * (this.canvas.width - 80) + 40;
-      enemy.y = -50;
-      enemy.vy = type.speed * this.state.enemySpeed;
-      this.state.enemies.push(enemy);
+        if (this.state.gameMode === 'fall') {
+          data[offset + 0] = Math.random() * (this.canvas.width - 80) + 40; // x
+          data[offset + 1] = -50; // y
+          data[offset + 2] = type.speed * this.state.enemySpeed; // vy
+          data[offset + 8] = 0; // lifespan not used in fall mode
+        } else {
+          data[offset + 0] = 60 + Math.random() * (this.canvas.width - 120); // x
+          data[offset + 1] = 60 + Math.random() * (this.canvas.height - 180); // y
+          data[offset + 2] = 0; // vy
+          data[offset + 8] = 90 + Math.random() * 60; // lifespan
+        }
+
+        data[offset + 3] = typeIndex; // type
+        data[offset + 4] = type.hp || 1; // hp
+        data[offset + 5] = type.hp || 1; // maxHp
+        data[offset + 6] = type.size || 40; // size
+        data[offset + 7] = 0; // slowed (false)
+      }
     } else {
-      enemy.x = 60 + Math.random() * (this.canvas.width - 120);
-      enemy.y = 60 + Math.random() * (this.canvas.height - 180);
-      enemy.vy = 0;
-      enemy.lifespan = 90 + Math.random() * 60;
-      enemy.maxLife = enemy.lifespan;
-      this.state.enemies.push(enemy);
+      // Legacy fallback
+      const maxEnemies = 13 + this.state.wave * 2;
+      if (this.state.enemies.length >= maxEnemies) return;
+
+      const maxTypeIndex = Math.min(this.state.wave + 2, this.enemyTypes.length - 1);
+      const type = this.enemyTypes[Math.floor(Math.random() * (maxTypeIndex + 1))];
+
+      const enemy = {
+        ...type,
+        hp: type.hp || 1,
+        maxHp: type.hp || 1,
+      };
+
+      if (this.state.gameMode === 'fall') {
+        enemy.x = Math.random() * (this.canvas.width - 80) + 40;
+        enemy.y = -50;
+        enemy.vy = type.speed * this.state.enemySpeed;
+        this.state.enemies.push(enemy);
+      } else {
+        enemy.x = 60 + Math.random() * (this.canvas.width - 120);
+        enemy.y = 60 + Math.random() * (this.canvas.height - 180);
+        enemy.vy = 0;
+        enemy.lifespan = 90 + Math.random() * 60;
+        enemy.maxLife = enemy.lifespan;
+        this.state.enemies.push(enemy);
+      }
     }
   },
 
@@ -423,7 +497,7 @@ const ScamBlaster = {
         this.state.score += 50 * this.getComboMultiplier();
         break;
     }
-    this.state.explosions.push({ x: powerUp.x, y: powerUp.y, life: 20, icon: powerUp.icon });
+    this.addExplosion(powerUp.x, powerUp.y, 20, powerUp.icon);
   },
 
   /**
@@ -488,12 +562,7 @@ const ScamBlaster = {
         if (dist < this.state.boss.size) {
           this.state.boss.hp--;
           totalHits++;
-          this.state.explosions.push({
-            x: this.state.boss.x,
-            y: this.state.boss.y,
-            life: 15,
-            icon: '💥',
-          });
+          this.addExplosion(this.state.boss.x, this.state.boss.y, 15, '💥');
 
           // Update boss HP bar
           const bossHpEl = document.getElementById('sb-boss-hp');
@@ -504,12 +573,7 @@ const ScamBlaster = {
           // Check boss death
           if (this.state.boss.hp <= 0) {
             this.state.score += this.state.boss.points * this.getComboMultiplier();
-            this.state.explosions.push({
-              x: this.state.boss.x,
-              y: this.state.boss.y,
-              life: 40,
-              icon: '🎆',
-            });
+            this.addExplosion(this.state.boss.x, this.state.boss.y, 40, '🎆');
             this.state.bossDefeated++;
             this.state.boss = null;
             this.state.bossPhase = false;
@@ -546,7 +610,7 @@ const ScamBlaster = {
             // Enemy killed
             const comboMult = self.getComboMultiplier();
             self.state.score += enemy.points * comboMult;
-            self.state.explosions.push({ x: enemy.x, y: enemy.y, life: 20, icon: '💥' });
+            self.addExplosion(enemy.x, enemy.y, 20, '💥');
 
             // Handle splitter
             if (enemy.splitter) {
@@ -563,7 +627,7 @@ const ScamBlaster = {
             return false; // Remove enemy
           } else {
             // Enemy damaged but not killed
-            self.state.explosions.push({ x: enemy.x, y: enemy.y, life: 10, icon: '✨' });
+            self.addExplosion(enemy.x, enemy.y, 10, '✨');
             if (!hasPierce) return true;
           }
         }
@@ -572,7 +636,7 @@ const ScamBlaster = {
     });
 
     if (totalHits === 0) {
-      this.state.explosions.push({ x, y, life: 10, icon: '💨' });
+      this.addExplosion(x, y, 10, '💨');
     }
   },
 
@@ -678,7 +742,7 @@ const ScamBlaster = {
 
         if (enemy.y > self.walletZone.y) {
           self.state.lives--;
-          self.state.explosions.push({ x: enemy.x, y: enemy.y, life: 25, icon: '💔' });
+          self.addExplosion(enemy.x, enemy.y, 25, '💔');
           if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
 
           if (self.state.lives <= 0) {
@@ -691,7 +755,7 @@ const ScamBlaster = {
         enemy.lifespan -= self.state.enemySpeed * 0.5 * dt;
         if (enemy.lifespan <= 0) {
           self.state.lives--;
-          self.state.explosions.push({ x: enemy.x, y: enemy.y, life: 25, icon: '💔' });
+          self.addExplosion(enemy.x, enemy.y, 25, '💔');
           if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
 
           if (self.state.lives <= 0) {
@@ -710,10 +774,27 @@ const ScamBlaster = {
       this.state.baseSpeed += 0.3;
     }
 
-    this.state.explosions = this.state.explosions.filter(exp => {
-      exp.life -= dt;
-      return exp.life > 0;
-    });
+    // Update explosions (TypedObjectPool Zero-Allocation)
+    if (this.state.explosionPool) {
+      const pool = this.state.explosionPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+
+          data[offset + 2] -= dt; // life -= dt
+          if (data[offset + 2] <= 0) {
+            pool.release(i);
+          }
+        }
+      }
+    } else {
+      // Legacy fallback
+      this.state.explosions = this.state.explosions.filter(exp => {
+        exp.life -= dt;
+        return exp.life > 0;
+      });
+    }
 
     // Update power-ups
     const crosshair = this.state.crosshair;
@@ -838,15 +919,31 @@ const ScamBlaster = {
       });
     });
 
-    // Explosions (using SpriteCache)
-    this.state.explosions.forEach(exp => {
-      const scale = 1 + (25 - exp.life) * 0.06;
-      SpriteCache.drawTransformed(ctx, exp.icon, exp.x, exp.y, 35, {
-        scaleX: scale,
-        scaleY: scale,
-        alpha: exp.life / 25,
+    // Explosions (TypedObjectPool Zero-Allocation)
+    if (this.state.explosionPool) {
+      const icons = ['💥', '🎆', '✨', '💔', '💨'];
+      this.state.explosionPool.forEach((i, data, offset) => {
+        // x, y, life, type
+        const life = data[offset + 2];
+        const icon = icons[Math.floor(data[offset + 3])] || '💥';
+        const scale = 1 + (25 - life) * 0.06;
+        SpriteCache.drawTransformed(ctx, icon, data[offset + 0], data[offset + 1], 35, {
+          scaleX: scale,
+          scaleY: scale,
+          alpha: life / 25,
+        });
       });
-    });
+    } else {
+      // Legacy fallback
+      this.state.explosions.forEach(exp => {
+        const scale = 1 + (25 - exp.life) * 0.06;
+        SpriteCache.drawTransformed(ctx, exp.icon, exp.x, exp.y, 35, {
+          scaleX: scale,
+          scaleY: scale,
+          alpha: exp.life / 25,
+        });
+      });
+    }
 
     ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 2;
@@ -871,36 +968,10 @@ const ScamBlaster = {
   },
 
   /**
-   * Game loop
-   */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  },
-
-  /**
    * Stop the game
    */
   stop() {
-    this.state.gameOver = true;
-
-    if (this.canvas) {
-      this.canvas.removeEventListener('mousemove', this.handleMove);
-      this.canvas.removeEventListener('click', this.handleClick);
-      this.canvas.removeEventListener('touchmove', this.handleMove);
-      this.canvas.removeEventListener('touchstart', this.handleClick);
-    }
-
-    this.canvas = null;
-    this.ctx = null;
-    this.state = null;
+    GameEngineBase.stop.call(this);
   },
 };
 

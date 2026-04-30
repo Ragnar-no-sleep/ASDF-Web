@@ -34,6 +34,20 @@ const GameEngineBase = {
   timing: null,
   state: null,
   _handlers: null, // Tracked event handlers for auto-cleanup
+  _active: false,
+
+  /**
+   * Standard initialization logic
+   * @param {string} gameId - Game identifier
+   * @param {HTMLCanvasElement} canvas - Canvas element
+   */
+  init(gameId, canvas) {
+    this.gameId = gameId;
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this._active = true;
+    this._handlers = [];
+  },
 
   /**
    * Standard game loop — requestAnimationFrame with delta time
@@ -45,7 +59,7 @@ const GameEngineBase = {
     let then = performance.now();
 
     function loop(timestamp) {
-      if (!self.state || self.state.gameOver) return;
+      if (!self._active || (self.state && self.state.gameOver)) return;
       requestAnimationFrame(loop);
 
       const elapsed = timestamp - then;
@@ -93,13 +107,26 @@ const GameEngineBase = {
 
   /**
    * Register an event handler for automatic cleanup on stop()
+   * Alias for trackHandler
    * @param {EventTarget} target - DOM element or document
    * @param {string} event - Event name (e.g., 'keydown')
    * @param {Function} handler - Event handler function
+   * @param {Object} options - AddEventListener options
    */
-  trackHandler(target, event, handler) {
+  track(target, event, handler, options = {}) {
+    this.trackHandler(target, event, handler, options);
+  },
+
+  /**
+   * Register an event handler for automatic cleanup on stop()
+   * @param {EventTarget} target - DOM element or document
+   * @param {string} event - Event name (e.g., 'keydown')
+   * @param {Function} handler - Event handler function
+   * @param {Object} options - AddEventListener options
+   */
+  trackHandler(target, event, handler, options = {}) {
     if (!this._handlers) this._handlers = [];
-    target.addEventListener(event, handler);
+    target.addEventListener(event, handler, options);
     this._handlers.push({ target, event, handler });
   },
 
@@ -120,6 +147,7 @@ const GameEngineBase = {
    * Override in engine if additional cleanup is needed
    */
   stop() {
+    this._active = false;
     if (this.state) this.state.gameOver = true;
     this.cleanupHandlers();
     this.canvas = null;

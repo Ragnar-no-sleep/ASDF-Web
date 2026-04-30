@@ -10,12 +10,9 @@
 'use strict';
 
 const BurnRunner = {
-  version: '1.2.0', // Parallax backgrounds + dust particles
+  ...GameEngineBase,
+  version: '1.2.1', // Standardized with GameEngineBase
   gameId: 'burnrunner',
-  state: null,
-  canvas: null,
-  ctx: null,
-  timing: null,
   juice: null, // GameJuice integration
 
   // Deadly obstacles
@@ -102,9 +99,14 @@ const BurnRunner = {
    * Start the game
    */
   start(gameId) {
-    this.gameId = gameId;
     const arena = document.getElementById(`arena-${gameId}`);
     if (!arena) return;
+
+    this.createArena(arena);
+    const canvas = document.getElementById('br-canvas');
+
+    // Initialize via base
+    this.init(gameId, canvas);
 
     // Initialize state with Fibonacci-based values
     this.state = {
@@ -127,6 +129,10 @@ const BurnRunner = {
       collectibles: [],
       bonusItems: [],
       malusItems: [],
+      // Initialize Typed Object Pools (Zero-Allocation)
+      particlePool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(500, 7) : null, // x, y, vx, vy, life, size, type (0=smoke, 1=sparkle, 2=burn)
+      dustPool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(200, 6) : null, // x, y, vx, vy, life, alpha
+      // Legacy fallbacks for compatibility until fully refactored
       particles: [],
       dustParticles: [], // Landing dust effects
       clouds: [],
@@ -175,10 +181,6 @@ const BurnRunner = {
       },
     };
 
-    this.createArena(arena);
-    this.canvas = document.getElementById('br-canvas');
-    this.ctx = this.canvas.getContext('2d');
-
     // Cache DOM references for performance (avoid lookups in game loop)
     this.dom = {
       jumps: document.getElementById('br-jumps'),
@@ -200,13 +202,21 @@ const BurnRunner = {
     this.resizeCanvas();
     this.setupInput();
     this.preloadSprites();
-    this.gameLoop();
 
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
-      };
+    // Initialize Fixed Timestep Loop (2026 Standard)
+    if (typeof FixedTimestepLoop !== 'undefined') {
+      this.physicsLoop = new FixedTimestepLoop(
+        60, // 60 updates per second
+        dt => this.update(dt),
+        alpha => this.draw(alpha)
+      );
+      this.physicsLoop.start();
+    } else {
+      console.warn('[BurnRunner] FixedTimestepLoop missing, falling back to legacy loop');
+      this.gameLoop();
     }
+
+    this.registerActiveGame(gameId);
   },
 
   /**
@@ -284,13 +294,13 @@ const BurnRunner = {
    */
   resizeCanvas() {
     if (!this.canvas || !this.canvas.parentElement) return;
-    
+
     const rect = this.canvas.parentElement.getBoundingClientRect();
-    
+
     // Fallback for hidden modals during initialization (avoids 0x0 canvas)
     this.canvas.width = rect.width > 0 ? rect.width : 800;
     this.canvas.height = rect.height > 0 ? rect.height : 400;
-    
+
     this.state.ground = this.canvas.height - 80;
     this.state.player.y = this.state.ground - this.state.player.height;
     this.initBackground();
@@ -360,34 +370,27 @@ const BurnRunner = {
    * Setup input handlers
    */
   setupInput() {
-    const self = this;
-
-    this.handleKeyDown = e => {
+    this.track(document, 'keydown', e => {
       if (e.code === 'Space') {
         e.preventDefault();
-        self.jump();
+        this.jump();
       }
-    };
+    });
 
-    this.handleClick = e => {
+    this.track(this.canvas, 'click', e => {
       e.preventDefault();
-      self.activateDash();
-    };
+      this.activateDash();
+    });
 
-    this.handleContextMenu = e => {
+    this.track(this.canvas, 'contextmenu', e => {
       e.preventDefault();
-      self.activateShield();
-    };
+      this.activateShield();
+    });
 
-    this.handleTouch = e => {
+    this.track(this.canvas, 'touchstart', e => {
       e.preventDefault();
-      self.jump();
-    };
-
-    document.addEventListener('keydown', this.handleKeyDown);
-    this.canvas.addEventListener('click', this.handleClick);
-    this.canvas.addEventListener('contextmenu', this.handleContextMenu);
-    this.canvas.addEventListener('touchstart', this.handleTouch);
+      this.jump();
+    });
   },
 
   /**
@@ -421,15 +424,20 @@ const BurnRunner = {
     this.state.dash.lastUsed = now;
 
     for (let i = 0; i < 10; i++) {
-      this.state.particles.push({
-        x: this.state.player.x,
-        y: this.state.player.y + this.state.player.height / 2,
-        vx: -3 - Math.random() * 3,
-        vy: (Math.random() - 0.5) * 2,
-        life: 25,
-        icon: '💨',
-        size: 20,
-      });
+      if (this.state.particlePool) {
+        const idx = this.state.particlePool.acquire();
+        if (idx !== -1) {
+          const offset = idx * this.state.particlePool.itemSize;
+          const data = this.state.particlePool.data;
+          data[offset + 0] = this.state.player.x;
+          data[offset + 1] = this.state.player.y + this.state.player.height / 2;
+          data[offset + 2] = -3 - Math.random() * 3;
+          data[offset + 3] = (Math.random() - 0.5) * 2;
+          data[offset + 4] = 25;
+          data[offset + 5] = 20;
+          data[offset + 6] = 0; // 0 = dash icon
+        }
+      }
     }
     return true;
   },
@@ -475,16 +483,20 @@ const BurnRunner = {
    * Add jump particles
    */
   addJumpParticles(x, y) {
+    if (!this.state.particlePool) return;
     for (let i = 0; i < 5; i++) {
-      this.state.particles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 2,
-        life: 20,
-        icon: '💨',
-        size: 12,
-      });
+      const idx = this.state.particlePool.acquire();
+      if (idx !== -1) {
+        const offset = idx * this.state.particlePool.itemSize;
+        const data = this.state.particlePool.data;
+        data[offset + 0] = x;
+        data[offset + 1] = y;
+        data[offset + 2] = (Math.random() - 0.5) * 4;
+        data[offset + 3] = Math.random() * 2;
+        data[offset + 4] = 20;
+        data[offset + 5] = 12;
+        data[offset + 6] = 0; // 0 = dash/dust icon
+      }
     }
   },
 
@@ -492,16 +504,25 @@ const BurnRunner = {
    * Add effect particles
    */
   addEffectParticles(x, y, icon) {
+    if (!this.state.particlePool) return;
+    let type = 1; // sparkle
+    if (icon === '🛡️') type = 3;
+    else if (icon === '⚡') type = 4;
+    else if (icon === '💥') type = 5;
+
     for (let i = 0; i < 6; i++) {
-      this.state.particles.push({
-        x: x + this.state.player.width / 2,
-        y: y + this.state.player.height / 2,
-        vx: (Math.random() - 0.5) * 8,
-        vy: -Math.random() * 5 - 2,
-        life: 40,
-        icon: icon,
-        size: 18,
-      });
+      const idx = this.state.particlePool.acquire();
+      if (idx !== -1) {
+        const offset = idx * this.state.particlePool.itemSize;
+        const data = this.state.particlePool.data;
+        data[offset + 0] = x + this.state.player.width / 2;
+        data[offset + 1] = y + this.state.player.height / 2;
+        data[offset + 2] = (Math.random() - 0.5) * 8;
+        data[offset + 3] = -Math.random() * 5 - 2;
+        data[offset + 4] = 40;
+        data[offset + 5] = 18;
+        data[offset + 6] = type;
+      }
     }
   },
 
@@ -509,57 +530,77 @@ const BurnRunner = {
    * Add burn particles
    */
   addBurnParticles(x, y) {
+    if (!this.state.particlePool) return;
     for (let i = 0; i < 8; i++) {
-      this.state.particles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 6,
-        vy: -Math.random() * 4 - 2,
-        life: 30,
-        icon: ['🔥', '✨', '💫'][Math.floor(Math.random() * 3)],
-        size: 16,
-      });
+      const idx = this.state.particlePool.acquire();
+      if (idx !== -1) {
+        const offset = idx * this.state.particlePool.itemSize;
+        const data = this.state.particlePool.data;
+        data[offset + 0] = x;
+        data[offset + 1] = y;
+        data[offset + 2] = (Math.random() - 0.5) * 6;
+        data[offset + 3] = -Math.random() * 4 - 2;
+        data[offset + 4] = 30;
+        data[offset + 5] = 16;
+        data[offset + 6] = 2; // 2 = burn icon
+      }
     }
   },
 
   /**
    * Add dust particles on landing (Fibonacci-based count)
+   * Using TypedObjectPool for Zero-Allocation
    */
   addDustParticles(x, y, intensity = 1) {
+    if (!this.state.dustPool) return; // Fallback handled by draw if null
+
     const count = Math.floor(5 * intensity); // fib[4] base
     for (let i = 0; i < count; i++) {
+      const idx = this.state.dustPool.acquire();
+      if (idx === -1) break; // Pool is full
+
+      const offset = idx * this.state.dustPool.itemSize;
+      const data = this.state.dustPool.data;
+
       const angle = (Math.random() - 0.5) * Math.PI; // Spread upward
       const speed = 1.5 + Math.random() * 2.5;
-      this.state.dustParticles.push({
-        x: x + (Math.random() - 0.5) * 20,
-        y: y,
-        vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
-        vy: -Math.random() * 2 - 0.5, // Slight upward
-        life: 21 + Math.random() * 13, // fib[7] + fib[6]
-        size: 3 + Math.random() * 4,
-        alpha: 0.6 + Math.random() * 0.3,
-      });
+
+      // itemSize: 6 (x, y, vx, vy, life, alpha)
+      data[offset + 0] = x + (Math.random() - 0.5) * 20; // x
+      data[offset + 1] = y; // y
+      data[offset + 2] = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1); // vx
+      data[offset + 3] = -Math.random() * 2 - 0.5; // vy
+      data[offset + 4] = 21 + Math.random() * 13; // life
+      data[offset + 5] = 0.6 + Math.random() * 0.3; // alpha
     }
   },
 
   /**
    * Add speed trail particles
+   * Using TypedObjectPool for Zero-Allocation
    */
   addTrailParticle() {
     if (this.state.speed < 7 && !this.state.dash.active) return;
+    if (!this.state.particlePool) return;
 
     const intensity = this.state.dash.active ? 1 : (this.state.speed - 7) / 6;
     if (Math.random() > 0.3 * intensity) return;
 
-    this.state.particles.push({
-      x: this.state.player.x - 5,
-      y: this.state.player.y + this.state.player.height / 2 + (Math.random() - 0.5) * 20,
-      vx: -2 - Math.random() * 2,
-      vy: (Math.random() - 0.5) * 1,
-      life: 15 + Math.random() * 10,
-      icon: this.state.dash.active ? '💨' : '✦',
-      size: this.state.dash.active ? 16 : 10,
-    });
+    const idx = this.state.particlePool.acquire();
+    if (idx === -1) return;
+
+    const offset = idx * this.state.particlePool.itemSize;
+    const data = this.state.particlePool.data;
+
+    // itemSize: 7 (x, y, vx, vy, life, size, type)
+    data[offset + 0] = this.state.player.x - 5;
+    data[offset + 1] =
+      this.state.player.y + this.state.player.height / 2 + (Math.random() - 0.5) * 20;
+    data[offset + 2] = -2 - Math.random() * 2;
+    data[offset + 3] = (Math.random() - 0.5) * 1;
+    data[offset + 4] = 15 + Math.random() * 10;
+    data[offset + 5] = this.state.dash.active ? 16 : 10;
+    data[offset + 6] = this.state.dash.active ? 0 : 1; // 0 = dash icon, 1 = sparkle icon
   },
 
   /**
@@ -919,25 +960,67 @@ const BurnRunner = {
       return col.x > -50;
     });
 
-    // Update particles (frame-independent)
-    this.state.particles = this.state.particles.filter(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += 0.15 * dt;
-      p.life -= dt;
-      return p.life > 0;
-    });
+    // Update particles (TypedObjectPool Zero-Allocation)
+    if (this.state.particlePool) {
+      const pool = this.state.particlePool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
 
-    // Update dust particles (frame-independent)
-    this.state.dustParticles = this.state.dustParticles.filter(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vx *= 0.96; // Friction
-      p.vy += 0.08 * dt; // Light gravity
-      p.life -= dt;
-      p.alpha *= 0.97; // Fade out
-      return p.life > 0 && p.alpha > 0.05;
-    });
+          data[offset + 0] += data[offset + 2] * dt; // x += vx
+          data[offset + 1] += data[offset + 3] * dt; // y += vy
+          data[offset + 3] += 0.15 * dt; // vy += gravity
+          data[offset + 4] -= dt; // life -= dt
+
+          if (data[offset + 4] <= 0) {
+            pool.release(i);
+          }
+        }
+      }
+    } else {
+      // Legacy fallback
+      this.state.particles = this.state.particles.filter(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 0.15 * dt;
+        p.life -= dt;
+        return p.life > 0;
+      });
+    }
+
+    // Update dust particles (TypedObjectPool Zero-Allocation)
+    if (this.state.dustPool) {
+      const pool = this.state.dustPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+
+          data[offset + 0] += data[offset + 2] * dt; // x += vx
+          data[offset + 1] += data[offset + 3] * dt; // y += vy
+          data[offset + 2] *= 0.96; // vx *= friction
+          data[offset + 3] += 0.08 * dt; // vy += gravity
+          data[offset + 4] -= dt; // life -= dt
+          data[offset + 5] *= 0.97; // alpha *= fade
+
+          if (data[offset + 4] <= 0 || data[offset + 5] <= 0.05) {
+            pool.release(i);
+          }
+        }
+      }
+    } else {
+      // Legacy fallback
+      this.state.dustParticles = this.state.dustParticles.filter(p => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= 0.96;
+        p.vy += 0.08 * dt;
+        p.life -= dt;
+        p.alpha *= 0.97;
+        return p.life > 0 && p.alpha > 0.05;
+      });
+    }
 
     // Update UI (using cached DOM references)
     const distanceEl = this.dom.distance;
@@ -1056,14 +1139,27 @@ const BurnRunner = {
     });
     ctx.globalAlpha = 1;
 
-    // Dust particles (ground level)
-    this.state.dustParticles.forEach(p => {
-      ctx.globalAlpha = p.alpha;
+    // Dust particles (ground level - TypedObjectPool)
+    if (this.state.dustPool) {
       ctx.fillStyle = '#a78bfa'; // Purple dust
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      this.state.dustPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, life, alpha
+        ctx.globalAlpha = data[offset + 5];
+        ctx.beginPath();
+        // Use life as size factor for now, or add size to itemSize later
+        ctx.arc(data[offset + 0], data[offset + 1], 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else {
+      // Legacy
+      this.state.dustParticles.forEach(p => {
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = '#a78bfa'; // Purple dust
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
     ctx.globalAlpha = 1;
 
     // Platforms (using SpriteCache)
@@ -1143,25 +1239,30 @@ const BurnRunner = {
       SpriteCache.draw(ctx, col.icon, col.x + col.width / 2, col.y + col.height / 2 + float, 24);
     });
 
-    // Particles (using SpriteCache)
-    this.state.particles.forEach(p => {
-      SpriteCache.drawTransformed(ctx, p.icon, p.x, p.y, p.size || 16, { alpha: p.life / 30 });
-    });
-  },
-
-  /**
-   * Game loop with frame-independent timing
-   */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
+    // Particles (TypedObjectPool Zero-Allocation)
+    if (this.state.particlePool) {
+      const icons = ['💨', '✨', '🔥', '🛡️', '⚡', '💥'];
+      this.state.particlePool.forEach((i, data, offset) => {
+        // x, y, vx, vy, life, size, type
+        const typeIndex = Math.floor(data[offset + 6]);
+        const icon = icons[typeIndex] || '✨';
+        SpriteCache.drawTransformed(
+          ctx,
+          icon,
+          data[offset + 0],
+          data[offset + 1],
+          data[offset + 5],
+          {
+            alpha: data[offset + 4] / 30,
+          }
+        );
+      });
+    } else {
+      // Legacy
+      this.state.particles.forEach(p => {
+        SpriteCache.drawTransformed(ctx, p.icon, p.x, p.y, p.size || 16, { alpha: p.life / 30 });
+      });
     }
-    requestAnimationFrame(loop);
   },
 
   /**
