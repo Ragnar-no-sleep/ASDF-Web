@@ -38,9 +38,22 @@ const StakeStackerRenderer = {
       this.drawBlock(ctx, state.currentBlock, true);
     }
 
-    // Draw particles
-    for (const particle of state.particles) {
-      this.drawParticle(ctx, particle);
+    // Draw particles (Zero-Allocation Pool)
+    if (state.particlePool) {
+      const pool = state.particlePool;
+      pool.forEach((i, data, offset) => {
+        // itemSize 7: x, y, vx, vy, life, maxLife, colorInt
+        const alpha = data[offset + 4] / data[offset + 5];
+        ctx.fillStyle = '#' + data[offset + 6].toString(16).padStart(6, '0');
+        ctx.globalAlpha = alpha;
+        ctx.fillRect(data[offset + 0], data[offset + 1], 4, 4); // Fixed w/h 4
+      });
+      ctx.globalAlpha = 1;
+    } else {
+      // Legacy particles
+      for (const particle of state.particles) {
+        this.drawParticle(ctx, particle);
+      }
     }
 
     ctx.restore();

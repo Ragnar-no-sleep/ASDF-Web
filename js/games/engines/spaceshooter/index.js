@@ -13,7 +13,7 @@ const SpaceShooter = {
   ...GameEngineBase,
 
   // Game meta
-  version: '1.0.0',
+  version: '1.0.1',
   gameId: 'spaceshooter',
 
   // DOM
@@ -39,72 +39,23 @@ const SpaceShooter = {
   state: null,
 
   /**
-   * Start game
-   * @param {string} gameId
+   * Create initial game state (2026 Standard)
    */
-  start(gameId) {
-    this.gameId = gameId;
-
-    // Get or create arena
-    const existingArena = document.querySelector(`[data-game-arena="${gameId}"]`);
-    if (!existingArena) {
-      this.createArena();
-    } else {
-      this.arena = existingArena;
-    }
-
-    this.canvas = this.arena.querySelector('canvas');
-    if (!this.canvas) {
-      const canvas = document.createElement('canvas');
-      this.arena.appendChild(canvas);
-      this.canvas = canvas;
-    }
-
-    this.ctx = this.canvas.getContext('2d');
-
-    // Initialize modules
-    this.timing = GameTiming.create();
-    this.intervals = IntervalManager.create();
-    this.particles = SpaceParticles.create(this.ctx);
-    this.audio = SpaceAudio.create();
-    this.parallax = SpaceParallax.create(this.canvas, this.ctx);
-    this.entities = SpaceEntities; // Use global object directly
-    this.upgrades = SpaceUpgrades.create();
-    this.waves = SpaceWaves.create(this.canvas.width, this.canvas.height);
-    this.renderer = SpaceRenderer.create(this.canvas, this.ctx);
-
-    // Setup input
-    this.input = InputManager.create({
-      canvas: this.canvas,
-      keyboard: true,
-      mouse: true,
-      touch: true,
-      onKeyDown: e => this.handleKeyDown(e),
-      onKeyUp: e => this.handleKeyUp(e),
-      onMouseMove: (e, state) => this.handleMouseMove(e, state),
-    });
-
-    // Initialize game state
-    this.state = {
+  createInitialState() {
+    return {
       gameOver: false,
       paused: false,
-      phase: 'playing', // playing, upgrading, boss, gameover
+      phase: 'playing',
       wave: 1,
       score: 0,
       particles: [],
       appState: window.appState || {},
-
-      // Ship
       ship: null,
-
-      // Collections
       bullets: [],
       enemies: [],
       enemyBullets: [],
       powerUps: [],
       boss: null,
-
-      // Upgrades (persisted)
       upgrades: {
         hull:
           (window.appState &&
@@ -132,16 +83,76 @@ const SpaceShooter = {
           0,
       },
     };
+  },
 
+  /**
+   * Start game
+   */
+  start(gameId) {
+    this.gameId = gameId;
+
+    // Get or create arena
+    const existingArena = document.querySelector(`[data-game-arena="${gameId}"]`);
+    if (!existingArena) {
+      this.createArena();
+    } else {
+      this.arena = existingArena;
+    }
+
+    this.canvas = this.arena.querySelector('canvas');
+    if (!this.canvas) {
+      const canvas = document.createElement('canvas');
+      this.arena.appendChild(canvas);
+      this.canvas = canvas;
+    }
+
+    // Standard engine initialization (sets up state via createInitialState)
+    this.init(gameId, this.canvas);
+
+    // Initialize modules with safety checks
+    try {
+      this.timing = GameTiming.create();
+      this.intervals = IntervalManager.create();
+      this.particles = SpaceParticles.create(this.ctx);
+      this.audio = SpaceAudio.create();
+      this.parallax = SpaceParallax.create(this.canvas, this.ctx);
+      this.entities = SpaceEntities;
+      this.upgrades = SpaceUpgrades
+        ? SpaceUpgrades.create()
+        : { hull: 0, engine: 0, weapons: 0, shields: 0 };
+      this.waves = SpaceWaves.create(this.canvas.width, this.canvas.height);
+      this.renderer = SpaceRenderer.create(this.canvas, this.ctx);
+    } catch (err) {
+      console.error('[SpaceShooter] Module initialization failed:', err);
+      // Fallback to basic state to prevent complete hang
+      if (!this.renderer) this.state.gameOver = true;
+    }
+
+    // Setup input
+    this.input = InputManager.create({
+      canvas: this.canvas,
+      keyboard: true,
+      mouse: true,
+      touch: true,
+      onKeyDown: e => this.handleKeyDown(e),
+      onKeyUp: e => this.handleKeyUp(e),
+    });
+
+    // Create ship entity
     this.state.ship = this.entities.createShip(
       this.canvas.width,
       this.canvas.height,
       this.state.upgrades
     );
 
-    // Setup resize (tracked for auto-cleanup in stop())
+    // Initialize Zero-Allocation Pools for Entities
+    if (this.entities.initPools) {
+      this.entities.initPools(this.state);
+    }
+
+    // Setup resize
     this._resizeHandler = () => this.resizeCanvas();
-    this.trackHandler(window, 'resize', this._resizeHandler);
+    this.track(window, 'resize', this._resizeHandler);
     this.resizeCanvas();
 
     // Register cleanup
@@ -149,15 +160,25 @@ const SpaceShooter = {
 
     // Start engine loop
     this.audio.startEngineLoop();
-    this.gameLoop();
+
+    // Initialize Fixed Timestep Loop (2026 Standard)
+    if (typeof FixedTimestepLoop !== 'undefined') {
+      this.physicsLoop = new FixedTimestepLoop(
+        60,
+        dt => this.update(dt),
+        alpha => this.draw(alpha)
+      );
+      this.physicsLoop.start();
+    } else {
+      this.gameLoop();
+    }
   },
 
   /**
    * Game update
-   * @param {number} dt
    */
   update(dt) {
-    if (this.state.paused || !this.state) return;
+    if (!this.state || this.state.paused || this.state.gameOver) return;
 
     const ship = this.state.ship;
 
@@ -181,8 +202,7 @@ const SpaceShooter = {
     // Auto-fire
     ship.lastShot -= dt;
     if (ship.lastShot <= 0) {
-      const newBullets = this.entities.createBullet(ship, ship.spreadLevel);
-      this.state.bullets.push(...newBullets);
+      this.entities.createBullet(this.state, ship, ship.spreadLevel);
       ship.lastShot = ship.fireRate;
       this.audio.play('shoot');
     }
@@ -197,9 +217,9 @@ const SpaceShooter = {
         color: '#ffff00',
       });
 
-      // Kill all enemies
-      this.state.enemies = [];
-      this.state.enemyBullets = [];
+      if (this.state.enemyPool) this.state.enemyPool.clear();
+      if (this.state.enemyBulletPool) this.state.enemyBulletPool.clear();
+
       this.audio.play('nuke');
       this.renderer.shake(20);
       delete this.input.state.keys['n'];
@@ -222,8 +242,6 @@ const SpaceShooter = {
     if (this.state.ship.hp <= 0) {
       this.state.gameOver = true;
     }
-
-    this.state.particleCount = this.particles.getCount();
   },
 
   /**
@@ -238,12 +256,6 @@ const SpaceShooter = {
    * Create arena DOM
    */
   createArena() {
-    const existing = document.querySelector(`[data-game-arena="${this.gameId}"]`);
-    if (existing) {
-      this.arena = existing;
-      return;
-    }
-
     this.arena = document.createElement('div');
     this.arena.setAttribute('data-game-arena', this.gameId);
     this.arena.className = `game-arena shs-arena`;
@@ -256,74 +268,34 @@ const SpaceShooter = {
     container.appendChild(this.arena);
   },
 
-  /**
-   * Handle key down
-   * @param {KeyboardEvent} e
-   */
   handleKeyDown(e) {
     const key = e.key.toLowerCase();
-    // Esc to pause
-    if (key === 'escape') {
-      this.state.paused = !this.state.paused;
-    }
+    if (key === 'escape') this.state.paused = !this.state.paused;
   },
 
-  /**
-   * Handle key up
-   * @param {KeyboardEvent} e
-   */
   handleKeyUp(e) {
-    // Nuke key released
-    if (e.key.toLowerCase() === 'n') {
-      this.input.state.keys['n'] = false;
-    }
-  },
-
-  /**
-   * Handle mouse move
-   * @param {MouseEvent} e
-   * @param {Object} state
-   */
-  handleMouseMove(e, state) {
-    // Optional: track mouse for alternative aim mechanism
+    if (e.key.toLowerCase() === 'n') this.input.state.keys['n'] = false;
   },
 
   /**
    * Override stop to cleanup all modules
    */
   stop() {
-    if (this.state) {
-      this.state.gameOver = true;
-    }
-
-    // Cleanup modules
+    if (this.state) this.state.gameOver = true;
     if (this.audio) {
       this.audio.stopEngineLoop();
       this.audio.suspend();
     }
-
-    if (this.input && this.input.cleanup) {
-      this.input.cleanup();
-    }
-
-    if (this.intervals) {
-      this.intervals.cleanup();
-    }
-
-    if (this.particles) {
-      this.particles.clear();
-    }
-
-    // Call parent stop
+    if (this.input && this.input.cleanup) this.input.cleanup();
+    if (this.intervals) this.intervals.cleanup();
+    if (this.particles) this.particles.clear();
     GameEngineBase.stop.call(this);
   },
 };
 
-// Export to window
+// Export
 if (typeof window !== 'undefined') {
   window.SpaceShooter = SpaceShooter;
-
-  // Register with GameRegistry for framework integration
   if (typeof GameRegistry !== 'undefined') {
     GameRegistry.register('spaceshooter', SpaceShooter);
   }

@@ -65,9 +65,12 @@ class FixedTimestepLoop {
     this.accumulator += frameTime;
 
     // Fixed timestep physics updates
+    // Legacy engines expect dt to be normalized to 60 FPS (i.e. dt = 1.0 per frame)
+    const normalizedDt = this.timeStep / (1000 / 60);
+
     while (this.accumulator >= this.timeStep) {
-      // Pass fixed delta time in seconds (e.g., 0.0166 for 60FPS)
-      this.updateFn(this.timeStep / 1000);
+      // Pass normalized delta time (e.g., 1.0 for 60FPS target)
+      this.updateFn(normalizedDt);
       this.accumulator -= this.timeStep;
     }
 

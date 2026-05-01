@@ -193,9 +193,15 @@ const BurnOrHold = {
    * Resize canvas
    */
   resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    if (!this.canvas) return;
+    const parent = this.canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+
+    this.canvas.width = w > 0 ? w : 800;
+    this.canvas.height = h > 0 ? h : 600;
   },
 
   /**
@@ -1088,13 +1094,11 @@ const BurnOrHold = {
   gameLoop() {
     const self = this;
     function loop(timestamp) {
-      if (self.state.gameOver) return;
+      if (!self.state || self.state.gameOver) return;
       const dt = self.timing.tick(timestamp);
       self.update(dt);
       self.draw();
-      if (!self.state.waveTransitioning) {
-        requestAnimationFrame(loop);
-      }
+      requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
   },
@@ -1103,7 +1107,7 @@ const BurnOrHold = {
    * Stop the game
    */
   stop() {
-    this.state.gameOver = true;
+    if (this.state) this.state.gameOver = true;
     if (this.canvas) {
       this.canvas.removeEventListener('click', this.handleClick);
     }
@@ -1118,4 +1122,8 @@ if (typeof window !== 'undefined') {
   window.ASDF = window.ASDF || {};
   window.ASDF.BurnOrHold = BurnOrHold;
   window.BurnOrHold = window.ASDF.BurnOrHold;
+
+  if (typeof GameRegistry !== 'undefined') {
+    GameRegistry.register('burnorhold', BurnOrHold);
+  }
 }

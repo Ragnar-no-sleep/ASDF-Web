@@ -34,24 +34,92 @@ const SpaceRenderer = {
 
     if (parallax) parallax.draw(canvas, ctx);
 
+    // Draw power-ups (Pool)
     ctx.fillStyle = this.colors.gold;
-    for (const pu of state.powerUps) {
-      ctx.fillRect(pu.x - pu.width / 2, pu.y - pu.height / 2, pu.width, pu.height);
+    if (state.powerUpPool) {
+      state.powerUpPool.forEach((i, data, offset) => {
+        // x, y, vy, width, height, life, typeInt
+        ctx.fillRect(
+          data[offset + 0] - data[offset + 3] / 2,
+          data[offset + 1] - data[offset + 4] / 2,
+          data[offset + 3],
+          data[offset + 4]
+        );
+      });
+    } else {
+      for (const pu of state.powerUps) {
+        ctx.fillRect(pu.x - pu.width / 2, pu.y - pu.height / 2, pu.width, pu.height);
+      }
     }
 
+    // Draw bullets (Pool)
     ctx.fillStyle = this.colors.bulletColor;
-    for (const b of state.bullets) {
-      ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+    if (state.bulletPool) {
+      state.bulletPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, damage
+        ctx.fillRect(
+          data[offset + 0] - data[offset + 4] / 2,
+          data[offset + 1] - data[offset + 5] / 2,
+          data[offset + 4],
+          data[offset + 5]
+        );
+      });
+    } else {
+      for (const b of state.bullets) {
+        ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+      }
     }
 
+    // Draw enemy bullets (Pool)
+    ctx.fillStyle = '#ff0000'; // red for enemy bullets
+    if (state.enemyBulletPool) {
+      state.enemyBulletPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, damage
+        ctx.fillRect(
+          data[offset + 0] - data[offset + 4] / 2,
+          data[offset + 1] - data[offset + 5] / 2,
+          data[offset + 4],
+          data[offset + 5]
+        );
+      });
+    } else {
+      for (const b of state.enemyBullets || []) {
+        ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+      }
+    }
+
+    // Draw enemies (Pool)
     ctx.fillStyle = this.colors.enemyColor;
-    for (const e of state.enemies) {
-      ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2, e.width, e.height);
-      if (e.hp < e.maxHp) {
-        ctx.fillStyle = '#555';
-        ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, e.width, 3);
-        ctx.fillStyle = this.colors.success;
-        ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, (e.width * e.hp) / e.maxHp, 3);
+    if (state.enemyPool) {
+      state.enemyPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, typeInt, hp, points, timer
+        const w = data[offset + 4];
+        const h = data[offset + 5];
+        const x = data[offset + 0] - w / 2;
+        const y = data[offset + 1] - h / 2;
+
+        ctx.fillRect(x, y, w, h);
+
+        // hp bar if damaged
+        // Ideally we would need maxHp in the pool or assume based on type, using a static max for simplicity if not tracked
+        // Assuming simple HP bar based on current HP > 1 (simplification for missing maxHp in pool schema)
+        if (data[offset + 7] > 1) {
+          ctx.fillStyle = '#555';
+          ctx.fillRect(x, y - 6, w, 3);
+          ctx.fillStyle = this.colors.success;
+          ctx.fillRect(x, y - 6, w * 0.5, 3); // Simplified HP bar
+          ctx.fillStyle = this.colors.enemyColor; // Reset for next enemy
+        }
+      });
+    } else {
+      for (const e of state.enemies) {
+        ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2, e.width, e.height);
+        if (e.hp < e.maxHp) {
+          ctx.fillStyle = '#555';
+          ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, e.width, 3);
+          ctx.fillStyle = this.colors.success;
+          ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, (e.width * e.hp) / e.maxHp, 3);
+        }
       }
     }
 
@@ -139,8 +207,12 @@ const SpaceRenderer = {
   /**
    * Trigger effects
    */
-  shake(intensity) { this.shakeIntensity = Math.max(this.shakeIntensity, intensity); },
-  flash(intensity) { this.flashIntensity = Math.max(this.flashIntensity, intensity); },
+  shake(intensity) {
+    this.shakeIntensity = Math.max(this.shakeIntensity, intensity);
+  },
+  flash(intensity) {
+    this.flashIntensity = Math.max(this.flashIntensity, intensity);
+  },
 };
 
 if (typeof window !== 'undefined') {

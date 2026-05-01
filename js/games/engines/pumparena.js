@@ -2825,15 +2825,15 @@ function startPumpArena(gameId) {
     });
   });
 
-  function update() {
+  function update(dt) {
     if (state.gameOver) return;
 
     // Particles
     state.particles = state.particles.filter(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.12;
-      p.life--;
+      p.x += p.vx * dt * 60; // Normalize velocity to Fixed Timestep
+      p.y += p.vy * dt * 60;
+      p.vy += 0.12 * dt * 60;
+      p.life -= dt * 60;
       return p.life > 0;
     });
   }
@@ -2843,27 +2843,41 @@ function startPumpArena(gameId) {
     ctx.fillStyle = '#ffffff';
     ctx.font = '24px Arial';
     ctx.textAlign = 'center';
+
+    // Batch render text particles with Bitwise Snapping (Performance Standard)
     state.particles.forEach(p => {
-      ctx.globalAlpha = p.life / 50;
-      ctx.fillText(p.icon, p.x, p.y);
+      ctx.globalAlpha = Math.max(0, p.life / 50);
+      ctx.fillText(p.icon, p.x | 0, p.y | 0);
     });
     ctx.globalAlpha = 1;
   }
 
-  function gameLoop() {
-    if (state.gameOver) return;
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-  }
-
   updateUI();
   showPhase('select');
-  gameLoop();
+
+  // Initialize Fixed Timestep Loop (2026 Standard)
+  let physicsLoop;
+  if (typeof FixedTimestepLoop !== 'undefined') {
+    physicsLoop = new FixedTimestepLoop(
+      60, // 60 updates per second
+      dt => update(dt),
+      alpha => draw() // Emojis don't need complex interpolation here
+    );
+    physicsLoop.start();
+  } else {
+    function fallbackLoop() {
+      if (state.gameOver) return;
+      update(1 / 60);
+      draw();
+      requestAnimationFrame(fallbackLoop);
+    }
+    requestAnimationFrame(fallbackLoop);
+  }
 
   activeGames[gameId] = {
     cleanup: () => {
       state.gameOver = true;
+      if (physicsLoop) physicsLoop.stop();
       // Clear tracked timeouts
       state._timeouts.forEach(id => clearTimeout(id));
       state._timeouts.length = 0;

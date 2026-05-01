@@ -1,6 +1,6 @@
 /**
  * WhaleWatch Game Engine — Dual cognitive game (Symbol Match + Memory Sequence)
- * Coordinator: GameKit + framework integration
+ * Coordinator: GameEngineBase Zero-Allocation
  * @module games/engines/whalewatch
  */
 

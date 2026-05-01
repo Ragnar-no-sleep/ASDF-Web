@@ -1,76 +1,80 @@
 /**
  * StakeStacker Game Engine — Block stacking puzzle
- * Coordinator: wires GameKit subsystems + game loop
+ * Coordinator: GameEngineBase Zero-Allocation
  * @module games/engines/stakestacker
  */
 
 'use strict';
 
 const StakeStacker = {
+  ...GameEngineBase,
   gameId: 'stakestacker',
-  version: '2.0.0', // Modular rewrite
+  version: '2.0.1', // Zero-allocation rewrite
 
-  async start(gameId) {
-    // Create game kit with required subsystems
-    this.kit = GameKit.createWithSubsystems(
-      {
-        gameId: 'stakestacker',
-        arenaSelector: '#ss-arena',
-        inputConfig: {
-          keys: ['space'],
-          mouse: true,
-        },
-        initialState: StakeStackerEntities.createGameState(),
-      },
-      ['timing', 'input', 'intervals', 'renderer']
-    );
+  start(gameId) {
+    const arena = document.querySelector('#ss-arena');
+    if (!arena) return;
 
-    // Game state
-    this.state = this.kit.state;
+    let canvas = arena.querySelector('canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'ss-canvas';
+      canvas.className = 'game-canvas';
+      arena.appendChild(canvas);
+    }
 
-    // Input handlers
-    this.kit.input.on('action', () => this.dropBlock());
-    const keyHandler = e => {
+    this.init(gameId, canvas);
+    this.resizeCanvas();
+
+    this.state = StakeStackerEntities.createGameState();
+
+    this.setupInput();
+
+    // Initialize Fixed Timestep Loop (2026 Standard)
+    if (typeof FixedTimestepLoop !== 'undefined') {
+      this.physicsLoop = new FixedTimestepLoop(
+        60, // 60 updates per second
+        dt => this.update(dt),
+        alpha => this.render()
+      );
+      this.physicsLoop.start();
+    }
+
+    this.registerActiveGame(gameId);
+  },
+
+  setupInput() {
+    this.track(document, 'keydown', e => {
       if (e.code === 'Space') {
         e.preventDefault();
         this.dropBlock();
       }
-    };
-    this.trackHandler(document, 'keydown', keyHandler);
+    });
 
-    // Game loop
-    this.gameLoop = () => {
-      const dt = this.kit.timing.deltaTime;
+    this.track(this.canvas, 'click', e => {
+      e.preventDefault();
+      this.dropBlock();
+    });
 
-      if (!this.state.gameOver) {
-        this.update(dt);
-      }
+    this.track(this.canvas, 'touchstart', e => {
+      e.preventDefault();
+      this.dropBlock();
+    });
 
-      this.render();
-
-      if (!this.state.gameOver) {
-        requestAnimationFrame(this.gameLoop);
-      }
-    };
-
-    // Start game loop
-    if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(this.gameLoop);
-    }
+    // Resize handler
+    this.track(window, 'resize', () => this.resizeCanvas());
   },
 
-  async stop() {
-    this.cleanupHandlers();
-    if (this.kit) {
-      this.kit.destroy();
-    }
-    if (this.state) this.state.gameOver = true;
+  stop() {
+    GameEngineBase.stop.call(this);
   },
 
   /**
    * Game update: physics, collision, scoring
    */
   update(dt) {
+    if (this.state.gameOver) return;
+
     // Spawn current block if none exists
     if (!this.state.currentBlock) {
       this.spawnBlock();
@@ -95,12 +99,32 @@ const StakeStacker = {
       this.state.gameOver = true;
     }
 
-    // Update particles
-    for (let i = this.state.particles.length - 1; i >= 0; i--) {
-      const p = this.state.particles[i];
-      StakeStackerEntities.integrateParticle(p, dt);
-      if (p.life <= 0) {
-        this.state.particles.splice(i, 1);
+    // Update particles (Zero-Allocation Pool)
+    if (this.state.particlePool) {
+      const pool = this.state.particlePool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+
+          data[offset + 3] += 3 * dt; // vy += gravity
+          data[offset + 0] += data[offset + 2] * dt; // x += vx
+          data[offset + 1] += data[offset + 3] * dt; // y += vy
+          data[offset + 4] -= dt; // life -= dt
+
+          if (data[offset + 4] <= 0) {
+            pool.release(i);
+          }
+        }
+      }
+    } else {
+      // Legacy fallback
+      for (let i = this.state.particles.length - 1; i >= 0; i--) {
+        const p = this.state.particles[i];
+        StakeStackerEntities.integrateParticle(p, dt);
+        if (p.life <= 0) {
+          this.state.particles.splice(i, 1);
+        }
       }
     }
   },
@@ -109,8 +133,9 @@ const StakeStacker = {
    * Render game state
    */
   render() {
+    if (this.state.gameOver) return; // Could render a game over screen here
     const cameraOffset = StakeStackerEntities.calculateCameraOffset(this.state.stack.length);
-    StakeStackerRenderer.render(this.kit.ctx, this.state, cameraOffset);
+    StakeStackerRenderer.render(this.ctx, this.state, cameraOffset);
   },
 
   /**
@@ -178,11 +203,11 @@ const StakeStacker = {
   },
 
   /**
-   * Spawn visual feedback particles
+   * Spawn visual feedback particles (Zero-Allocation Pool)
    */
   spawnPrecisionParticles(block, precision) {
     const count = { perfect: 12, great: 8, good: 4, miss: 2 }[precision] || 2;
-    const color = {
+    const hexColor = {
       perfect: '#4ade80',
       great: '#f59e0b',
       good: '#60a5fa',
@@ -192,28 +217,33 @@ const StakeStacker = {
     const centerX = block.x + block.w / 2;
     const centerY = block.y + block.h / 2;
 
+    const colorInt = parseInt(hexColor.slice(1), 16);
+
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
       const speed = 200 + Math.random() * 100;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
 
-      this.state.particles.push(
-        StakeStackerEntities.createParticle(centerX, centerY, vx, vy, 0.5, color)
-      );
-    }
-  },
-
-  // GameEngineBase mixin overrides
-  registerActiveGame() {
-    if (typeof GameStore !== 'undefined') {
-      GameStore.setActiveGame(this.gameId);
-    }
-  },
-  resizeCanvas() {
-    if (this.kit && this.kit.canvas) {
-      this.kit.canvas.width = window.innerWidth;
-      this.kit.canvas.height = window.innerHeight;
+      if (this.state.particlePool) {
+        const idx = this.state.particlePool.acquire();
+        if (idx !== -1) {
+          const offset = idx * this.state.particlePool.itemSize;
+          const data = this.state.particlePool.data;
+          // itemSize 7: x, y, vx, vy, life, maxLife, colorInt
+          data[offset + 0] = centerX;
+          data[offset + 1] = centerY;
+          data[offset + 2] = vx;
+          data[offset + 3] = vy;
+          data[offset + 4] = 0.6; // life
+          data[offset + 5] = 0.6; // maxLife
+          data[offset + 6] = colorInt; // color
+        }
+      } else {
+        this.state.particles.push(
+          StakeStackerEntities.createParticle(centerX, centerY, vx, vy, 0.6, hexColor)
+        );
+      }
     }
   },
 };

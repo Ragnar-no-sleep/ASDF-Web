@@ -85,7 +85,7 @@ const CryptoHeist = {
 
     this.createArena(arena);
     this.canvas = document.getElementById('ch-canvas');
-    this.ctx = await CanvasAdapter.create(this.canvas, { usePixi: true });
+    this.ctx = this.canvas.getContext('2d');
     this.resizeCanvas();
 
     // Initialize timing for frame-independent movement

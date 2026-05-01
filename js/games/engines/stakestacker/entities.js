@@ -184,6 +184,7 @@ const StakeStackerEntities = {
       stack: [],
       currentBlock: null,
       particles: [],
+      particlePool: typeof TypedObjectPool !== 'undefined' ? new TypedObjectPool(100, 7) : null, // Zero-Allocation pool
       perfectStreak: 0,
       nextBlockX: 400 - 20, // Centered
       nextBlockWidth: 40,

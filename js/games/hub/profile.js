@@ -30,7 +30,7 @@ function sanitizeNumberSimple(value, defaultValue = 0) {
 
 // Alias for backwards compatibility within this module
 // Using var to prevent redeclaration error when shared/validation.js is loaded
-var sanitizeNumber = sanitizeNumberSimple;
+const sanitizeNumber = sanitizeNumberSimple;
 
 /**
  * Validate wallet address format (Solana base58)

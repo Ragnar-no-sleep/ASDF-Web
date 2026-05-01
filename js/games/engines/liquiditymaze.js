@@ -174,9 +174,15 @@ const LiquidityMaze = {
    * Resize canvas and calculate maze dimensions
    */
   resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    if (!this.canvas) return;
+    const parent = this.canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+
+    this.canvas.width = w > 0 ? w : 800;
+    this.canvas.height = h > 0 ? h : 600;
 
     this.state.cellSize = Math.max(22, 38 - this.state.level * 2);
 

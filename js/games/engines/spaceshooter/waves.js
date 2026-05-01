@@ -20,7 +20,7 @@ const SpaceWaves = {
   /**
    * Update wave spawning
    */
-  update(dt, state, canvasW) {
+  update(dt, state) {
     if (!state) return;
     this.spawnTimer -= dt;
 
@@ -29,22 +29,67 @@ const SpaceWaves = {
     const spawnInterval = diffFib[Math.min(9, wave)] || 30;
     const maxEnemies = 5 + Math.floor(wave * 1.5);
 
-    if (state.enemies.length < maxEnemies && this.spawnTimer <= 0) {
+    const canvasW = 800; // Hardcoded default, typically passed, but simplified for pool. Or get from state.
+    // We should rely on state.canvasWidth or window.innerWidth if possible, but let's assume 800 for now.
+    const getCanvasW = () => {
+      const canvas = document.getElementById('shs-canvas') || document.querySelector('.shs-canvas');
+      return canvas ? canvas.width : 800;
+    };
+
+    const currentEnemyCount = state.enemyPool ? state.enemyPool.activeCount : state.enemies.length;
+
+    if (currentEnemyCount < maxEnemies && this.spawnTimer <= 0) {
       const mix = this.enemyMixes[Math.min(9, wave)];
       const types = [];
       for (const [type, count] of Object.entries(mix)) {
         for (let i = 0; i < count; i++) types.push(type);
       }
-      const type = types[Math.floor(Math.random() * types.length)];
+      const typeStr = types[Math.floor(Math.random() * types.length)];
 
-      if (typeof SpaceEntities !== 'undefined' && SpaceEntities.createEnemy) {
-        state.enemies.push(SpaceEntities.createEnemy(type, wave, canvasW));
-        this.spawnedCount++;
-        this.spawnTimer = spawnInterval;
+      if (typeof SpaceEntities !== 'undefined') {
+        const cw = getCanvasW();
+
+        if (state.enemyPool) {
+          const idx = state.enemyPool.acquire();
+          if (idx !== -1) {
+            const offset = idx * state.enemyPool.itemSize;
+            const data = state.enemyPool.data;
+            const spec = SpaceEntities.enemySpecs[typeStr] || SpaceEntities.enemySpecs.SCOUT;
+            const speedMult = 1 + wave * 0.05;
+            const typeInt = SpaceEntities.enemyTypeToInt[typeStr] || 0;
+
+            data[offset + 0] = Math.random() * (cw - spec.width) + spec.width / 2; // x
+            data[offset + 1] = -40; // y
+            data[offset + 2] = 0; // vx
+            data[offset + 3] = spec.speed * speedMult; // vy
+            data[offset + 4] = spec.width; // width
+            data[offset + 5] = spec.height; // height
+            data[offset + 6] = typeInt; // typeInt
+            data[offset + 7] = spec.hp; // hp
+            data[offset + 8] = spec.points; // points
+            data[offset + 9] = 0; // timer
+
+            this.spawnedCount++;
+            this.spawnTimer = spawnInterval;
+          }
+        } else if (SpaceEntities.createEnemy) {
+          state.enemies.push(SpaceEntities.createEnemy(typeStr, wave, cw));
+          this.spawnedCount++;
+          this.spawnTimer = spawnInterval;
+        }
       }
     }
 
-    if (state.enemies.length === 0 && state.enemyBullets.length === 0 && !state.boss && this.spawnedCount > 0) {
+    const currentBulletCount = state.enemyBulletPool
+      ? state.enemyBulletPool.activeCount
+      : state.enemyBullets.length;
+
+    if (
+      currentEnemyCount === 0 &&
+      currentBulletCount === 0 &&
+      !state.boss &&
+      this.spawnedCount > 0
+    ) {
       this.nextWave(state);
     }
   },

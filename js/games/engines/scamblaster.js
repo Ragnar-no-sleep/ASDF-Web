@@ -152,6 +152,9 @@ const ScamBlaster = {
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
+    // Track resize for modal visibility changes
+    this.track(window, 'resize', () => this.resizeCanvas());
+
     this.setupModeSelection();
     this.setupInput();
     this.preloadSprites();
@@ -253,9 +256,15 @@ const ScamBlaster = {
    * Resize canvas
    */
   resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    if (!this.canvas) return;
+    const parent = this.canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+
+    this.canvas.width = w > 0 ? w : 800;
+    this.canvas.height = h > 0 ? h : 600;
     this.walletZone = { y: this.canvas.height - 90, height: 50 };
   },
 
@@ -588,52 +597,111 @@ const ScamBlaster = {
       }
     }
 
-    // Check enemy hits
-    this.state.enemies = this.state.enemies.filter(enemy => {
-      for (const point of hitPoints) {
-        const dx = point.x - enemy.x;
-        const dy = point.y - enemy.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+    // Check enemy hits (Zero-Allocation Pool)
+    if (this.state.enemyPool) {
+      const pool = this.state.enemyPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+          // data: 0:x, 1:y, 2:vy, 3:type, 4:hp, 5:maxHp, 6:size, 7:slowed, 8:lifespan
 
-        if (dist < enemy.size) {
-          // Apply slow effect
-          if (hasSlow && !enemy.slowed) {
-            enemy.slowed = true;
-            enemy.vy *= 0.5;
-            if (enemy.lifespan) enemy.lifespan *= 1.5;
-          }
+          for (let pIdx = 0; pIdx < hitPoints.length; pIdx++) {
+            const point = hitPoints[pIdx];
+            if (!point.active && pIdx !== 0) continue; // Skip consumed pierce points, 0 is always active for simplicity unless set
 
-          enemy.hp--;
-          totalHits++;
+            const dx = point.x - data[offset + 0];
+            const dy = point.y - data[offset + 1];
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (enemy.hp <= 0) {
-            // Enemy killed
-            const comboMult = self.getComboMultiplier();
-            self.state.score += enemy.points * comboMult;
-            self.addExplosion(enemy.x, enemy.y, 20, '💥');
+            if (dist < data[offset + 6]) {
+              // Apply slow effect
+              if (hasSlow && data[offset + 7] === 0) {
+                data[offset + 7] = 1;
+                data[offset + 2] *= 0.5; // vy *= 0.5
+                if (data[offset + 8] > 0) data[offset + 8] *= 1.5; // lifespan *= 1.5
+              }
 
-            // Handle splitter
-            if (enemy.splitter) {
-              self.spawnSplitEnemies(enemy.x, enemy.y);
+              data[offset + 4]--; // hp--
+              totalHits++;
+
+              if (data[offset + 4] <= 0) {
+                // Enemy killed
+                const typeObj = this.enemyTypes[Math.floor(data[offset + 3])];
+                const comboMult = this.getComboMultiplier();
+                this.state.score += typeObj.points * comboMult;
+                this.addExplosion(data[offset + 0], data[offset + 1], 20, '💥');
+
+                if (typeObj.splitter) {
+                  this.spawnSplitEnemies(data[offset + 0], data[offset + 1]);
+                }
+
+                this.maybeDropPowerUp(data[offset + 0], data[offset + 1]);
+                this.updateCombo(true);
+
+                pool.release(i);
+              } else {
+                // Damaged
+                this.addExplosion(data[offset + 0], data[offset + 1], 10, '✨');
+              }
+
+              if (!hasPierce) {
+                point.active = false; // Mark bullet point as consumed
+                if (pIdx === 0) hitPoints.length = 0; // if main bullet, consume all (simple logic)
+              }
+              break; // Move to next enemy
             }
-
-            // Maybe drop power-up
-            self.maybeDropPowerUp(enemy.x, enemy.y);
-
-            // Update combo
-            self.updateCombo(true);
-
-            if (!hasPierce) return false;
-            return false; // Remove enemy
-          } else {
-            // Enemy damaged but not killed
-            self.addExplosion(enemy.x, enemy.y, 10, '✨');
-            if (!hasPierce) return true;
           }
         }
       }
-      return true;
-    });
+    } else {
+      // Legacy Check enemy hits
+      this.state.enemies = this.state.enemies.filter(enemy => {
+        for (const point of hitPoints) {
+          const dx = point.x - enemy.x;
+          const dy = point.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < enemy.size) {
+            // Apply slow effect
+            if (hasSlow && !enemy.slowed) {
+              enemy.slowed = true;
+              enemy.vy *= 0.5;
+              if (enemy.lifespan) enemy.lifespan *= 1.5;
+            }
+
+            enemy.hp--;
+            totalHits++;
+
+            if (enemy.hp <= 0) {
+              // Enemy killed
+              const comboMult = self.getComboMultiplier();
+              self.state.score += enemy.points * comboMult;
+              self.addExplosion(enemy.x, enemy.y, 20, '💥');
+
+              // Handle splitter
+              if (enemy.splitter) {
+                self.spawnSplitEnemies(enemy.x, enemy.y);
+              }
+
+              // Maybe drop power-up
+              self.maybeDropPowerUp(enemy.x, enemy.y);
+
+              // Update combo
+              self.updateCombo(true);
+
+              if (!hasPierce) return false;
+              return false; // Remove enemy
+            } else {
+              // Enemy damaged but not killed
+              self.addExplosion(enemy.x, enemy.y, 10, '✨');
+              if (!hasPierce) return true;
+            }
+          }
+        }
+        return true;
+      });
+    }
 
     if (totalHits === 0) {
       this.addExplosion(x, y, 10, '💨');
@@ -694,7 +762,10 @@ const ScamBlaster = {
     // Check for boss wave (every 5th wave)
     if (this.state.wave % 5 === 0 && !this.state.bossPhase && !this.state.boss) {
       // Clear remaining enemies before boss
-      if (this.state.enemies.length === 0) {
+      const enemyCount = this.state.enemyPool
+        ? this.state.enemyPool.activeCount
+        : this.state.enemies.length;
+      if (enemyCount === 0) {
         this.spawnBoss();
       }
     }
@@ -736,37 +807,79 @@ const ScamBlaster = {
     const waveEl = document.getElementById('sb-wave');
     const self = this;
 
-    this.state.enemies = this.state.enemies.filter(enemy => {
-      if (self.state.gameMode === 'fall') {
-        enemy.y += enemy.vy * self.state.enemySpeed * dt;
+    // Update Enemies (Zero-Allocation Pool)
+    if (this.state.enemyPool) {
+      const pool = this.state.enemyPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
 
-        if (enemy.y > self.walletZone.y) {
-          self.state.lives--;
-          self.addExplosion(enemy.x, enemy.y, 25, '💔');
-          if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+          if (self.state.gameMode === 'fall') {
+            data[offset + 1] += data[offset + 2] * dt; // y += vy
 
-          if (self.state.lives <= 0) {
-            self.state.gameOver = true;
-            endGame(self.gameId, self.state.score);
+            if (data[offset + 1] > self.walletZone.y) {
+              self.state.lives--;
+              self.addExplosion(data[offset + 0], data[offset + 1], 25, '💔');
+              if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+
+              if (self.state.lives <= 0) {
+                self.state.gameOver = true;
+                endGame(self.gameId, self.state.score);
+              }
+              pool.release(i);
+            }
+          } else {
+            // Pop mode
+            data[offset + 8] -= self.state.enemySpeed * 0.5 * dt; // lifespan -= ...
+            if (data[offset + 8] <= 0) {
+              self.state.lives--;
+              self.addExplosion(data[offset + 0], data[offset + 1], 25, '💔');
+              if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+
+              if (self.state.lives <= 0) {
+                self.state.gameOver = true;
+                endGame(self.gameId, self.state.score);
+              }
+              pool.release(i);
+            }
           }
-          return false;
-        }
-      } else {
-        enemy.lifespan -= self.state.enemySpeed * 0.5 * dt;
-        if (enemy.lifespan <= 0) {
-          self.state.lives--;
-          self.addExplosion(enemy.x, enemy.y, 25, '💔');
-          if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
-
-          if (self.state.lives <= 0) {
-            self.state.gameOver = true;
-            endGame(self.gameId, self.state.score);
-          }
-          return false;
         }
       }
-      return true;
-    });
+    } else {
+      // Legacy enemies update
+      this.state.enemies = this.state.enemies.filter(enemy => {
+        if (self.state.gameMode === 'fall') {
+          enemy.y += enemy.vy * self.state.enemySpeed * dt;
+
+          if (enemy.y > self.walletZone.y) {
+            self.state.lives--;
+            self.addExplosion(enemy.x, enemy.y, 25, '💔');
+            if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+
+            if (self.state.lives <= 0) {
+              self.state.gameOver = true;
+              endGame(self.gameId, self.state.score);
+            }
+            return false;
+          }
+        } else {
+          enemy.lifespan -= self.state.enemySpeed * 0.5 * dt;
+          if (enemy.lifespan <= 0) {
+            self.state.lives--;
+            self.addExplosion(enemy.x, enemy.y, 25, '💔');
+            if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+
+            if (self.state.lives <= 0) {
+              self.state.gameOver = true;
+              endGame(self.gameId, self.state.score);
+            }
+            return false;
+          }
+        }
+        return true;
+      });
+    }
 
     if (this.state.score >= this.state.wave * 300) {
       this.state.wave++;
@@ -798,21 +911,55 @@ const ScamBlaster = {
 
     // Update power-ups
     const crosshair = this.state.crosshair;
-    this.state.powerUps = this.state.powerUps.filter(powerUp => {
-      powerUp.y += powerUp.vy * dt;
-      powerUp.life -= dt;
+    if (this.state.powerUpPool) {
+      const pool = this.state.powerUpPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+          // data: 0:x, 1:y, 2:vy, 3:life, 4:type
 
-      // Check collection (click near power-up)
-      const dx = crosshair.x - powerUp.x;
-      const dy = crosshair.y - powerUp.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 40) {
-        self.collectPowerUp(powerUp);
-        return false;
+          data[offset + 1] += data[offset + 2] * dt; // y += vy
+          data[offset + 3] -= dt; // life -= dt
+
+          const dx = crosshair.x - data[offset + 0];
+          const dy = crosshair.y - data[offset + 1];
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 40) {
+            const powerUpDef = this.powerUpTypes[Math.floor(data[offset + 4])];
+            this.collectPowerUp({
+              x: data[offset + 0],
+              y: data[offset + 1],
+              effect: powerUpDef.effect,
+              duration: powerUpDef.duration,
+              icon: powerUpDef.icon,
+            });
+            pool.release(i);
+            continue;
+          }
+
+          if (data[offset + 3] <= 0 || data[offset + 1] > this.canvas.height) {
+            pool.release(i);
+          }
+        }
       }
+    } else {
+      this.state.powerUps = this.state.powerUps.filter(powerUp => {
+        powerUp.y += powerUp.vy * dt;
+        powerUp.life -= dt;
 
-      return powerUp.life > 0 && powerUp.y < this.canvas.height;
-    });
+        // Check collection (click near power-up)
+        const dx = crosshair.x - powerUp.x;
+        const dy = crosshair.y - powerUp.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 40) {
+          self.collectPowerUp(powerUp);
+          return false;
+        }
+
+        return powerUp.life > 0 && powerUp.y < this.canvas.height;
+      });
+    }
 
     if (scoreEl) scoreEl.textContent = this.state.score;
     updateScore(this.gameId, this.state.score);
@@ -849,52 +996,137 @@ const ScamBlaster = {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Draw enemies
-    this.state.enemies.forEach(enemy => {
-      // Pop mode timer ring
-      if (this.state.gameMode === 'pop' && enemy.lifespan !== undefined) {
-        const progress = enemy.lifespan / enemy.maxLife;
-        const radius = enemy.size + 8;
+    // Draw enemies (TypedObjectPool Zero-Allocation)
+    if (this.state.enemyPool) {
+      const pool = this.state.enemyPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+          const typeObj = this.enemyTypes[Math.floor(data[offset + 3])];
 
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, radius, 0, Math.PI * 2);
-        ctx.stroke();
+          if (this.state.gameMode === 'pop') {
+            const maxLife = 90 + Math.random() * 60; // Approximate fallback for maxLife not stored
+            const progress = data[offset + 8] / 120; // estimate
+            const radius = data[offset + 6] + 8;
 
-        const color = progress > 0.5 ? '#22c55e' : progress > 0.25 ? '#fbbf24' : '#ef4444';
-        ctx.strokeStyle = color;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
-        ctx.stroke();
-      }
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(data[offset + 0] | 0, data[offset + 1] | 0, radius | 0, 0, Math.PI * 2);
+            ctx.stroke();
 
-      // Shield indicator for shielded enemies (no shadowBlur for performance)
-      if (enemy.shield || enemy.hp > 1) {
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size * 0.7, 0, Math.PI * 2);
-        ctx.stroke();
+            const color = progress > 0.5 ? '#22c55e' : progress > 0.25 ? '#fbbf24' : '#ef4444';
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.arc(
+              data[offset + 0] | 0,
+              data[offset + 1] | 0,
+              radius | 0,
+              -Math.PI / 2,
+              -Math.PI / 2 + Math.PI * 2 * Math.max(0, progress)
+            );
+            ctx.stroke();
+          }
 
-        // HP indicator
-        if (enemy.maxHp > 1) {
-          ctx.fillStyle = '#3b82f6';
-          ctx.font = '12px Arial';
-          ctx.fillText(`${enemy.hp}/${enemy.maxHp}`, enemy.x, enemy.y + enemy.size * 0.6);
+          if (typeObj.shield || data[offset + 4] > 1) {
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(
+              data[offset + 0] | 0,
+              data[offset + 1] | 0,
+              (data[offset + 6] * 0.7) | 0,
+              0,
+              Math.PI * 2
+            );
+            ctx.stroke();
+
+            if (data[offset + 5] > 1) {
+              ctx.fillStyle = '#3b82f6';
+              ctx.font = '12px Arial';
+              ctx.fillText(
+                `${data[offset + 4]}/${data[offset + 5]}`,
+                data[offset + 0] | 0,
+                (data[offset + 1] + data[offset + 6] * 0.6) | 0
+              );
+            }
+          }
+
+          if (data[offset + 7] === 1) {
+            ctx.fillStyle = 'rgba(96, 165, 250, 0.3)';
+            ctx.beginPath();
+            ctx.arc(
+              data[offset + 0] | 0,
+              data[offset + 1] | 0,
+              (data[offset + 6] * 0.8) | 0,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+          }
+
+          SpriteCache.draw(ctx, typeObj.icon, data[offset + 0], data[offset + 1], data[offset + 6]);
         }
       }
+    } else {
+      // Legacy enemies draw
+      this.state.enemies.forEach(enemy => {
+        // Pop mode timer ring
+        if (this.state.gameMode === 'pop' && enemy.lifespan !== undefined) {
+          const progress = enemy.lifespan / enemy.maxLife;
+          const radius = enemy.size + 8;
 
-      // Slowed indicator
-      if (enemy.slowed) {
-        ctx.fillStyle = 'rgba(96, 165, 250, 0.3)';
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size * 0.8, 0, Math.PI * 2);
-        ctx.fill();
-      }
+          ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(enemy.x | 0, enemy.y | 0, radius | 0, 0, Math.PI * 2);
+          ctx.stroke();
 
-      SpriteCache.draw(ctx, enemy.icon, enemy.x, enemy.y, enemy.size);
-    });
+          const color = progress > 0.5 ? '#22c55e' : progress > 0.25 ? '#fbbf24' : '#ef4444';
+          ctx.strokeStyle = color;
+          ctx.beginPath();
+          ctx.arc(
+            enemy.x | 0,
+            enemy.y | 0,
+            radius | 0,
+            -Math.PI / 2,
+            -Math.PI / 2 + Math.PI * 2 * progress
+          );
+          ctx.stroke();
+        }
+
+        // Shield indicator for shielded enemies (no shadowBlur for performance)
+        if (enemy.shield || enemy.hp > 1) {
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(enemy.x | 0, enemy.y | 0, (enemy.size * 0.7) | 0, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // HP indicator
+          if (enemy.maxHp > 1) {
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = '12px Arial';
+            ctx.fillText(
+              `${enemy.hp}/${enemy.maxHp}`,
+              enemy.x | 0,
+              (enemy.y + enemy.size * 0.6) | 0
+            );
+          }
+        }
+
+        // Slowed indicator
+        if (enemy.slowed) {
+          ctx.fillStyle = 'rgba(96, 165, 250, 0.3)';
+          ctx.beginPath();
+          ctx.arc(enemy.x | 0, enemy.y | 0, (enemy.size * 0.8) | 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        SpriteCache.draw(ctx, enemy.icon, enemy.x, enemy.y, enemy.size);
+      });
+    }
 
     // Draw boss (using SpriteCache)
     if (this.state.boss) {
@@ -903,21 +1135,38 @@ const ScamBlaster = {
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(boss.x, boss.y, boss.size * 0.8, 0, Math.PI * 2);
+      ctx.arc(boss.x | 0, boss.y | 0, (boss.size * 0.8) | 0, 0, Math.PI * 2);
       ctx.stroke();
 
       // Boss icon
       SpriteCache.draw(ctx, boss.icon, boss.x, boss.y, boss.size);
     }
 
-    // Draw power-ups (using SpriteCache)
-    this.state.powerUps.forEach(powerUp => {
-      const pulse = Math.sin(this.state.frameCount * 0.1) * 0.2 + 1;
-      SpriteCache.drawTransformed(ctx, powerUp.icon, powerUp.x, powerUp.y, 24, {
-        scaleX: pulse,
-        scaleY: pulse,
+    // Draw power-ups (TypedObjectPool Zero-Allocation)
+    if (this.state.powerUpPool) {
+      const pool = this.state.powerUpPool;
+      for (let i = 0; i < pool.capacity; i++) {
+        if (pool.active[i] === 1) {
+          const offset = i * pool.itemSize;
+          const data = pool.data;
+          const powerUp = this.powerUpTypes[Math.floor(data[offset + 4])];
+
+          const pulse = Math.sin(this.state.frameCount * 0.1) * 0.2 + 1;
+          SpriteCache.drawTransformed(ctx, powerUp.icon, data[offset + 0], data[offset + 1], 24, {
+            scaleX: pulse,
+            scaleY: pulse,
+          });
+        }
+      }
+    } else {
+      this.state.powerUps.forEach(powerUp => {
+        const pulse = Math.sin(this.state.frameCount * 0.1) * 0.2 + 1;
+        SpriteCache.drawTransformed(ctx, powerUp.icon, powerUp.x, powerUp.y, 24, {
+          scaleX: pulse,
+          scaleY: pulse,
+        });
       });
-    });
+    }
 
     // Explosions (TypedObjectPool Zero-Allocation)
     if (this.state.explosionPool) {
@@ -948,22 +1197,22 @@ const ScamBlaster = {
     ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(this.state.crosshair.x, this.state.crosshair.y, 18, 0, Math.PI * 2);
+    ctx.arc(this.state.crosshair.x | 0, this.state.crosshair.y | 0, 18, 0, Math.PI * 2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(this.state.crosshair.x - 25, this.state.crosshair.y);
-    ctx.lineTo(this.state.crosshair.x - 8, this.state.crosshair.y);
-    ctx.moveTo(this.state.crosshair.x + 8, this.state.crosshair.y);
-    ctx.lineTo(this.state.crosshair.x + 25, this.state.crosshair.y);
-    ctx.moveTo(this.state.crosshair.x, this.state.crosshair.y - 25);
-    ctx.lineTo(this.state.crosshair.x, this.state.crosshair.y - 8);
-    ctx.moveTo(this.state.crosshair.x, this.state.crosshair.y + 8);
-    ctx.lineTo(this.state.crosshair.x, this.state.crosshair.y + 25);
+    ctx.moveTo((this.state.crosshair.x - 25) | 0, this.state.crosshair.y | 0);
+    ctx.lineTo((this.state.crosshair.x - 8) | 0, this.state.crosshair.y | 0);
+    ctx.moveTo((this.state.crosshair.x + 8) | 0, this.state.crosshair.y | 0);
+    ctx.lineTo((this.state.crosshair.x + 25) | 0, this.state.crosshair.y | 0);
+    ctx.moveTo(this.state.crosshair.x | 0, (this.state.crosshair.y - 25) | 0);
+    ctx.lineTo(this.state.crosshair.x | 0, (this.state.crosshair.y - 8) | 0);
+    ctx.moveTo(this.state.crosshair.x | 0, (this.state.crosshair.y + 8) | 0);
+    ctx.lineTo(this.state.crosshair.x | 0, (this.state.crosshair.y + 25) | 0);
     ctx.stroke();
 
     ctx.fillStyle = '#ef4444';
     ctx.beginPath();
-    ctx.arc(this.state.crosshair.x, this.state.crosshair.y, 3, 0, Math.PI * 2);
+    ctx.arc(this.state.crosshair.x | 0, this.state.crosshair.y | 0, 3, 0, Math.PI * 2);
     ctx.fill();
   },
 

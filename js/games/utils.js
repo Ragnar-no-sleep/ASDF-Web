@@ -50,7 +50,7 @@ const SpriteCache = {
   },
 
   /**
-   * Draw a cached sprite to a canvas context
+   * Draw a cached sprite to a canvas context (Bitwise Optimized)
    * @param {CanvasRenderingContext2D} ctx - Target canvas context
    * @param {string} emoji - The emoji to draw
    * @param {number} x - Center X position
@@ -60,11 +60,12 @@ const SpriteCache = {
    */
   draw(ctx, emoji, x, y, size, color = '#ffffff') {
     const sprite = this.get(emoji, size, color);
-    ctx.drawImage(sprite, x - sprite.width / 2, y - sprite.height / 2);
+    // Bitwise OR 0 truncates decimals, snapping to pixels (faster than Math.floor)
+    ctx.drawImage(sprite, (x - sprite.width / 2) | 0, (y - sprite.height / 2) | 0);
   },
 
   /**
-   * Draw with rotation and/or scale
+   * Draw with rotation and/or scale (Bitwise Optimized)
    * @param {CanvasRenderingContext2D} ctx - Target canvas context
    * @param {string} emoji - The emoji to draw
    * @param {number} x - Center X position
@@ -78,11 +79,74 @@ const SpriteCache = {
 
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.translate(x, y);
+    ctx.translate(x | 0, y | 0);
     if (rotation) ctx.rotate(rotation);
     if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
-    ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+    ctx.drawImage(sprite, (-sprite.width / 2) | 0, (-sprite.height / 2) | 0);
     ctx.restore();
+  },
+
+  /**
+   * High-Performance Batch Rendering (Zero-Allocation + Bitwise Snapping 2026 Standard)
+   * Minimizes ctx.save() / ctx.restore() and groups identical sprites.
+   * @param {CanvasRenderingContext2D} ctx - Target canvas context
+   * @param {string} emoji - The emoji to draw
+   * @param {number} size - Font size
+   * @param {Float32Array} poolData - The raw data array from a TypedObjectPool
+   * @param {Uint8Array} poolActive - The active array from a TypedObjectPool
+   * @param {number} capacity - The pool capacity
+   * @param {number} itemSize - The pool itemSize
+   * @param {Object} offsets - Index mapping {x, y, scale (optional), alpha (optional), rotation (optional)}
+   */
+  drawBatch(ctx, emoji, size, poolData, poolActive, capacity, itemSize, offsets) {
+    const sprite = this.get(emoji, size, '#ffffff');
+    const halfW = sprite.width / 2;
+    const halfH = sprite.height / 2;
+
+    // Fast path: No transformations, just positions
+    if (
+      offsets.scale === undefined &&
+      offsets.alpha === undefined &&
+      offsets.rotation === undefined
+    ) {
+      for (let i = 0; i < capacity; i++) {
+        if (poolActive[i] === 1) {
+          const base = i * itemSize;
+          ctx.drawImage(
+            sprite,
+            (poolData[base + offsets.x] - halfW) | 0,
+            (poolData[base + offsets.y] - halfH) | 0
+          );
+        }
+      }
+      return;
+    }
+
+    // Complex path: requires transformation per particle, but we avoid save/restore
+    // by manually reversing transformations, which is faster for the GPU pipeline.
+    for (let i = 0; i < capacity; i++) {
+      if (poolActive[i] === 1) {
+        const base = i * itemSize;
+        const x = poolData[base + offsets.x] | 0;
+        const y = poolData[base + offsets.y] | 0;
+        const scale = offsets.scale !== undefined ? poolData[base + offsets.scale] : 1;
+        const alpha = offsets.alpha !== undefined ? poolData[base + offsets.alpha] : 1;
+        const rotation = offsets.rotation !== undefined ? poolData[base + offsets.rotation] : 0;
+
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        if (rotation) ctx.rotate(rotation);
+        if (scale !== 1) ctx.scale(scale, scale);
+
+        ctx.drawImage(sprite, -halfW | 0, -halfH | 0);
+
+        // Reverse transformations manually
+        if (scale !== 1) ctx.scale(1 / scale, 1 / scale);
+        if (rotation) ctx.rotate(-rotation);
+        ctx.translate(-x, -y);
+      }
+    }
+    ctx.globalAlpha = 1; // Reset alpha globally once
   },
 
   /**

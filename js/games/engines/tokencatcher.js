@@ -150,24 +150,25 @@ const TokenCatcher = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div class="tc-container">
+            <div class="tc-container tc-container--neon">
                 <canvas id="tc-canvas" class="game-canvas"></canvas>
-                <div class="game-hud-top-left game-hud-top-left--wide">
-                    <div class="game-hud-stat-lg">
-                        <span class="game-hud-stat-lg-label">SCORE</span>
-                        <div class="tc-score-value" id="tc-score">0</div>
+                <div class="tc-grid-overlay"></div>
+                <div class="game-hud-top-left game-hud-top-left--wide tc-hud">
+                    <div class="game-hud-stat-lg tc-stat-box">
+                        <span class="game-hud-stat-lg-label tc-label">DATA BYTES</span>
+                        <div class="tc-score-value neon-text" id="tc-score">0</div>
                     </div>
-                    <div class="game-hud-stat-lg">
-                        <span class="game-hud-stat-lg-label">TIME</span>
-                        <div class="tc-time-value" id="tc-time">34</div>
+                    <div class="game-hud-stat-lg tc-stat-box">
+                        <span class="game-hud-stat-lg-label tc-label">UPTIME</span>
+                        <div class="tc-time-value neon-text" id="tc-time">34</div>
                     </div>
-                    <div class="game-hud-stat-lg" id="tc-combo-container">
-                        <span class="game-hud-stat-lg-label">COMBO</span>
-                        <div class="tc-combo-value" id="tc-combo">0<span class="tc-combo-suffix">x</span></div>
+                    <div class="game-hud-stat-lg tc-stat-box" id="tc-combo-container">
+                        <span class="game-hud-stat-lg-label tc-label">LINK LEVEL</span>
+                        <div class="tc-combo-value neon-text" id="tc-combo">0<span class="tc-combo-suffix">x</span></div>
                     </div>
                 </div>
-                <div class="tc-hint-bar">
-                    QZSD/Arrows: Move | SPACE/Click: Shoot | &#128128; = Death!
+                <div class="tc-hint-bar tc-hint-neon">
+                    [WASD] PILOT DRONE | [SPACE/CLICK] FIRE DE-FRAG | COLLECT ASDF NODES | AVOID SCAM VIRUS
                 </div>
             </div>
         `;
@@ -178,29 +179,35 @@ const TokenCatcher = {
    */
   preloadSprites() {
     const sprites = [
-      // Basket
-      { emoji: '🧺', size: 60 },
-      // Good tokens
+      // Drone/Ship (Replaces Basket)
+      { emoji: '🛸', size: 60 },
+      // Nodes (Replaces Good tokens)
       ...this.goodTokens.map(t => ({ emoji: t, size: 30 })),
-      // Scam tokens
+      // Virus (Replaces Scam tokens)
       ...this.scamTokens.map(t => ({ emoji: t, size: 30 })),
-      // Skull
-      { emoji: this.skullToken, size: 30 },
+      // Fatal Error (Replaces Skull)
+      { emoji: '💀', size: 30 },
       // Power-ups
       ...Object.values(this.powerUps).map(p => ({ emoji: p.icon, size: 28 })),
-      // Enemies
+      // Malicious Bots (Enemies)
       ...this.enemyTypes.map(e => ({ emoji: e.icon, size: 35 })),
     ];
     SpriteCache.preload(sprites);
   },
 
   /**
-   * Resize canvas to fit container
+   * Resize canvas
    */
   resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    if (!this.canvas) return;
+    const parent = this.canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+
+    this.canvas.width = w > 0 ? w : 800;
+    this.canvas.height = h > 0 ? h : 600;
 
     // Calculate 3 lane positions
     this.state.laneHeight = 50;
@@ -1051,10 +1058,10 @@ const TokenCatcher = {
       ctx.fillText(`${enemy.currentHp}/${enemy.hp}`, enemy.x, enemy.y + 35);
     });
 
-    // Draw basket (using SpriteCache)
+    // Draw Drone (Replaces basket)
     const basketX = this.state.basketPos;
     const basketY = this.state.lanePositions[this.state.basketLane];
-    SpriteCache.draw(ctx, '🧺', basketX, basketY, 60);
+    SpriteCache.draw(ctx, '🛸', basketX, basketY, 60);
 
     // Draw lane highlight
     ctx.fillStyle = 'rgba(251,191,36,0.15)';
@@ -1176,4 +1183,8 @@ if (typeof window !== 'undefined') {
   window.ASDF = window.ASDF || {};
   window.ASDF.TokenCatcher = TokenCatcher;
   window.TokenCatcher = window.ASDF.TokenCatcher;
+
+  if (typeof GameRegistry !== 'undefined') {
+    GameRegistry.register('tokencatcher', TokenCatcher);
+  }
 }
