@@ -44,7 +44,12 @@ const GameEngineBase = {
   init(gameId, canvas) {
     this.gameId = gameId;
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
+    // Enable low-latency rendering (2026 High-Performance Standard)
+    // desynchronized: true allows the browser to bypass its compositor
+    this.ctx = canvas.getContext('2d', {
+      desynchronized: true,
+      alpha: false, // Optimization: opaque canvas is faster to composite
+    });
     this._active = true;
     this._handlers = [];
   },

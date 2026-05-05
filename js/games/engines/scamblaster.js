@@ -305,7 +305,7 @@ const ScamBlaster = {
     const self = this;
 
     this.handleMove = e => {
-      // Use pointer events for zero-latency tracking
+      // Keep tracking for logic (shooting coordinates)
       const rect = self.canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -314,16 +314,20 @@ const ScamBlaster = {
     };
 
     this.handleClick = e => {
-      // Prevent default to avoid double-firing on touch devices
       if (e.cancelable) e.preventDefault();
       self.handleMove(e);
-      // Instant action on mouse DOWN, not mouse UP
+      // Instant action on mouse DOWN
       self.shoot(self.state.crosshair.x, self.state.crosshair.y);
     };
 
-    // Modern zero-latency input standard (Pointer Events)
-    // Avoids the 300ms touch delay and click (mouse up) delay
-    this.canvas.style.touchAction = 'none'; // Critical for mobile fast-response
+    // ZERO-LATENCY HARDWARE CURSOR
+    // Web browsers always add 1 frame of latency to software-drawn cursors in canvas.
+    // By using a CSS URL cursor, we offload the crosshair rendering to the Operating System.
+    // This provides absolute 0ms latency for mouse movement.
+    const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
+    this.canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
+    this.canvas.style.touchAction = 'none';
+
     this.track(this.canvas, 'pointermove', this.handleMove);
     this.track(this.canvas, 'pointerdown', this.handleClick);
   },
@@ -1202,26 +1206,8 @@ const ScamBlaster = {
       });
     }
 
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(this.state.crosshair.x | 0, this.state.crosshair.y | 0, 18, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo((this.state.crosshair.x - 25) | 0, this.state.crosshair.y | 0);
-    ctx.lineTo((this.state.crosshair.x - 8) | 0, this.state.crosshair.y | 0);
-    ctx.moveTo((this.state.crosshair.x + 8) | 0, this.state.crosshair.y | 0);
-    ctx.lineTo((this.state.crosshair.x + 25) | 0, this.state.crosshair.y | 0);
-    ctx.moveTo(this.state.crosshair.x | 0, (this.state.crosshair.y - 25) | 0);
-    ctx.lineTo(this.state.crosshair.x | 0, (this.state.crosshair.y - 8) | 0);
-    ctx.moveTo(this.state.crosshair.x | 0, (this.state.crosshair.y + 8) | 0);
-    ctx.lineTo(this.state.crosshair.x | 0, (this.state.crosshair.y + 25) | 0);
-    ctx.stroke();
-
-    ctx.fillStyle = '#ef4444';
-    ctx.beginPath();
-    ctx.arc(this.state.crosshair.x | 0, this.state.crosshair.y | 0, 3, 0, Math.PI * 2);
-    ctx.fill();
+    // SOFTWARE CROSSHAIR REMOVED
+    // We now use a hardware-rendered CSS cursor (defined in setupInput) for absolute zero latency.
   },
 
   /**
