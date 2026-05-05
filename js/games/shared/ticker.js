@@ -1,76 +1,63 @@
 /**
- * ASDF Games - High-Performance Game Ticker
+ * ASDF Games - High-Performance Game Ticker (v2 - Variable Timestep)
  *
- * Provides a centralized, high-precision game loop with decoupling
- * between Simulation (Logic) and Rendering (Visuals).
+ * Provides a centralized, highly fluid game loop.
+ * Scales perfectly to monitor refresh rate (60Hz, 144Hz, 240Hz) by passing
+ * a normalized delta-time (dt) directly to the update function.
  *
- * Scalability: Supports independent tick rates and interpolation.
- * Modularity: Engines can subscribe to tick events without owning the loop.
+ * Avoids the over-engineered "fixed timestep with interpolation" pattern
+ * which causes visual stuttering if the draw functions aren't built for it.
  */
 
 'use strict';
 
 const GameTicker = {
-  // Config
-  fps: 60,
-  maxFrameTime: 250, // Prevent "spiral of death" after tab focus return
-
-  // State
-  _lastTime: 0,
-  _accumulator: 0,
   _frameId: null,
   _isRunning: false,
-
-  // Decoupled rates
-  tickRate: 1000 / 60, // Fixed simulation step (60Hz)
+  _lastTime: 0,
 
   /**
    * Start the global ticker
-   * @param {Function} updateFn - Logic update callback(dt)
-   * @param {Function} renderFn - Render callback(alpha) for interpolation
+   * @param {Function} updateFn - Logic & Render callback(dt). dt is normalized (1.0 at 60fps)
+   * @param {Function} renderFn - Backward compatibility for engines still passing 2 args
    */
   start(updateFn, renderFn) {
     if (this._isRunning) return;
     this._isRunning = true;
     this._lastTime = performance.now();
-    this._accumulator = 0;
 
     const loop = currentTime => {
       if (!this._isRunning) return;
 
-      let frameTime = currentTime - this._lastTime;
-      if (frameTime > this.maxFrameTime) frameTime = this.maxFrameTime;
-
+      // Calculate raw delta in seconds
+      let rawDelta = (currentTime - this._lastTime) / 1000;
       this._lastTime = currentTime;
-      this._accumulator += frameTime;
 
-      // Fixed Timestep Simulation
-      // Logic runs at a constant rate regardless of rendering FPS
-      while (this._accumulator >= this.tickRate) {
-        try {
-          updateFn(1.0); // dt is normalized to 1 unit per tickRate
-        } catch (e) {
-          console.error('[GameTicker] Update Error:', e);
-        }
-        this._accumulator -= this.tickRate;
-      }
+      // Cap delta at 100ms (10fps minimum) to prevent physics exploding
+      // when the user switches tabs or the browser hangs.
+      if (rawDelta > 0.1) rawDelta = 0.1;
 
-      // Variable Rate Rendering
-      // Alpha is the interpolation factor (0.0 to 1.0)
-      // Representing how far we are between two simulation ticks
-      const alpha = this._accumulator / this.tickRate;
+      // Normalize dt to a 60fps baseline.
+      // If the screen is 144Hz, rawDelta is ~0.0069s, dt will be ~0.416
+      // If the screen is 60Hz, rawDelta is ~0.0166s, dt will be ~1.0
+      const dt = rawDelta * 60;
+
       try {
-        renderFn(alpha);
+        // Run update and draw in the same cycle for absolute zero-latency
+        // between physics calculations and screen rendering.
+        updateFn(dt);
+        if (renderFn) renderFn(1.0); // alpha is always 1.0 when perfectly synced
       } catch (e) {
-        console.error('[GameTicker] Render Error:', e);
+        console.error('[GameTicker] Update/Render Error:', e);
       }
 
       this._frameId = requestAnimationFrame(loop);
     };
 
     this._frameId = requestAnimationFrame(loop);
+
     if (typeof GameEvents !== 'undefined') {
-      GameEvents.emit('ticker:started', { fps: this.fps });
+      GameEvents.emit('ticker:started');
     }
   },
 
