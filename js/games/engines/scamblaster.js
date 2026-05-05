@@ -159,16 +159,19 @@ const ScamBlaster = {
     this.setupInput();
     this.preloadSprites();
 
-    // Initialize Fixed Timestep Loop (2026 Standard)
-    if (typeof FixedTimestepLoop !== 'undefined') {
-      this.physicsLoop = new FixedTimestepLoop(
-        60, // 60 updates per second
+    // Initialize Game Ticker (2026 Scalable Standard)
+    if (typeof GameShared !== 'undefined' && GameShared.Ticker) {
+      GameShared.Ticker.start(
         dt => this.update(dt),
         alpha => this.draw(alpha)
       );
-      this.physicsLoop.start();
+    } else if (typeof GameTicker !== 'undefined') {
+      GameTicker.start(
+        dt => this.update(dt),
+        alpha => this.draw(alpha)
+      );
     } else {
-      console.warn('[ScamBlaster] FixedTimestepLoop missing, falling back to legacy loop');
+      console.warn('[ScamBlaster] Ticker missing, falling back to legacy loop');
       this.gameLoop();
     }
 
@@ -302,22 +305,27 @@ const ScamBlaster = {
     const self = this;
 
     this.handleMove = e => {
+      // Use pointer events for zero-latency tracking
       const rect = self.canvas.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
       self.state.crosshair.x = x * (self.canvas.width / rect.width);
       self.state.crosshair.y = y * (self.canvas.height / rect.height);
     };
 
     this.handleClick = e => {
+      // Prevent default to avoid double-firing on touch devices
+      if (e.cancelable) e.preventDefault();
       self.handleMove(e);
+      // Instant action on mouse DOWN, not mouse UP
       self.shoot(self.state.crosshair.x, self.state.crosshair.y);
     };
 
-    this.track(this.canvas, 'mousemove', this.handleMove);
-    this.track(this.canvas, 'click', this.handleClick);
-    this.track(this.canvas, 'touchmove', this.handleMove, { passive: false });
-    this.track(this.canvas, 'touchstart', this.handleClick, { passive: false });
+    // Modern zero-latency input standard (Pointer Events)
+    // Avoids the 300ms touch delay and click (mouse up) delay
+    this.canvas.style.touchAction = 'none'; // Critical for mobile fast-response
+    this.track(this.canvas, 'pointermove', this.handleMove);
+    this.track(this.canvas, 'pointerdown', this.handleClick);
   },
 
   /**
@@ -714,7 +722,7 @@ const ScamBlaster = {
    */
   update(dt) {
     if (this.state.gameOver) return;
-    if (this.state.phase === 'select') return;
+    if (this.state.phase === 'select' || !this.state.gameMode) return;
 
     if (this.state.phase === 'countdown') {
       this.state.frameCount += dt;
@@ -1221,6 +1229,11 @@ const ScamBlaster = {
    */
   stop() {
     GameEngineBase.stop.call(this);
+    if (typeof GameShared !== 'undefined' && GameShared.Ticker) {
+      GameShared.Ticker.stop();
+    } else if (typeof GameTicker !== 'undefined') {
+      GameTicker.stop();
+    }
   },
 };
 
