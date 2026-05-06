@@ -154,6 +154,31 @@ const ScamBlaster = {
       cachedBg: null,
       cachedGrid: null,
     };
+
+    // ZERO-ALLOCATION DOM CACHING (125/100 Optimization)
+    // Prevents layout thrashing by never calling getElementById in the game loop
+    // and only touching innerHTML/textContent if the value actually changed.
+    this.domCache = {
+      lives: document.getElementById('sb-lives'),
+      score: document.getElementById('sb-score'),
+      wave: document.getElementById('sb-wave'),
+      combo: document.getElementById('sb-combo'),
+      weapon: document.getElementById('sb-weapon'),
+      bossHud: document.getElementById('sb-boss-hud'),
+      bossHp: document.getElementById('sb-boss-hp'),
+      bossName: document.getElementById('sb-boss-name'),
+      countdown: document.getElementById('sb-countdown'),
+    };
+
+    this.lastDomState = {
+      score: -1,
+      lives: -1,
+      wave: -1,
+      comboText: '',
+      weaponHtml: '',
+      countdown: -1,
+    };
+
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
@@ -747,9 +772,12 @@ const ScamBlaster = {
         this.state.frameCount = 0;
         if (this.state.countdown <= 0) {
           this.state.phase = 'playing';
-          document.getElementById('sb-countdown').style.display = 'none';
+          if (this.domCache.countdown) this.domCache.countdown.style.display = 'none';
         } else {
-          document.getElementById('sb-countdown').textContent = this.state.countdown;
+          if (this.domCache.countdown && this.lastDomState.countdown !== this.state.countdown) {
+            this.domCache.countdown.textContent = this.state.countdown;
+            this.lastDomState.countdown = this.state.countdown;
+          }
         }
       }
       return;
@@ -773,14 +801,18 @@ const ScamBlaster = {
       }
     }
 
-    // Update weapon display
-    const weaponEl = document.getElementById('sb-weapon');
-    if (weaponEl) {
+    // Update weapon display (Dirty Check)
+    if (this.domCache.weapon) {
       let icon = '🔫';
       if (this.state.activeEffects.spread.active) icon = '🌟';
       else if (this.state.activeEffects.pierce.active) icon = '⚡';
       else if (this.state.activeEffects.slow.active) icon = '❄️';
-      weaponEl.innerHTML = `<span class="sb-weapon-icon">${icon}</span>`;
+
+      const newHtml = `<span class="sb-weapon-icon">${icon}</span>`;
+      if (this.lastDomState.weaponHtml !== newHtml) {
+        this.domCache.weapon.innerHTML = newHtml;
+        this.lastDomState.weaponHtml = newHtml;
+      }
     }
 
     // Check for boss wave (every 5th wave)
@@ -826,9 +858,6 @@ const ScamBlaster = {
       }
     }
 
-    const livesEl = document.getElementById('sb-lives');
-    const scoreEl = document.getElementById('sb-score');
-    const waveEl = document.getElementById('sb-wave');
     const self = this;
 
     // Update Enemies (Zero-Allocation Pool)
@@ -845,7 +874,11 @@ const ScamBlaster = {
             if (data[offset + 1] > self.walletZone.y) {
               self.state.lives--;
               self.addExplosion(data[offset + 0], data[offset + 1], 25, '💔');
-              if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+
+              if (self.domCache.lives && self.lastDomState.lives !== self.state.lives) {
+                self.domCache.lives.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+                self.lastDomState.lives = self.state.lives;
+              }
 
               if (self.state.lives <= 0) {
                 self.state.gameOver = true;
@@ -859,7 +892,10 @@ const ScamBlaster = {
             if (data[offset + 8] <= 0) {
               self.state.lives--;
               self.addExplosion(data[offset + 0], data[offset + 1], 25, '💔');
-              if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+              if (self.domCache.lives && self.lastDomState.lives !== self.state.lives) {
+                self.domCache.lives.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+                self.lastDomState.lives = self.state.lives;
+              }
 
               if (self.state.lives <= 0) {
                 self.state.gameOver = true;
@@ -879,7 +915,10 @@ const ScamBlaster = {
           if (enemy.y > self.walletZone.y) {
             self.state.lives--;
             self.addExplosion(enemy.x, enemy.y, 25, '💔');
-            if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+            if (self.domCache.lives && self.lastDomState.lives !== self.state.lives) {
+              self.domCache.lives.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+              self.lastDomState.lives = self.state.lives;
+            }
 
             if (self.state.lives <= 0) {
               self.state.gameOver = true;
@@ -892,7 +931,10 @@ const ScamBlaster = {
           if (enemy.lifespan <= 0) {
             self.state.lives--;
             self.addExplosion(enemy.x, enemy.y, 25, '💔');
-            if (livesEl) livesEl.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+            if (self.domCache.lives && self.lastDomState.lives !== self.state.lives) {
+              self.domCache.lives.innerHTML = '❤️'.repeat(Math.max(0, self.state.lives));
+              self.lastDomState.lives = self.state.lives;
+            }
 
             if (self.state.lives <= 0) {
               self.state.gameOver = true;
@@ -985,8 +1027,15 @@ const ScamBlaster = {
       });
     }
 
-    if (scoreEl) scoreEl.textContent = this.state.score;
-    updateScore(this.gameId, this.state.score);
+    if (this.domCache.score && this.lastDomState.score !== this.state.score) {
+      this.domCache.score.textContent = this.state.score;
+      this.lastDomState.score = this.state.score;
+      updateScore(this.gameId, this.state.score);
+    }
+    if (this.domCache.wave && this.lastDomState.wave !== this.state.wave) {
+      this.domCache.wave.textContent = `Wave ${this.state.wave}`;
+      this.lastDomState.wave = this.state.wave;
+    }
   },
 
   /**
