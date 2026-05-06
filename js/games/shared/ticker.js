@@ -1,12 +1,8 @@
 /**
- * ASDF Games - High-Performance Game Ticker (v2 - Variable Timestep)
+ * ASDF Games - High-Performance Game Ticker (v3 - "SmoothFlow")
  *
- * Provides a centralized, highly fluid game loop.
- * Scales perfectly to monitor refresh rate (60Hz, 144Hz, 240Hz) by passing
- * a normalized delta-time (dt) directly to the update function.
- *
- * Avoids the over-engineered "fixed timestep with interpolation" pattern
- * which causes visual stuttering if the draw functions aren't built for it.
+ * Centralized game loop designed for "Steam-like" fluidity.
+ * Features: Sub-frame input synchronization and jitter-free delta-time.
  */
 
 'use strict';
@@ -15,40 +11,43 @@ const GameTicker = {
   _frameId: null,
   _isRunning: false,
   _lastTime: 0,
+  _inputBuffer: [], // Stores events that happened between frames
 
   /**
    * Start the global ticker
-   * @param {Function} updateFn - Logic & Render callback(dt). dt is normalized (1.0 at 60fps)
+   * @param {Function} updateFn - callback(dt, inputBuffer)
    * @param {Function} renderFn - Backward compatibility for engines still passing 2 args
    */
   start(updateFn, renderFn) {
     if (this._isRunning) return;
     this._isRunning = true;
     this._lastTime = performance.now();
+    this._inputBuffer = [];
 
     const loop = currentTime => {
       if (!this._isRunning) return;
 
-      // Calculate raw delta in seconds
+      // 1. Precise timing
       let rawDelta = (currentTime - this._lastTime) / 1000;
       this._lastTime = currentTime;
 
-      // Cap delta at 100ms (10fps minimum) to prevent physics exploding
-      // when the user switches tabs or the browser hangs.
+      // Spiral of death prevention (max 100ms)
       if (rawDelta > 0.1) rawDelta = 0.1;
 
-      // Normalize dt to a 60fps baseline.
-      // If the screen is 144Hz, rawDelta is ~0.0069s, dt will be ~0.416
-      // If the screen is 60Hz, rawDelta is ~0.0166s, dt will be ~1.0
+      // 60fps normalization (1.0 = 16.6ms)
       const dt = rawDelta * 60;
 
+      // 2. High-Priority Input Processing
+      // We pass the current buffer of events to the game before updating
+      const frameInputs = [...this._inputBuffer];
+      this._inputBuffer = [];
+
       try {
-        // Run update and draw in the same cycle for absolute zero-latency
-        // between physics calculations and screen rendering.
-        updateFn(dt);
-        if (renderFn) renderFn(1.0); // alpha is always 1.0 when perfectly synced
+        // Run update and draw in one atomic operation
+        updateFn(dt, frameInputs);
+        if (renderFn) renderFn(1.0);
       } catch (e) {
-        console.error('[GameTicker] Update/Render Error:', e);
+        console.error('[GameTicker] Loop Error:', e);
       }
 
       this._frameId = requestAnimationFrame(loop);
@@ -62,6 +61,19 @@ const GameTicker = {
   },
 
   /**
+   * Capture an input event to be processed in the next frame
+   * This preserves the sub-frame timing of the action.
+   */
+  queueInput(type, data) {
+    if (!this._isRunning) return;
+    this._inputBuffer.push({
+      type,
+      data,
+      timestamp: performance.now(),
+    });
+  },
+
+  /**
    * Stop the ticker
    */
   stop() {
@@ -70,6 +82,7 @@ const GameTicker = {
       cancelAnimationFrame(this._frameId);
       this._frameId = null;
     }
+    this._inputBuffer = [];
     if (typeof GameEvents !== 'undefined') {
       GameEvents.emit('ticker:stopped');
     }

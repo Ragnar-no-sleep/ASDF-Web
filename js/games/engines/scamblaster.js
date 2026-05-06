@@ -150,8 +150,10 @@ const ScamBlaster = {
       // Pre-allocated hit points for zero-allocation shooting (up to 10 points)
       hitPointsBuffer: new Float32Array(10 * 2),
       hitPointsCount: 0,
+      // Cached rendering objects
+      cachedBg: null,
+      cachedGrid: null,
     };
-
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
@@ -308,25 +310,32 @@ const ScamBlaster = {
     const self = this;
 
     this.handleMove = e => {
-      // Keep tracking for logic (shooting coordinates)
       const rect = self.canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      self.state.crosshair.x = x * (self.canvas.width / rect.width);
-      self.state.crosshair.y = y * (self.canvas.height / rect.height);
+      const x = (e.clientX - rect.left) * (self.canvas.width / rect.width);
+      const y = (e.clientY - rect.top) * (self.canvas.height / rect.height);
+
+      self.state.crosshair.x = x;
+      self.state.crosshair.y = y;
+
+      // Queue movement for sub-frame processing
+      if (typeof GameTicker !== 'undefined') {
+        GameTicker.queueInput('move', { x, y });
+      }
     };
 
     this.handleClick = e => {
       if (e.cancelable) e.preventDefault();
       self.handleMove(e);
-      // Instant action on mouse DOWN
+
+      // 1. Instant trigger (for tactile feel)
       self.shoot(self.state.crosshair.x, self.state.crosshair.y);
+
+      // 2. Queue for logic synchronization
+      if (typeof GameTicker !== 'undefined') {
+        GameTicker.queueInput('shoot', { x: self.state.crosshair.x, y: self.state.crosshair.y });
+      }
     };
 
-    // ZERO-LATENCY HARDWARE CURSOR
-    // Web browsers always add 1 frame of latency to software-drawn cursors in canvas.
-    // By using a CSS URL cursor, we offload the crosshair rendering to the Operating System.
-    // This provides absolute 0ms latency for mouse movement.
     const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
     this.canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     this.canvas.style.touchAction = 'none';
@@ -985,33 +994,37 @@ const ScamBlaster = {
    */
   draw() {
     const ctx = this.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
 
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    bgGrad.addColorStop(0, '#0a0a1a');
-    bgGrad.addColorStop(0.5, '#151530');
-    bgGrad.addColorStop(1, '#1a1a3a');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // 1. Optimized Background Rendering
+    if (!this.state.cachedBg) {
+      this.state.cachedBg = ctx.createLinearGradient(0, 0, 0, h);
+      this.state.cachedBg.addColorStop(0, '#0a0a1a');
+      this.state.cachedBg.addColorStop(0.5, '#151530');
+      this.state.cachedBg.addColorStop(1, '#1a1a3a');
+    }
+    ctx.fillStyle = this.state.cachedBg;
+    ctx.fillRect(0, 0, w, h);
 
+    // 2. High-Performance Grid (Fixed spacing)
     ctx.strokeStyle = 'rgba(139, 92, 246, 0.1)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < this.canvas.width; x += 40) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.canvas.height);
-      ctx.stroke();
+    ctx.beginPath();
+    for (let x = 0; x < w; x += 40) {
+      ctx.moveTo(x | 0, 0);
+      ctx.lineTo(x | 0, h);
     }
-    for (let y = 0; y < this.canvas.height; y += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.canvas.width, y);
-      ctx.stroke();
+    for (let y = 0; y < h; y += 40) {
+      ctx.moveTo(0, y | 0);
+      ctx.lineTo(w, y | 0);
     }
+    ctx.stroke();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Draw enemies (TypedObjectPool Zero-Allocation)
+    // 3. Draw enemies
     if (this.state.enemyPool) {
       const pool = this.state.enemyPool;
       for (let i = 0; i < pool.capacity; i++) {
