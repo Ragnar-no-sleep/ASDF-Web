@@ -109,8 +109,8 @@ app.use(
           'https://cdnjs.cloudflare.com',
           'https://cdn.jsdelivr.net',
           'https://esm.sh',
-        ],
-        // Inline event handlers (onclick etc) removed from all production pages
+          'https://esm.run', // Added for esm.run scripts
+        ],        // Inline event handlers (onclick etc) removed from all production pages
         // Remaining onclick in demo/lab are gated behind !isProduction check
         scriptSrcAttr: ["'none'"],
         // Disable bare style-src default — split into elem + attr below
