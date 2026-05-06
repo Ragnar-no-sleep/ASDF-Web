@@ -147,6 +147,9 @@ const ScamBlaster = {
       comboTimer: 0,
       maxComboTime: 89, // fib[10] frames to maintain combo
       lastKillFrame: 0,
+      // Pre-allocated hit points for zero-allocation shooting (up to 10 points)
+      hitPointsBuffer: new Float32Array(10 * 2),
+      hitPointsCount: 0,
     };
 
     // Initialize timing for frame-independent movement
