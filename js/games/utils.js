@@ -240,13 +240,6 @@ const VALID_GAME_IDS = new Set([
   'spaceshooter',
 ]);
 
-/**
- * Validate game ID against whitelist
- */
-function isValidGameId(gameId) {
-  return typeof gameId === 'string' && VALID_GAME_IDS.has(gameId.toLowerCase());
-}
-
 // ============================================
 // RATE LIMITING FOR RPC CALLS
 // ============================================
