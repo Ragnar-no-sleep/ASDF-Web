@@ -14,8 +14,10 @@ const SharedLifecycle = {
    */
   startGame(gameId) {
     console.log(`[SharedLifecycle] Attempting to start game: ${gameId}`);
-    
-    if (!isValidGameId(gameId)) {
+
+    // Security: Validate gameId
+    const isIdValid = typeof isValidGameId === 'function' ? isValidGameId(gameId) : true;
+    if (!isIdValid) {
       console.error(`[SharedLifecycle] Invalid gameId: ${gameId}`);
       return;
     }
@@ -76,7 +78,7 @@ const SharedLifecycle = {
       // Read mode AFTER fallback logic (may have changed from competitive to practice)
       const actualMode =
         typeof activeGameModes !== 'undefined' ? activeGameModes[gameId] : 'practice';
-      
+
       if (typeof GameEvents !== 'undefined') {
         GameEvents.emit('game:started', { gameId, isCompetitive: actualMode === 'competitive' });
       }
@@ -98,7 +100,7 @@ const SharedLifecycle = {
         console.error('[SharedLifecycle] GameEngines coordinator not found');
         // Legacy fallback
         if (typeof window.startLegacyGame === 'function') {
-           window.startLegacyGame(gameId);
+          window.startLegacyGame(gameId);
         }
       }
     });
