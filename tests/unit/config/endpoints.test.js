@@ -1,27 +1,24 @@
 /**
  * @jest-environment jsdom
  */
-import { describe, test, it, expect, beforeAll } from '@jest/globals';
+import { describe, test, it, expect } from '@jest/globals';
 import { ASDF_ENDPOINTS } from '../../../js/config/endpoints.js';
 
 // ============================================
 // TDD suite — added 2026-04-24 (Render purge)
-// Validates no *.onrender.com remains in the config.
 //
-// Note on dynamic import + hostname override:
-// jsdom disallows redefining window.location after first definition.
-// Jest module registry caches the module after static import above,
-// so dynamic import returns the same evaluated object (localhost = /api values).
-// The Render-purge assertions therefore inspect the SOURCE values directly
-// by verifying that any string value in the object is NOT an onrender.com URL,
-// which is vacuously true for /api values and correctly fails for onrender.com URLs.
+// jsdom default hostname is localhost, so static import evaluates endpoints.js
+// in dev mode where every tool value is '/api'. We can't easily test the prod
+// branch from a jsdom test (window.location is not redefinable post-eval), so
+// our structural guards target what we CAN inspect:
+//
+// - No '.onrender.com' substring anywhere — fails if a value is hardcoded without isDev guard
+// - All string values are '/api' in dev — fails if an isDev guard is missing
+// - Object is frozen — fails if Object.freeze was dropped or replaced
 // ============================================
 
 describe('ASDF_ENDPOINTS — Render purge (TDD)', () => {
-  test('contains no .onrender.com URLs (static import, any env)', () => {
-    // In dev (jsdom/localhost), all values are '/api' — no onrender.com possible.
-    // This test fails if endpoints.js has an onrender.com value with NO isDev guard
-    // (e.g. staking: 'https://lock-verifier.onrender.com' directly).
+  test('contains no .onrender.com URLs (any env)', () => {
     Object.values(ASDF_ENDPOINTS).forEach(url => {
       if (typeof url === 'string') {
         expect(url).not.toMatch(/\.onrender\.com/);
@@ -30,24 +27,13 @@ describe('ASDF_ENDPOINTS — Render purge (TDD)', () => {
   });
 
   test('all string values in dev mode are /api (no hardcoded external URLs survive)', () => {
-    // Ensures no production URL leaked into the dev/localhost evaluation path.
-    // If a value doesn't have isDev guard, it shows up here.
     Object.entries(ASDF_ENDPOINTS).forEach(([_key, url]) => {
       if (typeof url === 'string') {
         expect(url).toBe('/api');
       }
     });
   });
-
-  test('object is frozen', () => {
-    expect(Object.isFrozen(ASDF_ENDPOINTS)).toBe(true);
-  });
 });
-
-// ============================================
-// jsdom defaults to localhost — test DEV mode
-// Static import (above) ran with localhost hostname.
-// ============================================
 
 describe('ASDF_ENDPOINTS — Development (jsdom/localhost)', () => {
   it('all tool endpoints point to /api proxy in dev', () => {
@@ -62,8 +48,6 @@ describe('ASDF_ENDPOINTS — Development (jsdom/localhost)', () => {
     expect(ASDF_ENDPOINTS.api).toBe('/api');
   });
 });
-
-// ============================================
 
 describe('ASDF_ENDPOINTS — Immutability', () => {
   it('is frozen (Object.freeze)', () => {
@@ -90,8 +74,6 @@ describe('ASDF_ENDPOINTS — Immutability', () => {
   });
 });
 
-// ============================================
-
 describe('ASDF_ENDPOINTS — Structure', () => {
   it('has exactly 6 endpoint keys', () => {
     expect(Object.keys(ASDF_ENDPOINTS)).toHaveLength(6);
@@ -110,46 +92,29 @@ describe('ASDF_ENDPOINTS — Structure', () => {
 });
 
 // ============================================
-// Production URL validation — post Render purge
-// All active prod tool URLs must use alonisthe.dev.
-// api field is null in prod (no backend post Vercel migration).
+// Production URL validation — reads the actual source file (not literals).
+// This is the only way to inspect the prod branch from jsdom: parse the source
+// and assert on what's written. A literal-against-literal test cannot regress.
 // ============================================
 
-describe('ASDF_ENDPOINTS — Production URL correctness (post Render purge)', () => {
-  it('production burns URL uses alonisthe.dev', () => {
-    const prodUrl = 'https://alonisthe.dev/burns';
-    expect(prodUrl).toMatch(/^https:\/\/alonisthe\.dev\//);
+describe('ASDF_ENDPOINTS — Production URL correctness (source-level)', () => {
+  it('endpoints.js source contains no .onrender.com after Render purge', () => {
+    // Read the source file via Node fs — bypasses jsdom module cache and lets us
+    // inspect both prod and dev branches in a single string.
+    const fs = require('fs');
+    const path = require('path');
+    const src = fs.readFileSync(path.resolve(__dirname, '../../../js/config/endpoints.js'), 'utf8');
+    // Strip comments to avoid matching documentation
+    const code = src.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(code).not.toMatch(/\.onrender\.com/);
   });
 
-  it('production forecast URL uses alonisthe.dev (not asdforecast.onrender.com)', () => {
-    const prodUrl = 'https://alonisthe.dev/forecast';
-    expect(prodUrl).toMatch(/^https:\/\/alonisthe\.dev\//);
-    expect(prodUrl).not.toMatch(/onrender\.com/);
-  });
-
-  it('production staking URL uses alonisthe.dev (not lock-verifier.onrender.com)', () => {
-    const prodUrl = 'https://alonisthe.dev/staking';
-    expect(prodUrl).toMatch(/^https:\/\/alonisthe\.dev\//);
-    expect(prodUrl).not.toMatch(/onrender\.com/);
-  });
-
-  it('production api field is null (no backend in prod post-Vercel)', () => {
-    // null is the explicit signal: no central API gateway in prod.
-    // Task 4 will verify no consumer calls api in prod.
-    const prodApiValue = null;
-    expect(prodApiValue).toBeNull();
-  });
-
-  it('all active prod tool URLs use HTTPS and alonisthe.dev', () => {
-    const prodUrls = [
-      'https://alonisthe.dev/burns',
-      'https://alonisthe.dev/forecast',
-      'https://alonisthe.dev/holdex',
-      'https://alonisthe.dev/staking',
-      'https://alonisthe.dev/ignition',
-    ];
-    prodUrls.forEach(url => {
-      expect(url).toMatch(/^https:\/\/alonisthe\.dev\//);
+  it('endpoints.js source uses alonisthe.dev for all 5 tools in prod branch', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const src = fs.readFileSync(path.resolve(__dirname, '../../../js/config/endpoints.js'), 'utf8');
+    ['burns', 'forecast', 'holdex', 'staking', 'ignition'].forEach(tool => {
+      expect(src).toMatch(new RegExp(`'https://alonisthe\\.dev/${tool}'`));
     });
   });
 });
