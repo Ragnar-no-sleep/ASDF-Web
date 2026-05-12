@@ -309,6 +309,13 @@ async function checkTokenBalance(publicKey) {
       return;
     }
 
+    // Guard: API_BASE is null in production (Phase 1 BURN — backend archived).
+    // Return early rather than composing "null/ecosystem/stats" URLs.
+    if (!CONFIG.API_BASE) {
+      GameStore.updateBalance(0, false);
+      return;
+    }
+
     if (!RateLimiter.canMakeCall('api-balance')) {
       console.warn('Rate limited - please wait before checking balance again');
       return;

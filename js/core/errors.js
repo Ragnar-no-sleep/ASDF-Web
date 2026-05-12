@@ -244,6 +244,13 @@ export const errors = {
   // ============================================
   // API ERRORS
   // ============================================
+  API_DISABLED: {
+    code: 'API_DISABLED',
+    name: 'API Disabled',
+    message: 'Game backend is offline (post Phase 1 BURN) — scores use local state only.',
+    action: 'none',
+    severity: 'debug',
+  },
   API_ERROR: {
     code: 'API_ERROR',
     name: 'API Error',

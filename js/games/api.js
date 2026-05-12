@@ -101,6 +101,15 @@ const ApiClient = {
    * Uses httpOnly cookies for authentication (credentials: 'include')
    */
   async request(endpoint, options = {}) {
+    // Guard: API_BASE is null in production (Phase 1 BURN — backend archived).
+    // Throw a clean error so callers' try/catch degrades gracefully instead of
+    // composing "null/scores/submit" URLs that confuse the console.
+    if (!CONFIG.API_BASE) {
+      const err = new Error('API_DISABLED');
+      err.code = 'API_DISABLED';
+      throw err;
+    }
+
     const url = `${CONFIG.API_BASE}${endpoint}`;
 
     if (!RateLimiter.canMakeCall(endpoint)) {
