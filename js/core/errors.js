@@ -422,6 +422,13 @@ export const errors = {
     action: 'none',
     severity: 'debug',
   },
+  REDIS_DISABLED: {
+    code: 'REDIS_DISABLED',
+    name: 'Redis Disabled',
+    message: 'Redis sync layer is disabled (Phase 1 BURN) — using localStorage only.',
+    action: 'none',
+    severity: 'debug',
+  },
 
   // ============================================
   // GENERIC ERRORS

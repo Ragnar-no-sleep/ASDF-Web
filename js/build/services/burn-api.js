@@ -11,8 +11,9 @@
 // CONFIGURATION
 // ============================================
 
-// Use relative URL in dev (proxied by Vite), full URL in production
-const API_BASE = import.meta.env.DEV ? '/api' : 'https://asdf-api.onrender.com/api';
+// API base — prod points to sollama58 burns backend via alonisthe.dev proxy
+// Mock fallback exists (see MOCK_STATS/MOCK_RECENT_BURNS below) if API is unreachable
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://alonisthe.dev/burns/api';
 const CACHE_TTL = 30000; // 30 seconds
 const FETCH_TIMEOUT = 5000; // 5 seconds
 

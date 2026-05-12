@@ -71,7 +71,9 @@ const CONFIG = {
   ESCROW_WALLET: DEFAULT_CONFIG.ESCROW_WALLET,
 
   // API endpoints (environment-specific)
-  API_BASE: Environment.isDev ? 'http://localhost:3001/api' : 'https://asdf-api.onrender.com/api',
+  // API base — prod backend was archived in Phase 1. Games-specific endpoints (leaderboards, anti-cheat)
+  // are no longer reachable from prod. Localhost dev points to alonisthe.dev if/when wired.
+  API_BASE: Environment.isDev ? 'http://localhost:3001/api' : null,
 
   // DEPRECATED: Direct RPC calls from frontend
   // All RPC calls should go through the API (which uses Helius with proper rate limiting)
