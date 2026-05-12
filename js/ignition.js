@@ -21,10 +21,23 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet } from './utils/format.js';
 import { ANIMATION, TIME_MS } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
 
 // API_BASE ready for when backend is deployed
 // eslint-disable-next-line no-unused-vars
 const API_BASE = ASDF_ENDPOINTS.ignition;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -318,6 +331,11 @@ async function init() {
   showLeaderboardPending();
   showRobinhoodPending();
   showPagsPending();
+
+  // Backend is known silent — surface CYNIC-voiced notice once
+  announceOracleSilence(
+    '*growl* — Ignition runway down. Backend silent. Verify launches elsewhere.'
+  );
 
   // Countdown — no target until backend provides real schedule
   // [API] TODO: startCountdown(await fetchAirdropSchedule())

@@ -22,6 +22,19 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, CACHE_TTL as CACHE_DURATIONS, TIME_MS } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // CONSTANTS
@@ -203,6 +216,9 @@ async function fetchLocks() {
   } catch (err) {
     console.error('[Staking] API unavailable, using demo data:', err);
     AudioFeedback.play('error');
+    announceOracleSilence(
+      '*growl* \u2014 Staking ledger unreachable. Demo data shown. Verify your locks on-chain.'
+    );
     locks = getDemoLocks();
     renderLocks();
     renderTimeline();

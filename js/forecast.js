@@ -19,8 +19,21 @@ import { formatWallet, formatTimeAgo } from './utils/format.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, ANIMATION } from './config/timing.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
+import { showNotice } from './utils/notice.js';
 
 const API_BASE = ASDF_ENDPOINTS.forecast;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -67,6 +80,9 @@ async function fetchState(userPubkey = null) {
     return await fetchWithRetry(url, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching state:', error);
+    announceOracleSilence(
+      '*growl* — The forecast oracle has gone silent. Backend down. Verify on-chain elsewhere.'
+    );
     return null;
   }
 }
@@ -76,6 +92,9 @@ async function fetchWallet() {
     return await fetchWithRetry(`${API_BASE}/api/wallet`, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching wallet data:', error);
+    announceOracleSilence(
+      '*growl* — The forecast oracle has gone silent. Backend down. Verify on-chain elsewhere.'
+    );
     return null;
   }
 }

@@ -17,8 +17,21 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, DEBOUNCE } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
 
 const API_BASE = ASDF_ENDPOINTS.holdex;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -104,6 +117,9 @@ async function fetchTokens() {
     return data.tokens || [];
   } catch (error) {
     console.error('[HolDEX] Error fetching tokens:', error);
+    announceOracleSilence(
+      '*growl* — HolDex backend silent. Token list unavailable. Verify holdings on-chain.'
+    );
     return [];
   }
 }
