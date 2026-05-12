@@ -25,7 +25,6 @@ const PROJECT_ROOT = path.resolve(__dirname, '../..');
 const JS_GAMES_DIR = path.join(PROJECT_ROOT, 'js/games');
 const CSS_DIR = path.join(PROJECT_ROOT, 'css');
 const API_DIR = path.join(PROJECT_ROOT, 'api');
-const SSR_DIR = path.join(PROJECT_ROOT, 'ssr');
 
 function readFile(filePath) {
   try {
@@ -702,41 +701,5 @@ describe('Pattern by Design', () => {
   });
 });
 
-// =============================================================================
-// SSR QUALITY
-// =============================================================================
-
-describe('SSR Quality', () => {
-  test('SSR services should exist', () => {
-    const servicesFile = path.join(SSR_DIR, 'services.cjs');
-    const gamesFile = path.join(SSR_DIR, 'games.cjs');
-
-    expect(fs.existsSync(servicesFile)).toBe(true);
-    expect(fs.existsSync(gamesFile)).toBe(true);
-  });
-
-  test('SSR should generate valid HTML', async () => {
-    const { renderGamesPage } = require(path.join(PROJECT_ROOT, 'ssr/games.cjs'));
-
-    const html = await renderGamesPage();
-
-    expect(html).toContain('<!DOCTYPE html>');
-    expect(html).toContain('</html>');
-    expect(html).toContain('__ASDF_SSR__');
-    expect(html).toContain('featured-game');
-  });
-
-  test('SSR hydration data should be valid JSON', async () => {
-    const { renderGamesPage } = require(path.join(PROJECT_ROOT, 'ssr/games.cjs'));
-
-    const html = await renderGamesPage();
-    const match = html.match(/window\.__ASDF_SSR__\s*=\s*({.+?});/);
-
-    expect(match).not.toBeNull();
-
-    const data = JSON.parse(match[1]);
-    expect(data).toHaveProperty('CONFIG');
-    expect(data).toHaveProperty('GAMES');
-    expect(data).toHaveProperty('currentGame');
-  });
-});
+// SSR Quality block removed 2026-05-12 — ssr/ archived to _archive/ssr-dev-2026-04/
+// (zero real SEO value: mock leaderboards + countdown rendered server-side but updated client-side).
