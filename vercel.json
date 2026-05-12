@@ -29,9 +29,15 @@
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh; script-src-attr 'none'; style-src-elem 'self' https://fonts.googleapis.com 'sha256-g3zsE0Awsc4wfprhpe8YVZsqibeu2d4QukNDGbZkTHU=' 'sha256-UHB+MUGZC1RRhZqst+ys56opHmhRowJfMs9fGojrpJc=' 'sha256-VbU/423YJlS9/qfLYSz/0kkQJXKiizihJm3+NnDKEb4=' 'sha256-0lYMvYgiXsuAzDHBwjoj5n8jQ+Cv8pZbw11OmC2nhqc=' 'sha256-Eq449Zo+s3RjCHExwk5rAbkCNOYez04lqw5SYD5QKh4='; style-src-attr 'none'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.solana.com https://*.helius-rpc.com https://alonisthe.dev https://cdnjs.cloudflare.com https://api.github.com https://esm.sh; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://alonisthe.dev https://*.squarespace.com https://*.squarespace-cdn.com; upgrade-insecure-requests"
+        }
       ]
     },
     {
