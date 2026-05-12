@@ -7,10 +7,22 @@
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/story", "destination": "/learn.html" },
-    { "source": "/widget", "destination": "/index.html" },
     { "source": "/quick-start", "destination": "/learn.html" },
-    { "source": "/ignition", "destination": "/games.html" },
-    { "source": "/asdforecast", "destination": "/forecast.html" }
+    { "source": "/widget", "destination": "/index.html" },
+    { "source": "/asdforecast", "destination": "/forecast.html" },
+    { "source": "/ignition", "destination": "/ignition.html" },
+    { "source": "/burns", "destination": "/burns.html" },
+    { "source": "/forecast", "destination": "/forecast.html" },
+    { "source": "/holdex", "destination": "/holdex.html" },
+    { "source": "/staking", "destination": "/staking.html" },
+    { "source": "/build", "destination": "/build.html" },
+    { "source": "/deep-learn", "destination": "/deep-learn.html" },
+    { "source": "/ecosystem-map", "destination": "/ecosystem-map.html" },
+    { "source": "/games", "destination": "/games.html" },
+    { "source": "/me", "destination": "/me.html" },
+    { "source": "/terrier", "destination": "/terrier.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/tools", "destination": "/index.html" }
   ],
   "headers": [
     {
