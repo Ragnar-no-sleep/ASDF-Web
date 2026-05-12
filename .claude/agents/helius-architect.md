@@ -20,7 +20,10 @@ Opus (analyse complexe requise)
 - Grep - Rechercher patterns
 - Bash (git, node, npm)
 - WebFetch - Documentation Helius
-- context7 - Docs Solana/Helius
+- Helius MCP (60+ tools) - DAS, RPC, transfers, webhooks, wallet analysis, streaming
+- DFlow MCP - Trading APIs (spot swaps, prediction markets)
+- /helius-build - Routing skill vers les bons MCP tools
+- /helius-svm - Solana protocol knowledge (SIMD, source code, docs)
 
 ## Stack Reference
 
@@ -76,12 +79,15 @@ function verifyHeliusWebhook(body, signature, secret) {
 ### 4. Rate Limiting
 
 ```javascript
-// Production rate limits
+// Helius rate limits (2026 — credit-based model, rps caps still apply)
+// Actual throughput depends on plan credits. These are conservative rps caps.
 const HELIUS_LIMITS = {
-  free: { rps: 10, daily: 10_000 },
-  developer: { rps: 50, daily: 100_000 },
-  business: { rps: 200, daily: 500_000 },
+  free: { rps: 10 },
+  developer: { rps: 50 },
+  business: { rps: 200 },
+  professional: { rps: 500 }, // $999/mo, includes LaserStream
 };
+// Streaming: 3 credits / 0.1 MB. Webhooks: 1 credit / event.
 ```
 
 ## K-Score Implementation

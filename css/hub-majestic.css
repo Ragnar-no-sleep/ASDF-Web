@@ -107,6 +107,192 @@ body.hub-majestic {
   background: var(--bg-void);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   HERO BANDEAU — Onboarding hook
+   ============================================ */
+
+.hub-hero {
+  position: relative;
+  z-index: var(--z-elevated, 10);
+  flex: 0 0 auto;
+  padding: 21px 21px 13px;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 9, 6, 0.95) 0%,
+    rgba(13, 9, 6, 0.6) 80%,
+    transparent 100%
+  );
+}
+
+.hub-hero-inner {
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.hub-hero-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(14px, 2.5vw, 20px);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--gold-soft, #fcd34d);
+  margin-bottom: 8px;
+}
+
+.hub-hero-sub {
+  font-size: clamp(12px, 1.8vw, 15px);
+  color: var(--text-secondary, #d6cfc5);
+  line-height: 1.5;
+  margin-bottom: 13px;
+}
+
+.hub-hero-sub strong {
+  color: var(--gold, #eab308);
+}
+
+.hub-hero-cta {
+  display: inline-block;
+  padding: 8px 21px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg-void, #080604);
+  background: var(--gold, #eab308);
+  border-radius: 5px;
+  text-decoration: none;
+  transition:
+    transform 233ms var(--ease-phi, ease),
+    box-shadow 233ms var(--ease-phi, ease);
+}
+
+.hub-hero-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 21px rgba(234, 179, 8, 0.5);
+}
+
+/* Pulse animation when planet "New here?" is clicked */
+.hub-hero-cta.is-pulsing {
+  animation: hero-cta-pulse 1.5s var(--ease-phi, ease) 3;
+}
+
+@keyframes hero-cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 21px 8px rgba(234, 179, 8, 0.8);
+    transform: scale(1.08);
+  }
+}
+
+/* ============================================
+   PLANET — First-visit "New here?" state
+   ============================================ */
+
+.hub-planet:has(.planet-label.is-newcomer) {
+  cursor: pointer;
+}
+
+.planet-label.is-newcomer {
+  color: var(--gold-soft, #fcd34d);
+  cursor: pointer;
+  pointer-events: auto;
+  font-size: 12px;
+  animation: newcomer-bob 2s var(--ease-smooth, ease) infinite;
+}
+
+@keyframes newcomer-bob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+/* ============================================
+   NEWCOMER OVERLAY — Mini explainer
+   ============================================ */
+
+.newcomer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 6, 4, 0.75);
+  backdrop-filter: blur(4px);
+  animation: overlay-fade-in 233ms var(--ease-phi, ease);
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.newcomer-card {
+  max-width: 380px;
+  padding: 21px;
+  background: rgba(26, 18, 13, 0.95);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 13px;
+  text-align: center;
+  animation: card-scale-in 377ms var(--ease-spring, ease);
+}
+
+@keyframes card-scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.newcomer-card p {
+  font-size: 14px;
+  color: var(--text-secondary, #d6cfc5);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.newcomer-card p:last-of-type {
+  margin-bottom: 13px;
+}
+
+.newcomer-card strong {
+  color: var(--gold, #eab308);
+}
+
+.newcomer-card-cta {
+  display: inline-block;
+  padding: 8px 21px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg-void, #080604);
+  background: var(--gold, #eab308);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 233ms var(--ease-phi, ease);
+}
+
+.newcomer-card-cta:hover {
+  transform: scale(1.05);
 }
 
 /* ============================================
@@ -698,8 +884,8 @@ body.hub-majestic {
 .hub {
   position: relative;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  flex: 1 1 0%;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -718,14 +904,10 @@ body.hub-majestic {
 }
 
 .hub-orbit--inner {
-  width: 240px;
-  height: calc(240px / var(--phi));
   animation: orbit-rotate 90s linear infinite;
 }
 
 .hub-orbit--outer {
-  width: calc(240px * var(--phi));
-  height: 240px;
   animation: orbit-rotate 140s linear infinite reverse;
 }
 
@@ -734,24 +916,6 @@ body.hub-majestic {
     transform: rotate(360deg);
   }
 }
-
-/* ============================================
-   CENTER CORE - Removed, Tools now at center
-   ============================================ */
-
-@keyframes glow-breathe {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.65;
-    transform: scale(1.1);
-  }
-}
-
-/* hub-node + hub-tools removed — now handled by orbital-system.css */
 
 /* ============================================
    FOOTER
@@ -798,15 +962,6 @@ body.hub-majestic {
    ============================================ */
 
 @media (max-width: 768px) {
-  .hub-orbit--inner {
-    width: 180px;
-    height: calc(180px / var(--phi));
-  }
-  .hub-orbit--outer {
-    width: calc(180px * var(--phi));
-    height: 180px;
-  }
-
   /* Reduce particle visibility on mobile for performance */
   .hub-cells i {
     opacity: 0 !important;
@@ -837,19 +992,30 @@ body.hub-majestic {
   }
 }
 
-@media (max-height: 600px) {
-  .hub-orbit--inner {
-    width: 140px;
-    height: calc(140px / var(--phi));
+@media (max-width: 480px) {
+  .hub-hero {
+    padding: 13px 13px 8px;
   }
-  .hub-orbit--outer {
-    width: calc(140px * var(--phi));
-    height: 140px;
+  .hub-hero-title {
+    font-size: 13px;
   }
+  .hub-hero-sub {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+  .hub-hero-cta {
+    padding: 6px 13px;
+    font-size: 11px;
+  }
+}
 
+@media (max-height: 600px) {
   .hub-cells,
   .hub-synapses {
     display: none;
+  }
+  .hub-hero {
+    padding: 8px 13px 5px;
   }
 }
 

@@ -686,6 +686,13 @@
   .hub-orbit-item-label {
     display: none; /* Hide labels on small screens to prevent overlap */
   }
+
+  /* Hide orbital content — grid view takes over */
+  .hub-orbit-container,
+  .hub-orbit,
+  .hub-planet {
+    display: none;
+  }
 }
 
 /* ============================================

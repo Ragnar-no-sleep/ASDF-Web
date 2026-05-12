@@ -131,12 +131,7 @@
               <div class="quick-stat-label">Cycles</div>
             </div>
           </div>
-          <a
-            href="/burns"
-            class="btn btn-secondary"
-            style="width: 100%; margin-top: var(--space-4); font-size: var(--text-sm)"
-            >View Burns</a
-          >
+          <a href="/burns" class="btn btn-secondary dl-sidebar-btn">View Burns</a>
         </div>
       </aside>
 
@@ -150,7 +145,7 @@
           </div>
           <h1>Deep Learn ASDF</h1>
           <p class="deep-hero-pitch">
-            <strong style="color: var(--accent)"
+            <strong class="dl-text-accent"
               >Trading fees buy tokens. Bought tokens get burned. Supply goes down.</strong
             ><br />
             THIS IS FINE.
@@ -221,7 +216,7 @@
                 <div class="flywheel-label">Scarcity</div>
               </div>
             </div>
-            <p style="text-align: center; color: var(--text-tertiary); font-style: italic">
+            <p class="dl-caption-centered">
               More trading &#8594; More fees &#8594; More burns &#8594; Less supply &#8594; More
               scarcity... repeat.
             </p>
@@ -229,89 +224,22 @@
 
           <div class="content-block">
             <h3>&#128138; Key Numbers</h3>
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: var(--space-4);
-                margin-top: var(--space-4);
-              "
-            >
-              <div
-                style="
-                  text-align: center;
-                  padding: var(--space-4);
-                  background: var(--bg-hover);
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  id="stat-burned"
-                  style="
-                    font-family: var(--font-mono);
-                    font-size: var(--text-2xl);
-                    color: var(--accent);
-                    font-weight: var(--font-bold);
-                  "
-                >
-                  --
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">
-                  Already Burned
-                </div>
+            <div class="dl-stats-grid">
+              <div class="dl-stat-card">
+                <div class="dl-stat-value" id="stat-burned">--</div>
+                <div class="dl-stat-label">Already Burned</div>
               </div>
-              <div
-                style="
-                  text-align: center;
-                  padding: var(--space-4);
-                  background: var(--bg-hover);
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-size: var(--text-2xl);
-                    color: var(--accent);
-                    font-weight: var(--font-bold);
-                  "
-                >
-                  &#966;&#8315;&#185;
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">
-                  Fee Ratio (61.8%)
-                </div>
+              <div class="dl-stat-card">
+                <div class="dl-stat-value">&#966;&#8315;&#185;</div>
+                <div class="dl-stat-label">Fee Ratio (61.8%)</div>
               </div>
-              <div
-                style="
-                  text-align: center;
-                  padding: var(--space-4);
-                  background: var(--bg-hover);
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-size: var(--text-2xl);
-                    color: var(--accent);
-                    font-weight: var(--font-bold);
-                  "
-                >
-                  24/7
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-tertiary)">Automated</div>
+              <div class="dl-stat-card">
+                <div class="dl-stat-value">24/7</div>
+                <div class="dl-stat-label">Automated</div>
               </div>
             </div>
-            <p
-              style="
-                font-size: var(--text-xs);
-                color: var(--text-tertiary);
-                margin-top: var(--space-3);
-                text-align: center;
-              "
-            >
-              &#8594; <a href="/burns" style="color: var(--accent)">Check live burn stats</a>
+            <p class="dl-footnote">
+              &#8594; <a href="/burns" class="dl-text-accent">Check live burn stats</a>
             </p>
           </div>
 
@@ -337,9 +265,7 @@
               Think of it like throwing money into a volcano. When supply decreases while demand
               stays constant, each remaining token becomes more scarce.
             </p>
-            <p style="color: var(--accent)">
-              All burns are on-chain and publicly verifiable on Solscan.
-            </p>
+            <p class="dl-text-accent">All burns are on-chain and publicly verifiable on Solscan.</p>
           </div>
 
           <div class="content-block">
@@ -348,18 +274,12 @@
               The "Daemon" is an automated program running 24/7. It's not a person - it's
               deterministic code that:
             </p>
-            <ol style="color: var(--text-secondary); margin-left: var(--space-5)">
-              <li style="margin-bottom: var(--space-2)">
-                Detects accumulated fees in the treasury
-              </li>
-              <li style="margin-bottom: var(--space-2)">Collects and consolidates them</li>
-              <li style="margin-bottom: var(--space-2)">
-                Executes market buys for ASDF (via Jupiter)
-              </li>
-              <li style="margin-bottom: var(--space-2)">
-                Sends purchased tokens to the burn address
-              </li>
-              <li style="margin-bottom: var(--space-2)">Logs everything on-chain</li>
+            <ol class="dl-list-secondary">
+              <li>Detects accumulated fees in the treasury</li>
+              <li>Collects and consolidates them</li>
+              <li>Executes market buys for ASDF (via Jupiter)</li>
+              <li>Sends purchased tokens to the burn address</li>
+              <li>Logs everything on-chain</li>
             </ol>
           </div>
 
@@ -373,22 +293,10 @@
               activity.
             </div>
 
-            <ul
-              style="
-                color: var(--text-secondary);
-                margin-left: var(--space-5);
-                margin-top: var(--space-4);
-              "
-            >
-              <li style="margin-bottom: var(--space-3)">
-                Creator fees fuel buybacks, not developer wallets
-              </li>
-              <li style="margin-bottom: var(--space-3)">
-                Selling generates burns too - sellers aren't enemies, they're fuel
-              </li>
-              <li style="margin-bottom: var(--space-3)">
-                Building apps? Your fees contribute to the burn
-              </li>
+            <ul class="dl-list-spaced">
+              <li>Creator fees fuel buybacks, not developer wallets</li>
+              <li>Selling generates burns too - sellers aren't enemies, they're fuel</li>
+              <li>Building apps? Your fees contribute to the burn</li>
             </ul>
           </div>
 
@@ -405,12 +313,12 @@
                  ================================ -->
         <div class="view-section" id="view-philosophy">
           <!-- THIS IS FINE - 3 Layers -->
-          <div class="content-block" style="border-color: var(--accent)">
+          <div class="content-block dl-block-accent-border">
             <h2>&#128021;&#128293; "THIS IS FINE" - Three Layers Deep</h2>
             <p>Our mascot isn't just a meme. It's a philosophy with three levels of meaning:</p>
 
             <div class="layer-card surface" aria-label="Surface level: Acceptance of Chaos">
-              <div class="layer-label" style="color: var(--text-tertiary)">Surface Level</div>
+              <div class="layer-label dl-text-muted">Surface Level</div>
               <div class="layer-title">Acceptance of Chaos</div>
               <div class="layer-desc">
                 Crypto markets are wild. Prices swing 50% in a day. Most panic. We accept the chaos
@@ -419,7 +327,7 @@
             </div>
 
             <div class="layer-card milieu" aria-label="Milieu level: Anti-Panic Conviction">
-              <div class="layer-label" style="color: var(--accent)">Milieu</div>
+              <div class="layer-label dl-text-accent">Milieu</div>
               <div class="layer-title">Anti-Panic Conviction</div>
               <div class="layer-desc">
                 Diamond hands through volatility. No FOMO, no FUD. The mechanism works regardless of
@@ -428,7 +336,7 @@
             </div>
 
             <div class="layer-card profond" aria-label="Deep level: Lucid Irony">
-              <div class="layer-label" style="color: var(--accent)">Profond (Deep)</div>
+              <div class="layer-label dl-text-accent">Profond (Deep)</div>
               <div class="layer-title">Lucid Irony</div>
               <div class="layer-desc">
                 We <em>know</em> everything is on fire. We build anyway. With mathematical rigor.
@@ -439,24 +347,15 @@
           </div>
 
           <!-- PHI PHILOSOPHY -->
-          <div
-            class="content-block"
-            style="
-              background: linear-gradient(
-                135deg,
-                var(--bg-surface) 0%,
-                rgba(234, 78, 51, 0.05) 100%
-              );
-            "
-          >
-            <h2 style="display: flex; align-items: center; gap: var(--space-3)">
+          <div class="content-block dl-block-phi-gradient">
+            <h2 class="dl-heading-flex">
               <span class="phi-display">&phi;</span>
               The Golden Ratio
             </h2>
             <p>
               Every ratio in the ASDF ecosystem is derived from
-              <strong style="color: var(--accent)">&phi; (phi) = 1.618...</strong> - the golden
-              ratio found in nature, from spiral galaxies to seashells.
+              <strong class="dl-text-accent">&phi; (phi) = 1.618...</strong> - the golden ratio
+              found in nature, from spiral galaxies to seashells.
             </p>
 
             <div class="highlight-box">
@@ -500,14 +399,12 @@
             <div class="hierarchy-card build">
               <div class="hierarchy-icon">&#128736;</div>
               <div class="hierarchy-info">
-                <div class="hierarchy-name" style="color: var(--accent)">BUILD</div>
+                <div class="hierarchy-name dl-text-accent">BUILD</div>
                 <div class="hierarchy-desc">
                   Create tools, contribute code, generate ecosystem value
                 </div>
               </div>
-              <div class="hierarchy-multiplier" style="color: var(--accent)">
-                &phi;&sup2; = 2.618x
-              </div>
+              <div class="hierarchy-multiplier dl-multiplier-accent">&phi;&sup2; = 2.618x</div>
             </div>
 
             <div class="hierarchy-card use">
@@ -518,9 +415,7 @@
                   Active ecosystem participant, using tools generates fees
                 </div>
               </div>
-              <div class="hierarchy-multiplier" style="color: var(--text-secondary)">
-                &phi; = 1.618x
-              </div>
+              <div class="hierarchy-multiplier dl-multiplier-secondary">&phi; = 1.618x</div>
             </div>
 
             <div class="hierarchy-card hold">
@@ -529,7 +424,7 @@
                 <div class="hierarchy-name">HOLD</div>
                 <div class="hierarchy-desc">Entry point - conviction demonstrated by holding</div>
               </div>
-              <div class="hierarchy-multiplier" style="color: var(--text-tertiary)">1.0x</div>
+              <div class="hierarchy-multiplier dl-multiplier-muted">1.0x</div>
             </div>
 
             <div class="highlight-box">
@@ -541,16 +436,7 @@
 
           <div class="content-block">
             <h3>&#128161; Core Principles</h3>
-            <div
-              style="
-                font-family: var(--font-mono);
-                padding: var(--space-6);
-                background: var(--bg-elevated);
-                border-radius: var(--radius-md);
-                color: var(--accent);
-                line-height: 2;
-              "
-            >
+            <div class="dl-principles-block">
               Don't trust. Verify.<br />
               Don't extract. Burn.<br />
               Don't panic. Hold.<br />
@@ -634,112 +520,28 @@
 
           <div class="content-block">
             <h3>&#128202; K-Score Interpretation</h3>
-            <div style="display: flex; flex-direction: column; gap: var(--space-3)">
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-4);
-                  padding: var(--space-4);
-                  background: linear-gradient(
-                    90deg,
-                    rgba(34, 197, 94, 0.2) 0%,
-                    var(--bg-hover) 100%
-                  );
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-weight: var(--font-bold);
-                    color: var(--success);
-                  "
-                >
-                  80-100
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+            <div class="dl-kscore-list">
+              <div class="dl-kscore-tier dl-kscore-tier--exceptional">
+                <div class="dl-kscore-tier-value dl-kscore-tier-value--success">80-100</div>
+                <div class="dl-kscore-tier-desc">
                   Exceptional - Strong conviction across all dimensions
                 </div>
               </div>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-4);
-                  padding: var(--space-4);
-                  background: linear-gradient(
-                    90deg,
-                    rgba(59, 130, 246, 0.2) 0%,
-                    var(--bg-hover) 100%
-                  );
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-weight: var(--font-bold);
-                    color: #3b82f6;
-                  "
-                >
-                  60-80
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+              <div class="dl-kscore-tier dl-kscore-tier--good">
+                <div class="dl-kscore-tier-value dl-kscore-tier-value--blue">60-80</div>
+                <div class="dl-kscore-tier-desc">
                   Good - Solid fundamentals with minor weaknesses
                 </div>
               </div>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-4);
-                  padding: var(--space-4);
-                  background: linear-gradient(
-                    90deg,
-                    rgba(234, 179, 8, 0.2) 0%,
-                    var(--bg-hover) 100%
-                  );
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-weight: var(--font-bold);
-                    color: #eab308;
-                  "
-                >
-                  40-60
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+              <div class="dl-kscore-tier dl-kscore-tier--average">
+                <div class="dl-kscore-tier-value dl-kscore-tier-value--yellow">40-60</div>
+                <div class="dl-kscore-tier-desc">
                   Average - Needs improvement in one or more areas
                 </div>
               </div>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-4);
-                  padding: var(--space-4);
-                  background: linear-gradient(
-                    90deg,
-                    rgba(239, 68, 68, 0.2) 0%,
-                    var(--bg-hover) 100%
-                  );
-                  border-radius: var(--radius-md);
-                "
-              >
-                <div
-                  style="
-                    font-family: var(--font-mono);
-                    font-weight: var(--font-bold);
-                    color: var(--error);
-                  "
-                >
-                  0-40
-                </div>
-                <div style="font-size: var(--text-sm); color: var(--text-secondary)">
+              <div class="dl-kscore-tier dl-kscore-tier--weak">
+                <div class="dl-kscore-tier-value dl-kscore-tier-value--error">0-40</div>
+                <div class="dl-kscore-tier-desc">
                   Weak - Significant issues in multiple dimensions
                 </div>
               </div>
@@ -809,42 +611,29 @@
 
           <div class="content-block">
             <h3>&#128161; Technical Advantages</h3>
-            <ul style="color: var(--text-secondary); margin-left: var(--space-5)">
-              <li style="margin-bottom: var(--space-3)">
+            <ul class="dl-list-advantages">
+              <li>
                 <strong>Automated:</strong> The daemon runs 24/7, no human intervention needed
               </li>
-              <li style="margin-bottom: var(--space-3)">
+              <li>
                 <strong>Transparent:</strong> All transactions on-chain, verifiable on Solscan
               </li>
-              <li style="margin-bottom: var(--space-3)">
-                <strong>Open Source:</strong> Code is public on GitHub - audit it yourself
-              </li>
-              <li style="margin-bottom: var(--space-3)">
+              <li><strong>Open Source:</strong> Code is public on GitHub - audit it yourself</li>
+              <li>
                 <strong>Ecosystem Revenue:</strong> Multiple apps contribute fees, not just trading
               </li>
             </ul>
           </div>
 
-          <div
-            class="content-block"
-            style="background: var(--accent-soft); border-color: var(--accent)"
-          >
-            <h3 style="color: var(--accent)">&#128270; Verify Yourself</h3>
+          <div class="content-block dl-block-verify">
+            <h3 class="dl-text-accent">&#128270; Verify Yourself</h3>
             <p>True to "Don't Trust, Verify" - check every transaction on-chain:</p>
-            <div
-              style="
-                display: flex;
-                gap: var(--space-4);
-                flex-wrap: wrap;
-                margin-top: var(--space-4);
-              "
-            >
+            <div class="dl-flex-row">
               <a
                 href="https://solscan.io/account/1nc1nerator11111111111111111111111111111111"
                 target="_blank"
                 rel="noopener"
-                class="btn btn-secondary"
-                style="display: inline-flex; align-items: center; gap: var(--space-2)"
+                class="btn btn-secondary dl-btn-inline"
               >
                 &#128293; Burn Address
               </a>
@@ -852,18 +641,11 @@
                 href="https://github.com/Ragnar-no-sleep/ASDF-Ecosystem"
                 target="_blank"
                 rel="noopener"
-                class="btn btn-secondary"
-                style="display: inline-flex; align-items: center; gap: var(--space-2)"
+                class="btn btn-secondary dl-btn-inline"
               >
                 &#128187; GitHub
               </a>
-              <a
-                href="/burns"
-                class="btn btn-primary"
-                style="display: inline-flex; align-items: center; gap: var(--space-2)"
-              >
-                &#128200; Full Burns Page
-              </a>
+              <a href="/burns" class="btn btn-primary dl-btn-inline"> &#128200; Full Burns Page </a>
             </div>
           </div>
 
@@ -932,7 +714,7 @@
                 <div class="faq-answer-inner">
                   Initial supply was 1 billion tokens. Approximately 8% has been burned. Check
                   real-time stats at
-                  <a href="/burns" style="color: var(--accent)">alonisthe.dev/burns</a>.
+                  <a href="/burns" class="dl-text-accent">alonisthe.dev/burns</a>.
                 </div>
               </div>
             </div>
@@ -996,7 +778,7 @@
           </div>
 
           <!-- Glossary -->
-          <div class="content-block" style="margin-top: var(--space-8)">
+          <div class="content-block dl-block-glossary">
             <h2 id="glossary-heading">&#128214; Glossary</h2>
             <label for="glossary-search" class="visually-hidden">Search glossary terms</label>
             <input
@@ -1078,9 +860,9 @@
             </div>
           </div>
 
-          <div class="level-nav" style="margin-top: var(--space-8)">
+          <div class="level-nav dl-level-nav-spaced">
             <button class="btn btn-secondary" data-nav-view="ecosystem">&#8592; Back</button>
-            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap">
+            <div class="dl-nav-actions">
               <a href="/build" class="btn btn-primary">Start Building &#127795;</a>
               <a href="/burns" class="btn btn-secondary">Track Burns &#128293;</a>
             </div>

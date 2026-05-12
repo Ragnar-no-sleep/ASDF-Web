@@ -138,27 +138,27 @@ const CryptoHeist = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a0a1a 0%,#1a0a2e 100%);cursor:crosshair;">
-                <canvas id="ch-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:15px;left:15px;display:flex;gap:12px;">
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
-                        <span style="color:var(--gold);font-size:13px;">&#128176; <span id="ch-score">0</span></span>
+            <div class="ch-container">
+                <canvas id="ch-canvas" class="game-canvas"></canvas>
+                <div class="game-hud-top-left">
+                    <div class="ch-stat">
+                        <span class="ch-stat-score">&#128176; <span id="ch-score">0</span></span>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
-                        <span style="color:var(--red);font-size:13px;">&#128128; <span id="ch-kills">0</span></span>
+                    <div class="ch-stat">
+                        <span class="ch-stat-kills">&#128128; <span id="ch-kills">0</span></span>
                     </div>
-                    <div style="background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
-                        <span style="color:var(--purple);font-size:13px;">&#127754; <span id="ch-wave">1</span></span>
+                    <div class="ch-stat">
+                        <span class="ch-stat-wave">&#127754; <span id="ch-wave">1</span></span>
                     </div>
                 </div>
-                <div style="position:absolute;top:15px;right:15px;background:rgba(0,0,0,0.7);padding:8px 14px;border-radius:8px;">
-                    <div style="font-size:10px;color:#a78bfa;margin-bottom:4px;">STEALTH</div>
-                    <div style="width:80px;height:8px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden;">
-                        <div id="ch-stealth-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);transition:width 0.2s;"></div>
+                <div class="game-hud-top-right ch-stealth-panel">
+                    <div class="ch-stealth-label">STEALTH</div>
+                    <div class="ch-stealth-bar-track">
+                        <div id="ch-stealth-bar" class="ch-stealth-bar-fill"></div>
                     </div>
-                    <div id="ch-alert" style="font-size:10px;color:#22c55e;margin-top:2px;text-align:center;">HIDDEN</div>
+                    <div id="ch-alert" class="ch-alert-text">HIDDEN</div>
                 </div>
-                <div style="position:absolute;bottom:15px;left:50%;transform:translateX(-50%);color:var(--text-muted);font-size:11px;text-align:center;">
+                <div class="ch-hint-bar">
                     WASD to move | AIM with mouse | CLICK to shoot | Survive the enemy waves!
                 </div>
             </div>

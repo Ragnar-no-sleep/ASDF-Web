@@ -375,19 +375,25 @@ class AchievementSystem {
     `;
 
     overlay.innerHTML = `
-      <div style="text-align: center; animation: scale-in 400ms ease-out;">
-        <div style="font-size: 80px; margin-bottom: 16px;">${achievement.icon}</div>
-        <div style="font-size: 14px; color: ${rarityColors[achievement.rarity]}; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
+      <div class="ach-unlock-inner">
+        <div class="ach-unlock-icon">${achievement.icon}</div>
+        <div class="ach-unlock-rarity">
           ${achievement.rarity}
         </div>
-        <div style="font-size: 32px; font-weight: 700; margin-bottom: 12px;">
+        <div class="ach-unlock-title">
           ${achievement.name}
         </div>
-        <div style="font-size: 16px; color: rgba(255, 255, 255, 0.7); max-width: 400px;">
+        <div class="ach-unlock-desc">
           ${achievement.description}
         </div>
       </div>
     `;
+
+    // Set dynamic rarity color via CSSOM
+    const rarityEl = overlay.querySelector('.ach-unlock-rarity');
+    if (rarityEl) {
+      rarityEl.style.setProperty('--ach-rarity-color', rarityColors[achievement.rarity]);
+    }
 
     document.body.appendChild(overlay);
 
@@ -547,10 +553,16 @@ export function createAchievementGallery(container) {
       <div class="achievement-stats-count">${unlockedCount}/${totalCount}</div>
       <div class="achievement-stats-label">Achievements Unlocked</div>
       <div class="achievement-stats-progress">
-        <div class="achievement-stats-bar" style="width: ${(unlockedCount / totalCount) * 100}%"></div>
+        <div class="achievement-stats-bar" data-width="${(unlockedCount / totalCount) * 100}"></div>
       </div>
     </div>
   `;
+
+  // Set dynamic width via CSSOM
+  const statsBar = gallery.querySelector('.achievement-stats-bar');
+  if (statsBar) {
+    statsBar.style.width = `${statsBar.dataset.width}%`;
+  }
 
   // Render by rarity
   Object.entries(byRarity).forEach(([rarity, list]) => {
@@ -587,13 +599,19 @@ function createAchievementCard(achievement) {
       !achievement.unlocked && achievement.progress > 0
         ? `
       <div class="achievement-progress">
-        <div class="achievement-progress-bar" style="width: ${achievement.progress}%"></div>
+        <div class="achievement-progress-bar" data-width="${achievement.progress}"></div>
       </div>
       <div class="achievement-progress-text">${Math.floor(achievement.progress)}%</div>
     `
         : ''
     }
   `;
+
+  // Set dynamic progress bar width via CSSOM
+  const progressBar = card.querySelector('.achievement-progress-bar');
+  if (progressBar) {
+    progressBar.style.width = `${progressBar.dataset.width}%`;
+  }
 
   return card;
 }

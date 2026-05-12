@@ -227,7 +227,7 @@ const ShopCollections = {
 
     return `
             <div class="collection-progress ${complete ? 'complete' : ''}">
-                <div class="collection-progress-bar" style="width: ${percentage}%"></div>
+                <div class="collection-progress-bar" data-progress="${percentage}"></div>
                 <span class="collection-progress-text">
                     ${collection.ownedCount}/${collection.totalCount}
                     ${complete ? '✓' : ''}

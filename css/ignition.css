@@ -1416,6 +1416,12 @@ a:hover {
   color: var(--ig-accent);
 }
 
+.ig-context-centered {
+  max-width: 500px;
+  margin: 12px auto 0;
+  text-align: center;
+}
+
 /* Full mode — enhanced effects */
 [data-density='full'] .ig-glow {
   opacity: 0.5;

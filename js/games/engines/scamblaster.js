@@ -158,57 +158,57 @@ const ScamBlaster = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;cursor:crosshair;">
-                <canvas id="sb-canvas" style="width:100%;height:100%;"></canvas>
-                <div id="sb-mode-select" style="position:absolute;inset:0;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;">
-                    <h2 style="color:var(--gold);font-size:28px;margin-bottom:10px;">&#127919; SCAM BLASTER</h2>
-                    <p style="color:var(--text-muted);font-size:14px;margin-bottom:30px;">Choose your game mode:</p>
-                    <div style="display:flex;gap:20px;">
-                        <button id="sb-select-fall" style="padding:20px 30px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#16a34a);border:3px solid #4ade80;color:#fff;cursor:pointer;text-align:center;transition:transform 0.2s;">
-                            <div style="font-size:40px;margin-bottom:8px;">&#128229;</div>
-                            <div style="font-size:16px;font-weight:bold;">FALL MODE</div>
-                            <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:5px;">Enemies fall down<br>Protect your wallet!</div>
+            <div class="sb-container">
+                <canvas id="sb-canvas" class="game-canvas"></canvas>
+                <div id="sb-mode-select" class="game-mode-overlay">
+                    <h2 class="sb-title">&#127919; SCAM BLASTER</h2>
+                    <p class="sb-subtitle">Choose your game mode:</p>
+                    <div class="game-flex-row">
+                        <button id="sb-select-fall" class="game-btn game-btn-success">
+                            <div class="game-btn-icon">&#128229;</div>
+                            <div class="game-btn-title">FALL MODE</div>
+                            <div class="game-btn-desc">Enemies fall down<br>Protect your wallet!</div>
                         </button>
-                        <button id="sb-select-pop" style="padding:20px 30px;border-radius:12px;background:linear-gradient(135deg,#a855f7,#7c3aed);border:3px solid #c084fc;color:#fff;cursor:pointer;text-align:center;transition:transform 0.2s;">
-                            <div style="font-size:40px;margin-bottom:8px;">&#128165;</div>
-                            <div style="font-size:16px;font-weight:bold;">POP MODE</div>
-                            <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:5px;">Enemies pop up anywhere<br>Click before they vanish!</div>
+                        <button id="sb-select-pop" class="game-btn game-btn-purple">
+                            <div class="game-btn-icon">&#128165;</div>
+                            <div class="game-btn-title">POP MODE</div>
+                            <div class="game-btn-desc">Enemies pop up anywhere<br>Click before they vanish!</div>
                         </button>
                     </div>
                 </div>
-                <div id="sb-hud" style="display:none;">
-                    <div style="position:absolute;top:12px;left:12px;display:flex;gap:12px;">
-                        <div style="background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:8px;backdrop-filter:blur(4px);">
-                            <span style="color:#a78bfa;font-size:10px;">SCORE</span>
-                            <div style="color:#fbbf24;font-size:18px;font-weight:bold;" id="sb-score">0</div>
+                <div id="sb-hud" class="game-hidden">
+                    <div class="game-hud-tl">
+                        <div class="game-hud-stat">
+                            <span class="game-hud-stat-label">SCORE</span>
+                            <div class="sb-score-value" id="sb-score">0</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:8px;backdrop-filter:blur(4px);">
-                            <span style="color:#a78bfa;font-size:10px;">WAVE</span>
-                            <div style="color:#a855f7;font-size:18px;font-weight:bold;" id="sb-wave">1</div>
+                        <div class="game-hud-stat">
+                            <span class="game-hud-stat-label">WAVE</span>
+                            <div class="sb-wave-value" id="sb-wave">1</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:8px;backdrop-filter:blur(4px);">
-                            <span style="color:#a78bfa;font-size:10px;">COMBO</span>
-                            <div style="color:#f97316;font-size:16px;font-weight:bold;" id="sb-combo">-</div>
+                        <div class="game-hud-stat">
+                            <span class="game-hud-stat-label">COMBO</span>
+                            <div class="sb-combo-value" id="sb-combo">-</div>
                         </div>
                     </div>
-                    <div style="position:absolute;top:12px;right:12px;display:flex;gap:10px;">
-                        <div style="background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:8px;backdrop-filter:blur(4px);" id="sb-weapon">
-                            <span style="font-size:16px;">&#128299;</span>
+                    <div class="game-hud-tr">
+                        <div class="game-hud-stat" id="sb-weapon">
+                            <span class="sb-weapon-icon">&#128299;</span>
                         </div>
-                        <div style="background:rgba(0,0,0,0.7);padding:6px 14px;border-radius:8px;backdrop-filter:blur(4px);" id="sb-lives">&#10084;&#10084;&#10084;</div>
+                        <div class="game-hud-stat" id="sb-lives">&#10084;&#10084;&#10084;</div>
                     </div>
-                    <div id="sb-wallet" style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:85%;height:50px;background:linear-gradient(90deg,rgba(139,92,246,0.4),rgba(251,191,36,0.4));border:2px solid #fbbf24;border-radius:10px;display:none;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(251,191,36,0.3);">
-                        <span style="font-size:22px;">&#128188;</span>
-                        <span style="margin-left:8px;color:#fbbf24;font-weight:bold;">YOUR WALLET</span>
+                    <div id="sb-wallet" class="sb-wallet">
+                        <span class="sb-wallet-icon">&#128188;</span>
+                        <span class="sb-wallet-label">YOUR WALLET</span>
                     </div>
-                    <div id="sb-boss-hud" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);text-align:center;">
-                        <div style="color:#ef4444;font-size:14px;font-weight:bold;" id="sb-boss-name">BOSS</div>
-                        <div style="width:200px;height:12px;background:rgba(0,0,0,0.6);border-radius:6px;border:2px solid #ef4444;overflow:hidden;margin-top:4px;">
-                            <div id="sb-boss-hp" style="width:100%;height:100%;background:linear-gradient(90deg,#ef4444,#f97316);transition:width 0.2s;"></div>
+                    <div id="sb-boss-hud" class="sb-boss-hud">
+                        <div class="sb-boss-name" id="sb-boss-name">BOSS</div>
+                        <div class="sb-boss-hp-bar">
+                            <div id="sb-boss-hp" class="sb-boss-hp-fill"></div>
                         </div>
                     </div>
                 </div>
-                <div id="sb-countdown" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;font-weight:bold;color:#fff;text-shadow:0 0 30px rgba(251,191,36,0.8);display:none;"></div>
+                <div id="sb-countdown" class="game-countdown"></div>
             </div>
         `;
   },
@@ -624,7 +624,7 @@ const ScamBlaster = {
       if (this.state.activeEffects.spread.active) icon = '🌟';
       else if (this.state.activeEffects.pierce.active) icon = '⚡';
       else if (this.state.activeEffects.slow.active) icon = '❄️';
-      weaponEl.innerHTML = `<span style="font-size:16px;">${icon}</span>`;
+      weaponEl.innerHTML = `<span class="sb-weapon-icon">${icon}</span>`;
     }
 
     // Check for boss wave (every 5th wave)

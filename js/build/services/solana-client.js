@@ -83,7 +83,7 @@ const SolanaClient = {
    * @param {string} config.rpcEndpoint - Helius RPC endpoint
    */
   async init(config = {}) {
-    this._rpcEndpoint = config.rpcEndpoint || 'https://mainnet.helius-rpc.com';
+    this._rpcEndpoint = config.rpcEndpoint || 'https://beta.helius-rpc.com';
     return true;
   },
 

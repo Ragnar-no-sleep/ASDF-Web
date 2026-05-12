@@ -18,8 +18,22 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet, formatTimeAgo } from './utils/format.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, ANIMATION } from './config/timing.js';
+import { fetchWithRetry } from './utils/fetch-retry.js';
+import { showNotice } from './utils/notice.js';
 
 const API_BASE = ASDF_ENDPOINTS.forecast;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -63,22 +77,24 @@ async function fetchState(userPubkey = null) {
     const url = userPubkey
       ? `${API_BASE}/api/state?user=${encodeURIComponent(userPubkey)}`
       : `${API_BASE}/api/state`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    return await response.json();
+    return await fetchWithRetry(url, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching state:', error);
+    announceOracleSilence(
+      '*growl* — The forecast oracle has gone silent. Backend down. Verify on-chain elsewhere.'
+    );
     return null;
   }
 }
 
 async function fetchWallet() {
   try {
-    const response = await fetch(`${API_BASE}/api/wallet`);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    return await response.json();
+    return await fetchWithRetry(`${API_BASE}/api/wallet`, { retries: 2 });
   } catch (error) {
     console.error('[Forecast] Error fetching wallet data:', error);
+    announceOracleSilence(
+      '*growl* — The forecast oracle has gone silent. Backend down. Verify on-chain elsewhere.'
+    );
     return null;
   }
 }
@@ -140,7 +156,7 @@ function updateLeaderboard(leaderboard) {
   if (!leaderboard || leaderboard.length === 0) {
     body.innerHTML = `
       <div class="table-row">
-        <span style="grid-column:1/-1;text-align:center;color:var(--white-muted)">
+        <span class="forecast-empty">
           No predictions yet. Be the first!
         </span>
       </div>`;
@@ -388,3 +404,6 @@ async function init() {
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// Named exports for unit testing (pure functions only)
+export { formatCompact, formatTime };

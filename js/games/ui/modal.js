@@ -121,7 +121,7 @@ const ModalUI = {
                             <div class="game-stat-value" id="best-${game.id}">${appState.practiceScores[game.id] || 0}</div>
                             <div class="game-stat-label">Best</div>
                         </div>
-                        <div class="game-stat" id="timer-stat-${game.id}" style="display: none;">
+                        <div class="game-stat hidden" id="timer-stat-${game.id}">
                             <div class="game-stat-value" id="timer-${game.id}">--:--</div>
                             <div class="game-stat-label">Time Left</div>
                         </div>
@@ -136,8 +136,8 @@ const ModalUI = {
                     </div>
                 </div>
                 <!-- Mini Leaderboard (hidden by default) -->
-                <div class="game-leaderboard-mini" id="leaderboard-panel-${game.id}" style="display:none;">
-                    <h4 class="mini-leaderboard-title">Top Scores <button style="float:right;background:none;border:none;color:#888;cursor:pointer;font-size:16px;" data-action="hide-leaderboard" data-game="${game.id}">&times;</button></h4>
+                <div class="game-leaderboard-mini hidden" id="leaderboard-panel-${game.id}">
+                    <h4 class="mini-leaderboard-title">Top Scores <button class="mini-leaderboard-close" data-action="hide-leaderboard" data-game="${game.id}">&times;</button></h4>
                     <div class="mini-leaderboard-list" id="leaderboard-mini-${game.id}">
                         <div class="leaderboard-loading">Loading...</div>
                     </div>

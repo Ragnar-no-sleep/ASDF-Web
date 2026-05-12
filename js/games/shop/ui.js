@@ -99,11 +99,14 @@ const ShopUI = {
                     ${this.config.showPreview ? this.renderPreviewHTML() : ''}
                 </div>
             </div>
-            <div class="shop-loading" id="shop-loading" style="display: none;">
+            <div class="shop-loading shop-loading-hidden" id="shop-loading">
                 <div class="shop-loading-spinner"></div>
                 <span>Loading...</span>
             </div>
         `;
+
+    // Apply dynamic tier colors via CSSOM (CSP Phase 2)
+    this.applyTierColors(this.container);
 
     // Attach event listeners
     this.attachEventListeners();
@@ -337,6 +340,7 @@ const ShopUI = {
     const grid = this.container.querySelector('#shop-grid');
     if (grid) {
       grid.innerHTML = this.renderItemGridHTML();
+      this.applyTierColors(grid);
       this.attachItemListeners();
     }
     this.renderPagination();
@@ -362,7 +366,7 @@ const ShopUI = {
     return `
             <div class="shop-item ${isSelected ? 'selected' : ''} ${item.owned ? 'owned' : ''}"
                  data-item-id="${item.id}"
-                 style="--tier-color: ${item.tierColor || '#9ca3af'}">
+                 data-tier-color="${this.escapeHtml(item.tierColor || '#9ca3af')}">
                 <div class="shop-item-image">
                     <img src="${imageUrl}" alt="${this.escapeHtml(item.name)}" loading="lazy">
                     ${
@@ -383,7 +387,7 @@ const ShopUI = {
                 <div class="shop-item-info">
                     <span class="shop-item-layer">${this.escapeHtml(this.capitalizeFirst(item.layer))}</span>
                     <h4 class="shop-item-name">${this.escapeHtml(item.name)}</h4>
-                    <div class="shop-item-tier" style="color: ${this.escapeHtml(item.tierColor)}">
+                    <div class="shop-item-tier">
                         ${this.escapeHtml(item.tierName || 'Common')}
                     </div>
                     ${
@@ -484,7 +488,7 @@ const ShopUI = {
             <h3 class="preview-item-name">${this.escapeHtml(item.name)}</h3>
             <div class="preview-item-meta">
                 <span class="preview-layer">${this.escapeHtml(this.capitalizeFirst(item.layer))}</span>
-                <span class="preview-tier" style="color: ${this.escapeHtml(item.tierColor)}">${this.escapeHtml(item.tierName)}</span>
+                <span class="preview-tier">${this.escapeHtml(item.tierName)}</span>
             </div>
             ${item.description ? `<p class="preview-description">${this.escapeHtml(item.description)}</p>` : ''}
 
@@ -577,6 +581,12 @@ const ShopUI = {
             `
             }
         `;
+
+    // Apply --tier-color via CSSOM (CSP Phase 2)
+    const tierEl = details.querySelector('.preview-tier');
+    if (tierEl && item.tierColor) {
+      tierEl.style.setProperty('color', item.tierColor);
+    }
 
     this.attachPreviewListeners();
   },
@@ -882,13 +892,23 @@ const ShopUI = {
   setLoading(loading) {
     const loadingEl = this.container.querySelector('#shop-loading');
     if (loadingEl) {
-      loadingEl.style.display = loading ? 'flex' : 'none';
+      loadingEl.classList.toggle('shop-loading-hidden', !loading);
     }
   },
 
   showError(message) {
     console.error('[ShopUI] Error:', message);
     // Could show toast notification here
+  },
+
+  /**
+   * Apply --tier-color CSS custom property via CSSOM (CSP Phase 2)
+   * @param {HTMLElement} container - Parent element containing rendered items
+   */
+  applyTierColors(container) {
+    container.querySelectorAll('[data-tier-color]').forEach(el => {
+      el.style.setProperty('--tier-color', el.dataset.tierColor);
+    });
   },
 
   /**

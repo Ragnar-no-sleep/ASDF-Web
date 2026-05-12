@@ -320,7 +320,7 @@ export function createSoundSettingsUI(container) {
         <span class="sound-toggle-slider"></span>
       </label>
     </div>
-    <div class="sound-settings-volume" ${!settings.enabled ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+    <div class="sound-settings-volume ${!settings.enabled ? 'sound-settings-disabled' : ''}">
       <label for="soundVolume">Volume: <span id="volumeValue">${settings.volume}%</span></label>
       <input type="range" id="soundVolume" min="0" max="100" value="${settings.volume}" step="5">
     </div>
@@ -335,8 +335,7 @@ export function createSoundSettingsUI(container) {
   toggle.addEventListener('change', e => {
     const enabled = e.target.checked;
     soundSystem.toggle(enabled);
-    volumeContainer.style.opacity = enabled ? '1' : '0.5';
-    volumeContainer.style.pointerEvents = enabled ? 'auto' : 'none';
+    volumeContainer.classList.toggle('sound-settings-disabled', !enabled);
   });
 
   volumeSlider.addEventListener('input', e => {

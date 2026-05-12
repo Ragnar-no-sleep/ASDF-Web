@@ -161,8 +161,8 @@ const ShopFilters = {
                             <button class="filter-chip ${this.filters.rarity === rarity.id ? 'active' : ''}"
                                     data-filter="rarity"
                                     data-value="${rarity.id}"
-                                    style="--rarity-color: ${rarity.color}">
-                                <span class="chip-dot" style="background: ${rarity.color}"></span>
+                                    data-rarity-color="${rarity.color}">
+                                <span class="chip-dot" data-bg="${rarity.color}"></span>
                                 <span class="chip-label">${rarity.name}</span>
                             </button>
                         `
@@ -230,6 +230,16 @@ const ShopFilters = {
                 </button>
             </div>
         `;
+
+    // Apply dynamic styles via CSSOM
+    this.container.querySelectorAll('[data-rarity-color]').forEach(el => {
+      el.style.setProperty('--rarity-color', el.dataset.rarityColor);
+      el.removeAttribute('data-rarity-color');
+    });
+    this.container.querySelectorAll('[data-bg]').forEach(el => {
+      el.style.setProperty('background', el.dataset.bg);
+      el.removeAttribute('data-bg');
+    });
 
     this.bindEvents();
   },

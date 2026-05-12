@@ -128,7 +128,7 @@ const TracksComponent = {
       .map(([id, track]) => {
         return `
         <button class="journey-track" data-track="${sanitizeText(id)}">
-          <span class="track-icon" style="color: ${track.color}; background: ${track.color}20">${sanitizeText(track.icon)}</span>
+          <span class="track-icon" data-track-color="${track.color}">${sanitizeText(track.icon)}</span>
           <span class="track-name">${sanitizeText(track.name)}</span>
         </button>
       `;
@@ -146,6 +146,13 @@ const TracksComponent = {
     `;
 
     tracksContainer.insertBefore(tracksPanel, tracksContainer.firstChild);
+
+    // Apply track colors via CSSOM
+    tracksPanel.querySelectorAll('[data-track-color]').forEach(el => {
+      el.style.setProperty('color', el.dataset.trackColor);
+      el.style.setProperty('background', el.dataset.trackColor + '20');
+      el.removeAttribute('data-track-color');
+    });
   },
 
   /**

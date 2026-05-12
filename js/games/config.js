@@ -45,7 +45,7 @@ const DEFAULT_CONFIG = {
 
   // Rotation settings
   ROTATION_EPOCH: '2024-01-01T00:00:00Z',
-  CYCLE_WEEKS: 9,
+  CYCLE_WEEKS: 10,
 };
 
 // ============================================
@@ -71,7 +71,9 @@ const CONFIG = {
   ESCROW_WALLET: DEFAULT_CONFIG.ESCROW_WALLET,
 
   // API endpoints (environment-specific)
-  API_BASE: Environment.isDev ? 'http://localhost:3001/api' : 'https://asdf-api.onrender.com/api',
+  // API base — prod backend was archived in Phase 1. Games-specific endpoints (leaderboards, anti-cheat)
+  // are no longer reachable from prod. Localhost dev points to alonisthe.dev if/when wired.
+  API_BASE: Environment.isDev ? 'http://localhost:3001/api' : null,
 
   // DEPRECATED: Direct RPC calls from frontend
   // All RPC calls should go through the API (which uses Helius with proper rate limiting)
@@ -84,7 +86,7 @@ const CONFIG = {
 
   // Rotation settings
   ROTATION_EPOCH: new Date(DEFAULT_CONFIG.ROTATION_EPOCH),
-  CYCLE_WEEKS: DEFAULT_CONFIG.CYCLE_WEEKS,
+  CYCLE_WEEKS: 10,
 
   // Config state
   _loaded: false,
@@ -283,6 +285,14 @@ const GAMES = [
     type: 'Navigation',
     description:
       'Navigate the DeFi maze to find the deepest liquidity pools. Avoid fee traps and dead ends!',
+  },
+  {
+    id: 'spaceshooter',
+    name: 'Space Shooter',
+    icon: '🚀',
+    type: 'Arcade Shooter',
+    description:
+      'Classic vertical shmup! Pilot your starship, dodge enemy fire, collect power-ups, and conquer 5 boss waves!',
   },
 ];
 

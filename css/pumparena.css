@@ -1,0 +1,1265 @@
+/* ==========================================================================
+ * PumpArena Game Engine — Extracted inline styles (CSP Phase 2)
+ * Prefix: .pa-
+ * Dynamic colors use CSS custom properties: --pa-accent, --pa-accent-light,
+ * --pa-stage-color, --pa-stage-bg
+ * ========================================================================== */
+
+/* ---------- Layout Shell ---------- */
+.pa-shell {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #0a0a1a 0%, #0f1a2a 100%);
+  box-sizing: border-box;
+}
+
+/* ---------- Top Bar ---------- */
+.pa-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid #333;
+}
+
+.pa-topbar-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.pa-refresh-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #444;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pa-divider {
+  width: 1px;
+  height: 30px;
+  background: #333;
+}
+
+.pa-stat-label {
+  color: #6b7280;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pa-stat-influence {
+  color: #fbbf24;
+  font-size: 20px;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.pa-stat-reputation {
+  color: #22c55e;
+  font-size: 20px;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.pa-partner-badge {
+  display: none;
+  padding: 4px 10px;
+  background: linear-gradient(90deg, #a855f7, #6366f1);
+  border-radius: 12px;
+  font-size: 11px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.pa-topbar-right {
+  text-align: right;
+}
+
+.pa-stat-round {
+  color: #a855f7;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ---------- Main Game Area ---------- */
+.pa-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  padding-bottom: 30px;
+}
+
+.pa-instructions {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* ---------- Type Selection Grid ---------- */
+.pa-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pa-type-btn {
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--pa-accent);
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: #fff;
+  font-family: inherit;
+}
+
+.pa-type-icon {
+  font-size: 32px;
+  width: 50px;
+  text-align: center;
+}
+
+.pa-type-body {
+  flex: 1;
+}
+
+.pa-type-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--pa-accent);
+  margin-bottom: 3px;
+}
+
+.pa-type-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.3;
+}
+
+/* ---------- Hidden Panels (initial state) ---------- */
+.pa-panel-hidden {
+  display: none;
+}
+
+.pa-builder-select {
+  flex: 1;
+}
+
+.pa-roadmap-panel {
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 20px;
+}
+
+.pa-contribute-panel {
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pa-scenario-panel {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---------- Result Display ---------- */
+.pa-result-panel {
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pa-result-icon {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+
+.pa-result-text {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.pa-result-detail {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.pa-next-btn {
+  padding: 10px 30px;
+  font-size: 14px;
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #000;
+}
+
+/* ---------- Partnership Panels ---------- */
+.pa-partnership-offer-panel {
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pa-partnership-view-panel {
+  flex: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pa-collab-panel {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---------- Canvas Overlay ---------- */
+.pa-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- Instructions Variants ---------- */
+.pa-instr-title {
+  font-size: 18px;
+  color: #fbbf24;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.pa-instr-sub {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.pa-instr-phase-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--pa-accent);
+}
+
+.pa-instr-phase-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pa-instr-contrib-title {
+  font-size: 16px;
+  color: #fbbf24;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* ---------- Builder List ---------- */
+.pa-builder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pa-builder-btn {
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 19%, transparent);
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.pa-builder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.pa-builder-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.pa-builder-vision {
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.pa-builder-stage-wrap {
+  text-align: right;
+}
+
+.pa-builder-stage {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  background: var(--pa-stage-bg);
+  color: var(--pa-stage-color);
+}
+
+.pa-builder-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 10px;
+  color: #9ca3af;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pa-builder-needs {
+  font-size: 10px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.pa-builder-needs-label {
+  color: #a855f7;
+}
+
+.pa-builder-potential-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pa-builder-potential-track {
+  flex: 1;
+  height: 4px;
+  background: #1f2937;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pa-builder-potential-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #fbbf24);
+}
+
+.pa-builder-potential-label {
+  font-size: 10px;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.pa-back-btn {
+  margin-top: 5px;
+  padding: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* ---------- Roadmap Card ---------- */
+.pa-roadmap-card {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  border: 1px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 19%, transparent);
+  overflow: hidden;
+}
+
+.pa-roadmap-header {
+  padding: 12px 15px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pa-accent) 13%, transparent),
+    transparent
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--pa-accent) 13%, transparent);
+}
+
+.pa-roadmap-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pa-roadmap-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pa-roadmap-icon {
+  font-size: 28px;
+}
+
+.pa-roadmap-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.pa-roadmap-subtitle {
+  font-size: 11px;
+  color: var(--pa-accent);
+}
+
+.pa-roadmap-stage-wrap {
+  text-align: right;
+}
+
+.pa-roadmap-stage {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  background: var(--pa-stage-bg);
+  color: var(--pa-stage-color);
+}
+
+/* ---------- Project Stats Grid ---------- */
+.pa-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: #1f2937;
+  border-bottom: 1px solid #1f2937;
+}
+
+.pa-stat-cell {
+  padding: 10px;
+  background: #0a0a1a;
+  text-align: center;
+}
+
+.pa-stat-cell-label {
+  font-size: 10px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.pa-stat-cell-value {
+  font-size: 11px;
+  color: #fff;
+}
+
+.pa-stat-cell-value-green {
+  font-size: 11px;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.pa-stat-cell-value-gold {
+  font-size: 11px;
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+/* ---------- Needs Section ---------- */
+.pa-needs-section {
+  padding: 12px 15px;
+  background: rgba(168, 85, 247, 0.1);
+  border-bottom: 1px solid #1f2937;
+}
+
+.pa-needs-title {
+  font-size: 11px;
+  color: #a855f7;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.pa-needs-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pa-needs-tag {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 10px;
+  color: #d1d5db;
+}
+
+/* ---------- Roadmap Timeline ---------- */
+.pa-timeline-section {
+  padding: 12px 15px;
+}
+
+.pa-timeline-heading {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pa-timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.pa-timeline-phase {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 10px;
+  border-left: 2px solid;
+  border-left-color: var(--pa-accent);
+}
+
+.pa-timeline-phase-faded {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 10px;
+  border-left: 2px solid;
+  border-left-color: color-mix(in srgb, var(--pa-accent) 25%, transparent);
+}
+
+.pa-timeline-phase-label {
+  font-size: 10px;
+  color: var(--pa-accent);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.pa-timeline-phase-title {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.pa-timeline-tasks {
+  margin: 0;
+  padding-left: 12px;
+  font-size: 9px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+/* ---------- Action Buttons Row ---------- */
+.pa-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.pa-back-btn-light {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #555;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pa-join-btn {
+  flex: 2;
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    135deg,
+    var(--pa-accent),
+    color-mix(in srgb, var(--pa-accent) 80%, transparent)
+  );
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--pa-accent) 25%, transparent);
+}
+
+/* ---------- Contribution Panel ---------- */
+.pa-contrib-card {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid #333;
+}
+
+.pa-contrib-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.pa-contrib-header-left {
+  text-align: left;
+}
+
+.pa-contrib-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pa-contrib-name {
+  font-size: 14px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.pa-contrib-prev {
+  font-size: 10px;
+  color: #a855f7;
+  margin-top: 2px;
+}
+
+.pa-contrib-header-right {
+  text-align: right;
+}
+
+.pa-contrib-influence-value {
+  font-size: 16px;
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.pa-contrib-choose-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.pa-contrib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pa-contrib-btn {
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #333;
+  color: white;
+  font-size: 12px;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pa-contrib-btn-allin {
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #a855f7;
+  color: white;
+  font-size: 12px;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+}
+
+.pa-contrib-icon {
+  font-size: 24px;
+}
+
+.pa-contrib-body {
+  flex: 1;
+}
+
+.pa-contrib-level {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.pa-contrib-desc {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.pa-contrib-cost-wrap {
+  text-align: right;
+}
+
+.pa-contrib-cost {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+.pa-back-btn-full {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+/* ---------- Scenario Card ---------- */
+.pa-scenario-card {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 25%, transparent);
+  overflow: hidden;
+}
+
+.pa-scenario-header {
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pa-accent) 13%, transparent),
+    transparent
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--pa-accent) 13%, transparent);
+}
+
+.pa-scenario-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.pa-scenario-icon {
+  font-size: 32px;
+}
+
+.pa-scenario-builder-name {
+  font-size: 11px;
+  color: var(--pa-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pa-scenario-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.pa-scenario-narrative {
+  color: #d1d5db;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border-left: 3px solid var(--pa-accent);
+}
+
+/* ---------- Scenario Choices ---------- */
+.pa-choices-section {
+  padding: 20px;
+}
+
+.pa-choices-label {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.pa-choices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pa-choice-btn {
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pa-choice-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pa-choice-desc {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ---------- Contribution Info Footer ---------- */
+.pa-contrib-footer {
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid #1f2937;
+}
+
+.pa-contrib-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pa-contrib-footer-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pa-contrib-footer-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+/* ---------- Partnership Offer ---------- */
+.pa-offer-card {
+  border-radius: 12px;
+  padding: 25px;
+  border: 2px solid var(--pa-accent);
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pa-accent) 13%, transparent),
+    rgba(0, 0, 0, 0.6)
+  );
+}
+
+.pa-offer-emoji {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+.pa-offer-title {
+  color: var(--pa-accent);
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.pa-offer-desc {
+  color: #9ca3af;
+  font-size: 13px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.pa-offer-highlight {
+  color: #fbbf24;
+}
+
+.pa-offer-details {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.pa-offer-details-title {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.pa-offer-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #d1d5db;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.pa-offer-warning {
+  color: #f59e0b;
+}
+
+.pa-offer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.pa-decline-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #444;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pa-accept-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    135deg,
+    var(--pa-accent),
+    color-mix(in srgb, var(--pa-accent) 67%, transparent)
+  );
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* ---------- Partnership View ---------- */
+.pa-pview-card {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  border: 1px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 25%, transparent);
+  overflow: hidden;
+}
+
+.pa-pview-header {
+  padding: 15px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pa-accent) 19%, transparent),
+    transparent
+  );
+  border-bottom: 1px solid color-mix(in srgb, var(--pa-accent) 13%, transparent);
+}
+
+.pa-pview-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pa-pview-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pa-pview-icon {
+  font-size: 36px;
+}
+
+.pa-pview-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.pa-pview-partner-label {
+  font-size: 12px;
+  color: var(--pa-accent);
+}
+
+.pa-pview-header-right {
+  text-align: right;
+}
+
+.pa-pview-decisions-label {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.pa-pview-decisions-count {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+/* ---------- Partnership Roadmap ---------- */
+.pa-pview-roadmap-section {
+  padding: 15px;
+}
+
+.pa-pview-roadmap-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.pa-pview-roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.pa-pview-phase-completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 6px;
+  padding: 10px;
+  border: 2px solid rgba(34, 197, 94, 0.25);
+}
+
+.pa-pview-phase-current {
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 6px;
+  padding: 10px;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+}
+
+.pa-pview-phase-collab {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 10px;
+  border: 2px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 25%, transparent);
+}
+
+.pa-pview-phase-future {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 10px;
+  border: 2px solid rgba(51, 51, 51, 0.5);
+}
+
+.pa-pview-phase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.pa-pview-phase-label {
+  font-size: 10px;
+  color: var(--pa-accent);
+  font-weight: bold;
+}
+
+.pa-pview-phase-status {
+  font-size: 14px;
+}
+
+.pa-pview-phase-title {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.pa-pview-cobuilt {
+  font-size: 9px;
+  color: #a855f7;
+  font-style: italic;
+}
+
+/* ---------- Previous Choices ---------- */
+.pa-pview-choices-section {
+  padding: 0 15px 15px;
+}
+
+.pa-pview-choices-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.pa-pview-choices-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pa-pview-choice-tag {
+  padding: 4px 10px;
+  background: rgba(168, 85, 247, 0.2);
+  border-radius: 12px;
+  font-size: 10px;
+  color: #a855f7;
+}
+
+/* ---------- Partnership Actions ---------- */
+.pa-pview-actions {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid #1f2937;
+  display: flex;
+  gap: 10px;
+}
+
+.pa-leave-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pa-decision-btn {
+  flex: 2;
+  padding: 10px;
+  border-radius: 6px;
+  background: linear-gradient(
+    135deg,
+    var(--pa-accent),
+    color-mix(in srgb, var(--pa-accent) 80%, transparent)
+  );
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.pa-finish-btn {
+  flex: 2;
+  padding: 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* ---------- Collab Decision Card ---------- */
+.pa-collab-card {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid;
+  border-color: color-mix(in srgb, var(--pa-accent) 25%, transparent);
+}
+
+.pa-collab-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.pa-collab-emoji {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.pa-collab-title {
+  color: #fff;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.pa-collab-desc {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.pa-collab-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.pa-collab-option-btn {
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
+  color: #fff;
+  font-size: 13px;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.pa-collab-option-num {
+  color: var(--pa-accent);
+  margin-right: 8px;
+}
+
+/* ---------- Collab Outcome ---------- */
+.pa-collab-outcome {
+  text-align: center;
+  padding: 30px;
+}
+
+.pa-collab-outcome-emoji {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+.pa-collab-outcome-title-good {
+  font-size: 18px;
+  color: #22c55e;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.pa-collab-outcome-title-neutral {
+  font-size: 18px;
+  color: #f59e0b;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.pa-collab-outcome-detail {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.pa-collab-outcome-bonus {
+  font-size: 16px;
+  color: #22c55e;
+  font-weight: bold;
+}

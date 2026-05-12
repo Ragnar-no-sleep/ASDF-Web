@@ -70,15 +70,12 @@ const LeaderboardUI = {
           typeof entry.player === 'string' &&
           entry.player.includes(appState.wallet.slice(0, 4));
         const slots = REWARD_SLOTS[rank] || 0;
-        const slotBadge =
-          slots > 0
-            ? `<span style="color: var(--gold); font-size: 11px; margin-left: 8px;">+${slots} slots</span>`
-            : '';
+        const slotBadge = slots > 0 ? `<span class="lb-bonus">+${slots} slots</span>` : '';
 
         return `
             <div class="leaderboard-item ${isYou ? 'you' : ''}">
                 <div class="leaderboard-rank ${rankClass}">${rank}</div>
-                <div class="leaderboard-player" style="flex: 1;">
+                <div class="leaderboard-player">
                     ${isYou ? ' You' : escapeHtml(String(entry.player || ''))}
                     ${slotBadge}
                 </div>
@@ -110,7 +107,7 @@ const LeaderboardUI = {
             <div class="leaderboard-item ${isYou ? 'you' : ''}">
                 <div class="leaderboard-rank ${rankClass}">${rank}</div>
                 <div class="leaderboard-player">${isYou ? ' You' : escapeHtml(String(entry.player || ''))}</div>
-                <div class="leaderboard-score" style="color: var(--gold);">${slots} slots</div>
+                <div class="leaderboard-score lb-cycle-score">${slots} slots</div>
             </div>
         `;
       })

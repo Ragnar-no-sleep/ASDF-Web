@@ -1,28 +1,10 @@
 /**
  * fetchWithRetry Tests
+ * Tests the REAL source at js/utils/fetch-retry.js
  * Covers: retry logic, backoff, AbortController, opts passthrough
  */
 
-// Inline implementation mirroring js/utils/fetch-retry.js (jest CJS compat)
-async function fetchWithRetry(url, opts = {}) {
-  const { retries = 2, timeout = 8000, backoff = 377, ...fetchOpts } = opts;
-  let lastErr;
-  for (let i = 0; i <= retries; i++) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    try {
-      const res = await fetch(url, { ...fetchOpts, signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      lastErr = err;
-      if (i < retries) await new Promise(r => setTimeout(r, backoff * (i + 1)));
-    }
-  }
-  throw lastErr;
-}
+import { fetchWithRetry } from '../../../js/utils/fetch-retry.js';
 
 // Mock fetch + AbortController
 const mockFetch = jest.fn();

@@ -37,10 +37,11 @@ module.exports = defineConfig({
     //   name: 'webkit',
     //   use: { ...devices['Desktop Safari'] },
     // },
-    // {
-    //   name: 'mobile',
-    //   use: { ...devices['iPhone 13'] },
-    // },
+    {
+      name: 'mobile',
+      use: { ...devices['iPhone 13'] },
+      dependencies: ['chromium'],
+    },
   ],
 
   // Run local dev server before starting tests

@@ -73,10 +73,10 @@ export const YggdrasilQuiz = {
       return `
         <div class="ygg-quiz-result">
           <div class="ygg-quiz-result-header">
-            <span class="ygg-quiz-result-icon" style="color: ${track.color}">${track.icon}</span>
+            <span class="ygg-quiz-result-icon" data-track-color="${track.color}">${track.icon}</span>
             <div class="ygg-quiz-result-text">
               <span class="ygg-quiz-result-label">Your Path</span>
-              <span class="ygg-quiz-result-track" style="color: ${track.color}">${track.name}</span>
+              <span class="ygg-quiz-result-track" data-track-color="${track.color}">${track.name}</span>
             </div>
           </div>
           <p class="ygg-quiz-result-desc">Focus on ${track.name} to maximize your builder potential.</p>
@@ -95,7 +95,7 @@ export const YggdrasilQuiz = {
           <span class="ygg-quiz-step">${quizState.currentQuestion + 1}/${QUIZ_QUESTIONS.length}</span>
         </div>
         <div class="ygg-quiz-progress">
-          <div class="ygg-quiz-progress-fill" style="width: ${progress}%"></div>
+          <div class="ygg-quiz-progress-fill" data-progress="${progress}"></div>
         </div>
         <p class="ygg-quiz-question">${q.text}</p>
         <div class="ygg-quiz-options">
@@ -173,6 +173,16 @@ export const YggdrasilQuiz = {
       const temp = document.createElement('div');
       temp.innerHTML = newHtml;
       parent.replaceChild(temp.firstElementChild, quizContainer);
+
+      // Apply dynamic styles via CSSOM
+      leftPanel.querySelectorAll('[data-track-color]').forEach(el => {
+        el.style.setProperty('color', el.dataset.trackColor);
+        el.removeAttribute('data-track-color');
+      });
+      leftPanel.querySelectorAll('[data-progress]').forEach(el => {
+        el.style.setProperty('width', el.dataset.progress + '%');
+        el.removeAttribute('data-progress');
+      });
 
       // Re-bind events
       leftPanel.querySelectorAll('.ygg-quiz-option').forEach(opt => {

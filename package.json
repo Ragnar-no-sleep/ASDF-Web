@@ -5,11 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.cjs",
+    "start": "echo 'Production runs on Vercel (static + Functions). Use \"npm run dev\" for local Vite or \"npm run dev:express\" for Express dev.' && exit 0",
     "dev": "vite",
+    "dev:express": "node server.cjs",
     "build": "vite build",
     "preview": "vite preview",
-    "serve": "node server.cjs",
     "serve:dev": "nodemon server.cjs",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -43,6 +43,7 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "7.28.6",
     "@eslint/js": "^10.0.0",
     "@playwright/test": "^1.42.1",
     "eslint": "^10.0.1",

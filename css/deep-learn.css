@@ -656,3 +656,247 @@
     font-size: var(--text-xs);
   }
 }
+
+/* ============================================
+   CSP Phase 2: Extracted inline style classes
+   ============================================ */
+
+/* Sidebar "View Burns" button */
+.dl-sidebar-btn {
+  width: 100%;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* Accent-colored text */
+.dl-text-accent {
+  color: var(--accent);
+}
+
+/* Muted/tertiary text */
+.dl-text-muted {
+  color: var(--text-tertiary);
+}
+
+/* Secondary text color */
+.dl-text-secondary {
+  color: var(--text-secondary);
+}
+
+/* Italic centered caption */
+.dl-caption-centered {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* 3-column stats grid */
+.dl-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+/* Stat card (centered box with bg) */
+.dl-stat-card {
+  text-align: center;
+  padding: var(--space-4);
+  background: var(--bg-hover);
+  border-radius: var(--radius-md);
+}
+
+/* Stat value (mono, bold, accent) */
+.dl-stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  color: var(--accent);
+  font-weight: var(--font-bold);
+}
+
+/* Stat label (small, muted) */
+.dl-stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+/* Small centered footnote */
+.dl-footnote {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-3);
+  text-align: center;
+}
+
+/* Ordered/unordered list with secondary color + left margin */
+.dl-list-secondary {
+  color: var(--text-secondary);
+  margin-left: var(--space-5);
+}
+
+/* List items with small bottom spacing */
+.dl-list-secondary > li {
+  margin-bottom: var(--space-2);
+}
+
+/* Unordered list with secondary color, left margin, top margin */
+.dl-list-spaced {
+  color: var(--text-secondary);
+  margin-left: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+/* List items with medium bottom spacing */
+.dl-list-spaced > li {
+  margin-bottom: var(--space-3);
+}
+
+/* Advantages list (secondary color, left margin, no top margin) */
+.dl-list-advantages {
+  color: var(--text-secondary);
+  margin-left: var(--space-5);
+}
+
+.dl-list-advantages > li {
+  margin-bottom: var(--space-3);
+}
+
+/* Content block with accent border */
+.dl-block-accent-border {
+  border-color: var(--accent);
+}
+
+/* Phi philosophy content block gradient */
+.dl-block-phi-gradient {
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 78, 51, 0.05) 100%);
+}
+
+/* Heading with flex row layout */
+.dl-heading-flex {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Hierarchy multiplier color variants */
+.dl-multiplier-accent {
+  color: var(--accent);
+}
+
+.dl-multiplier-secondary {
+  color: var(--text-secondary);
+}
+
+.dl-multiplier-muted {
+  color: var(--text-tertiary);
+}
+
+/* Core principles mono block */
+.dl-principles-block {
+  font-family: var(--font-mono);
+  padding: var(--space-6);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  line-height: 2;
+}
+
+/* K-Score interpretation column */
+.dl-kscore-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* K-Score tier row (shared layout) */
+.dl-kscore-tier {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+/* K-Score tier gradient backgrounds */
+.dl-kscore-tier--exceptional {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, var(--bg-hover) 100%);
+}
+
+.dl-kscore-tier--good {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, var(--bg-hover) 100%);
+}
+
+.dl-kscore-tier--average {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.2) 0%, var(--bg-hover) 100%);
+}
+
+.dl-kscore-tier--weak {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.2) 0%, var(--bg-hover) 100%);
+}
+
+/* K-Score tier value label (mono, bold) */
+.dl-kscore-tier-value {
+  font-family: var(--font-mono);
+  font-weight: var(--font-bold);
+}
+
+/* K-Score tier value color variants */
+.dl-kscore-tier-value--success {
+  color: var(--success);
+}
+
+.dl-kscore-tier-value--blue {
+  color: #3b82f6;
+}
+
+.dl-kscore-tier-value--yellow {
+  color: #eab308;
+}
+
+.dl-kscore-tier-value--error {
+  color: var(--error);
+}
+
+/* K-Score tier description */
+.dl-kscore-tier-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Verify yourself CTA block */
+.dl-block-verify {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* Flex row with wrap (for button groups) */
+.dl-flex-row {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+/* Inline button with icon */
+.dl-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Glossary block top margin */
+.dl-block-glossary {
+  margin-top: var(--space-8);
+}
+
+/* Level nav top margin */
+.dl-level-nav-spaced {
+  margin-top: var(--space-8);
+}
+
+/* Flex row for bottom nav actions */
+.dl-nav-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}

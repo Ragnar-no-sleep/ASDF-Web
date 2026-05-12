@@ -888,6 +888,7 @@ a:hover {
 
 .burn-progress-fill {
   height: 100%;
+  width: 0%;
   background: linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-light));
   border-radius: 2px;
   transition: width 1s ease-out;

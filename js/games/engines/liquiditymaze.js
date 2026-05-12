@@ -132,29 +132,29 @@ const LiquidityMaze = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;display:flex;overflow:hidden;background:linear-gradient(180deg,#0a1628 0%,#1a2744 100%);">
+            <div class="lm-container">
                 <!-- Game Area -->
-                <div style="flex:1;position:relative;overflow:hidden;">
-                    <canvas id="lm-canvas" style="width:100%;height:100%;"></canvas>
-                    <div id="lm-key-indicator" style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:8px;display:none;">
-                        <span style="color:var(--green);font-size:14px;">&#128273; KEY</span>
+                <div class="lm-game-area">
+                    <canvas id="lm-canvas" class="game-canvas"></canvas>
+                    <div id="lm-key-indicator" class="lm-key-indicator">
+                        <span class="lm-key-text">&#128273; KEY</span>
                     </div>
                 </div>
                 <!-- Stats Sidebar -->
-                <div style="width:100px;background:rgba(0,0,0,0.6);padding:15px 10px;display:flex;flex-direction:column;gap:15px;border-left:2px solid #333;">
-                    <div style="text-align:center;">
-                        <span style="color:var(--text-muted);font-size:10px;">LIQUIDITY</span>
-                        <div style="color:var(--gold);font-size:18px;font-weight:bold;" id="lm-score">0</div>
+                <div class="lm-sidebar">
+                    <div class="lm-stat">
+                        <span class="lm-stat-label">LIQUIDITY</span>
+                        <div class="lm-stat-value--score" id="lm-score">0</div>
                     </div>
-                    <div style="text-align:center;">
-                        <span style="color:var(--text-muted);font-size:10px;">LEVEL</span>
-                        <div style="color:var(--purple);font-size:18px;font-weight:bold;" id="lm-level">1</div>
+                    <div class="lm-stat">
+                        <span class="lm-stat-label">LEVEL</span>
+                        <div class="lm-stat-value--level" id="lm-level">1</div>
                     </div>
-                    <div style="text-align:center;">
-                        <span style="color:var(--text-muted);font-size:10px;">TIME</span>
-                        <div style="color:var(--accent-fire);font-size:18px;font-weight:bold;" id="lm-time">1:30</div>
+                    <div class="lm-stat">
+                        <span class="lm-stat-label">TIME</span>
+                        <div class="lm-stat-value--time" id="lm-time">1:30</div>
                     </div>
-                    <div style="margin-top:auto;font-size:9px;color:var(--text-muted);text-align:center;line-height:1.6;">
+                    <div class="lm-legend">
                         &#127754; +LP<br>
                         &#9888; -LP<br>
                         &#128273; Key<br>
@@ -164,7 +164,7 @@ const LiquidityMaze = {
                         &#127937; Exit<br>
                         &#129717; Secret
                     </div>
-                    <button id="lm-minimap-toggle" style="margin-top:10px;background:#333;border:1px solid #555;color:#aaa;padding:4px 8px;border-radius:4px;font-size:9px;cursor:pointer;">MAP: ON</button>
+                    <button id="lm-minimap-toggle" class="lm-minimap-btn">MAP: ON</button>
                 </div>
             </div>
         `;
@@ -1127,10 +1127,11 @@ const LiquidityMaze = {
     // Mini-map toggle
     const minimapToggle = document.getElementById('lm-minimap-toggle');
     if (minimapToggle) {
-      minimapToggle.addEventListener('click', () => {
+      this.handleMinimapToggle = () => {
         self.state.showMiniMap = !self.state.showMiniMap;
         minimapToggle.textContent = self.state.showMiniMap ? 'MAP: ON' : 'MAP: OFF';
-      });
+      };
+      minimapToggle.addEventListener('click', this.handleMinimapToggle);
     }
   },
 
@@ -1145,6 +1146,10 @@ const LiquidityMaze = {
     if (this.canvas) {
       this.canvas.removeEventListener('touchstart', this.handleTouchStart);
       this.canvas.removeEventListener('touchmove', this.handleTouchMove);
+    }
+    const minimapToggle = document.getElementById('lm-minimap-toggle');
+    if (minimapToggle && this.handleMinimapToggle) {
+      minimapToggle.removeEventListener('click', this.handleMinimapToggle);
     }
     this.canvas = null;
     this.ctx = null;

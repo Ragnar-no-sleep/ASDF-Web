@@ -116,7 +116,7 @@ const FormationPanel = {
             .join('')}
         </div>
 
-        <div class="formation-detail" style="display: none;">
+        <div class="formation-detail hidden">
           <button class="formation-back">
             <span>&larr;</span> Back to Tracks
           </button>
@@ -130,6 +130,9 @@ const FormationPanel = {
     this.tracksContainer = $('.formation-tracks', this.panel);
     this.detailContainer = $('.formation-detail', this.panel);
     this.detailContent = $('.track-detail-content', this.panel);
+
+    // Apply dynamic styles after initial render
+    this.applyDynamicStyles(this.tracksContainer);
   },
 
   /**
@@ -141,7 +144,7 @@ const FormationPanel = {
     const progress = calculateTrackProgress(track.id, this.progress[track.id]?.completed || []);
 
     return `
-      <div class="track-card" data-track="${track.id}" style="--track-color: ${track.color}">
+      <div class="track-card" data-track="${track.id}" data-track-color="${track.color}">
         <div class="track-card-header">
           <span class="track-icon">${track.icon}</span>
           <div class="track-info">
@@ -155,15 +158,46 @@ const FormationPanel = {
         </div>
         <div class="track-progress">
           <div class="progress-bar">
-            <div class="progress-fill" style="width: ${progress}%; background: ${track.color}"></div>
+            <div class="progress-fill" data-progress="${progress}" data-color="${track.color}"></div>
           </div>
           <span class="progress-label">${progress}% complete</span>
         </div>
-        <button class="track-start-btn" style="background: ${track.color}">
+        <button class="track-start-btn" data-bg="${track.color}">
           ${progress > 0 ? 'Continue' : 'Start Track'}
         </button>
       </div>
     `;
+  },
+
+  /**
+   * Apply dynamic styles via CSSOM after innerHTML render
+   * @param {Element} container - Parent to scan
+   */
+  applyDynamicStyles(container) {
+    // Track cards: --track-color
+    container.querySelectorAll('[data-track-color]').forEach(el => {
+      el.style.setProperty('--track-color', el.dataset.trackColor);
+      el.removeAttribute('data-track-color');
+    });
+    // Progress fills: width + background
+    container.querySelectorAll('[data-progress]').forEach(el => {
+      el.style.setProperty('width', el.dataset.progress + '%');
+      if (el.dataset.color) {
+        el.style.setProperty('background', el.dataset.color);
+        el.removeAttribute('data-color');
+      }
+      el.removeAttribute('data-progress');
+    });
+    // Buttons with dynamic background
+    container.querySelectorAll('[data-bg]').forEach(el => {
+      el.style.setProperty('background', el.dataset.bg);
+      el.removeAttribute('data-bg');
+    });
+    // Module cards: animation-delay + --track-color
+    container.querySelectorAll('[data-delay]').forEach(el => {
+      el.style.setProperty('animation-delay', el.dataset.delay + 'ms');
+      el.removeAttribute('data-delay');
+    });
   },
 
   /**
@@ -272,13 +306,14 @@ const FormationPanel = {
    */
   showTracksList() {
     this.currentTrack = null;
-    this.tracksContainer.style.display = 'block';
-    this.detailContainer.style.display = 'none';
+    this.tracksContainer.classList.remove('hidden');
+    this.detailContainer.classList.add('hidden');
 
     // Re-render cards with updated progress
     this.tracksContainer.innerHTML = Object.values(TRACKS)
       .map(track => this.renderTrackCard(track))
       .join('');
+    this.applyDynamicStyles(this.tracksContainer);
   },
 
   /**
@@ -290,15 +325,15 @@ const FormationPanel = {
     if (!track) return;
 
     this.currentTrack = trackId;
-    this.tracksContainer.style.display = 'none';
-    this.detailContainer.style.display = 'block';
+    this.tracksContainer.classList.add('hidden');
+    this.detailContainer.classList.remove('hidden');
 
     const modules = getTrackModules(trackId);
     const completedModules = this.progress[trackId]?.completed || [];
     const nextModule = getNextModule(trackId, completedModules);
 
     const html = `
-      <div class="track-detail-header" style="--track-color: ${track.color}">
+      <div class="track-detail-header" data-track-color="${track.color}">
         <span class="track-icon-large">${track.icon}</span>
         <div>
           <h3 class="track-name-large">${sanitizeText(track.name)}</h3>
@@ -324,7 +359,7 @@ const FormationPanel = {
             <div
               class="module-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''} ${isNext ? 'next' : ''}"
               data-module="${module.id}"
-              style="animation-delay: ${index * PANEL_CONFIG.animation.stagger}ms; --track-color: ${track.color}"
+              data-delay="${index * PANEL_CONFIG.animation.stagger}" data-track-color="${track.color}"
             >
               <div class="module-number">${index + 1}</div>
               <div class="module-info">
@@ -349,6 +384,7 @@ const FormationPanel = {
     `;
 
     safeInnerHTML(this.detailContent, html);
+    this.applyDynamicStyles(this.detailContent);
   },
 
   /**

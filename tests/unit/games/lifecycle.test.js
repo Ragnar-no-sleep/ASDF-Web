@@ -12,38 +12,12 @@
 'use strict';
 
 // ============================================
-// INLINE DEPENDENCIES
+// SHARED FIXTURES + INLINE SUT
 // ============================================
 
-const GameEvents = {
-  _listeners: new Map(),
-  on(event, fn) {
-    if (!this._listeners.has(event)) this._listeners.set(event, []);
-    this._listeners.get(event).push(fn);
-    return () => this.off(event, fn);
-  },
-  off(event, fn) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      this._listeners.set(
-        event,
-        fns.filter(f => f !== fn)
-      );
-    }
-  },
-  emit(event, data) {
-    const fns = this._listeners.get(event);
-    if (fns) {
-      fns.forEach(fn => {
-        try {
-          fn(data);
-        } catch (e) {
-          console.error(`[GameEvents] ${event}:`, e);
-        }
-      });
-    }
-  },
-};
+const { createGameEvents, createAppState } = require('../../fixtures/game-mocks');
+
+const GameEvents = createGameEvents();
 
 // ============================================
 // MOCK GLOBALS
@@ -61,10 +35,7 @@ function sanitizeNumber(val, min, max, fallback) {
   return Math.max(min, Math.min(max, n));
 }
 
-const appState = {
-  wallet: null,
-  practiceScores: {},
-};
+const appState = createAppState();
 
 const saveState = jest.fn();
 const activeGameModes = {};
@@ -78,35 +49,6 @@ const addXpFromGame = undefined;
 const showXpNotification = undefined;
 const showTierUpCelebration = undefined;
 const initializeGame = jest.fn();
-
-// Mock DOM
-let domElements = {};
-
-function createMockElement(id) {
-  return {
-    id,
-    classList: {
-      _classes: new Set(),
-      add(cls) {
-        this._classes.add(cls);
-      },
-      remove(cls) {
-        this._classes.delete(cls);
-      },
-      contains(cls) {
-        return this._classes.has(cls);
-      },
-    },
-    style: {},
-    textContent: '',
-    innerHTML: '',
-    children: [],
-    appendChild(child) {
-      this.children.push(child);
-    },
-    remove() {},
-  };
-}
 
 // ============================================
 // COPY OF RELEVANT GameLifecycle METHODS
@@ -179,7 +121,6 @@ describe('GameLifecycle', () => {
     appState.practiceScores = {};
     saveState.mockClear();
     Object.keys(activeGameModes).forEach(k => delete activeGameModes[k]);
-    domElements = {};
   });
 
   describe('endGame — event emissions', () => {

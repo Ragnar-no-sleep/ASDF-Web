@@ -22,6 +22,19 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, CACHE_TTL as CACHE_DURATIONS, TIME_MS } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // CONSTANTS
@@ -203,6 +216,9 @@ async function fetchLocks() {
   } catch (err) {
     console.error('[Staking] API unavailable, using demo data:', err);
     AudioFeedback.play('error');
+    announceOracleSilence(
+      '*growl* \u2014 Staking ledger unreachable. Demo data shown. Verify your locks on-chain.'
+    );
     locks = getDemoLocks();
     renderLocks();
     renderTimeline();
@@ -365,9 +381,9 @@ function renderLocks() {
         formatNumber(lock.amount) +
         ' ASDF</div>' +
         '<div class="staking-lock-progress">' +
-        '<div class="staking-progress-bar"><div class="staking-progress-fill" style="width:' +
+        '<div class="staking-progress-bar"><div class="staking-progress-fill" data-progress="' +
         pct +
-        '%"></div></div>' +
+        '"></div></div>' +
         '<div class="staking-lock-pct">' +
         pct +
         '% unlocked</div>' +
@@ -381,6 +397,12 @@ function renderLocks() {
       );
     })
     .join('');
+
+  // Apply progress widths via CSSOM
+  container.querySelectorAll('[data-progress]').forEach(el => {
+    el.style.setProperty('width', el.dataset.progress + '%');
+    el.removeAttribute('data-progress');
+  });
 }
 
 // ============================================
@@ -621,3 +643,15 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// Named exports for unit testing (pure functions only)
+export {
+  normalizeLock,
+  getCachedData,
+  setCachedData,
+  getDemoLocks,
+  formatDate,
+  getProgress,
+  getCountdown,
+  STATUS_MAP,
+};

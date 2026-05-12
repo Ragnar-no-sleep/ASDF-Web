@@ -152,9 +152,11 @@ function renderStreakCalendar() {
 
     const cell = document.createElement('div');
     cell.className = 'streak-day';
+    cell.setAttribute('role', 'gridcell');
 
+    const isActive = i < streak;
     // Mark as active if within current streak
-    if (i < streak) {
+    if (isActive) {
       cell.classList.add('active');
     }
 
@@ -163,7 +165,9 @@ function renderStreakCalendar() {
       cell.classList.add('today');
     }
 
-    cell.title = day.toDateString();
+    const dateStr = day.toDateString();
+    cell.title = dateStr;
+    cell.setAttribute('aria-label', `${dateStr}${isActive ? ' \u2014 active' : ''}`);
     calendarEl.appendChild(cell);
   }
 }
@@ -178,7 +182,9 @@ function renderProgress() {
   const featuresPercent = Math.round((featuresUnlocked / totalFeatures) * 100);
 
   document.getElementById('featuresProgress').textContent = `${featuresUnlocked}/${totalFeatures}`;
-  document.getElementById('featuresBar').style.width = `${featuresPercent}%`;
+  const featuresBar = document.getElementById('featuresBar');
+  featuresBar.style.width = `${featuresPercent}%`;
+  featuresBar.setAttribute('aria-valuenow', featuresPercent);
 
   // Achievements
   const totalAchievements = 20;
@@ -187,7 +193,9 @@ function renderProgress() {
 
   document.getElementById('achievementsProgress').textContent =
     `${achievementsUnlocked}/${totalAchievements}`;
-  document.getElementById('achievementsBar').style.width = `${achievementsPercent}%`;
+  const achievementsBar = document.getElementById('achievementsBar');
+  achievementsBar.style.width = `${achievementsPercent}%`;
+  achievementsBar.setAttribute('aria-valuenow', achievementsPercent);
 
   // Pages explored
   const totalPages = 10;
@@ -195,7 +203,9 @@ function renderProgress() {
   const pagesPercent = Math.round((pagesVisited / totalPages) * 100);
 
   document.getElementById('pagesProgress').textContent = `${pagesVisited}/${totalPages}`;
-  document.getElementById('pagesBar').style.width = `${pagesPercent}%`;
+  const pagesBar = document.getElementById('pagesBar');
+  pagesBar.style.width = `${pagesPercent}%`;
+  pagesBar.setAttribute('aria-valuenow', pagesPercent);
 }
 
 /**
@@ -236,6 +246,7 @@ function renderHeatmap() {
 
     const cell = document.createElement('div');
     cell.className = 'heatmap-cell';
+    cell.setAttribute('role', 'gridcell');
 
     // Get activity level for this day (0-5)
     const level = activityData[dateKey] || 0;
@@ -243,7 +254,9 @@ function renderHeatmap() {
       cell.setAttribute('data-level', level);
     }
 
-    cell.title = `${dateKey}: ${level} activities`;
+    const label = `${dateKey}: ${level} activities`;
+    cell.title = label;
+    cell.setAttribute('aria-label', label);
 
     grid.appendChild(cell);
   }
@@ -300,16 +313,22 @@ function renderAchievements() {
   toShow.forEach(achievement => {
     const badge = document.createElement('div');
     badge.className = `achievement-badge ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+    badge.setAttribute('tabindex', '0');
+    badge.setAttribute('role', 'listitem');
 
+    const iconText = achievement.unlocked ? achievement.icon : '&#x1F512;';
+    const nameText = achievement.unlocked ? achievement.name : '???';
     badge.innerHTML = `
-      <div class="achievement-icon">${achievement.unlocked ? achievement.icon : '🔒'}</div>
-      <div class="achievement-name">${achievement.unlocked ? achievement.name : '???'}</div>
+      <div class="achievement-icon" aria-hidden="true">${iconText}</div>
+      <div class="achievement-name">${nameText}</div>
     `;
 
     if (achievement.unlocked) {
       badge.title = achievement.description;
+      badge.setAttribute('aria-label', `${achievement.name}: ${achievement.description}`);
     } else {
       badge.title = 'Locked';
+      badge.setAttribute('aria-label', 'Locked achievement');
     }
 
     showcase.appendChild(badge);

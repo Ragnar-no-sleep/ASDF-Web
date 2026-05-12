@@ -276,6 +276,42 @@
   }
 }
 
+/* Orbit custom properties (extracted from inline styles) */
+[data-orbit-id='burns'] {
+  --orbit-delay: 0s;
+  --static-angle: 0deg;
+}
+[data-orbit-id='forecast'] {
+  --orbit-delay: -6.8s;
+  --static-angle: 72deg;
+}
+[data-orbit-id='holdex'] {
+  --orbit-delay: -13.6s;
+  --static-angle: 144deg;
+}
+[data-orbit-id='staking'] {
+  --orbit-delay: -20.4s;
+  --static-angle: 216deg;
+}
+[data-orbit-id='ignition'] {
+  --orbit-delay: -27.2s;
+  --static-angle: 288deg;
+}
+
+/* Satellite custom properties (extracted from inline styles) */
+[data-sat='learn'] {
+  --sat-angle: 0deg;
+}
+[data-sat='build'] {
+  --sat-angle: 90deg;
+}
+[data-sat='games'] {
+  --sat-angle: 180deg;
+}
+[data-sat='deep-learn'] {
+  --sat-angle: 270deg;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hub-tool-card {
     transition: none;
@@ -285,5 +321,21 @@
   }
   .hub-view-toggle {
     transition: none;
+  }
+}
+
+/* Mobile: auto-activate grid, hide orbital shell + toggle */
+@media (max-width: 480px) {
+  .hub {
+    display: none;
+  }
+  .hub-footer {
+    display: none;
+  }
+  .hub-grid-view {
+    display: block;
+  }
+  .hub-view-toggle {
+    display: none;
   }
 }

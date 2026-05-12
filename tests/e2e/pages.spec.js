@@ -1,5 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
+import { setupErrorCollector, filterCriticalErrors } from './fixtures.js';
 
 /**
  * ASDF-Web Critical Pages E2E Tests
@@ -14,31 +15,6 @@ import { test, expect } from '@playwright/test';
 
 // Increase default timeout for CI
 test.setTimeout(30000);
-
-// Helper to collect console errors
-function setupErrorCollector(page) {
-  const errors = [];
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
-      errors.push(msg.text());
-    }
-  });
-  page.on('pageerror', error => {
-    errors.push(error.message);
-  });
-  return errors;
-}
-
-// Filter out non-critical errors (favicon, etc)
-function filterCriticalErrors(errors) {
-  return errors.filter(
-    e =>
-      !e.includes('favicon') &&
-      !e.includes('404') &&
-      !e.includes('net::ERR') &&
-      !e.includes('Failed to load resource')
-  );
-}
 
 // ============================================
 // LEARN PAGE

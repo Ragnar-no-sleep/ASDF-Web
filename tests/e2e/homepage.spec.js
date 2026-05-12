@@ -48,18 +48,29 @@ test.describe('Homepage', () => {
     await expect(hubMain).toBeVisible();
   });
 
-  test('should be responsive', async ({ page }) => {
-    // Test mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
-    await expect(page.locator('body')).toBeVisible();
+  test('should be responsive at mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
 
-    // Test tablet viewport
+    // Grid auto-activated at mobile width
+    await expect(page.locator('#hubGridView')).toBeVisible();
+
+    // Cards fit viewport
+    const card = page.locator('.hub-tool-card').first();
+    await expect(card).toBeVisible();
+    const box = await card.boundingBox();
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+
+    // Orbital hidden
+    await expect(page.locator('.hub-orbit-container')).not.toBeVisible();
+  });
+
+  test('should be responsive at tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(page.locator('body')).toBeVisible();
+    await page.goto('/');
 
-    // Test desktop viewport
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await expect(page.locator('body')).toBeVisible();
+    await expect(page.locator('#main-hub')).toBeVisible();
+    await expect(page.locator('.hub-orbit-item').first()).toBeVisible();
   });
 });
 

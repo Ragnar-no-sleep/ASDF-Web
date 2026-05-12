@@ -21,10 +21,23 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet } from './utils/format.js';
 import { ANIMATION, TIME_MS } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
 
 // API_BASE ready for when backend is deployed
 // eslint-disable-next-line no-unused-vars
 const API_BASE = ASDF_ENDPOINTS.ignition;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -227,8 +240,7 @@ function showKothPending() {
 
   const historyEl = document.getElementById('koth-history');
   if (historyEl) {
-    historyEl.innerHTML =
-      '<div class="ig-koth-row" style="color:var(--white-muted)">History endpoint pending</div>';
+    historyEl.innerHTML = '<div class="ig-koth-row ig-koth-pending">History endpoint pending</div>';
   }
 }
 
@@ -237,7 +249,7 @@ function showLeaderboardPending() {
   const body = document.getElementById('leaderboard-body');
   if (body) {
     body.innerHTML = `
-      <div class="ig-table-row" style="color:var(--white-muted);grid-column:1/-1;text-align:center;padding:24px">
+      <div class="ig-table-row ig-pending-msg">
         Leaderboard endpoint pending
       </div>`;
   }
@@ -248,7 +260,7 @@ function showRobinhoodPending() {
   const list = document.getElementById('robinhood-list');
   if (list) {
     list.innerHTML = `
-      <div style="color:var(--white-muted);padding:24px;text-align:center">
+      <div class="ig-pending-msg">
         Robinhood endpoint pending
       </div>`;
   }
@@ -262,7 +274,7 @@ function showPagsPending() {
   list.querySelectorAll('.ig-pags-row').forEach(row => row.remove());
 
   const pending = document.createElement('div');
-  pending.style.cssText = 'color:var(--white-muted);padding:12px 0';
+  pending.className = 'ig-pending-msg';
   pending.textContent = 'Designations endpoint pending';
   list.appendChild(pending);
 }
@@ -320,6 +332,11 @@ async function init() {
   showRobinhoodPending();
   showPagsPending();
 
+  // Backend is known silent — surface CYNIC-voiced notice once
+  announceOracleSilence(
+    '*growl* — Ignition runway down. Backend silent. Verify launches elsewhere.'
+  );
+
   // Countdown — no target until backend provides real schedule
   // [API] TODO: startCountdown(await fetchAirdropSchedule())
   startCountdown(null);
@@ -330,3 +347,6 @@ async function init() {
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// Named exports for unit testing (pure functions only)
+export { pad };

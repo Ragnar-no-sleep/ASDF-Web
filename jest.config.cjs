@@ -13,6 +13,7 @@ module.exports = {
     'ssr/**/*.cjs',
     'js/config/**/*.js',
     'js/core/**/*.js',
+    '!js/core/redis-client.js',
     'js/utils/format.js',
     'js/utils/notice.js',
     'js/utils/fetch-retry.js',
@@ -23,10 +24,10 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 20,
-      functions: 20,
-      lines: 20,
-      statements: 20,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
 
@@ -36,8 +37,11 @@ module.exports = {
   // Module paths
   moduleDirectories: ['node_modules', 'js'],
 
-  // Transform (no transform needed for vanilla JS)
-  transform: {},
+  // Transform ES modules to CJS for Jest (browser serves ES modules as-is)
+  transform: {
+    '^.+\\.js$': 'babel-jest',
+  },
+  transformIgnorePatterns: ['/node_modules/'],
 
   // Verbose output
   verbose: true,

@@ -111,12 +111,12 @@ const BuilderProfile = {
           <span>Loading profile...</span>
         </div>
 
-        <div class="profile-error" style="display: none;">
+        <div class="profile-error hidden">
           <span class="error-icon">&#9888;</span>
           <span class="error-message">Failed to load profile</span>
         </div>
 
-        <div class="profile-content" style="display: none;">
+        <div class="profile-content hidden">
           <div class="profile-header">
             <img class="profile-avatar" src="" alt="" />
             <div class="profile-info">
@@ -142,19 +142,19 @@ const BuilderProfile = {
           </div>
 
           <div class="profile-details">
-            <div class="detail-item location" style="display: none;">
+            <div class="detail-item location hidden">
               <span class="detail-icon">&#128205;</span>
               <span class="detail-value"></span>
             </div>
-            <div class="detail-item company" style="display: none;">
+            <div class="detail-item company hidden">
               <span class="detail-icon">&#127970;</span>
               <span class="detail-value"></span>
             </div>
-            <div class="detail-item blog" style="display: none;">
+            <div class="detail-item blog hidden">
               <span class="detail-icon">&#128279;</span>
               <a class="detail-value" href="" target="_blank" rel="noopener"></a>
             </div>
-            <div class="detail-item twitter" style="display: none;">
+            <div class="detail-item twitter hidden">
               <span class="detail-icon">&#128038;</span>
               <a class="detail-value" href="" target="_blank" rel="noopener"></a>
             </div>
@@ -298,7 +298,7 @@ const BuilderProfile = {
     const bio = $('.profile-bio', this.contentEl);
     if (bio) {
       bio.textContent = profile.bio || 'No bio available';
-      bio.style.display = profile.bio ? 'block' : 'none';
+      bio.classList.toggle('hidden', !profile.bio);
     }
 
     // Stats
@@ -315,10 +315,10 @@ const BuilderProfile = {
     const locationItem = $('.detail-item.location', this.contentEl);
     if (locationItem) {
       if (profile.location) {
-        locationItem.style.display = 'flex';
+        locationItem.classList.remove('hidden');
         $('.detail-value', locationItem).textContent = profile.location;
       } else {
-        locationItem.style.display = 'none';
+        locationItem.classList.add('hidden');
       }
     }
 
@@ -326,10 +326,10 @@ const BuilderProfile = {
     const companyItem = $('.detail-item.company', this.contentEl);
     if (companyItem) {
       if (profile.company) {
-        companyItem.style.display = 'flex';
+        companyItem.classList.remove('hidden');
         $('.detail-value', companyItem).textContent = profile.company;
       } else {
-        companyItem.style.display = 'none';
+        companyItem.classList.add('hidden');
       }
     }
 
@@ -337,12 +337,12 @@ const BuilderProfile = {
     const blogItem = $('.detail-item.blog', this.contentEl);
     if (blogItem) {
       if (profile.blog) {
-        blogItem.style.display = 'flex';
+        blogItem.classList.remove('hidden');
         const link = $('a', blogItem);
         link.href = profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`;
         link.textContent = profile.blog.replace(/^https?:\/\//, '');
       } else {
-        blogItem.style.display = 'none';
+        blogItem.classList.add('hidden');
       }
     }
 
@@ -350,12 +350,12 @@ const BuilderProfile = {
     const twitterItem = $('.detail-item.twitter', this.contentEl);
     if (twitterItem) {
       if (profile.twitter_username) {
-        twitterItem.style.display = 'flex';
+        twitterItem.classList.remove('hidden');
         const link = $('a', twitterItem);
         link.href = `https://twitter.com/${profile.twitter_username}`;
         link.textContent = `@${profile.twitter_username}`;
       } else {
-        twitterItem.style.display = 'none';
+        twitterItem.classList.add('hidden');
       }
     }
 
@@ -399,9 +399,9 @@ const BuilderProfile = {
    */
   showLoading() {
     this.isLoading = true;
-    if (this.loadingEl) this.loadingEl.style.display = 'flex';
-    if (this.contentEl) this.contentEl.style.display = 'none';
-    if (this.errorEl) this.errorEl.style.display = 'none';
+    if (this.loadingEl) this.loadingEl.classList.remove('hidden');
+    if (this.contentEl) this.contentEl.classList.add('hidden');
+    if (this.errorEl) this.errorEl.classList.add('hidden');
   },
 
   /**
@@ -409,8 +409,8 @@ const BuilderProfile = {
    */
   hideLoading() {
     this.isLoading = false;
-    if (this.loadingEl) this.loadingEl.style.display = 'none';
-    if (this.contentEl) this.contentEl.style.display = 'block';
+    if (this.loadingEl) this.loadingEl.classList.add('hidden');
+    if (this.contentEl) this.contentEl.classList.remove('hidden');
   },
 
   /**
@@ -419,10 +419,10 @@ const BuilderProfile = {
    */
   showError(message) {
     this.isLoading = false;
-    if (this.loadingEl) this.loadingEl.style.display = 'none';
-    if (this.contentEl) this.contentEl.style.display = 'none';
+    if (this.loadingEl) this.loadingEl.classList.add('hidden');
+    if (this.contentEl) this.contentEl.classList.add('hidden');
     if (this.errorEl) {
-      this.errorEl.style.display = 'flex';
+      this.errorEl.classList.remove('hidden');
       const msgEl = $('.error-message', this.errorEl);
       if (msgEl) msgEl.textContent = message || 'Failed to load profile';
     }

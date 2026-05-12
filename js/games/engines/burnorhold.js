@@ -145,44 +145,44 @@ const BurnOrHold = {
    */
   createArena(arena) {
     arena.innerHTML = `
-            <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a0a1a 0%,#1a1a2e 100%);">
-                <canvas id="cc-canvas" style="width:100%;height:100%;"></canvas>
-                <div style="position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;">
-                    <div style="display:flex;gap:10px;">
-                        <div style="background:rgba(0,0,0,0.8);padding:8px 12px;border-radius:8px;border:2px solid var(--green);">
-                            <div style="color:var(--green);font-size:11px;">&#9876; YOUR NODES</div>
-                            <div style="color:var(--green);font-size:18px;font-weight:bold;" id="cc-player-nodes">0</div>
+            <div class="boh-container">
+                <canvas id="cc-canvas" class="game-canvas"></canvas>
+                <div class="boh-hud-top">
+                    <div class="boh-hud-group">
+                        <div class="boh-stat boh-stat--player">
+                            <div class="boh-stat-label--player">&#9876; YOUR NODES</div>
+                            <div class="boh-stat-value--player" id="cc-player-nodes">0</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.8);padding:8px 12px;border-radius:8px;border:2px solid var(--accent-fire);">
-                            <div style="color:var(--accent-fire);font-size:11px;">&#128121; ENEMY</div>
-                            <div style="color:var(--accent-fire);font-size:18px;font-weight:bold;" id="cc-enemy-nodes">0</div>
+                        <div class="boh-stat boh-stat--enemy">
+                            <div class="boh-stat-label--enemy">&#128121; ENEMY</div>
+                            <div class="boh-stat-value--enemy" id="cc-enemy-nodes">0</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.8);padding:8px 12px;border-radius:8px;">
-                            <div style="color:var(--gold);font-size:11px;">&#127919; SCORE</div>
-                            <div style="color:var(--gold);font-size:18px;font-weight:bold;" id="cc-score">0</div>
+                        <div class="boh-stat">
+                            <div class="boh-stat-label--score">&#127919; SCORE</div>
+                            <div class="boh-stat-value--score" id="cc-score">0</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.8);padding:8px 12px;border-radius:8px;">
-                            <div style="color:var(--purple);font-size:11px;">&#127754; WAVE</div>
-                            <div style="color:var(--purple);font-size:18px;font-weight:bold;" id="cc-wave">1</div>
+                        <div class="boh-stat">
+                            <div class="boh-stat-label--wave">&#127754; WAVE</div>
+                            <div class="boh-stat-value--wave" id="cc-wave">1</div>
                         </div>
                     </div>
-                    <div style="background:rgba(0,0,0,0.8);padding:8px 12px;border-radius:8px;">
-                        <div style="color:var(--cyan);font-size:11px;">&#9202; TIME</div>
-                        <div style="color:var(--cyan);font-size:18px;font-weight:bold;" id="cc-time">0:00</div>
-                    </div>
-                </div>
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
-                    <div id="cc-banner" style="background:linear-gradient(90deg,transparent,rgba(0,0,0,0.9),transparent);padding:15px 60px;text-align:center;opacity:0;transition:opacity 0.3s;">
-                        <div id="cc-banner-text" style="color:var(--gold);font-size:24px;font-weight:bold;text-transform:uppercase;letter-spacing:3px;"></div>
-                        <div id="cc-banner-hint" style="color:var(--text-muted);font-size:12px;margin-top:5px;"></div>
+                    <div class="boh-stat">
+                        <div class="boh-stat-label--time">&#9202; TIME</div>
+                        <div class="boh-stat-value--time" id="cc-time">0:00</div>
                     </div>
                 </div>
-                <div style="position:absolute;bottom:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-end;">
-                    <div style="background:rgba(0,0,0,0.8);padding:10px 15px;border-radius:8px;max-width:320px;">
-                        <div style="color:#ccc;font-size:11px;line-height:1.4;">&#128293; CHAOS WARFARE &#128293;<br>Click node &#8594; Click enemy = ATTACK!<br>SPAM CLICKS! Conquer or be conquered!</div>
+                <div class="boh-banner-wrapper">
+                    <div id="cc-banner" class="boh-banner">
+                        <div id="cc-banner-text" class="boh-banner-text"></div>
+                        <div id="cc-banner-hint" class="boh-banner-hint"></div>
                     </div>
-                    <div style="pointer-events:auto;">
-                        <button id="cc-next-wave" style="display:none;background:linear-gradient(135deg,#22c55e,#16a34a);border:2px solid #4ade80;color:#fff;padding:12px 30px;border-radius:8px;cursor:pointer;font-weight:bold;font-size:16px;box-shadow:0 0 20px rgba(34,197,94,0.5);">&#128640; NEXT WAVE &#8594;</button>
+                </div>
+                <div class="boh-bottom-bar">
+                    <div class="boh-instructions">
+                        <div class="boh-instructions-text">&#128293; CHAOS WARFARE &#128293;<br>Click node &#8594; Click enemy = ATTACK!<br>SPAM CLICKS! Conquer or be conquered!</div>
+                    </div>
+                    <div class="boh-btn-wrapper">
+                        <button id="cc-next-wave" class="boh-next-wave-btn">&#128640; NEXT WAVE &#8594;</button>
                     </div>
                 </div>
             </div>

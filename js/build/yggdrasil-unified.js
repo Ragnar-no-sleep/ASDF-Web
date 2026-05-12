@@ -383,7 +383,7 @@ const YggdrasilCosmos = {
                         <span class="component-status status-${item.status}">${item.status}</span>
                     </div>
                     <div class="ygg-component-preview">${item.what || ''}</div>
-                    <div class="ygg-component-details" style="display: none;">
+                    <div class="ygg-component-details hidden">
                         <div class="component-detail-row">
                             <span class="detail-label">What</span>
                             <p>${item.what || 'N/A'}</p>
@@ -723,12 +723,12 @@ const YggdrasilCosmos = {
         .join('') || '';
 
     this.skillModal.querySelector('.ygg-modal-body').innerHTML = `
-      <div class="ygg-skill-header" style="border-color: ${trackColor}">
+      <div class="ygg-skill-header" data-track-color="${trackColor}">
         <span class="ygg-skill-icon">${skill.icon}</span>
         <div class="ygg-skill-title-group">
           <h2 class="ygg-skill-title">${skill.name}</h2>
           <div class="ygg-skill-meta">
-            <span class="ygg-skill-track" style="color: ${trackColor}">${track?.name || skill.track}</span>
+            <span class="ygg-skill-track">${track?.name || skill.track}</span>
             <span class="ygg-skill-difficulty">Difficulty: ${'★'.repeat(skill.difficulty)}${'☆'.repeat(3 - skill.difficulty)}</span>
           </div>
         </div>
@@ -800,6 +800,14 @@ const YggdrasilCosmos = {
         </button>
       </div>
     `;
+
+    // Apply track color via CSSOM (CSP Phase 2)
+    const headerEl = this.skillModal.querySelector('.ygg-skill-header');
+    if (headerEl) {
+      headerEl.style.setProperty('border-color', trackColor);
+      const trackEl = headerEl.querySelector('.ygg-skill-track');
+      if (trackEl) trackEl.style.setProperty('color', trackColor);
+    }
 
     // Bind prereq clicks
     this.skillModal.querySelectorAll('.ygg-skill-prereq[data-skill]').forEach(el => {
@@ -976,7 +984,7 @@ const YggdrasilCosmos = {
       this.loadingEl.innerHTML = `
                 <div class="ygg-loading-icon">⚠️</div>
                 <div class="ygg-loading-text">WebGL Error</div>
-                <div style="color: #666; font-size: 12px; margin-top: 8px;">
+                <div class="ygg-error-detail">
                     ${error.message || 'Unknown error'}
                 </div>
             `;
@@ -1059,6 +1067,9 @@ const YggdrasilCosmos = {
       });
     });
 
+    // Apply track colors via CSSOM (CSP Phase 2)
+    this.applyTrackColors(this.leftPanel);
+
     // Module cards - expand/collapse
     this.leftPanel.querySelectorAll('.ygg-module-card').forEach(card => {
       card.addEventListener('click', e => {
@@ -1087,9 +1098,9 @@ const YggdrasilCosmos = {
         const isRecommended = this.quizState.result === track.id;
 
         return `
-                <div class="ygg-track-card ${isRecommended ? 'recommended' : ''}" data-track="${track.id}">
+                <div class="ygg-track-card ${isRecommended ? 'recommended' : ''}" data-track="${track.id}" data-track-color="${track.color}">
                     <div class="ygg-track-header">
-                        <span class="ygg-track-icon" style="color: ${track.color}">${track.icon}</span>
+                        <span class="ygg-track-icon">${track.icon}</span>
                         <div class="ygg-track-info">
                             <div class="ygg-track-name">${track.name}</div>
                             <div class="ygg-track-meta">
@@ -1103,7 +1114,7 @@ const YggdrasilCosmos = {
                         ${isRecommended ? '<span class="ygg-track-badge">Recommended</span>' : ''}
                     </div>
                     <div class="ygg-progress-bar">
-                        <div class="ygg-progress-fill ${track.id}" style="width: ${progress}%"></div>
+                        <div class="ygg-progress-fill ${track.id}" data-progress="${progress}"></div>
                     </div>
                     <div class="ygg-track-modules">
                         ${track.modules
@@ -1172,6 +1183,7 @@ const YggdrasilCosmos = {
     const tracksList = this.leftPanel.querySelector('.ygg-tracks-list');
     if (tracksList) {
       tracksList.innerHTML = this.renderTracksWithModules();
+      this.applyTrackColors(tracksList);
       this.leftPanel.querySelectorAll('.ygg-track-card').forEach(card => {
         card.addEventListener('click', () => {
           const trackId = card.dataset.track;
@@ -1954,6 +1966,9 @@ const YggdrasilCosmos = {
     if (connectBtn) {
       connectBtn.addEventListener('click', () => this.connectWallet());
     }
+
+    // Apply dynamic colors via CSSOM (CSP Phase 2)
+    this.applyTrackColors(this.rightPanel);
   },
 
   /**
@@ -2056,7 +2071,7 @@ const YggdrasilCosmos = {
 
         <div class="ygg-xp-progress">
           <div class="ygg-xp-bar">
-            <div class="ygg-xp-fill" style="width: ${xpPercent}%"></div>
+            <div class="ygg-xp-fill" data-progress="${xpPercent}"></div>
           </div>
           ${
             levelProgress.next
@@ -2110,10 +2125,10 @@ const YggdrasilCosmos = {
               ${Object.entries(GENERALIST_TRACKS)
                 .map(
                   ([id, track]) => `
-                  <div class="ygg-track-progress-row">
-                    <span class="ygg-track-label" style="color: ${track.color}">${track.icon} ${track.name}</span>
+                  <div class="ygg-track-progress-row" data-track-color="${track.color}">
+                    <span class="ygg-track-label">${track.icon} ${track.name}</span>
                     <div class="ygg-track-progress-bar">
-                      <div class="ygg-track-progress-fill" style="width: ${stats.trackProgress[id]}%; background: ${track.color}"></div>
+                      <div class="ygg-track-progress-fill" data-progress="${stats.trackProgress[id]}"></div>
                     </div>
                     <span class="ygg-track-percent">${stats.trackProgress[id]}%</span>
                   </div>
@@ -2174,10 +2189,10 @@ const YggdrasilCosmos = {
               : '#44aaff';
 
         return `
-          <div class="ygg-specialized-row" data-project="${projectId}">
+          <div class="ygg-specialized-row" data-project="${projectId}" data-track-color="${trackColor}">
             <span class="specialized-name">${project?.title || projectId}</span>
             <div class="ygg-track-progress-bar small">
-              <div class="ygg-track-progress-fill" style="width: ${progress.percent}%; background: ${trackColor}"></div>
+              <div class="ygg-track-progress-fill" data-progress="${progress.percent}"></div>
             </div>
             <span class="ygg-track-percent">${progress.percent}%</span>
           </div>
@@ -2238,6 +2253,9 @@ const YggdrasilCosmos = {
       if (connectBtn) {
         connectBtn.addEventListener('click', () => this.connectWallet());
       }
+
+      // Re-apply dynamic colors via CSSOM (CSP Phase 2)
+      this.applyTrackColors(this.rightPanel);
     }
   },
 
@@ -2366,19 +2384,19 @@ const YggdrasilCosmos = {
           <span class="legend-section-title">Tracks</span>
           <label class="legend-filter" data-filter="track" data-value="dev">
             <input type="checkbox" checked>
-            <span class="legend-color" style="background: #ff4444;"></span>
+            <span class="legend-color legend-color--dev"></span>
             <span class="legend-label">Dev</span>
             <span class="legend-count" data-track="dev">11</span>
           </label>
           <label class="legend-filter" data-filter="track" data-value="games">
             <input type="checkbox" checked>
-            <span class="legend-color" style="background: #aa44ff;"></span>
+            <span class="legend-color legend-color--games"></span>
             <span class="legend-label">Games</span>
             <span class="legend-count" data-track="games">4</span>
           </label>
           <label class="legend-filter" data-filter="track" data-value="content">
             <input type="checkbox" checked>
-            <span class="legend-color" style="background: #44aaff;"></span>
+            <span class="legend-color legend-color--content"></span>
             <span class="legend-label">Content</span>
             <span class="legend-count" data-track="content">6</span>
           </label>
@@ -2667,6 +2685,33 @@ const YggdrasilCosmos = {
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
     return num.toString();
+  },
+
+  /**
+   * Apply dynamic track colors via CSSOM (CSP Phase 2)
+   * Replaces inline style= attributes with CSSOM property assignments
+   * @param {HTMLElement} container - Parent element to search within
+   */
+  applyTrackColors(container) {
+    // Set icon/label color + fill background from data-track-color
+    container.querySelectorAll('[data-track-color]').forEach(el => {
+      const color = el.dataset.trackColor;
+      // Set color on labels/icons
+      const label = el.querySelector('.ygg-track-label, .ygg-track-icon');
+      if (label) label.style.setProperty('color', color);
+      // Set fill width + background on track-progress-fill bars (stats panel)
+      const fill = el.querySelector('.ygg-track-progress-fill');
+      if (fill) {
+        if (fill.dataset.progress) fill.style.setProperty('width', fill.dataset.progress + '%');
+        fill.style.setProperty('background', color);
+      }
+    });
+    // Handle all data-progress elements (xp-fill, progress-fill) — width only
+    container.querySelectorAll('[data-progress]').forEach(el => {
+      if (!el.style.width) {
+        el.style.setProperty('width', el.dataset.progress + '%');
+      }
+    });
   },
 
   /**

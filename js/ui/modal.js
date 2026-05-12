@@ -471,16 +471,6 @@ class ModalManager {
           class="modal-input"
           placeholder="${opts.placeholder || ''}"
           value="${opts.defaultValue || ''}"
-          style="
-            width: 100%;
-            padding: 12px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            margin-top: 12px;
-          "
         />
       `,
       size: 'sm',

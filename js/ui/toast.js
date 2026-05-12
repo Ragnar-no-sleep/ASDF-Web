@@ -263,7 +263,7 @@ class ToastManager {
     }
 
     if (progress && duration > 0) {
-      html += `<div class="toast-progress" style="width: 100%; transition-duration: ${duration}ms;"></div>`;
+      html += `<div class="toast-progress"></div>`;
     }
 
     toast.innerHTML = html;
@@ -275,14 +275,15 @@ class ToastManager {
       });
     }
 
-    // Start progress animation
+    // Start progress animation (CSP Phase 2 — duration via CSSOM)
     if (progress && duration > 0) {
-      requestAnimationFrame(() => {
-        const progressBar = toast.querySelector('.toast-progress');
-        if (progressBar) {
+      const progressBar = toast.querySelector('.toast-progress');
+      if (progressBar) {
+        progressBar.style.setProperty('--toast-duration', duration + 'ms');
+        requestAnimationFrame(() => {
           progressBar.style.width = '0%';
-        }
-      });
+        });
+      }
     }
 
     return toast;

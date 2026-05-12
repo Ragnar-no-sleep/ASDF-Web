@@ -14,15 +14,32 @@
 
 # ASDF-Web — Project Instructions
 
+`WORKFLOW.md` defines the universal engineering method.
+This file defines the ASDF-Web local adaptation: stack, deployment rules, branch policy, style constraints, and project-specific operating instructions.
+
 ## Stack
 
-Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | Render deploy (paused)
+Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | **Vercel deploy** (fresh foundation 2026-04-16)
+
+## Ontology — 7 pillars
+
+ASDF-Web manifests the $ASDFASDFA ecosystem through 7 pillars:
+
+1. **Thèse** — `/`, `/story`, `/deep-learn` (cosmic→pedagogic→austere)
+2. **Formation** — Dev/Gaming/Creator tracks (currently inside `/build`)
+3. **Construction** — `/build` (Yggdrasil), `/ecosystem-map`
+4. **Observation** — `/burns`, `/holdex`, `/forecast`, `/staking`, `/ignition`
+5. **Jeu** — `/games`, engines in `js/games/engines/`
+6. **Soi** — `/me` (K-Score)
+7. **Voix** — `/terrier` (CYNIC public surface)
+
+Full audit in `docs/superpowers/specs/2026-04-24-asdf-web-reorg-design.md` (local-only, gitignored).
 
 ## Structure
 
 - 1 primary JS controller per HTML page, shared utilities via ES modules
 - CSS variables in `:root` via `system.css` (design system)
-- No build step — direct serve
+- Vite present for dev/build (`npm run dev`, `npm run build`); production on Vercel serves the repo statically (no build executed at deploy time)
 - HTML entities instead of emojis in code
 - Shared modules in `js/utils/`, `js/config/`, `js/core/`
 
@@ -105,18 +122,20 @@ Typography: Inter (body), JetBrains Mono (code)
 
 ### Branches
 
-| Branch    | Deploys to           | URL                                                           |
-| --------- | -------------------- | ------------------------------------------------------------- |
-| `develop` | Render: asdf-web-dev | https://asdf-web-dev.onrender.com                             |
-| `main`    | Render: asdf-gateway | https://hub.alonisthe.dev / https://asdf-gateway.onrender.com |
+| Branch    | Deploys to         | URL                                                          |
+| --------- | ------------------ | ------------------------------------------------------------ |
+| `develop` | Vercel: preview    | https://asdf-web-{commit-hash}-stasiufrs-projects.vercel.app |
+| `main`    | Vercel: production | https://asdf-web.vercel.app / https://hub.alonisthe.dev      |
 
 ### Rules
 
-- **Default**: Always push to `develop`. Every feature, fix, or advancement.
-- **To prod**: ONLY push to `main` when the user explicitly says so.
+- **Default**: Always push to `develop`. Every feature, fix, or advancement → preview auto-deploys.
+- **To prod**: ONLY push to `main` when the user explicitly says so → production auto-deploys.
 - **PR required**: main deploys are done via Pull Request from develop → main.
 - **NEVER** push to main without explicit instruction from user.
-- `alonisthe.dev` is managed on Squarespace by another developer — no DNS changes.
+- **Vercel**: Auto-deploy on push to either branch. Project linked via `.vercel/project.json` (committed).
+- **DNS**: `alonisthe.dev` is managed on Squarespace by gcr — Vercel handles `asdf-web.vercel.app`.
+- **Fresh foundation**: No env vars imported from Render. Configure all secrets on Vercel Dashboard.
 
 ### Commit convention
 
@@ -165,11 +184,10 @@ Scopes: hub | learn | build | games | burns | api | ecosystem
 
 - Philosophy: `docs/PHILOSOPHY.md`
 - Architecture: `docs/ARCHITECTURE.md`
-- Roadmap: `docs/ROADMAP-LIVE.md` (living doc, updated per sprint)
-- Audit findings: `docs/AUDIT.md`
-- Security: `docs/SECURITY-ASSESSMENT.md`
+- Roadmap: `docs/ROADMAP.md` (open items, metrics, decisions)
+- Architecture: `docs/ARCHITECTURE.md` (system design, security posture, debt)
 - Privacy: `docs/PRIVACY-POLICY.md`
-- Archive: `_archive/` (historical docs dated by month)
+- Archive: `_archive/docs-2026-02/` (historical docs)
 
 ## Agents
 

@@ -181,7 +181,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
     rgba(0, 0, 0, 0.1) 4px
   );
   pointer-events: none;
-  z-index: 9998; /* decorative, pointer-events:none — must be above all content */
+  z-index: var(--z-max); /* decorative, pointer-events:none — must be above all content */
   opacity: 0.3;
 }
 
@@ -192,7 +192,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   inset: 0;
   background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
   pointer-events: none;
-  z-index: 9997; /* decorative, pointer-events:none */
+  z-index: var(--z-max); /* decorative, pointer-events:none */
 }
 
 /* Console text glow */
@@ -235,7 +235,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   left: 0;
   right: 0;
   height: var(--eco-nav-height);
-  z-index: 900; /* ecosystem nav layer — above tool content, below modals use separate stacking context */
+  z-index: var(--z-popover); /* ecosystem nav layer — above tool content, below modals */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -303,7 +303,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
     color 200ms ease,
     background 200ms ease;
   white-space: nowrap;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .eco-nav-link:hover {
@@ -367,7 +367,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 800;
+  z-index: var(--z-overlay);
   width: 44px;
   height: 44px;
   border: none;
@@ -415,7 +415,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
 .eco-drawer-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 850;
+  z-index: calc(var(--z-modal) - 1);
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   pointer-events: none;
@@ -433,7 +433,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   left: 0;
   bottom: 0;
   width: 280px;
-  z-index: 860;
+  z-index: var(--z-modal);
   background: var(--eco-nav-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -543,7 +543,7 @@ html[data-eco-dir='right'] ::view-transition-new(root) {
   left: 280px;
   right: 0;
   bottom: 0;
-  z-index: 859; /* Just below drawer (860) */
+  z-index: calc(var(--z-modal) - 1); /* Just below drawer */
   pointer-events: none;
   opacity: 0;
   transform: translateX(8px);

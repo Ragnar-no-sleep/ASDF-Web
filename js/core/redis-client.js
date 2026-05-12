@@ -106,18 +106,20 @@ const ALLOWED_METHODS = [
 ];
 
 // ============================================
-// DEV MODE DETECTION
+// REDIS DISABLED CHECK
 // ============================================
 
 /**
- * Detect if running in development mode (localhost/127.0.0.1)
- * In dev mode, skip Redis and use localStorage only
+ * Detect if Redis sync layer should be skipped.
+ *
+ * Current state (2026-05-12): Redis backend proxy /api/redis is BURNED in Phase 1
+ * (no Vercel Function). All environments fall back to localStorage-only.
+ *
+ * When wallet-identity (Phase 2 Pillar 6 / BLITZ&CHILL bridge) lands and
+ * cross-device sync becomes necessary, create api/redis.js as a Vercel Function
+ * and flip this to return false in production.
  */
-const isDevMode = () => {
-  if (typeof window === 'undefined') return false;
-  const hostname = window.location.hostname;
-  return hostname === 'localhost' || hostname === '127.0.0.1';
-};
+const isRedisDisabled = () => true;
 
 // ============================================
 // REDIS CLIENT CLASS
@@ -130,10 +132,10 @@ class RedisClient {
     this.cache = new Map();
     this.pendingQueue = [];
     this.retryCount = 0;
-    this.devMode = isDevMode();
+    this.disabled = isRedisDisabled();
 
-    if (this.devMode) {
-      console.log('[Redis] Dev mode detected - using localStorage only');
+    if (this.disabled) {
+      console.log('[Redis] Disabled (Phase 1 BURN) — using localStorage only');
     }
   }
 
@@ -148,9 +150,9 @@ class RedisClient {
    * @returns {Promise<any>} Redis response
    */
   async request(method, params = []) {
-    // Skip Redis in dev mode - let sync layer use localStorage
-    if (this.devMode) {
-      throw createError('REDIS_DEV_MODE', { method, params });
+    // Skip Redis when disabled — let sync layer fall back to localStorage
+    if (this.disabled) {
+      throw createError('REDIS_DISABLED', { method, params });
     }
 
     const upperMethod = method.toUpperCase();

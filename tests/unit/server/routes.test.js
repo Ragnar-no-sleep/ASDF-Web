@@ -170,10 +170,13 @@ describe('security headers', () => {
     expect(csp).toContain('https://alonisthe.dev');
   });
 
-  it('CSP connectSrc includes lock-verifier', async () => {
+  it('CSP connectSrc includes alonisthe.dev for all sollama58 tools', async () => {
     const res = await request(app).get('/health');
     const csp = res.headers['content-security-policy'];
-    expect(csp).toContain('https://lock-verifier.onrender.com');
+    // All sollama58 tools (burns, forecast, holdex, staking, ignition) proxied via alonisthe.dev
+    // Render URLs removed 2026-04-24 (post Vercel migration — all 3 verified 503)
+    expect(csp).toContain('https://alonisthe.dev');
+    expect(csp).not.toContain('onrender.com');
   });
 
   it('CSP blocks inline event handlers (script-src-attr none)', async () => {
@@ -214,10 +217,13 @@ describe('security headers', () => {
     expect(elemMatch[1]).toContain("'sha256-");
   });
 
-  it('CSP style-src-attr contains unsafe-inline (Phase 1 contract)', async () => {
+  it('CSP style-src-attr does NOT contain unsafe-inline (Phase 2 hardened)', async () => {
     const res = await request(app).get('/health');
     const csp = res.headers['content-security-policy'];
-    expect(csp).toContain("style-src-attr 'unsafe-inline'");
+    const attrMatch = csp.match(/style-src-attr ([^;]+)/);
+    expect(attrMatch).not.toBeNull();
+    expect(attrMatch[1]).not.toContain("'unsafe-inline'");
+    expect(attrMatch[1]).toContain("'none'");
   });
 
   it('CSP has no bare style-src directive (split into elem + attr)', async () => {

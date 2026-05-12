@@ -36,7 +36,7 @@
    BASE - BLACK BACKGROUND
    ============================================ */
 .arcade-page {
-  background: #0a0a0f !important;
+  background: #0a0a0f;
   min-height: 100vh;
   color: var(--text-white);
   font-family: var(--font-mono);
@@ -53,7 +53,7 @@
 .arcade-page .viking-symbols,
 .arcade-page .viking-spirits,
 .arcade-page .valhalla-particles {
-  display: none !important;
+  display: none;
 }
 
 /* ============================================
@@ -401,13 +401,16 @@
    ============================================ */
 .arcade-cards {
   display: grid;
-  grid-template-columns: repeat(2, 240px);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 240px));
   gap: var(--space-lg);
+  justify-content: center;
 }
 
 @media (max-width: 480px) {
   .arcade-cards {
-    grid-template-columns: 260px;
+    grid-template-columns: 1fr;
+    max-width: calc(100vw - 2 * var(--space-lg));
+    margin: 0 auto;
   }
 }
 
@@ -557,7 +560,7 @@
    TOP NAV - NEO ARCADE
    ============================================ */
 .arcade-page .nav {
-  background: #050508 !important;
+  background: #050508;
   border-bottom: 1px solid #151520;
 }
 
@@ -666,7 +669,7 @@
 .arcade-page .hero,
 .arcade-page .games-section,
 .arcade-page .pump-arena-section {
-  background: transparent !important;
+  background: transparent;
 }
 
 /* ============================================

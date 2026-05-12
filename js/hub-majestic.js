@@ -34,84 +34,6 @@ import { initInteractions } from './utils/interactions.js';
     document.addEventListener('mousemove', handleMove, { passive: true });
   };
 
-  // --- Glow follow on nodes ---
-  const initNodeGlow = () => {
-    document.querySelectorAll('.hub-node:not(.hub-node--disabled)').forEach(node => {
-      let rect = null;
-
-      node.addEventListener('mouseenter', () => {
-        rect = node.getBoundingClientRect();
-      });
-
-      node.addEventListener(
-        'mousemove',
-        throttle(e => {
-          if (!rect) rect = node.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 100;
-          const y = ((e.clientY - rect.top) / rect.height) * 100;
-          node.style.setProperty('--glow-x', `${x}%`);
-          node.style.setProperty('--glow-y', `${y}%`);
-        }),
-        { passive: true }
-      );
-
-      node.addEventListener('mouseleave', () => {
-        rect = null;
-        node.style.removeProperty('--glow-x');
-        node.style.removeProperty('--glow-y');
-      });
-    });
-  };
-
-  // --- Tools interactive expansion ---
-  const initTools = () => {
-    const tools = document.getElementById('hubTools');
-    const trigger = document.getElementById('toolsTrigger');
-    if (!tools || !trigger) return;
-
-    let isExpanded = false;
-    let closeTimeout = null;
-
-    const expand = () => {
-      clearTimeout(closeTimeout);
-      if (!isExpanded && tools && trigger) {
-        tools.classList.add('expanded');
-        trigger.setAttribute('aria-expanded', 'true');
-        isExpanded = true;
-      }
-    };
-
-    const collapse = () => {
-      closeTimeout = setTimeout(() => {
-        if (tools && trigger) {
-          tools.classList.remove('expanded');
-          trigger.setAttribute('aria-expanded', 'false');
-          isExpanded = false;
-        }
-      }, 300);
-    };
-
-    // Expand on hover
-    trigger.addEventListener('mouseenter', expand);
-    tools.addEventListener('mouseenter', expand);
-
-    // Collapse when leaving the tools area
-    tools.addEventListener('mouseleave', collapse);
-
-    // Also support click toggle for touch devices
-    trigger.addEventListener('click', e => {
-      e.preventDefault();
-      if (isExpanded && tools && trigger) {
-        clearTimeout(closeTimeout);
-        tools.classList.remove('expanded');
-        trigger.setAttribute('aria-expanded', 'false');
-        isExpanded = false;
-      } else {
-        expand();
-      }
-    });
-  };
-
   // --- Respect reduced motion ---
   const checkReducedMotion = () => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -270,14 +192,131 @@ import { initInteractions } from './utils/interactions.js';
     center.appendChild(portal);
   };
 
+  // --- View toggle: orbital ↔ grid ---
+  const initViewToggle = () => {
+    const KEY = 'asdf-hub-view';
+    const toggle = document.getElementById('hubViewToggle');
+    const icon = document.getElementById('hubToggleIcon');
+    const label = document.getElementById('hubToggleLabel');
+    const orbital = document.getElementById('main-hub');
+    const grid = document.getElementById('hubGridView');
+
+    const setView = view => {
+      if (view === 'grid') {
+        orbital.setAttribute('data-view', 'grid');
+        grid.classList.add('is-active');
+        icon.innerHTML = '&#9673;';
+        label.textContent = 'Orbital View';
+      } else {
+        orbital.removeAttribute('data-view');
+        grid.classList.remove('is-active');
+        icon.innerHTML = '&#9638;';
+        label.textContent = 'Grid View';
+      }
+      try {
+        localStorage.setItem(KEY, view);
+      } catch (_e) {
+        /* private browsing */
+      }
+    };
+
+    try {
+      if (localStorage.getItem(KEY) === 'grid') setView('grid');
+    } catch (_e) {
+      /* private browsing */
+    }
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const current = grid.classList.contains('is-active') ? 'grid' : 'orbital';
+        setView(current === 'grid' ? 'orbital' : 'grid');
+      });
+    }
+  };
+
+  // --- First-visit: "New here?" on planet center ---
+  const VISITED_KEY = 'asdf_has_visited';
+
+  const initNewcomerHook = () => {
+    try {
+      if (localStorage.getItem(VISITED_KEY)) return;
+    } catch (_e) {
+      return; // private browsing
+    }
+
+    const label = document.getElementById('planetLabel');
+    const planet = document.getElementById('hubPlanet');
+    if (!label || !planet) return;
+
+    // Swap label to "New here?"
+    label.textContent = 'New here?';
+    label.classList.add('is-newcomer');
+
+    const handlePlanetClick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      showNewcomerOverlay();
+      planet.removeEventListener('click', handlePlanetClick);
+    };
+
+    planet.addEventListener('click', handlePlanetClick);
+  };
+
+  const showNewcomerOverlay = () => {
+    const overlay = document.createElement('div');
+    overlay.className = 'newcomer-overlay';
+    overlay.innerHTML = `
+      <div class="newcomer-card">
+        <p>A token on <strong>Solana</strong>. Created on pump.fun.</p>
+        <p>Every fee earned by a creator <strong>automatically burns</strong> $asdfasdfa tokens. Forever.</p>
+        <p>Less supply. No promises. Just code that runs.</p>
+        <button class="newcomer-card-cta">Got it</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const dismiss = () => {
+      overlay.remove();
+      // Restore planet label
+      const label = document.getElementById('planetLabel');
+      if (label) {
+        label.textContent = '$ASDF';
+        label.classList.remove('is-newcomer');
+      }
+      // Mark as visited
+      try {
+        localStorage.setItem(VISITED_KEY, '1');
+      } catch (_e) {
+        /* private browsing */
+      }
+      // Pulse the hero CTA
+      const cta = document.getElementById('hubHeroCta');
+      if (cta) {
+        cta.classList.add('is-pulsing');
+        cta.addEventListener('animationend', () => cta.classList.remove('is-pulsing'), {
+          once: true,
+        });
+      }
+    };
+
+    overlay.querySelector('.newcomer-card-cta').addEventListener('click', dismiss);
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) dismiss();
+    });
+  };
+
   // --- Init ---
   const init = () => {
     checkReducedMotion();
     initParallax();
-    initNodeGlow();
-    initTools();
+    initViewToggle();
+    initNewcomerHook();
     initFullscreenPrompt();
     initEasterEgg();
+
+    // Achievement init (deferred scripts loaded before DOMContentLoaded)
+    if (window.AchievementToast) window.AchievementToast.init();
+    if (window.AchievementEngine) window.AchievementEngine.autoArrival();
 
     // Init micro-interactions system
     initInteractions({

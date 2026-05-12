@@ -70,12 +70,17 @@
 
         <!-- Daily Streak -->
         <div class="card">
-          <h2 class="card-title">Daily Streak 🔥</h2>
+          <h2 class="card-title">Daily Streak <span aria-hidden="true">&#x1F525;</span></h2>
           <div class="streak-display">
             <div class="streak-value" id="streakValue">0</div>
             <div class="streak-label">days in a row</div>
           </div>
-          <div class="streak-calendar" id="streakCalendar"></div>
+          <div
+            class="streak-calendar"
+            id="streakCalendar"
+            role="grid"
+            aria-label="28-day streak calendar"
+          ></div>
         </div>
       </div>
 
@@ -94,7 +99,6 @@
               <div
                 class="progress-bar-fill"
                 id="featuresBar"
-                style="width: 0%"
                 role="progressbar"
                 aria-valuenow="0"
                 aria-valuemin="0"
@@ -113,7 +117,6 @@
               <div
                 class="progress-bar-fill"
                 id="achievementsBar"
-                style="width: 0%"
                 role="progressbar"
                 aria-valuenow="0"
                 aria-valuemin="0"
@@ -132,7 +135,6 @@
               <div
                 class="progress-bar-fill"
                 id="pagesBar"
-                style="width: 0%"
                 role="progressbar"
                 aria-valuenow="0"
                 aria-valuemin="0"
@@ -170,23 +172,15 @@
       <!-- Activity Heatmap -->
       <div class="card">
         <h2 class="card-title">Activity Heatmap</h2>
-        <p
-          style="
-            font-size: var(--text-sm);
-            color: var(--color-text-tertiary);
-            margin-bottom: var(--space-lg);
-          "
-        >
-          Your contribution to the ASDF ecosystem over the past year
-        </p>
+        <p class="me-hint">Your contribution to the ASDF ecosystem over the past year</p>
         <div class="heatmap">
           <div
             class="heatmap-grid"
             id="heatmapGrid"
-            role="img"
+            role="grid"
             aria-label="Activity heatmap showing contribution levels over the past year"
           ></div>
-          <div class="heatmap-legend">
+          <div class="heatmap-legend" aria-hidden="true">
             <span>Less</span>
             <div class="heatmap-cell" data-level="0"></div>
             <div class="heatmap-cell" data-level="1"></div>
@@ -202,7 +196,12 @@
       <!-- Recent Achievements -->
       <div class="card">
         <h2 class="card-title">Recent Achievements</h2>
-        <div class="achievement-showcase" id="achievementShowcase"></div>
+        <div
+          class="achievement-showcase"
+          id="achievementShowcase"
+          role="list"
+          aria-label="Achievement badges"
+        ></div>
       </div>
 
       <!-- Quick Actions -->

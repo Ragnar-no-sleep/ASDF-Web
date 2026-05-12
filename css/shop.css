@@ -959,12 +959,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  background: linear-gradient(135deg, #fbbf24, #f97316) !important;
-  border: none !important;
-  color: #000 !important;
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  border: none;
+  color: #000;
   font-weight: var(--font-semibold);
-  padding: var(--space-sm) var(--space-md) !important;
-  border-radius: var(--radius-md) !important;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     transform var(--duration-fast),
@@ -2245,3 +2245,61 @@
     flex: 1 1 calc(50% - 4px);
   }
 }
+
+/* ============================================
+   CSP PHASE 2 — Extracted inline styles
+   ============================================ */
+
+/* Item card tier-color fallback (set dynamically via CSSOM) */
+.shop-item-card {
+  --tier-color: #9ca3af;
+}
+.shop-item {
+  --tier-color: #9ca3af;
+}
+
+/* Card glow uses CSS custom property instead of inline gradient */
+.card-glow {
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--tier-color) 19%, transparent),
+    transparent 70%
+  );
+}
+
+/* Card tier label color driven by --tier-color */
+.card-tier {
+  color: var(--tier-color);
+}
+
+/* Card placeholder background driven by --tier-color */
+.card-placeholder--gradient {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tier-color) 25%, transparent),
+    color-mix(in srgb, var(--tier-color) 12%, transparent)
+  );
+}
+
+/* Shop item tier label in ui.js grid */
+.shop-item-tier {
+  color: var(--tier-color);
+}
+
+/* Preview tier label in ui.js preview panel */
+.preview-tier {
+  color: var(--tier-color);
+}
+
+/* Loading overlay hidden by default */
+.shop-loading-hidden {
+  display: none;
+}
+
+/* ============================================
+   CSP Phase 2: Dynamic styles applied via CSSOM
+   ============================================ */
+/* Rarity chip uses --rarity-color set via CSSOM */
+/* Chip dot uses background set via CSSOM */
+/* Preview panel uses --tier-color set via CSSOM */
+/* Stock fill + progress fill use width set via CSSOM */

@@ -244,6 +244,13 @@ export const errors = {
   // ============================================
   // API ERRORS
   // ============================================
+  API_DISABLED: {
+    code: 'API_DISABLED',
+    name: 'API Disabled',
+    message: 'Game backend is offline (post Phase 1 BURN) — scores use local state only.',
+    action: 'none',
+    severity: 'debug',
+  },
   API_ERROR: {
     code: 'API_ERROR',
     name: 'API Error',
@@ -415,10 +422,10 @@ export const errors = {
     action: 'retry',
     severity: 'warning',
   },
-  REDIS_DEV_MODE: {
-    code: 'REDIS_DEV_MODE',
-    name: 'Dev Mode',
-    message: 'Redis skipped in development - using localStorage.',
+  REDIS_DISABLED: {
+    code: 'REDIS_DISABLED',
+    name: 'Redis Disabled',
+    message: 'Redis sync layer is disabled (Phase 1 BURN) — using localStorage only.',
     action: 'none',
     severity: 'debug',
   },

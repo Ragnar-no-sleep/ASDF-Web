@@ -173,6 +173,7 @@ const VALID_GAME_IDS = new Set([
   'burnorhold',
   'liquiditymaze',
   'pumparena',
+  'spaceshooter',
 ]);
 
 /**

@@ -249,7 +249,7 @@ class LearnBuildUIController {
         </div>
         <div class="lb-milestone-progress">
           <div class="lb-milestone-bar">
-            <div class="lb-milestone-fill" style="width: ${m.progress}%"></div>
+            <div class="lb-milestone-fill" data-progress="${m.progress}"></div>
           </div>
           <span class="lb-milestone-text">${m.current}/${m.target}</span>
         </div>
@@ -257,6 +257,12 @@ class LearnBuildUIController {
     `
       )
       .join('');
+
+    // Apply progress widths via CSSOM
+    container.querySelectorAll('[data-progress]').forEach(el => {
+      el.style.setProperty('width', el.dataset.progress + '%');
+      el.removeAttribute('data-progress');
+    });
   }
 
   /**

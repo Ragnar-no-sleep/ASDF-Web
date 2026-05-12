@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" style="background: #020812">
+<html lang="en">
   <head>
     <style>
       html {
@@ -63,11 +63,17 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/design-tokens.css" />
     <link rel="stylesheet" href="css/games.css" />
+    <link rel="stylesheet" href="css/games-variants.css" />
+    <link rel="stylesheet" href="css/games-engage.css" />
+    <link rel="stylesheet" href="css/games-challenges.css" />
     <link rel="stylesheet" href="css/games-arcade.css" />
     <link rel="stylesheet" href="css/viking-bg.css" />
     <link rel="stylesheet" href="css/shop.css" />
     <link rel="stylesheet" href="css/shop-animations.css" />
     <link rel="stylesheet" href="css/valhalla.css" />
+    <link rel="stylesheet" href="css/pumparena.css" />
+    <link rel="stylesheet" href="css/game-engines.css" />
+    <link rel="stylesheet" href="css/spaceshooter.css" />
 
     <link rel="stylesheet" href="css/runtime-components.css" />
   </head>
@@ -108,26 +114,16 @@
     <nav class="nav eco-page" role="navigation" aria-label="Games navigation">
       <div class="nav-content">
         <span class="nav-logo">
-          <span style="font-size: 20px">&#128293;</span>
+          <span class="nav-logo-icon">&#128293;</span>
           <span class="nav-logo-text">Ignition</span>
         </span>
 
         <div class="nav-tabs">
-          <a href="#hub" class="nav-tab active" data-hub-view="hub" style="text-decoration: none"
-            >Hub</a
-          >
-          <a href="#games" class="nav-tab" data-hub-view="games" style="text-decoration: none"
-            >Games</a
-          >
-          <a href="#shop" class="nav-tab" data-hub-view="shop" style="text-decoration: none"
-            >Shop</a
-          >
-          <a href="#profile" class="nav-tab" data-hub-view="profile" style="text-decoration: none"
-            >Profile</a
-          >
-          <a href="#settings" class="nav-tab" data-hub-view="settings" style="text-decoration: none"
-            >Settings</a
-          >
+          <a href="#hub" class="nav-tab active" data-hub-view="hub">Hub</a>
+          <a href="#games" class="nav-tab" data-hub-view="games">Games</a>
+          <a href="#shop" class="nav-tab" data-hub-view="shop">Shop</a>
+          <a href="#profile" class="nav-tab" data-hub-view="profile">Profile</a>
+          <a href="#settings" class="nav-tab" data-hub-view="settings">Settings</a>
         </div>
 
         <div class="nav-right">
@@ -192,7 +188,7 @@
              GAMES SECTION
              ============================================ -->
       <!-- Hero Section -->
-      <section class="hero" style="display: none">
+      <section class="hero section-hidden">
         <div class="hero-content container">
           <div class="gotw-badge">
             <span>GAME OF THE WEEK</span>
@@ -231,7 +227,7 @@
       </section>
 
       <!-- Access Info Bar -->
-      <div class="access-bar container" id="access-bar" style="display: none">
+      <div class="access-bar container section-hidden" id="access-bar">
         <div class="access-item" id="access-gotw">
           <span class="access-icon"></span>
           <span>Game of the Week: <strong id="access-gotw-status">Available</strong></span>
@@ -244,16 +240,15 @@
 
       <!-- All Games Section -->
       <section
-        class="games-section"
+        class="games-section section-hidden"
         id="games-section"
-        style="display: none"
         aria-labelledby="games-section-title"
       >
         <div class="container">
           <div class="section-header">
             <h2 class="section-title" id="games-section-title">All Games</h2>
             <p class="section-subtitle">
-              9 unique mini-games. Play, earn XP, climb the leaderboards!
+              11 unique mini-games. Play, earn XP, climb the leaderboards!
             </p>
           </div>
 
@@ -278,12 +273,11 @@
              COSMETIC SHOP SECTION
              ============================================ -->
       <section
-        class="valhalla-section"
+        class="valhalla-section section-hidden"
         id="shop-section"
-        style="display: none"
         aria-labelledby="shop-section-title"
       >
-        <div class="container" style="max-width: 1400px; margin: 0 auto">
+        <div class="container container-xl">
           <div class="valhalla-section-header">
             <h2 class="valhalla-section-title" id="shop-section-title">
               <span class="icon" aria-hidden="true">🛒</span>
@@ -294,7 +288,7 @@
           </div>
 
           <!-- Back to Hub -->
-          <div style="margin-bottom: 20px">
+          <div class="mb-5">
             <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
               ← Back to Hub
             </button>
@@ -309,12 +303,11 @@
              PROFILE SECTION
              ============================================ -->
       <section
-        class="valhalla-section"
+        class="valhalla-section section-hidden"
         id="profile-section"
-        style="display: none"
         aria-labelledby="profile-section-title"
       >
-        <div class="container" style="max-width: 1200px; margin: 0 auto">
+        <div class="container container-lg">
           <div class="valhalla-section-header">
             <h2 class="valhalla-section-title" id="profile-section-title">
               <span class="icon" aria-hidden="true">👤</span>
@@ -324,15 +317,14 @@
           </div>
 
           <!-- Back to Hub -->
-          <div style="margin-bottom: 20px">
+          <div class="mb-5">
             <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
               ← Back to Hub
             </button>
             <button
-              class="btn-valhalla-icon"
+              class="btn-valhalla-icon ml-2"
               id="profile-refresh-btn"
               aria-label="Refresh profile data"
-              style="margin-left: 10px"
             >
               🔄
             </button>
@@ -510,9 +502,8 @@
              SETTINGS SECTION
              ============================================ -->
       <section
-        class="valhalla-section"
+        class="valhalla-section section-hidden"
         id="settings-section"
-        style="display: none"
         aria-labelledby="settings-section-title"
       >
         <div class="settings-container">
@@ -525,7 +516,7 @@
           </div>
 
           <!-- Back to Hub -->
-          <div style="margin-bottom: 20px">
+          <div class="mb-5">
             <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
               ← Back to Hub
             </button>
@@ -828,9 +819,8 @@
                   <div class="settings-item-desc">Delete all local data</div>
                 </div>
                 <button
-                  class="btn-valhalla-secondary"
+                  class="btn-valhalla-secondary btn-danger"
                   id="settings-clear-btn"
-                  style="border-color: #ef4444; color: #ef4444"
                   aria-label="Clear all local data - this action cannot be undone"
                 >
                   Clear
@@ -866,7 +856,7 @@
           </div>
 
           <!-- Reset -->
-          <div style="text-align: center; padding: 20px">
+          <div class="settings-reset-wrapper">
             <button
               class="btn-valhalla-secondary"
               id="settings-reset-btn"
@@ -991,13 +981,45 @@
     <script defer src="js/games/shared/juice.js"></script>
     <script defer src="js/games/shared/index.js"></script>
 
+    <!-- ASDF Game Framework (Sprint 2 SOLID Hardening) — Load order critical -->
+    <script defer src="js/games/framework/registry.js"></script>
+    <script defer src="js/games/framework/entity.js"></script>
+    <script defer src="js/games/framework/entity-schema.js"></script>
+    <script defer src="js/games/framework/scene.js"></script>
+    <script defer src="js/games/framework/assets.js"></script>
+    <script defer src="js/games/framework/hud.js"></script>
+    <script defer src="js/games/framework/camera.js"></script>
+    <script defer src="js/games/framework/renderer.js"></script>
+    <script defer src="js/games/framework/game-lifecycle.js"></script>
+    <script defer src="js/games/framework/game-kit.js"></script>
+
     <!-- Game Engines (Modular) -->
+    <script defer src="js/games/engines/game-engine-base.js"></script>
+
+    <!-- Space Shooter Modules -->
+    <script defer src="js/games/engines/spaceshooter/particles.js"></script>
+    <script defer src="js/games/engines/spaceshooter/audio.js"></script>
+    <script defer src="js/games/engines/spaceshooter/parallax.js"></script>
+    <script defer src="js/games/engines/spaceshooter/entities.js"></script>
+    <script defer src="js/games/engines/spaceshooter/waves.js"></script>
+    <script defer src="js/games/engines/spaceshooter/upgrades.js"></script>
+    <script defer src="js/games/engines/spaceshooter/renderer.js"></script>
+    <script defer src="js/games/engines/spaceshooter/index.js"></script>
+
+    <!-- StakeStacker Modules (Modular Rewrite) -->
+    <script defer src="js/games/engines/stakestacker/entities.js"></script>
+    <script defer src="js/games/engines/stakestacker/renderer.js"></script>
+    <script defer src="js/games/engines/stakestacker/index.js"></script>
+
+    <!-- WhaleWatch Modules (Modular Rewrite) -->
+    <script defer src="js/games/engines/whalewatch/entities.js"></script>
+    <script defer src="js/games/engines/whalewatch/renderer.js"></script>
+    <script defer src="js/games/engines/whalewatch/index.js"></script>
+
     <script defer src="js/games/engines/tokencatcher.js"></script>
     <script defer src="js/games/engines/burnrunner.js"></script>
     <script defer src="js/games/engines/scamblaster.js"></script>
     <script defer src="js/games/engines/cryptoheist.js"></script>
-    <script defer src="js/games/engines/whalewatch.js"></script>
-    <script defer src="js/games/engines/stakestacker.js"></script>
     <script defer src="js/games/engines/dexdash.js"></script>
     <script defer src="js/games/engines/burnorhold.js"></script>
     <script defer src="js/games/engines/liquiditymaze.js"></script>

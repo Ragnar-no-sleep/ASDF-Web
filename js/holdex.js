@@ -17,8 +17,21 @@ import { PageLifecycle } from './core/PageLifecycle.js';
 import { fetchWithRetry } from './utils/fetch-retry.js';
 import { esc } from './utils/escape.js';
 import { POLL_INTERVAL, DEBOUNCE } from './config/timing.js';
+import { showNotice } from './utils/notice.js';
 
 const API_BASE = ASDF_ENDPOINTS.holdex;
+
+// ============================================
+// ORACLE SILENCE (one-time notice per page load)
+// ============================================
+
+let _oracleSilenceShown = false;
+
+function announceOracleSilence(message) {
+  if (_oracleSilenceShown) return;
+  _oracleSilenceShown = true;
+  showNotice(message);
+}
 
 // ============================================
 // STATE
@@ -104,6 +117,9 @@ async function fetchTokens() {
     return data.tokens || [];
   } catch (error) {
     console.error('[HolDEX] Error fetching tokens:', error);
+    announceOracleSilence(
+      '*growl* — HolDex backend silent. Token list unavailable. Verify holdings on-chain.'
+    );
     return [];
   }
 }
@@ -192,7 +208,7 @@ function renderTokenList(tokens) {
   if (!container) return;
 
   if (tokens.length === 0) {
-    container.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--white-muted)">No tokens found.</td></tr>`;
+    container.innerHTML = `<tr><td colspan="8" class="holdex-empty">No tokens found.</td></tr>`;
     return;
   }
 
@@ -222,13 +238,18 @@ function renderTokenList(tokens) {
             <span class="rank-badge rank-badge--${rank.css}" title="${rank.name}">&#9670;</span>
             <span class="kscore-value">${esc(String(ks))}</span>
             <div class="kscore-bar">
-              <div class="kscore-fill" style="width:${Math.min(100, Math.max(0, ks))}%"></div>
+              <div class="kscore-fill" data-w="${Math.min(100, Math.max(0, ks))}"></div>
             </div>
           </div>
         </td>
       </tr>`;
     })
     .join('');
+
+  // Apply kscore-fill widths via CSSOM (CSP Phase 2 — no inline style=)
+  container.querySelectorAll('.kscore-fill[data-w]').forEach(el => {
+    el.style.setProperty('--w', el.dataset.w + '%');
+  });
 }
 
 // ============================================
@@ -361,3 +382,6 @@ document.addEventListener('click', e => {
 
 // Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// Named exports for unit testing (pure functions only)
+export { getKRank, getCreditRating, formatUSD, formatPrice, formatPercent, formatHolders };

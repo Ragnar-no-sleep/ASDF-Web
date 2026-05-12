@@ -83,8 +83,10 @@ export default defineConfig({
     cors: true,
     proxy: {
       // Proxy API calls to avoid CORS in development
+      // Target updated to alonisthe.dev (Render backend burned in Phase 1, 2026-05-12)
+      // Burns endpoint is live; other /api/* routes may 404 until Phase 2 backends land
       '/api': {
-        target: 'https://asdf-api.onrender.com',
+        target: 'https://alonisthe.dev',
         changeOrigin: true,
         secure: true,
       },
