@@ -207,10 +207,7 @@ app.use(
           ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
           'https://*.solana.com',
           'https://*.helius-rpc.com',
-          'https://alonisthe.dev', // Proxy: burns, holdex, ignition
-          'https://asdforecast.onrender.com', // Forecast (direct, not proxied yet)
-          'https://asdf-api.onrender.com', // Central API gateway
-          'https://lock-verifier.onrender.com', // Staking / TVU (direct)
+          'https://alonisthe.dev', // All sollama58 tools (burns, forecast, holdex, staking, ignition)
           'https://cdnjs.cloudflare.com',
           'https://api.github.com',
           'https://esm.sh',

@@ -170,10 +170,13 @@ describe('security headers', () => {
     expect(csp).toContain('https://alonisthe.dev');
   });
 
-  it('CSP connectSrc includes lock-verifier', async () => {
+  it('CSP connectSrc includes alonisthe.dev for all sollama58 tools', async () => {
     const res = await request(app).get('/health');
     const csp = res.headers['content-security-policy'];
-    expect(csp).toContain('https://lock-verifier.onrender.com');
+    // All sollama58 tools (burns, forecast, holdex, staking, ignition) proxied via alonisthe.dev
+    // Render URLs removed 2026-04-24 (post Vercel migration — all 3 verified 503)
+    expect(csp).toContain('https://alonisthe.dev');
+    expect(csp).not.toContain('onrender.com');
   });
 
   it('CSP blocks inline event handlers (script-src-attr none)', async () => {

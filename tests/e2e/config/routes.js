@@ -40,12 +40,14 @@ export const API_ROUTES = [
   },
 ];
 
-/** External API endpoints — soft-fail (never break build) */
+/** External API endpoints — soft-fail (never break build)
+ * All sollama58 backends now routed via alonisthe.dev (Render URLs purged 2026-04-24).
+ */
 export const EXTERNAL_APIS = [
   { url: 'https://alonisthe.dev/burns', label: 'Burns API' },
-  { url: 'https://asdforecast.onrender.com', label: 'Forecast API' },
+  { url: 'https://alonisthe.dev/forecast', label: 'Forecast API' },
   { url: 'https://alonisthe.dev/holdex', label: 'HolDex API' },
-  { url: 'https://lock-verifier.onrender.com', label: 'Staking API' },
+  { url: 'https://alonisthe.dev/staking', label: 'Staking API' },
   { url: 'https://alonisthe.dev/ignition', label: 'Ignition API' },
 ];
 
