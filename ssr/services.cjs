@@ -55,7 +55,10 @@ class ConfigService {
       case 'staging':
         return 'https://test.alonisthe.dev/api';
       default:
-        return 'https://asdf-api.onrender.com/api';
+        // Phase 1 BURN — production backend archived. SSR is dev-only;
+        // this default branch should not fire in practice. Returning null
+        // surfaces any unexpected production SSR call as a clear runtime error.
+        return null;
     }
   }
 
