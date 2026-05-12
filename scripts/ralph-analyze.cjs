@@ -104,9 +104,7 @@ patterns.push({
     if (!fs.existsSync(ctx.ciYmlPath)) return false;
     const ciYml = fs.readFileSync(ctx.ciYmlPath, 'utf8');
 
-    const installMatch = ciYml.match(
-      /playwright install[^\n]*?(chromium|firefox|webkit)[\s\w]*/g
-    );
+    const installMatch = ciYml.match(/playwright install[^\n]*?(chromium|firefox|webkit)[\s\w]*/g);
     const installedBrowsers = new Set();
     if (installMatch) {
       for (const line of installMatch) {
@@ -116,7 +114,7 @@ patterns.push({
       }
     }
 
-    const missing = [...requiredBrowsers].filter((b) => !installedBrowsers.has(b));
+    const missing = [...requiredBrowsers].filter(b => !installedBrowsers.has(b));
     if (missing.length === 0) return false;
 
     ctx._missingBrowsers = missing;
@@ -132,9 +130,7 @@ patterns.push({
     );
     fs.writeFileSync(ctx.ciYmlPath, updated);
     ctx.fixes.push(ctx.ciYmlPath);
-    ctx.summary.push(
-      `Install missing Playwright browsers: ${ctx._missingBrowsers.join(', ')}`
-    );
+    ctx.summary.push(`Install missing Playwright browsers: ${ctx._missingBrowsers.join(', ')}`);
     return `playwright-missing-browser`;
   },
 });
@@ -218,10 +214,7 @@ patterns.push({
       fs.writeFileSync(ctx.playwrightConfigPath, updated);
     } else {
       // Add timeout after testDir
-      const updated = config.replace(
-        /(testDir:\s*'[^']+',)/,
-        `$1\n  timeout: 60000,`
-      );
+      const updated = config.replace(/(testDir:\s*'[^']+',)/, `$1\n  timeout: 60000,`);
       fs.writeFileSync(ctx.playwrightConfigPath, updated);
     }
     ctx.fixes.push(ctx.playwrightConfigPath);
@@ -269,9 +262,7 @@ patterns.push({
     // Also check report for server connection errors
     if (!ctx.reportJson) return false;
     const json = JSON.stringify(ctx.reportJson);
-    return (
-      json.includes('ERR_CONNECTION_REFUSED') || json.includes('webServer')
-    );
+    return json.includes('ERR_CONNECTION_REFUSED') || json.includes('webServer');
   },
   fix(ctx) {
     const config = fs.readFileSync(ctx.playwrightConfigPath, 'utf8');
@@ -282,10 +273,7 @@ patterns.push({
     const newTimeout = Math.min(currentTimeout * 2, 120000);
     if (newTimeout === currentTimeout) return null;
 
-    const updated = config.replace(
-      /(webServer:\s*\{[\s\S]*?timeout:\s*)\d+/,
-      `$1${newTimeout}`
-    );
+    const updated = config.replace(/(webServer:\s*\{[\s\S]*?timeout:\s*)\d+/, `$1${newTimeout}`);
     fs.writeFileSync(ctx.playwrightConfigPath, updated);
     ctx.fixes.push(ctx.playwrightConfigPath);
     ctx.summary.push(`Increase webServer timeout to ${newTimeout}ms`);
@@ -325,7 +313,7 @@ function main() {
       `**Report available:** ${ctx.reportJson ? 'yes' : 'no'}`,
       '',
       '### Patterns checked:',
-      ...patterns.map((p) => `- \`${p.id}\`: no match`),
+      ...patterns.map(p => `- \`${p.id}\`: no match`),
       '',
       'Manual investigation required.',
     ].join('\n');
