@@ -21,11 +21,25 @@ This file defines the ASDF-Web local adaptation: stack, deployment rules, branch
 
 Express.js + Helmet | Vanilla HTML/CSS/JS | No bundler | **Vercel deploy** (fresh foundation 2026-04-16)
 
+## Ontology — 7 pillars
+
+ASDF-Web manifests the $ASDFASDFA ecosystem through 7 pillars:
+
+1. **Thèse** — `/`, `/story`, `/deep-learn` (cosmic→pedagogic→austere)
+2. **Formation** — Dev/Gaming/Creator tracks (currently inside `/build`)
+3. **Construction** — `/build` (Yggdrasil), `/ecosystem-map`
+4. **Observation** — `/burns`, `/holdex`, `/forecast`, `/staking`, `/ignition`
+5. **Jeu** — `/games`, engines in `js/games/engines/`
+6. **Soi** — `/me` (K-Score)
+7. **Voix** — `/terrier` (CYNIC public surface)
+
+Full audit in `docs/superpowers/specs/2026-04-24-asdf-web-reorg-design.md` (local-only, gitignored).
+
 ## Structure
 
 - 1 primary JS controller per HTML page, shared utilities via ES modules
 - CSS variables in `:root` via `system.css` (design system)
-- No build step — direct serve
+- Vite present for dev/build (`npm run dev`, `npm run build`); production on Vercel serves the repo statically (no build executed at deploy time)
 - HTML entities instead of emojis in code
 - Shared modules in `js/utils/`, `js/config/`, `js/core/`
 
