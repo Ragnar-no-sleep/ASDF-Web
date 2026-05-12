@@ -1,6 +1,3 @@
-# Ignore api/ subfolder entirely (no serverless functions needed)
-api/
-
 # Development files
 node_modules
 .git

@@ -6,6 +6,7 @@
   "buildCommand": "echo 'No build needed'",
   "outputDirectory": ".",
   "rewrites": [
+    { "source": "/health", "destination": "/api/health" },
     { "source": "/story", "destination": "/learn.html" },
     { "source": "/quick-start", "destination": "/learn.html" },
     { "source": "/widget", "destination": "/index.html" },
