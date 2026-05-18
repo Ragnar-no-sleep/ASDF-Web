@@ -10,7 +10,7 @@
 
 const DexDash = {
   ...GameEngineBase,
-  version: '2.0.1',
+  version: '1.1.8',
   gameId: 'dexdash',
   roadHeight: 250,
 
@@ -65,15 +65,8 @@ const DexDash = {
     this.setupInput();
     this.preloadSprites();
 
-    // Start Fixed Timestep Loop
-    if (typeof FixedTimestepLoop !== 'undefined') {
-      this.physicsLoop = new FixedTimestepLoop(
-        60,
-        dt => this.update(dt),
-        alpha => this.draw(alpha)
-      );
-      this.physicsLoop.start();
-    }
+    // Start game loop (2026 Standard)
+    this.gameLoop();
 
     this.registerActiveGame(gameId);
   },

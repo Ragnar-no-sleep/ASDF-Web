@@ -1,1036 +1,680 @@
 /**
- * ASDF Games - Crypto Heist Engine
+ * ASDF Games - Crypto Heist Engine (11/10 ECS Edition)
  *
- * Top-down shooter survival game
- * Navigate the crypto underworld, steal tokens, evade enemies
- *
- * Extracted from engine.js for modularity
+ * Top-down shooter survival game with lighting, stealth, and loot rarity.
+ * Migrated to ECS for peak zero-allocation performance.
  */
 
 'use strict';
 
-const CryptoHeist = {
-  version: '1.2.0', // Lighting + stealth + loot rarity
-  gameId: 'cryptoheist',
-  state: null,
-  canvas: null,
-  ctx: null,
-  timing: null,
-  juice: null,
+(function () {
+  const CryptoHeist = {
+    version: '2.0.0',
+    gameId: 'cryptoheist',
+    instance: null,
 
-  // Loot rarity system (Fibonacci-based values)
-  lootRarities: {
-    common: { icon: '🪙', color: '#9ca3af', chance: 0.5, value: 5, glow: false },
-    uncommon: { icon: '💎', color: '#22c55e', chance: 0.25, value: 13, glow: false },
-    rare: { icon: '💠', color: '#3b82f6', chance: 0.15, value: 34, glow: true },
-    epic: { icon: '🔮', color: '#a855f7', chance: 0.08, value: 89, glow: true },
-    legendary: { icon: '👑', color: '#fbbf24', chance: 0.02, value: 233, glow: true },
-  },
+    lootRarities: [
+      { icon: '🪙', color: '#9ca3af', value: 5, glow: false }, // 0 Common
+      { icon: '💎', color: '#22c55e', value: 13, glow: false }, // 1 Uncommon
+      { icon: '💠', color: '#3b82f6', value: 34, glow: true }, // 2 Rare
+      { icon: '🔮', color: '#a855f7', value: 89, glow: true }, // 3 Epic
+      { icon: '👑', color: '#fbbf24', value: 233, glow: true }, // 4 Legendary
+    ],
 
-  // Trap types
-  trapTypes: [
-    { icon: '⚡', name: 'SHOCK', damage: 'stun', radius: 30, duration: 60 },
-    { icon: '🔥', name: 'FIRE', damage: 'dot', radius: 40, duration: 120 },
-    { icon: '🕸️', name: 'WEB', damage: 'slow', radius: 35, duration: 90 },
-  ],
+    trapTypes: [
+      { icon: '⚡', name: 'SHOCK', radius: 30, duration: 60, type: 0 },
+      { icon: '🔥', name: 'FIRE', radius: 40, duration: 120, type: 1 },
+      { icon: '🕸️', name: 'WEB', radius: 35, duration: 90, type: 2 },
+    ],
 
-  /**
-   * Start the game
-   */
-  async start(gameId) {
-    this.gameId = gameId;
-    const arena = document.getElementById(`arena-${gameId}`);
-    if (!arena) return;
+    enemyTypes: [
+      { icon: '👾', hp: 1, speed: 1.6, value: 13, size: 18, vision: 120 },
+      { icon: '👹', hp: 2, speed: 1.3, value: 21, size: 22, vision: 150 },
+      { icon: '🤖', hp: 3, speed: 1.0, value: 34, size: 25, vision: 180 },
+      { icon: '🕵️', hp: 1, speed: 1.9, value: 21, size: 20, vision: 200 },
+    ],
 
-    this.state = {
-      score: 0,
-      wave: 1,
-      kills: 0,
-      gameOver: false,
-      player: { x: 0, y: 0, size: 21, speed: 5, angle: 0 }, // fib[7], fib[4]
-      enemies: [],
-      bullets: [],
-      tokens: [],
-      effects: [],
-      traps: [],
-      keys: { up: false, down: false, left: false, right: false },
-      mouseX: 0,
-      mouseY: 0,
-      lastShot: 0,
-      shootCooldown: 144, // fib[11]
-      spawnTimer: 0,
-      spawnRate: 89, // fib[10]
-      enemySpeed: 1.618, // PHI
-      // Lighting system
-      flashlightAngle: Math.PI / 4, // 45 degree cone
-      flashlightRange: 200,
-      ambientLight: 0.15, // Base visibility
-      // Stealth system
-      stealth: {
-        visibility: 0, // 0 = hidden, 1 = fully visible
-        lastSeen: 0, // Frame when last spotted
-        alertLevel: 0, // 0 = none, 1 = suspicious, 2 = alert
-      },
-      // Player status effects
-      statusEffects: {
-        stunned: false,
-        stunEnd: 0,
-        slowed: false,
-        slowEnd: 0,
-        burning: false,
-        burnEnd: 0,
-        burnDamage: 0,
-      },
-    };
+    start(gameId) {
+      const arena = document.getElementById(`arena-${gameId}`);
+      if (!arena) return;
 
-    this.createArena(arena);
-    this.canvas = document.getElementById('ch-canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.resizeCanvas();
+      this.createArena(arena);
+      const canvas = document.getElementById('ch-canvas');
 
-    // Initialize timing for frame-independent movement
-    this.timing = GameTiming.create();
+      this.instance = new ASDF.GameInstance(canvas, {
+        maxEntities: 1500,
+        debug: true,
+      });
 
-    this.setupInput();
+      const world = this.instance.world;
+      this.instance.initStandardComponents();
 
-    // Spawn initial enemies
-    for (let i = 0; i < 3; i++) {
-      this.spawnEnemy();
-    }
+      // Heist Components
+      world.registerComponent('Player', { angle: 'f32', stun: 'f32', slow: 'f32', burn: 'f32' });
+      world.registerComponent('Enemy', {
+        hp: 'u8',
+        maxHp: 'u8',
+        state: 'u8',
+        alert: 'f32',
+        targetX: 'f32',
+        targetY: 'f32',
+        vision: 'f32',
+        pIndex: 'u8',
+      });
+      world.registerComponent('Bullet', { active: 'u8' });
+      world.registerComponent('Loot', { value: 'u16', rarity: 'u8' });
+      world.registerComponent('Trap', { type: 'u8', cooldown: 'f32', active: 'u8' });
+      world.registerComponent('Lifespan', { remaining: 'f32' });
+      world.registerComponent('VisualEffect', { colorIndex: 'u8', iconIndex: 'u8' });
 
-    this.preloadSprites();
-    this.gameLoop();
+      // Global State
+      world.setResource('GameState', {
+        score: 0,
+        wave: 1,
+        kills: 0,
+        gameOver: false,
+        keys: { up: false, down: false, left: false, right: false },
+        mouseX: 0,
+        mouseY: 0,
+        lastShot: 0,
+        shootCooldown: 10, // frames
+        spawnTimer: 0,
+        spawnRate: 89,
+        enemySpeed: 1.618,
+        stealth: 0,
+        playerId: -1,
+      });
 
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
+      this.dom = {
+        score: document.getElementById('ch-score'),
+        kills: document.getElementById('ch-kills'),
+        wave: document.getElementById('ch-wave'),
+        stealthBar: document.getElementById('ch-stealth-bar'),
+        alertText: document.getElementById('ch-alert'),
       };
-    }
-  },
 
-  /**
-   * Preload sprites for performance
-   */
-  preloadSprites() {
-    const sprites = [
-      // Player
-      { emoji: '🤠', size: 30 },
-      // Loot rarities
-      { emoji: '🪙', size: 20 },
-      { emoji: '💎', size: 20 },
-      { emoji: '💠', size: 20 },
-      { emoji: '🔮', size: 20 },
-      { emoji: '👑', size: 20 },
-      // Enemies
-      { emoji: '👮', size: 30 },
-      { emoji: '🤖', size: 30 },
-      { emoji: '👹', size: 30 },
-      // Traps
-      { emoji: '⚡', size: 20 },
-      { emoji: '🔥', size: 20 },
-      { emoji: '🕸️', size: 20 },
-    ];
-    SpriteCache.preload(sprites);
-  },
+      this.setupInput();
+      this.preloadSprites();
 
-  /**
-   * Create arena HTML
-   */
-  createArena(arena) {
-    arena.innerHTML = `
-            <div class="ch-container">
-                <canvas id="ch-canvas" class="game-canvas"></canvas>
-                <div class="game-hud-top-left">
-                    <div class="ch-stat">
-                        <span class="ch-stat-score">&#128176; <span id="ch-score">0</span></span>
-                    </div>
-                    <div class="ch-stat">
-                        <span class="ch-stat-kills">&#128128; <span id="ch-kills">0</span></span>
-                    </div>
-                    <div class="ch-stat">
-                        <span class="ch-stat-wave">&#127754; <span id="ch-wave">1</span></span>
-                    </div>
-                </div>
-                <div class="game-hud-top-right ch-stealth-panel">
-                    <div class="ch-stealth-label">STEALTH</div>
-                    <div class="ch-stealth-bar-track">
-                        <div id="ch-stealth-bar" class="ch-stealth-bar-fill"></div>
-                    </div>
-                    <div id="ch-alert" class="ch-alert-text">HIDDEN</div>
-                </div>
-                <div class="ch-hint-bar">
-                    WASD to move | AIM with mouse | CLICK to shoot | Survive the enemy waves!
-                </div>
-            </div>
-        `;
-  },
+      // Create Player
+      const p = world.createEntity();
+      world.addComponent(p, 'Position');
+      world.addComponent(p, 'Velocity');
+      world.addComponent(p, 'Renderable');
+      world.addComponent(p, 'Collider');
+      world.addComponent(p, 'Player');
 
-  /**
-   * Resize canvas
-   */
-  resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    this.state.player.x = this.canvas.width / 2;
-    this.state.player.y = this.canvas.height / 2;
-  },
+      const pIdx = world.getIndex(p);
+      world.componentRegistry.get('Position').props.x[pIdx] = canvas.width / 2;
+      world.componentRegistry.get('Position').props.y[pIdx] = canvas.height / 2;
+      world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0; // 🧙
+      world.componentRegistry.get('Renderable').props.size[pIdx] = 28;
+      world.componentRegistry.get('Collider').props.width[pIdx] = 20;
+      world.componentRegistry.get('Collider').props.height[pIdx] = 20;
+      world.getResource('GameState').playerId = p;
 
-  /**
-   * Setup input handlers
-   */
-  setupInput() {
-    const self = this;
+      // Spawn Initials
+      for (let i = 0; i < 3; i++) this.spawnEnemy(world);
 
-    this.handleKeyDown = e => {
-      if (['ArrowUp', 'KeyW'].includes(e.code)) {
-        self.state.keys.up = true;
-        e.preventDefault();
+      world.addSystem(this.createLogicSystem());
+      world.addSystem(this.createCollisionSystem());
+      world.addSystem(ASDF.PhysicsSystem.createMovement());
+
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx);
+      this.instance.render = alpha => this.draw(alpha, defaultRender);
+
+      this.instance.start();
+
+      if (typeof activeGames !== 'undefined') {
+        activeGames[gameId] = { cleanup: () => this.stop() };
       }
-      if (['ArrowDown', 'KeyS'].includes(e.code)) {
-        self.state.keys.down = true;
-        e.preventDefault();
-      }
-      if (['ArrowLeft', 'KeyA'].includes(e.code)) {
-        self.state.keys.left = true;
-        e.preventDefault();
-      }
-      if (['ArrowRight', 'KeyD'].includes(e.code)) {
-        self.state.keys.right = true;
-        e.preventDefault();
-      }
-    };
+    },
 
-    this.handleKeyUp = e => {
-      if (['ArrowUp', 'KeyW'].includes(e.code)) self.state.keys.up = false;
-      if (['ArrowDown', 'KeyS'].includes(e.code)) self.state.keys.down = false;
-      if (['ArrowLeft', 'KeyA'].includes(e.code)) self.state.keys.left = false;
-      if (['ArrowRight', 'KeyD'].includes(e.code)) self.state.keys.right = false;
-    };
+    createArena(arena) {
+      arena.innerHTML = `
+        <div class="ch-container">
+          <canvas id="ch-canvas" class="game-canvas"></canvas>
+          <div class="game-hud-top-left">
+            <div class="ch-stat"><span class="ch-stat-score">💰 <span id="ch-score">0</span></span></div>
+            <div class="ch-stat"><span class="ch-stat-kills">💀 <span id="ch-kills">0</span></span></div>
+            <div class="ch-stat"><span class="ch-stat-wave">🌊 <span id="ch-wave">1</span></span></div>
+          </div>
+          <div class="game-hud-top-right ch-stealth-panel">
+            <div class="ch-stealth-label">STEALTH</div>
+            <div class="ch-stealth-bar-track"><div id="ch-stealth-bar" class="ch-stealth-bar-fill"></div></div>
+            <div id="ch-alert" class="ch-alert-text">HIDDEN</div>
+          </div>
+          <div class="ch-hint-bar">WASD to move | AIM with mouse | CLICK to shoot | Survive!</div>
+        </div>
+      `;
+    },
 
-    this.handleMouseMove = e => {
-      const rect = self.canvas.getBoundingClientRect();
-      self.state.mouseX = (e.clientX - rect.left) * (self.canvas.width / rect.width);
-      self.state.mouseY = (e.clientY - rect.top) * (self.canvas.height / rect.height);
-    };
+    preloadSprites() {
+      const sprites = [
+        { emoji: '🧙', size: 28 },
+        ...this.lootRarities.map(r => ({ emoji: r.icon, size: 20 })),
+        ...this.enemyTypes.map(e => ({ emoji: e.icon, size: 30 })),
+        ...this.trapTypes.map(t => ({ emoji: t.icon, size: 20 })),
+        { emoji: '💥', size: 20 },
+      ];
+      if (typeof SpriteCache !== 'undefined') SpriteCache.preload(sprites);
+    },
 
-    this.handleClick = e => {
-      if (!self.state.gameOver) {
-        self.shoot();
-      }
-    };
+    setupInput() {
+      const canvas = this.instance.canvas;
+      const world = this.instance.world;
 
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
-    this.canvas.addEventListener('mousemove', this.handleMouseMove);
-    this.canvas.addEventListener('click', this.handleClick);
-  },
+      const setKey = (e, val) => {
+        const key = e.key.toLowerCase();
+        const state = world.getResource('GameState');
+        if (['w', 'arrowup'].includes(key)) state.keys.up = val;
+        if (['s', 'arrowdown'].includes(key)) state.keys.down = val;
+        if (['a', 'arrowleft'].includes(key)) state.keys.left = val;
+        if (['d', 'arrowright'].includes(key)) state.keys.right = val;
+      };
 
-  /**
-   * Spawn enemy with patrol behavior
-   */
-  spawnEnemy() {
-    const side = Math.floor(Math.random() * 4);
-    let x, y;
-    switch (side) {
-      case 0:
-        x = -30;
-        y = Math.random() * this.canvas.height;
-        break;
-      case 1:
-        x = this.canvas.width + 30;
-        y = Math.random() * this.canvas.height;
-        break;
-      case 2:
-        x = Math.random() * this.canvas.width;
-        y = -30;
-        break;
-      case 3:
-        x = Math.random() * this.canvas.width;
-        y = this.canvas.height + 30;
-        break;
-    }
+      document.addEventListener('keydown', e => setKey(e, true));
+      document.addEventListener('keyup', e => setKey(e, false));
 
-    const types = [
-      {
-        icon: '👾',
-        health: 1,
-        speed: this.state.enemySpeed,
-        value: 13,
-        size: 18,
-        visionRange: 120,
-      },
-      {
-        icon: '👹',
-        health: 2,
-        speed: this.state.enemySpeed * 0.8,
-        value: 21,
-        size: 22,
-        visionRange: 150,
-      },
-      {
-        icon: '🤖',
-        health: 3,
-        speed: this.state.enemySpeed * 0.6,
-        value: 34,
-        size: 25,
-        visionRange: 180,
-      },
-      {
-        icon: '🕵️',
-        health: 1,
-        speed: this.state.enemySpeed * 1.2,
-        value: 21,
-        size: 20,
-        visionRange: 200,
-        stealth: true,
-      },
-    ];
+      canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        const state = world.getResource('GameState');
+        state.mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+        state.mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+      });
 
-    const maxType = Math.min(this.state.wave, types.length);
-    const typeIndex = Math.floor(Math.random() * maxType);
-    const type = types[typeIndex];
-
-    // Patrol patterns
-    const patterns = ['chase', 'patrol', 'ambush'];
-    const pattern =
-      this.state.wave >= 3 ? patterns[Math.floor(Math.random() * patterns.length)] : 'chase';
-
-    // Generate patrol points for patrol behavior
-    const patrolPoints = [];
-    if (pattern === 'patrol') {
-      const centerX = 100 + Math.random() * (this.canvas.width - 200);
-      const centerY = 100 + Math.random() * (this.canvas.height - 200);
-      const radius = 50 + Math.random() * 50;
-      for (let i = 0; i < 4; i++) {
-        const angle = (i / 4) * Math.PI * 2;
-        patrolPoints.push({
-          x: centerX + Math.cos(angle) * radius,
-          y: centerY + Math.sin(angle) * radius,
-        });
-      }
-    }
-
-    this.state.enemies.push({
-      x,
-      y,
-      ...type,
-      maxHealth: type.health,
-      // AI state
-      behavior: pattern,
-      state: 'idle', // idle, patrol, chase, search
-      patrolPoints: patrolPoints,
-      patrolIndex: 0,
-      lastSeenPlayer: null, // Last known player position
-      searchTimer: 0,
-      alertLevel: 0, // 0-100
-    });
-  },
-
-  /**
-   * Spawn token with rarity system
-   */
-  spawnToken(x, y) {
-    if (Math.random() > 0.4) return; // 40% chance to drop
-
-    // Roll for rarity (weighted random)
-    const roll = Math.random();
-    let cumulative = 0;
-    let selectedRarity = 'common';
-
-    for (const [rarity, data] of Object.entries(this.lootRarities)) {
-      cumulative += data.chance;
-      if (roll <= cumulative) {
-        selectedRarity = rarity;
-        break;
-      }
-    }
-
-    const rarityData = this.lootRarities[selectedRarity];
-    const waveBonus = Math.floor(this.state.wave * 1.618); // PHI scaling
-
-    this.state.tokens.push({
-      x,
-      y,
-      size: 14,
-      value: rarityData.value + waveBonus,
-      rarity: selectedRarity,
-      icon: rarityData.icon,
-      color: rarityData.color,
-      glow: rarityData.glow,
-      life: 300,
-      bobOffset: Math.random() * Math.PI * 2,
-    });
-
-    // Announce rare+ drops
-    if (selectedRarity !== 'common' && selectedRarity !== 'uncommon') {
-      this.addEffect(x, y - 20, selectedRarity.toUpperCase() + '!', rarityData.color);
-    }
-  },
-
-  /**
-   * Spawn environmental trap
-   */
-  spawnTrap() {
-    const type = this.trapTypes[Math.floor(Math.random() * this.trapTypes.length)];
-    const margin = 80;
-
-    this.state.traps.push({
-      x: margin + Math.random() * (this.canvas.width - margin * 2),
-      y: margin + Math.random() * (this.canvas.height - margin * 2),
-      ...type,
-      active: true,
-      triggered: false,
-      cooldown: 0,
-    });
-  },
-
-  /**
-   * Shoot
-   */
-  shoot() {
-    const now = Date.now();
-    if (now - this.state.lastShot < this.state.shootCooldown) return;
-    this.state.lastShot = now;
-
-    const angle = Math.atan2(
-      this.state.mouseY - this.state.player.y,
-      this.state.mouseX - this.state.player.x
-    );
-    this.state.bullets.push({
-      x: this.state.player.x,
-      y: this.state.player.y,
-      vx: Math.cos(angle) * 12,
-      vy: Math.sin(angle) * 12,
-      size: 5,
-    });
-    recordGameAction(this.gameId, 'shoot', { angle });
-  },
-
-  /**
-   * Add effect
-   */
-  addEffect(x, y, text, color) {
-    this.state.effects.push({ x, y, text, color, life: 30, vy: -2 });
-  },
-
-  /**
-   * Check if point is in player's flashlight cone
-   */
-  isInFlashlight(x, y) {
-    const dx = x - this.state.player.x;
-    const dy = y - this.state.player.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist > this.state.flashlightRange) return false;
-
-    const angleToPoint = Math.atan2(dy, dx);
-    let angleDiff = Math.abs(angleToPoint - this.state.player.angle);
-    if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
-
-    return angleDiff < this.state.flashlightAngle / 2;
-  },
-
-  /**
-   * Calculate visibility of player from enemy perspective
-   */
-  calculateVisibility(enemy) {
-    const dx = this.state.player.x - enemy.x;
-    const dy = this.state.player.y - enemy.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    // Base visibility decreases with distance
-    let visibility = Math.max(0, 1 - dist / enemy.visionRange);
-
-    // Player is more visible when shooting (muzzle flash)
-    const timeSinceShot = Date.now() - this.state.lastShot;
-    if (timeSinceShot < 200) {
-      visibility = Math.min(1, visibility + 0.5);
-    }
-
-    // Player is more visible when moving
-    if (
-      this.state.keys.up ||
-      this.state.keys.down ||
-      this.state.keys.left ||
-      this.state.keys.right
-    ) {
-      visibility = Math.min(1, visibility + 0.2);
-    }
-
-    return visibility;
-  },
-
-  /**
-   * Update enemy AI state
-   */
-  updateEnemyAI(enemy, dt) {
-    const visibility = this.calculateVisibility(enemy);
-    const canSeePlayer = visibility > 0.3;
-
-    // Update enemy alert level
-    if (canSeePlayer) {
-      enemy.alertLevel = Math.min(100, enemy.alertLevel + visibility * 3 * dt);
-      enemy.lastSeenPlayer = { x: this.state.player.x, y: this.state.player.y };
-      enemy.searchTimer = 180; // 3 seconds to search
-    } else {
-      enemy.alertLevel = Math.max(0, enemy.alertLevel - 1 * dt);
-      if (enemy.searchTimer > 0) enemy.searchTimer -= dt;
-    }
-
-    // Determine behavior state
-    if (enemy.alertLevel > 80) {
-      enemy.state = 'chase';
-    } else if (enemy.alertLevel > 30 || enemy.searchTimer > 0) {
-      enemy.state = 'search';
-    } else if (enemy.behavior === 'patrol' && enemy.patrolPoints.length > 0) {
-      enemy.state = 'patrol';
-    } else {
-      enemy.state = 'idle';
-    }
-
-    // Get target position based on state
-    let targetX, targetY;
-    switch (enemy.state) {
-      case 'chase':
-        targetX = this.state.player.x;
-        targetY = this.state.player.y;
-        break;
-      case 'search':
-        if (enemy.lastSeenPlayer) {
-          targetX = enemy.lastSeenPlayer.x + (Math.random() - 0.5) * 50;
-          targetY = enemy.lastSeenPlayer.y + (Math.random() - 0.5) * 50;
+      canvas.addEventListener('pointerdown', () => {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+        const now = Date.now();
+        if (now - state.lastShot > state.shootCooldown * 16) {
+          this.shoot(world);
+          state.lastShot = now;
         }
-        break;
-      case 'patrol': {
-        const point = enemy.patrolPoints[enemy.patrolIndex];
-        targetX = point.x;
-        targetY = point.y;
-        // Check if reached patrol point
-        const distToPoint = Math.sqrt(
-          Math.pow(enemy.x - point.x, 2) + Math.pow(enemy.y - point.y, 2)
-        );
-        if (distToPoint < 10) {
-          enemy.patrolIndex = (enemy.patrolIndex + 1) % enemy.patrolPoints.length;
+      });
+    },
+
+    shoot(world) {
+      const state = world.getResource('GameState');
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const playerAngle = world.componentRegistry.get('Player').props.angle[pIdx];
+
+      const b = world.createEntity();
+      world.addComponent(b, 'Position');
+      world.addComponent(b, 'Velocity');
+      world.addComponent(b, 'Collider');
+      world.addComponent(b, 'Bullet');
+
+      const bIdx = world.getIndex(b);
+      world.componentRegistry.get('Position').props.x[bIdx] = pos.x[pIdx];
+      world.componentRegistry.get('Position').props.y[bIdx] = pos.y[pIdx];
+      world.componentRegistry.get('Velocity').props.vx[bIdx] = Math.cos(playerAngle) * 12;
+      world.componentRegistry.get('Velocity').props.vy[bIdx] = Math.sin(playerAngle) * 12;
+      world.componentRegistry.get('Collider').props.width[bIdx] = 6;
+      world.componentRegistry.get('Collider').props.height[bIdx] = 6;
+    },
+
+    createLogicSystem() {
+      const self = this;
+      return function (world, dt) {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+
+        const pIdx = world.getIndex(state.playerId);
+        const pos = world.componentRegistry.get('Position').props;
+        const vel = world.componentRegistry.get('Velocity').props;
+        const pProps = world.componentRegistry.get('Player').props;
+
+        // Player Effects
+        if (pProps.stun[pIdx] > 0) pProps.stun[pIdx] -= dt;
+        if (pProps.slow[pIdx] > 0) pProps.slow[pIdx] -= dt;
+        if (pProps.burn[pIdx] > 0) pProps.burn[pIdx] -= dt; // Add visual damage logic here if needed
+
+        // Player Movement
+        let dx = 0,
+          dy = 0;
+        if (pProps.stun[pIdx] <= 0) {
+          if (state.keys.up) dy -= 1;
+          if (state.keys.down) dy += 1;
+          if (state.keys.left) dx -= 1;
+          if (state.keys.right) dx += 1;
         }
-        break;
-      }
-      default:
-        // Idle - wander slightly
-        targetX = enemy.x + (Math.random() - 0.5) * 20;
-        targetY = enemy.y + (Math.random() - 0.5) * 20;
-    }
 
-    // Move toward target
-    if (targetX !== undefined && targetY !== undefined) {
-      const dx = targetX - enemy.x;
-      const dy = targetY - enemy.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist > 5) {
-        const speedMod = enemy.state === 'chase' ? 1.2 : enemy.state === 'search' ? 0.8 : 0.5;
-        enemy.x += (dx / dist) * enemy.speed * speedMod * dt;
-        enemy.y += (dy / dist) * enemy.speed * speedMod * dt;
-      }
-    }
-
-    return canSeePlayer;
-  },
-
-  /**
-   * Update player status effects
-   */
-  updateStatusEffects(dt, frameCount) {
-    const effects = this.state.statusEffects;
-
-    // Stun effect
-    if (effects.stunned && frameCount > effects.stunEnd) {
-      effects.stunned = false;
-    }
-
-    // Slow effect
-    if (effects.slowed && frameCount > effects.slowEnd) {
-      effects.slowed = false;
-    }
-
-    // Burn damage over time
-    if (effects.burning) {
-      if (frameCount > effects.burnEnd) {
-        effects.burning = false;
-      } else {
-        // Apply periodic damage (every 30 frames)
-        if (frameCount % 30 === 0) {
-          this.addEffect(this.state.player.x, this.state.player.y - 20, '-1', '#ef4444');
-        }
-      }
-    }
-  },
-
-  /**
-   * Check and apply trap effects
-   */
-  checkTraps(dt, frameCount) {
-    const player = this.state.player;
-
-    this.state.traps.forEach(trap => {
-      if (!trap.active || trap.cooldown > 0) {
-        trap.cooldown -= dt;
-        return;
-      }
-
-      const dx = player.x - trap.x;
-      const dy = player.y - trap.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < trap.radius) {
-        trap.triggered = true;
-        trap.cooldown = 180; // 3 second cooldown
-
-        switch (trap.damage) {
-          case 'stun':
-            this.state.statusEffects.stunned = true;
-            this.state.statusEffects.stunEnd = frameCount + trap.duration;
-            this.addEffect(player.x, player.y, 'STUNNED!', '#fbbf24');
-            break;
-          case 'slow':
-            this.state.statusEffects.slowed = true;
-            this.state.statusEffects.slowEnd = frameCount + trap.duration;
-            this.addEffect(player.x, player.y, 'SLOWED!', '#3b82f6');
-            break;
-          case 'dot':
-            this.state.statusEffects.burning = true;
-            this.state.statusEffects.burnEnd = frameCount + trap.duration;
-            this.addEffect(player.x, player.y, 'BURNING!', '#ef4444');
-            break;
-        }
-      } else {
-        trap.triggered = false;
-      }
-    });
-  },
-
-  /**
-   * Update game state
-   * @param {number} dt - Delta time normalized to 60fps
-   */
-  update(dt) {
-    if (this.state.gameOver) return;
-
-    // Track frame count for status effects
-    if (!this.state.frameCount) this.state.frameCount = 0;
-    this.state.frameCount += dt;
-
-    // Update status effects
-    this.updateStatusEffects(dt, this.state.frameCount);
-
-    // Check traps
-    this.checkTraps(dt, this.state.frameCount);
-
-    // Skip movement if stunned
-    if (this.state.statusEffects.stunned) {
-      // Still update enemies and other systems
-    } else {
-      // Player movement
-      let dx = 0,
-        dy = 0;
-      if (this.state.keys.up) dy -= 1;
-      if (this.state.keys.down) dy += 1;
-      if (this.state.keys.left) dx -= 1;
-      if (this.state.keys.right) dx += 1;
-
-      if (dx || dy) {
         const len = Math.sqrt(dx * dx + dy * dy);
-        let speed = this.state.player.speed;
-        if (this.state.statusEffects.slowed) speed *= 0.5;
-        this.state.player.x += (dx / len) * speed * dt;
-        this.state.player.y += (dy / len) * speed * dt;
-      }
-    }
+        let speed = 5;
+        if (pProps.slow[pIdx] > 0) speed *= 0.5;
 
-    const bottomMargin = 50;
-    this.state.player.x = Math.max(
-      this.state.player.size,
-      Math.min(this.canvas.width - this.state.player.size, this.state.player.x)
-    );
-    this.state.player.y = Math.max(
-      this.state.player.size,
-      Math.min(this.canvas.height - this.state.player.size - bottomMargin, this.state.player.y)
-    );
+        if (len > 0) {
+          vel.vx[pIdx] = (dx / len) * speed;
+          vel.vy[pIdx] = (dy / len) * speed;
+        } else {
+          vel.vx[pIdx] = 0;
+          vel.vy[pIdx] = 0;
+        }
 
-    this.state.player.angle = Math.atan2(
-      this.state.mouseY - this.state.player.y,
-      this.state.mouseX - this.state.player.x
-    );
+        // Keep Player in bounds
+        const px = pos.x[pIdx];
+        const py = pos.y[pIdx];
+        const w = self.instance.canvas.width;
+        const h = self.instance.canvas.height;
+        if (px < 15) pos.x[pIdx] = 15;
+        if (px > w - 15) pos.x[pIdx] = w - 15;
+        if (py < 15) pos.y[pIdx] = 15;
+        if (py > h - 50) pos.y[pIdx] = h - 50;
 
-    // Spawn enemies
-    this.state.spawnTimer += dt;
-    if (this.state.spawnTimer >= this.state.spawnRate) {
-      this.state.spawnTimer = 0;
-      this.spawnEnemy();
-    }
+        pProps.angle[pIdx] = Math.atan2(state.mouseY - py, state.mouseX - px);
 
-    // Spawn traps every new wave
-    if (
-      this.state.kills > 0 &&
-      this.state.kills % 10 === 0 &&
-      this.state.traps.length < this.state.wave + 2
-    ) {
-      this.spawnTrap();
-    }
+        // Spawning
+        state.spawnTimer += dt;
+        if (state.spawnTimer >= state.spawnRate) {
+          state.spawnTimer = 0;
+          self.spawnEnemy(world);
+        }
 
-    const self = this;
-
-    // Update stealth system
-    let maxVisibility = 0;
-    let anyChasing = false;
-
-    // Update enemies with AI
-    this.state.enemies.forEach(enemy => {
-      const canSee = self.updateEnemyAI(enemy, dt);
-      if (canSee) {
-        const vis = self.calculateVisibility(enemy);
-        maxVisibility = Math.max(maxVisibility, vis);
-      }
-      if (enemy.state === 'chase') anyChasing = true;
-
-      // Collision with player
-      const dx = self.state.player.x - enemy.x;
-      const dy = self.state.player.y - enemy.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < self.state.player.size + enemy.size) {
-        self.state.gameOver = true;
-        self.addEffect(self.state.player.x, self.state.player.y, 'GAME OVER!', '#ef4444');
-        setTimeout(() => endGame(self.gameId, self.state.score), 500);
-      }
-    });
-
-    // Update stealth UI
-    this.state.stealth.visibility = maxVisibility;
-    const stealthBar = document.getElementById('ch-stealth-bar');
-    const alertText = document.getElementById('ch-alert');
-    if (stealthBar) stealthBar.style.width = `${maxVisibility * 100}%`;
-    if (alertText) {
-      if (anyChasing) {
-        alertText.textContent = 'ALERT!';
-        alertText.style.color = '#ef4444';
-      } else if (maxVisibility > 0.3) {
-        alertText.textContent = 'SPOTTED';
-        alertText.style.color = '#fbbf24';
-      } else {
-        alertText.textContent = 'HIDDEN';
-        alertText.style.color = '#22c55e';
-      }
-    }
-
-    // Update bullets
-    this.state.bullets = this.state.bullets.filter(bullet => {
-      bullet.x += bullet.vx * dt;
-      bullet.y += bullet.vy * dt;
-
-      for (let i = self.state.enemies.length - 1; i >= 0; i--) {
-        const enemy = self.state.enemies[i];
-        const dx = bullet.x - enemy.x;
-        const dy = bullet.y - enemy.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < bullet.size + enemy.size) {
-          enemy.health--;
-          if (enemy.health <= 0) {
-            self.state.kills++;
-            self.state.score += enemy.value;
-            document.getElementById('ch-kills').textContent = self.state.kills;
-            document.getElementById('ch-score').textContent = self.state.score;
-            self.addEffect(enemy.x, enemy.y, '+' + enemy.value, '#22c55e');
-            self.spawnToken(enemy.x, enemy.y);
-            self.state.enemies.splice(i, 1);
-            recordScoreUpdate(self.gameId, self.state.score, enemy.value);
-
-            if (self.state.kills > 0 && self.state.kills % 10 === 0) {
-              self.state.wave++;
-              self.state.spawnRate = Math.max(40, self.state.spawnRate - 10);
-              self.state.enemySpeed += 0.2;
-              document.getElementById('ch-wave').textContent = self.state.wave;
-              self.addEffect(
-                self.canvas.width / 2,
-                self.canvas.height / 2,
-                'WAVE ' + self.state.wave + '!',
-                '#a855f7'
-              );
-            }
-          } else {
-            self.addEffect(enemy.x, enemy.y, '-1', '#fbbf24');
+        // Cleanup Lifespans
+        const lsQuery = world.createQuery(['Lifespan']);
+        const { dense: lsDense, count: lsCount } = lsQuery.set;
+        const lsProps = world.componentRegistry.get('Lifespan').props;
+        for (let i = lsCount - 1; i >= 0; i--) {
+          const idx = lsDense[i];
+          lsProps.remaining[idx] -= dt;
+          if (lsProps.remaining[idx] <= 0) {
+            world.destroyEntity(world.getEntityId(idx));
           }
-          return false;
         }
-      }
 
-      return (
-        bullet.x > -10 &&
-        bullet.x < self.canvas.width + 10 &&
-        bullet.y > -10 &&
-        bullet.y < self.canvas.height + 10
-      );
-    });
+        // Boundary bullets cleanup
+        const bQuery = world.createQuery(['Bullet', 'Position']);
+        const { dense: bDense, count: bCount } = bQuery.set;
+        for (let i = bCount - 1; i >= 0; i--) {
+          const idx = bDense[i];
+          if (pos.x[idx] < -10 || pos.x[idx] > w + 10 || pos.y[idx] < -10 || pos.y[idx] > h + 10) {
+            world.destroyEntity(world.getEntityId(idx));
+          }
+        }
 
-    // Update tokens
-    this.state.tokens = this.state.tokens.filter(token => {
-      token.life -= dt;
-      const dx = token.x - self.state.player.x;
-      const dy = token.y - self.state.player.y;
-      if (Math.sqrt(dx * dx + dy * dy) < self.state.player.size + token.size) {
-        self.state.score += token.value;
-        document.getElementById('ch-score').textContent = self.state.score;
-        self.addEffect(token.x, token.y, '+' + token.value, '#fbbf24');
-        recordScoreUpdate(self.gameId, self.state.score, token.value);
-        return false;
-      }
-      return token.life > 0;
-    });
+        self.updateUI(state);
+      };
+    },
 
-    // Update effects
-    this.state.effects = this.state.effects.filter(e => {
-      e.y += e.vy * dt;
-      e.life -= dt;
-      return e.life > 0;
-    });
+    createCollisionSystem() {
+      const self = this;
+      return function (world, dt) {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
 
-    updateScore(this.gameId, this.state.score);
-  },
+        const pIdx = world.getIndex(state.playerId);
+        const pos = world.componentRegistry.get('Position').props;
+        const vel = world.componentRegistry.get('Velocity').props;
+        const pProps = world.componentRegistry.get('Player').props;
+        const eProps = world.componentRegistry.get('Enemy');
+        const lProps = world.componentRegistry.get('Loot');
+        const tProps = world.componentRegistry.get('Trap');
 
-  /**
-   * Draw game
-   */
-  draw() {
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const px = pos.x[pIdx];
+        const py = pos.y[pIdx];
 
-    // Dark background (affected by lighting)
-    ctx.fillStyle = '#050510';
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        let maxVis = 0;
+        let anyChasing = false;
 
-    // Grid (dim)
-    ctx.strokeStyle = 'rgba(26, 26, 62, 0.5)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < this.canvas.width; x += 50) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.canvas.height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < this.canvas.height; y += 50) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.canvas.width, y);
-      ctx.stroke();
-    }
+        // Enemies AI & Collision with Player
+        if (eProps) {
+          const query = world.createQuery(['Enemy', 'Position', 'Velocity']);
+          const { dense, count } = query.set;
+          for (let i = 0; i < count; i++) {
+            const idx = dense[i];
+            const ex = pos.x[idx];
+            const ey = pos.y[idx];
 
-    // Draw flashlight cone (illuminated area)
-    ctx.save();
-    ctx.translate(this.state.player.x, this.state.player.y);
-    ctx.rotate(this.state.player.angle);
+            // Visibility
+            const dist = Math.hypot(px - ex, py - ey);
+            let vis = Math.max(0, 1 - dist / eProps.props.vision[idx]);
+            if (Date.now() - state.lastShot < 200) vis = Math.min(1, vis + 0.5);
+            maxVis = Math.max(maxVis, vis);
 
-    // Flashlight gradient
-    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.state.flashlightRange);
-    gradient.addColorStop(0, 'rgba(251, 191, 36, 0.3)');
-    gradient.addColorStop(0.5, 'rgba(251, 191, 36, 0.15)');
-    gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+            // AI State Machine
+            if (vis > 0.3) {
+              eProps.props.alert[idx] = Math.min(100, eProps.props.alert[idx] + vis * 3 * dt);
+              eProps.props.targetX[idx] = px;
+              eProps.props.targetY[idx] = py;
+            } else {
+              eProps.props.alert[idx] = Math.max(0, eProps.props.alert[idx] - dt);
+            }
 
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(
-      0,
-      0,
-      this.state.flashlightRange,
-      -this.state.flashlightAngle / 2,
-      this.state.flashlightAngle / 2
-    );
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    ctx.restore();
+            eProps.props.state[idx] =
+              eProps.props.alert[idx] > 80 ? 2 : eProps.props.alert[idx] > 30 ? 1 : 0;
 
-    // Ambient light around player
-    const ambientGrad = ctx.createRadialGradient(
-      this.state.player.x,
-      this.state.player.y,
-      0,
-      this.state.player.x,
-      this.state.player.y,
-      80
-    );
-    ambientGrad.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
-    ambientGrad.addColorStop(1, 'rgba(139, 92, 246, 0)');
-    ctx.fillStyle = ambientGrad;
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            if (eProps.props.state[idx] === 2) {
+              anyChasing = true;
+              const spd = state.enemySpeed * 1.2;
+              const angle = Math.atan2(py - ey, px - ex);
+              vel.vx[idx] = Math.cos(angle) * spd;
+              vel.vy[idx] = Math.sin(angle) * spd;
+            } else {
+              vel.vx[idx] = 0;
+              vel.vy[idx] = 0;
+            }
 
-    // Draw traps
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    this.state.traps.forEach(trap => {
-      // Trap warning zone
-      if (trap.triggered) {
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+            // Hit Player?
+            if (dist < 20) {
+              state.gameOver = true;
+              if (typeof endGame === 'function')
+                setTimeout(() => endGame(self.gameId, state.score), 500);
+            }
+          }
+        }
+
+        state.stealth = maxVis;
+
+        // UI Alerts
+        if (self.dom.alertText) {
+          let msg = 'HIDDEN';
+          let col = '#22c55e';
+          if (anyChasing) {
+            msg = 'ALERT!';
+            col = '#ef4444';
+          } else if (maxVis > 0.3) {
+            msg = 'SPOTTED';
+            col = '#fbbf24';
+          }
+          self.dom.alertText.textContent = msg;
+          self.dom.alertText.style.color = col;
+        }
+
+        // Bullets vs Enemies
+        const bullets = world.createQuery(['Bullet', 'Position']);
+        if (eProps) {
+          const { dense: bDense, count: bCount } = bullets.set;
+          const { dense: eDense, count: eCount } = world.createQuery(['Enemy', 'Position']).set;
+
+          for (let i = bCount - 1; i >= 0; i--) {
+            const bIdx = bDense[i];
+            const bx = pos.x[bIdx];
+            const by = pos.y[bIdx];
+            let hit = false;
+
+            for (let j = eCount - 1; j >= 0; j--) {
+              const eIdx = eDense[j];
+              const ex = pos.x[eIdx];
+              const ey = pos.y[eIdx];
+              if (Math.hypot(bx - ex, by - ey) < 20) {
+                eProps.props.hp[eIdx]--;
+                if (eProps.props.hp[eIdx] <= 0) {
+                  state.kills++;
+                  state.score += eProps.props.points[eIdx] || 10;
+                  self.spawnLoot(world, ex, ey);
+
+                  if (state.kills > 0 && state.kills % 10 === 0) {
+                    state.wave++;
+                    state.spawnRate = Math.max(40, state.spawnRate - 10);
+                    state.enemySpeed += 0.2;
+                    self.spawnTrap(world);
+                  }
+
+                  world.destroyEntity(world.getEntityId(eIdx));
+                }
+                hit = true;
+                break;
+              }
+            }
+            if (hit) world.destroyEntity(world.getEntityId(bIdx));
+          }
+        }
+
+        // Loot Collection
+        if (lProps) {
+          const { dense, count } = world.createQuery(['Loot', 'Position']).set;
+          for (let i = count - 1; i >= 0; i--) {
+            const lIdx = dense[i];
+            if (Math.hypot(px - pos.x[lIdx], py - pos.y[lIdx]) < 25) {
+              state.score += lProps.props.value[lIdx];
+              world.destroyEntity(world.getEntityId(lIdx));
+            }
+          }
+        }
+
+        // Traps Trigger
+        if (tProps) {
+          const { dense, count } = world.createQuery(['Trap', 'Position']).set;
+          for (let i = count - 1; i >= 0; i--) {
+            const tIdx = dense[i];
+            if (tProps.props.cooldown[tIdx] > 0) {
+              tProps.props.cooldown[tIdx] -= dt;
+            } else {
+              const dist = Math.hypot(px - pos.x[tIdx], py - pos.y[tIdx]);
+              if (dist < 30) {
+                tProps.props.cooldown[tIdx] = 180;
+                const type = tProps.props.type[tIdx];
+                if (type === 0) pProps.stun[pIdx] = 60;
+                if (type === 1) pProps.burn[pIdx] = 120;
+                if (type === 2) pProps.slow[pIdx] = 90;
+              }
+            }
+          }
+        }
+      };
+    },
+
+    spawnEnemy(world) {
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Velocity');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Enemy');
+
+      const idx = world.getIndex(e);
+      const pos = world.componentRegistry.get('Position').props;
+      const en = world.componentRegistry.get('Enemy').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const state = world.getResource('GameState');
+
+      const side = Math.floor(Math.random() * 4);
+      const w = this.instance.canvas.width;
+      const h = this.instance.canvas.height;
+      if (side === 0) {
+        pos.x[idx] = -30;
+        pos.y[idx] = Math.random() * h;
+      } else if (side === 1) {
+        pos.x[idx] = w + 30;
+        pos.y[idx] = Math.random() * h;
+      } else if (side === 2) {
+        pos.x[idx] = Math.random() * w;
+        pos.y[idx] = -30;
       } else {
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.1)';
-      }
-      ctx.beginPath();
-      ctx.arc(trap.x, trap.y, trap.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Trap icon
-      const pulse = trap.triggered ? 1.3 : 1 + Math.sin(this.state.frameCount * 0.1) * 0.1;
-      const trapAlpha = trap.cooldown > 0 ? 0.3 : 0.8;
-      SpriteCache.drawTransformed(ctx, trap.icon, trap.x, trap.y, 20, {
-        scaleX: pulse,
-        scaleY: pulse,
-        alpha: trapAlpha,
-      });
-    });
-
-    // Tokens with rarity system (cached sprites)
-    this.state.tokens.forEach(token => {
-      const tokenAlpha = token.life > 60 ? 1 : token.life / 60;
-      // Bob animation
-      const bob = Math.sin(token.bobOffset + this.state.frameCount * 0.08) * 3;
-      SpriteCache.drawTransformed(ctx, token.icon, token.x, token.y + bob, 20, {
-        alpha: tokenAlpha,
-      });
-    });
-
-    // Bullets
-    ctx.fillStyle = '#fbbf24';
-    this.state.bullets.forEach(bullet => {
-      ctx.beginPath();
-      ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Enemies with alert indicators
-    this.state.enemies.forEach(enemy => {
-      // Visibility based on flashlight
-      const inLight = this.isInFlashlight(enemy.x, enemy.y);
-      const enemyAlpha = inLight ? 1 : 0.4;
-
-      // Alert indicator above enemy
-      if (enemy.alertLevel > 0) {
-        const alertHeight = 15 + enemy.alertLevel / 10;
-        if (enemy.state === 'chase') {
-          SpriteCache.drawTransformed(ctx, '!', enemy.x, enemy.y - enemy.size - alertHeight, 14, {
-            alpha: enemyAlpha,
-            color: '#ef4444',
-          });
-        } else if (enemy.state === 'search') {
-          SpriteCache.drawTransformed(ctx, '?', enemy.x, enemy.y - enemy.size - alertHeight, 14, {
-            alpha: enemyAlpha,
-            color: '#fbbf24',
-          });
-        }
-
-        // Alert meter
-        const meterWidth = 20;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(enemy.x - meterWidth / 2, enemy.y - enemy.size - 8, meterWidth, 3);
-        ctx.fillStyle =
-          enemy.alertLevel > 80 ? '#ef4444' : enemy.alertLevel > 30 ? '#fbbf24' : '#22c55e';
-        ctx.fillRect(
-          enemy.x - meterWidth / 2,
-          enemy.y - enemy.size - 8,
-          meterWidth * (enemy.alertLevel / 100),
-          3
-        );
+        pos.x[idx] = Math.random() * w;
+        pos.y[idx] = h + 30;
       }
 
-      // Vision cone indicator (when in search/patrol)
-      if (enemy.state !== 'chase' && enemy.visionRange) {
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.1)';
+      const type =
+        this.enemyTypes[Math.floor(Math.random() * Math.min(state.wave, this.enemyTypes.length))];
+      en.hp[idx] = type.hp;
+      en.maxHp[idx] = type.hp;
+      en.vision[idx] = type.vision;
+      rend.iconIndex[idx] = this.lootRarities.length + this.enemyTypes.indexOf(type) + 1; // dynamically map
+      rend.size[idx] = type.size;
+    },
+
+    spawnLoot(world, x, y) {
+      if (Math.random() > 0.5) return;
+
+      const roll = Math.random();
+      let rarity = 0;
+      if (roll < 0.02) rarity = 4;
+      else if (roll < 0.1) rarity = 3;
+      else if (roll < 0.25) rarity = 2;
+      else if (roll < 0.5) rarity = 1;
+
+      const rData = this.lootRarities[rarity];
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Loot');
+      world.addComponent(e, 'Lifespan');
+
+      const idx = world.getIndex(e);
+      world.componentRegistry.get('Position').props.x[idx] = x;
+      world.componentRegistry.get('Position').props.y[idx] = y;
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] = rarity + 1; // mapped to loot
+      world.componentRegistry.get('Renderable').props.size[idx] = 20;
+      world.componentRegistry.get('Loot').props.value[idx] = rData.value;
+      world.componentRegistry.get('Loot').props.rarity[idx] = rarity;
+      world.componentRegistry.get('Lifespan').props.remaining[idx] = 300;
+    },
+
+    spawnTrap(world) {
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Trap');
+
+      const idx = world.getIndex(e);
+      const margin = 80;
+      world.componentRegistry.get('Position').props.x[idx] =
+        margin + Math.random() * (this.instance.canvas.width - margin * 2);
+      world.componentRegistry.get('Position').props.y[idx] =
+        margin + Math.random() * (this.instance.canvas.height - margin * 2);
+
+      const tIdx = Math.floor(Math.random() * this.trapTypes.length);
+      world.componentRegistry.get('Trap').props.type[idx] = tIdx;
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] =
+        this.lootRarities.length + this.enemyTypes.length + 1 + tIdx;
+      world.componentRegistry.get('Renderable').props.size[idx] = 20;
+    },
+
+    updateUI(state) {
+      if (this.dom.score) this.dom.score.textContent = state.score;
+      if (this.dom.kills) this.dom.kills.textContent = state.kills;
+      if (this.dom.wave) this.dom.wave.textContent = state.wave;
+      if (this.dom.stealthBar) this.dom.stealthBar.style.width = `${state.stealth * 100}%`;
+    },
+
+    draw(alpha, defaultRender) {
+      const ctx = this.instance.ctx;
+      const w = this.instance.canvas.width;
+      const h = this.instance.canvas.height;
+      const state = this.instance.world.getResource('GameState');
+      const world = this.instance.world;
+
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const px = pos.x[pIdx];
+      const py = pos.y[pIdx];
+      const pAngle = world.componentRegistry.get('Player').props.angle[pIdx];
+
+      // BG
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(26, 26, 62, 0.5)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 50) {
         ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.visionRange, 0, Math.PI * 2);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
         ctx.stroke();
       }
 
-      SpriteCache.drawTransformed(ctx, enemy.icon, enemy.x, enemy.y, enemy.size * 1.5, {
-        alpha: enemyAlpha,
-      });
+      // Flashlight
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(pAngle);
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 200);
+      gradient.addColorStop(0, 'rgba(251, 191, 36, 0.3)');
+      gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 200, -Math.PI / 8, Math.PI / 8);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.restore();
 
-      if (enemy.health < enemy.maxHealth) {
-        const barWidth = enemy.size * 1.5;
-        const barHeight = 4;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(enemy.x - barWidth / 2, enemy.y - enemy.size - 10, barWidth, barHeight);
-        ctx.fillStyle = enemy.health > 1 ? '#22c55e' : '#ef4444';
-        ctx.fillRect(
-          enemy.x - barWidth / 2,
-          enemy.y - enemy.size - 10,
-          barWidth * (enemy.health / enemy.maxHealth),
-          barHeight
-        );
+      // Ambient
+      const ambient = ctx.createRadialGradient(px, py, 0, px, py, 80);
+      ambient.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+      ambient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+      ctx.fillStyle = ambient;
+      ctx.fillRect(0, 0, w, h);
+
+      // Render Everything via custom loop to handle icons and visibility correctly
+      const movers = world.createQuery(['Position', 'Renderable']);
+      const rend = world.componentRegistry.get('Renderable').props;
+      const { dense, count } = movers.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx];
+        const ty = pos.y[idx];
+        const rIdx = rend.iconIndex[idx];
+
+        let icon = '❓';
+        if (idx === state.playerId) {
+          icon = '🧙';
+        } else if (
+          world.componentRegistry.get('Bullet') &&
+          world.componentRegistry.get('Bullet').props.active[idx] !== undefined
+        ) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(tx, ty, 5, 0, Math.PI * 2);
+          ctx.fill();
+          continue;
+        } else if (rIdx >= 1 && rIdx <= this.lootRarities.length) {
+          icon = this.lootRarities[rIdx - 1].icon;
+        } else if (
+          rIdx > this.lootRarities.length &&
+          rIdx <= this.lootRarities.length + this.enemyTypes.length
+        ) {
+          icon = this.enemyTypes[rIdx - this.lootRarities.length - 1].icon;
+          // Enemy UI
+          const enProps = world.componentRegistry.get('Enemy').props;
+          if (enProps && enProps.alert[idx] > 0) {
+            ctx.fillStyle = enProps.alert[idx] > 80 ? '#ef4444' : '#fbbf24';
+            ctx.fillRect(tx - 10, ty - 25, 20 * (enProps.alert[idx] / 100), 3);
+          }
+        } else if (rIdx > this.lootRarities.length + this.enemyTypes.length) {
+          icon = this.trapTypes[rIdx - this.lootRarities.length - this.enemyTypes.length - 1].icon;
+          ctx.fillStyle = 'rgba(251, 191, 36, 0.1)';
+          ctx.beginPath();
+          ctx.arc(tx, ty, 30, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Sight check
+        const dist = Math.hypot(px - tx, py - ty);
+        const a = Math.abs(Math.atan2(ty - py, tx - px) - pAngle);
+        const inLight = dist < 200 && (a < Math.PI / 8 || Math.PI * 2 - a < Math.PI / 8);
+        const alpha = inLight || dist < 80 ? 1 : 0.4;
+
+        if (idx === state.playerId) {
+          ctx.save();
+          ctx.translate(tx, ty);
+          ctx.rotate(pAngle);
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(30, 0);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        SpriteCache.drawTransformed(ctx, icon, tx, ty, rend.size[idx], { alpha });
       }
-    });
+    },
 
-    // Player
-    ctx.save();
-    ctx.translate(this.state.player.x, this.state.player.y);
-    ctx.rotate(this.state.player.angle);
+    stop() {
+      if (this.instance) this.instance.stop();
+    },
+  };
 
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(40, 0);
-    ctx.stroke();
-
-    ctx.restore();
-
-    SpriteCache.draw(ctx, '🧙', this.state.player.x, this.state.player.y, 28);
-
-    // Effects (text-based, keep as is for dynamic text)
-    ctx.font = 'bold 18px Arial';
-    this.state.effects.forEach(e => {
-      ctx.globalAlpha = e.life / 30;
-      ctx.fillStyle = e.color;
-      ctx.fillText(e.text, e.x, e.y);
-    });
-    ctx.globalAlpha = 1;
-  },
-
-  /**
-   * Game loop
-   */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  },
-
-  /**
-   * Stop the game
-   */
-  stop() {
-    this.state.gameOver = true;
-
-    document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('keyup', this.handleKeyUp);
-    if (this.canvas) {
-      this.canvas.removeEventListener('mousemove', this.handleMouseMove);
-      this.canvas.removeEventListener('click', this.handleClick);
-    }
-
-    this.canvas = null;
-    this.ctx = null;
-    this.state = null;
-  },
-};
-
-// Export
-if (typeof window !== 'undefined') {
   window.ASDF = window.ASDF || {};
   window.ASDF.CryptoHeist = CryptoHeist;
-  window.CryptoHeist = window.ASDF.CryptoHeist;
-}
+  window.CryptoHeist = CryptoHeist;
+  if (typeof GameRegistry !== 'undefined') GameRegistry.register('cryptoheist', CryptoHeist);
+})();

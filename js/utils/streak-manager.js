@@ -7,7 +7,6 @@ import storage from './storage.js';
 
 ('use strict');
 
-const STORAGE_KEY = 'asdf_streak_unified';
 const TIMEOUT = 48 * 60 * 60 * 1000; // 48 hours
 
 class StreakManager {
@@ -27,7 +26,7 @@ class StreakManager {
             bestStreak: 0,
             totalDays: 0,
           };
-    } catch (e) {
+    } catch (_e) {
       return { current: 0, lastActivity: null, bestStreak: 0, totalDays: 0 };
     }
   }

@@ -30,15 +30,8 @@ const StakeStacker = {
 
     this.setupInput();
 
-    // Initialize Fixed Timestep Loop (2026 Standard)
-    if (typeof FixedTimestepLoop !== 'undefined') {
-      this.physicsLoop = new FixedTimestepLoop(
-        60, // 60 updates per second
-        dt => this.update(dt),
-        alpha => this.render()
-      );
-      this.physicsLoop.start();
-    }
+    // Start game loop (2026 Standard)
+    this.gameLoop();
 
     this.registerActiveGame(gameId);
   },
@@ -132,7 +125,7 @@ const StakeStacker = {
   /**
    * Render game state
    */
-  render() {
+  draw(alpha) {
     if (this.state.gameOver) return; // Could render a game over screen here
     const cameraOffset = StakeStackerEntities.calculateCameraOffset(this.state.stack.length);
     StakeStackerRenderer.render(this.ctx, this.state, cameraOffset);

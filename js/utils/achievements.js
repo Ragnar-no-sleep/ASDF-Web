@@ -273,8 +273,9 @@ class AchievementSystem {
     overlay.innerHTML = `<div class="ach-unlock-inner"><div class="ach-unlock-icon">${achievement.icon}</div><div class="ach-unlock-rarity">${achievement.rarity}</div><div class="ach-unlock-title">${achievement.name}</div><div class="ach-unlock-desc">${achievement.description}</div></div>`;
 
     const rarityEl = overlay.querySelector('.ach-unlock-rarity');
-    if (rarityEl)
+    if (rarityEl) {
       rarityEl.style.setProperty('--ach-rarity-color', rarityColors[achievement.rarity]);
+    }
     document.body.appendChild(overlay);
 
     setTimeout(() => {

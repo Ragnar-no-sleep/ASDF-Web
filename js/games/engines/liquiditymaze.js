@@ -112,6 +112,15 @@ const LiquidityMaze = {
     this.canvas = document.getElementById('lm-canvas');
     this.ctx = this.canvas.getContext('2d');
 
+    // Cache DOM references for performance
+    this.domCache = {
+      score: document.getElementById('lm-score'),
+      level: document.getElementById('lm-level'),
+      time: document.getElementById('lm-time'),
+      keyIndicator: document.getElementById('lm-key-indicator'),
+      minimapToggle: document.getElementById('lm-minimap-toggle'),
+    };
+
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
@@ -492,16 +501,12 @@ const LiquidityMaze = {
    * Check collisions
    */
   checkCollisions(x, y) {
-    const scoreEl = document.getElementById('lm-score');
-    const levelEl = document.getElementById('lm-level');
-    const keyIndicator = document.getElementById('lm-key-indicator');
-
     // Liquidity pools
     const poolIdx = this.state.liquidityPools.findIndex(p => p.x === x && p.y === y);
     if (poolIdx !== -1) {
       const pool = this.state.liquidityPools.splice(poolIdx, 1)[0];
       this.state.score += pool.value;
-      scoreEl.textContent = this.state.score;
+      if (this.domCache.score) this.domCache.score.textContent = this.state.score;
       this.addEffect(x, y, '+' + pool.value, '#22c55e');
       recordScoreUpdate(this.gameId, this.state.score, pool.value);
     }
@@ -511,7 +516,7 @@ const LiquidityMaze = {
     if (trapIdx !== -1) {
       const trap = this.state.feeTraps.splice(trapIdx, 1)[0];
       this.state.score = Math.max(0, this.state.score - trap.penalty);
-      scoreEl.textContent = this.state.score;
+      if (this.domCache.score) this.domCache.score.textContent = this.state.score;
       this.addEffect(x, y, '-' + trap.penalty, '#ef4444');
       this.state.player.frozen = true;
       setTimeout(() => {
@@ -525,7 +530,7 @@ const LiquidityMaze = {
       this.state.keys.splice(keyIdx, 1);
       this.state.player.hasKey = true;
       this.state.goal.locked = false;
-      keyIndicator.style.display = 'block';
+      if (this.domCache.keyIndicator) this.domCache.keyIndicator.style.display = 'block';
       this.addEffect(x, y, 'KEY!', '#fbbf24');
     }
 
@@ -534,7 +539,7 @@ const LiquidityMaze = {
     if (speedIdx !== -1) {
       this.state.speedBoosts.splice(speedIdx, 1);
       this.state.score += 25;
-      scoreEl.textContent = this.state.score;
+      if (this.domCache.score) this.domCache.score.textContent = this.state.score;
       this.addEffect(x, y, 'SPEED!', '#3b82f6');
     }
 
@@ -561,7 +566,7 @@ const LiquidityMaze = {
     if (treasureIdx !== -1) {
       const treasure = this.state.treasures.splice(treasureIdx, 1)[0];
       this.state.score += treasure.value;
-      scoreEl.textContent = this.state.score;
+      if (this.domCache.score) this.domCache.score.textContent = this.state.score;
       this.addEffect(x, y, `${treasure.icon} +${treasure.value}`, '#fbbf24');
       recordScoreUpdate(this.gameId, this.state.score, treasure.value);
     }
@@ -578,12 +583,12 @@ const LiquidityMaze = {
         const totalBonus = timeBonus + levelBonus + poolBonus;
 
         this.state.score += totalBonus;
-        scoreEl.textContent = this.state.score;
+        if (this.domCache.score) this.domCache.score.textContent = this.state.score;
         updateScore(this.gameId, this.state.score);
         recordScoreUpdate(this.gameId, this.state.score, totalBonus);
 
         this.state.level++;
-        levelEl.textContent = this.state.level;
+        if (this.domCache.level) this.domCache.level.textContent = this.state.level;
         this.generateMaze();
       }
     }
@@ -598,16 +603,15 @@ const LiquidityMaze = {
 
     this.state.frameCount += dt;
 
-    const timeEl = document.getElementById('lm-time');
-    const scoreEl = document.getElementById('lm-score');
-
     // Update time
     const elapsed = Math.floor((Date.now() - this.state.startTime) / 1000);
     const remaining = this.state.timeLimit - elapsed;
     const mins = Math.floor(Math.max(0, remaining) / 60);
     const secs = Math.max(0, remaining) % 60;
-    timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    timeEl.style.color = remaining <= 15 ? '#ef4444' : '';
+    if (this.domCache.time) {
+      this.domCache.time.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      this.domCache.time.style.color = remaining <= 15 ? '#ef4444' : '';
+    }
 
     if (remaining <= 0) {
       this.state.gameOver = true;
@@ -672,7 +676,7 @@ const LiquidityMaze = {
           this.state.maze[newY][newX] = 0;
           this.addEffect(newX, newY, '🔓 SECRET!', '#a855f7');
           this.state.score += 25;
-          scoreEl.textContent = this.state.score;
+          if (this.domCache.score) this.domCache.score.textContent = this.state.score;
         }
 
         if (
@@ -815,7 +819,7 @@ const LiquidityMaze = {
         ) {
           const damage = enemy.state === self.AI_STATE.CHASE ? 50 : 30;
           self.state.score = Math.max(0, self.state.score - damage);
-          scoreEl.textContent = self.state.score;
+          if (self.domCache.score) self.domCache.score.textContent = self.state.score;
           self.addEffect(self.state.player.x, self.state.player.y, `-${damage}`, '#ef4444');
           self.state.player.frozen = true;
           enemy.state = self.AI_STATE.PATROL; // Reset to patrol after catch
@@ -1131,13 +1135,12 @@ const LiquidityMaze = {
     this.canvas.addEventListener('touchmove', this.handleTouchMove, { passive: false });
 
     // Mini-map toggle
-    const minimapToggle = document.getElementById('lm-minimap-toggle');
-    if (minimapToggle) {
+    if (this.domCache.minimapToggle) {
       this.handleMinimapToggle = () => {
         self.state.showMiniMap = !self.state.showMiniMap;
-        minimapToggle.textContent = self.state.showMiniMap ? 'MAP: ON' : 'MAP: OFF';
+        this.domCache.minimapToggle.textContent = self.state.showMiniMap ? 'MAP: ON' : 'MAP: OFF';
       };
-      minimapToggle.addEventListener('click', this.handleMinimapToggle);
+      this.domCache.minimapToggle.addEventListener('click', this.handleMinimapToggle);
     }
   },
 
@@ -1153,9 +1156,8 @@ const LiquidityMaze = {
       this.canvas.removeEventListener('touchstart', this.handleTouchStart);
       this.canvas.removeEventListener('touchmove', this.handleTouchMove);
     }
-    const minimapToggle = document.getElementById('lm-minimap-toggle');
-    if (minimapToggle && this.handleMinimapToggle) {
-      minimapToggle.removeEventListener('click', this.handleMinimapToggle);
+    if (this.domCache.minimapToggle && this.handleMinimapToggle) {
+      this.domCache.minimapToggle.removeEventListener('click', this.handleMinimapToggle);
     }
     this.canvas = null;
     this.ctx = null;

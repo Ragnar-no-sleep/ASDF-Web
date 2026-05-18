@@ -331,10 +331,23 @@
     <!-- Core Zero-Allocation Engines (2026 Standard) -->
     <script defer src="js/games/core/TypedObjectPool.js"></script>
     <script defer src="js/games/core/FixedTimestepLoop.js"></script>
+    <script defer src="js/games/core/SpatialHash.js"></script>
+    <script defer src="js/games/core/DevInspector.js"></script>
+    <script defer src="js/games/core/ECS.js"></script>
+
+    <!-- ECS Systems -->
+    <script defer src="js/games/core/systems/RenderSystem.js"></script>
+    <script defer src="js/games/core/systems/PhysicsSystem.js"></script>
+    <script defer src="js/games/core/systems/InputSystem.js"></script>
+
+    <!-- Game Framework -->
+    <script defer src="js/games/framework/GameInstance.js"></script>
+    <script defer src="js/games/framework/registry.js"></script>
 
     <!-- Game Engines (Lazy Loaded via GameEngines coordinator) -->
     <script defer src="js/games/engines/game-engine-base.js"></script>
     <script defer src="js/games/engines/index.js"></script>
+    <script defer src="js/games/engines/ecsdemos.js"></script>
 
     <!-- Legacy Engine (backwards compatibility) -->
     <script defer src="js/games/engine.js"></script>

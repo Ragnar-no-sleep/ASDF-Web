@@ -21,7 +21,7 @@ const StorageManager = {
     if (stored !== null) {
       try {
         return JSON.parse(stored);
-      } catch (e) {
+      } catch (_e) {
         return stored;
       }
     }
@@ -32,12 +32,11 @@ const StorageManager = {
     for (const legacyKey of legacyKeys) {
       const legacyValue = localStorage.getItem(legacyKey);
       if (legacyValue !== null) {
-        console.log(`*sniff* Migrating legacy key: ${legacyKey} -> ${prefixedKey}`);
         this.set(key, legacyValue);
         // localStorage.removeItem(legacyKey); // We keep it for safety during transition
         try {
           return JSON.parse(legacyValue);
-        } catch (e) {
+        } catch (_e) {
           return legacyValue;
         }
       }

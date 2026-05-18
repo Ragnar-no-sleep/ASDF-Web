@@ -50,15 +50,14 @@ class SoundSystem {
    * Load setting from localStorage
    */
   loadSetting(key, defaultValue) {
-    const stored = storage.get(sound_);
-    return stored !== null ? JSON.parse(stored) : defaultValue;
+    return storage.get(`sound_${key}`, defaultValue);
   }
 
   /**
    * Save setting to localStorage
    */
   saveSetting(key, value) {
-    storage.set(sound_, value);
+    storage.set(`sound_${key}`, value);
   }
 
   /**

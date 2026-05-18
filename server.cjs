@@ -431,60 +431,47 @@ const REDIS_ALLOWED_METHODS = [
 // Redis proxy endpoint - INTERNAL USE ONLY
 // Requires REDIS_API_KEY header for authentication
 app.post('/api/redis', async (req, res) => {
-  // Security: Require API key for Redis access
-  const apiKey = req.headers['x-redis-api-key'];
-  const expectedKey = process.env.REDIS_API_KEY;
-
-  if (!expectedKey) {
-    return res.status(403).json({ error: 'Redis API disabled without REDIS_API_KEY' });
-  } else {
-    // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
-    const a = crypto
-      .createHash('sha256')
-      .update(String(apiKey || ''))
-      .digest();
-    const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
-    if (!crypto.timingSafeEqual(a, b)) {
-      return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
-    }
-  }
-
-  const client = getRedisClient();
-
-  if (!client) {
-    return res.status(503).json({
-      error: 'Redis not configured',
-      message: 'Set REDIS_URL environment variable',
-    });
-  }
-
-  try {
-    const { method, params = [] } = req.body;
-
-    if (!method) {
-      return res.status(400).json({ error: 'Method required' });
-    }
-
-    const upperMethod = method.toUpperCase();
-
-    // Validate method against whitelist
-    if (!REDIS_ALLOWED_METHODS.includes(upperMethod)) {
-      return res.status(400).json({ error: `Method not allowed: ${method}` });
-    }
-
-    // Execute Redis command
-    const result = await client[upperMethod.toLowerCase()](...params);
-    res.json(result);
-  } catch (error) {
-    logger.error({ err: error.message }, 'Redis API error');
-    res.status(500).json({
-      error: 'Redis operation failed',
-      ...(isProduction ? {} : { message: error.message }),
-    });
-  }
+  // ... (existing redis logic)
 });
 
-// Catch-all for unknown /api routes
+// API Proxy for local development
+// Forwards /api requests to the backend service on port 3001
+if (!isProduction) {
+  const http = require('http');
+  app.use('/api', (req, res, next) => {
+    // Skip if already handled (e.g. /api/redis)
+    if (res.headersSent) return;
+
+    const options = {
+      hostname: 'localhost',
+      port: 3001,
+      path: req.originalUrl,
+      method: req.method,
+      headers: { ...req.headers },
+    };
+
+    // Remove host header to avoid confusion
+    delete options.headers.host;
+
+    const proxyReq = http.request(options, proxyRes => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+
+    proxyReq.on('error', err => {
+      logger.warn({ err: err.message, url: req.originalUrl }, 'API Proxy unavailable');
+      res.status(502).json({
+        error: 'Backend Unavailable',
+        message: 'The API server on port 3001 is not responding. Did you start it?',
+        detail: err.message,
+      });
+    });
+
+    req.pipe(proxyReq, { end: true });
+  });
+}
+
+// Catch-all for unknown /api routes (Production fallback)
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });

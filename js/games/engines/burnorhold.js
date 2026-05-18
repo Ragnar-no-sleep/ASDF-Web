@@ -122,6 +122,26 @@ const BurnOrHold = {
     this.ctx = this.canvas.getContext('2d');
     this.startTime = Date.now();
 
+    // Cache DOM references for performance
+    this.domCache = {
+      playerNodes: document.getElementById('cc-player-nodes'),
+      enemyNodes: document.getElementById('cc-enemy-nodes'),
+      score: document.getElementById('cc-score'),
+      wave: document.getElementById('cc-wave'),
+      time: document.getElementById('cc-time'),
+      banner: document.getElementById('cc-banner'),
+      bannerText: document.getElementById('cc-banner-text'),
+      bannerHint: document.getElementById('cc-banner-hint'),
+    };
+
+    this.lastDomState = {
+      playerNodes: -1,
+      enemyNodes: -1,
+      score: -1,
+      wave: -1,
+      time: '',
+    };
+
     // Initialize timing for frame-independent movement
     this.timing = GameTiming.create();
 
@@ -289,30 +309,50 @@ const BurnOrHold = {
   },
 
   /**
-   * Update UI elements
+   * Update UI elements with dirty checking
    */
   updateUI() {
     const playerNodes = this.state.nodes.filter(n => n.owner === this.OWNER.PLAYER).length;
     const enemyNodes = this.state.nodes.filter(n => n.owner === this.OWNER.ENEMY).length;
-    document.getElementById('cc-player-nodes').textContent = playerNodes;
-    document.getElementById('cc-enemy-nodes').textContent = enemyNodes;
-    document.getElementById('cc-score').textContent = this.state.score;
-    document.getElementById('cc-wave').textContent = this.state.wave;
+
+    if (this.domCache.playerNodes && this.lastDomState.playerNodes !== playerNodes) {
+      this.domCache.playerNodes.textContent = playerNodes;
+      this.lastDomState.playerNodes = playerNodes;
+    }
+    if (this.domCache.enemyNodes && this.lastDomState.enemyNodes !== enemyNodes) {
+      this.domCache.enemyNodes.textContent = enemyNodes;
+      this.lastDomState.enemyNodes = enemyNodes;
+    }
+    if (this.domCache.score && this.lastDomState.score !== this.state.score) {
+      this.domCache.score.textContent = this.state.score;
+      this.lastDomState.score = this.state.score;
+      updateScore(this.gameId, this.state.score);
+    }
+    if (this.domCache.wave && this.lastDomState.wave !== this.state.wave) {
+      this.domCache.wave.textContent = this.state.wave;
+      this.lastDomState.wave = this.state.wave;
+    }
+
     const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-    document.getElementById('cc-time').textContent =
-      `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
-    updateScore(this.gameId, this.state.score);
+    const timeStr = `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
+    if (this.domCache.time && this.lastDomState.time !== timeStr) {
+      this.domCache.time.textContent = timeStr;
+      this.lastDomState.time = timeStr;
+    }
   },
 
   /**
    * Show banner message
    */
   showBanner(text, hint) {
-    const banner = document.getElementById('cc-banner');
-    document.getElementById('cc-banner-text').textContent = text;
-    document.getElementById('cc-banner-hint').textContent = hint;
-    banner.style.opacity = '1';
-    setTimeout(() => (banner.style.opacity = '0'), 1500);
+    if (this.domCache.banner) {
+      if (this.domCache.bannerText) this.domCache.bannerText.textContent = text;
+      if (this.domCache.bannerHint) this.domCache.bannerHint.textContent = hint;
+      this.domCache.banner.style.opacity = '1';
+      setTimeout(() => {
+        if (this.domCache.banner) this.domCache.banner.style.opacity = '0';
+      }, 1500);
+    }
   },
 
   /**

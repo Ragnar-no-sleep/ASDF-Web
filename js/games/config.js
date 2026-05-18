@@ -294,6 +294,14 @@ const GAMES = [
     description:
       'Classic vertical shmup! Pilot your starship, dodge enemy fire, collect power-ups, and conquer 5 boss waves!',
   },
+  {
+    id: 'ecsdemos',
+    name: '11/10 Engine (ECS)',
+    icon: '⚡',
+    type: 'PoC / Demo',
+    description:
+      'A high-performance ECS proof-of-concept demonstrating thousands of entities with zero-allocation physics.',
+  },
 ];
 
 // Reward slots per rank

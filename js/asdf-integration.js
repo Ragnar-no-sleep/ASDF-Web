@@ -54,11 +54,9 @@ function initASDF() {
   }
 
   // 5. Track scroll to bottom
-  trackScrollToBottom();
   // 6. Badge Manager (Gap G11)
   const initBadges = async addr => {
     if (!addr) return;
-    console.log('*sniff* Initializing BadgeManager for:', addr);
     await badgeManager.init(addr);
     await badgeManager.checkAchievements();
   };
@@ -71,10 +69,13 @@ function initASDF() {
   }
 
   // 7. Dynamic Game Hub Loader (Fix for 'Orange Screen')
-  if (window.location.pathname.includes('ignition') || document.querySelector('[data-orbit-id="games"]')) {
-    console.log('*sniff* Pre-warming Game Engine (delegated to HTML script tags)...');
+  if (
+    window.location.pathname.includes('ignition') ||
+    document.querySelector('[data-orbit-id="games"]')
+  ) {
     /* 
      * DISABLED: Mixing <script defer> and import() causes "Identifier has already been declared" errors.
+  ...
      * The game page handles its own script loading.
      * 
     import('./games/utils.js').then(() => {

@@ -23,6 +23,10 @@ const WhaleWatch = {
     // Create arena HTML
     arena.innerHTML = WhaleWatchRenderer.createArena(gameId);
 
+    // Initialize GameEngineBase (for event tracking/lifecycle)
+    // Note: WhaleWatch is DOM-based, so it doesn't need the Canvas loop
+    this.init(gameId, null);
+
     // Build legend
     const legendEl = document.getElementById('symbol-legend');
     legendEl.innerHTML = WhaleWatchRenderer.buildLegend(WhaleWatchEntities.symbolLegend);

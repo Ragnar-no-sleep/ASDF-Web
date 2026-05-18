@@ -161,17 +161,8 @@ const SpaceShooter = {
     // Start engine loop
     this.audio.startEngineLoop();
 
-    // Initialize Fixed Timestep Loop (2026 Standard)
-    if (typeof FixedTimestepLoop !== 'undefined') {
-      this.physicsLoop = new FixedTimestepLoop(
-        60,
-        dt => this.update(dt),
-        alpha => this.draw(alpha)
-      );
-      this.physicsLoop.start();
-    } else {
-      this.gameLoop();
-    }
+    // Start game loop (2026 Standard)
+    this.gameLoop();
   },
 
   /**
