@@ -86,7 +86,8 @@
       this.preloadSprites();
 
       // Override Render
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx);
+      const icons = [...this.enemyTypes.map(e => e.icon), '💥'];
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
       this.instance.render = alpha => this.draw(alpha, defaultRender);
 
       // Systems
@@ -249,7 +250,7 @@
       en.typeIndex[idx] = this.enemyTypes.indexOf(type);
       en.hp[idx] = type.hp || 1;
       en.points[idx] = type.points;
-      rend.iconIndex[idx] = 2; // Fixed map or dynamic? Let's use SpriteCache index
+      rend.iconIndex[idx] = en.typeIndex[idx];
       rend.size[idx] = type.size;
     },
 
@@ -291,7 +292,7 @@
       const idx = world.getIndex(e);
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
-      world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1; // Explosion
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] = this.enemyTypes.length; // Explosion (last icon)
       world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
       world.componentRegistry.get('Lifespan').props.initial[idx] = 20;
     },
@@ -310,30 +311,22 @@
       const world = this.instance.world;
       const state = world.getResource('GameState');
 
-      // Render Entities
-      const query = world.createQuery(['Position', 'Renderable']);
-      const pos = world.componentRegistry.get('Position').props;
-      const rend = world.componentRegistry.get('Renderable').props;
-      const en = world.componentRegistry.get('Enemy');
-      const { dense, count } = query.set;
+      // Use Standard Render System
+      defaultRender(world, alpha);
 
-      for (let i = 0; i < count; i++) {
-        const idx = dense[i];
-        const icon =
-          en && en.props.typeIndex[idx] !== undefined
-            ? this.enemyTypes[en.props.typeIndex[idx]].icon
-            : rend.iconIndex[idx] === 1
-              ? '💥'
-              : '❓';
+      // Game-specific Overlay (Pop Rings)
+      if (state.gameMode === 'pop') {
+        const query = world.createQuery(['Position', 'Renderable', 'Lifespan']);
+        const { dense, count } = query.set;
+        const pos = world.componentRegistry.get('Position').props;
+        const rend = world.componentRegistry.get('Renderable').props;
+        const life = world.componentRegistry.get('Lifespan').props;
 
-        SpriteCache.draw(ctx, icon, pos.x[idx], pos.y[idx], rend.size[idx]);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < count; i++) {
+          const idx = dense[i];
+          if (life.remaining[idx] === undefined) continue;
 
-        // Pop Ring
-        if (
-          state.gameMode === 'pop' &&
-          world.componentRegistry.get('Lifespan').props.remaining[idx] !== undefined
-        ) {
-          const life = world.componentRegistry.get('Lifespan').props;
           const progress = life.remaining[idx] / life.initial[idx];
           ctx.strokeStyle = progress > 0.5 ? '#22c55e' : '#ef4444';
           ctx.beginPath();

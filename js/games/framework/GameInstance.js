@@ -14,6 +14,11 @@
         alpha: false,
       });
 
+      if (!this.ctx) {
+        console.warn('[GameInstance] Desynchronized context failed, falling back to standard.');
+        this.ctx = canvas.getContext('2d');
+      }
+
       this.world = new ECS.World(options.maxEntities || 2000);
       this.inspector = options.debug ? new ASDF.DevInspector(this.world) : null;
 
@@ -24,17 +29,20 @@
       );
 
       this.initialized = false;
+      this._standardComponentsInited = false;
     }
 
     /**
      * Define standard components with strict RAM-optimized typing
      */
     initStandardComponents() {
+      if (this._standardComponentsInited) return;
       this.world.registerComponent('Position', { x: 'f32', y: 'f32' });
       this.world.registerComponent('Velocity', { vx: 'f32', vy: 'f32' });
       this.world.registerComponent('Renderable', { iconIndex: 'u8', size: 'u8', alpha: 'f32' });
       this.world.registerComponent('Collider', { width: 'u16', height: 'u16', active: 'u8' });
       this.world.registerComponent('Controllable', { speed: 'f32' });
+      this._standardComponentsInited = true;
     }
 
     /**

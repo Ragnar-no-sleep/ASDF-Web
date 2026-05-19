@@ -2,7 +2,6 @@
  * ASDF Games - Burn Runner Engine (11/10 ECS Edition)
  *
  * Endless runner game: Run through the blockchain, collect tokens, avoid obstacles
- * Features: Double jump, dash ability, shield ability, platform physics
  * Migrated to ECS for zero-allocation performance.
  */
 
@@ -14,22 +13,12 @@
     gameId: 'burnrunner',
     instance: null,
 
-    // Definitions
     obstacleTypes: [
-      { icon: '💀', name: 'SCAM', width: 35, height: 40, deadly: true },
-      { icon: '🚫', name: 'RUG', width: 35, height: 35, deadly: true },
-      { icon: '🔥', name: 'BURN', width: 32, height: 38, deadly: true },
-      { icon: '💣', name: 'BOMB', width: 32, height: 34, deadly: true },
-      { icon: '🌋', name: 'LAVA', width: 40, height: 30, deadly: true },
+      { icon: '💀', name: 'SCAM', width: 35, height: 40 },
+      { icon: '🚫', name: 'RUG', width: 35, height: 35 },
+      { icon: '🔥', name: 'BURN', width: 32, height: 38 },
+      { icon: '💣', name: 'BOMB', width: 32, height: 34 },
     ],
-
-    platformTypes: [
-      { icon: '📦', name: 'CRATE', width: 45, height: 35, points: 15 },
-      { icon: '🧱', name: 'BLOCK', width: 50, height: 30, points: 10 },
-      { icon: '☁️', name: 'CLOUD', width: 70, height: 25, points: 30, floating: true },
-    ],
-
-    tokenType: { icon: '💎', width: 28, height: 28, points: 50 },
 
     start(gameId) {
       const arena = document.getElementById(`arena-${gameId}`);
@@ -46,12 +35,11 @@
       const world = this.instance.world;
       this.instance.initStandardComponents();
 
-      // BurnRunner Specific Components
-      world.registerComponent('Player', { jumpsLeft: 'u8', state: 'u8' });
-      world.registerComponent('Obstacle', { points: 'u16' });
-      world.registerComponent('Collectible', { points: 'u16', collected: 'u8' });
+      // Components
+      world.registerComponent('Player', { jumpsLeft: 'u8' });
+      world.registerComponent('Obstacle', { type: 'u8' });
+      world.registerComponent('Collectible', { value: 'u16' });
 
-      // State Resource
       world.setResource('GameState', {
         distance: 0,
         tokens: 0,
@@ -67,10 +55,8 @@
       });
 
       this.dom = {
-        jumps: document.getElementById('br-jumps'),
         distance: document.getElementById('br-distance'),
         tokens: document.getElementById('br-tokens'),
-        dashCd: document.getElementById('br-dash-cd'),
       };
 
       this.setupInput();
@@ -87,20 +73,21 @@
       const pIdx = world.getIndex(player);
       world.componentRegistry.get('Position').props.x[pIdx] = 80;
       world.componentRegistry.get('Position').props.y[pIdx] = canvas.height - 100;
-      world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0; // Dog
+      world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0; // 🐕
       world.componentRegistry.get('Renderable').props.size[pIdx] = 45;
       world.componentRegistry.get('Collider').props.width[pIdx] = 30;
       world.componentRegistry.get('Collider').props.height[pIdx] = 45;
       world.componentRegistry.get('Player').props.jumpsLeft[pIdx] = 2;
       world.getResource('GameState').playerId = player;
 
+      // Override Render
+      const icons = ['🐕', '💥', '💎', ...this.obstacleTypes.map(o => o.icon)];
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+      this.instance.render = alpha => this.draw(alpha, defaultRender);
+
       // Systems
       world.addSystem(this.createRunnerSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
-
-      // Override Render
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
 
@@ -114,15 +101,8 @@
         <div class="br-container">
           <canvas id="br-canvas" class="game-canvas"></canvas>
           <div class="game-hud-top-left">
-            <div class="game-hud-stat"><span class="br-stat-label">DIST</span><div id="br-distance">0m</div></div>
-            <div class="game-hud-stat"><span class="br-stat-label">TOKENS</span><div id="br-tokens">0</div></div>
-            <div class="game-hud-stat"><span class="br-stat-label">JUMPS</span><div id="br-jumps">2/2</div></div>
-          </div>
-          <div class="game-hud-bottom-right">
-            <div class="br-ability" id="br-dash-ability">
-              <span class="br-ability-icon">💨</span>
-              <div class="br-cooldown" id="br-dash-cd"></div>
-            </div>
+            <div class="game-hud-stat">DIST: <span id="br-distance">0m</span></div>
+            <div class="game-hud-stat">TOKENS: <span id="br-tokens">0</span></div>
           </div>
         </div>
       `;
@@ -131,11 +111,9 @@
     preloadSprites() {
       const sprites = [
         { emoji: '🐕', size: 45 },
-        { emoji: '💨', size: 20 },
+        { emoji: '💎', size: 28 },
         { emoji: '💥', size: 35 },
-        { emoji: this.tokenType.icon, size: this.tokenType.width },
         ...this.obstacleTypes.map(o => ({ emoji: o.icon, size: 36 })),
-        ...this.platformTypes.map(p => ({ emoji: p.icon, size: 36 })),
       ];
       if (typeof SpriteCache !== 'undefined') SpriteCache.preload(sprites);
     },
@@ -171,7 +149,7 @@
         if (state.gameOver) return;
 
         state.distance += state.speed * 0.1 * dt;
-        state.speed = state.baseSpeed + state.distance * 0.001; // Gradual speedup
+        state.speed = state.baseSpeed + state.distance * 0.001;
 
         const playerIdx = world.getIndex(state.playerId);
         const posProps = world.componentRegistry.get('Position').props;
@@ -180,21 +158,15 @@
         const collProps = world.componentRegistry.get('Collider').props;
         const rendProps = world.componentRegistry.get('Renderable').props;
 
-        // Player Gravity
         velProps.vy[playerIdx] += state.gravity * dt;
 
-        const px = posProps.x[playerIdx];
         const py = posProps.y[playerIdx];
-        const pw = collProps.width[playerIdx];
         const ph = collProps.height[playerIdx];
 
-        let onGround = false;
-
-        // Floor collision
         if (py + ph > state.groundY) {
           posProps.y[playerIdx] = state.groundY - ph;
           velProps.vy[playerIdx] = 0;
-          onGround = true;
+          pProps.jumpsLeft[playerIdx] = state.maxJumps;
         }
 
         // Spawning
@@ -204,8 +176,10 @@
           self.spawnEntity(world);
         }
 
-        // Environment Update & Collisions
-        const query = world.createQuery(['Position', 'Velocity', 'Collider']);
+        // Collisions
+        const px = posProps.x[playerIdx],
+          pw = collProps.width[playerIdx];
+        const query = world.createQuery(['Position', 'Collider']);
         const { dense, count } = query.set;
 
         const obsProps = world.componentRegistry.get('Obstacle');
@@ -213,42 +187,32 @@
 
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
-          if (idx === playerIdx) continue; // Skip player
+          if (idx === playerIdx) continue;
 
-          // Move world left
-          velProps.vx[idx] = -state.speed;
+          posProps.x[idx] -= state.speed * dt;
 
-          const ex = posProps.x[idx];
-          const ey = posProps.y[idx];
-          const ew = collProps.width[idx];
-          const eh = collProps.height[idx];
+          const ex = posProps.x[idx],
+            ey = posProps.y[idx];
+          const ew = collProps.width[idx],
+            eh = collProps.height[idx];
 
-          // AABB Collision with player
-          if (px < ex + ew && px + pw > ex && py < ey + eh && py + ph > ey) {
-            // Check if Obstacle
-            if (obsProps && obsProps.props.points[idx] !== undefined) {
+          if (
+            px < ex + ew &&
+            px + pw > ex &&
+            posProps.y[playerIdx] < ey + eh &&
+            posProps.y[playerIdx] + ph > ey
+          ) {
+            if (obsProps && obsProps.props.type[idx] !== undefined) {
               state.gameOver = true;
-              rendProps.iconIndex[playerIdx] = 2; // Dead
-              if (typeof endGame === 'function')
-                endGame(self.gameId, Math.floor(state.distance + state.tokens * 10));
-            }
-
-            // Check if Collectible
-            if (colProps && colProps.props.collected[idx] === 0) {
-              colProps.props.collected[idx] = 1;
+              rendProps.iconIndex[playerIdx] = 1; // 💥
+              if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
+            } else if (colProps && colProps.props.value[idx] !== undefined) {
               state.tokens++;
               world.destroyEntity(world.getEntityId(idx));
             }
           }
 
-          // Offscreen cleanup
-          if (ex < -100) {
-            world.destroyEntity(world.getEntityId(idx));
-          }
-        }
-
-        if (onGround) {
-          pProps.jumpsLeft[playerIdx] = state.maxJumps;
+          if (ex < -100) world.destroyEntity(world.getEntityId(idx));
         }
 
         self.updateUI(state);
@@ -259,7 +223,6 @@
       const state = world.getResource('GameState');
       const e = world.createEntity();
       world.addComponent(e, 'Position');
-      world.addComponent(e, 'Velocity');
       world.addComponent(e, 'Renderable');
       world.addComponent(e, 'Collider');
 
@@ -268,85 +231,44 @@
       const rend = world.componentRegistry.get('Renderable').props;
       const coll = world.componentRegistry.get('Collider').props;
 
-      const typeRnd = Math.random();
-      if (typeRnd < 0.6) {
-        // Obstacle
+      pos.x[idx] = this.instance.canvas.width + 50;
+
+      if (Math.random() < 0.6) {
         world.addComponent(e, 'Obstacle');
-        const type = this.obstacleTypes[Math.floor(Math.random() * this.obstacleTypes.length)];
-        pos.x[idx] = this.instance.canvas.width + 50;
+        const typeIdx = Math.floor(Math.random() * this.obstacleTypes.length);
+        const type = this.obstacleTypes[typeIdx];
         pos.y[idx] = state.groundY - type.height;
-        rend.iconIndex[idx] = 4; // Using specific index mapping or fallback
+        rend.iconIndex[idx] = 3 + typeIdx; // Map to icons array
         rend.size[idx] = type.width;
         coll.width[idx] = type.width;
         coll.height[idx] = type.height;
       } else {
-        // Collectible
         world.addComponent(e, 'Collectible');
-        pos.x[idx] = this.instance.canvas.width + 50;
         pos.y[idx] = state.groundY - 100 - Math.random() * 80;
-        rend.iconIndex[idx] = 3;
-        rend.size[idx] = this.tokenType.width;
-        coll.width[idx] = this.tokenType.width;
-        coll.height[idx] = this.tokenType.height;
+        rend.iconIndex[idx] = 2; // 💎
+        rend.size[idx] = 28;
+        coll.width[idx] = 28;
+        coll.height[idx] = 28;
       }
     },
 
     updateUI(state) {
       if (this.dom.distance) this.dom.distance.textContent = Math.floor(state.distance) + 'm';
       if (this.dom.tokens) this.dom.tokens.textContent = state.tokens;
-      const pIdx = this.instance.world.getIndex(state.playerId);
-      const jumps = this.instance.world.componentRegistry.get('Player').props.jumpsLeft[pIdx];
-      if (this.dom.jumps) this.dom.jumps.textContent = `${jumps}/${state.maxJumps}`;
     },
 
     draw(alpha, defaultRender) {
       const ctx = this.instance.ctx;
-      const w = this.instance.canvas.width;
-      const h = this.instance.canvas.height;
-
-      // Parallax BG
+      const w = this.instance.canvas.width,
+        h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
+
       ctx.fillStyle = '#1a1a2e';
       ctx.fillRect(0, 0, w, h);
-
-      // Floor
       ctx.fillStyle = '#0f0f1c';
       ctx.fillRect(0, state.groundY, w, h - state.groundY);
 
-      const speedOffset = (state.distance * 10) % 40;
-      ctx.strokeStyle = '#2d2d4a';
-      ctx.beginPath();
-      for (let x = -speedOffset; x < w; x += 40) {
-        ctx.moveTo(x | 0, state.groundY);
-        ctx.lineTo(x | 0, h);
-      }
-      ctx.stroke();
-
-      // ECS Standard Render
-      // Need dynamic icons mapping based on components if defaultRender is strict
-      // For 11/10 we could override the icon mappings in RenderSystem or draw them manually here
-      const query = this.instance.world.createQuery(['Position', 'Renderable']);
-      const { dense, count } = query.set;
-      const pos = this.instance.world.componentRegistry.get('Position').props;
-      const rend = this.instance.world.componentRegistry.get('Renderable').props;
-      const obs = this.instance.world.componentRegistry.get('Obstacle');
-      const col = this.instance.world.componentRegistry.get('Collectible');
-
-      for (let i = 0; i < count; i++) {
-        const idx = dense[i];
-        let icon = '❓';
-
-        if (idx === state.playerId) {
-          icon = state.gameOver ? '💥' : '🐕';
-        } else if (col && col.props.points[idx] !== undefined) {
-          icon = '💎';
-        } else if (obs && obs.props.points[idx] !== undefined) {
-          // Simplification: random icon based on index or just general obstacle
-          icon = this.obstacleTypes[idx % this.obstacleTypes.length].icon;
-        }
-
-        SpriteCache.draw(ctx, icon, pos.x[idx], pos.y[idx] + rend.size[idx] / 2, rend.size[idx]);
-      }
+      defaultRender(this.instance.world, alpha);
     },
 
     stop() {

@@ -14,28 +14,25 @@
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
-      const canvas = document.createElement('canvas');
-      canvas.width = arena.clientWidth || 800;
-      canvas.height = arena.clientHeight || 600;
-      arena.innerHTML = '';
-      arena.appendChild(canvas);
+      arena.innerHTML = `<canvas id="ecs-canvas" class="game-canvas"></canvas>`;
+      const canvas = document.getElementById('ecs-canvas');
 
-      // Create Game Instance (11/10 Standard)
       this.instance = new ASDF.GameInstance(canvas, {
-        maxEntities: 15000, // Overhead for peak stress
+        maxEntities: 15000,
         debug: true,
       });
-      const world = this.instance.world;
-      const ctx = this.instance.ctx;
 
-      // Register Systems (11/10 modular init)
+      const world = this.instance.world;
+      this.instance.initStandardComponents();
+
+      // Systems
       world.addSystem(ASDF.InputSystem.init(world));
       world.addSystem(ASDF.PhysicsSystem.createMovement());
       world.addSystem(ASDF.PhysicsSystem.createCollision());
-      const render = ASDF.RenderSystem.create(ctx);
 
-      // We must init standard components before manual entity creation
-      this.instance.initStandardComponents();
+      // Icons: 0:Dog, 1:Fire, 2:Skull
+      const icons = ['🐕', '🔥', '💀'];
+      const render = ASDF.RenderSystem.create(this.instance.ctx, icons);
 
       // Create Player
       const player = world.createEntity();
@@ -45,60 +42,50 @@
       world.addComponent(player, 'Controllable');
       world.addComponent(player, 'Collider');
 
-      const pos = world.componentRegistry.get('Position').props;
-      const rend = world.componentRegistry.get('Renderable').props;
-      const coll = world.componentRegistry.get('Collider').props;
-      const ctrl = world.componentRegistry.get('Controllable').props;
+      const pIdx = world.getIndex(player);
+      world.componentRegistry.get('Position').props.x[pIdx] = canvas.width / 2;
+      world.componentRegistry.get('Position').props.y[pIdx] = canvas.height / 2;
+      world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0;
+      world.componentRegistry.get('Renderable').props.size[pIdx] = 40;
+      world.componentRegistry.get('Collider').props.width[pIdx] = 40;
+      world.componentRegistry.get('Collider').props.height[pIdx] = 40;
+      world.componentRegistry.get('Controllable').props.speed[pIdx] = 5;
 
-      const playerIdx = world.getIndex(player);
-      pos.x[playerIdx] = canvas.width / 2;
-      pos.y[playerIdx] = canvas.height / 2;
-      rend.iconIndex[playerIdx] = 0; // Dog
-      rend.size[playerIdx] = 40;
-      coll.width[playerIdx] = 40;
-      coll.height[playerIdx] = 40;
-      ctrl.speed[playerIdx] = 5;
-
-      // Spawn 10,000 random fires (STRESS TEST 11/10)
-      const vel = world.componentRegistry.get('Velocity').props;
-      for (let i = 0; i < 10000; i++) {
+      // Spawn 5000 fires
+      for (let i = 0; i < 5000; i++) {
         const fire = world.createEntity();
-        const fireIdx = world.getIndex(fire);
         world.addComponent(fire, 'Position');
         world.addComponent(fire, 'Velocity');
         world.addComponent(fire, 'Renderable');
         world.addComponent(fire, 'Collider');
 
-        pos.x[fireIdx] = Math.random() * canvas.width;
-        pos.y[fireIdx] = Math.random() * canvas.height;
-        vel.vx[fireIdx] = (Math.random() - 0.5) * 4;
-        vel.vy[fireIdx] = (Math.random() - 0.5) * 4;
-
-        rend.iconIndex[fireIdx] = 1; // Fire
-        rend.size[fireIdx] = 15;
-        coll.width[fireIdx] = 15;
-        coll.height[fireIdx] = 15;
+        const idx = world.getIndex(fire);
+        world.componentRegistry.get('Position').props.x[idx] = Math.random() * canvas.width;
+        world.componentRegistry.get('Position').props.y[idx] = Math.random() * canvas.height;
+        world.componentRegistry.get('Velocity').props.vx[idx] = (Math.random() - 0.5) * 4;
+        world.componentRegistry.get('Velocity').props.vy[idx] = (Math.random() - 0.5) * 4;
+        world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1;
+        world.componentRegistry.get('Renderable').props.size[idx] = 15;
+        world.componentRegistry.get('Collider').props.width[idx] = 15;
+        world.componentRegistry.get('Collider').props.height[idx] = 15;
       }
 
-      // Override instance render for collision feedback
       this.instance.render = alpha => {
+        const ctx = this.instance.ctx;
         ctx.fillStyle = '#0a0a0f';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Feedback System: Update colors based on collision
+        // Collision visual feedback
         const colliders = world.createQuery(['Collider', 'Renderable']);
-        const collProps = world.componentRegistry.get('Collider').props;
-        const rendProps = world.componentRegistry.get('Renderable').props;
-
         const { dense, count } = colliders.set;
+        const cProps = world.componentRegistry.get('Collider').props;
+        const rProps = world.componentRegistry.get('Renderable').props;
         for (let i = 0; i < count; i++) {
-          const index = dense[i];
-          const id = world.getEntityId(index);
-          if (collProps.active[index] === 1) {
-            rendProps.iconIndex[index] = 2; // Skull on collision
-          } else {
-            rendProps.iconIndex[index] = id === player ? 0 : 1;
-          }
+          const idx = dense[i];
+          const id = world.getEntityId(idx);
+          if (cProps.active[idx] === 1)
+            rProps.iconIndex[idx] = 2; // Skull
+          else rProps.iconIndex[idx] = id === player ? 0 : 1;
         }
 
         render(world, alpha);
@@ -112,17 +99,13 @@
     },
 
     stop() {
-      if (this.instance) {
-        this.instance.stop();
-      }
+      if (this.instance) this.instance.stop();
     },
   };
 
   if (typeof window !== 'undefined') {
     window.ASDF = window.ASDF || {};
     window.ASDF.ECSDemo = ECSDemo;
-    if (typeof GameRegistry !== 'undefined') {
-      GameRegistry.register('ecsdemos', ECSDemo);
-    }
+    if (typeof GameRegistry !== 'undefined') GameRegistry.register('ecsdemos', ECSDemo);
   }
 })();

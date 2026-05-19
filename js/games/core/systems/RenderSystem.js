@@ -11,18 +11,24 @@
     /**
      * Create a Render System
      * @param {CanvasRenderingContext2D} ctx
+     * @param {string[]} customIcons - Optional mapping for iconIndex
      */
-    create(ctx) {
-      // Icons mapping - matches SpriteCache usage
-      const ICONS = ['🐕', '🔥', '💀', '💎', '🚀'];
+    create(ctx, customIcons = null) {
+      // Default fallback icons
+      const DEFAULT_ICONS = ['🐕', '🔥', '💀', '💎', '🚀'];
+      const icons = customIcons || DEFAULT_ICONS;
 
       return function (world, alpha) {
         // Query for things that can be rendered
         const query = world.createQuery(['Position', 'Renderable']);
-        const posProps = world.componentRegistry.get('Position').props;
-        const rendProps = world.componentRegistry.get('Renderable').props;
+        const posComp = world.componentRegistry.get('Position');
+        const rendComp = world.componentRegistry.get('Renderable');
 
-        // Optional Velocity for interpolation
+        if (!posComp || !rendComp) return;
+
+        const posProps = posComp.props;
+        const rendProps = rendComp.props;
+
         const velComp = world.componentRegistry.get('Velocity');
         const velProps = velComp ? velComp.props : null;
 
@@ -32,11 +38,8 @@
         query.forEach(entityId => {
           const index = world.getIndex(entityId);
 
-          // 1. Interpolation (11/10 Smoothness)
-          // We render at: PreviousPosition + (CurrentVelocity * alpha)
           let x = posProps.x[index];
           let y = posProps.y[index];
-
           if (velProps) {
             x += velProps.vx[index] * alpha;
             y += velProps.vy[index] * alpha;
@@ -46,27 +49,28 @@
           const size = rendProps.size[index] || 20;
           const entityAlpha = rendProps.alpha[index] ?? 1;
 
-          // 2. Alpha optimization: Only change context if necessary
           if (entityAlpha !== currentAlpha) {
             ctx.globalAlpha = entityAlpha;
             currentAlpha = entityAlpha;
           }
 
-          // 3. SpriteCache Drawing (100x faster than fillText)
-          const iconStr = ICONS[iconIdx] || '❓';
+          try {
+            // Support both numeric index and direct emoji string
+            const iconStr = typeof iconIdx === 'string' ? iconIdx : icons[iconIdx] || '❓';
 
-          if (typeof SpriteCache !== 'undefined') {
-            SpriteCache.draw(ctx, iconStr, x, y, size);
-          } else {
-            // Fallback if SpriteCache is missing (should not happen in 2026)
-            ctx.font = `${size}px serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(iconStr, x, y);
+            if (typeof SpriteCache !== 'undefined') {
+              SpriteCache.draw(ctx, iconStr, x, y, size);
+            } else {
+              ctx.font = `${size}px serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(iconStr, x, y);
+            }
+          } catch (e) {
+            console.warn('[RenderSystem] Draw failed:', e);
           }
         });
 
-        // Reset context state
         if (currentAlpha !== 1.0) ctx.globalAlpha = 1.0;
       };
     },
