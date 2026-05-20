@@ -65,6 +65,8 @@
 
       this.renderPhase(world);
 
+      this.instance.onRender = () => {}; // PumpArena is hybrid
+
       this.instance.start();
 
       if (typeof activeGames !== 'undefined') {

@@ -50,7 +50,7 @@
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
 

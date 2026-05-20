@@ -60,19 +60,7 @@
       this.generateMaze(world);
 
       // Override Render
-      const icons = [
-        '🧑‍💻',
-        '🌊',
-        '⚠️',
-        '🔑',
-        '⚡',
-        '👁️',
-        '👾',
-        ...this.TREASURES.map(t => t.icon),
-        '🏁',
-      ];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha);
 
       world.addSystem(this.createLogicSystem());
 
@@ -111,8 +99,9 @@
         .map(() => Array(state.cols).fill(1));
 
       // Simple room maze
-      for (let y = 1; y < state.rows - 1; y++)
+      for (let y = 1; y < state.rows - 1; y++) {
         for (let x = 1; x < state.cols - 1; x++) state.maze[y][x] = 0;
+      }
 
       state.fog = Array(state.rows)
         .fill(0)
@@ -197,27 +186,36 @@
         }
       }
 
-      // Convert grid pos to pixel pos for defaultRender
-      const query = this.instance.world.createQuery(['Position']);
+      // 11/10: Custom Render Loop for Grid -> Pixel conversion
+      // We DON'T mutate posProps.x/y to avoid corruption
+      const query = this.instance.world.createQuery(['Position', 'Renderable']);
       const { dense, count } = query.set;
       const pos = this.instance.world.componentRegistry.get('Position').props;
-      const tmpX = new Float32Array(count),
-        tmpY = new Float32Array(count);
+      const rend = this.instance.world.componentRegistry.get('Renderable').props;
+
+      const icons = [
+        '🧑‍💻',
+        '🌊',
+        '⚠️',
+        '🔑',
+        '⚡',
+        '👁️',
+        '👾',
+        ...this.TREASURES.map(t => t.icon),
+        '🏁',
+      ];
 
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
-        tmpX[i] = pos.x[idx];
-        tmpY[i] = pos.y[idx]; // backup
-        pos.x[idx] = pos.x[idx] * cS + cS / 2;
-        pos.y[idx] = pos.y[idx] * cS + cS / 2;
-      }
+        const gx = pos.x[idx],
+          gy = pos.y[idx];
+        const screenX = gx * cS + cS / 2;
+        const screenY = gy * cS + cS / 2;
+        const icon = icons[rend.iconIndex[idx]] || '❓';
 
-      defaultRender(this.instance.world, alpha);
-
-      for (let i = 0; i < count; i++) {
-        const idx = dense[i];
-        pos.x[idx] = tmpX[i];
-        pos.y[idx] = tmpY[i]; // restore
+        if (typeof SpriteCache !== 'undefined') {
+          SpriteCache.draw(ctx, icon, screenX, screenY, rend.size[idx] || 24);
+        }
       }
     },
 

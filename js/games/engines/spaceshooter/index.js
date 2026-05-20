@@ -62,9 +62,10 @@
       // Override Render
       const icons = ['🚀', '🔥', '🛸', '💥'];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       world.addSystem(this.createLogicSystem());
+
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       this.instance.start();

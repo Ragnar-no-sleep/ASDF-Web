@@ -93,7 +93,7 @@
         '💥',
       ];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       // Systems
       world.addSystem(this.createLogicSystem());
@@ -212,8 +212,9 @@
             pos.x[idx] > self.instance.canvas.width ||
             pos.y[idx] < 0 ||
             pos.y[idx] > self.instance.canvas.height
-          )
+          ) {
             world.destroyEntity(world.getEntityId(idx));
+          }
         }
 
         self.updateUI(state);

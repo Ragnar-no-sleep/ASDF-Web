@@ -85,14 +85,14 @@
       this.setupInput();
       this.preloadSprites();
 
-      // Override Render
-      const icons = [...this.enemyTypes.map(e => e.icon), '💥'];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
-
       // Systems
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
+
+      // Use the new onRender hook (Maximum stability)
+      const icons = [...this.enemyTypes.map(e => e.icon), '💥'];
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
 

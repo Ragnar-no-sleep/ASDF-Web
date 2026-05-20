@@ -77,10 +77,11 @@
       // Override Render
       const icons = ['🏎️', ...this.obstacleTypes.map(o => o.icon), ...this.dexLogos];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.render = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       // Systems
       world.addSystem(this.createLogicSystem());
+
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       this.instance.start();

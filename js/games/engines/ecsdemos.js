@@ -32,7 +32,7 @@
 
       // Icons: 0:Dog, 1:Fire, 2:Skull
       const icons = ['🐕', '🔥', '💀'];
-      const render = ASDF.RenderSystem.create(this.instance.ctx, icons);
+      const renderSystem = ASDF.RenderSystem.create(this.instance.ctx, icons);
 
       // Create Player
       const player = world.createEntity();
@@ -70,7 +70,7 @@
         world.componentRegistry.get('Collider').props.height[idx] = 15;
       }
 
-      this.instance.render = alpha => {
+      this.instance.onRender = alpha => {
         const ctx = this.instance.ctx;
         ctx.fillStyle = '#0a0a0f';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -88,7 +88,7 @@
           else rProps.iconIndex[idx] = id === player ? 0 : 1;
         }
 
-        render(world, alpha);
+        renderSystem(world, alpha);
       };
 
       this.instance.start();

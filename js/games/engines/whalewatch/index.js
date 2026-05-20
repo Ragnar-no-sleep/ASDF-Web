@@ -52,6 +52,8 @@
       this.setupSymbolHunt();
       this.setupMemoryGame();
 
+      this.instance.onRender = () => {}; // WhaleWatch is DOM-based
+
       this.instance.start();
 
       if (typeof activeGames !== 'undefined') {

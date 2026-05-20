@@ -14,12 +14,14 @@
      * @param {string[]} customIcons - Optional mapping for iconIndex
      */
     create(ctx, customIcons = null) {
-      // Default fallback icons
+      if (!ctx) return () => {};
+
       const DEFAULT_ICONS = ['🐕', '🔥', '💀', '💎', '🚀'];
       const icons = customIcons || DEFAULT_ICONS;
 
       return function (world, alpha) {
-        // Query for things that can be rendered
+        if (!world) return;
+
         const query = world.createQuery(['Position', 'Renderable']);
         const posComp = world.componentRegistry.get('Position');
         const rendComp = world.componentRegistry.get('Renderable');
@@ -36,8 +38,9 @@
         ctx.globalAlpha = 1.0;
 
         query.forEach(entityId => {
-          const index = world.getIndex(entityId);
+          const index = entityId & 0xffffff; // Faster than getIndex
 
+          // 1. Interpolation
           let x = posProps.x[index];
           let y = posProps.y[index];
           if (velProps) {
@@ -46,8 +49,11 @@
           }
 
           const iconIdx = rendProps.iconIndex[index];
-          const size = rendProps.size[index] || 20;
-          const entityAlpha = rendProps.alpha[index] ?? 1;
+          const size = rendProps.size[index] || 24;
+
+          // 2. Alpha defaulting (Standard ECS 0-initialization fix)
+          const a = rendProps.alpha[index];
+          const entityAlpha = a === 0 && rendComp.schema.alpha ? 1.0 : a;
 
           if (entityAlpha !== currentAlpha) {
             ctx.globalAlpha = entityAlpha;
@@ -55,9 +61,7 @@
           }
 
           try {
-            // Support both numeric index and direct emoji string
-            const iconStr = typeof iconIdx === 'string' ? iconIdx : icons[iconIdx] || '❓';
-
+            const iconStr = icons[iconIdx] || icons[0] || '❓';
             if (typeof SpriteCache !== 'undefined') {
               SpriteCache.draw(ctx, iconStr, x, y, size);
             } else {
@@ -67,7 +71,7 @@
               ctx.fillText(iconStr, x, y);
             }
           } catch (e) {
-            console.warn('[RenderSystem] Draw failed:', e);
+            // Silently fail per entity to keep loop alive
           }
         });
 

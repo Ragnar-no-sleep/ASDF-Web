@@ -10,22 +10,46 @@
     constructor(canvas, options = {}) {
       this.canvas = canvas;
       this.ctx = canvas.getContext('2d', {
-        desynchronized: true,
         alpha: false,
       });
 
       if (!this.ctx) {
-        console.warn('[GameInstance] Desynchronized context failed, falling back to standard.');
-        this.ctx = canvas.getContext('2d');
+        throw new Error('[GameInstance] Failed to get 2D context');
       }
 
       this.world = new ECS.World(options.maxEntities || 2000);
       this.inspector = options.debug ? new ASDF.DevInspector(this.world) : null;
 
+      // Hooks for game-specific logic
+      this.onUpdate = null;
+      this.onRender = null;
+
       this.loop = new FixedTimestepLoop(
         options.fps || 60,
-        this.update.bind(this),
-        this.render.bind(this)
+        dt => {
+          try {
+            this.world.update(dt);
+            if (this.onUpdate) this.onUpdate(dt);
+            if (this.inspector) this.inspector.update(dt);
+          } catch (e) {
+            console.error('[GameInstance] Update crash:', e);
+            this.stop();
+          }
+        },
+        alpha => {
+          try {
+            if (this.onRender) {
+              this.onRender(alpha);
+            } else {
+              // Default background
+              this.ctx.fillStyle = '#0a0a0f';
+              this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+          } catch (e) {
+            console.error('[GameInstance] Render crash:', e);
+            this.stop();
+          }
+        }
       );
 
       this.initialized = false;
