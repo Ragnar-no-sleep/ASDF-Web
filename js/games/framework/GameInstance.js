@@ -75,9 +75,27 @@
     start() {
       if (!this.initialized) {
         this.initStandardComponents();
+        this.resize();
         this.initialized = true;
       }
       this.loop.start();
+    }
+
+    /**
+     * Resize canvas to match container
+     */
+    resize() {
+      if (!this.canvas) return;
+      const parent = this.canvas.parentElement;
+      if (!parent) return;
+
+      const w = parent.clientWidth || 800;
+      const h = parent.clientHeight || 600;
+
+      if (this.canvas.width !== w || this.canvas.height !== h) {
+        this.canvas.width = w;
+        this.canvas.height = h;
+      }
     }
 
     /**

@@ -107,7 +107,7 @@ function isBot(req) {
 
 // JSON body parser for API routes
 app.use(express.json({ limit: '10kb' }));
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Validate environment at startup

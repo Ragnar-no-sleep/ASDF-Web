@@ -38,7 +38,7 @@
         ctx.globalAlpha = 1.0;
 
         query.forEach(entityId => {
-          const index = entityId & 0xffffff; // Faster than getIndex
+          const index = entityId & 0xffffff;
 
           // 1. Interpolation
           let x = posProps.x[index];
@@ -52,8 +52,9 @@
           const size = rendProps.size[index] || 24;
 
           // 2. Alpha defaulting (Standard ECS 0-initialization fix)
+          // Default to 1.0 unless explicitly set to non-zero value
           const a = rendProps.alpha[index];
-          const entityAlpha = a === 0 && rendComp.schema.alpha ? 1.0 : a;
+          const entityAlpha = a === 0 ? 1.0 : a;
 
           if (entityAlpha !== currentAlpha) {
             ctx.globalAlpha = entityAlpha;

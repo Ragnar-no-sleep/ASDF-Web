@@ -147,10 +147,14 @@
       const canvas = this.instance.canvas;
       canvas.addEventListener('pointerdown', e => {
         const rect = canvas.getBoundingClientRect();
+        // Scale coordinates to internal canvas resolution
         const x = (e.clientX - rect.left) * (canvas.width / rect.width);
         const y = (e.clientY - rect.top) * (canvas.height / rect.height);
         this.shoot(x, y);
       });
+      // Hardware cursor for zero-latency
+      const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
+      canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     },
 
     preloadSprites() {

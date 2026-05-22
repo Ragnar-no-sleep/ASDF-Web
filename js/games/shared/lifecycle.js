@@ -37,7 +37,7 @@
       // 5. Engine Ignition
       this.states.set(gameId, 'PLAYING');
 
-      requestAnimationFrame(() => {
+      requestAnimationFrame(async () => {
         if (typeof GameEvents !== 'undefined') {
           GameEvents.emit('game:started', {
             gameId,
@@ -48,7 +48,7 @@
 
         if (typeof GameEngines !== 'undefined') {
           try {
-            GameEngines.start(gameId);
+            await GameEngines.start(gameId);
           } catch (e) {
             console.error(`[GameLifecycle] Engine crash on start for ${gameId}:`, e);
             this._restoreOverlay(gameId);
