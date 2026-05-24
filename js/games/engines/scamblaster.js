@@ -39,13 +39,19 @@
       this.createArena(arena);
       const canvas = document.getElementById('sb-canvas');
 
-      this.instance = new ASDF.GameInstance(canvas, {
+      if (typeof window.ASDF.GameInstance === 'undefined') {
+        console.error('[ScamBlaster] ASDF.GameInstance is missing! Load order error?');
+        return;
+      }
+
+      this.instance = new window.ASDF.GameInstance(canvas, {
         maxEntities: 1000,
         debug: true,
       });
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+      this.instance.resize();
 
       // Register Components
       world.registerComponent('Enemy', {

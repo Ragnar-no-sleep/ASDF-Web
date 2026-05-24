@@ -434,42 +434,8 @@ app.post('/api/redis', async (req, res) => {
   // ... (existing redis logic)
 });
 
-// API Proxy for local development
-// Forwards /api requests to the backend service on port 3001
-if (!isProduction) {
-  const http = require('http');
-  app.use('/api', (req, res, next) => {
-    // Skip if already handled (e.g. /api/redis)
-    if (res.headersSent) return;
-
-    const options = {
-      hostname: 'localhost',
-      port: 3001,
-      path: req.originalUrl,
-      method: req.method,
-      headers: { ...req.headers },
-    };
-
-    // Remove host header to avoid confusion
-    delete options.headers.host;
-
-    const proxyReq = http.request(options, proxyRes => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers);
-      proxyRes.pipe(res, { end: true });
-    });
-
-    proxyReq.on('error', err => {
-      logger.warn({ err: err.message, url: req.originalUrl }, 'API Proxy unavailable');
-      res.status(502).json({
-        error: 'Backend Unavailable',
-        message: 'The API server on port 3001 is not responding. Did you start it?',
-        detail: err.message,
-      });
-    });
-
-    req.pipe(proxyReq, { end: true });
-  });
-}
+// API Proxy for local development removed - this server now handles /api directly or via specific route handlers
+// (Add your API route handlers here if they are part of this server)
 
 // Catch-all for unknown /api routes (Production fallback)
 app.use('/api', (req, res) => {

@@ -20,6 +20,11 @@ const GameEngines = {
 
   initialized: false,
   _loadingPromises: new Map(),
+  _enginePaths: {
+    spaceshooter: 'spaceshooter/index.js',
+    stakestacker: 'stakestacker/index.js',
+    whalewatch: 'whalewatch/index.js',
+  },
 
   /**
    * Initialize the game engines coordinator
@@ -83,7 +88,9 @@ const GameEngines = {
       console.log(`[GameEngines] Lazy loading engine: ${gameId}...`);
 
       const script = document.createElement('script');
-      script.src = `${this.config.enginesPath}${gameId}.js`;
+      // Use specific path if mapped, else default to flat .js
+      const path = this._enginePaths[gameId] || `${gameId}.js`;
+      script.src = `${this.config.enginesPath}${path}`;
       script.defer = true;
 
       script.onload = () => {
@@ -92,18 +99,25 @@ const GameEngines = {
       };
 
       script.onerror = err => {
-        console.error(`[GameEngines] Failed to load engine script for ${gameId}`, err);
-        // Fallback for complex engines (directories like spaceshooter/index.js)
-        const fallbackScript = document.createElement('script');
-        fallbackScript.src = `${this.config.enginesPath}${gameId}/index.js`;
-        fallbackScript.defer = true;
+        console.error(
+          `[GameEngines] Failed to load engine script for ${gameId} at ${script.src}`,
+          err
+        );
 
-        fallbackScript.onload = () => resolve(true);
-        fallbackScript.onerror = () => {
-          console.error(`[GameEngines] Fallback load failed for ${gameId}`);
-          reject(new Error(`Failed to load engine ${gameId}`));
-        };
-        document.body.appendChild(fallbackScript);
+        // If it wasn't a modular engine but failed, try the subfolder as fallback
+        if (!this._enginePaths[gameId]) {
+          const fallbackScript = document.createElement('script');
+          fallbackScript.src = `${this.config.enginesPath}${gameId}/index.js`;
+          fallbackScript.defer = true;
+          fallbackScript.onload = () => resolve(true);
+          fallbackScript.onerror = () => {
+            console.error(`[GameEngines] Fallback load failed for ${gameId}`);
+            reject(new Error(`Failed to load engine ${gameId}`));
+          };
+          document.body.appendChild(fallbackScript);
+        } else {
+          reject(new Error(`Failed to load modular engine ${gameId}`));
+        }
       };
 
       document.body.appendChild(script);
