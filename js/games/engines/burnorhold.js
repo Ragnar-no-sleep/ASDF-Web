@@ -62,7 +62,9 @@
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx);
+      // Override Render
+      const icons = ['🌐', '⚔️'];
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
