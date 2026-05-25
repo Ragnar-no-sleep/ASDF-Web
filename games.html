@@ -11,38 +11,15 @@
     />
     <link rel="canonical" href="https://alonisthe.dev/games" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://alonisthe.dev/games" />
-    <meta property="og:title" content="ASDF Game of the Week" />
-    <meta
-      property="og:description"
-      content="Weekly gaming competition for the ASDF community. Hold tokens, play games, earn rewards."
-    />
-    <meta property="og:image" content="https://alonisthe.dev/og-games.png" />
-    <meta property="og:site_name" content="ASDFASDFA" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://alonisthe.dev/games" />
-    <meta name="twitter:title" content="ASDF Game of the Week" />
-    <meta
-      name="twitter:description"
-      content="Weekly gaming competition for the ASDF community. Hold tokens, play games, earn rewards."
-    />
-    <meta name="twitter:image" content="https://alonisthe.dev/og-games.png" />
-
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <!-- X-Frame-Options handled by server (allows Squarespace embedding) -->
     <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
     <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <!-- CSP handled by server.cjs Helmet -->
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -55,18 +32,9 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/design-tokens.css" />
     <link rel="stylesheet" href="css/games.css" />
-    <link rel="stylesheet" href="css/games-variants.css" />
-    <link rel="stylesheet" href="css/games-engage.css" />
-    <link rel="stylesheet" href="css/games-challenges.css" />
     <link rel="stylesheet" href="css/games-arcade.css" />
-    <link rel="stylesheet" href="css/viking-bg.css" />
-    <link rel="stylesheet" href="css/shop.css" />
-    <link rel="stylesheet" href="css/shop-animations.css" />
     <link rel="stylesheet" href="css/valhalla.css" />
-    <link rel="stylesheet" href="css/pumparena.css" />
     <link rel="stylesheet" href="css/game-engines.css" />
-    <link rel="stylesheet" href="css/spaceshooter.css" />
-
     <link rel="stylesheet" href="css/runtime-components.css" />
   </head>
   <body class="arcade-page">
@@ -79,247 +47,65 @@
         return false;
       };
     </script>
-    <!-- Neo Arcade Navigation -->
-    <nav class="nav eco-page" role="navigation" aria-label="Games navigation">
+    
+    <nav class="nav eco-page">
       <div class="nav-content">
-        <a href="/" class="nav-logo">
-          <span class="nav-logo-icon">&#128293;</span>
-          <span class="nav-logo-text">Ignition Arcade</span>
-        </a>
-
+        <a href="/" class="nav-logo"> Ignition Arcade </a>
         <div class="nav-tabs">
-          <a href="#games" class="nav-tab active" data-hub-view="games">Games</a>
-          <a href="#shop" class="nav-tab" data-hub-view="shop">Shop</a>
-          <a href="#profile" class="nav-tab" data-hub-view="profile">Profile</a>
-          <a href="#settings" class="nav-tab" data-hub-view="settings">Settings</a>
+          <a href="#games" class="nav-tab active">Games</a>
+          <a href="#shop" class="nav-tab">Shop</a>
         </div>
-
         <div class="nav-right">
-          <span id="user-badge" class="visitor-badge" role="status" aria-live="polite">VISITOR</span>
-          <button id="wallet-btn" class="wallet-btn" aria-label="Connect Phantom wallet">
-            <span id="wallet-btn-text">Connect Wallet</span>
-          </button>
+          <button id="wallet-btn" class="wallet-btn">Connect Wallet</button>
         </div>
       </div>
     </nav>
 
-    <!-- ============================================
-         MAIN CONTENT
-         ============================================ -->
-    <main id="main-content" class="arcade-main" role="main">
-      <!-- Background (Persistent) -->
-      <div class="arcade-bg" aria-hidden="true">
+    <main id="main-content" class="arcade-main">
+      <div class="arcade-bg">
         <div class="arcade-grid"></div>
-        <div class="arcade-sun"></div>
-        <div class="arcade-mountains"></div>
-        <div class="arcade-glow"></div>
-        <div class="arcade-shapes">
-          <div class="shape shape-1"></div>
-          <div class="shape shape-2"></div>
-          <div class="shape shape-3"></div>
-          <div class="shape shape-4"></div>
-        </div>
-        <div class="arcade-sidelines"></div>
-        <div class="arcade-scanlines"></div>
-        <div class="arcade-vignette"></div>
       </div>
 
-      <!-- ============================================
-             GAMES SECTION (Grid View) - DEFAULT
-             ============================================ -->
-      <section class="valhalla-section" id="games-section" aria-labelledby="games-section-title">
+      <section class="valhalla-section" id="games-section">
         <div class="container">
           <div class="valhalla-section-header">
-            <h2 class="valhalla-section-title" id="games-section-title">
-              <span class="icon" aria-hidden="true">🕹️</span>
-              All Games
-            </h2>
+            <h2 class="valhalla-section-title">🕹️ All Games</h2>
             <p class="valhalla-section-subtitle">11 unique mini-games. Play, earn XP, climb the leaderboards!</p>
           </div>
-
           <div class="games-grid" id="games-grid">
             <div class="loading-skeleton"><div class="skeleton-card"></div></div>
           </div>
         </div>
       </section>
 
-      <!-- ============================================
-             COSMETIC SHOP SECTION
-             ============================================ -->
-      <section class="valhalla-section section-hidden" id="shop-section" aria-labelledby="shop-section-title">
-        <div class="container container-xl">
-          <div class="valhalla-section-header">
-            <h2 class="valhalla-section-title" id="shop-section-title">
-              <span class="icon" aria-hidden="true">🛒</span>
-              Cosmetic Shop
-              <span class="valhalla-badge">NEW</span>
-            </h2>
-            <p class="valhalla-section-subtitle">Customize your ASDF Dog with unique cosmetics!</p>
-          </div>
-
-          <!-- Back to Hub -->
-          <div class="mb-5">
-            <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
-              ← Back to Hub
-            </button>
-          </div>
-
-          <div id="shop-container"></div>
-        </div>
+      <!-- Placeholder sections for navigation -->
+      <section class="valhalla-section section-hidden" id="shop-section">
+        <div class="container"><h2>🛒 Cosmetic Shop</h2><div id="shop-container"></div></div>
       </section>
-
-      <!-- ============================================
-             PROFILE SECTION
-             ============================================ -->
-      <section class="valhalla-section section-hidden" id="profile-section" aria-labelledby="profile-section-title">
-        <div class="container container-lg">
-          <div class="valhalla-section-header">
-            <h2 class="valhalla-section-title" id="profile-section-title">
-              <span class="icon" aria-hidden="true">👤</span>
-              Profile
-            </h2>
-            <p class="valhalla-section-subtitle">Your stats, achievements, and journey</p>
-          </div>
-
-          <!-- Back to Hub -->
-          <div class="mb-5">
-            <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
-              ← Back to Hub
-            </button>
-          </div>
-
-          <div class="profile-container">
-            <!-- Content dynamic via JS -->
-          </div>
-        </div>
+      <section class="valhalla-section section-hidden" id="profile-section">
+        <div class="container"><h2>👤 Profile</h2><div class="profile-container"></div></div>
       </section>
-
-      <!-- ============================================
-             SETTINGS SECTION
-             ============================================ -->
-      <section class="valhalla-section section-hidden" id="settings-section" aria-labelledby="settings-section-title">
-        <div class="settings-container container">
-          <div class="valhalla-section-header">
-            <h2 class="valhalla-section-title" id="settings-section-title">
-              <span class="icon" aria-hidden="true">⚙️</span>
-              Settings
-            </h2>
-            <p class="valhalla-section-subtitle">Customize your experience</p>
-          </div>
-
-          <!-- Back to Hub -->
-          <div class="mb-5">
-            <button class="btn-valhalla-secondary" data-hub-back aria-label="Go back to Hub">
-              ← Back to Hub
-            </button>
-          </div>
-
-          <div class="settings-grid">
-            <!-- Settings options dynamic via JS -->
-          </div>
-        </div>
+      <section class="valhalla-section section-hidden" id="settings-section">
+        <div class="container"><h2>⚙️ Settings</h2><div class="settings-grid"></div></div>
       </section>
     </main>
 
-    <!-- Game Modals Container -->
-    <div id="game-modals">
-      <!-- Modals will be generated by JavaScript -->
-    </div>
+    <div id="game-modals"></div>
 
-    <!-- ============================================
-         JAVASCRIPT
-         ============================================ -->
-    <!-- Solana Web3.js for blockchain transactions (with Subresource Integrity) -->
-    <script
-      src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"
-      integrity="sha384-frt8Dafwfh70NeaBS1T4CRjuekut3aQwBwRGErSdQ+htbmU6sT8P2lc07CA03Kix"
-      crossorigin="anonymous"
-    ></script>
+    <!-- JAVASCRIPT: Load Order Critical (11/10 Standard) -->
+    
+    <!-- 1. External Dependencies -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
 
-    <!-- Cookie Consent (RGPD) - Must load first -->
+    <!-- 2. Foundation (ASDF Core) -->
     <script defer src="js/consent/index.js"></script>
-
-    <!-- Shared Utilities (module scripts defer by default) -->
-    <script type="module" src="js/utils/notice.js"></script>
-
-    <!-- ASDF Games - Modular Architecture -->
     <script defer src="js/shared/security.js"></script>
+    <script defer src="js/games/asdf.js"></script>
     <script defer src="js/games/utils.js"></script>
     <script defer src="js/games/config.js"></script>
-    <script defer src="js/games/asdf.js"></script>
-    <script defer src="js/games/engage.js"></script>
-    <script defer src="js/games/shop.js"></script>
-    <script defer src="js/games/avatar.js"></script>
-    <script defer src="js/games/solana.js"></script>
-    <script defer src="js/games/api.js"></script>
     <script defer src="js/games/state.js"></script>
 
-    <!-- UI Modules (load order matters) -->
-    <script defer src="js/games/ui/rotation.js"></script>
-    <script defer src="js/games/ui/leaderboard.js"></script>
-    <script defer src="js/games/ui/competitive.js"></script>
-    <script defer src="js/games/ui/grid.js"></script>
-    <script defer src="js/games/ui/modal.js"></script>
-    <script defer src="js/games/ui/index.js"></script>
-
-    <!-- Pump Arena RPG Module - DISABLED (not MVP ready)
-    <script defer src="js/games/pumparena/rpgstate.js"></script>
-    <script defer src="js/games/pumparena/character.js"></script>
-    <script defer src="js/games/pumparena/daily.js"></script>
-    <script defer src="js/games/pumparena/npcs.js"></script>
-    <script defer src="js/games/pumparena/quests.js"></script>
-    <script defer src="js/games/pumparena/events.js"></script>
-    <script defer src="js/games/pumparena/minigames.js"></script>
-    <script defer src="js/games/pumparena/skilltrees.js"></script>
-    <script defer src="js/games/pumparena/inventory.js"></script>
-    <script defer src="js/games/pumparena/achievements.js"></script>
-    <script defer src="js/games/pumparena/battle.js"></script>
-    <script defer src="js/games/pumparena/equipment.js"></script>
-    <script defer src="js/games/pumparena/trading.js"></script>
-    <script defer src="js/games/pumparena/cosmetics.js"></script>
-    <script defer src="js/games/pumparena/premium-effects.js"></script>
-    <script defer src="js/games/pumparena/combat-animations.js"></script>
-    <script defer src="js/games/pumparena/reward-feedback.js"></script>
-    <script defer src="js/games/pumparena/factions.js"></script>
-    <script defer src="js/games/pumparena/battle-grid.js"></script>
-    <script defer src="js/games/pumparena/summons.js"></script>
-    <script defer src="js/games/pumparena/deck-builder.js"></script>
-    <script defer src="js/games/pumparena/story-gates.js"></script>
-    <script defer src="js/games/pumparena/quest-items.js"></script>
-    <script defer src="js/games/pumparena/faction-skills.js"></script>
-    <script defer src="js/games/pumparena/quests-expanded.js"></script>
-    <script defer src="js/games/pumparena/events-expanded.js"></script>
-    <script defer src="js/games/pumparena/tutorial-combat.js"></script>
-    <script defer src="js/games/pumparena/effects-integration.js"></script>
-    <script defer src="js/games/pumparena/index.js"></script>
-    -->
-
-    <!-- Shop V2 Module -->
-    <script defer src="js/games/shop/placeholders.js"></script>
-    <script defer src="js/games/shop/particles.js"></script>
-    <script defer src="js/games/shop/canvas.js"></script>
-    <script defer src="js/games/shop/catalog.js"></script>
-    <script defer src="js/games/shop/collections.js"></script>
-    <script defer src="js/games/shop/toast.js"></script>
-    <script defer src="js/games/shop/utils.js"></script>
-    <script defer src="js/games/shop/filters.js"></script>
-    <script defer src="js/games/shop/itemCard.js"></script>
-    <script defer src="js/games/shop/preview.js"></script>
-    <script defer src="js/games/shop/state.js"></script>
-    <script defer src="js/games/shop/sync.js"></script>
-    <script defer src="js/games/shop/favorites.js"></script>
-    <script defer src="js/games/shop/purchase.js"></script>
-    <script defer src="js/games/shop/currency.js"></script>
-    <script defer src="js/games/shop/ui.js"></script>
-    <script defer src="js/games/shop/index.js"></script>
-
-    <!-- Hub Module (Valhalla) -->
-    <script defer src="js/games/hub/audio.js"></script>
-    <script defer src="js/games/hub/profile.js"></script>
-    <script defer src="js/games/hub/settings.js"></script>
-    <script defer src="js/games/hub/index.js"></script>
-
-    <!-- Shared Game Modules -->
+    <!-- 3. Shared Game Logic -->
     <script defer src="js/games/shared/events.js"></script>
     <script defer src="js/games/shared/store.js"></script>
     <script defer src="js/games/shared/timing-config.js"></script>
@@ -334,38 +120,33 @@
     <script defer src="js/games/shared/ticker.js"></script>
     <script defer src="js/games/shared/index.js"></script>
 
-    <!-- ASDF Game Framework — Load order critical -->
-    <script defer src="js/games/framework/registry.js"></script>
+    <!-- 4. UI Framework -->
+    <script defer src="js/games/ui/rotation.js"></script>
+    <script defer src="js/games/ui/leaderboard.js"></script>
+    <script defer src="js/games/ui/competitive.js"></script>
+    <script defer src="js/games/ui/grid.js"></script>
+    <script defer src="js/games/ui/modal.js"></script>
+    <script defer src="js/games/ui/index.js"></script>
 
-    <!-- Core Zero-Allocation Engines (2026 Standard) -->
+    <!-- 5. 11/10 Engine Kernel -->
+    <script defer src="js/games/framework/registry.js"></script>
     <script defer src="js/games/core/TypedObjectPool.js"></script>
     <script defer src="js/games/core/FixedTimestepLoop.js"></script>
     <script defer src="js/games/core/SpatialHash.js"></script>
     <script defer src="js/games/core/DevInspector.js"></script>
     <script defer src="js/games/core/ECS.js"></script>
-
-    <!-- ECS Systems -->
     <script defer src="js/games/core/systems/RenderSystem.js"></script>
     <script defer src="js/games/core/systems/PhysicsSystem.js"></script>
     <script defer src="js/games/core/systems/InputSystem.js"></script>
-
-    <!-- Game Framework -->
     <script defer src="js/games/framework/GameInstance.js"></script>
 
-    <!-- Game Engines (Lazy Loaded via GameEngines coordinator) -->
-    <script defer src="js/games/engines/game-engine-base.js"></script>
+    <!-- 6. Coordinator & Main Entry -->
     <script defer src="js/games/engines/index.js"></script>
-    <script defer src="js/games/engines/ecsdemos.js"></script>
-
-    <!-- Legacy Engine (backwards compatibility) -->
-    <script defer src="js/games/engine.js"></script>
     <script defer src="js/games/main.js"></script>
 
-    <!-- Arcade Hub Module -->
+    <!-- 7. Integration & Hubs -->
     <script defer src="js/games/arcade-hub.js"></script>
-
-    <!-- Cosmetics Button Handler -->
     <script defer src="js/games/cosmetics-btn.js"></script>
-  <script type="module" src="js/asdf-integration.js"></script></body>
+    <script type="module" src="js/asdf-integration.js"></script>
+  </body>
 </html>
-

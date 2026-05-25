@@ -31,7 +31,13 @@ const httpRequestsTotal = new promClient.Counter({
 });
 
 // SSR renderer for games page
-const { renderGamesPage } = require('./ssr/games.cjs');
+let renderGamesPage = async () => '';
+try {
+  const ssr = require('./ssr/games.cjs');
+  if (ssr && ssr.renderGamesPage) renderGamesPage = ssr.renderGamesPage;
+} catch (e) {
+  logger.warn('SSR games module not found, bot rendering disabled');
+}
 
 const app = express();
 
