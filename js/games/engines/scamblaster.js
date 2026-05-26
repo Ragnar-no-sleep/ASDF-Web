@@ -1,15 +1,15 @@
 /**
  * ASDF Games - Scam Blaster Engine (11/10 ECS Edition)
  *
- * Shooter game: Shoot down scam tokens and rug projects
- * Migrated to ECS for peak performance and modularity.
+ * Shooter game: Shoot down scam tokens and rug projects.
+ * Features: High-performance ECS, Sprite Batching, Visual Interpolation.
  */
 
 'use strict';
 
 (function () {
   const ScamBlaster = {
-    version: '2.1.0',
+    version: '2.2.0',
     gameId: 'scamblaster',
     instance: null,
 
@@ -23,33 +23,24 @@
 
     start(gameId) {
       const arena = document.getElementById(`arena-${gameId}`);
-      if (!arena) {
-        console.error(`[ScamBlaster] Arena arena-${gameId} not found`);
-        return;
-      }
+      if (!arena) return;
 
       this.createArena(arena);
       const canvas = document.getElementById('sb-canvas');
 
-      if (!window.ASDF || !window.ASDF.GameInstance) {
-        console.error('[ScamBlaster] ASDF Framework not loaded correctly');
-        return;
-      }
-
-      this.instance = new window.ASDF.GameInstance(canvas, {
+      this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 1000,
         debug: true,
       });
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
-      this.instance.resize();
 
-      // Components
+      // Standard Components were defined in GameInstance.js
+      // Register Scam Blaster Specific Components
       world.registerComponent('Enemy', { hp: 'u8', points: 'u8', typeIndex: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32', initial: 'f32' });
 
-      // State
       world.setResource('GameState', {
         score: 0,
         lives: 3,
@@ -76,7 +67,7 @@
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
-      // Logic System
+      // Systems
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
@@ -85,19 +76,20 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="sb-container" style="width:100%; height:100%; position:relative; background:#000;">
+        <div class="sb-container" style="width:100%; height:100%; position:relative; background:#050510;">
           <canvas id="sb-canvas" style="width:100%; height:100%; display:block;"></canvas>
-          <div id="sb-mode-select" class="game-mode-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100;">
-            <h2 style="color:#fff; margin-bottom:20px;">TARGET: SCAMS</h2>
+          <div id="sb-mode-select" class="game-mode-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100;">
+            <h2 style="color:#fff; font-family:Orbitron, sans-serif; margin-bottom:25px; letter-spacing:2px;">SCAM BLASTER</h2>
             <div style="display:flex; gap:20px;">
-              <button id="sb-select-fall" class="game-btn game-btn-success">FALL MODE</button>
-              <button id="sb-select-pop" class="game-btn game-btn-purple">POP MODE</button>
+              <button id="sb-select-fall" class="game-btn game-btn-success" style="padding:15px 30px; cursor:pointer;">FALL MODE</button>
+              <button id="sb-select-pop" class="game-btn game-btn-purple" style="padding:15px 30px; cursor:pointer;">POP MODE</button>
             </div>
+            <p style="color:#666; margin-top:20px; font-size:12px;">Protect your wallet from incoming rug pulls</p>
           </div>
-          <div id="sb-hud" class="game-hidden" style="position:absolute; top:10px; left:10px; color:#fff; pointer-events:none;">
-            SCORE: <span id="sb-score">0</span> | LIVES: <span id="sb-lives">❤️❤️❤️</span>
+          <div id="sb-hud" class="game-hidden" style="position:absolute; top:15px; left:15px; color:#fff; font-family:monospace; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; border:1px solid #333;">
+            SCORE: <span id="sb-score" style="color:#fbbf24; font-weight:bold;">0</span> | LIVES: <span id="sb-lives">❤️❤️❤️</span>
           </div>
-          <div id="sb-countdown" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:80px; display:none; pointer-events:none;">3</div>
+          <div id="sb-countdown" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:120px; font-family:Orbitron, sans-serif; font-weight:bold; display:none; pointer-events:none; text-shadow: 0 0 20px rgba(139,92,246,0.5);">3</div>
         </div>
       `;
     },
@@ -114,16 +106,22 @@
       this.dom.modeSelect.style.display = 'none';
       this.dom.hud.classList.remove('game-hidden');
       this.dom.countdown.style.display = 'block';
+      this.updateUI(state);
+      if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('click');
     },
 
     setupInput() {
       const canvas = this.instance.canvas;
       canvas.addEventListener('pointerdown', e => {
+        if (e.cancelable) e.preventDefault();
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX - rect.left) * (canvas.width / rect.width);
         const y = (e.clientY - rect.top) * (canvas.height / rect.height);
         this.shoot(x, y);
       });
+      // Zero-latency hardware cursor
+      const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
+      canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     },
 
     createLogicSystem() {
@@ -143,21 +141,40 @@
           return;
         }
 
-        // Spawn
+        // Spawn logic
         state.spawnTimer += dt;
-        if (state.spawnTimer >= 60) {
+        const rate = Math.max(15, 60 - state.wave * 5);
+        if (state.spawnTimer >= rate) {
           self.spawnEnemy(world);
           state.spawnTimer = 0;
         }
 
-        // Cleanup Lifespans
-        const query = world.createQuery(['Lifespan']);
+        // Boundary checks & Life loss
+        const query = world.createQuery(['Position', 'Enemy']);
         const { dense, count } = query.set;
-        const lifeProps = world.componentRegistry.get('Lifespan').props;
+        const pos = world.componentRegistry.get('Position').props;
+        const canvasH = self.instance.canvas.height;
+
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
+          if (state.gameMode === 'fall' && pos.y[idx] > canvasH - 60) {
+            self.loseLife(world, world.getEntityId(idx));
+          }
+        }
+
+        // Cleanup Lifespans (for explosions)
+        const lsQuery = world.createQuery(['Lifespan']);
+        const { dense: lsDense, count: lsCount } = lsQuery.set;
+        const lifeProps = world.componentRegistry.get('Lifespan').props;
+        for (let i = lsCount - 1; i >= 0; i--) {
+          const idx = lsDense[i];
           lifeProps.remaining[idx] -= dt;
-          if (lifeProps.remaining[idx] <= 0) world.destroyEntity(world.getEntityId(idx));
+          if (lifeProps.remaining[idx] <= 0) {
+            // If it was an enemy that expired in POP mode, lose a life
+            const isEnemy = world.componentRegistry.get('Enemy').props.points[idx] !== undefined;
+            if (isEnemy && state.gameMode === 'pop') self.loseLife(world, world.getEntityId(idx));
+            else world.destroyEntity(world.getEntityId(idx));
+          }
         }
 
         self.updateUI(state);
@@ -180,9 +197,18 @@
       const rend = world.componentRegistry.get('Renderable').props;
       const en = world.componentRegistry.get('Enemy').props;
 
-      pos.x[idx] = 50 + Math.random() * (this.instance.canvas.width - 100);
-      pos.y[idx] = -40;
-      vel.vy[idx] = type.speed;
+      if (state.gameMode === 'fall') {
+        pos.x[idx] = 50 + Math.random() * (this.instance.canvas.width - 100);
+        pos.y[idx] = -50;
+        vel.vy[idx] = type.speed + state.wave * 0.2;
+      } else {
+        pos.x[idx] = 100 + Math.random() * (this.instance.canvas.width - 200);
+        pos.y[idx] = 100 + Math.random() * (this.instance.canvas.height - 200);
+        world.addComponent(e, 'Lifespan');
+        const life = world.componentRegistry.get('Lifespan').props;
+        life.initial[idx] = Math.max(30, 90 - state.wave * 5);
+        life.remaining[idx] = life.initial[idx];
+      }
 
       en.typeIndex[idx] = typeIdx;
       en.hp[idx] = 1;
@@ -202,14 +228,38 @@
       const rend = world.componentRegistry.get('Renderable').props;
       const en = world.componentRegistry.get('Enemy').props;
 
+      let hit = false;
       for (let i = count - 1; i >= 0; i--) {
         const idx = dense[i];
-        if (Math.hypot(pos.x[idx] - x, pos.y[idx] - y) < rend.size[idx]) {
+        const dist = Math.hypot(pos.x[idx] - x, pos.y[idx] - y);
+        if (dist < rend.size[idx]) {
           state.score += en.points[idx];
+          if (state.score % 200 === 0) state.wave++;
           this.addEffect(world, pos.x[idx], pos.y[idx], this.enemyTypes.length); // 💥
           world.destroyEntity(world.getEntityId(idx));
-          return;
+          hit = true;
+          if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('collect');
+          break;
         }
+      }
+
+      if (!hit && typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('dash');
+    },
+
+    loseLife(world, id) {
+      const state = world.getResource('GameState');
+      const idx = world.getIndex(id);
+      const pos = world.componentRegistry.get('Position').props;
+
+      this.addEffect(world, pos.x[idx], pos.y[idx], this.enemyTypes.length + 1); // 💔
+      state.lives--;
+      world.destroyEntity(id);
+
+      if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('error');
+
+      if (state.lives <= 0) {
+        state.gameOver = true;
+        if (typeof endGame === 'function') endGame(this.gameId, state.score);
       }
     },
 
@@ -222,21 +272,58 @@
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = iconIdx;
-      world.componentRegistry.get('Renderable').props.size[idx] = 40;
-      world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
-      world.componentRegistry.get('Lifespan').props.initial[idx] = 20;
+      world.componentRegistry.get('Renderable').props.size[idx] = 45;
+      world.componentRegistry.get('Lifespan').props.remaining[idx] = 25;
+      world.componentRegistry.get('Lifespan').props.initial[idx] = 25;
     },
 
     updateUI(state) {
-      this.dom.score.textContent = state.score;
-      this.dom.lives.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
+      if (this.dom.score) this.dom.score.textContent = state.score;
+      if (this.dom.lives) this.dom.lives.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
     },
 
     draw(alpha, defaultRender) {
       const ctx = this.instance.ctx;
+      const w = this.instance.canvas.width,
+        h = this.instance.canvas.height;
+      const state = this.instance.world.getResource('GameState');
+
+      // 1. Dynamic Background (Cyber Grid)
       ctx.fillStyle = '#0a0a1a';
-      ctx.fillRect(0, 0, this.instance.canvas.width, this.instance.canvas.height);
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 50) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+      }
+      for (let y = 0; y < h; y += 50) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+
+      // 2. Main Entities
       defaultRender(this.instance.world, alpha);
+
+      // 3. Mode Specific Overlays
+      if (state.gameMode === 'pop') {
+        const query = this.instance.world.createQuery(['Position', 'Lifespan', 'Enemy']);
+        const { dense, count } = query.set;
+        const pos = this.instance.world.componentRegistry.get('Position').props;
+        const life = this.instance.world.componentRegistry.get('Lifespan').props;
+        for (let i = 0; i < count; i++) {
+          const idx = dense[i];
+          const p = life.remaining[idx] / life.initial[idx];
+          ctx.strokeStyle = p > 0.5 ? '#22c55e' : '#ef4444';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(pos.x[idx], pos.y[idx], 35, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p);
+          ctx.stroke();
+        }
+      }
     },
 
     stop() {

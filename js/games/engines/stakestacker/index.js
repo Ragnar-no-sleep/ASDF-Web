@@ -14,7 +14,7 @@
     instance: null,
 
     start(gameId) {
-      const arena = document.getElementById(`ss-arena`);
+      const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
       const canvas = arena.querySelector('canvas') || document.createElement('canvas');
