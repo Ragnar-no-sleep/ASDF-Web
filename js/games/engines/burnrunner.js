@@ -208,6 +208,18 @@
             if (obsProps && obsProps.props.type[idx] !== undefined) {
               state.gameOver = true;
               rendProps.iconIndex[playerIdx] = 1; // 💥
+
+              // 11/10 Visual Juice
+              if (ASDF.ParticleSystem) {
+                ASDF.ParticleSystem.emit(world, px + pw / 2, py + ph / 2, {
+                  count: 30,
+                  colorIdx: 2,
+                  speed: 8,
+                  gravity: 0.3,
+                });
+              }
+              this.instance.shake(15, 20);
+
               if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
             } else if (colProps && colProps.props.value[idx] !== undefined) {
               state.tokens++;

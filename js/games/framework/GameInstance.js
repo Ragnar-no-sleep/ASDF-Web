@@ -24,10 +24,31 @@
       this.onUpdate = null;
       this.onRender = null;
 
+      // Camera & Juice (11/10 Standard)
+      this.camera = {
+        x: 0,
+        y: 0,
+        shakeIntensity: 0,
+        shakeTimer: 0,
+      };
+
       this.loop = new FixedTimestepLoop(
         options.fps || 60,
         dt => {
           try {
+            // Update Camera Shake
+            if (this.camera.shakeTimer > 0) {
+              this.camera.shakeTimer -= dt;
+              if (this.camera.shakeTimer <= 0) {
+                this.camera.shakeIntensity = 0;
+                this.camera.x = 0;
+                this.camera.y = 0;
+              } else {
+                this.camera.x = (Math.random() - 0.5) * this.camera.shakeIntensity;
+                this.camera.y = (Math.random() - 0.5) * this.camera.shakeIntensity;
+              }
+            }
+
             this.world.update(dt);
             if (this.onUpdate) this.onUpdate(dt);
             if (this.inspector) this.inspector.update(dt);
@@ -39,7 +60,13 @@
         alpha => {
           try {
             if (this.onRender) {
+              // Apply Camera Transform before render
+              this.ctx.save();
+              this.ctx.translate(this.camera.x, this.camera.y);
+
               this.onRender(alpha);
+
+              this.ctx.restore();
             } else {
               // Default background
               this.ctx.fillStyle = '#0a0a0f';
@@ -54,6 +81,16 @@
 
       this.initialized = false;
       this._standardComponentsInited = false;
+    }
+
+    /**
+     * Trigger a camera shake effect
+     * @param {number} intensity - Peak pixels to offset
+     * @param {number} duration - Frames to shake
+     */
+    shake(intensity = 5, duration = 20) {
+      this.camera.shakeIntensity = intensity;
+      this.camera.shakeTimer = duration;
     }
 
     /**

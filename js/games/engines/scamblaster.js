@@ -246,6 +246,9 @@
         });
       }
 
+      // 11/10 Physical Feedback
+      this.instance.shake(10, 15);
+
       state.lives--;
       world.destroyEntity(id);
       if (state.lives <= 0) endGame(this.gameId, state.score);

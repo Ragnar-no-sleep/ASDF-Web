@@ -183,6 +183,17 @@
             const eIdx = eDense[j];
             if (Math.hypot(bPos.x[bIdx] - ePos.x[eIdx], bPos.y[bIdx] - ePos.y[eIdx]) < 25) {
               state.score += eProps.points[eIdx];
+
+              // 11/10 Impact Juice
+              if (ASDF.ParticleSystem) {
+                ASDF.ParticleSystem.emit(world, ePos.x[eIdx], ePos.y[eIdx], {
+                  count: 10,
+                  colorIdx: 1,
+                  speed: 4,
+                });
+              }
+              self.instance.shake(3, 10);
+
               self.addEffect(world, ePos.x[eIdx], ePos.y[eIdx], 5); // 💥
               world.destroyEntity(world.getEntityId(eIdx));
               world.destroyEntity(world.getEntityId(bIdx));
