@@ -9,7 +9,7 @@
 
 (function () {
   const LiquidityMaze = {
-    version: '2.0.0',
+    version: '2.1.0',
     gameId: 'liquiditymaze',
     instance: null,
 
@@ -32,6 +32,9 @@
         maxEntities: 1000,
         debug: true,
       });
+
+      // 11/10: Resize early for correct grid calculation
+      this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
@@ -73,9 +76,11 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="lm-container">
-          <canvas id="lm-canvas" class="game-canvas"></canvas>
-          <div class="lm-hud">SCORE: <span id="lm-score">0</span> | LEVEL: <span id="lm-level">1</span></div>
+        <div class="lm-container" style="width:100%; height:100%; background:#050510; position:relative; display:flex; align-items:center; justify-content:center;">
+          <canvas id="lm-canvas" style="width:100%; height:100%; display:block;"></canvas>
+          <div class="lm-hud" style="position:absolute; top:10px; left:10px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:8px; border-radius:4px; border:1px solid #333;">
+            SCORE: <span id="lm-score">0</span> | LEVEL: <span id="lm-level">1</span>
+          </div>
         </div>
       `;
     },
@@ -94,14 +99,24 @@
 
     generateMaze(world) {
       const state = world.getResource('GameState');
+
+      // Calculate cellSize to fit the canvas
+      state.cellSize = Math.floor(
+        Math.min(this.instance.canvas.width / state.cols, this.instance.canvas.height / state.rows)
+      );
+
       state.maze = Array(state.rows)
         .fill(0)
         .map(() => Array(state.cols).fill(1));
 
-      // Simple room maze
+      // Simple room maze with corridor
       for (let y = 1; y < state.rows - 1; y++) {
         for (let x = 1; x < state.cols - 1; x++) state.maze[y][x] = 0;
       }
+
+      // Ensure spawn and goal are always clear
+      state.maze[1][1] = 0;
+      state.maze[state.rows - 2][state.cols - 2] = 0;
 
       state.fog = Array(state.rows)
         .fill(0)
@@ -124,14 +139,15 @@
       const world = this.instance.world;
       document.addEventListener('keydown', e => {
         const state = world.getResource('GameState');
+        if (state.gameOver) return;
         const pIdx = world.getIndex(state.playerId);
         const pos = world.componentRegistry.get('Position').props;
         let dx = 0,
           dy = 0;
-        if (e.code === 'KeyW') dy = -1;
-        if (e.code === 'KeyS') dy = 1;
-        if (e.code === 'KeyA') dx = -1;
-        if (e.code === 'KeyD') dx = 1;
+        if (e.code === 'KeyW' || e.code === 'ArrowUp') dy = -1;
+        else if (e.code === 'KeyS' || e.code === 'ArrowDown') dy = 1;
+        else if (e.code === 'KeyA' || e.code === 'ArrowLeft') dx = -1;
+        else if (e.code === 'KeyD' || e.code === 'ArrowRight') dx = 1;
 
         if (state.maze[pos.y[pIdx] + dy]?.[pos.x[pIdx] + dx] === 0) {
           pos.x[pIdx] += dx;
@@ -150,7 +166,7 @@
         const px = world.componentRegistry.get('Position').props.x[pIdx];
         const py = world.componentRegistry.get('Position').props.y[pIdx];
 
-        // Fog
+        // Fog Reveal
         const vR = world.componentRegistry.get('Player').props.viewRadius[pIdx];
         for (let fy = Math.max(0, py - vR); fy <= Math.min(state.rows - 1, py + vR); fy++) {
           for (let fx = Math.max(0, px - vR); fx <= Math.min(state.cols - 1, px + vR); fx++) {
@@ -158,36 +174,47 @@
           }
         }
 
-        document.getElementById('lm-score').textContent = state.score;
+        const scoreEl = document.getElementById('lm-score');
+        if (scoreEl) scoreEl.textContent = state.score;
+
+        // Goal Check
+        if (px === state.cols - 2 && py === state.rows - 2) {
+          state.score += 100;
+          state.level++;
+          self.generateMaze(world);
+        }
       };
     },
 
-    draw(alpha, defaultRender) {
+    draw(alpha) {
       const ctx = this.instance.ctx;
       const w = this.instance.canvas.width,
         h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
       const cS = state.cellSize;
 
+      const offsetX = (w - state.cols * cS) / 2;
+      const offsetY = (h - state.rows * cS) / 2;
+
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#0a0a1a';
+      ctx.fillStyle = '#050510';
       ctx.fillRect(0, 0, w, h);
 
       for (let y = 0; y < state.rows; y++) {
         for (let x = 0; x < state.cols; x++) {
+          const px = offsetX + x * cS,
+            py = offsetY + y * cS;
           if (state.maze[y][x] === 1) {
-            ctx.fillStyle = '#111122';
-            ctx.fillRect(x * cS, y * cS, cS, cS);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(px, py, cS, cS);
           }
           if (state.fog[y][x] > 0) {
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            ctx.fillRect(x * cS, y * cS, cS, cS);
+            ctx.fillStyle = 'rgba(0,0,0,0.85)';
+            ctx.fillRect(px, py, cS, cS);
           }
         }
       }
 
-      // 11/10: Custom Render Loop for Grid -> Pixel conversion
-      // We DON'T mutate posProps.x/y to avoid corruption
       const query = this.instance.world.createQuery(['Position', 'Renderable']);
       const { dense, count } = query.set;
       const pos = this.instance.world.componentRegistry.get('Position').props;
@@ -209,13 +236,28 @@
         const idx = dense[i];
         const gx = pos.x[idx],
           gy = pos.y[idx];
-        const screenX = gx * cS + cS / 2;
-        const screenY = gy * cS + cS / 2;
+
+        if (state.fog[gy | 0]?.[gx | 0] > 0.5 && world.getEntityId(idx) !== state.playerId)
+          continue;
+
+        const screenX = offsetX + gx * cS + cS / 2;
+        const screenY = offsetY + gy * cS + cS / 2;
         const icon = icons[rend.iconIndex[idx]] || '❓';
 
         if (typeof SpriteCache !== 'undefined') {
           SpriteCache.draw(ctx, icon, screenX, screenY, rend.size[idx] || 24);
         }
+      }
+
+      // Draw goal always if revealed
+      if (state.fog[state.rows - 2][state.cols - 2] === 0) {
+        SpriteCache.draw(
+          ctx,
+          '🏁',
+          offsetX + (state.cols - 2) * cS + cS / 2,
+          offsetY + (state.rows - 2) * cS + cS / 2,
+          24
+        );
       }
     },
 

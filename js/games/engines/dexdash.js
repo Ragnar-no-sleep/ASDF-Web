@@ -10,7 +10,7 @@
 
 (function () {
   const DexDash = {
-    version: '2.0.0',
+    version: '2.1.0',
     gameId: 'dexdash',
     roadHeight: 250,
     instance: null,
@@ -29,6 +29,9 @@
         maxEntities: 500,
         debug: true,
       });
+
+      // 11/10: Resize early for correct road placement
+      this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
@@ -67,7 +70,8 @@
 
       const pIdx = world.getIndex(p);
       world.componentRegistry.get('Position').props.x[pIdx] = 120;
-      world.componentRegistry.get('Position').props.y[pIdx] = this.canvas.height / 2;
+      // Place car on the road (offset from bottom)
+      world.componentRegistry.get('Position').props.y[pIdx] = this.roadBottom() - 40;
       world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0; // 🏎️
       world.componentRegistry.get('Renderable').props.size[pIdx] = 60;
       world.componentRegistry.get('Player').props.speed[pIdx] = 2;
@@ -81,7 +85,6 @@
 
       // Systems
       world.addSystem(this.createLogicSystem());
-
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       this.instance.start();
@@ -218,7 +221,39 @@
       ctx.lineTo(w, rB);
       ctx.stroke();
 
-      defaultRender(this.instance.world, alpha);
+      // Dashed middle line
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
+      ctx.setLineDash([30, 30]);
+      ctx.beginPath();
+      ctx.moveTo(0, rT + this.roadHeight / 2);
+      ctx.lineTo(w, rT + this.roadHeight / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const world = this.instance.world;
+      const state = world.getResource('GameState');
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const vel = world.componentRegistry.get('Velocity').props;
+
+      // Custom car render for orientation
+      SpriteCache.drawTransformed(ctx, '🏎️', pos.x[pIdx], pos.y[pIdx], 60, {
+        scaleX: 1, // Face right
+        rotation: vel.vy[pIdx] * 0.05, // Tilt based on vertical movement
+      });
+
+      // Render other entities (RenderSystem skip player)
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const icons = ['🏎️', ...this.obstacleTypes.map(o => o.icon), ...this.dexLogos];
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        if (idx === pIdx) continue;
+        const icon = icons[rend.iconIndex[idx]] || '❓';
+        SpriteCache.draw(ctx, icon, pos.x[idx], pos.y[idx], rend.size[idx]);
+      }
     },
 
     stop() {

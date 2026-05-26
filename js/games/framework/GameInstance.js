@@ -73,9 +73,9 @@
      * Start the game
      */
     start() {
+      this.initStandardComponents();
+      this.resize();
       if (!this.initialized) {
-        this.initStandardComponents();
-        this.resize();
         this.initialized = true;
       }
       this.loop.start();

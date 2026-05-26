@@ -32,6 +32,9 @@
         debug: true,
       });
 
+      // 11/10: Resize early to get correct dimensions for logic
+      this.instance.resize();
+
       const world = this.instance.world;
       this.instance.initStandardComponents();
 

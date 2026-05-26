@@ -43,6 +43,9 @@
         debug: true,
       });
 
+      // 11/10: Resize early for correct lane calculation
+      this.instance.resize();
+
       const world = this.instance.world;
       this.instance.initStandardComponents();
 

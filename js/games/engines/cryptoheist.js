@@ -9,7 +9,7 @@
 
 (function () {
   const CryptoHeist = {
-    version: '2.0.0',
+    version: '2.1.0',
     gameId: 'cryptoheist',
     instance: null,
 
@@ -39,6 +39,9 @@
         maxEntities: 1500,
         debug: true,
       });
+
+      // 11/10: Resize early
+      this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
@@ -109,9 +112,9 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="ch-container">
-          <canvas id="ch-canvas" class="game-canvas"></canvas>
-          <div class="game-hud-top-left">
+        <div class="ch-container" style="width:100%; height:100%; position:relative; background:#050510;">
+          <canvas id="ch-canvas" style="width:100%; height:100%; display:block;"></canvas>
+          <div class="game-hud-top-left" style="position:absolute; top:10px; left:10px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px;">
             <div class="ch-stat">SCORE: <span id="ch-score">0</span></div>
             <div class="ch-stat">KILLS: <span id="ch-kills">0</span></div>
           </div>
@@ -188,10 +191,10 @@
 
         let dx = 0,
           dy = 0;
-        if (state.keys['w']) dy -= 1;
-        if (state.keys['s']) dy += 1;
-        if (state.keys['a']) dx -= 1;
-        if (state.keys['d']) dx += 1;
+        if (state.keys['w'] || state.keys['arrowup']) dy -= 1;
+        if (state.keys['s'] || state.keys['arrowdown']) dy += 1;
+        if (state.keys['a'] || state.keys['arrowleft']) dx -= 1;
+        if (state.keys['d'] || state.keys['arrowright']) dx += 1;
 
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
         vel.vx[pIdx] = (dx / len) * 5;
@@ -273,11 +276,32 @@
 
       const idx = world.getIndex(e);
       const pos = world.componentRegistry.get('Position').props;
+      const vel = world.componentRegistry.get('Velocity').props;
       const rend = world.componentRegistry.get('Renderable').props;
+      const w = this.instance.canvas.width,
+        h = this.instance.canvas.height;
 
-      pos.x[idx] = Math.random() * this.instance.canvas.width;
-      pos.y[idx] = -30;
-      world.componentRegistry.get('Velocity').props.vy[idx] = 2;
+      // Spawn from random side
+      const side = Math.floor(Math.random() * 4);
+      if (side === 0) {
+        pos.x[idx] = Math.random() * w;
+        pos.y[idx] = -40;
+      } else if (side === 1) {
+        pos.x[idx] = Math.random() * w;
+        pos.y[idx] = h + 40;
+      } else if (side === 2) {
+        pos.x[idx] = -40;
+        pos.y[idx] = Math.random() * h;
+      } else {
+        pos.x[idx] = w + 40;
+        pos.y[idx] = Math.random() * h;
+      }
+
+      // Aim towards center
+      const angle = Math.atan2(h / 2 - pos.y[idx], w / 2 - pos.x[idx]);
+      vel.vx[idx] = Math.cos(angle) * 2;
+      vel.vy[idx] = Math.sin(angle) * 2;
+
       rend.iconIndex[idx] =
         1 + this.lootRarities.length + Math.floor(Math.random() * this.enemyTypes.length);
       rend.size[idx] = 30;
@@ -291,8 +315,9 @@
       const idx = world.getIndex(e);
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
-      rend.iconIndex[idx] = 1 + Math.floor(Math.random() * this.lootRarities.length);
-      rend.size[idx] = 20;
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] =
+        1 + Math.floor(Math.random() * this.lootRarities.length);
+      world.componentRegistry.get('Renderable').props.size[idx] = 20;
     },
 
     updateUI(state) {

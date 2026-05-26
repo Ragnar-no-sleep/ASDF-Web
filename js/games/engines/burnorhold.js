@@ -9,7 +9,7 @@
 
 (function () {
   const BurnOrHold = {
-    version: '2.0.0',
+    version: '2.1.0',
     gameId: 'burnorhold',
     instance: null,
 
@@ -28,6 +28,9 @@
         maxEntities: 1000,
         debug: true,
       });
+
+      // 11/10: Resize early for correct node distribution
+      this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
@@ -76,15 +79,15 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="boh-container">
-          <canvas id="cc-canvas" class="game-canvas"></canvas>
-          <div class="boh-hud-top">
-            <div class="boh-stat">YOURS: <span id="cc-player-nodes">0</span></div>
-            <div class="boh-stat">ENEMY: <span id="cc-enemy-nodes">0</span></div>
+        <div class="boh-container" style="width:100%; height:100%; position:relative; background:#0a0a1a;">
+          <canvas id="cc-canvas" style="width:100%; height:100%; display:block;"></canvas>
+          <div class="boh-hud-top" style="position:absolute; top:10px; left:10px; display:flex; gap:20px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px;">
+            <div class="boh-stat">YOURS: <span id="cc-player-nodes" style="color:#22c55e;">0</span></div>
+            <div class="boh-stat">ENEMY: <span id="cc-enemy-nodes" style="color:#ef4444;">0</span></div>
             <div class="boh-stat">SCORE: <span id="cc-score">0</span></div>
             <div class="boh-stat">WAVE: <span id="cc-wave">1</span></div>
           </div>
-          <div class="boh-instructions">Click your node -> Click target to attack!</div>
+          <div class="boh-instructions" style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); color:#666; font-size:10px;">Click your node -> Click target to attack!</div>
         </div>
       `;
     },
@@ -114,7 +117,8 @@
         const node = world.componentRegistry.get('Node').props;
         const rend = world.componentRegistry.get('Renderable').props;
 
-        pos.x[idx] = 100 + Math.random() * (cw - 200);
+        // Better distribution margin
+        pos.x[idx] = 60 + Math.random() * (cw - 120);
         pos.y[idx] = 100 + Math.random() * (ch - 200);
         node.owner[idx] = i === 0 ? 1 : i === 1 ? 2 : 0;
         node.validators[idx] = 10;
@@ -152,6 +156,7 @@
     },
 
     launchAttack(world, fromId, toId) {
+      if (fromId === toId) return;
       const fromIdx = world.getIndex(fromId);
       const nodeProps = world.componentRegistry.get('Node').props;
       const count = Math.floor(nodeProps.validators[fromIdx] / 2);
@@ -169,20 +174,23 @@
       const vel = world.componentRegistry.get('Velocity').props;
       const att = world.componentRegistry.get('Attack').props;
       const rend = world.componentRegistry.get('Renderable').props;
-      const fromPos = world.componentRegistry.get('Position').props;
-      const toPos = world.componentRegistry.get('Position').props;
       const targetIdx = world.getIndex(toId);
 
-      pos.x[idx] = fromPos.x[fromIdx];
-      pos.y[idx] = fromPos.y[fromIdx];
-      const angle = Math.atan2(toPos.y[targetIdx] - pos.y[idx], toPos.x[targetIdx] - pos.x[idx]);
+      pos.x[idx] = world.componentRegistry.get('Position').props.x[fromIdx];
+      pos.y[idx] = world.componentRegistry.get('Position').props.y[fromIdx];
+
+      const angle = Math.atan2(
+        world.componentRegistry.get('Position').props.y[targetIdx] - pos.y[idx],
+        world.componentRegistry.get('Position').props.x[targetIdx] - pos.x[idx]
+      );
+
       vel.vx[idx] = Math.cos(angle) * 5;
       vel.vy[idx] = Math.sin(angle) * 5;
       att.from[idx] = fromId;
       att.to[idx] = toId;
       att.count[idx] = count;
       att.owner[idx] = nodeProps.owner[fromIdx];
-      rend.iconIndex[idx] = 1; // mapped to ⚔️
+      rend.iconIndex[idx] = 1; // ⚔️
       rend.size[idx] = 16;
     },
 
@@ -206,7 +214,7 @@
 
         // AI
         state.aiTimer += dt;
-        if (state.aiTimer > 120) {
+        if (state.aiTimer > 180) {
           const nodes = world.createQuery(['Node']);
           const { dense, count } = nodes.set;
           const nodeProps = world.componentRegistry.get('Node').props;
@@ -214,8 +222,9 @@
             targetNodes = [];
           for (let i = 0; i < count; i++) {
             const idx = dense[i];
-            if (nodeProps.owner[idx] === 2) enemyNodes.push(world.getEntityId(idx));
-            else targetNodes.push(world.getEntityId(idx));
+            const id = world.getEntityId(idx);
+            if (nodeProps.owner[idx] === 2) enemyNodes.push(id);
+            else targetNodes.push(id);
           }
           if (enemyNodes.length > 0 && targetNodes.length > 0) {
             const from = enemyNodes[Math.floor(Math.random() * enemyNodes.length)];
@@ -236,6 +245,8 @@
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
           const targetId = att.to[idx];
+          if (!world.componentRegistry.get('Position').props) continue; // safety
+
           const targetIdx = world.getIndex(targetId);
           if (
             Math.hypot(pos.x[idx] - nodePos.x[targetIdx], pos.y[idx] - nodePos.y[targetIdx]) < 10
@@ -280,14 +291,15 @@
       const world = this.instance.world;
       const state = world.getResource('GameState');
 
-      ctx.fillStyle = '#0a0a1a';
+      ctx.fillStyle = '#050510';
       ctx.fillRect(0, 0, w, h);
 
-      // Render Connections (Network)
       const nodes = world.createQuery(['Node', 'Position']);
       const { dense, count } = nodes.set;
       const pos = world.componentRegistry.get('Position').props;
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+
+      // Lines
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.1)';
       ctx.beginPath();
       for (let i = 0; i < count; i++) {
         for (let j = i + 1; j < count; j++) {
@@ -297,12 +309,11 @@
       }
       ctx.stroke();
 
-      // Render Nodes
       const nodeProps = world.componentRegistry.get('Node').props;
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
         const owner = nodeProps.owner[idx];
-        const color = owner === 1 ? '#22c55e' : owner === 2 ? '#ef4444' : '#555';
+        const color = owner === 1 ? '#22c55e' : owner === 2 ? '#ef4444' : '#333';
 
         ctx.fillStyle = color;
         ctx.beginPath();
@@ -316,11 +327,12 @@
         }
 
         ctx.fillStyle = '#fff';
+        ctx.font = '12px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(nodeProps.validators[idx], pos.x[idx], pos.y[idx] + 5);
       }
 
-      // Render Attacks
+      // Attacks
       const attacks = world.createQuery(['Attack', 'Position']);
       const aDense = attacks.set.dense;
       for (let i = 0; i < attacks.set.count; i++) {

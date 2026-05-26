@@ -28,15 +28,17 @@
       this.createArena(arena);
       const canvas = document.getElementById('sb-canvas');
 
-      this.instance = new ASDF.GameInstance(canvas, {
+      this.instance = new window.ASDF.GameInstance(canvas, {
         maxEntities: 1000,
         debug: true,
       });
 
+      // 11/10: Resize early for correct input coordinate scaling
+      this.instance.resize();
+
       const world = this.instance.world;
       this.instance.initStandardComponents();
 
-      // Standard Components were defined in GameInstance.js
       // Register Scam Blaster Specific Components
       world.registerComponent('Enemy', { hp: 'u8', points: 'u8', typeIndex: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32', initial: 'f32' });
@@ -84,12 +86,11 @@
               <button id="sb-select-fall" class="game-btn game-btn-success" style="padding:15px 30px; cursor:pointer;">FALL MODE</button>
               <button id="sb-select-pop" class="game-btn game-btn-purple" style="padding:15px 30px; cursor:pointer;">POP MODE</button>
             </div>
-            <p style="color:#666; margin-top:20px; font-size:12px;">Protect your wallet from incoming rug pulls</p>
           </div>
           <div id="sb-hud" class="game-hidden" style="position:absolute; top:15px; left:15px; color:#fff; font-family:monospace; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; border:1px solid #333;">
             SCORE: <span id="sb-score" style="color:#fbbf24; font-weight:bold;">0</span> | LIVES: <span id="sb-lives">❤️❤️❤️</span>
           </div>
-          <div id="sb-countdown" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:120px; font-family:Orbitron, sans-serif; font-weight:bold; display:none; pointer-events:none; text-shadow: 0 0 20px rgba(139,92,246,0.5);">3</div>
+          <div id="sb-countdown" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:120px; font-family:Orbitron, sans-serif; font-weight:bold; display:none; pointer-events:none;">3</div>
         </div>
       `;
     },
@@ -106,14 +107,11 @@
       this.dom.modeSelect.style.display = 'none';
       this.dom.hud.classList.remove('game-hidden');
       this.dom.countdown.style.display = 'block';
-      this.updateUI(state);
-      if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('click');
     },
 
     setupInput() {
       const canvas = this.instance.canvas;
       canvas.addEventListener('pointerdown', e => {
-        if (e.cancelable) e.preventDefault();
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX - rect.left) * (canvas.width / rect.width);
         const y = (e.clientY - rect.top) * (canvas.height / rect.height);
@@ -143,13 +141,12 @@
 
         // Spawn logic
         state.spawnTimer += dt;
-        const rate = Math.max(15, 60 - state.wave * 5);
-        if (state.spawnTimer >= rate) {
+        if (state.spawnTimer >= 60) {
           self.spawnEnemy(world);
           state.spawnTimer = 0;
         }
 
-        // Boundary checks & Life loss
+        // Boundary checks
         const query = world.createQuery(['Position', 'Enemy']);
         const { dense, count } = query.set;
         const pos = world.componentRegistry.get('Position').props;
@@ -162,7 +159,7 @@
           }
         }
 
-        // Cleanup Lifespans (for explosions)
+        // Cleanup Lifespans
         const lsQuery = world.createQuery(['Lifespan']);
         const { dense: lsDense, count: lsCount } = lsQuery.set;
         const lifeProps = world.componentRegistry.get('Lifespan').props;
@@ -170,7 +167,6 @@
           const idx = lsDense[i];
           lifeProps.remaining[idx] -= dt;
           if (lifeProps.remaining[idx] <= 0) {
-            // If it was an enemy that expired in POP mode, lose a life
             const isEnemy = world.componentRegistry.get('Enemy').props.points[idx] !== undefined;
             if (isEnemy && state.gameMode === 'pop') self.loseLife(world, world.getEntityId(idx));
             else world.destroyEntity(world.getEntityId(idx));
@@ -199,15 +195,15 @@
 
       if (state.gameMode === 'fall') {
         pos.x[idx] = 50 + Math.random() * (this.instance.canvas.width - 100);
-        pos.y[idx] = -50;
-        vel.vy[idx] = type.speed + state.wave * 0.2;
+        pos.y[idx] = -40;
+        vel.vy[idx] = type.speed;
       } else {
         pos.x[idx] = 100 + Math.random() * (this.instance.canvas.width - 200);
         pos.y[idx] = 100 + Math.random() * (this.instance.canvas.height - 200);
         world.addComponent(e, 'Lifespan');
         const life = world.componentRegistry.get('Lifespan').props;
-        life.initial[idx] = Math.max(30, 90 - state.wave * 5);
-        life.remaining[idx] = life.initial[idx];
+        life.initial[idx] = 90;
+        life.remaining[idx] = 90;
       }
 
       en.typeIndex[idx] = typeIdx;
@@ -228,39 +224,22 @@
       const rend = world.componentRegistry.get('Renderable').props;
       const en = world.componentRegistry.get('Enemy').props;
 
-      let hit = false;
       for (let i = count - 1; i >= 0; i--) {
         const idx = dense[i];
-        const dist = Math.hypot(pos.x[idx] - x, pos.y[idx] - y);
-        if (dist < rend.size[idx]) {
+        if (Math.hypot(pos.x[idx] - x, pos.y[idx] - y) < rend.size[idx]) {
           state.score += en.points[idx];
-          if (state.score % 200 === 0) state.wave++;
           this.addEffect(world, pos.x[idx], pos.y[idx], this.enemyTypes.length); // 💥
           world.destroyEntity(world.getEntityId(idx));
-          hit = true;
-          if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('collect');
-          break;
+          return;
         }
       }
-
-      if (!hit && typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('dash');
     },
 
     loseLife(world, id) {
       const state = world.getResource('GameState');
-      const idx = world.getIndex(id);
-      const pos = world.componentRegistry.get('Position').props;
-
-      this.addEffect(world, pos.x[idx], pos.y[idx], this.enemyTypes.length + 1); // 💔
       state.lives--;
       world.destroyEntity(id);
-
-      if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('error');
-
-      if (state.lives <= 0) {
-        state.gameOver = true;
-        if (typeof endGame === 'function') endGame(this.gameId, state.score);
-      }
+      if (state.lives <= 0) endGame(this.gameId, state.score);
     },
 
     addEffect(world, x, y, iconIdx) {
@@ -272,9 +251,9 @@
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = iconIdx;
-      world.componentRegistry.get('Renderable').props.size[idx] = 45;
-      world.componentRegistry.get('Lifespan').props.remaining[idx] = 25;
-      world.componentRegistry.get('Lifespan').props.initial[idx] = 25;
+      world.componentRegistry.get('Renderable').props.size[idx] = 40;
+      world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
+      world.componentRegistry.get('Lifespan').props.initial[idx] = 20;
     },
 
     updateUI(state) {
@@ -288,7 +267,6 @@
         h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
 
-      // 1. Dynamic Background (Cyber Grid)
       ctx.fillStyle = '#0a0a1a';
       ctx.fillRect(0, 0, w, h);
 
@@ -305,10 +283,8 @@
       }
       ctx.stroke();
 
-      // 2. Main Entities
       defaultRender(this.instance.world, alpha);
 
-      // 3. Mode Specific Overlays
       if (state.gameMode === 'pop') {
         const query = this.instance.world.createQuery(['Position', 'Lifespan', 'Enemy']);
         const { dense, count } = query.set;

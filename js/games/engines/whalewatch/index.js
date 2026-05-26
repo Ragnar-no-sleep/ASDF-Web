@@ -43,6 +43,8 @@
         debug: false,
       });
 
+      this.instance.resize();
+
       const world = this.instance.world;
       this.instance.initStandardComponents();
 
@@ -134,8 +136,9 @@
       state.foundCount = 0;
 
       const cells = [];
-      for (let i = 0; i < state.totalTargets; i++)
+      for (let i = 0; i < state.totalTargets; i++) {
         cells.push({ symbol: target.symbol, isTarget: true });
+      }
       for (let i = state.totalTargets; i < 16; i++) {
         let other;
         do {
