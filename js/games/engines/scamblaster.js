@@ -9,7 +9,7 @@
 
 (function () {
   const ScamBlaster = {
-    version: '2.2.0',
+    version: '2.3.0',
     gameId: 'scamblaster',
     instance: null,
 
@@ -33,13 +33,11 @@
         debug: true,
       });
 
-      // 11/10: Resize early for correct input coordinate scaling
       this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
 
-      // Register Scam Blaster Specific Components
       world.registerComponent('Enemy', { hp: 'u8', points: 'u8', typeIndex: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32', initial: 'f32' });
 
@@ -64,12 +62,10 @@
       this.setupModeSelection();
       this.setupInput();
 
-      // Render Hook
       const icons = [...this.enemyTypes.map(e => e.icon), '💥', '💔'];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
-      // Systems
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
@@ -117,7 +113,6 @@
         const y = (e.clientY - rect.top) * (canvas.height / rect.height);
         this.shoot(x, y);
       });
-      // Zero-latency hardware cursor
       const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
       canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     },
@@ -139,14 +134,12 @@
           return;
         }
 
-        // Spawn logic
         state.spawnTimer += dt;
         if (state.spawnTimer >= 60) {
           self.spawnEnemy(world);
           state.spawnTimer = 0;
         }
 
-        // Boundary checks
         const query = world.createQuery(['Position', 'Enemy']);
         const { dense, count } = query.set;
         const pos = world.componentRegistry.get('Position').props;
@@ -159,7 +152,6 @@
           }
         }
 
-        // Cleanup Lifespans
         const lsQuery = world.createQuery(['Lifespan']);
         const { dense: lsDense, count: lsCount } = lsQuery.set;
         const lifeProps = world.componentRegistry.get('Lifespan').props;
@@ -167,7 +159,9 @@
           const idx = lsDense[i];
           lifeProps.remaining[idx] -= dt;
           if (lifeProps.remaining[idx] <= 0) {
-            const isEnemy = world.componentRegistry.get('Enemy').props.points[idx] !== undefined;
+            const isEnemy =
+              world.componentRegistry.has('Enemy') &&
+              world.getIndexMask(idx) & world.componentRegistry.get('Enemy').mask;
             if (isEnemy && state.gameMode === 'pop') self.loseLife(world, world.getEntityId(idx));
             else world.destroyEntity(world.getEntityId(idx));
           }
@@ -228,7 +222,11 @@
         const idx = dense[i];
         if (Math.hypot(pos.x[idx] - x, pos.y[idx] - y) < rend.size[idx]) {
           state.score += en.points[idx];
-          this.addEffect(world, pos.x[idx], pos.y[idx], this.enemyTypes.length); // 💥
+
+          if (typeof ASDF !== 'undefined' && ASDF.ParticleSystem) {
+            ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], { count: 12, colorIdx: 1 });
+          }
+
           world.destroyEntity(world.getEntityId(idx));
           return;
         }
@@ -237,28 +235,25 @@
 
     loseLife(world, id) {
       const state = world.getResource('GameState');
+      const pos = world.componentRegistry.get('Position').props;
+      const idx = world.getIndex(id);
+
+      if (typeof ASDF !== 'undefined' && ASDF.ParticleSystem) {
+        ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], {
+          count: 20,
+          colorIdx: 2,
+          speed: 5,
+        });
+      }
+
       state.lives--;
       world.destroyEntity(id);
       if (state.lives <= 0) endGame(this.gameId, state.score);
     },
 
-    addEffect(world, x, y, iconIdx) {
-      const e = world.createEntity();
-      world.addComponent(e, 'Position');
-      world.addComponent(e, 'Renderable');
-      world.addComponent(e, 'Lifespan');
-      const idx = world.getIndex(e);
-      world.componentRegistry.get('Position').props.x[idx] = x;
-      world.componentRegistry.get('Position').props.y[idx] = y;
-      world.componentRegistry.get('Renderable').props.iconIndex[idx] = iconIdx;
-      world.componentRegistry.get('Renderable').props.size[idx] = 40;
-      world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
-      world.componentRegistry.get('Lifespan').props.initial[idx] = 20;
-    },
-
     updateUI(state) {
-      if (this.dom.score) this.dom.score.textContent = state.score;
-      if (this.dom.lives) this.dom.lives.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
+      this.dom.score.textContent = state.score;
+      this.dom.lives.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
     },
 
     draw(alpha, defaultRender) {
@@ -267,7 +262,7 @@
         h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
 
-      ctx.fillStyle = '#0a0a1a';
+      ctx.fillStyle = '#050510';
       ctx.fillRect(0, 0, w, h);
 
       ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';

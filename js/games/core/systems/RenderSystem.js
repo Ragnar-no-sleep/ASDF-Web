@@ -19,6 +19,16 @@
       const DEFAULT_ICONS = ['🐕', '🔥', '💀', '💎', '🚀'];
       const icons = customIcons || DEFAULT_ICONS;
 
+      // Particle Color Palette (Juice)
+      const COLORS = [
+        '#ffffff', // 0: White
+        '#fbbf24', // 1: Amber
+        '#ef4444', // 2: Red
+        '#3b82f6', // 3: Blue
+        '#a855f7', // 4: Purple
+        '#22c55e', // 5: Green
+      ];
+
       return function (world, alpha) {
         if (!world) return;
 
@@ -33,6 +43,10 @@
 
         const velComp = world.componentRegistry.get('Velocity');
         const velProps = velComp ? velComp.props : null;
+
+        // Particle System check (Optional component)
+        const partComp = world.componentRegistry.get('Particle');
+        const partProps = partComp ? partComp.props : null;
 
         let currentAlpha = 1.0;
         ctx.globalAlpha = 1.0;
@@ -52,7 +66,6 @@
           const size = rendProps.size[index] || 24;
 
           // 2. Alpha defaulting (Standard ECS 0-initialization fix)
-          // Default to 1.0 unless explicitly set to non-zero value
           const a = rendProps.alpha[index];
           const entityAlpha = a === 0 ? 1.0 : a;
 
@@ -62,14 +75,28 @@
           }
 
           try {
-            const iconStr = icons[iconIdx] || icons[0] || '❓';
-            if (typeof SpriteCache !== 'undefined') {
-              SpriteCache.draw(ctx, iconStr, x, y, size);
+            // 3. High-Quality Rendering
+            if (iconIdx === 255 && partProps) {
+              const colorIdx = partProps.colorIndex[index] || 0;
+              const color = COLORS[colorIdx] || COLORS[0];
+
+              // Use 'lighter' for glow effect
+              ctx.globalCompositeOperation = 'lighter';
+              ctx.fillStyle = color;
+              ctx.beginPath();
+              ctx.arc(x, y, size, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.globalCompositeOperation = 'source-over';
             } else {
-              ctx.font = `${size}px serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(iconStr, x, y);
+              const iconStr = icons[iconIdx] || icons[0] || '❓';
+              if (typeof SpriteCache !== 'undefined') {
+                SpriteCache.draw(ctx, iconStr, x, y, size);
+              } else {
+                ctx.font = `${size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(iconStr, x, y);
+              }
             }
           } catch (e) {
             // Silently fail per entity to keep loop alive

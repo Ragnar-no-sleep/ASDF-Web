@@ -66,6 +66,13 @@
       this.world.registerComponent('Renderable', { iconIndex: 'u8', size: 'u8', alpha: 'f32' });
       this.world.registerComponent('Collider', { width: 'u16', height: 'u16', active: 'u8' });
       this.world.registerComponent('Controllable', { speed: 'f32' });
+
+      // 11/10: Universal Juice
+      if (typeof ASDF !== 'undefined' && ASDF.ParticleSystem) {
+        ASDF.ParticleSystem.init(this.world);
+        this.world.addSystem(ASDF.ParticleSystem.update());
+      }
+
       this._standardComponentsInited = true;
     }
 
