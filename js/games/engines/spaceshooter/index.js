@@ -9,7 +9,7 @@
 
 (function () {
   const SpaceShooter = {
-    version: '2.1.0',
+    version: '2.2.0',
     gameId: 'spaceshooter',
     instance: null,
 
@@ -37,7 +37,6 @@
         debug: true,
       });
 
-      // 11/10: Resize early
       this.instance.resize();
 
       const world = this.instance.world;
@@ -46,7 +45,7 @@
       // Components
       world.registerComponent('Player', { lastShot: 'f32', fireRate: 'f32' });
       world.registerComponent('Enemy', { type: 'u8', hp: 'u8', points: 'u8' });
-      world.registerComponent('Bullet', { owner: 'u8' }); // 0:Player, 1:Enemy
+      world.registerComponent('Bullet', { owner: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32' });
 
       world.setResource('GameState', {
@@ -78,7 +77,7 @@
       pos.y[idx] = canvas.height - 60;
       rend.iconIndex[idx] = 0; // 🚀
       rend.size[idx] = 32;
-      pl.fireRate[idx] = 15; // frames
+      pl.fireRate[idx] = 15;
       pl.lastShot[idx] = 0;
 
       world.getResource('GameState').playerId = p;
@@ -87,14 +86,10 @@
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
-      // Override Render
+      // Override Render (Atmospheric Environment)
       const icons = ['🚀', '🔥', '🛸', '👾', '🛰️', '💥'];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.onRender = alpha => {
-        this.instance.ctx.fillStyle = '#000005';
-        this.instance.ctx.fillRect(0, 0, canvas.width, canvas.height);
-        defaultRender(world, alpha);
-      };
+      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
 
@@ -184,7 +179,7 @@
             if (Math.hypot(bPos.x[bIdx] - ePos.x[eIdx], bPos.y[bIdx] - ePos.y[eIdx]) < 25) {
               state.score += eProps.points[eIdx];
 
-              // 11/10 Impact Juice
+              // Impact Juice
               if (ASDF.ParticleSystem) {
                 ASDF.ParticleSystem.emit(world, ePos.x[eIdx], ePos.y[eIdx], {
                   count: 10,
@@ -194,7 +189,7 @@
               }
               self.instance.shake(3, 10);
 
-              self.addEffect(world, ePos.x[eIdx], ePos.y[eIdx], 5); // 💥
+              self.addEffect(world, ePos.x[eIdx], ePos.y[eIdx], 5);
               world.destroyEntity(world.getEntityId(eIdx));
               world.destroyEntity(world.getEntityId(bIdx));
               if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('collect');
@@ -228,7 +223,7 @@
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
       world.componentRegistry.get('Velocity').props.vy[idx] = -12;
-      world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1; // 🔥
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1;
       world.componentRegistry.get('Renderable').props.size[idx] = 15;
     },
 
@@ -240,7 +235,7 @@
       world.addComponent(e, 'Enemy');
       const idx = world.getIndex(e);
       const state = world.getResource('GameState');
-      const typeIdx = Math.floor(Math.random() * Math.min(state.wave, this.enemyTypes.length));
+      const typeIdx = Math.floor(Math.random() * Math.min(state.wave, this.enemySpecs.length));
       const type = this.enemySpecs[typeIdx] || this.enemySpecs[0];
 
       world.componentRegistry.get('Position').props.x[idx] =
@@ -263,6 +258,34 @@
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = iconIdx;
       world.componentRegistry.get('Renderable').props.size[idx] = 40;
       world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
+    },
+
+    draw(alpha, defaultRender) {
+      const ctx = this.instance.ctx;
+      const w = this.instance.canvas.width,
+        h = this.instance.canvas.height;
+      const state = this.instance.world.getResource('GameState');
+
+      // 1. Deep Space Nebula
+      const nebula = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w);
+      nebula.addColorStop(0, '#0a001a');
+      nebula.addColorStop(1, '#000005');
+      ctx.fillStyle = nebula;
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Parallax Starfield
+      const starColors = ['#ffffff', '#3b82f6', '#fbbf24'];
+      for (let layer = 1; layer <= 3; layer++) {
+        ctx.fillStyle = starColors[layer - 1];
+        const speed = layer * 0.2;
+        for (let i = 0; i < 15; i++) {
+          const x = (i * 137.5 + state.score * speed) % w;
+          const y = (i * 243.1 + state.score * speed * 2) % h;
+          ctx.fillRect(x, y, layer, layer);
+        }
+      }
+
+      defaultRender(this.instance.world, alpha);
     },
 
     stop() {

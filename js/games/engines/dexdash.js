@@ -203,56 +203,102 @@
 
     draw(alpha, defaultRender) {
       const ctx = this.instance.ctx;
-      const w = this.instance.canvas.width;
+      const w = this.instance.canvas.width,
+        h = this.instance.canvas.height;
+      const state = this.instance.world.getResource('GameState');
       const rT = this.roadTop(),
         rB = this.roadBottom();
 
-      ctx.fillStyle = '#050510';
-      ctx.fillRect(0, 0, w, this.instance.canvas.height);
+      // 1. Cyberpunk Sky Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, rT);
+      skyGrad.addColorStop(0, '#050510');
+      skyGrad.addColorStop(1, '#1a0b2e');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, rT);
+
+      // 2. Distant Mountains (Parallax)
+      ctx.fillStyle = '#0f051a';
+      for (let i = 0; i < 3; i++) {
+        const off = (state.distance * (0.2 + i * 0.1)) % 400;
+        ctx.beginPath();
+        ctx.moveTo(-off, rT);
+        ctx.lineTo(-off + 200, rT - 100);
+        ctx.lineTo(-off + 400, rT);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(400 - off, rT);
+        ctx.lineTo(600 - off, rT - 80);
+        ctx.lineTo(800 - off, rT);
+        ctx.fill();
+      }
+
+      // 3. Pseudo-3D Road (Mode 7 Logic)
+      // We render the road surface with horizontal perspective lines
       ctx.fillStyle = '#151525';
       ctx.fillRect(0, rT, w, this.roadHeight);
 
       ctx.strokeStyle = '#4c1d95';
+      ctx.lineWidth = 2;
+      const horizonY = rT;
+      const depth = this.roadHeight;
+
+      for (let i = 0; i < 15; i++) {
+        const lineZ = (i * 40 - state.roadOffset) % 600;
+        if (lineZ < 0) continue;
+
+        // Perspective mapping: Y grows faster as it approaches the bottom
+        const py = horizonY + (lineZ / 600) * depth;
+        const opacity = lineZ / 600;
+        ctx.globalAlpha = opacity;
+        ctx.beginPath();
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1.0;
+
+      // Road Edges (Converging at horizon)
+      ctx.strokeStyle = '#d97706';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(0, rT);
-      ctx.lineTo(w, rT);
-      ctx.moveTo(0, rB);
+      ctx.moveTo(w * 0.4, rT);
+      ctx.lineTo(0, rB);
+      ctx.moveTo(w * 0.6, rT);
       ctx.lineTo(w, rB);
       ctx.stroke();
 
-      // Dashed middle line
-      ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
-      ctx.setLineDash([30, 30]);
-      ctx.beginPath();
-      ctx.moveTo(0, rT + this.roadHeight / 2);
-      ctx.lineTo(w, rT + this.roadHeight / 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
+      // 4. Entities
       const world = this.instance.world;
-      const state = world.getResource('GameState');
       const pIdx = world.getIndex(state.playerId);
       const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
       const vel = world.componentRegistry.get('Velocity').props;
 
-      // Custom car render for orientation
-      SpriteCache.drawTransformed(ctx, '🏎️', pos.x[pIdx], pos.y[pIdx], 60, {
-        scaleX: 1, // Face right
-        rotation: vel.vy[pIdx] * 0.05, // Tilt based on vertical movement
-      });
-
-      // Render other entities (RenderSystem skip player)
       const query = world.createQuery(['Position', 'Renderable']);
       const { dense, count } = query.set;
-      const rend = world.componentRegistry.get('Renderable').props;
       const icons = ['🏎️', ...this.obstacleTypes.map(o => o.icon), ...this.dexLogos];
 
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
-        if (idx === pIdx) continue;
-        const icon = icons[rend.iconIndex[idx]] || '❓';
-        SpriteCache.draw(ctx, icon, pos.x[idx], pos.y[idx], rend.size[idx]);
+        const tx = pos.x[idx],
+          ty = pos.y[idx];
+
+        // Perspective Scaling based on Y position (closer = bigger)
+        const pScale = 0.5 + ((ty - rT) / this.roadHeight) * 1.5;
+        const size = (rend.size[idx] || 40) * pScale;
+
+        if (idx === pIdx) {
+          SpriteCache.drawTransformed(ctx, '🏎️', tx, ty, size, {
+            scaleX: 1,
+            rotation: vel.vy[idx] * 0.05,
+          });
+        } else {
+          const icon = icons[rend.iconIndex[idx]] || '❓';
+          // Fade out entities near horizon
+          ctx.globalAlpha = Math.min(1.0, (ty - rT) / 40);
+          SpriteCache.draw(ctx, icon, tx, ty, size);
+          ctx.globalAlpha = 1.0;
+        }
       }
     },
 
