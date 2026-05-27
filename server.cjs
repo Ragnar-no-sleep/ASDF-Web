@@ -443,6 +443,48 @@ app.post('/api/redis', async (req, res) => {
 // API Proxy for local development removed - this server now handles /api directly or via specific route handlers
 // (Add your API route handlers here if they are part of this server)
 
+// ============================================
+// DUMMY SHOP & SCORES API (Recovery 11/10)
+// ============================================
+
+app.get('/api/v2/shop/catalog', (req, res) => {
+  res.json({ items: [] });
+});
+
+app.get('/api/v2/shop/events', (req, res) => {
+  res.json({ events: [] });
+});
+
+app.get('/api/v2/shop/inventory', (req, res) => {
+  res.json({ inventory: [], equipped: {} });
+});
+
+app.get('/api/v2/shop/favorites', (req, res) => {
+  res.json({ favorites: [] });
+});
+
+app.get('/api/v2/shop/collections', (req, res) => {
+  res.json({ collections: [] });
+});
+
+app.get('/api/scores/leaderboard/weekly/:gameId', (req, res) => {
+  res.json({ scores: [] });
+});
+
+app.get('/api/scores/all', (req, res) => {
+  res.json({ scores: {} });
+});
+
+app.get('/api/config/public', (req, res) => {
+  res.json({
+    tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+    treasuryWallet: '5VUuiKmR4zt1bfHNTTpPMGB2r7tjNo4YFL1WqKC7ZRwa',
+    escrowWallet: 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y',
+    minHolderBalance: 1000000,
+    cycleWeeks: 10
+  });
+});
+
 // Catch-all for unknown /api routes (Production fallback)
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });

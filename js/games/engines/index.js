@@ -90,7 +90,11 @@ const GameEngines = {
       const script = document.createElement('script');
       // Use specific path if mapped, else default to flat .js
       const path = this._enginePaths[gameId] || `${gameId}.js`;
-      script.src = `${this.config.enginesPath}${path}`;
+      // Force absolute path from root
+      const basePath = this.config.enginesPath.startsWith('/')
+        ? this.config.enginesPath
+        : `/${this.config.enginesPath}`;
+      script.src = `${basePath}${path}`;
       script.defer = true;
 
       script.onload = () => {

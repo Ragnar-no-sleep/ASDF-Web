@@ -72,8 +72,8 @@ const CONFIG = {
 
   // API endpoints (environment-specific)
   // API base — prod backend was archived in Phase 1. Games-specific endpoints (leaderboards, anti-cheat)
-  // are no longer reachable from prod. Localhost dev points to alonisthe.dev if/when wired.
-  API_BASE: Environment.isDev ? 'http://localhost:3001/api' : null,
+  // are no longer reachable from prod. Localhost dev uses relative /api to leverage Vite's proxy.
+  API_BASE: Environment.isDev ? '/api' : null,
 
   // DEPRECATED: Direct RPC calls from frontend
   // All RPC calls should go through the API (which uses Helius with proper rate limiting)
