@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
+  // Base path for GitHub Pages
+  base: '/ASDF-Web/',
+
   // Root directory
   root: '.',
 

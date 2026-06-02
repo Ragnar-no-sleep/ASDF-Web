@@ -218,7 +218,7 @@
                   gravity: 0.3,
                 });
               }
-              this.instance.shake(15, 20);
+              self.instance.shake(15, 20);
 
               if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
             } else if (colProps && colProps.props.value[idx] !== undefined) {
@@ -278,11 +278,57 @@
         h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
 
-      ctx.fillStyle = '#1a1a2e';
+      // 1. Cyberpunk Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, state.groundY);
+      skyGrad.addColorStop(0, '#0a0a1a');
+      skyGrad.addColorStop(1, '#2d1b4e');
+      ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = '#0f0f1c';
+
+      // 2. Parallax Skyline (Layer 1: Far Buildings)
+      ctx.fillStyle = '#150a25';
+      const farSpeed = state.distance * 0.05;
+      for (let i = 0; i < 5; i++) {
+        const x = (i * 300 - farSpeed) % (5 * 300);
+        const bx = x < 0 ? x + 1500 : x;
+        ctx.fillRect(bx, state.groundY - 150, 120, 150);
+        // Small windows
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.1)';
+        ctx.fillRect(bx + 20, state.groundY - 130, 10, 10);
+        ctx.fillRect(bx + 90, state.groundY - 100, 10, 10);
+        ctx.fillStyle = '#150a25';
+      }
+
+      // 3. Parallax Skyline (Layer 2: Mid Buildings)
+      ctx.fillStyle = '#0f051a';
+      const midSpeed = state.distance * 0.15;
+      for (let i = 0; i < 6; i++) {
+        const x = (i * 250 - midSpeed) % (6 * 250);
+        const bx = x < 0 ? x + 1500 : x;
+        ctx.fillRect(bx, state.groundY - 100, 150, 100);
+      }
+
+      // 4. Animated Ground (Grid)
+      ctx.fillStyle = '#050508';
       ctx.fillRect(0, state.groundY, w, h - state.groundY);
 
+      ctx.strokeStyle = '#4c1d95';
+      ctx.lineWidth = 1;
+      const gridOff = (state.distance * 5) % 40;
+      ctx.beginPath();
+      // Vertical lines (Perspective-like)
+      for (let x = -gridOff; x < w; x += 40) {
+        ctx.moveTo(x, state.groundY);
+        ctx.lineTo(x - 50, h);
+      }
+      // Horizontal lines
+      for (let y = state.groundY; y < h; y += 20) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+
+      // 5. Entities
       defaultRender(this.instance.world, alpha);
     },
 

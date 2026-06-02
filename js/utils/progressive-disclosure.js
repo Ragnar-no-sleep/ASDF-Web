@@ -155,7 +155,8 @@ class ProgressiveDisclosure {
    */
   loadProgress() {
     const stored = storage.get('disclosure_progress');
-    return stored ? JSON.parse(stored) : {};
+    if (!stored) return {};
+    return typeof stored === 'object' ? stored : JSON.parse(stored);
   }
 
   /**
@@ -163,7 +164,8 @@ class ProgressiveDisclosure {
    */
   loadUnlockedFeatures() {
     const stored = storage.get('unlocked_features');
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    return typeof stored === 'object' ? stored : JSON.parse(stored);
   }
 
   /**
@@ -171,7 +173,8 @@ class ProgressiveDisclosure {
    */
   loadShownTips() {
     const stored = storage.get('shown_tips');
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    return typeof stored === 'object' ? stored : JSON.parse(stored);
   }
 
   /**

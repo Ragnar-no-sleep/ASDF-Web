@@ -126,11 +126,14 @@
     setupSymbolHunt(world) {
       const state = world.getResource('GameState').symbolMatch;
       const grid = document.getElementById('symbol-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       const target = this.symbolLegend[Math.floor(Math.random() * this.symbolLegend.length)];
       state.targetIndex = this.symbolLegend.indexOf(target);
-      document.getElementById('sm-target-name').textContent = target.name;
+
+      const targetNameEl = document.getElementById('sm-target-name');
+      if (targetNameEl) targetNameEl.textContent = target.name;
 
       state.totalTargets = 3 + Math.floor(world.getResource('GameState').level / 2);
       state.foundCount = 0;

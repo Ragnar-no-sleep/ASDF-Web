@@ -34,7 +34,15 @@
       this.instance.resize();
 
       const world = this.instance.world;
+      const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+
+      // Configure Input Hub
+      if (kernel.getPlugin('InputHub')) {
+        const input = kernel.getPlugin('InputHub');
+        input.mapAction('MOVE_LEFT', ['KeyA', 'ArrowLeft']);
+        input.mapAction('MOVE_RIGHT', ['KeyD', 'ArrowRight']);
+      }
 
       // Components
       world.registerComponent('Player', { speed: 'f32' });
@@ -69,9 +77,9 @@
       world.addComponent(p, 'Player');
 
       const pIdx = world.getIndex(p);
-      world.componentRegistry.get('Position').props.x[pIdx] = 120;
-      // Place car on the road (offset from bottom)
-      world.componentRegistry.get('Position').props.y[pIdx] = this.roadBottom() - 40;
+      world.componentRegistry.get('Position').props.x[pIdx] = this.canvas.width / 2;
+      // Place car at the bottom of the track (facing up)
+      world.componentRegistry.get('Position').props.y[pIdx] = this.canvas.height - 120;
       world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0; // 🏎️
       world.componentRegistry.get('Renderable').props.size[pIdx] = 60;
       world.componentRegistry.get('Player').props.speed[pIdx] = 2;
@@ -81,6 +89,18 @@
       // Override Render
       const icons = ['🏎️', ...this.obstacleTypes.map(o => o.icon), ...this.dexLogos];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+
+      this.instance.onUpdate = dt => {
+        const state = world.getResource('GameState');
+        if (kernel.services.hud) {
+          kernel.services.hud.update(this.gameId, state);
+          // DexDash custom HUD updates
+          const speed = world.componentRegistry.get('Player').props.speed[pIdx];
+          if (this.dom.distance) this.dom.distance.textContent = (state.distance | 0) + 'm';
+          if (this.dom.speed) this.dom.speed.textContent = ((speed * 20) | 0) + ' km/h';
+        }
+      };
+
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       // Systems
@@ -116,11 +136,11 @@
       if (typeof SpriteCache !== 'undefined') SpriteCache.preload(sprites);
     },
 
-    roadTop() {
-      return (this.instance.canvas.height - this.roadHeight) / 2;
+    trackLeft() {
+      return (this.instance.canvas.width - this.roadHeight) / 2;
     },
-    roadBottom() {
-      return this.roadTop() + this.roadHeight;
+    trackRight() {
+      return this.trackLeft() + this.roadHeight;
     },
 
     setupInput() {
@@ -149,15 +169,15 @@
         state.distance += pProps.speed[pIdx] * 0.2 * dt;
         state.roadOffset = (state.roadOffset + pProps.speed[pIdx] * 10 * dt) % 100;
 
-        if (state.keys['ArrowUp'] || state.keys['KeyW']) vel.vy[pIdx] -= 1 * dt;
-        if (state.keys['ArrowDown'] || state.keys['KeyS']) vel.vy[pIdx] += 1 * dt;
+        if (state.keys['ArrowLeft'] || state.keys['KeyA']) vel.vx[pIdx] -= 1 * dt;
+        if (state.keys['ArrowRight'] || state.keys['KeyD']) vel.vx[pIdx] += 1 * dt;
 
-        vel.vy[pIdx] *= Math.pow(0.9, dt);
+        vel.vx[pIdx] *= Math.pow(0.9, dt);
 
         // Bounds
-        const rT = self.roadTop(),
-          rB = self.roadBottom();
-        pos.y[pIdx] = Math.max(rT + 30, Math.min(rB - 30, pos.y[pIdx]));
+        const rL = self.trackLeft(),
+          rR = self.trackRight();
+        pos.x[pIdx] = Math.max(rL + 30, Math.min(rR - 30, pos.x[pIdx]));
 
         // Spawning
         if (Math.random() < 0.02) self.spawnObstacle(world);
@@ -169,11 +189,11 @@
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
           if (idx === pIdx) continue;
-          pos.x[idx] -= worldSpeed * dt;
+          pos.y[idx] += worldSpeed * dt;
           if (Math.hypot(pos.x[idx] - pos.x[pIdx], pos.y[idx] - pos.y[pIdx]) < 40) {
             pProps.speed[pIdx] = Math.max(2, pProps.speed[pIdx] - 2);
             world.destroyEntity(world.getEntityId(idx));
-          } else if (pos.x[idx] < -100) {
+          } else if (pos.y[idx] > self.instance.canvas.height + 100) {
             world.destroyEntity(world.getEntityId(idx));
           }
         }
@@ -188,9 +208,9 @@
       world.addComponent(e, 'Renderable');
       const idx = world.getIndex(e);
       const typeIdx = Math.floor(Math.random() * this.obstacleTypes.length);
-      world.componentRegistry.get('Position').props.x[idx] = this.instance.canvas.width + 100;
-      world.componentRegistry.get('Position').props.y[idx] =
-        this.roadTop() + 40 + Math.random() * (this.roadHeight - 80);
+      world.componentRegistry.get('Position').props.y[idx] = -100;
+      world.componentRegistry.get('Position').props.x[idx] =
+        this.trackLeft() + 40 + Math.random() * (this.roadHeight - 80);
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1 + typeIdx;
       world.componentRegistry.get('Renderable').props.size[idx] = 40;
     },
@@ -206,65 +226,45 @@
       const w = this.instance.canvas.width,
         h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
-      const rT = this.roadTop(),
-        rB = this.roadBottom();
+      const rL = this.trackLeft(),
+        rR = this.trackRight();
 
-      // 1. Cyberpunk Sky Gradient
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, rT);
-      skyGrad.addColorStop(0, '#050510');
-      skyGrad.addColorStop(1, '#1a0b2e');
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, w, rT);
+      // 1. Cyberpunk Background
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, w, h);
 
-      // 2. Distant Mountains (Parallax)
-      ctx.fillStyle = '#0f051a';
-      for (let i = 0; i < 3; i++) {
-        const off = (state.distance * (0.2 + i * 0.1)) % 400;
-        ctx.beginPath();
-        ctx.moveTo(-off, rT);
-        ctx.lineTo(-off + 200, rT - 100);
-        ctx.lineTo(-off + 400, rT);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(400 - off, rT);
-        ctx.lineTo(600 - off, rT - 80);
-        ctx.lineTo(800 - off, rT);
-        ctx.fill();
-      }
-
-      // 3. Pseudo-3D Road (Mode 7 Logic)
-      // We render the road surface with horizontal perspective lines
+      // 2. Pseudo-3D Road (Vertical Perspective)
       ctx.fillStyle = '#151525';
-      ctx.fillRect(0, rT, w, this.roadHeight);
+      ctx.fillRect(rL, 0, this.roadHeight, h);
 
       ctx.strokeStyle = '#4c1d95';
       ctx.lineWidth = 2;
-      const horizonY = rT;
-      const depth = this.roadHeight;
+      const horizonY = 0;
+      const depth = h;
 
-      for (let i = 0; i < 15; i++) {
-        const lineZ = (i * 40 - state.roadOffset) % 600;
+      for (let i = 0; i < 20; i++) {
+        const lineZ = (i * 40 + state.roadOffset) % 800;
         if (lineZ < 0) continue;
 
-        // Perspective mapping: Y grows faster as it approaches the bottom
-        const py = horizonY + (lineZ / 600) * depth;
-        const opacity = lineZ / 600;
+        // Perspective mapping: Lines moving down
+        const py = horizonY + lineZ;
+        const opacity = Math.min(1.0, py / h);
         ctx.globalAlpha = opacity;
         ctx.beginPath();
-        ctx.moveTo(0, py);
-        ctx.lineTo(w, py);
+        ctx.moveTo(rL, py);
+        ctx.lineTo(rR, py);
         ctx.stroke();
       }
       ctx.globalAlpha = 1.0;
 
-      // Road Edges (Converging at horizon)
+      // Road Edges (Vertical)
       ctx.strokeStyle = '#d97706';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(w * 0.4, rT);
-      ctx.lineTo(0, rB);
-      ctx.moveTo(w * 0.6, rT);
-      ctx.lineTo(w, rB);
+      ctx.moveTo(rL, 0);
+      ctx.lineTo(rL, h);
+      ctx.moveTo(rR, 0);
+      ctx.lineTo(rR, h);
       ctx.stroke();
 
       // 4. Entities
@@ -283,21 +283,16 @@
         const tx = pos.x[idx],
           ty = pos.y[idx];
 
-        // Perspective Scaling based on Y position (closer = bigger)
-        const pScale = 0.5 + ((ty - rT) / this.roadHeight) * 1.5;
-        const size = (rend.size[idx] || 40) * pScale;
+        const size = rend.size[idx] || 40;
 
         if (idx === pIdx) {
           SpriteCache.drawTransformed(ctx, '🏎️', tx, ty, size, {
             scaleX: 1,
-            rotation: vel.vy[idx] * 0.05,
+            rotation: vel.vx[idx] * 0.05 - Math.PI / 2, // Rotate -90deg + tilt
           });
         } else {
           const icon = icons[rend.iconIndex[idx]] || '❓';
-          // Fade out entities near horizon
-          ctx.globalAlpha = Math.min(1.0, (ty - rT) / 40);
           SpriteCache.draw(ctx, icon, tx, ty, size);
-          ctx.globalAlpha = 1.0;
         }
       }
     },

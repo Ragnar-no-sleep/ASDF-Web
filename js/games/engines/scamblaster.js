@@ -36,7 +36,16 @@
       this.instance.resize();
 
       const world = this.instance.world;
+      const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+
+      // Configure Input Hub for logical actions
+      if (kernel.getPlugin('InputHub')) {
+        const input = kernel.getPlugin('InputHub');
+        input.mapAction('MOVE_LEFT', ['KeyA', 'ArrowLeft']);
+        input.mapAction('MOVE_RIGHT', ['KeyD', 'ArrowRight']);
+        input.mapAction('FIRE', ['Space', 'Enter']);
+      }
 
       world.registerComponent('Enemy', { hp: 'u8', points: 'u8', typeIndex: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32', initial: 'f32' });
@@ -64,6 +73,16 @@
 
       const icons = [...this.enemyTypes.map(e => e.icon), '💥', '💔'];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+
+      // Update Loop
+      this.instance.onUpdate = dt => {
+        const state = world.getResource('GameState');
+        // Let HUDManager handle the DOM
+        if (kernel.services.hud) {
+          kernel.services.hud.update(this.gameId, state);
+        }
+      };
+
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       world.addSystem(this.createLogicSystem());

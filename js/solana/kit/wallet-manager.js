@@ -9,7 +9,7 @@
 
 'use strict';
 
-import { address } from 'https://esm.sh/@solana/kit@5';
+import { address } from 'https://esm.run/@solana/kit@5';
 
 // ============================================
 // WALLET STANDARD FEATURE DETECTION

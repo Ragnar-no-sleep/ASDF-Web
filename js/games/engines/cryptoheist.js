@@ -28,6 +28,8 @@
       { icon: '🕵️', vision: 240, speed: 2.1 },
     ],
 
+    icons: [],
+
     start(gameId) {
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
@@ -89,13 +91,13 @@
       world.getResource('GameState').playerId = p;
 
       // Override Render for Dynamic Lighting
-      const icons = [
+      this.icons = [
         '🧙',
         ...this.lootRarities.map(l => l.icon),
         ...this.enemyTypes.map(e => e.icon),
         '💥',
       ];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, this.icons);
       this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       // Systems
@@ -190,7 +192,7 @@
       bPos.y[bIdx] = pos.y[pIdx] + Math.sin(playerAngle) * 20;
       bVel.vx[bIdx] = Math.cos(playerAngle) * 12;
       bVel.vy[bIdx] = Math.sin(playerAngle) * 12;
-      bRend.iconIndex[bIdx] = icons.indexOf('💥') || 0; // mapped below
+      bRend.iconIndex[bIdx] = this.icons.indexOf('💥') || 0;
       bRend.size[bIdx] = 8;
 
       if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('click');
@@ -263,7 +265,7 @@
         // Enemies vs Player
         const enemies = world.createQuery(['Enemy', 'Position']);
         const { dense: eDense, count: eCount } = enemies.set;
-        for (let i = count - 1; i >= 0; i--) {
+        for (let i = eCount - 1; i >= 0; i--) {
           const idx = eDense[i];
           if (Math.hypot(px - pos.x[idx], py - pos.y[idx]) < 22) {
             state.gameOver = true;

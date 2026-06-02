@@ -69,6 +69,7 @@
         frameCount: 0,
         droneId: -1,
         activePowerUps: [0, 0, 0, 0],
+        visualYOffset: 0, // Visual jump effect
         lanes: [
           canvas.height - bM - laneH * 2.5,
           canvas.height - bM - laneH * 1.5,
@@ -168,22 +169,24 @@
         const pProps = world.componentRegistry.get('Position').props;
         const drProps = world.componentRegistry.get('Drone').props;
 
-        if (key === 'a') {
+        if (key === 'a' || key === 'arrowleft') {
           world.componentRegistry.get('Velocity').props.vx[dIdx] = -8;
-        } else if (key === 'd') {
+        } else if (key === 'd' || key === 'arrowright') {
           world.componentRegistry.get('Velocity').props.vx[dIdx] = 8;
-        } else if (key === 'w' && drProps.lane[dIdx] > 0) {
+        } else if ((key === 'w' || key === 'arrowup') && drProps.lane[dIdx] > 0) {
           drProps.lane[dIdx]--;
           pProps.y[dIdx] = state.lanes[drProps.lane[dIdx]];
-        } else if (key === 's' && drProps.lane[dIdx] < 2) {
+          state.visualYOffset = -20; // Visual jump
+        } else if ((key === 's' || key === 'arrowdown') && drProps.lane[dIdx] < 2) {
           drProps.lane[dIdx]++;
           pProps.y[dIdx] = state.lanes[drProps.lane[dIdx]];
+          state.visualYOffset = 10; // Visual squash
         }
       });
 
       document.addEventListener('keyup', e => {
         const key = e.key.toLowerCase();
-        if (key === 'a' || key === 'd') {
+        if (key === 'a' || key === 'd' || key === 'arrowleft' || key === 'arrowright') {
           const state = world.getResource('GameState');
           const dIdx = world.getIndex(state.droneId);
           world.componentRegistry.get('Velocity').props.vx[dIdx] = 0;
@@ -242,6 +245,9 @@
             if (typeof endGame === 'function') endGame(self.gameId, state.score);
           }
         }
+
+        // Visual Juice decay
+        state.visualYOffset *= Math.pow(0.8, dt);
 
         // Spawning
         state.spawnTimer += dt;
@@ -370,9 +376,53 @@
 
     draw(alpha, defaultRender) {
       const ctx = this.instance.ctx;
+      const state = this.instance.world.getResource('GameState');
       ctx.fillStyle = '#0a0a0f';
       ctx.fillRect(0, 0, this.instance.canvas.width, this.instance.canvas.height);
-      defaultRender(this.instance.world, alpha);
+
+      // Draw background lanes
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      state.lanes.forEach(y => {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(this.instance.canvas.width, y);
+        ctx.stroke();
+      });
+
+      // Render entities with visual offset for the drone
+      const droneId = state.droneId;
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+
+      const icons = [
+        '🛸',
+        '🔥',
+        '💥',
+        ...this.powerUps.map(p => p.icon),
+        ...this.enemyTypes.map(e => e.icon),
+        ...this.goodTokens,
+        ...this.scamTokens,
+        '💀',
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx],
+          ty = pos.y[idx];
+        const icon = icons[rend.iconIndex[idx]] || '❓';
+        const size = rend.size[idx] || 30;
+
+        if (world.getEntityId(idx) === droneId) {
+          SpriteCache.draw(ctx, icon, tx, ty + state.visualYOffset, size);
+        } else {
+          SpriteCache.draw(ctx, icon, tx, ty, size);
+        }
+      }
     },
 
     stop() {

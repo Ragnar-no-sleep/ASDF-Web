@@ -217,8 +217,9 @@
 
       const query = this.instance.world.createQuery(['Position', 'Renderable']);
       const { dense, count } = query.set;
-      const pos = this.instance.world.componentRegistry.get('Position').props;
-      const rend = this.instance.world.componentRegistry.get('Renderable').props;
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
 
       const icons = [
         '🧑‍💻',
@@ -237,8 +238,9 @@
         const gx = pos.x[idx],
           gy = pos.y[idx];
 
-        if (state.fog[gy | 0]?.[gx | 0] > 0.5 && world.getEntityId(idx) !== state.playerId)
+        if (state.fog[gy | 0]?.[gx | 0] > 0.5 && world.getEntityId(idx) !== state.playerId) {
           continue;
+        }
 
         const screenX = offsetX + gx * cS + cS / 2;
         const screenY = offsetY + gy * cS + cS / 2;

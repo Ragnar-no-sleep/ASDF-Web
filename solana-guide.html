@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solana Starter Guide — $ASDFASDFA</title>
+    <meta
+      name="description"
+      content="A beginner's guide to the Solana ecosystem and how to get started with ASDF."
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Solana Starter Guide - ASDF" />
+    <meta
+      property="og:description"
+      content="Learn how to setup your wallet and join the Solana ecosystem."
+    />
+    <meta property="og:image" content="https://alonisthe.dev/og-image.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/system.css" />
+    <link rel="stylesheet" href="css/solana-guide.css" />
+    <link rel="stylesheet" href="css/runtime-components.css" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+      <a href="/" class="back" aria-label="Return to Hub">&#8592; Hub</a>
+      <div class="logo-text">SOLANA STARTER</div>
+    </header>
+
+    <main id="main-content" class="container">
+      <section class="hero">
+        <h1 class="glitch-text" data-text="THE GATEWAY">THE GATEWAY</h1>
+        <p class="subtitle">Welcome to the high-performance blockchain. Let's get you set up.</p>
+      </section>
+
+      <div class="guide-grid">
+        <!-- Step 1: Wallet -->
+        <div class="guide-card" id="step-1">
+          <div class="card-number">01</div>
+          <h2>Secure Your Wallet</h2>
+          <p>You need a place to hold your SOL and tokens. We recommend <strong>Phantom</strong> or <strong>Solflare</strong>.</p>
+          <ul class="check-list">
+            <li>Download the extension or app</li>
+            <li>Create a new wallet</li>
+            <li><strong>WRITE DOWN YOUR SEED PHRASE</strong> (Never share it!)</li>
+          </ul>
+          <div class="card-links">
+            <a href="https://phantom.app" target="_blank" rel="noopener" class="btn-small">Phantom</a>
+            <a href="https://solflare.com" target="_blank" rel="noopener" class="btn-small">Solflare</a>
+          </div>
+        </div>
+
+        <!-- Step 2: Funding -->
+        <div class="guide-card" id="step-2">
+          <div class="card-number">02</div>
+          <h2>Fund with SOL</h2>
+          <p>SOL is the fuel for the Solana network. You need it to pay for transaction fees (which are very small!).</p>
+          <ul class="check-list">
+            <li>Buy SOL on an exchange (Coinbase, Binance, Kraken)</li>
+            <li>Send it to your new Wallet Address</li>
+            <li>Wait a few seconds for it to arrive</li>
+          </ul>
+        </div>
+
+        <!-- Step 3: Interaction -->
+        <div class="guide-card" id="step-3">
+          <div class="card-number">03</div>
+          <h2>Join the Ecosystem</h2>
+          <p>Now that you have SOL, you can interact with ASDF and other projects.</p>
+          <div class="interactive-demo">
+            <button id="connectWallet" class="btn-primary">Connect Wallet</button>
+            <div id="walletStatus" class="status-msg hidden">Searching for provider...</div>
+          </div>
+          <p class="hint">Use Jupiter to swap SOL for $asdfasdfa.</p>
+          <a href="https://jup.ag/swap/SOL-asdfasdfa" target="_blank" rel="noopener" class="btn-outline">Swap on Jupiter</a>
+        </div>
+      </div>
+
+      <section class="cynic-wisdom">
+        <div class="cynic-avatar">🐕</div>
+        <div class="cynic-bubble">
+          <h3>CYNIC's Advice</h3>
+          <p><em>*sniff*</em> Don't trust the hype. Verify the contract. Don't gamble what you can't burn. This is fine.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2026 ASDF Ecosystem. No promises. Just code.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="js/solana-guide.js"></script>
+  </body>
+</html>
