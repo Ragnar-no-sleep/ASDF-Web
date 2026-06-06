@@ -8,6 +8,39 @@ const rateLimit = require('express-rate-limit');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
 const promClient = require('prom-client');
+const OpenAIModelConfig = {
+  primary: process.env.OPENAI_MODEL || 'gpt-5.2',
+  fallback: process.env.OPENAI_MODEL_FALLBACK || 'gpt-4.1-mini',
+};
+const OPENAI_TIMEOUT_MS = 12000;
+
+/**
+ * Normalize and sanitize a requested model value.
+ */
+function resolveAiModel(requestedModel) {
+  if (typeof requestedModel !== 'string') {
+    return OpenAIModelConfig.primary;
+  }
+  const normalized = requestedModel.trim().slice(0, 128);
+  return normalized || OpenAIModelConfig.primary;
+}
+
+/**
+ * Normalize messages payload for OpenAI-compatible chat endpoint.
+ */
+function normalizeChatMessages(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .map(msg => {
+      if (!msg || typeof msg !== 'object') return null;
+      const role = typeof msg.role === 'string' ? msg.role.trim().toLowerCase() : '';
+      const content = typeof msg.content === 'string' ? msg.content.trim() : '';
+      if (!['system', 'user', 'assistant'].includes(role) || !content) return null;
+      return { role, content };
+    })
+    .filter(Boolean);
+}
 
 // Structured logger — JSON in prod, pretty in dev
 const logger = pino({
@@ -583,8 +616,96 @@ app.get('/api/config/public', (req, res) => {
     escrowWallet: 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y',
     minHolderBalance: 1000000,
     cycleWeeks: 10,
-    rotationEpoch: '2024-01-01T00:00:00Z'
+    rotationEpoch: '2024-01-01T00:00:00Z',
+    aiModel: OpenAIModelConfig.primary,
+    aiFallbackModel: OpenAIModelConfig.fallback,
+    aiConfigured: Boolean(process.env.OPENAI_API_KEY),
   });
+});
+
+app.post('/api/ai/chat', async (req, res) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: 'OpenAI backend not configured' });
+  }
+
+  const model = resolveAiModel(req.body?.model);
+  const messagesFromBody = normalizeChatMessages(req.body?.messages);
+  const fallbackPrompt =
+    typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
+  const messages =
+    messagesFromBody.length > 0
+      ? messagesFromBody
+      : fallbackPrompt
+        ? [{ role: 'user', content: fallbackPrompt }]
+        : [];
+
+  if (!messages.length) {
+    return res.status(400).json({ error: 'No valid messages provided' });
+  }
+
+  const payload = {
+    model,
+    messages,
+    temperature: typeof req.body?.temperature === 'number' ? req.body.temperature : 0.7,
+  };
+  if (Number.isFinite(req.body?.max_tokens) && req.body.max_tokens > 0) {
+    payload.max_tokens = Math.min(req.body.max_tokens, 4096);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    const payloadText = await response.text();
+    clearTimeout(timeout);
+    let parsed = {};
+    try {
+      parsed = JSON.parse(payloadText);
+    } catch {
+      parsed = {};
+    }
+
+    if (!response.ok) {
+      logger.warn(
+        { status: response.status, model, error: parsed.error },
+        'OpenAI API request failed'
+      );
+      return res.status(502).json({
+        error: 'OpenAI request failed',
+        details: parsed.error || payloadText,
+      });
+    }
+
+    const content = parsed?.choices?.[0]?.message?.content;
+    if (typeof content !== 'string') {
+      return res.status(502).json({ error: 'Invalid response from OpenAI' });
+    }
+
+    res.json({
+      model: parsed?.model || model,
+      content,
+      usage: parsed?.usage || null,
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      logger.warn({ timeoutMs: OPENAI_TIMEOUT_MS }, 'OpenAI request timed out');
+      return res.status(504).json({ error: 'OpenAI request timed out' });
+    }
+    logger.error({ err: err.message }, 'OpenAI route failed');
+    return res.status(500).json({ error: 'Failed to query OpenAI' });
+  }
 });
 
 // ============================================
