@@ -12,6 +12,7 @@
     version: '2.2.0',
     gameId: 'cryptoheist',
     instance: null,
+    _cleanupInput: null,
 
     lootRarities: [
       { icon: '🪙', value: 5, color: '#9ca3af' },
@@ -31,6 +32,8 @@
     icons: [],
 
     start(gameId) {
+      this.stop();
+
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
@@ -58,6 +61,9 @@
         wave: 1,
         kills: 0,
         gameOver: false,
+        spawnTimer: 0,
+        difficulty: 1,
+        maxEnemies: 10,
         keys: {},
         mouseX: 0,
         mouseY: 0,
@@ -142,25 +148,25 @@
       const canvas = this.instance.canvas;
       const world = this.instance.world;
 
-      document.addEventListener('keydown', e => {
+      const onKeyDown = e => {
         const state = world.getResource('GameState');
         if (state) state.keys[e.key.toLowerCase()] = true;
-      });
-      document.addEventListener('keyup', e => {
+      };
+      const onKeyUp = e => {
         const state = world.getResource('GameState');
         if (state) state.keys[e.key.toLowerCase()] = false;
-      });
+      };
 
-      canvas.addEventListener('mousemove', e => {
+      const onMouseMove = e => {
         const rect = canvas.getBoundingClientRect();
         const state = world.getResource('GameState');
         if (state) {
           state.mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
           state.mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
         }
-      });
+      };
 
-      canvas.addEventListener('pointerdown', () => {
+      const onPointerDown = () => {
         const state = world.getResource('GameState');
         if (!state || state.gameOver) return;
         const now = performance.now();
@@ -168,7 +174,18 @@
           this.shoot(world);
           state.lastShot = now;
         }
-      });
+      };
+
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+      canvas.addEventListener('mousemove', onMouseMove);
+      canvas.addEventListener('pointerdown', onPointerDown);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+        canvas.removeEventListener('mousemove', onMouseMove);
+        canvas.removeEventListener('pointerdown', onPointerDown);
+      };
     },
 
     shoot(world) {
@@ -229,8 +246,18 @@
         pProps.lightFlicker[pIdx] =
           1.0 + Math.sin(performance.now() * 0.01) * 0.05 + Math.random() * 0.02;
 
+        state.wave = 1 + Math.floor(state.kills / 10);
+        state.difficulty = Math.min(3.2, 1 + state.wave * 0.09);
+        state.maxEnemies = Math.min(30, 8 + state.wave * 2);
+
         // Spawning
-        if (Math.random() < 0.025) self.spawnEnemy(world);
+        state.spawnTimer += dt;
+        const enemies = world.createQuery(['Enemy', 'Position']);
+        const spawnInterval = Math.max(20, 72 - state.wave * 4);
+        if (enemies.set.count < state.maxEnemies && state.spawnTimer >= spawnInterval) {
+          self.spawnEnemy(world);
+          state.spawnTimer = 0;
+        }
 
         // Bounds Cleanup
         const bullets = world.createQuery(['Bullet', 'Position']);
@@ -306,6 +333,10 @@
         const lootProps = world.componentRegistry.get('Loot').props;
         for (let i = lCount - 1; i >= 0; i--) {
           const idx = lDense[i];
+          if (i > 26) {
+            world.destroyEntity(world.getEntityId(idx));
+            continue;
+          }
           if (Math.hypot(px - pos.x[idx], py - pos.y[idx]) < 25) {
             state.score += lootProps.value[idx];
             if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('collect');
@@ -347,9 +378,10 @@
 
       const typeIdx = Math.floor(Math.random() * this.enemyTypes.length);
       const type = this.enemyTypes[typeIdx];
+      const state = world.getResource('GameState');
       const angle = Math.atan2(h / 2 - pos.y[idx], w / 2 - pos.x[idx]);
-      vel.vx[idx] = Math.cos(angle) * type.speed;
-      vel.vy[idx] = Math.sin(angle) * type.speed;
+      vel.vx[idx] = Math.cos(angle) * type.speed * state.difficulty;
+      vel.vy[idx] = Math.sin(angle) * type.speed * state.difficulty;
 
       en.hp[idx] = 1;
       en.vision[idx] = type.vision;
@@ -387,6 +419,10 @@
         h = this.instance.canvas.height;
       const world = this.instance.world;
       const state = world.getResource('GameState');
+      if (this.instance) {
+        this.drawHeistScene(ctx, w, h, world, state, alpha);
+        return;
+      }
 
       const pIdx = world.getIndex(state.playerId);
       const pos = world.componentRegistry.get('Position').props;
@@ -461,8 +497,228 @@
       ctx.restore();
     },
 
+    drawHeistScene(ctx, w, h, world, state, alpha) {
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const player = world.componentRegistry.get('Player').props;
+      const px = pos.x[pIdx];
+      const py = pos.y[pIdx];
+      const angle = player.angle[pIdx];
+      const flicker = player.lightFlicker[pIdx] || 1;
+
+      this.drawVaultFloor(ctx, w, h, state);
+      this.drawHeistEntities(ctx, world, state, alpha);
+      this.drawLightMask(ctx, w, h, px, py, angle, state.lightRange * flicker, state.ambientAlpha);
+      this.drawPlayerAgent(ctx, px, py, angle);
+      this.drawSightline(ctx, px, py, angle, state.lightRange * 0.85);
+    },
+
+    drawVaultFloor(ctx, w, h, state) {
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#050914');
+      bg.addColorStop(0.55, '#0b1022');
+      bg.addColorStop(1, '#10081b');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
+      ctx.lineWidth = 1;
+      const offset = (performance.now() / 80) % 48;
+      ctx.beginPath();
+      for (let x = -offset; x < w; x += 48) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+      }
+      for (let y = -offset; y < h; y += 48) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.12)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 5; i++) {
+        const y = ((state.score + i * 137) % (h + 160)) - 80;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.bezierCurveTo(w * 0.25, y + 45, w * 0.72, y - 45, w, y + 20);
+        ctx.stroke();
+      }
+    },
+
+    drawHeistEntities(ctx, world, state) {
+      const pos = world.componentRegistry.get('Position').props;
+      const lootComp = world.componentRegistry.get('Loot');
+      const enemyComp = world.componentRegistry.get('Enemy');
+      const bulletComp = world.componentRegistry.get('Bullet');
+      const lootBit = lootComp ? lootComp.bit : 0;
+      const enemyBit = enemyComp ? enemyComp.bit : 0;
+      const bulletBit = bulletComp ? bulletComp.bit : 0;
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        if (world.getEntityId(idx) === state.playerId) continue;
+        const mask = world.entityMasks[idx];
+        if (lootBit && (mask & lootBit) === lootBit) {
+          this.drawLoot(ctx, pos.x[idx], pos.y[idx], lootComp.props.value[idx]);
+        } else if (enemyBit && (mask & enemyBit) === enemyBit) {
+          this.drawSentry(ctx, pos.x[idx], pos.y[idx], enemyComp.props.vision[idx]);
+        } else if (bulletBit && (mask & bulletBit) === bulletBit) {
+          this.drawTracer(ctx, pos.x[idx], pos.y[idx]);
+        }
+      }
+    },
+
+    drawLoot(ctx, x, y, value) {
+      const tier = value >= 200 ? 4 : value >= 80 ? 3 : value >= 30 ? 2 : value >= 10 ? 1 : 0;
+      const palette = ['#9ca3af', '#22c55e', '#3b82f6', '#a855f7', '#fbbf24'];
+      const color = palette[tier];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.PI / 4);
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+      const grad = ctx.createLinearGradient(-16, -16, 16, 16);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.38, color);
+      grad.addColorStop(1, '#020617');
+      ctx.fillStyle = grad;
+      this.roundRect(ctx, -15, -15, 30, 30, 6);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    },
+
+    drawSentry(ctx, x, y, vision) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.min(vision, 220), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(0,0,0,0.36)';
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 23, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#7f1d1d';
+      this.roundRect(ctx, -17, -17, 34, 34, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(-11, -4, 22, 8);
+      ctx.fillStyle = '#fee2e2';
+      ctx.fillRect(-9, -2, 6, 4);
+      ctx.fillRect(3, -2, 6, 4);
+      ctx.restore();
+    },
+
+    drawTracer(ctx, x, y) {
+      ctx.save();
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawPlayerAgent(ctx, x, y, angle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.ellipse(0, 7, 18, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const suit = ctx.createLinearGradient(-16, 0, 16, 0);
+      suit.addColorStop(0, '#0f172a');
+      suit.addColorStop(0.5, '#22d3ee');
+      suit.addColorStop(1, '#312e81');
+      ctx.fillStyle = suit;
+      this.roundRect(ctx, -16, -13, 32, 26, 8);
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(19, 0);
+      ctx.lineTo(6, -6);
+      ctx.lineTo(6, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawSightline(ctx, x, y, angle, range) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      const beamHalf = Math.PI / 8;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, range);
+      grad.addColorStop(0, 'rgba(251, 191, 36, 0.24)');
+      grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, range, angle - beamHalf, angle + beamHalf);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawLightMask(ctx, w, h, x, y, angle, range, ambientAlpha) {
+      ctx.save();
+      ctx.fillStyle = `rgba(2, 6, 23, ${ambientAlpha})`;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'destination-out';
+
+      const radial = ctx.createRadialGradient(x, y, 16, x, y, range);
+      radial.addColorStop(0, 'rgba(0,0,0,0.9)');
+      radial.addColorStop(0.62, 'rgba(0,0,0,0.35)');
+      radial.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = radial;
+      ctx.beginPath();
+      ctx.arc(x, y, range, 0, Math.PI * 2);
+      ctx.fill();
+
+      const beamHalf = Math.PI / 5.6;
+      const beam = ctx.createRadialGradient(x, y, 0, x, y, range * 1.18);
+      beam.addColorStop(0, 'rgba(0,0,0,0.9)');
+      beam.addColorStop(0.78, 'rgba(0,0,0,0.4)');
+      beam.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = beam;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, range * 1.18, angle - beamHalf, angle + beamHalf);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    },
+
+    roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    },
+
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 

@@ -1,92 +1,80 @@
 /**
- * ASDF Games - Whale Watch Engine (11/10 ECS Edition)
+ * ASDF Games - Whale Watch Engine
  *
- * Dual cognitive game:
- * - Symbol Match: Find all target symbols in a 3D flip grid.
- * - Memory Sequence: Simon-like recall pattern.
- *
- * Migrated to ECS for peak zero-allocation performance and modularity.
+ * Dual focus game: scan liquidity signals, then replay whale movement
+ * sequences. DOM-first by design for crisp interaction and accessibility.
  */
 
 'use strict';
 
 (function () {
+  const SYMBOLS = [
+    { symbol: 'F', name: 'Fire' },
+    { symbol: 'D', name: 'Diamond' },
+    { symbol: 'R', name: 'Rocket' },
+    { symbol: 'L', name: 'Liquidity' },
+    { symbol: 'S', name: 'Signal' },
+    { symbol: 'G', name: 'Game' },
+    { symbol: 'T', name: 'Trophy' },
+    { symbol: 'X', name: 'Spark' },
+    { symbol: 'V', name: 'Vault' },
+    { symbol: 'C', name: 'Crown' },
+    { symbol: 'B', name: 'Bolt' },
+    { symbol: 'Q', name: 'Crystal' },
+  ];
+
+  const MEMORY_COLORS = ['#38bdf8', '#22c55e', '#fbbf24', '#f472b6'];
+  const MEMORY_LABELS = ['N', 'E', 'S', 'W'];
+
   const WhaleWatch = {
-    version: '2.2.0',
+    version: '3.0.0',
     gameId: 'whalewatch',
     instance: null,
-
-    symbolLegend: [
-      { symbol: '🔥', name: 'Fire' },
-      { symbol: '💎', name: 'Diamond' },
-      { symbol: '🚀', name: 'Rocket' },
-      { symbol: '💰', name: 'Money' },
-      { symbol: '⭐', name: 'Star' },
-      { symbol: '🎮', name: 'Game' },
-      { symbol: '🏆', name: 'Trophy' },
-      { symbol: '✨', name: 'Sparkle' },
-      { symbol: '🎁', name: 'Gift' },
-      { symbol: '👑', name: 'Crown' },
-      { symbol: '⚡', name: 'Bolt' },
-      { symbol: '🔮', name: 'Crystal' },
-    ],
+    dom: null,
+    _timeouts: [],
+    _handlers: [],
 
     start(gameId) {
+      this.stop();
       this.gameId = gameId;
+
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
       this.createArena(arena);
-
       this.instance = new ASDF.GameInstance(document.createElement('canvas'), {
-        maxEntities: 200,
+        maxEntities: 16,
         debug: false,
       });
 
-      this.instance.resize();
-
-      const world = this.instance.world;
-      this.instance.initStandardComponents();
-
-      world.setResource('GameState', {
+      this.instance.world.setResource('GameState', {
         score: 0,
         level: 1,
         gameOver: false,
-        symbolMatch: {
-          grid: [],
-          foundCount: 0,
-          totalTargets: 0,
-          timer: 55,
-          cols: 4,
-          rows: 4,
-          targetIndex: 0,
+        scan: {
+          timer: 45,
+          maxTimer: 45,
+          found: 0,
+          total: 0,
           mistakes: 0,
-          hints: 2,
+          target: SYMBOLS[0],
+          cells: [],
         },
-        memoryGame: {
-          sequence: [],
-          playerSeq: [],
+        memory: {
           round: 1,
+          sequence: [],
+          input: [],
           state: 'idle',
-          timer: 10,
         },
       });
 
-      this.dom = {
-        score: document.getElementById('ww-score'),
-        level: document.getElementById('ww-level'),
-        smTimer: document.getElementById('sm-timer'),
-        smFound: document.getElementById('sm-found'),
-        smTotal: document.getElementById('sm-total'),
-        smTargetName: document.getElementById('sm-target-name'),
-        memStatus: document.getElementById('mem-status'),
-        memTimer: document.getElementById('mem-timer-bar'),
-      };
-
-      this.setupSymbolHunt(world);
-      this.setupMemoryGame(world);
+      this.cacheDom();
+      this.setupScanRound();
+      this.setupMemoryBoard();
+      this.startMemoryRound();
 
       this.instance.onUpdate = dt => this.update(dt);
+      this.instance.onRender = () => {};
       this.instance.start();
 
       if (typeof activeGames !== 'undefined') {
@@ -96,196 +84,259 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="ww-layout" style="display:flex; height:100%; gap:15px; padding:15px; background:#0a1628; color:#fff; font-family:Orbitron, sans-serif;">
-          <!-- LEFT: Symbol Match -->
-          <div class="ww-panel" style="flex:1; background:rgba(0,0,0,0.3); border-radius:12px; padding:15px; border:1px solid #333; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="color:#fbbf24; font-size:12px;">FIND: <span id="sm-target-name">...</span></span>
-                <span style="color:#ef4444; font-size:12px;">⏱️ <span id="sm-timer">55</span>s</span>
+        <div class="ww-container ww-arcade">
+          <section class="ww-panel ww-panel--scan">
+            <div class="ww-panel-header">
+              <span class="ww-panel-title--gold">Signal Scan</span>
+              <span class="ww-stat-timer"><span id="sm-timer">45</span>s</span>
             </div>
-            <div id="symbol-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; flex:1;"></div>
-            <div style="margin-top:10px; font-size:12px; text-align:center;">
-                FOUND: <span id="sm-found">0</span> / <span id="sm-total">0</span>
+            <div class="ww-target-box">
+              <span class="ww-target-label">Find</span>
+              <strong id="sm-target-name" class="ww-target-name">...</strong>
             </div>
-          </div>
-          <!-- RIGHT: Memory -->
-          <div class="ww-panel" style="flex:1; background:rgba(0,0,0,0.3); border-radius:12px; padding:15px; border:1px solid #333; display:flex; flex-direction:column;">
-            <div id="mem-status" style="text-align:center; margin-bottom:10px; color:#a855f7;">Wait for sequence...</div>
-            <div style="height:4px; background:#222; margin-bottom:15px;"><div id="mem-timer-bar" style="height:100%; width:100%; background:#22c55e;"></div></div>
-            <div id="memory-buttons" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; flex:1;"></div>
-          </div>
-          <!-- HUD OVERLAY -->
-          <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:10px 30px; border-radius:30px; border:1px solid #fbbf24; display:flex; gap:30px;">
-            <div>SCORE: <span id="ww-score" style="color:#fbbf24; font-weight:bold;">0</span></div>
-            <div>LEVEL: <span id="ww-level" style="color:#a855f7; font-weight:bold;">1</span></div>
+            <div id="symbol-grid" class="ww-symbol-grid"></div>
+            <div class="ww-stats-row ww-stats-row--footer">
+              <span class="ww-stat-found">FOUND <span id="sm-found">0</span>/<span id="sm-total">0</span></span>
+              <span class="ww-stat-mistakes">MISS <span id="sm-mistakes">0</span></span>
+            </div>
+          </section>
+
+          <section class="ww-panel ww-panel--memory">
+            <div class="ww-panel-header">
+              <span class="ww-panel-title--purple">Whale Route</span>
+              <span class="ww-mem-round">ROUND <span id="mem-round">1</span></span>
+            </div>
+            <div id="mem-status" class="ww-mem-status">Watch the route</div>
+            <div class="ww-timer-bar-track"><div id="mem-timer-bar" class="ww-timer-bar-fill"></div></div>
+            <div id="memory-buttons" class="ww-memory-buttons"></div>
+          </section>
+
+          <div class="ww-bottom-hud">
+            <span>SCORE <strong id="ww-score" class="ww-score-text">0</strong></span>
+            <span>LEVEL <strong id="ww-level" class="ww-level-text">1</strong></span>
           </div>
         </div>
       `;
     },
 
-    setupSymbolHunt(world) {
-      const state = world.getResource('GameState').symbolMatch;
-      const grid = document.getElementById('symbol-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
+    cacheDom() {
+      this.dom = {
+        score: document.getElementById('ww-score'),
+        level: document.getElementById('ww-level'),
+        scanTimer: document.getElementById('sm-timer'),
+        scanFound: document.getElementById('sm-found'),
+        scanTotal: document.getElementById('sm-total'),
+        scanMistakes: document.getElementById('sm-mistakes'),
+        targetName: document.getElementById('sm-target-name'),
+        grid: document.getElementById('symbol-grid'),
+        memoryButtons: document.getElementById('memory-buttons'),
+        memoryStatus: document.getElementById('mem-status'),
+        memoryRound: document.getElementById('mem-round'),
+        memoryBar: document.getElementById('mem-timer-bar'),
+      };
+    },
 
-      const target = this.symbolLegend[Math.floor(Math.random() * this.symbolLegend.length)];
-      state.targetIndex = this.symbolLegend.indexOf(target);
+    setupScanRound() {
+      const state = this.getState();
+      const scan = state.scan;
+      scan.target = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      scan.total = Math.min(8, 3 + Math.floor(state.level / 2));
+      scan.found = 0;
+      scan.mistakes = 0;
+      scan.timer = Math.max(24, 45 - state.level * 1.5);
+      scan.maxTimer = scan.timer;
+      scan.cells = this.createScanCells(scan.target, scan.total);
 
-      const targetNameEl = document.getElementById('sm-target-name');
-      if (targetNameEl) targetNameEl.textContent = target.name;
+      this.dom.targetName.textContent = `${scan.target.name} (${scan.target.symbol})`;
+      this.dom.grid.innerHTML = '';
 
-      state.totalTargets = 3 + Math.floor(world.getResource('GameState').level / 2);
-      state.foundCount = 0;
+      scan.cells.forEach((cell, index) => {
+        const button = document.createElement('button');
+        button.className = 'ww-card';
+        button.type = 'button';
+        button.textContent = '?';
+        button.dataset.index = String(index);
+        this.track(button, 'click', () => this.revealScanCell(index, button));
+        this.dom.grid.appendChild(button);
+      });
 
+      this.updateUI();
+    },
+
+    createScanCells(target, total) {
       const cells = [];
-      for (let i = 0; i < state.totalTargets; i++) {
-        cells.push({ symbol: target.symbol, isTarget: true });
+      for (let i = 0; i < total; i++) cells.push({ ...target, target: true, revealed: false });
+      while (cells.length < 16) {
+        const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+        if (symbol.name !== target.name) cells.push({ ...symbol, target: false, revealed: false });
       }
-      for (let i = state.totalTargets; i < 16; i++) {
-        let other;
-        do {
-          other = this.symbolLegend[Math.floor(Math.random() * this.symbolLegend.length)];
-        } while (other === target);
-        cells.push({ symbol: other.symbol, isTarget: false });
-      }
-      cells.sort(() => Math.random() - 0.5);
+      return cells.sort(() => Math.random() - 0.5);
+    },
 
-      cells.forEach((cell, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'ww-card';
-        btn.style.cssText =
-          'background:rgba(59,130,246,0.1); border:1px solid #3b82f6; border-radius:8px; font-size:24px; cursor:pointer; transition:all 0.2s;';
-        btn.innerHTML = '❓';
-        btn.onclick = () => {
-          if (btn.disabled) return;
-          btn.innerHTML = cell.symbol;
-          if (cell.isTarget) {
-            btn.style.background = 'rgba(34,197,94,0.3)';
-            btn.style.borderColor = '#22c55e';
-            btn.disabled = true;
-            state.foundCount++;
-            world.getResource('GameState').score += 20;
-            if (state.foundCount >= state.totalTargets) this.nextLevel(world);
-          } else {
-            btn.style.background = 'rgba(239,68,68,0.3)';
-            btn.style.borderColor = '#ef4444';
-            setTimeout(() => {
-              btn.innerHTML = '❓';
-              btn.style.background = 'rgba(59,130,246,0.1)';
-              btn.style.borderColor = '#3b82f6';
-            }, 500);
-            world.getResource('GameState').score = Math.max(
-              0,
-              world.getResource('GameState').score - 10
-            );
-          }
-          this.updateUI(world);
-        };
-        grid.appendChild(btn);
+    revealScanCell(index, button) {
+      const state = this.getState();
+      const cell = state.scan.cells[index];
+      if (!cell || cell.revealed || state.gameOver) return;
+
+      cell.revealed = true;
+      button.textContent = cell.symbol;
+      button.classList.add('ww-card--revealed');
+
+      if (cell.target) {
+        button.classList.add('ww-card--found');
+        state.scan.found += 1;
+        state.score += 22 + state.level * 2;
+        if (state.scan.found >= state.scan.total) {
+          state.level += 1;
+          this.setLater(() => this.setupScanRound(), 420);
+        }
+      } else {
+        button.classList.add('ww-card--wrong');
+        state.scan.mistakes += 1;
+        state.score = Math.max(0, state.score - 8);
+        this.setLater(() => {
+          cell.revealed = false;
+          button.textContent = '?';
+          button.classList.remove('ww-card--revealed', 'ww-card--wrong');
+        }, 520);
+      }
+
+      this.updateUI();
+    },
+
+    setupMemoryBoard() {
+      this.dom.memoryButtons.innerHTML = '';
+      MEMORY_COLORS.forEach((color, index) => {
+        const button = document.createElement('button');
+        button.className = 'ww-mem-btn';
+        button.type = 'button';
+        button.textContent = MEMORY_LABELS[index];
+        button.style.setProperty('--btn-color', color);
+        button.style.borderColor = color;
+        this.track(button, 'click', () => this.handleMemoryClick(index));
+        this.dom.memoryButtons.appendChild(button);
       });
     },
 
-    setupMemoryGame(world) {
-      const container = document.getElementById('memory-buttons');
-      container.innerHTML = '';
-      const colors = ['#3b82f6', '#0ea5e9', '#22c55e', '#f59e0b'];
-      const icons = ['🦈', '🐋', '🐟', '🐕'];
+    startMemoryRound() {
+      const state = this.getState();
+      const memory = state.memory;
+      memory.input = [];
+      memory.sequence.push(Math.floor(Math.random() * MEMORY_COLORS.length));
+      memory.state = 'showing';
+      this.dom.memoryStatus.textContent = 'Watch the route';
+      this.showSequence();
+    },
 
-      colors.forEach((color, idx) => {
-        const btn = document.createElement('button');
-        btn.style.cssText = `background:rgba(0,0,0,0.5); border:4px solid ${color}; border-radius:12px; font-size:32px; cursor:pointer; opacity:0.6; transition:all 0.1s;`;
-        btn.innerHTML = icons[idx];
-        btn.onclick = () => this.handleMemoryClick(world, idx);
-        container.appendChild(btn);
+    showSequence() {
+      const memory = this.getState().memory;
+      const buttons = Array.from(this.dom.memoryButtons.children);
+      let delay = 280;
+      buttons.forEach(btn => btn.setAttribute('disabled', 'true'));
+
+      memory.sequence.forEach(index => {
+        this.setLater(() => this.pulseMemoryButton(buttons[index]), delay);
+        delay += Math.max(240, 520 - memory.round * 18);
       });
 
-      this.startMemoryRound(world);
+      this.setLater(() => {
+        memory.state = 'waiting';
+        this.dom.memoryStatus.textContent = 'Repeat the route';
+        buttons.forEach(btn => btn.removeAttribute('disabled'));
+      }, delay + 120);
     },
 
-    startMemoryRound(world) {
-      const state = world.getResource('GameState').memoryGame;
-      state.sequence.push(Math.floor(Math.random() * 4));
-      state.playerSeq = [];
-      state.state = 'showing';
-      this.showSequence(world);
+    pulseMemoryButton(button) {
+      if (!button) return;
+      button.classList.add('ww-mem-btn--active');
+      this.setLater(() => button.classList.remove('ww-mem-btn--active'), 210);
     },
 
-    async showSequence(world) {
-      const state = world.getResource('GameState').memoryGame;
-      const btns = document.getElementById('memory-buttons').children;
+    handleMemoryClick(index) {
+      const state = this.getState();
+      const memory = state.memory;
+      if (memory.state !== 'waiting' || state.gameOver) return;
 
-      for (let i = 0; i < state.sequence.length; i++) {
-        const idx = state.sequence[i];
-        const btn = btns[idx];
-        btn.style.opacity = '1';
-        btn.style.transform = 'scale(1.05)';
-        await new Promise(r => setTimeout(r, 400));
-        btn.style.opacity = '0.6';
-        btn.style.transform = 'scale(1)';
-        await new Promise(r => setTimeout(r, 200));
-      }
+      this.pulseMemoryButton(this.dom.memoryButtons.children[index]);
+      memory.input.push(index);
+      const inputIndex = memory.input.length - 1;
 
-      state.state = 'waiting';
-      document.getElementById('mem-status').textContent = 'YOUR TURN!';
-      document.getElementById('mem-status').style.color = '#22c55e';
-    },
-
-    handleMemoryClick(world, idx) {
-      const state = world.getResource('GameState').memoryGame;
-      if (state.state !== 'waiting') return;
-
-      state.playerSeq.push(idx);
-      const cur = state.playerSeq.length - 1;
-
-      if (state.sequence[cur] !== idx) {
-        state.sequence = [];
-        state.round = 1;
-        document.getElementById('mem-status').textContent = 'WRONG! RESETTING...';
-        document.getElementById('mem-status').style.color = '#ef4444';
-        setTimeout(() => this.startMemoryRound(world), 1000);
+      if (memory.sequence[inputIndex] !== index) {
+        state.score = Math.max(0, state.score - 15);
+        memory.sequence = [];
+        memory.round = 1;
+        memory.state = 'showing';
+        this.dom.memoryStatus.textContent = 'Route lost';
+        this.setLater(() => this.startMemoryRound(), 820);
+        this.updateUI();
         return;
       }
 
-      if (state.playerSeq.length === state.sequence.length) {
-        world.getResource('GameState').score += 50;
-        state.round++;
-        document.getElementById('mem-status').textContent = 'PERFECT!';
-        setTimeout(() => this.startMemoryRound(world), 800);
+      if (memory.input.length === memory.sequence.length) {
+        state.score += 38 + memory.round * 7;
+        memory.round += 1;
+        memory.state = 'showing';
+        this.dom.memoryStatus.textContent = 'Route locked';
+        this.setLater(() => this.startMemoryRound(), 650);
       }
-      this.updateUI(world);
-    },
 
-    nextLevel(world) {
-      const state = world.getResource('GameState');
-      state.level++;
-      this.setupSymbolHunt(world);
+      this.updateUI();
     },
 
     update(dt) {
-      const world = this.instance.world;
-      const state = world.getResource('GameState');
+      const state = this.getState();
       if (state.gameOver) return;
 
-      state.symbolMatch.timer -= dt / 60;
-      if (state.symbolMatch.timer <= 0) {
-        this.setupSymbolHunt(world);
-        state.symbolMatch.timer = 55;
+      state.scan.timer -= dt / 60;
+      if (state.scan.timer <= 0) {
+        state.score = Math.max(0, state.score - 20);
+        this.setupScanRound();
       }
-      this.updateUI(world);
+
+      this.updateUI();
     },
 
-    updateUI(world) {
-      const state = world.getResource('GameState');
-      if (this.dom.score) this.dom.score.textContent = state.score;
-      if (this.dom.level) this.dom.level.textContent = state.level;
-      if (this.dom.smTimer) this.dom.smTimer.textContent = Math.ceil(state.symbolMatch.timer);
-      if (this.dom.smFound) this.dom.smFound.textContent = state.symbolMatch.foundCount;
-      if (this.dom.smTotal) this.dom.smTotal.textContent = state.symbolMatch.totalTargets;
+    updateUI() {
+      const state = this.getState();
+      const scanRatio = Math.max(0, state.scan.timer / state.scan.maxTimer);
+      this.dom.score.textContent = state.score;
+      this.dom.level.textContent = state.level;
+      this.dom.scanTimer.textContent = Math.ceil(state.scan.timer);
+      this.dom.scanFound.textContent = state.scan.found;
+      this.dom.scanTotal.textContent = state.scan.total;
+      this.dom.scanMistakes.textContent = state.scan.mistakes;
+      this.dom.memoryRound.textContent = state.memory.round;
+      this.dom.memoryBar.style.setProperty('--bar-width', `${Math.round(scanRatio * 100)}%`);
+    },
+
+    getState() {
+      return this.instance.world.getResource('GameState');
+    },
+
+    track(target, event, handler) {
+      target.addEventListener(event, handler);
+      this._handlers.push({ target, event, handler });
+    },
+
+    setLater(fn, delay) {
+      const id = setTimeout(() => {
+        this._timeouts = this._timeouts.filter(item => item !== id);
+        if (this.instance) fn();
+      }, delay);
+      this._timeouts.push(id);
+      return id;
     },
 
     stop() {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+      this._handlers.forEach(({ target, event, handler }) => {
+        target.removeEventListener(event, handler);
+      });
+      this._handlers = [];
       if (this.instance) this.instance.stop();
+      this.instance = null;
+      this.dom = null;
     },
   };
 

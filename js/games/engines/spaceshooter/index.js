@@ -12,6 +12,7 @@
     version: '2.2.0',
     gameId: 'spaceshooter',
     instance: null,
+    _cleanupInput: null,
 
     enemySpecs: [
       { icon: '🛸', hp: 1, speed: 2, points: 10, size: 24 },
@@ -20,16 +21,22 @@
     ],
 
     start(gameId) {
+      this.stop();
+
       this.gameId = gameId;
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
-      arena.innerHTML = `<div style="width:100%; height:100%; position:relative; background:#000005;">
-        <canvas id="ss-canvas" style="width:100%; height:100%; display:block;"></canvas>
-        <div id="ss-hud" style="position:absolute; top:10px; left:10px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:8px; border-radius:4px; border:1px solid #333;">
-            SCORE: <span id="ss-score">0</span> | WAVE: <span id="ss-wave">1</span>
+      arena.innerHTML = `
+        <div class="sps-container">
+          <canvas id="ss-canvas" class="game-canvas"></canvas>
+          <div id="ss-hud" class="sps-hud">
+            <span>SCORE <strong id="ss-score">0</strong></span>
+            <span>WAVE <strong id="ss-wave">1</strong></span>
+          </div>
+          <div class="sps-hint">WASD / arrows to pilot · Space to fire</div>
         </div>
-      </div>`;
+      `;
       const canvas = document.getElementById('ss-canvas');
 
       this.instance = new ASDF.GameInstance(canvas, {
@@ -51,10 +58,12 @@
       world.setResource('GameState', {
         score: 0,
         wave: 1,
+        kills: 0,
         gameOver: false,
         playerId: -1,
         keys: {},
         spawnTimer: 0,
+        maxEnemies: 10,
       });
 
       this.setupInput();
@@ -87,9 +96,7 @@
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       // Override Render (Atmospheric Environment)
-      const icons = ['🚀', '🔥', '🛸', '👾', '🛰️', '💥'];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha);
 
       this.instance.start();
 
@@ -113,12 +120,18 @@
     setupInput() {
       const world = this.instance.world;
       const state = world.getResource('GameState');
-      document.addEventListener('keydown', e => {
+      const onKeyDown = e => {
         state.keys[e.key.toLowerCase()] = true;
-      });
-      document.addEventListener('keyup', e => {
+      };
+      const onKeyUp = e => {
         state.keys[e.key.toLowerCase()] = false;
-      });
+      };
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+      };
     },
 
     createLogicSystem() {
@@ -155,16 +168,22 @@
           if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('click');
         }
 
+        state.wave = 1 + Math.floor(state.score / 350);
+        state.maxEnemies = Math.min(26, 8 + state.wave * 2);
+
         // Spawning
         state.spawnTimer += dt;
-        if (state.spawnTimer > Math.max(20, 80 - state.wave * 5)) {
+        const enemies = world.createQuery(['Enemy', 'Position']);
+        if (
+          enemies.set.count < state.maxEnemies &&
+          state.spawnTimer > Math.max(14, 76 - state.wave * 4)
+        ) {
           self.spawnEnemy(world);
           state.spawnTimer = 0;
         }
 
         // Collisions
         const bullets = world.createQuery(['Bullet', 'Position']);
-        const enemies = world.createQuery(['Enemy', 'Position']);
         const bPos = world.componentRegistry.get('Position').props;
         const ePos = world.componentRegistry.get('Position').props;
         const eProps = world.componentRegistry.get('Enemy').props;
@@ -177,6 +196,7 @@
           for (let j = eCount - 1; j >= 0; j--) {
             const eIdx = eDense[j];
             if (Math.hypot(bPos.x[bIdx] - ePos.x[eIdx], bPos.y[bIdx] - ePos.y[eIdx]) < 25) {
+              state.kills++;
               state.score += eProps.points[eIdx];
 
               // Impact Juice
@@ -198,6 +218,20 @@
           }
         }
 
+        // Enemy pressure and cleanup
+        for (let i = eCount - 1; i >= 0; i--) {
+          const eIdx = eDense[i];
+          if (Math.hypot(pos.x[pIdx] - ePos.x[eIdx], pos.y[pIdx] - ePos.y[eIdx]) < 26) {
+            state.gameOver = true;
+            self.instance.shake(18, 24);
+            if (typeof endGame === 'function') endGame(self.gameId, state.score);
+            break;
+          }
+          if (ePos.y[eIdx] > self.instance.canvas.height + 80) {
+            world.destroyEntity(world.getEntityId(eIdx));
+          }
+        }
+
         // Cleanup Lifespans
         const lsQuery = world.createQuery(['Lifespan']);
         const { dense: lDense, count: lCount } = lsQuery.set;
@@ -210,6 +244,8 @@
 
         const scoreEl = document.getElementById('ss-score');
         if (scoreEl) scoreEl.textContent = state.score;
+        const waveEl = document.getElementById('ss-wave');
+        if (waveEl) waveEl.textContent = state.wave;
       };
     },
 
@@ -219,12 +255,14 @@
       world.addComponent(e, 'Velocity');
       world.addComponent(e, 'Renderable');
       world.addComponent(e, 'Bullet');
+      world.addComponent(e, 'Lifespan');
       const idx = world.getIndex(e);
       world.componentRegistry.get('Position').props.x[idx] = x;
       world.componentRegistry.get('Position').props.y[idx] = y;
       world.componentRegistry.get('Velocity').props.vy[idx] = -12;
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1;
       world.componentRegistry.get('Renderable').props.size[idx] = 15;
+      world.componentRegistry.get('Lifespan').props.remaining[idx] = 70;
     },
 
     spawnEnemy(world) {
@@ -235,13 +273,17 @@
       world.addComponent(e, 'Enemy');
       const idx = world.getIndex(e);
       const state = world.getResource('GameState');
-      const typeIdx = Math.floor(Math.random() * Math.min(state.wave, this.enemySpecs.length));
+      const typeIdx = Math.floor(
+        Math.random() * Math.min(1 + Math.floor(state.wave / 2), this.enemySpecs.length)
+      );
       const type = this.enemySpecs[typeIdx] || this.enemySpecs[0];
+      const speedScale = Math.min(2.25, 1 + state.wave * 0.08);
 
       world.componentRegistry.get('Position').props.x[idx] =
         30 + Math.random() * (this.instance.canvas.width - 60);
       world.componentRegistry.get('Position').props.y[idx] = -40;
-      world.componentRegistry.get('Velocity').props.vy[idx] = type.speed;
+      world.componentRegistry.get('Velocity').props.vy[idx] = type.speed * speedScale;
+      world.componentRegistry.get('Enemy').props.type[idx] = typeIdx;
       world.componentRegistry.get('Enemy').props.points[idx] = type.points;
       world.componentRegistry.get('Renderable').props.iconIndex[idx] = 2 + typeIdx;
       world.componentRegistry.get('Renderable').props.size[idx] = type.size;
@@ -260,7 +302,7 @@
       world.componentRegistry.get('Lifespan').props.remaining[idx] = 20;
     },
 
-    draw(alpha, defaultRender) {
+    draw(alpha) {
       const ctx = this.instance.ctx;
       const w = this.instance.canvas.width,
         h = this.instance.canvas.height;
@@ -285,11 +327,143 @@
         }
       }
 
-      defaultRender(this.instance.world, alpha);
+      this.drawShips(ctx);
+    },
+
+    drawShips(ctx) {
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const state = world.getResource('GameState');
+      const playerIdx = world.getIndex(state.playerId);
+      const enemyComp = world.componentRegistry.get('Enemy');
+      const bulletComp = world.componentRegistry.get('Bullet');
+      const lifespanComp = world.componentRegistry.get('Lifespan');
+      const enemyBit = enemyComp ? enemyComp.bit : 0;
+      const bulletBit = bulletComp ? bulletComp.bit : 0;
+      const lifeBit = lifespanComp ? lifespanComp.bit : 0;
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const mask = world.entityMasks[idx];
+        if (idx === playerIdx) {
+          this.drawPlayerShip(ctx, pos.x[idx], pos.y[idx], rend.size[idx] || 34);
+        } else if (enemyBit && (mask & enemyBit) === enemyBit) {
+          this.drawEnemyShip(
+            ctx,
+            pos.x[idx],
+            pos.y[idx],
+            rend.size[idx] || 30,
+            enemyComp.props.type[idx] || 0
+          );
+        } else if (bulletBit && (mask & bulletBit) === bulletBit) {
+          this.drawLaser(ctx, pos.x[idx], pos.y[idx]);
+        } else if (lifeBit && (mask & lifeBit) === lifeBit) {
+          this.drawBurst(ctx, pos.x[idx], pos.y[idx], rend.size[idx] || 28);
+        }
+      }
+    },
+
+    drawPlayerShip(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 16;
+      const grad = ctx.createLinearGradient(0, -size, 0, size);
+      grad.addColorStop(0, '#e0f2fe');
+      grad.addColorStop(0.45, '#38bdf8');
+      grad.addColorStop(1, '#1d4ed8');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.8);
+      ctx.lineTo(size * 0.54, size * 0.42);
+      ctx.lineTo(size * 0.16, size * 0.22);
+      ctx.lineTo(0, size * 0.74);
+      ctx.lineTo(-size * 0.16, size * 0.22);
+      ctx.lineTo(-size * 0.54, size * 0.42);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#020617';
+      ctx.beginPath();
+      ctx.ellipse(0, -size * 0.2, size * 0.17, size * 0.26, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(-size * 0.16, size * 0.58, size * 0.32, size * 0.14);
+      ctx.restore();
+    },
+
+    drawEnemyShip(ctx, x, y, size, type) {
+      const palettes = [
+        ['#ef4444', '#7f1d1d'],
+        ['#a855f7', '#581c87'],
+        ['#f97316', '#7c2d12'],
+      ];
+      const [hot, dark] = palettes[type % palettes.length];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.shadowColor = hot;
+      ctx.shadowBlur = 10;
+      const grad = ctx.createLinearGradient(-size, -size, size, size);
+      grad.addColorStop(0, hot);
+      grad.addColorStop(1, dark);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, size * 0.72);
+      ctx.lineTo(size * 0.58, -size * 0.24);
+      ctx.lineTo(size * 0.2, -size * 0.08);
+      ctx.lineTo(0, -size * 0.62);
+      ctx.lineTo(-size * 0.2, -size * 0.08);
+      ctx.lineTo(-size * 0.58, -size * 0.24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fee2e2';
+      ctx.fillRect(-size * 0.28, size * 0.12, size * 0.18, size * 0.08);
+      ctx.fillRect(size * 0.1, size * 0.12, size * 0.18, size * 0.08);
+      ctx.restore();
+    },
+
+    drawLaser(ctx, x, y) {
+      ctx.save();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 14);
+      ctx.lineTo(x, y + 8);
+      ctx.stroke();
+      ctx.restore();
+    },
+
+    drawBurst(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * size * 0.15, Math.sin(a) * size * 0.15);
+        ctx.lineTo(Math.cos(a) * size * 0.55, Math.sin(a) * size * 0.55);
+        ctx.stroke();
+      }
+      ctx.restore();
     },
 
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 

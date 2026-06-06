@@ -12,11 +12,14 @@
     version: '2.1.0',
     gameId: 'burnorhold',
     instance: null,
+    _cleanupInput: null,
 
     OWNER: { NEUTRAL: 0, PLAYER: 1, ENEMY: 2 },
     CHAIN_NAMES: ['ETH', 'SOL', 'AVAX', 'MATIC', 'BNB', 'ARB', 'OP', 'BASE', 'FTM', 'ATOM'],
 
     start(gameId) {
+      this.stop();
+
       this.gameId = gameId;
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
@@ -128,10 +131,11 @@
 
     setupInput() {
       const world = this.instance.world;
-      this.instance.canvas.addEventListener('pointerdown', e => {
-        const rect = this.instance.canvas.getBoundingClientRect();
-        const mx = (e.clientX - rect.left) * (this.instance.canvas.width / rect.width);
-        const my = (e.clientY - rect.top) * (this.instance.canvas.height / rect.height);
+      const canvas = this.instance.canvas;
+      const onPointerDown = e => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const my = (e.clientY - rect.top) * (canvas.height / rect.height);
 
         const state = world.getResource('GameState');
         const nodes = world.createQuery(['Position', 'Node']);
@@ -152,11 +156,18 @@
             break;
           }
         }
-      });
+      };
+
+      canvas.addEventListener('pointerdown', onPointerDown);
+      this._cleanupInput = () => {
+        canvas.removeEventListener('pointerdown', onPointerDown);
+      };
     },
 
     launchAttack(world, fromId, toId) {
       if (fromId === toId) return;
+      const activeAttacks = world.createQuery(['Attack', 'Position']).set.count;
+      if (activeAttacks > 80) return;
       const fromIdx = world.getIndex(fromId);
       const nodeProps = world.componentRegistry.get('Node').props;
       const count = Math.floor(nodeProps.validators[fromIdx] / 2);
@@ -207,14 +218,20 @@
           const nodeProps = world.componentRegistry.get('Node').props;
           for (let i = 0; i < count; i++) {
             const idx = dense[i];
-            if (nodeProps.owner[idx] !== 0) nodeProps.validators[idx]++;
+            if (nodeProps.owner[idx] !== 0) {
+              nodeProps.validators[idx] = Math.min(
+                120 + state.wave * 8,
+                nodeProps.validators[idx] + 1
+              );
+            }
           }
           state.regenTimer = 0;
         }
 
         // AI
         state.aiTimer += dt;
-        if (state.aiTimer > 180) {
+        const aiInterval = Math.max(70, 180 - state.wave * 12);
+        if (state.aiTimer > aiInterval) {
           const nodes = world.createQuery(['Node']);
           const { dense, count } = nodes.set;
           const nodeProps = world.componentRegistry.get('Node').props;
@@ -264,6 +281,8 @@
           }
         }
 
+        state.frameCount += dt;
+        state.wave = 1 + Math.floor(state.frameCount / 900);
         self.updateUI(world, state);
       };
     },
@@ -278,6 +297,7 @@
         if (nodeProps.owner[dense[i]] === 1) pCount++;
         else if (nodeProps.owner[dense[i]] === 2) eCount++;
       }
+      state.score = pCount * 100 - eCount * 50 + state.wave * 25;
       if (this.dom.playerNodes) this.dom.playerNodes.textContent = pCount;
       if (this.dom.enemyNodes) this.dom.enemyNodes.textContent = eCount;
       if (this.dom.score) this.dom.score.textContent = state.score;
@@ -290,6 +310,10 @@
         h = this.instance.canvas.height;
       const world = this.instance.world;
       const state = world.getResource('GameState');
+      if (this.instance) {
+        this.drawConquestScene(ctx, w, h, world, state);
+        return;
+      }
 
       ctx.fillStyle = '#050510';
       ctx.fillRect(0, 0, w, h);
@@ -341,8 +365,171 @@
       }
     },
 
+    drawConquestScene(ctx, w, h, world, state) {
+      this.drawNetworkBackdrop(ctx, w, h, state);
+
+      const nodes = world.createQuery(['Node', 'Position']);
+      const { dense, count } = nodes.set;
+      const pos = world.componentRegistry.get('Position').props;
+      const nodeProps = world.componentRegistry.get('Node').props;
+
+      this.drawNetworkLinks(ctx, dense, count, pos);
+      this.drawAttackPackets(ctx, world);
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        this.drawNode(ctx, world, idx, pos.x[idx], pos.y[idx], nodeProps, state);
+      }
+    },
+
+    drawNetworkBackdrop(ctx, w, h, state) {
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#06101f');
+      bg.addColorStop(0.55, '#0b1027');
+      bg.addColorStop(1, '#12071f');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const offset = (state.frameCount * 0.8) % 56;
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = -offset; x < w; x += 56) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 40, h);
+      }
+      for (let y = -offset; y < h; y += 56) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+    },
+
+    drawNetworkLinks(ctx, dense, count, pos) {
+      for (let i = 0; i < count; i++) {
+        for (let j = i + 1; j < count; j++) {
+          const ax = pos.x[dense[i]];
+          const ay = pos.y[dense[i]];
+          const bx = pos.x[dense[j]];
+          const by = pos.y[dense[j]];
+          const dist = Math.hypot(ax - bx, ay - by);
+          if (dist > 280) continue;
+          const alpha = Math.max(0.04, 0.18 - dist / 2000);
+          ctx.strokeStyle = `rgba(148, 163, 184, ${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+          ctx.stroke();
+        }
+      }
+    },
+
+    drawNode(ctx, world, idx, x, y, nodeProps, state) {
+      const owner = nodeProps.owner[idx];
+      const validators = nodeProps.validators[idx];
+      const color =
+        owner === this.OWNER.PLAYER
+          ? '#22c55e'
+          : owner === this.OWNER.ENEMY
+            ? '#ef4444'
+            : '#64748b';
+      const glow =
+        owner === this.OWNER.PLAYER
+          ? 'rgba(34, 197, 94, 0.22)'
+          : owner === this.OWNER.ENEMY
+            ? 'rgba(239, 68, 68, 0.22)'
+            : 'rgba(148, 163, 184, 0.14)';
+      const radius = 24 + Math.min(12, validators / 10);
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius + 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.fillStyle = '#08111f';
+      this.hexPath(ctx, 0, 0, radius);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(248, 250, 252, 0.28)';
+      ctx.lineWidth = 1;
+      this.hexPath(ctx, 0, 0, radius - 8);
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(validators, 0, 2);
+
+      const label = this.CHAIN_NAMES[idx % this.CHAIN_NAMES.length];
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.72)';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText(label, 0, radius + 16);
+
+      if (world.getEntityId(idx) === state.selectedNodeId) {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius + 9, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawAttackPackets(ctx, world) {
+      const attacks = world.createQuery(['Attack', 'Position']);
+      const { dense, count } = attacks.set;
+      const pos = world.componentRegistry.get('Position').props;
+      const att = world.componentRegistry.get('Attack').props;
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const color = att.owner[idx] === this.OWNER.PLAYER ? '#22c55e' : '#ef4444';
+        ctx.save();
+        ctx.translate(pos.x[idx], pos.y[idx]);
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(0, 0, 5 + Math.min(7, att.count[idx] / 12), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-8, 0);
+        ctx.lineTo(8, 0);
+        ctx.moveTo(0, -8);
+        ctx.lineTo(0, 8);
+        ctx.stroke();
+        ctx.restore();
+      }
+    },
+
+    hexPath(ctx, x, y, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = -Math.PI / 2 + (Math.PI * 2 * i) / 6;
+        const px = x + Math.cos(a) * r;
+        const py = y + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    },
+
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 

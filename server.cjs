@@ -201,6 +201,7 @@ app.use(
           'https://cdn.jsdelivr.net',
           'https://esm.sh',
           'https://esm.run', // Added for esm.run scripts
+          "'sha256-zSR70EexB8sSO+BHHuUxfJu0E1KUUS2IHxmuPgjQ9fw='", // games.html window.onerror handler
         ],        // Inline event handlers (onclick etc) removed from all production pages
         // Remaining onclick in demo/lab are gated behind !isProduction check
         scriptSrcAttr: ["'none'"],
@@ -459,7 +460,135 @@ app.post('/api/redis', async (req, res) => {
 // (Add your API route handlers here if they are part of this server)
 
 // ============================================
-// DUMMY SHOP & SCORES API (Recovery 11/10)
+// REAL SCORES API (Redis Backed)
+// ============================================
+
+/**
+ * Get player best scores from Redis
+ */
+async function getPlayerBests(wallet) {
+  const redis = getRedisClient();
+  if (!redis) return {};
+  const data = await redis.hgetall(`player:${wallet}:bests`);
+  const bests = {};
+  Object.entries(data).forEach(([gameId, score]) => {
+    bests[gameId] = parseInt(score, 10);
+  });
+  return bests;
+}
+
+app.post('/api/scores/submit', async (req, res) => {
+  const { gameId, score, isCompetitive } = req.body;
+  const wallet = req.headers['x-wallet-address'];
+
+  if (!wallet) {
+    return res.status(401).json({ error: 'Wallet required' });
+  }
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) {
+      return res.status(503).json({ error: 'Storage unavailable' });
+    }
+
+    // 1. Update Player Best (Practice)
+    const currentBest = await redis.hget(`player:${wallet}:bests`, gameId);
+    let isNewBest = false;
+    const numericScore = parseInt(score, 10);
+
+    if (!currentBest || numericScore > parseInt(currentBest, 10)) {
+      await redis.hset(`player:${wallet}:bests`, gameId, numericScore);
+      isNewBest = true;
+    }
+
+    // 2. Update Global Leaderboard (Weekly)
+    // We use a simplified key for now (leaderboard:weekly:gameId)
+    await redis.zadd(`leaderboard:weekly:${gameId}`, numericScore, wallet);
+
+    // 3. Get new rank
+    const rank = (await redis.zrevrank(`leaderboard:weekly:${gameId}`, wallet)) + 1;
+
+    res.json({
+      success: true,
+      isNewBest,
+      bestScore: isNewBest ? numericScore : parseInt(currentBest, 10),
+      rank,
+    });
+  } catch (err) {
+    logger.error({ err: err.message }, 'Score submission failed');
+    res.status(500).json({ error: 'Failed to save score' });
+  }
+});
+
+app.get('/api/scores/leaderboard/weekly/:gameId', async (req, res) => {
+  const { gameId } = req.params;
+  const limit = parseInt(req.query.limit, 10) || 10;
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) return res.json({ scores: [] });
+
+    // Get top scores from Sorted Set
+    const top = await redis.zrevrange(`leaderboard:weekly:${gameId}`, 0, limit - 1, 'WITHSCORES');
+    
+    const scores = [];
+    for (let i = 0; i < top.length; i += 2) {
+      scores.push({
+        wallet: top[i],
+        score: parseInt(top[i+1], 10),
+        rank: (i / 2) + 1
+      });
+    }
+
+    res.json({ scores });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+/**
+ * Get overall cycle leaderboard (aggregated across all games)
+ */
+app.get('/api/scores/leaderboard/cycle', async (req, res) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) return res.json({ scores: [] });
+
+    // For now, return empty or dummy until we have aggregation logic
+    // In a real scenario, this would use a 'leaderboard:cycle' key
+    res.json({ scores: [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch cycle leaderboard' });
+  }
+});
+
+app.get('/api/scores/all', async (req, res) => {
+  const wallet = req.headers['x-wallet-address'];
+  if (!wallet) return res.json({ scores: {} });
+
+  try {
+    const bests = await getPlayerBests(wallet);
+    res.json({ scores: bests });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch player scores' });
+  }
+});
+
+app.get('/api/config/public', (req, res) => {
+  res.json({
+    tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+    treasuryWallet: '5VUuiKmR4zt1bfHNTTpPMGB2r7tjNo4YFL1WqKC7ZRwa',
+    escrowWallet: 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y',
+    minHolderBalance: 1000000,
+    cycleWeeks: 10,
+    rotationEpoch: '2024-01-01T00:00:00Z'
+  });
+});
+
+// ============================================
+// DUMMY SHOP API (Static Recovery)
 // ============================================
 
 app.get('/api/v2/shop/catalog', (req, res) => {
@@ -480,24 +609,6 @@ app.get('/api/v2/shop/favorites', (req, res) => {
 
 app.get('/api/v2/shop/collections', (req, res) => {
   res.json({ collections: [] });
-});
-
-app.get('/api/scores/leaderboard/weekly/:gameId', (req, res) => {
-  res.json({ scores: [] });
-});
-
-app.get('/api/scores/all', (req, res) => {
-  res.json({ scores: {} });
-});
-
-app.get('/api/config/public', (req, res) => {
-  res.json({
-    tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
-    treasuryWallet: '5VUuiKmR4zt1bfHNTTpPMGB2r7tjNo4YFL1WqKC7ZRwa',
-    escrowWallet: 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y',
-    minHolderBalance: 1000000,
-    cycleWeeks: 10
-  });
 });
 
 // Catch-all for unknown /api routes (Production fallback)

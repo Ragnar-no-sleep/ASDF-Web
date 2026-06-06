@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
-  // Base path for GitHub Pages
-  base: '/ASDF-Web/',
+export default defineConfig(({ command }) => ({
+  // Local dev runs at site root; production keeps the GitHub Pages subpath.
+  base: command === 'serve' ? '/' : '/ASDF-Web/',
 
   // Root directory
   root: '.',
@@ -106,4 +106,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['three'],
   },
-});
+}));

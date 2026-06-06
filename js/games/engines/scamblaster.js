@@ -12,6 +12,7 @@
     version: '2.3.0',
     gameId: 'scamblaster',
     instance: null,
+    _cleanupInput: null,
 
     enemyTypes: [
       { icon: '🪙', points: 8, speed: 1.2, size: 34 },
@@ -22,6 +23,8 @@
     ],
 
     start(gameId) {
+      this.stop();
+
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
@@ -58,6 +61,10 @@
         gameMode: null,
         spawnTimer: 0,
         countdown: 3,
+        shots: 0,
+        hits: 0,
+        streak: 0,
+        bestStreak: 0,
       });
 
       this.dom = {
@@ -66,6 +73,7 @@
         modeSelect: document.getElementById('sb-mode-select'),
         hud: document.getElementById('sb-hud'),
         countdown: document.getElementById('sb-countdown'),
+        streak: document.getElementById('sb-streak'),
       };
 
       this.setupModeSelection();
@@ -83,7 +91,7 @@
         }
       };
 
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+      this.instance.onRender = alpha => this.draw(alpha);
 
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
@@ -93,19 +101,20 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="sb-container" style="width:100%; height:100%; position:relative; background:#050510;">
-          <canvas id="sb-canvas" style="width:100%; height:100%; display:block;"></canvas>
-          <div id="sb-mode-select" class="game-mode-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100;">
-            <h2 style="color:#fff; font-family:Orbitron, sans-serif; margin-bottom:25px; letter-spacing:2px;">SCAM BLASTER</h2>
-            <div style="display:flex; gap:20px;">
-              <button id="sb-select-fall" class="game-btn game-btn-success" style="padding:15px 30px; cursor:pointer;">FALL MODE</button>
-              <button id="sb-select-pop" class="game-btn game-btn-purple" style="padding:15px 30px; cursor:pointer;">POP MODE</button>
+        <div class="sb-container">
+          <canvas id="sb-canvas" class="sb-canvas"></canvas>
+          <div id="sb-mode-select" class="sb-mode-select">
+            <h2 class="sb-mode-title">SCAM BLASTER</h2>
+            <div class="sb-mode-btns">
+              <button id="sb-select-fall" class="game-btn game-btn-success sb-mode-btn">FALL MODE</button>
+              <button id="sb-select-pop" class="game-btn game-btn-purple sb-mode-btn">POP MODE</button>
             </div>
           </div>
-          <div id="sb-hud" class="game-hidden" style="position:absolute; top:15px; left:15px; color:#fff; font-family:monospace; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; border:1px solid #333;">
-            SCORE: <span id="sb-score" style="color:#fbbf24; font-weight:bold;">0</span> | LIVES: <span id="sb-lives">❤️❤️❤️</span>
+          <div id="sb-hud" class="sb-hud game-hidden">
+            SCORE: <span id="sb-score" class="sb-score-label">0</span> | LIVES: <span id="sb-lives">❤️❤️❤️</span>
           </div>
-          <div id="sb-countdown" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:120px; font-family:Orbitron, sans-serif; font-weight:bold; display:none; pointer-events:none;">3</div>
+          <div id="sb-streak" class="sb-streak">x0</div>
+          <div id="sb-countdown" class="sb-countdown">3</div>
         </div>
       `;
     },
@@ -126,12 +135,17 @@
 
     setupInput() {
       const canvas = this.instance.canvas;
-      canvas.addEventListener('pointerdown', e => {
+      const onPointerDown = e => {
         const rect = canvas.getBoundingClientRect();
         const x = (e.clientX - rect.left) * (canvas.width / rect.width);
         const y = (e.clientY - rect.top) * (canvas.height / rect.height);
         this.shoot(x, y);
-      });
+      };
+      canvas.addEventListener('pointerdown', onPointerDown);
+      this._cleanupInput = () => {
+        canvas.removeEventListener('pointerdown', onPointerDown);
+        canvas.style.cursor = '';
+      };
       const svgCursor = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>`;
       canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     },
@@ -154,7 +168,12 @@
         }
 
         state.spawnTimer += dt;
-        if (state.spawnTimer >= 60) {
+        const spawnInterval = Math.max(24, 60 - state.score / 90 - state.wave * 2);
+        const activeEnemies = world.createQuery(['Position', 'Enemy']).set.count;
+        if (
+          activeEnemies < Math.min(34, 14 + state.wave * 3) &&
+          state.spawnTimer >= spawnInterval
+        ) {
           self.spawnEnemy(world);
           state.spawnTimer = 0;
         }
@@ -174,13 +193,13 @@
         const lsQuery = world.createQuery(['Lifespan']);
         const { dense: lsDense, count: lsCount } = lsQuery.set;
         const lifeProps = world.componentRegistry.get('Lifespan').props;
+        const enemyComp = world.componentRegistry.get('Enemy');
+        const enemyBit = enemyComp ? enemyComp.bit : 0;
         for (let i = lsCount - 1; i >= 0; i--) {
           const idx = lsDense[i];
           lifeProps.remaining[idx] -= dt;
           if (lifeProps.remaining[idx] <= 0) {
-            const isEnemy =
-              world.componentRegistry.has('Enemy') &&
-              world.getIndexMask(idx) & world.componentRegistry.get('Enemy').mask;
+            const isEnemy = enemyBit && (world.entityMasks[idx] & enemyBit) === enemyBit;
             if (isEnemy && state.gameMode === 'pop') self.loseLife(world, world.getEntityId(idx));
             else world.destroyEntity(world.getEntityId(idx));
           }
@@ -237,19 +256,31 @@
       const rend = world.componentRegistry.get('Renderable').props;
       const en = world.componentRegistry.get('Enemy').props;
 
+      state.shots++;
       for (let i = count - 1; i >= 0; i--) {
         const idx = dense[i];
         if (Math.hypot(pos.x[idx] - x, pos.y[idx] - y) < rend.size[idx]) {
-          state.score += en.points[idx];
+          state.hits++;
+          state.streak++;
+          state.bestStreak = Math.max(state.bestStreak, state.streak);
+          const multiplier = 1 + Math.floor(state.streak / 5) * 0.25;
+          state.score += Math.round(en.points[idx] * multiplier);
+          state.wave = 1 + Math.floor(state.score / 500);
 
           if (typeof ASDF !== 'undefined' && ASDF.ParticleSystem) {
-            ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], { count: 12, colorIdx: 1 });
+            ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], {
+              count: 12 + Math.min(18, state.streak),
+              colorIdx: state.streak >= 5 ? 5 : 1,
+              speed: 3 + Math.min(5, state.streak * 0.2),
+            });
           }
 
           world.destroyEntity(world.getEntityId(idx));
           return;
         }
       }
+
+      state.streak = 0;
     },
 
     loseLife(world, id) {
@@ -269,16 +300,18 @@
       this.instance.shake(10, 15);
 
       state.lives--;
+      state.streak = 0;
       world.destroyEntity(id);
       if (state.lives <= 0) endGame(this.gameId, state.score);
     },
 
     updateUI(state) {
       this.dom.score.textContent = state.score;
+      if (this.dom.streak) this.dom.streak.textContent = `x${state.streak}`;
       this.dom.lives.innerHTML = '❤️'.repeat(Math.max(0, state.lives));
     },
 
-    draw(alpha, defaultRender) {
+    draw(alpha) {
       const ctx = this.instance.ctx;
       const w = this.instance.canvas.width,
         h = this.instance.canvas.height;
@@ -300,7 +333,7 @@
       }
       ctx.stroke();
 
-      defaultRender(this.instance.world, alpha);
+      this.drawThreats(ctx);
 
       if (state.gameMode === 'pop') {
         const query = this.instance.world.createQuery(['Position', 'Lifespan', 'Enemy']);
@@ -319,8 +352,79 @@
       }
     },
 
+    drawThreats(ctx) {
+      const world = this.instance.world;
+      const query = world.createQuery(['Position', 'Enemy']);
+      const { dense, count } = query.set;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const enemy = world.componentRegistry.get('Enemy').props;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        this.drawThreat(
+          ctx,
+          pos.x[idx],
+          pos.y[idx],
+          rend.size[idx] || 36,
+          enemy.typeIndex[idx] || 0
+        );
+      }
+    },
+
+    drawThreat(ctx, x, y, size, type) {
+      const palettes = [
+        ['#ef4444', '#7f1d1d', 'SCAM'],
+        ['#f97316', '#7c2d12', 'RUG'],
+        ['#a855f7', '#581c87', 'BOT'],
+        ['#22c55e', '#14532d', 'FAKE'],
+        ['#94a3b8', '#334155', 'WHALE'],
+      ];
+      const [hot, dark, label] = palettes[type % palettes.length];
+      const pulse = 1 + Math.sin((performance.now() + x * 3) / 180) * 0.04;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(pulse, pulse);
+      ctx.shadowColor = hot;
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(0, size * 0.18, size * 0.58, size * 0.44, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      const grad = ctx.createLinearGradient(-size * 0.5, -size * 0.5, size * 0.5, size * 0.5);
+      grad.addColorStop(0, hot);
+      grad.addColorStop(1, dark);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.58);
+      ctx.lineTo(size * 0.5, -size * 0.18);
+      ctx.lineTo(size * 0.38, size * 0.44);
+      ctx.lineTo(0, size * 0.58);
+      ctx.lineTo(-size * 0.38, size * 0.44);
+      ctx.lineTo(-size * 0.5, -size * 0.18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.34)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = `900 ${Math.max(8, size * 0.22)}px Orbitron, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, 1);
+      ctx.restore();
+    },
+
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 

@@ -79,6 +79,9 @@ function init() {
 
     // Core Plugins
     if (ASDF.AssetPipeline) kernel.use(ASDF.AssetPipeline);
+    if (ASDF.SoundPlugin) kernel.use(ASDF.SoundPlugin);
+    if (ASDF.ScoreService) kernel.use(ASDF.ScoreService);
+    if (ASDF.LeaderboardPlugin) kernel.use(ASDF.LeaderboardPlugin);
     if (ASDF.InputHub) kernel.use(ASDF.InputHub);
     if (ASDF.HUDManager) kernel.use(ASDF.HUDManager);
 

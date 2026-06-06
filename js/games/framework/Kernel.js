@@ -26,6 +26,20 @@
         `%c 🎮 Arcade Kernel ${this.version} initialized `,
         'background: #4c1d95; color: #fff; font-weight: bold;'
       );
+
+      // Bridge legacy GameEvents if available
+      this._setupLegacyBridge();
+    }
+
+    _setupLegacyBridge() {
+      if (typeof window.GameEvents !== 'undefined') {
+        const legacyEmit = window.GameEvents.emit.bind(window.GameEvents);
+        window.GameEvents.emit = (event, data) => {
+          legacyEmit(event, data);
+          this.emit(event, data);
+        };
+        console.log('[ArcadeKernel] Legacy GameEvents bridged');
+      }
     }
 
     /**

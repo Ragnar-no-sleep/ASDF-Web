@@ -315,6 +315,7 @@ class InteractionEasterEggs {
     document.addEventListener(
       'mouseenter',
       e => {
+        if (!e.target || typeof e.target.closest !== 'function') return;
         const logo = e.target.closest('.logo, .hub-orbit-center, [data-logo]');
         if (!logo) return;
 

@@ -12,6 +12,8 @@
     version: '2.0.0',
     gameId: 'burnrunner',
     instance: null,
+    _cleanupInput: null,
+    icons: ['🐕', '💥', '💎'],
 
     obstacleTypes: [
       { icon: '💀', name: 'SCAM', width: 35, height: 40 },
@@ -21,6 +23,8 @@
     ],
 
     start(gameId) {
+      this.stop();
+
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
@@ -36,7 +40,14 @@
       this.instance.resize();
 
       const world = this.instance.world;
+      const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+
+      // Configure Input Hub
+      if (kernel.getPlugin('InputHub')) {
+        const input = kernel.getPlugin('InputHub');
+        input.mapAction('JUMP', ['Space', 'ArrowUp', 'KeyW']);
+      }
 
       // Components
       world.registerComponent('Player', { jumpsLeft: 'u8' });
@@ -48,6 +59,7 @@
         tokens: 0,
         speed: 6,
         baseSpeed: 6,
+        maxSpeed: 13.5,
         gravity: 0.4,
         jumpForce: -9,
         maxJumps: 2,
@@ -55,11 +67,18 @@
         spawnTimer: 0,
         groundY: canvas.height - 50,
         playerId: -1,
+        jumpBuffer: 0,
+        jumpBufferFrames: 8,
+        coyoteTimer: 0,
+        coyoteFrames: 6,
+        combo: 0,
+        bestCombo: 0,
       });
 
       this.dom = {
         distance: document.getElementById('br-distance'),
         tokens: document.getElementById('br-tokens'),
+        combo: document.getElementById('br-combo'),
       };
 
       this.setupInput();
@@ -83,10 +102,20 @@
       world.componentRegistry.get('Player').props.jumpsLeft[pIdx] = 2;
       world.getResource('GameState').playerId = player;
 
+      // Update Loop
+      this.instance.onUpdate = dt => {
+        const state = world.getResource('GameState');
+        if (kernel.services.hud) {
+          kernel.services.hud.update(this.gameId, state);
+          // Custom BR HUD
+          if (this.dom.distance) this.dom.distance.textContent = Math.floor(state.distance) + 'm';
+          if (this.dom.tokens) this.dom.tokens.textContent = state.tokens;
+        }
+      };
+
       // Override Render
-      const icons = ['🐕', '💥', '💎', ...this.obstacleTypes.map(o => o.icon)];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+      this.icons = ['🐕', '💥', '💎', ...this.obstacleTypes.map(o => o.icon)];
+      this.instance.onRender = alpha => this.draw(alpha);
 
       // Systems
       world.addSystem(this.createRunnerSystem());
@@ -106,6 +135,7 @@
           <div class="game-hud-top-left">
             <div class="game-hud-stat">DIST: <span id="br-distance">0m</span></div>
             <div class="game-hud-stat">TOKENS: <span id="br-tokens">0</span></div>
+            <div class="game-hud-stat">COMBO: <span id="br-combo">x0</span></div>
           </div>
         </div>
       `;
@@ -123,26 +153,24 @@
 
     setupInput() {
       const canvas = this.instance.canvas;
-      const jump = e => {
+      const queueJump = e => {
         if (e && e.cancelable) e.preventDefault();
         const world = this.instance.world;
         const state = world.getResource('GameState');
         if (state.gameOver) return;
-
-        const playerIdx = world.getIndex(state.playerId);
-        const pProps = world.componentRegistry.get('Player').props;
-        const vProps = world.componentRegistry.get('Velocity').props;
-
-        if (pProps.jumpsLeft[playerIdx] > 0) {
-          vProps.vy[playerIdx] = state.jumpForce;
-          pProps.jumpsLeft[playerIdx]--;
-        }
+        state.jumpBuffer = state.jumpBufferFrames;
       };
 
-      document.addEventListener('keydown', e => {
-        if (e.code === 'Space') jump(e);
-      });
-      canvas.addEventListener('pointerdown', jump);
+      const onKeyDown = e => {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') queueJump(e);
+      };
+
+      document.addEventListener('keydown', onKeyDown);
+      canvas.addEventListener('pointerdown', queueJump);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        canvas.removeEventListener('pointerdown', queueJump);
+      };
     },
 
     createRunnerSystem() {
@@ -152,7 +180,7 @@
         if (state.gameOver) return;
 
         state.distance += state.speed * 0.1 * dt;
-        state.speed = state.baseSpeed + state.distance * 0.001;
+        state.speed = Math.min(state.maxSpeed, state.baseSpeed + state.distance * 0.0012);
 
         const playerIdx = world.getIndex(state.playerId);
         const posProps = world.componentRegistry.get('Position').props;
@@ -166,15 +194,36 @@
         const py = posProps.y[playerIdx];
         const ph = collProps.height[playerIdx];
 
+        const wasGrounded = py + ph >= state.groundY - 1;
         if (py + ph > state.groundY) {
           posProps.y[playerIdx] = state.groundY - ph;
           velProps.vy[playerIdx] = 0;
           pProps.jumpsLeft[playerIdx] = state.maxJumps;
         }
 
+        if (wasGrounded) {
+          state.coyoteTimer = state.coyoteFrames;
+        } else if (state.coyoteTimer > 0) {
+          state.coyoteTimer -= dt;
+        }
+
+        if (state.jumpBuffer > 0) {
+          state.jumpBuffer -= dt;
+          const canCoyoteJump =
+            state.coyoteTimer > 0 && pProps.jumpsLeft[playerIdx] === state.maxJumps;
+
+          if (pProps.jumpsLeft[playerIdx] > 0 || canCoyoteJump) {
+            velProps.vy[playerIdx] = state.jumpForce;
+            pProps.jumpsLeft[playerIdx] = Math.max(0, pProps.jumpsLeft[playerIdx] - 1);
+            state.jumpBuffer = 0;
+            state.coyoteTimer = 0;
+          }
+        }
+
         // Spawning
         state.spawnTimer += dt;
-        if (state.spawnTimer > 120 / (state.speed / 6)) {
+        const activeHazards = world.createQuery(['Position', 'Collider']).set.count;
+        if (activeHazards < 24 && state.spawnTimer > Math.max(42, 120 / (state.speed / 6))) {
           state.spawnTimer = 0;
           self.spawnEntity(world);
         }
@@ -185,8 +234,10 @@
         const query = world.createQuery(['Position', 'Collider']);
         const { dense, count } = query.set;
 
-        const obsProps = world.componentRegistry.get('Obstacle');
-        const colProps = world.componentRegistry.get('Collectible');
+        const obsComp = world.componentRegistry.get('Obstacle');
+        const colComp = world.componentRegistry.get('Collectible');
+        const obsBit = obsComp ? obsComp.bit : 0;
+        const colBit = colComp ? colComp.bit : 0;
 
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
@@ -205,8 +256,10 @@
             posProps.y[playerIdx] < ey + eh &&
             posProps.y[playerIdx] + ph > ey
           ) {
-            if (obsProps && obsProps.props.type[idx] !== undefined) {
+            const entityMask = world.entityMasks[idx];
+            if (obsBit && (entityMask & obsBit) === obsBit) {
               state.gameOver = true;
+              state.combo = 0;
               rendProps.iconIndex[playerIdx] = 1; // 💥
 
               // 11/10 Visual Juice
@@ -221,13 +274,31 @@
               self.instance.shake(15, 20);
 
               if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
-            } else if (colProps && colProps.props.value[idx] !== undefined) {
-              state.tokens++;
+            } else if (colBit && (entityMask & colBit) === colBit) {
+              const value = colComp.props.value[idx] || 1;
+              state.tokens += value;
+              state.combo++;
+              state.bestCombo = Math.max(state.bestCombo, state.combo);
+              state.distance += value * Math.min(10, state.combo);
+
+              if (ASDF.ParticleSystem) {
+                ASDF.ParticleSystem.emit(world, ex + ew / 2, ey + eh / 2, {
+                  count: 12,
+                  colorIdx: 1,
+                  speed: 4,
+                  gravity: 0.02,
+                  life: 18,
+                });
+              }
+
               world.destroyEntity(world.getEntityId(idx));
             }
           }
 
-          if (ex < -100) world.destroyEntity(world.getEntityId(idx));
+          if (ex < -100) {
+            if (obsBit && (world.entityMasks[idx] & obsBit) === obsBit) state.combo = 0;
+            world.destroyEntity(world.getEntityId(idx));
+          }
         }
 
         self.updateUI(state);
@@ -259,20 +330,24 @@
         coll.height[idx] = type.height;
       } else {
         world.addComponent(e, 'Collectible');
+        const collectible = world.componentRegistry.get('Collectible').props;
         pos.y[idx] = state.groundY - 100 - Math.random() * 80;
         rend.iconIndex[idx] = 2; // 💎
         rend.size[idx] = 28;
         coll.width[idx] = 28;
         coll.height[idx] = 28;
+        collectible.value[idx] = Math.random() < 0.15 ? 3 : 1;
+        if (collectible.value[idx] > 1) rend.size[idx] = 34;
       }
     },
 
     updateUI(state) {
       if (this.dom.distance) this.dom.distance.textContent = Math.floor(state.distance) + 'm';
       if (this.dom.tokens) this.dom.tokens.textContent = state.tokens;
+      if (this.dom.combo) this.dom.combo.textContent = `x${state.combo}`;
     },
 
-    draw(alpha, defaultRender) {
+    draw(alpha) {
       const ctx = this.instance.ctx;
       const w = this.instance.canvas.width,
         h = this.instance.canvas.height;
@@ -328,12 +403,67 @@
       }
       ctx.stroke();
 
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.16)';
+      ctx.lineWidth = 2;
+      const lineCount = Math.min(18, Math.floor(6 + state.speed));
+      for (let i = 0; i < lineCount; i++) {
+        const y = 40 + ((i * 73 + state.distance * 9) % Math.max(80, state.groundY - 80));
+        const x = (w - ((state.distance * 18 + i * 137) % (w + 180))) | 0;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 80 + state.speed * 4, y);
+        ctx.stroke();
+      }
+
       // 5. Entities
-      defaultRender(this.instance.world, alpha);
+      const world = this.instance.world;
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx],
+          ty = pos.y[idx];
+        const size = rend.size[idx] || 40;
+
+        if (idx === pIdx) {
+          // Flip the dog (🐕) to face RIGHT
+          if (typeof SpriteCache !== 'undefined' && SpriteCache.drawTransformed) {
+            SpriteCache.drawTransformed(ctx, this.icons[0], tx, ty, size, {
+              scaleX: -1,
+              rotation: 0,
+            });
+          } else {
+            ctx.font = `${size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.icons[0], tx, ty);
+          }
+        } else {
+          const icon = this.icons[rend.iconIndex[idx]] || '❓';
+          if (typeof SpriteCache !== 'undefined') {
+            SpriteCache.draw(ctx, icon, tx, ty, size);
+          } else {
+            ctx.font = `${size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(icon, tx, ty);
+          }
+        }
+      }
     },
 
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 

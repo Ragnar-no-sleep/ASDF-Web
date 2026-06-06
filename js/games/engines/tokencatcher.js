@@ -13,6 +13,7 @@
     version: '2.0.0',
     gameId: 'tokencatcher',
     instance: null,
+    _cleanupInput: null,
 
     goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
     scamTokens: ['🚨', '❌', '🦠'],
@@ -32,6 +33,8 @@
     ],
 
     start(gameId) {
+      this.stop();
+
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
 
@@ -161,7 +164,7 @@
       const canvas = this.instance.canvas;
       const world = this.instance.world;
 
-      document.addEventListener('keydown', e => {
+      const onKeyDown = e => {
         const key = e.key.toLowerCase();
         const state = world.getResource('GameState');
         if (state.gameOver) return;
@@ -182,25 +185,34 @@
           pProps.y[dIdx] = state.lanes[drProps.lane[dIdx]];
           state.visualYOffset = 10; // Visual squash
         }
-      });
+      };
 
-      document.addEventListener('keyup', e => {
+      const onKeyUp = e => {
         const key = e.key.toLowerCase();
         if (key === 'a' || key === 'd' || key === 'arrowleft' || key === 'arrowright') {
           const state = world.getResource('GameState');
           const dIdx = world.getIndex(state.droneId);
           world.componentRegistry.get('Velocity').props.vx[dIdx] = 0;
         }
-      });
+      };
 
-      canvas.addEventListener('pointerdown', e => {
+      const onPointerDown = e => {
         const state = world.getResource('GameState');
         if (state.gameOver) return;
         const rect = canvas.getBoundingClientRect();
         const tx = (e.clientX - rect.left) * (canvas.width / rect.width);
         const ty = (e.clientY - rect.top) * (canvas.height / rect.height);
         this.shoot(world, tx, ty);
-      });
+      };
+
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+      canvas.addEventListener('pointerdown', onPointerDown);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+        canvas.removeEventListener('pointerdown', onPointerDown);
+      };
     },
 
     shoot(world, tx, ty) {
@@ -251,11 +263,13 @@
 
         // Spawning
         state.spawnTimer += dt;
-        const rate = Math.max(20, 40 - state.difficulty);
-        if (state.spawnTimer >= rate) {
+        state.difficulty = Math.min(90, state.difficulty);
+        const rate = Math.max(16, 40 - state.difficulty * 0.35);
+        const activeDrops = world.createQuery(['Position', 'Collider']).set.count;
+        if (activeDrops < 42 && state.spawnTimer >= rate) {
           self.spawnItem(world);
           state.spawnTimer = 0;
-          state.difficulty += 0.05;
+          state.difficulty += 0.045;
         }
 
         // Cleanup Lifespans
@@ -286,9 +300,12 @@
         const movers = world.createQuery(['Position', 'Collider']);
         const { dense, count } = movers.set;
 
-        const tokenProps = world.componentRegistry.get('Token');
-        const enemyProps = world.componentRegistry.get('Enemy');
-        const powerProps = world.componentRegistry.get('PowerUp');
+        const tokenComp = world.componentRegistry.get('Token');
+        const enemyComp = world.componentRegistry.get('Enemy');
+        const powerComp = world.componentRegistry.get('PowerUp');
+        const tokenBit = tokenComp ? tokenComp.bit : 0;
+        const enemyBit = enemyComp ? enemyComp.bit : 0;
+        const powerBit = powerComp ? powerComp.bit : 0;
 
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
@@ -296,10 +313,11 @@
 
           const ex = pos.x[idx],
             ey = pos.y[idx];
+          const entityMask = world.entityMasks[idx];
 
           if (Math.hypot(dx - ex, dy - ey) < 40) {
-            if (tokenProps && tokenProps.props.type[idx] !== undefined) {
-              const type = tokenProps.props.type[idx];
+            if (tokenBit && (entityMask & tokenBit) === tokenBit) {
+              const type = tokenComp.props.type[idx];
               if (type === 0) {
                 state.score += 10;
               } else if (type === 1) {
@@ -309,9 +327,14 @@
                 if (typeof endGame === 'function') endGame(self.gameId, state.score);
               }
               world.destroyEntity(world.getEntityId(idx));
-            } else if (enemyProps && enemyProps.props.hp[idx] !== undefined) {
+            } else if (enemyBit && (entityMask & enemyBit) === enemyBit) {
               state.gameOver = true;
               if (typeof endGame === 'function') endGame(self.gameId, state.score);
+            } else if (powerBit && (entityMask & powerBit) === powerBit) {
+              const type = powerComp.props.type[idx];
+              state.activePowerUps[type] = self.powerUps[type]?.duration || 180;
+              state.score += 25;
+              world.destroyEntity(world.getEntityId(idx));
             }
           }
 
@@ -337,7 +360,7 @@
 
       pos.x[idx] = 30 + Math.random() * (cw - 60);
       pos.y[idx] = -30;
-      vel.vy[idx] = 2 + state.difficulty * 0.1;
+      vel.vy[idx] = Math.min(9, 2 + state.difficulty * 0.08);
 
       const roll = Math.random();
       if (roll < 0.15) {
@@ -377,6 +400,11 @@
     draw(alpha, defaultRender) {
       const ctx = this.instance.ctx;
       const state = this.instance.world.getResource('GameState');
+      if (this.instance) {
+        this.drawArenaBackdrop(ctx, state);
+        this.drawEntities(ctx, state);
+        return;
+      }
       ctx.fillStyle = '#0a0a0f';
       ctx.fillRect(0, 0, this.instance.canvas.width, this.instance.canvas.height);
 
@@ -425,8 +453,253 @@
       }
     },
 
+    drawArenaBackdrop(ctx, state) {
+      const w = this.instance.canvas.width;
+      const h = this.instance.canvas.height;
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#08111f');
+      bg.addColorStop(0.55, '#10142d');
+      bg.addColorStop(1, '#12071f');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.12)';
+      ctx.lineWidth = 1;
+      const gridOffset = (state.frameCount * 2) % 42;
+      ctx.beginPath();
+      for (let x = -gridOffset; x < w; x += 42) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 64, h);
+      }
+      for (let y = -gridOffset; y < h; y += 42) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+
+      state.lanes.forEach((y, lane) => {
+        ctx.fillStyle = lane === 1 ? 'rgba(34, 211, 238, 0.1)' : 'rgba(148, 163, 184, 0.055)';
+        this.roundRect(ctx, 18, y - 24, w - 36, 48, 12);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.18)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([18, 16]);
+        ctx.lineDashOffset = -state.frameCount * 2.5;
+        ctx.beginPath();
+        ctx.moveTo(26, y);
+        ctx.lineTo(w - 26, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.08)';
+      ctx.fillRect(0, 0, w, 4);
+      ctx.fillRect(0, h - 4, w, 4);
+    },
+
+    drawEntities(ctx, state) {
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const tokenComp = world.componentRegistry.get('Token');
+      const enemyComp = world.componentRegistry.get('Enemy');
+      const powerComp = world.componentRegistry.get('PowerUp');
+      const projectileComp = world.componentRegistry.get('Projectile');
+      const tokenBit = tokenComp ? tokenComp.bit : 0;
+      const enemyBit = enemyComp ? enemyComp.bit : 0;
+      const powerBit = powerComp ? powerComp.bit : 0;
+      const projectileBit = projectileComp ? projectileComp.bit : 0;
+      const query = world.createQuery(['Position', 'Renderable']);
+      const { dense, count } = query.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx];
+        const ty = pos.y[idx];
+        const size = rend.size[idx] || 30;
+
+        if (world.getEntityId(idx) === state.droneId) {
+          this.drawDrone(ctx, tx, ty + state.visualYOffset, size);
+          continue;
+        }
+
+        const mask = world.entityMasks[idx];
+        if (projectileBit && (mask & projectileBit) === projectileBit) {
+          this.drawProjectile(ctx, tx, ty);
+        } else if (tokenBit && (mask & tokenBit) === tokenBit) {
+          this.drawToken(ctx, tx, ty, tokenComp.props.type[idx], size);
+        } else if (enemyBit && (mask & enemyBit) === enemyBit) {
+          this.drawEnemy(ctx, tx, ty, size);
+        } else if (powerBit && (mask & powerBit) === powerBit) {
+          this.drawPowerUp(ctx, tx, ty, powerComp.props.type[idx], size);
+        }
+      }
+    },
+
+    drawDrone(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      const pulse = 1 + Math.sin(performance.now() / 120) * 0.03;
+      ctx.scale(pulse, pulse);
+      ctx.fillStyle = 'rgba(34, 211, 238, 0.22)';
+      ctx.beginPath();
+      ctx.ellipse(0, 8, size * 0.7, size * 0.25, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const body = ctx.createLinearGradient(-size / 2, 0, size / 2, 0);
+      body.addColorStop(0, '#312e81');
+      body.addColorStop(0.45, '#22d3ee');
+      body.addColorStop(1, '#7c3aed');
+      ctx.fillStyle = body;
+      this.roundRect(ctx, -size * 0.42, -size * 0.22, size * 0.84, size * 0.44, 14);
+      ctx.fill();
+
+      ctx.fillStyle = '#020617';
+      this.roundRect(ctx, -size * 0.18, -size * 0.11, size * 0.36, size * 0.22, 8);
+      ctx.fill();
+
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.55, -size * 0.08);
+      ctx.lineTo(-size * 0.34, 0);
+      ctx.moveTo(size * 0.55, -size * 0.08);
+      ctx.lineTo(size * 0.34, 0);
+      ctx.stroke();
+      ctx.restore();
+    },
+
+    drawToken(ctx, x, y, type, size) {
+      const colors =
+        type === 0
+          ? ['#fbbf24', '#22c55e']
+          : type === 1
+            ? ['#ef4444', '#f97316']
+            : ['#111827', '#ef4444'];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin((performance.now() + x * 7) / 260) * 0.18);
+      ctx.shadowColor = colors[0];
+      ctx.shadowBlur = type === 0 ? 18 : 10;
+      const grad = ctx.createRadialGradient(-size * 0.15, -size * 0.2, 2, 0, 0, size * 0.55);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.35, colors[0]);
+      grad.addColorStop(1, colors[1]);
+      ctx.fillStyle = grad;
+      this.hexPath(ctx, 0, 0, size * 0.52);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = type === 0 ? 'rgba(255,255,255,0.72)' : 'rgba(248,250,252,0.36)';
+      ctx.lineWidth = 2;
+      this.hexPath(ctx, 0, 0, size * 0.38);
+      ctx.stroke();
+      ctx.fillStyle = type === 0 ? '#052e16' : '#f8fafc';
+      ctx.font = `900 ${Math.max(11, size * 0.28)}px Orbitron, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(type === 0 ? 'ASDF' : type === 1 ? 'SCAM' : 'RUG', 0, 1);
+      ctx.restore();
+    },
+
+    drawEnemy(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin((performance.now() + y * 3) / 180) * 0.12);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+      const grad = ctx.createLinearGradient(-size * 0.45, -size * 0.42, size * 0.45, size * 0.42);
+      grad.addColorStop(0, '#450a0a');
+      grad.addColorStop(0.5, '#dc2626');
+      grad.addColorStop(1, '#7f1d1d');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.55);
+      ctx.lineTo(size * 0.48, -size * 0.08);
+      ctx.lineTo(size * 0.28, size * 0.46);
+      ctx.lineTo(-size * 0.3, size * 0.44);
+      ctx.lineTo(-size * 0.5, -size * 0.06);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(-size * 0.24, -size * 0.08, size * 0.15, size * 0.12);
+      ctx.fillRect(size * 0.09, -size * 0.08, size * 0.15, size * 0.12);
+      ctx.strokeStyle = '#fecaca';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.22, size * 0.24);
+      ctx.lineTo(size * 0.22, size * 0.24);
+      ctx.stroke();
+      ctx.restore();
+    },
+
+    drawPowerUp(ctx, x, y, type, size) {
+      const power = this.powerUps[type] || this.powerUps[0];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = power.color;
+      ctx.shadowColor = power.color;
+      ctx.shadowBlur = 16;
+      this.roundRect(ctx, -size * 0.45, -size * 0.45, size * 0.9, size * 0.9, 8);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = '#020617';
+      ctx.font = `bold ${Math.max(10, size * 0.3)}px JetBrains Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(power.name.slice(0, 2), 0, 1);
+      ctx.restore();
+    },
+
+    drawProjectile(ctx, x, y) {
+      ctx.save();
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    hexPath(ctx, x, y, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 6 + (Math.PI * 2 * i) / 6;
+        const px = x + Math.cos(angle) * r;
+        const py = y + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    },
+
+    roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    },
+
     stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
       if (this.instance) this.instance.stop();
+      this.instance = null;
     },
   };
 
