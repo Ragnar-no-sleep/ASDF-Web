@@ -362,6 +362,12 @@
   font-weight: bold;
 }
 
+.sb-score-value {
+  color: #fbbf24;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .sb-streak {
   position: absolute;
   top: 58px;
@@ -396,16 +402,31 @@
   margin-bottom: 10px;
 }
 
+.sb-life-value {
+  color: #ef4444;
+  font-weight: bold;
+}
+
 .sb-subtitle {
   color: var(--text-muted);
   font-size: 14px;
   margin-bottom: 30px;
 }
 
-.sb-score-value {
-  color: #fbbf24;
-  font-size: 18px;
+.sb-threat-count {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  min-width: 112px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.52);
+  color: #c4b5fd;
+  border: 1px solid rgba(196, 181, 253, 0.45);
+  font-family: Orbitron, sans-serif;
+  font-size: 12px;
   font-weight: bold;
+  pointer-events: none;
 }
 
 .sb-wave-value {
