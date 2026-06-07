@@ -13,6 +13,7 @@
     gameId: 'liquiditymaze',
     instance: null,
     _cleanupInput: null,
+    _positionQuery: null,
 
     TREASURES: [
       { icon: '💎', value: 100 },
@@ -42,6 +43,7 @@
       const world = this.instance.world;
       const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+      this._positionQuery = world.createQuery(['Position', 'Renderable']);
 
       // Configure Input Hub
       if (kernel.getPlugin('InputHub')) {
@@ -244,7 +246,9 @@
 
         const itemComp = world.componentRegistry.get('Item');
         const itemBit = itemComp ? itemComp.bit : 0;
-        const entities = world.createQuery(['Position', 'Renderable']);
+        const entities =
+          self._positionQuery ||
+          (self._positionQuery = world.createQuery(['Position', 'Renderable']));
         const { dense, count } = entities.set;
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
@@ -299,7 +303,9 @@
         }
       }
 
-      const query = this.instance.world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._positionQuery ||
+        (this._positionQuery = this.instance.world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
       const world = this.instance.world;
       const pos = world.componentRegistry.get('Position').props;
@@ -413,15 +419,18 @@
       const pos = world.componentRegistry.get('Position').props;
       const itemComp = world.componentRegistry.get('Item');
       const itemBit = itemComp ? itemComp.bit : 0;
-      const query = world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._positionQuery ||
+        (this._positionQuery = world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
 
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
         const gx = pos.x[idx];
         const gy = pos.y[idx];
-        if (state.fog[gy | 0]?.[gx | 0] > 0.5 && world.getEntityId(idx) !== state.playerId)
+        if (state.fog[gy | 0]?.[gx | 0] > 0.5 && world.getEntityId(idx) !== state.playerId) {
           continue;
+        }
         const x = offsetX + gx * cS + cS / 2;
         const y = offsetY + gy * cS + cS / 2;
         if (world.getEntityId(idx) === state.playerId) {
@@ -513,6 +522,7 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._positionQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },

@@ -14,6 +14,9 @@
     gameId: 'tokencatcher',
     instance: null,
     _cleanupInput: null,
+    _positionColliderQuery: null,
+    _lifespanQuery: null,
+    _renderQuery: null,
 
     goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
     scamTokens: ['🚨', '❌', '🦠'],
@@ -51,6 +54,9 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+      this._positionColliderQuery = world.createQuery(['Position', 'Collider']);
+      this._lifespanQuery = world.createQuery(['Lifespan']);
+      this._renderQuery = world.createQuery(['Position', 'Renderable']);
 
       // Components
       world.registerComponent('Drone', { lane: 'u8', cooldown: 'f32' });
@@ -265,7 +271,10 @@
         state.spawnTimer += dt;
         state.difficulty = Math.min(90, state.difficulty);
         const rate = Math.max(16, 40 - state.difficulty * 0.35);
-        const activeDrops = world.createQuery(['Position', 'Collider']).set.count;
+        const activeDrops = (
+          self._positionColliderQuery ||
+          (self._positionColliderQuery = world.createQuery(['Position', 'Collider']))
+        ).set.count;
         if (activeDrops < 42 && state.spawnTimer >= rate) {
           self.spawnItem(world);
           state.spawnTimer = 0;
@@ -273,7 +282,8 @@
         }
 
         // Cleanup Lifespans
-        const query = world.createQuery(['Lifespan']);
+        const query =
+          self._lifespanQuery || (self._lifespanQuery = world.createQuery(['Lifespan']));
         const { dense, count } = query.set;
         const lifeProps = world.componentRegistry.get('Lifespan').props;
         for (let i = count - 1; i >= 0; i--) {
@@ -297,7 +307,9 @@
         const dx = pos.x[dIdx],
           dy = pos.y[dIdx];
 
-        const movers = world.createQuery(['Position', 'Collider']);
+        const movers =
+          self._positionColliderQuery ||
+          (self._positionColliderQuery = world.createQuery(['Position', 'Collider']));
         const { dense, count } = movers.set;
 
         const tokenComp = world.componentRegistry.get('Token');
@@ -424,7 +436,8 @@
       const pos = world.componentRegistry.get('Position').props;
       const rend = world.componentRegistry.get('Renderable').props;
 
-      const query = world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._renderQuery || (this._renderQuery = world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
 
       const icons = [
@@ -510,7 +523,8 @@
       const enemyBit = enemyComp ? enemyComp.bit : 0;
       const powerBit = powerComp ? powerComp.bit : 0;
       const projectileBit = projectileComp ? projectileComp.bit : 0;
-      const query = world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._renderQuery || (this._renderQuery = world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
 
       for (let i = 0; i < count; i++) {
@@ -698,6 +712,9 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._positionColliderQuery = null;
+      this._lifespanQuery = null;
+      this._renderQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },

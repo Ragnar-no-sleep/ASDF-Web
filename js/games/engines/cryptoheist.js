@@ -13,6 +13,10 @@
     gameId: 'cryptoheist',
     instance: null,
     _cleanupInput: null,
+    _enemyQuery: null,
+    _bulletQuery: null,
+    _lootQuery: null,
+    _renderQuery: null,
 
     lootRarities: [
       { icon: '🪙', value: 5, color: '#9ca3af' },
@@ -49,6 +53,9 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+      this._enemyQuery = world.createQuery(['Enemy', 'Position']);
+      this._bulletQuery = world.createQuery(['Bullet', 'Position']);
+      this._lootQuery = world.createQuery(['Loot', 'Position']);
 
       // Components
       world.registerComponent('Player', { angle: 'f32', lightFlicker: 'f32' });
@@ -252,7 +259,8 @@
 
         // Spawning
         state.spawnTimer += dt;
-        const enemies = world.createQuery(['Enemy', 'Position']);
+        const enemies =
+          self._enemyQuery || (self._enemyQuery = world.createQuery(['Enemy', 'Position']));
         const spawnInterval = Math.max(20, 72 - state.wave * 4);
         if (enemies.set.count < state.maxEnemies && state.spawnTimer >= spawnInterval) {
           self.spawnEnemy(world);
@@ -260,7 +268,8 @@
         }
 
         // Bounds Cleanup
-        const bullets = world.createQuery(['Bullet', 'Position']);
+        const bullets =
+          self._bulletQuery || (self._bulletQuery = world.createQuery(['Bullet', 'Position']));
         const { dense, count } = bullets.set;
         for (let i = count - 1; i >= 0; i--) {
           const idx = dense[i];
@@ -290,7 +299,8 @@
           py = pos.y[pIdx];
 
         // Enemies vs Player
-        const enemies = world.createQuery(['Enemy', 'Position']);
+        const enemies =
+          self._enemyQuery || (self._enemyQuery = world.createQuery(['Enemy', 'Position']));
         const { dense: eDense, count: eCount } = enemies.set;
         for (let i = eCount - 1; i >= 0; i--) {
           const idx = eDense[i];
@@ -302,7 +312,8 @@
         }
 
         // Bullets vs Enemies
-        const bullets = world.createQuery(['Bullet', 'Position']);
+        const bullets =
+          self._bulletQuery || (self._bulletQuery = world.createQuery(['Bullet', 'Position']));
         const { dense: bDense, count: bCount } = bullets.set;
         for (let i = bCount - 1; i >= 0; i--) {
           const bIdx = bDense[i];
@@ -328,7 +339,8 @@
         }
 
         // Loot Collection
-        const loots = world.createQuery(['Loot', 'Position']);
+        const loots =
+          self._lootQuery || (self._lootQuery = world.createQuery(['Loot', 'Position']));
         const { dense: lDense, count: lCount } = loots.set;
         const lootProps = world.componentRegistry.get('Loot').props;
         for (let i = lCount - 1; i >= 0; i--) {
@@ -554,7 +566,9 @@
       const lootBit = lootComp ? lootComp.bit : 0;
       const enemyBit = enemyComp ? enemyComp.bit : 0;
       const bulletBit = bulletComp ? bulletComp.bit : 0;
-      const query = world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._renderQuery ||
+        (this._renderQuery = this.instance.world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
 
       for (let i = 0; i < count; i++) {
@@ -717,6 +731,10 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._enemyQuery = null;
+      this._bulletQuery = null;
+      this._lootQuery = null;
+      this._renderQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },

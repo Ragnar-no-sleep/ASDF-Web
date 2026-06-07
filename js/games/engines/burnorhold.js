@@ -13,6 +13,9 @@
     gameId: 'burnorhold',
     instance: null,
     _cleanupInput: null,
+    _nodeQuery: null,
+    _nodePositionQuery: null,
+    _attackQuery: null,
 
     OWNER: { NEUTRAL: 0, PLAYER: 1, ENEMY: 2 },
     CHAIN_NAMES: ['ETH', 'SOL', 'AVAX', 'MATIC', 'BNB', 'ARB', 'OP', 'BASE', 'FTM', 'ATOM'],
@@ -37,6 +40,9 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+      this._nodeQuery = world.createQuery(['Node']);
+      this._nodePositionQuery = world.createQuery(['Node', 'Position']);
+      this._attackQuery = world.createQuery(['Attack', 'Position']);
 
       // Components
       world.registerComponent('Node', { owner: 'u8', validators: 'u16', max: 'u16', type: 'u8' });
@@ -138,7 +144,7 @@
         const my = (e.clientY - rect.top) * (canvas.height / rect.height);
 
         const state = world.getResource('GameState');
-        const nodes = world.createQuery(['Position', 'Node']);
+        const nodes = this._nodePositionQuery || world.createQuery(['Position', 'Node']);
         const { dense, count } = nodes.set;
         const pos = world.componentRegistry.get('Position').props;
         const nodeProps = world.componentRegistry.get('Node').props;
@@ -166,7 +172,8 @@
 
     launchAttack(world, fromId, toId) {
       if (fromId === toId) return;
-      const activeAttacks = world.createQuery(['Attack', 'Position']).set.count;
+      const activeAttacks = (this._attackQuery || world.createQuery(['Attack', 'Position'])).set
+        .count;
       if (activeAttacks > 80) return;
       const fromIdx = world.getIndex(fromId);
       const nodeProps = world.componentRegistry.get('Node').props;
@@ -213,7 +220,7 @@
 
         state.regenTimer += dt;
         if (state.regenTimer > 60) {
-          const nodes = world.createQuery(['Node']);
+          const nodes = self._nodeQuery || world.createQuery(['Node']);
           const { dense, count } = nodes.set;
           const nodeProps = world.componentRegistry.get('Node').props;
           for (let i = 0; i < count; i++) {
@@ -232,7 +239,7 @@
         state.aiTimer += dt;
         const aiInterval = Math.max(70, 180 - state.wave * 12);
         if (state.aiTimer > aiInterval) {
-          const nodes = world.createQuery(['Node']);
+          const nodes = self._nodeQuery || world.createQuery(['Node']);
           const { dense, count } = nodes.set;
           const nodeProps = world.componentRegistry.get('Node').props;
           const enemyNodes = [],
@@ -252,7 +259,7 @@
         }
 
         // Attacks
-        const attacks = world.createQuery(['Attack', 'Position']);
+        const attacks = self._attackQuery || world.createQuery(['Attack', 'Position']);
         const { dense, count } = attacks.set;
         const pos = world.componentRegistry.get('Position').props;
         const att = world.componentRegistry.get('Attack').props;
@@ -288,7 +295,7 @@
     },
 
     updateUI(world, state) {
-      const nodes = world.createQuery(['Node']);
+      const nodes = this._nodeQuery || world.createQuery(['Node']);
       const { dense, count } = nodes.set;
       const nodeProps = world.componentRegistry.get('Node').props;
       let pCount = 0,
@@ -318,7 +325,7 @@
       ctx.fillStyle = '#050510';
       ctx.fillRect(0, 0, w, h);
 
-      const nodes = world.createQuery(['Node', 'Position']);
+      const nodes = this._nodePositionQuery || world.createQuery(['Node', 'Position']);
       const { dense, count } = nodes.set;
       const pos = world.componentRegistry.get('Position').props;
 
@@ -357,7 +364,7 @@
       }
 
       // Attacks
-      const attacks = world.createQuery(['Attack', 'Position']);
+      const attacks = this._attackQuery || world.createQuery(['Attack', 'Position']);
       const aDense = attacks.set.dense;
       for (let i = 0; i < attacks.set.count; i++) {
         const idx = aDense[i];
@@ -368,7 +375,7 @@
     drawConquestScene(ctx, w, h, world, state) {
       this.drawNetworkBackdrop(ctx, w, h, state);
 
-      const nodes = world.createQuery(['Node', 'Position']);
+      const nodes = this._nodePositionQuery || world.createQuery(['Node', 'Position']);
       const { dense, count } = nodes.set;
       const pos = world.componentRegistry.get('Position').props;
       const nodeProps = world.componentRegistry.get('Node').props;
@@ -483,7 +490,7 @@
     },
 
     drawAttackPackets(ctx, world) {
-      const attacks = world.createQuery(['Attack', 'Position']);
+      const attacks = this._attackQuery || world.createQuery(['Attack', 'Position']);
       const { dense, count } = attacks.set;
       const pos = world.componentRegistry.get('Position').props;
       const att = world.componentRegistry.get('Attack').props;
@@ -528,6 +535,9 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._nodeQuery = null;
+      this._nodePositionQuery = null;
+      this._attackQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },

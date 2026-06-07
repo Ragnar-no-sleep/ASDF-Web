@@ -13,6 +13,10 @@
     gameId: 'spaceshooter',
     instance: null,
     _cleanupInput: null,
+    _enemyQuery: null,
+    _bulletQuery: null,
+    _lifespanQuery: null,
+    _renderQuery: null,
 
     enemySpecs: [
       { icon: '🛸', hp: 1, speed: 2, points: 10, size: 24 },
@@ -48,6 +52,9 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+      this._enemyQuery = world.createQuery(['Enemy', 'Position']);
+      this._bulletQuery = world.createQuery(['Bullet', 'Position']);
+      this._lifespanQuery = world.createQuery(['Lifespan']);
 
       // Components
       world.registerComponent('Player', { lastShot: 'f32', fireRate: 'f32' });
@@ -173,7 +180,8 @@
 
         // Spawning
         state.spawnTimer += dt;
-        const enemies = world.createQuery(['Enemy', 'Position']);
+        const enemies =
+          self._enemyQuery || (self._enemyQuery = world.createQuery(['Enemy', 'Position']));
         if (
           enemies.set.count < state.maxEnemies &&
           state.spawnTimer > Math.max(14, 76 - state.wave * 4)
@@ -183,7 +191,8 @@
         }
 
         // Collisions
-        const bullets = world.createQuery(['Bullet', 'Position']);
+        const bullets =
+          self._bulletQuery || (self._bulletQuery = world.createQuery(['Bullet', 'Position']));
         const bPos = world.componentRegistry.get('Position').props;
         const ePos = world.componentRegistry.get('Position').props;
         const eProps = world.componentRegistry.get('Enemy').props;
@@ -233,7 +242,8 @@
         }
 
         // Cleanup Lifespans
-        const lsQuery = world.createQuery(['Lifespan']);
+        const lsQuery =
+          self._lifespanQuery || (self._lifespanQuery = world.createQuery(['Lifespan']));
         const { dense: lDense, count: lCount } = lsQuery.set;
         const lsProps = world.componentRegistry.get('Lifespan').props;
         for (let i = lCount - 1; i >= 0; i--) {
@@ -342,7 +352,8 @@
       const enemyBit = enemyComp ? enemyComp.bit : 0;
       const bulletBit = bulletComp ? bulletComp.bit : 0;
       const lifeBit = lifespanComp ? lifespanComp.bit : 0;
-      const query = world.createQuery(['Position', 'Renderable']);
+      const query =
+        this._renderQuery || (this._renderQuery = world.createQuery(['Position', 'Renderable']));
       const { dense, count } = query.set;
 
       for (let i = 0; i < count; i++) {
@@ -462,6 +473,10 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._enemyQuery = null;
+      this._bulletQuery = null;
+      this._lifespanQuery = null;
+      this._renderQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },
