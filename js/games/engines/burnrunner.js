@@ -132,6 +132,7 @@
       const canvasW = this.instance.canvas.width;
       const groundY = canvasH - Math.max(56, Math.round(canvasH * 0.12));
       const coyoteFrames = CONFIG.physics.coyoteFrames;
+      const playerX = (canvasW * CONFIG.playerBaseX) / 1000 + 80;
 
       world.setResource('GameState', {
         distance: 0,
@@ -139,6 +140,7 @@
         tokens: 0,
         speed: CONFIG.baseSpeed,
         groundY,
+        playerX,
         playerId: -1,
         jumpBuffer: 0,
         jumpBufferFrames: CONFIG.physics.jumpBufferFrames,
@@ -169,8 +171,7 @@
       world.addComponent(player, 'Player');
 
       const pIdx = world.getIndex(player);
-      world.componentRegistry.get('Position').props.x[pIdx] =
-        (canvasW * CONFIG.playerBaseX) / 1000 + 80;
+      world.componentRegistry.get('Position').props.x[pIdx] = playerX;
       world.componentRegistry.get('Position').props.y[pIdx] =
         groundY - CONFIG.playerSize - CONFIG.playerLift;
       world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0;
@@ -288,10 +289,7 @@
           CONFIG.speedCap,
           state.speed * (1 + CONFIG.physics.acceleration * dt)
         );
-        pos.x[pIdx] = Math.max(
-          70,
-          Math.min(self.instance.canvas.width * 0.46, px + vel.vx[pIdx] * 0.0)
-        );
+        pos.x[pIdx] = state.playerX;
 
         const playerBottom = state.groundY;
         const pW = coll.width[pIdx];
