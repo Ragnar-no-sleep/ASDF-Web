@@ -17,9 +17,9 @@
     blockJitter: 6,
 
     speedBase: 6.8,
-    speedStep: 0.72,
-    speedCurve: 0.24,
-    maxSpeed: 28,
+    speedStep: 0.9,
+    speedCurve: 0.26,
+    maxSpeed: 34,
 
     sweepBandMultiplier: 1.08,
     sweepMin: 52,
@@ -37,8 +37,8 @@
     anchorRows: 7,
     cameraClamp: 0.54,
     messageTtlMax: 16,
-    dropWindowBaseMs: 820,
-    dropWindowDecay: 14,
+    dropWindowBaseMs: 540,
+    dropWindowDecay: 22,
     dropWindowMinMs: 300,
     colors: ['#0ea5e9', '#22c55e', '#facc15', '#f97316', '#a78bfa'],
   };

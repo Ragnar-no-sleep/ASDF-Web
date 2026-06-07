@@ -98,6 +98,8 @@
     gameId: 'burnrunner',
     instance: null,
     _cleanupInput: null,
+    _collisionQuery: null,
+    _entityQuery: null,
     _layout: null,
 
     start(gameId) {
@@ -183,6 +185,8 @@
       world.getResource('GameState').playerId = player;
 
       this._layout = { floorY: groundY };
+      this._entityQuery = world.createQuery(['Position', 'Collider', 'Renderable']);
+      this._collisionQuery = world.createQuery(['Position', 'Obstacle', 'Collider']);
       this.instance.onUpdate = dt => {
         const state = world.getResource('GameState');
         if (kernel.services?.hud) {
@@ -296,8 +300,8 @@
         const pH = coll.height[pIdx];
 
         state.spawnTimer += dt;
-        const activeHazards = world.createQuery(['Position', 'Obstacle', 'Collider']).set.count;
-        const activeAll = world.createQuery(['Position', 'Renderable']).set.count - 1;
+        const activeHazards = self._collisionQuery ? self._collisionQuery.set.count : 0;
+        const activeAll = self._entityQuery ? self._entityQuery.set.count - 1 : 0;
         const maxHazards = Math.min(
           CONFIG.spawn.maxHazards,
           CONFIG.spawn.baseMaxHazards + diff.level * 1.5
@@ -320,8 +324,9 @@
           state.spawnTimer = 0;
         }
 
-        const query = world.createQuery(['Position', 'Collider', 'Renderable']);
-        const { dense, count } = query.set;
+        const { dense, count } = self._entityQuery
+          ? self._entityQuery.set
+          : { dense: [], count: 0 };
         const obsComp = world.componentRegistry.get('Obstacle');
         const colComp = world.componentRegistry.get('Collectible');
         const obsBit = obsComp ? obsComp.bit : 0;
@@ -459,8 +464,7 @@
       this.drawParallaxCity(ctx, w, h, state);
       this.drawGround(ctx, w, h, state);
 
-      const query = world.createQuery(['Position', 'Renderable']);
-      const { dense, count } = query.set;
+      const { dense, count } = this._entityQuery ? this._entityQuery.set : { dense: [], count: 0 };
       const obstacleComp = world.componentRegistry.get('Obstacle');
       const collectibleComp = world.componentRegistry.get('Collectible');
       const obsBit = obstacleComp ? obstacleComp.bit : 0;
@@ -685,6 +689,8 @@
         this._cleanupInput();
         this._cleanupInput = null;
       }
+      this._collisionQuery = null;
+      this._entityQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
       this._layout = null;

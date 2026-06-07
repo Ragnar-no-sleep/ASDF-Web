@@ -91,6 +91,8 @@
     _cleanupInput: null,
     _cleanupResize: null,
     _resizeTimer: null,
+    _enemyQuery: null,
+    _lifespanQuery: null,
     layout: null,
 
     enemyTypes: [
@@ -162,6 +164,8 @@
       this.setupModeSelection();
       this.setupInput();
       this.updateLayout();
+      this._enemyQuery = world.createQuery(['Position', 'Enemy', 'ThreatMeta']);
+      this._lifespanQuery = world.createQuery(['Lifespan', 'Enemy', 'Position']);
 
       this.instance.onUpdate = () => {
         const state = world.getResource('GameState');
@@ -288,7 +292,7 @@
         state.wave = diff.wave;
         state.level = diff.level;
         state.spawnTimer += dt;
-        state.threatCount = world.createQuery(['Position', 'Enemy']).set.count;
+        state.threatCount = self._enemyQuery ? self._enemyQuery.set.count : 0;
 
         const maxEnemies = Math.min(44, CONFIG.baseMaxThreats + state.wave * 2);
         if (state.threatCount < maxEnemies && state.spawnTimer >= diff.spawnInterval) {
@@ -299,8 +303,7 @@
           state.spawnTimer = Math.max(0, state.spawnTimer - diff.spawnInterval);
         }
 
-        const query = world.createQuery(['Position', 'Enemy']);
-        const { dense, count } = query.set;
+        const { dense, count } = self._enemyQuery ? self._enemyQuery.set : { dense: [], count: 0 };
         const pos = world.componentRegistry.get('Position').props;
         const meta = world.componentRegistry.get('ThreatMeta').props;
         const canvasH = self.instance.canvas.height;
@@ -314,8 +317,9 @@
           }
         }
 
-        const lsQuery = world.createQuery(['Lifespan']);
-        const { dense: lsDense, count: lsCount } = lsQuery.set;
+        const { dense: lsDense, count: lsCount } = self._lifespanQuery
+          ? self._lifespanQuery.set
+          : { dense: [], count: 0 };
         const lifeProps = world.componentRegistry.get('Lifespan').props;
         const enemyComp = world.componentRegistry.get('Enemy');
         const enemyBit = enemyComp ? enemyComp.bit : 0;
@@ -415,8 +419,7 @@
       const state = world.getResource('GameState');
       if (state.phase !== 'playing') return;
 
-      const enemies = world.createQuery(['Position', 'Enemy']);
-      const { dense, count } = enemies.set;
+      const { dense, count } = this._enemyQuery ? this._enemyQuery.set : { dense: [], count: 0 };
       const pos = world.componentRegistry.get('Position').props;
       const rend = world.componentRegistry.get('Renderable').props;
       const en = world.componentRegistry.get('Enemy').props;
@@ -549,8 +552,9 @@
       if (state.gameMode !== 'pop') return;
 
       const world = this.instance.world;
-      const query = world.createQuery(['Position', 'Lifespan', 'Enemy']);
-      const { dense, count } = query.set;
+      const { dense, count } = this._lifespanQuery
+        ? this._lifespanQuery.set
+        : { dense: [], count: 0 };
       const pos = world.componentRegistry.get('Position').props;
       const life = world.componentRegistry.get('Lifespan').props;
       const ctx = this.instance.ctx;
@@ -573,8 +577,7 @@
 
     drawThreats(ctx) {
       const world = this.instance.world;
-      const query = world.createQuery(['Position', 'Enemy', 'ThreatMeta']);
-      const { dense, count } = query.set;
+      const { dense, count } = this._enemyQuery ? this._enemyQuery.set : { dense: [], count: 0 };
       const pos = world.componentRegistry.get('Position').props;
       const rend = world.componentRegistry.get('Renderable').props;
       const enemy = world.componentRegistry.get('Enemy').props;
@@ -778,6 +781,8 @@
         clearTimeout(this._resizeTimer);
         this._resizeTimer = null;
       }
+      this._enemyQuery = null;
+      this._lifespanQuery = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
     },

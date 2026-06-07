@@ -13,8 +13,8 @@
     roadWidthRatio: 0.98,
     roadMinWidth: 520,
     roadMaxWidth: 2700,
-    playerYRatio: 0.84,
-    playerWidth: 74,
+    playerYRatio: 0.78,
+    playerWidth: 80,
     playerHeight: 38,
     obstacleWidth: 64,
     obstacleHeight: 70,
@@ -25,8 +25,8 @@
     speedStart: 3.6,
     speedCap: 18.4,
     acceleration: 0.02,
-    worldSpeedBase: 2.28,
-    worldSpeedScale: 0.88,
+    worldSpeedBase: 2.18,
+    worldSpeedScale: 0.75,
 
     spawnBaseMs: 66,
     spawnMinMs: 16,
@@ -43,6 +43,7 @@
     roadNarrowRatio: 0.16,
     nearRoadBoost: 1.16,
     trackSpanMultiplier: 3.2,
+    perspectivePower: 1.04,
 
     distancePerLevel: 340,
     collisionPenalty: 80,
@@ -65,6 +66,7 @@
     _cleanupInput: null,
     _resizeTimer: null,
     trafficQuery: null,
+    _layout: null,
 
     start(gameId) {
       this.stop();
@@ -125,8 +127,9 @@
         speed: document.getElementById('dd-speed'),
       };
       this.setupInput();
+      this._layout = this.getRoadLayout();
 
-      const layout = this.getRoadLayout();
+      const layout = this._layout || this.getRoadLayout();
       const player = world.createEntity();
       world.addComponent(player, 'Position');
       world.addComponent(player, 'Velocity');
@@ -169,6 +172,7 @@
         state.trackSpan = Math.round(
           spawnLead * CONFIG.trackSpanMultiplier + c.height * CONFIG.playerYRatio
         );
+        this._layout = this.getRoadLayout();
       };
       const resizeHandler = () => {
         if (this._resizeTimer) window.clearTimeout(this._resizeTimer);
@@ -279,7 +283,7 @@
     },
 
     getRoadWidth(layout, depth) {
-      const eased = Math.pow(depth, 0.78) * CONFIG.nearRoadBoost;
+      const eased = Math.pow(depth, CONFIG.perspectivePower) * CONFIG.nearRoadBoost;
       return clamp(
         layout.width * CONFIG.roadNarrowRatio,
         lerp(layout.width * CONFIG.roadNarrowRatio, layout.width, eased),
@@ -297,7 +301,9 @@
     },
 
     projectY(depth, layout) {
-      return layout.horizonY + Math.pow(depth, 0.78) * (layout.h - layout.horizonY);
+      return (
+        layout.horizonY + Math.pow(depth, CONFIG.perspectivePower) * (layout.h - layout.horizonY)
+      );
     },
 
     projectEntity(worldX, worldY, layout, state) {
@@ -328,7 +334,7 @@
         const pos = world.componentRegistry.get('Position').props;
         const vel = world.componentRegistry.get('Velocity').props;
         const collider = world.componentRegistry.get('Collider').props;
-        const layout = self.getRoadLayout();
+        const layout = self._layout || self.getRoadLayout();
 
         const difficulty = self.getDifficulty(state);
         state.level = difficulty.level;
@@ -422,7 +428,7 @@
 
     spawnTraffic(world) {
       const state = world.getResource('GameState');
-      const layout = this.getRoadLayout();
+      const layout = this._layout || this.getRoadLayout();
       const difficulty = this.getDifficulty(state);
       const lane = Math.floor(Math.random() * CONFIG.lanes);
       const jitter = Math.min(0.42, layout.laneWidth * 0.18) * (Math.random() - 0.5);
@@ -475,7 +481,7 @@
       const w = this.instance.canvas.width;
       const h = this.instance.canvas.height;
       const state = this.instance.world.getResource('GameState');
-      const layout = this.getRoadLayout();
+      const layout = this._layout || this.getRoadLayout();
 
       this.drawWorld(ctx, w, h, state, layout);
       this.drawEntities(ctx, state, layout);
@@ -919,6 +925,7 @@
       if (this.instance) this.instance.stop();
       this.instance = null;
       this.canvas = null;
+      this._layout = null;
       this.trafficQuery = null;
     },
   };
