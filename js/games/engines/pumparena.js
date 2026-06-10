@@ -17,136 +17,137 @@
     gameId: 'pumparena',
     instance: null,
     dom: null,
+    _mainClickHandler: null,
 
     projectTypes: {
       defi: {
-        name: 'DeFi Builders',
-        badge: 'DF',
-        color: '#38bdf8',
-        desc: 'Liquidity, audits, and market trust.',
+        name: 'ASDF Drop',
+        badge: 'A',
+        color: '#ffcc00',
+        desc: 'Simple launch moves with clear timing.',
       },
       gaming: {
-        name: 'GameFi Creators',
-        badge: 'GF',
-        color: '#f472b6',
-        desc: 'Fast loops, fair rewards, player retention.',
+        name: 'Mini Game',
+        badge: 'S',
+        color: '#ff6b35',
+        desc: 'Make the game room feel alive.',
       },
       community: {
-        name: 'ASDF Army',
-        badge: 'CA',
-        color: '#22c55e',
-        desc: 'Momentum, governance, and public signal.',
+        name: 'ASDF Crew',
+        badge: 'D',
+        color: '#ff2d95',
+        desc: 'Keep the crowd active and focused.',
       },
       infra: {
-        name: 'Technical Layer',
-        badge: 'TL',
-        color: '#fbbf24',
-        desc: 'Reliability, scale, and clean integrations.',
+        name: 'Launch Booth',
+        badge: 'F',
+        color: '#fff2b3',
+        desc: 'Polish the booth before the rush.',
       },
     },
 
     scenarios: {
       defi: [
         {
-          title: 'Security Audit',
-          narrative: 'A vault bug is found two hours before the public campaign.',
+          title: 'Countdown Rush',
+          narrative: 'The ASDF sun is up and the drop starts soon.',
           choices: [
-            { text: 'Publish the finding and fund a fast patch', gain: 24, cost: 12 },
-            { text: 'Pause deposits and run a full external audit', gain: 31, cost: 18 },
+            { text: 'Add a clear countdown', gain: 24, cost: 12 },
+            { text: 'Delay a little and make the screen cleaner', gain: 31, cost: 18 },
           ],
         },
         {
-          title: 'Liquidity Crisis',
-          narrative: 'TVL is dropping while competitors start a noisy incentive war.',
+          title: 'Crowded Feed',
+          narrative: 'Too many posts are flying around the menu.',
           choices: [
-            { text: 'Launch a capped yield sprint', gain: 19, cost: 10 },
-            { text: 'Secure partner liquidity with transparent terms', gain: 28, cost: 14 },
+            { text: 'Pin the main ASDF card', gain: 19, cost: 10 },
+            { text: 'Show one strong visual and one short line', gain: 28, cost: 14 },
           ],
         },
         {
-          title: 'Treasury Vote',
-          narrative: 'The DAO asks how aggressively to spend the next growth tranche.',
+          title: 'Prize Table',
+          narrative: 'Players want a reason to come back after one run.',
           choices: [
-            { text: 'Back builders with milestone grants', gain: 26, cost: 12 },
-            { text: 'Buy back supply after a public report', gain: 18, cost: 8 },
+            { text: 'Add a simple daily score target', gain: 26, cost: 12 },
+            { text: 'Make the reward text shorter', gain: 18, cost: 8 },
           ],
         },
       ],
       gaming: [
         {
-          title: 'Alpha Test',
-          narrative: 'The first players love the loop but report input lag in combat.',
+          title: 'First Playtest',
+          narrative: 'The loop works, but the first click feels slow.',
           choices: [
-            { text: 'Ship a performance patch before new content', gain: 30, cost: 14 },
-            { text: 'Add ranked rewards and keep collecting telemetry', gain: 18, cost: 9 },
+            { text: 'Speed up the input feel', gain: 30, cost: 14 },
+            { text: 'Keep the loop short and easy', gain: 18, cost: 9 },
           ],
         },
         {
-          title: 'Loot Economy',
-          narrative: 'Creators want rare drops, but players are watching fairness closely.',
+          title: 'Bonus Round',
+          narrative: 'The room needs a simple surprise between levels.',
           choices: [
-            { text: 'Publish transparent odds and crafting paths', gain: 27, cost: 11 },
-            { text: 'Run a limited cosmetic-only event', gain: 21, cost: 8 },
+            { text: 'Add a golden ASDF token', gain: 27, cost: 11 },
+            { text: 'Add a quick color burst', gain: 21, cost: 8 },
           ],
         },
         {
-          title: 'Server Spike',
-          narrative: 'A tournament doubles traffic and matchmaking queues start slipping.',
+          title: 'Busy Lobby',
+          narrative: 'More players join and the screen starts to feel packed.',
           choices: [
-            { text: 'Scale servers and delay the finals thirty minutes', gain: 25, cost: 13 },
-            { text: 'Move top matches to dedicated lobbies', gain: 22, cost: 10 },
+            { text: 'Reduce extra decoration', gain: 25, cost: 13 },
+            { text: 'Make enemies easier to read', gain: 22, cost: 10 },
           ],
         },
       ],
       community: [
         {
-          title: 'Signal Storm',
-          narrative: 'A rumor is spreading faster than the official announcement.',
+          title: 'Chat Burst',
+          narrative: 'The ASDF crew is active and needs one clear call.',
           choices: [
-            { text: 'Open a live community room with receipts', gain: 29, cost: 12 },
-            { text: 'Drop a concise thread and answer top holders', gain: 22, cost: 8 },
+            { text: 'Start a short play challenge', gain: 29, cost: 12 },
+            { text: 'Post the best score target', gain: 22, cost: 8 },
           ],
         },
         {
-          title: 'Builder Showcase',
-          narrative: 'Three small teams need attention, but the main feed is crowded.',
+          title: 'Winner Moment',
+          narrative: 'A player hits a clean run and the room reacts.',
           choices: [
-            { text: 'Host a curated demo night', gain: 27, cost: 11 },
-            { text: 'Boost one launch per day with metrics', gain: 20, cost: 8 },
+            { text: 'Show a simple win banner', gain: 27, cost: 11 },
+            { text: 'Keep the score card compact', gain: 20, cost: 8 },
           ],
         },
         {
-          title: 'Governance Heat',
-          narrative: 'The vote is close and both sides are pushing hard in public.',
+          title: 'Theme Vote',
+          narrative: 'Players ask for the next ASDF game look.',
           choices: [
-            { text: 'Publish neutral impact analysis', gain: 26, cost: 10 },
-            { text: 'Invite delegates to a moderated debate', gain: 30, cost: 15 },
+            { text: 'Pick sunset colors', gain: 26, cost: 10 },
+            { text: 'Let the crew choose the next icon set', gain: 30, cost: 15 },
           ],
         },
       ],
       infra: [
         {
-          title: 'RPC Bottleneck',
-          narrative: 'A partner integration is timing out during peak wallet activity.',
+          title: 'Booth Setup',
+          narrative: 'The launch booth needs to be readable on mobile.',
           choices: [
-            { text: 'Add regional fallback routing', gain: 28, cost: 13 },
-            { text: 'Prioritize critical endpoints and cache reads', gain: 23, cost: 9 },
+            { text: 'Make buttons larger', gain: 28, cost: 13 },
+            { text: 'Reduce long labels', gain: 23, cost: 9 },
           ],
         },
         {
-          title: 'SDK Release',
-          narrative: 'The new SDK is powerful, but documentation is still thin.',
+          title: 'Clean Menu',
+          narrative: 'The booth has too many small panels.',
           choices: [
-            { text: 'Ship with examples and starter templates', gain: 29, cost: 12 },
-            { text: 'Run a closed beta with three teams', gain: 24, cost: 10 },
+            { text: 'Group the cards into two clear columns', gain: 29, cost: 12 },
+            { text: 'Keep one main action per panel', gain: 24, cost: 10 },
           ],
         },
         {
-          title: 'Incident Review',
-          narrative: 'A degraded service window ended, and builders want a timeline.',
+          title: 'Final Polish',
+          narrative: 'The game works, now it needs one last ASDF pass.',
           choices: [
-            { text: 'Publish a full postmortem and fixes', gain: 31, cost: 14 },
-            { text: 'Credit affected partners and add status alerts', gain: 25, cost: 11 },
+            { text: 'Unify the colors', gain: 31, cost: 14 },
+            { text: 'Remove noisy effects', gain: 25, cost: 11 },
           ],
         },
       ],
@@ -168,6 +169,7 @@
 
       this.resetState();
       this.cacheDom();
+      this.setupMainActions();
       this.renderSelect();
 
       this.instance.onRender = () => {};
@@ -226,11 +228,33 @@
       };
     },
 
+    setupMainActions() {
+      if (!this.dom?.main) return;
+      this._mainClickHandler = event => {
+        const category = event.target.closest('[data-pa-category]');
+        if (category) {
+          this.selectCategory(category.dataset.paCategory);
+          return;
+        }
+
+        const choice = event.target.closest('[data-pa-choice]');
+        if (choice) {
+          this.makeChoice(Number(choice.dataset.paChoice));
+          return;
+        }
+
+        if (event.target.closest('[data-pa-restart]')) {
+          this.restart();
+        }
+      };
+      this.dom.main.addEventListener('click', this._mainClickHandler);
+    },
+
     renderSelect() {
       const cards = Object.entries(this.projectTypes)
         .map(
           ([id, type]) => `
-            <button class="pa-card" style="--pa-accent:${type.color}" onclick="ASDF.PumpArena.selectCategory('${id}')">
+            <button class="pa-card pa-card--${id}" data-pa-category="${id}">
               <span class="pa-card-icon">${type.badge}</span>
               <span class="pa-card-title">${type.name}</span>
               <span class="pa-card-desc">${type.desc}</span>
@@ -257,13 +281,14 @@
 
     renderScenario() {
       const state = this.getState();
+      const typeId = state.selectedType || 'defi';
       const type = this.projectTypes[state.selectedType] || this.projectTypes.defi;
       const scenario = this.getScenario(state);
 
       const choices = scenario.choices
         .map(
           (choice, idx) => `
-            <button class="pa-choice" onclick="ASDF.PumpArena.makeChoice(${idx})">
+            <button class="pa-choice" data-pa-choice="${idx}">
               <span class="pa-choice-primary">${choice.text}</span>
               <span>+${choice.gain} rep / -${choice.cost} influence</span>
             </button>
@@ -272,7 +297,7 @@
         .join('');
 
       this.dom.main.innerHTML = `
-        <section class="pa-panel pa-scenario" style="--pa-accent:${type.color}">
+        <section class="pa-panel pa-scenario pa-scenario--${typeId}">
           <span class="pa-eyebrow">${type.name}</span>
           <h2 class="pa-title">${scenario.title}</h2>
           <p class="pa-copy">${scenario.narrative}</p>
@@ -335,7 +360,7 @@
           <h2 class="pa-title">${rating}</h2>
           <div class="pa-final-score">${state.reputation}</div>
           <p class="pa-copy">Final reputation with ${state.influence} influence remaining.</p>
-          <button class="pa-restart" onclick="ASDF.PumpArena.restart()">Play again</button>
+          <button class="pa-restart" data-pa-restart>Play again</button>
         </section>
       `;
 
@@ -350,6 +375,10 @@
     },
 
     stop() {
+      if (this.dom?.main && this._mainClickHandler) {
+        this.dom.main.removeEventListener('click', this._mainClickHandler);
+      }
+      this._mainClickHandler = null;
       if (this.instance) this.instance.stop();
       this.instance = null;
       this.dom = null;

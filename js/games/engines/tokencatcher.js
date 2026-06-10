@@ -46,7 +46,7 @@
 
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 1500,
-        debug: true,
+        debug: false,
       });
 
       // 11/10: Resize early for correct lane calculation
@@ -54,8 +54,13 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
+
       this._positionColliderQuery = world.createQuery(['Position', 'Collider']);
-      this._lifespanQuery = world.createQuery(['Lifespan']);
       this._renderQuery = world.createQuery(['Position', 'Renderable']);
 
       // Components
@@ -65,6 +70,12 @@
       world.registerComponent('PowerUp', { type: 'u8' });
       world.registerComponent('Projectile', { active: 'u8' });
       world.registerComponent('Lifespan', { remaining: 'f32' });
+
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
+
+      this._lifespanQuery = world.createQuery(['Lifespan']);
 
       // State Resource
       const laneH = 50,
@@ -101,6 +112,8 @@
       world.addComponent(drone, 'Renderable');
       world.addComponent(drone, 'Collider');
       world.addComponent(drone, 'Drone');
+      world.addComponent(drone, 'Rotation');
+      world.addComponent(drone, 'Scale');
 
       const dIdx = world.getIndex(drone);
       const lanes = world.getResource('GameState').lanes;
@@ -126,9 +139,25 @@
         '💀',
       ];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+
+      this.instance.onUpdate = (dt, dtMs) => {
+        const state = world.getResource('GameState');
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+        return shouldFreeze;
+      };
+
+      this.instance.onRender = alpha => {
+        if (this.juice) this.juice.renderPre();
+        this.draw(alpha, defaultRender);
+        if (this.juice) this.juice.renderPost();
+      };
 
       // Systems
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createLogicSystem());
       world.addSystem(this.createCollisionSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
@@ -142,7 +171,7 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="tc-container tc-container--neon">
+        <div class="tc-container">
           <canvas id="tc-canvas" class="game-canvas"></canvas>
           <div class="game-hud-top-left">
             <div class="tc-stat">SCORE: <span id="tc-score">0</span></div>
@@ -266,6 +295,9 @@
 
         // Visual Juice decay
         state.visualYOffset *= Math.pow(0.8, dt);
+        for (let i = 0; i < state.activePowerUps.length; i += 1) {
+          state.activePowerUps[i] = Math.max(0, state.activePowerUps[i] - dt);
+        }
 
         // Spawning
         state.spawnTimer += dt;
@@ -331,17 +363,27 @@
             if (tokenBit && (entityMask & tokenBit) === tokenBit) {
               const type = tokenComp.props.type[idx];
               if (type === 0) {
-                state.score += 10;
+                state.score += state.activePowerUps[2] > 0 ? 20 : 10;
               } else if (type === 1) {
-                state.score = Math.max(0, state.score - 50);
+                state.score = Math.max(0, state.score - (state.activePowerUps[3] > 0 ? 10 : 50));
               } else if (type === 2) {
-                state.gameOver = true;
-                if (typeof endGame === 'function') endGame(self.gameId, state.score);
+                if (state.activePowerUps[3] > 0) {
+                  state.activePowerUps[3] = 0;
+                  state.score += 5;
+                } else {
+                  state.gameOver = true;
+                  if (typeof endGame === 'function') endGame(self.gameId, state.score);
+                }
               }
               world.destroyEntity(world.getEntityId(idx));
             } else if (enemyBit && (entityMask & enemyBit) === enemyBit) {
-              state.gameOver = true;
-              if (typeof endGame === 'function') endGame(self.gameId, state.score);
+              if (state.activePowerUps[3] > 0) {
+                state.activePowerUps[3] = 0;
+                world.destroyEntity(world.getEntityId(idx));
+              } else {
+                state.gameOver = true;
+                if (typeof endGame === 'function') endGame(self.gameId, state.score);
+              }
             } else if (powerBit && (entityMask & powerBit) === powerBit) {
               const type = powerComp.props.type[idx];
               state.activePowerUps[type] = self.powerUps[type]?.duration || 180;
@@ -372,7 +414,8 @@
 
       pos.x[idx] = 30 + Math.random() * (cw - 60);
       pos.y[idx] = -30;
-      vel.vy[idx] = Math.min(9, 2 + state.difficulty * 0.08);
+      vel.vy[idx] =
+        Math.min(9, 2 + state.difficulty * 0.08) * (state.activePowerUps[1] > 0 ? 0.72 : 1);
 
       const roll = Math.random();
       if (roll < 0.15) {
@@ -382,15 +425,24 @@
         rend.size[idx] = 35;
         col.width[idx] = 35;
         col.height[idx] = 35;
+      } else if (roll < 0.24) {
+        world.addComponent(e, 'PowerUp');
+        const typeIdx = Math.floor(Math.random() * this.powerUps.length);
+        const power = world.componentRegistry.get('PowerUp').props;
+        power.type[idx] = typeIdx;
+        rend.iconIndex[idx] = 3 + typeIdx;
+        rend.size[idx] = 32;
+        col.width[idx] = 32;
+        col.height[idx] = 32;
       } else {
         world.addComponent(e, 'Token');
         const tProps = world.componentRegistry.get('Token').props;
-        if (roll < 0.3) {
+        if (roll < 0.38) {
           tProps.type[idx] = 2;
           rend.iconIndex[idx] =
             7 + this.enemyTypes.length + this.goodTokens.length + this.scamTokens.length;
         } // Skull
-        else if (roll < 0.5) {
+        else if (roll < 0.58) {
           tProps.type[idx] = 1;
           rend.iconIndex[idx] = 7 + this.enemyTypes.length + this.goodTokens.length;
         } // Scam
@@ -469,44 +521,24 @@
     drawArenaBackdrop(ctx, state) {
       const w = this.instance.canvas.width;
       const h = this.instance.canvas.height;
-      const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, '#08111f');
-      bg.addColorStop(0.55, '#10142d');
-      bg.addColorStop(1, '#12071f');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.12)';
-      ctx.lineWidth = 1;
-      const gridOffset = (state.frameCount * 2) % 42;
-      ctx.beginPath();
-      for (let x = -gridOffset; x < w; x += 42) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + 64, h);
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          seed: state.score || 0,
+        });
+      } else {
+        ctx.fillStyle = '#12071f';
+        ctx.fillRect(0, 0, w, h);
       }
-      for (let y = -gridOffset; y < h; y += 42) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-      }
-      ctx.stroke();
 
       state.lanes.forEach((y, lane) => {
-        ctx.fillStyle = lane === 1 ? 'rgba(34, 211, 238, 0.1)' : 'rgba(148, 163, 184, 0.055)';
-        this.roundRect(ctx, 18, y - 24, w - 36, 48, 12);
+        ctx.fillStyle = lane === 1 ? 'rgba(255, 204, 0, 0.1)' : 'rgba(255, 244, 204, 0.05)';
+        this.roundRect(ctx, 18, y - 18, w - 36, 36, 8);
         ctx.fill();
-
-        ctx.strokeStyle = 'rgba(248, 250, 252, 0.18)';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([18, 16]);
-        ctx.lineDashOffset = -state.frameCount * 2.5;
-        ctx.beginPath();
-        ctx.moveTo(26, y);
-        ctx.lineTo(w - 26, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
       });
 
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.08)';
+      ctx.fillStyle = 'rgba(255, 204, 0, 0.18)';
       ctx.fillRect(0, 0, w, 4);
       ctx.fillRect(0, h - 4, w, 4);
     },
@@ -534,7 +566,7 @@
         const size = rend.size[idx] || 30;
 
         if (world.getEntityId(idx) === state.droneId) {
-          this.drawDrone(ctx, tx, ty + state.visualYOffset, size);
+          this.drawDrone(ctx, tx, ty + state.visualYOffset, size, state);
           continue;
         }
 
@@ -551,131 +583,158 @@
       }
     },
 
-    drawDrone(ctx, x, y, size) {
+    drawDrone(ctx, x, y, size, state = null) {
       ctx.save();
       ctx.translate(x, y);
-      const pulse = 1 + Math.sin(performance.now() / 120) * 0.03;
-      ctx.scale(pulse, pulse);
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.22)';
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
       ctx.beginPath();
-      ctx.ellipse(0, 8, size * 0.7, size * 0.25, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, size * 0.24, size * 0.34, size * 0.09, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      const body = ctx.createLinearGradient(-size / 2, 0, size / 2, 0);
-      body.addColorStop(0, '#312e81');
-      body.addColorStop(0.45, '#22d3ee');
-      body.addColorStop(1, '#7c3aed');
-      ctx.fillStyle = body;
-      this.roundRect(ctx, -size * 0.42, -size * 0.22, size * 0.84, size * 0.44, 14);
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -size * 0.32, -size * 0.08, size * 0.64, size * 0.26, 9);
       ctx.fill();
-
-      ctx.fillStyle = '#020617';
-      this.roundRect(ctx, -size * 0.18, -size * 0.11, size * 0.36, size * 0.22, 8);
+      ctx.fillStyle = '#ff6b35';
+      this.roundRect(ctx, -size * 0.24, -size * 0.2, size * 0.48, size * 0.34, 10);
       ctx.fill();
-
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 3;
+      ctx.fillStyle = '#fff7ed';
       ctx.beginPath();
-      ctx.moveTo(-size * 0.55, -size * 0.08);
-      ctx.lineTo(-size * 0.34, 0);
-      ctx.moveTo(size * 0.55, -size * 0.08);
-      ctx.lineTo(size * 0.34, 0);
-      ctx.stroke();
+      ctx.ellipse(0, -size * 0.09, size * 0.16, size * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.arc(-size * 0.24, size * 0.08, size * 0.055, 0, Math.PI * 2);
+      ctx.arc(size * 0.24, size * 0.08, size * 0.055, 0, Math.PI * 2);
+      ctx.fill();
+      if (state?.activePowerUps?.[3] > 0) {
+        ctx.strokeStyle = 'rgba(255,242,179,0.86)';
+        ctx.lineWidth = Math.max(2, size * 0.04);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.46, size * 0.34, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
     },
 
     drawToken(ctx, x, y, type, size) {
-      const colors =
-        type === 0
-          ? ['#fbbf24', '#22c55e']
-          : type === 1
-            ? ['#ef4444', '#f97316']
-            : ['#111827', '#ef4444'];
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(Math.sin((performance.now() + x * 7) / 260) * 0.18);
-      ctx.shadowColor = colors[0];
-      ctx.shadowBlur = type === 0 ? 18 : 10;
-      const grad = ctx.createRadialGradient(-size * 0.15, -size * 0.2, 2, 0, 0, size * 0.55);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.35, colors[0]);
-      grad.addColorStop(1, colors[1]);
-      ctx.fillStyle = grad;
-      this.hexPath(ctx, 0, 0, size * 0.52);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = type === 0 ? 'rgba(255,255,255,0.72)' : 'rgba(248,250,252,0.36)';
-      ctx.lineWidth = 2;
-      this.hexPath(ctx, 0, 0, size * 0.38);
-      ctx.stroke();
-      ctx.fillStyle = type === 0 ? '#052e16' : '#f8fafc';
-      ctx.font = `900 ${Math.max(11, size * 0.28)}px Orbitron, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(type === 0 ? 'ASDF' : type === 1 ? 'SCAM' : 'RUG', 0, 1);
+      ctx.rotate(Math.sin((performance.now() + x * 7) / 260) * 0.12);
+      if (type === 0) {
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff2b3';
+        ctx.lineWidth = Math.max(1.4, size * 0.07);
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.24, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#ff6b35';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (type === 1) {
+        ctx.fillStyle = '#ff6b35';
+        this.roundRect(ctx, -size * 0.35, -size * 0.35, size * 0.7, size * 0.7, 7);
+        ctx.fill();
+        ctx.strokeStyle = '#3b120b';
+        ctx.lineWidth = Math.max(2, size * 0.09);
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.2, size * 0.2);
+        ctx.lineTo(size * 0.2, -size * 0.2);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = '#3b120b';
+        this.hexPath(ctx, 0, 0, size * 0.42);
+        ctx.fill();
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(-size * 0.13, -size * 0.05, size * 0.07, 0, Math.PI * 2);
+        ctx.arc(size * 0.13, -size * 0.05, size * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = Math.max(1.5, size * 0.05);
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.16, size * 0.15);
+        ctx.lineTo(size * 0.16, size * 0.15);
+        ctx.stroke();
+      }
       ctx.restore();
     },
 
     drawEnemy(ctx, x, y, size) {
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(Math.sin((performance.now() + y * 3) / 180) * 0.12);
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+      ctx.rotate(Math.sin((performance.now() + y * 3) / 180) * 0.08);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
       ctx.beginPath();
-      ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+      ctx.ellipse(0, size * 0.24, size * 0.32, size * 0.11, 0, 0, Math.PI * 2);
       ctx.fill();
-      const grad = ctx.createLinearGradient(-size * 0.45, -size * 0.42, size * 0.45, size * 0.42);
-      grad.addColorStop(0, '#450a0a');
-      grad.addColorStop(0.5, '#dc2626');
-      grad.addColorStop(1, '#7f1d1d');
-      ctx.fillStyle = grad;
+      ctx.fillStyle = '#f43f5e';
       ctx.beginPath();
-      ctx.moveTo(0, -size * 0.55);
-      ctx.lineTo(size * 0.48, -size * 0.08);
-      ctx.lineTo(size * 0.28, size * 0.46);
-      ctx.lineTo(-size * 0.3, size * 0.44);
-      ctx.lineTo(-size * 0.5, -size * 0.06);
-      ctx.closePath();
+      ctx.arc(0, 0, size * 0.34, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#f8fafc';
-      ctx.fillRect(-size * 0.24, -size * 0.08, size * 0.15, size * 0.12);
-      ctx.fillRect(size * 0.09, -size * 0.08, size * 0.15, size * 0.12);
-      ctx.strokeStyle = '#fecaca';
-      ctx.lineWidth = 3;
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -size * 0.24, -size * 0.08, size * 0.48, size * 0.18, 6);
+      ctx.fill();
+      ctx.fillStyle = '#fff7ed';
       ctx.beginPath();
-      ctx.moveTo(-size * 0.22, size * 0.24);
-      ctx.lineTo(size * 0.22, size * 0.24);
-      ctx.stroke();
+      ctx.arc(-size * 0.11, -size * 0.005, size * 0.04, 0, Math.PI * 2);
+      ctx.arc(size * 0.11, -size * 0.005, size * 0.04, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     },
 
     drawPowerUp(ctx, x, y, type, size) {
-      const power = this.powerUps[type] || this.powerUps[0];
+      const colors = ['#ffcc00', '#ff6b35', '#ff2d95', '#fff2b3'];
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = power.color;
-      ctx.shadowColor = power.color;
-      ctx.shadowBlur = 16;
-      this.roundRect(ctx, -size * 0.45, -size * 0.45, size * 0.9, size * 0.9, 8);
+      ctx.fillStyle = colors[type] || '#ffcc00';
+      this.roundRect(ctx, -size * 0.36, -size * 0.36, size * 0.72, size * 0.72, 6);
       ctx.fill();
-      ctx.shadowBlur = 0;
       ctx.rotate(-Math.PI / 4);
-      ctx.fillStyle = '#020617';
-      ctx.font = `bold ${Math.max(10, size * 0.3)}px JetBrains Mono, monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(power.name.slice(0, 2), 0, 1);
+      ctx.strokeStyle = '#090510';
+      ctx.fillStyle = '#090510';
+      ctx.lineWidth = Math.max(2, size * 0.075);
+      if (type === 0) {
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.16, Math.PI * 0.2, Math.PI * 1.8);
+        ctx.stroke();
+        ctx.fillRect(size * 0.12, -size * 0.12, size * 0.08, size * 0.08);
+      } else if (type === 1) {
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -size * 0.13);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(size * 0.12, 0);
+        ctx.stroke();
+      } else if (type === 2) {
+        ctx.beginPath();
+        ctx.arc(-size * 0.08, 0, size * 0.09, 0, Math.PI * 2);
+        ctx.arc(size * 0.08, 0, size * 0.09, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 0.18);
+        ctx.lineTo(size * 0.17, -size * 0.07);
+        ctx.quadraticCurveTo(size * 0.12, size * 0.16, 0, size * 0.2);
+        ctx.quadraticCurveTo(-size * 0.12, size * 0.16, -size * 0.17, -size * 0.07);
+        ctx.closePath();
+        ctx.stroke();
+      }
       ctx.restore();
     },
 
     drawProjectile(ctx, x, y) {
       ctx.save();
       ctx.fillStyle = '#fbbf24';
-      ctx.shadowColor = '#fbbf24';
-      ctx.shadowBlur = 12;
       ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     },

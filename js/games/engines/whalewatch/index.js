@@ -9,22 +9,22 @@
 
 (function () {
   const SYMBOLS = [
-    { symbol: 'F', name: 'Fire' },
-    { symbol: 'D', name: 'Diamond' },
-    { symbol: 'R', name: 'Rocket' },
-    { symbol: 'L', name: 'Liquidity' },
-    { symbol: 'S', name: 'Signal' },
-    { symbol: 'G', name: 'Game' },
-    { symbol: 'T', name: 'Trophy' },
-    { symbol: 'X', name: 'Spark' },
-    { symbol: 'V', name: 'Vault' },
-    { symbol: 'C', name: 'Crown' },
-    { symbol: 'B', name: 'Bolt' },
-    { symbol: 'Q', name: 'Crystal' },
+    { symbol: 'A', name: 'ASDF A' },
+    { symbol: 'S', name: 'ASDF S' },
+    { symbol: 'D', name: 'ASDF D' },
+    { symbol: 'F', name: 'ASDF F' },
+    { symbol: '+', name: 'Boost' },
+    { symbol: '*', name: 'Sun' },
+    { symbol: '$', name: 'Token' },
+    { symbol: 'X', name: 'Trap' },
+    { symbol: '1', name: 'Stack' },
+    { symbol: '2', name: 'Route' },
+    { symbol: '3', name: 'Run' },
+    { symbol: '4', name: 'Score' },
   ];
 
-  const MEMORY_COLORS = ['#38bdf8', '#22c55e', '#fbbf24', '#f472b6'];
-  const MEMORY_LABELS = ['N', 'E', 'S', 'W'];
+  const MEMORY_COLORS = ['#ffcc00', '#ff6b35', '#ff2d95', '#fff2b3'];
+  const MEMORY_LABELS = ['A', 'S', 'D', 'F'];
 
   const WhaleWatch = {
     version: '3.0.0',
@@ -46,6 +46,14 @@
         maxEntities: 16,
         debug: false,
       });
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(
+          this.instance.canvas,
+          this.instance.canvas.getContext('2d')
+        );
+      }
 
       this.instance.world.setResource('GameState', {
         score: 0,
@@ -208,11 +216,10 @@
       this.dom.memoryButtons.innerHTML = '';
       MEMORY_COLORS.forEach((color, index) => {
         const button = document.createElement('button');
-        button.className = 'ww-mem-btn';
+        button.className = `ww-mem-btn ww-mem-btn--${index}`;
         button.type = 'button';
         button.textContent = MEMORY_LABELS[index];
-        button.style.setProperty('--btn-color', color);
-        button.style.borderColor = color;
+        button.dataset.color = color;
         this.track(button, 'click', () => this.handleMemoryClick(index));
         this.dom.memoryButtons.appendChild(button);
       });
@@ -306,7 +313,8 @@
       this.dom.scanTotal.textContent = state.scan.total;
       this.dom.scanMistakes.textContent = state.scan.mistakes;
       this.dom.memoryRound.textContent = state.memory.round;
-      this.dom.memoryBar.style.setProperty('--bar-width', `${Math.round(scanRatio * 100)}%`);
+      const bucket = Math.max(0, Math.min(10, Math.ceil(scanRatio * 10)));
+      this.dom.memoryBar.className = `ww-timer-bar-fill ww-timer-bar-fill--p${bucket}`;
     },
 
     getState() {

@@ -5,14 +5,14 @@ const SpaceRenderer = {
   flashIntensity: 0,
   colors: {
     accent: '#ea4e33',
-    gold: '#f59e0b',
-    success: '#4ade80',
+    gold: '#ffcc00',
+    success: '#ff6b35',
     dark: '#0a0a0a',
-    shipColor: '#4ade80',
-    bulletColor: '#ffff00',
-    enemyColor: '#ea4e33',
-    bossColor: '#ff00ff',
-    shieldColor: '#00ffff',
+    shipColor: '#ff6b35',
+    bulletColor: '#ffcc00',
+    enemyColor: '#f43f5e',
+    bossColor: '#ff2d95',
+    shieldColor: '#fff7ed',
   },
 
   /**
@@ -20,6 +20,8 @@ const SpaceRenderer = {
    */
   draw(state, parallax, particles, canvas, ctx) {
     if (!state || !canvas || !ctx) return;
+
+    const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
 
     ctx.save();
     if (this.shakeIntensity > 0) {
@@ -29,107 +31,93 @@ const SpaceRenderer = {
       this.shakeIntensity *= 0.9;
     }
 
-    ctx.fillStyle = this.colors.dark;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (visuals) {
+      visuals.drawBackdrop(ctx, canvas.width, canvas.height, {
+        theme: 'default',
+        seed: state.score,
+      });
+    } else {
+      ctx.fillStyle = this.colors.dark;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-    if (parallax) parallax.draw(canvas, ctx);
+    this.drawSimpleSkyMarks(ctx, canvas);
 
     // Draw power-ups (Pool)
-    ctx.fillStyle = this.colors.gold;
     if (state.powerUpPool) {
       state.powerUpPool.forEach((i, data, offset) => {
         // x, y, vy, width, height, life, typeInt
-        ctx.fillRect(
-          data[offset + 0] - data[offset + 3] / 2,
-          data[offset + 1] - data[offset + 4] / 2,
+        this.drawPowerUp(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
           data[offset + 3],
           data[offset + 4]
         );
       });
     } else {
       for (const pu of state.powerUps) {
-        ctx.fillRect(pu.x - pu.width / 2, pu.y - pu.height / 2, pu.width, pu.height);
+        this.drawPowerUp(ctx, pu.x, pu.y, pu.width, pu.height);
       }
     }
 
     // Draw bullets (Pool)
-    ctx.fillStyle = this.colors.bulletColor;
     if (state.bulletPool) {
       state.bulletPool.forEach((i, data, offset) => {
         // x, y, vx, vy, width, height, damage
-        ctx.fillRect(
-          data[offset + 0] - data[offset + 4] / 2,
-          data[offset + 1] - data[offset + 5] / 2,
+        this.drawBullet(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
           data[offset + 4],
-          data[offset + 5]
+          data[offset + 5],
+          false
         );
       });
     } else {
       for (const b of state.bullets) {
-        ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+        this.drawBullet(ctx, b.x, b.y, b.width, b.height, false);
       }
     }
 
     // Draw enemy bullets (Pool)
-    ctx.fillStyle = '#ff0000'; // red for enemy bullets
     if (state.enemyBulletPool) {
       state.enemyBulletPool.forEach((i, data, offset) => {
         // x, y, vx, vy, width, height, damage
-        ctx.fillRect(
-          data[offset + 0] - data[offset + 4] / 2,
-          data[offset + 1] - data[offset + 5] / 2,
+        this.drawBullet(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
           data[offset + 4],
-          data[offset + 5]
+          data[offset + 5],
+          true
         );
       });
     } else {
       for (const b of state.enemyBullets || []) {
-        ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+        this.drawBullet(ctx, b.x, b.y, b.width, b.height, true);
       }
     }
 
     // Draw enemies (Pool)
-    ctx.fillStyle = this.colors.enemyColor;
     if (state.enemyPool) {
       state.enemyPool.forEach((i, data, offset) => {
         // x, y, vx, vy, width, height, typeInt, hp, points, timer
         const w = data[offset + 4];
         const h = data[offset + 5];
-        const x = data[offset + 0] - w / 2;
-        const y = data[offset + 1] - h / 2;
-
-        ctx.fillRect(x, y, w, h);
-
-        // hp bar if damaged
-        // Ideally we would need maxHp in the pool or assume based on type, using a static max for simplicity if not tracked
-        // Assuming simple HP bar based on current HP > 1 (simplification for missing maxHp in pool schema)
-        if (data[offset + 7] > 1) {
-          ctx.fillStyle = '#555';
-          ctx.fillRect(x, y - 6, w, 3);
-          ctx.fillStyle = this.colors.success;
-          ctx.fillRect(x, y - 6, w * 0.5, 3); // Simplified HP bar
-          ctx.fillStyle = this.colors.enemyColor; // Reset for next enemy
-        }
+        this.drawEnemy(ctx, data[offset + 0], data[offset + 1], w, h, data[offset + 6]);
       });
     } else {
       for (const e of state.enemies) {
-        ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2, e.width, e.height);
-        if (e.hp < e.maxHp) {
-          ctx.fillStyle = '#555';
-          ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, e.width, 3);
-          ctx.fillStyle = this.colors.success;
-          ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, (e.width * e.hp) / e.maxHp, 3);
-        }
+        this.drawEnemy(ctx, e.x, e.y, e.width, e.height, e.type || 0);
       }
     }
 
     const ship = state.ship;
     if (ship) {
-      ctx.fillStyle =
-        ship.invincibleTimer > 0 && Math.floor(ship.invincibleTimer * 0.1) % 2 === 0
-          ? 'rgba(74, 222, 128, 0.5)'
-          : this.colors.shipColor;
-      ctx.fillRect(ship.x - ship.width / 2, ship.y - ship.height / 2, ship.width, ship.height);
+      const isInvincible =
+        ship.invincibleTimer > 0 && Math.floor(ship.invincibleTimer * 0.1) % 2 === 0;
+      this.drawShip(ctx, ship, isInvincible);
 
       if (ship.shield > 0) {
         ctx.strokeStyle = this.colors.shieldColor;
@@ -157,28 +145,114 @@ const SpaceRenderer = {
    * Draw HUD
    */
   drawHUD(state, canvas, ctx) {
-    if (!state || !state.ship) return;
-    const ship = state.ship;
+    return;
+  },
 
+  drawSimpleSkyMarks(ctx, canvas) {
     ctx.save();
-    ctx.fillStyle = this.colors.gold;
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'left';
-    ctx.fillText(`SCORE: ${state.score}`, 20, 30);
-    ctx.fillText(`WAVE: ${state.wave}`, 20, 55);
-
-    const hpBarW = 150;
-    ctx.fillStyle = '#555';
-    ctx.fillRect(20, 80, hpBarW, 10);
-    ctx.fillStyle = this.colors.success;
-    ctx.fillRect(20, 80, (hpBarW * ship.hp) / ship.maxHp, 10);
-
-    if (ship.nukeCharges > 0) {
-      ctx.fillStyle = this.colors.accent;
-      ctx.textAlign = 'right';
-      ctx.fillText(`NUKE: ${ship.nukeCharges} [N]`, canvas.width - 20, 30);
+    ctx.globalAlpha = 0.28;
+    ctx.fillStyle = '#fff2b3';
+    for (let i = 0; i < 18; i++) {
+      const x = (i * 83 + 29) % canvas.width;
+      const y = (i * 137 + 41) % canvas.height;
+      ctx.fillRect(x, y, 2, 2);
     }
     ctx.restore();
+  },
+
+  drawPowerUp(ctx, x, y, w, h) {
+    const size = Math.max(w, h, 18);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#ffcc00';
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#12071f';
+    ctx.font = '900 11px Orbitron, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('A', 0, 1);
+    ctx.restore();
+  },
+
+  drawBullet(ctx, x, y, w, h, enemy) {
+    ctx.save();
+    ctx.fillStyle = enemy ? '#f43f5e' : '#ffcc00';
+    this.roundRect(ctx, x - w / 2, y - h / 2, Math.max(4, w), Math.max(8, h), 4);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  drawEnemy(ctx, x, y, w, h, type) {
+    const letters = ['S', 'D', 'F', 'X'];
+    const letter = letters[Math.abs(Math.round(type || 0)) % letters.length];
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = type > 2 ? '#ff2d95' : '#f43f5e';
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.lineTo(w / 2, 0);
+    ctx.lineTo(0, h / 2);
+    ctx.lineTo(-w / 2, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    if (w > 18 && h > 18) {
+      ctx.fillStyle = '#fff7ed';
+      ctx.font = '900 10px Orbitron, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(letter, 0, 1);
+    }
+    ctx.restore();
+  },
+
+  drawShip(ctx, ship, isInvincible) {
+    const w = ship.width || 26;
+    const h = ship.height || 34;
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.globalAlpha = isInvincible ? 0.62 : 1;
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur = 5;
+    ctx.fillStyle = this.colors.shipColor;
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.lineTo(w / 2, h * 0.35);
+    ctx.lineTo(w * 0.16, h * 0.22);
+    ctx.lineTo(0, h / 2);
+    ctx.lineTo(-w * 0.16, h * 0.22);
+    ctx.lineTo(-w / 2, h * 0.35);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(-3, h * 0.08, 6, h * 0.28);
+    ctx.restore();
+  },
+
+  roundRect(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
   },
 
   /**
@@ -190,16 +264,40 @@ const SpaceRenderer = {
     }
 
     if (state.gameOver) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,0.8)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = this.colors.accent;
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
-      ctx.fillStyle = this.colors.gold;
-      ctx.font = '24px Arial';
-      ctx.fillText(`Final Score: ${state.score}`, canvas.width / 2, canvas.height / 2 + 20);
+      if (visuals) {
+        visuals.drawNeonText(
+          ctx,
+          'GAME OVER',
+          canvas.width / 2,
+          canvas.height / 2 - 42,
+          '#f8fafc',
+          '#64748b',
+          46,
+          'center'
+        );
+        visuals.drawNeonText(
+          ctx,
+          `Final Score: ${state.score}`,
+          canvas.width / 2,
+          canvas.height / 2 + 18,
+          '#fde68a',
+          '#64748b',
+          21,
+          'center'
+        );
+      } else {
+        ctx.fillStyle = this.colors.accent;
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.fillStyle = this.colors.gold;
+        ctx.font = '24px Arial';
+        ctx.fillText(`Final Score: ${state.score}`, canvas.width / 2, canvas.height / 2 + 20);
+      }
       ctx.restore();
     }
   },

@@ -18,7 +18,7 @@
     _attackQuery: null,
 
     OWNER: { NEUTRAL: 0, PLAYER: 1, ENEMY: 2 },
-    CHAIN_NAMES: ['ETH', 'SOL', 'AVAX', 'MATIC', 'BNB', 'ARB', 'OP', 'BASE', 'FTM', 'ATOM'],
+    CHAIN_NAMES: ['ASDF', 'A', 'S', 'D', 'F', 'SUN', 'RUN', 'STACK', 'BOOST', 'GO'],
 
     start(gameId) {
       this.stop();
@@ -32,7 +32,7 @@
 
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 1000,
-        debug: true,
+        debug: false,
       });
 
       // 11/10: Resize early for correct node distribution
@@ -40,14 +40,24 @@
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
-      this._nodeQuery = world.createQuery(['Node']);
-      this._nodePositionQuery = world.createQuery(['Node', 'Position']);
-      this._attackQuery = world.createQuery(['Attack', 'Position']);
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
       // Components
       world.registerComponent('Node', { owner: 'u8', validators: 'u16', max: 'u16', type: 'u8' });
       world.registerComponent('Attack', { from: 'u32', to: 'u32', count: 'u16', owner: 'u8' });
       world.registerComponent('VisualEffect', { type: 'u8' });
+
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
+
+      this._nodeQuery = world.createQuery(['Node']);
+      this._nodePositionQuery = world.createQuery(['Node', 'Position']);
+      this._attackQuery = world.createQuery(['Attack', 'Position']);
 
       world.setResource('GameState', {
         score: 0,
@@ -71,13 +81,29 @@
       this.preloadSprites();
       this.generateNodes(world);
 
+      this.instance.onUpdate = (dt, dtMs) => {
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+        return shouldFreeze;
+      };
+
+      this.instance.onRender = alpha => {
+        if (this.juice) this.juice.renderPre();
+        this.draw(alpha);
+        if (this.juice) this.juice.renderPost();
+      };
+
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
 
       // Override Render
-      const icons = ['🌐', '⚔️'];
-      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+      // const icons = ['🌐', '⚔️'];
+      // const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
+      // this.instance.onRender = alpha => this.draw(alpha, defaultRender);
 
       this.instance.start();
 
@@ -88,15 +114,37 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="boh-container" style="width:100%; height:100%; position:relative; background:#0a0a1a;">
-          <canvas id="cc-canvas" style="width:100%; height:100%; display:block;"></canvas>
-          <div class="boh-hud-top" style="position:absolute; top:10px; left:10px; display:flex; gap:20px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px;">
-            <div class="boh-stat">YOURS: <span id="cc-player-nodes" style="color:#22c55e;">0</span></div>
-            <div class="boh-stat">ENEMY: <span id="cc-enemy-nodes" style="color:#ef4444;">0</span></div>
-            <div class="boh-stat">SCORE: <span id="cc-score">0</span></div>
-            <div class="boh-stat">WAVE: <span id="cc-wave">1</span></div>
+        <div class="boh-container">
+          <canvas id="cc-canvas" class="boh-canvas"></canvas>
+          <div class="boh-hud-top">
+            <div class="boh-hud-group">
+              <div class="boh-stat boh-stat--player">
+                YOURS
+                <span id="cc-player-nodes" class="boh-stat-value boh-stat-value--player">0</span>
+              </div>
+              <div class="boh-stat boh-stat--enemy">
+                ENEMY
+                <span id="cc-enemy-nodes" class="boh-stat-value boh-stat-value--enemy">0</span>
+              </div>
+              <div class="boh-stat boh-stat--score">
+                SCORE
+                <span id="cc-score" class="boh-stat-value boh-stat-value--score">0</span>
+              </div>
+              <div class="boh-stat boh-stat--wave">
+                WAVE
+                <span id="cc-wave" class="boh-stat-value boh-stat-value--wave">1</span>
+              </div>
+            </div>
+            <div class="boh-instructions-text">Tap ASDF node, tap target</div>
           </div>
-          <div class="boh-instructions" style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); color:#666; font-size:10px;">Click your node -> Click target to attack!</div>
+          <div class="boh-bottom-bar">
+            <div class="boh-instructions">
+              <span class="boh-instructions-text">Hold the ASDF circles</span>
+            </div>
+            <button class="boh-next-wave-btn game-hidden" id="boh-retry-wave-btn">
+              RESTART WAVE
+            </button>
+          </div>
         </div>
       `;
     },
@@ -120,6 +168,8 @@
         world.addComponent(e, 'Position');
         world.addComponent(e, 'Node');
         world.addComponent(e, 'Renderable');
+        world.addComponent(e, 'Rotation');
+        world.addComponent(e, 'Scale');
 
         const idx = world.getIndex(e);
         const pos = world.componentRegistry.get('Position').props;
@@ -282,6 +332,17 @@
               if (nodeProps.validators[targetIdx] < 0) {
                 nodeProps.validators[targetIdx] = Math.abs(nodeProps.validators[targetIdx]);
                 nodeProps.owner[targetIdx] = att.owner[idx];
+
+                if (self.juice) {
+                  self.juice.impact(nodePos.x[targetIdx], nodePos.y[targetIdx], {
+                    intensity: 'medium',
+                  });
+                  const color = att.owner[idx] === 1 ? '#ffcc00' : '#f43f5e';
+                  self.juice.burst(nodePos.x[targetIdx], nodePos.y[targetIdx], {
+                    color,
+                    count: 12,
+                  });
+                }
               }
             }
             world.destroyEntity(world.getEntityId(idx));
@@ -390,26 +451,19 @@
     },
 
     drawNetworkBackdrop(ctx, w, h, state) {
-      const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, '#06101f');
-      bg.addColorStop(0.55, '#0b1027');
-      bg.addColorStop(1, '#12071f');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          seed: state.score || state.wave || 0,
+        });
+      } else {
+        ctx.fillStyle = '#12071f';
+        ctx.fillRect(0, 0, w, h);
+      }
 
-      const offset = (state.frameCount * 0.8) % 56;
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = -offset; x < w; x += 56) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + 40, h);
-      }
-      for (let y = -offset; y < h; y += 56) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-      }
-      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,204,0,0.08)';
+      ctx.fillRect(0, h * 0.84, w, 2);
     },
 
     drawNetworkLinks(ctx, dense, count, pos) {
@@ -421,8 +475,7 @@
           const by = pos.y[dense[j]];
           const dist = Math.hypot(ax - bx, ay - by);
           if (dist > 280) continue;
-          const alpha = Math.max(0.04, 0.18 - dist / 2000);
-          ctx.strokeStyle = `rgba(148, 163, 184, ${alpha})`;
+          ctx.strokeStyle = 'rgba(255, 204, 0, 0.08)';
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(ax, ay);
@@ -437,51 +490,39 @@
       const validators = nodeProps.validators[idx];
       const color =
         owner === this.OWNER.PLAYER
-          ? '#22c55e'
+          ? '#ffcc00'
           : owner === this.OWNER.ENEMY
-            ? '#ef4444'
-            : '#64748b';
-      const glow =
-        owner === this.OWNER.PLAYER
-          ? 'rgba(34, 197, 94, 0.22)'
-          : owner === this.OWNER.ENEMY
-            ? 'rgba(239, 68, 68, 0.22)'
-            : 'rgba(148, 163, 184, 0.14)';
+            ? '#f43f5e'
+            : '#ff6b35';
       const radius = 24 + Math.min(12, validators / 10);
 
       ctx.save();
       ctx.translate(x, y);
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius + 16, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.fillStyle = '#08111f';
-      this.hexPath(ctx, 0, 0, radius);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(248, 250, 252, 0.28)';
-      ctx.lineWidth = 1;
-      this.hexPath(ctx, 0, 0, radius - 8);
-      ctx.stroke();
-
       ctx.fillStyle = color;
-      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255,247,237,0.72)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 12px Orbitron, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(validators, 0, 2);
 
       const label = this.CHAIN_NAMES[idx % this.CHAIN_NAMES.length];
-      ctx.fillStyle = 'rgba(248, 250, 252, 0.72)';
-      ctx.font = '10px JetBrains Mono, monospace';
-      ctx.fillText(label, 0, radius + 16);
+      ctx.fillStyle = 'rgba(255, 247, 237, 0.68)';
+      ctx.font = '10px Orbitron, sans-serif';
+      ctx.fillText(owner === this.OWNER.PLAYER ? 'ASDF' : label, 0, radius + 16);
 
       if (world.getEntityId(idx) === state.selectedNodeId) {
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffcc00';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(0, 0, radius + 9, 0, Math.PI * 2);
         ctx.stroke();
@@ -496,17 +537,14 @@
       const att = world.componentRegistry.get('Attack').props;
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
-        const color = att.owner[idx] === this.OWNER.PLAYER ? '#22c55e' : '#ef4444';
+        const color = att.owner[idx] === this.OWNER.PLAYER ? '#ffcc00' : '#f43f5e';
         ctx.save();
         ctx.translate(pos.x[idx], pos.y[idx]);
         ctx.fillStyle = color;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 14;
         ctx.beginPath();
-        ctx.arc(0, 0, 5 + Math.min(7, att.count[idx] / 12), 0, Math.PI * 2);
+        ctx.arc(0, 0, 4 + Math.min(4, att.count[idx] / 16), 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = '#f8fafc';
+        ctx.strokeStyle = 'rgba(255,247,237,0.36)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(-8, 0);

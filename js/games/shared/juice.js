@@ -528,23 +528,16 @@ const GameJuice = {
 
         switch (intensity) {
           case 'light':
-            this.triggerShake(3, 100);
             this.emit('COLLECT', x, y);
             break;
           case 'medium':
-            this.triggerShake(5, 200);
-            this.triggerFlash('#ffffff', 50);
             this.emit('DAMAGE', x, y);
             break;
           case 'heavy':
-            this.triggerShake(10, 400);
-            this.triggerFlash('#ff0000', 100);
             this.triggerFreeze(30);
             this.emit('EXPLOSION', x, y);
             break;
           case 'death':
-            this.triggerShake(15, 500);
-            this.triggerFlash('#ff0000', 150);
             this.triggerFreeze(100);
             this.emit('DEATH', x, y);
             break;

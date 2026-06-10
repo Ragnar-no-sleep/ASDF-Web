@@ -10,86 +10,106 @@
 
 (function () {
   const CONFIG = {
-    playerSize: 44,
-    playerLift: 14,
-    playerBaseX: 80,
-    playerBaseY: 0.2,
+    playerSize: 46,
+    playerLift: 8,
+    playerBaseX: 96,
+    playerBaseY: 0.22,
     physics: {
-      jumpForce: -9,
-      gravity: 0.36,
-      maxSpeed: 14.2,
-      acceleration: 0.035,
+      jumpForce: -8.8,
+      gravity: 0.34,
+      maxSpeed: 14.6,
+      acceleration: 0.032,
       maxAirJumps: 1,
-      coyoteFrames: 6,
-      jumpBufferFrames: 8,
+      coyoteFrames: 7,
+      jumpBufferFrames: 10,
     },
-    baseSpeed: 5.8,
-    speedCap: 13.4,
-    levelDistance: 340,
-    distanceScale: 0.0012,
+    baseSpeed: 5.9,
+    speedCap: 14.2,
+    levelDistance: 360,
+    distanceScale: 0.0014,
+    maxDifficultyDistance: 2_000,
     spawn: {
-      baseInterval: 56,
-      minInterval: 28,
+      baseInterval: 62,
+      minInterval: 25,
       obstacleChanceBase: 0.64,
-      obstacleChanceGrowth: 0.05,
-      baseMaxHazards: 10,
-      maxHazards: 30,
-      collectibleChance: 0.36,
+      obstacleChanceGrowth: 0.06,
+      baseMaxHazards: 11,
+      maxHazards: 34,
+      collectibleChance: 0.38,
     },
     icons: ['S', 'R', 'B', 'C', 'T', 'L'],
     colors: {
       player: '#dc2626',
-      playerTrim: '#eab308',
-      hazard: ['#a855f7', '#f97316', '#16a34a', '#f43f5e', '#38bdf8', '#facc15'],
-      collectible: '#22c55e',
+      playerTrim: '#ffcc00',
+      ground: '#06050d',
+      groundGrid: '#ffcc00',
+      skyline: '#1f1338',
+      skylineRoof: '#0b1222',
+      hazard: ['#ff6b35', '#ff2d95', '#f97316', '#f43f5e', '#ffcc00', '#fff7ed'],
+      collectible: '#ffcc00',
       collectText: '#fef08a',
     },
+    horizon: 0.23,
+    citySpeed: 1.2,
+    roadPulse: 0.006,
   };
 
   const BURN_TYPES = [
     {
       name: 'SCAM',
-      width: 44,
-      height: 38,
+      width: 52,
+      height: 34,
       reward: 0,
       speedScale: 1.0,
       icon: 'S',
-      body: '#ef4444',
-      accent: '#7f1d1d',
-      panel: '#fee2e2',
+      body: '#ff6b35',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#ff6b35', '#ff2d95', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
     },
     {
       name: 'RUG',
-      width: 38,
-      height: 35,
+      width: 48,
+      height: 36,
       reward: 0,
       speedScale: 1.08,
       icon: 'R',
       body: '#f97316',
-      accent: '#7c2d12',
-      panel: '#ffedd5',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'truck',
+      palette: ['#f97316', '#ffcc00', '#3b120b', '#fff7ed', '#ff2d95'],
+      danger: '#ffcc00',
     },
     {
       name: 'BURN',
-      width: 40,
-      height: 39,
+      width: 44,
+      height: 34,
       reward: 0,
-      speedScale: 1.15,
+      speedScale: 1.14,
       icon: 'B',
-      body: '#a855f7',
-      accent: '#581c87',
-      panel: '#e9d5ff',
+      body: '#ff2d95',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#ff2d95', '#ff6b35', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
     },
     {
       name: 'CHAIN',
-      width: 46,
-      height: 34,
+      width: 56,
+      height: 38,
       reward: 0,
-      speedScale: 1.22,
+      speedScale: 1.24,
       icon: 'C',
-      body: '#16a34a',
-      accent: '#14532d',
-      panel: '#dcfce7',
+      body: '#f43f5e',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#f43f5e', '#ff6b35', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
     },
   ];
 
@@ -97,6 +117,7 @@
     version: '2.3.0',
     gameId: 'burnrunner',
     instance: null,
+    juice: null,
     _cleanupInput: null,
     _collisionQuery: null,
     _entityQuery: null,
@@ -112,10 +133,15 @@
       const canvas = document.getElementById('br-canvas');
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 900,
-        debug: true,
+        debug: false,
       });
 
       this.instance.resize();
+
+      // Init Juice for 11/10 addictiveness
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
       const world = this.instance.world;
       const kernel = window.ASDF.Kernel;
@@ -126,7 +152,7 @@
         input.mapAction('JUMP', ['Space', 'ArrowUp', 'KeyW']);
       }
 
-      world.registerComponent('Player', { jumpsLeft: 'u8' });
+      world.registerComponent('Player', { jumpsLeft: 'u8', fever: 'f32' });
       world.registerComponent('Obstacle', { type: 'u8' });
       world.registerComponent('Collectible', { value: 'u16' });
 
@@ -156,12 +182,16 @@
         level: 1,
         intensity: 1,
         collectiblesMissed: 0,
+        feverActive: false,
+        feverMeter: 0,
       });
 
       this.dom = {
         distance: document.getElementById('br-distance'),
         tokens: document.getElementById('br-tokens'),
         combo: document.getElementById('br-combo'),
+        level: document.getElementById('br-level'),
+        intensity: document.getElementById('br-intensity'),
       };
       this.setupInput();
 
@@ -187,15 +217,30 @@
       this._layout = { floorY: groundY };
       this._entityQuery = world.createQuery(['Position', 'Collider', 'Renderable']);
       this._collisionQuery = world.createQuery(['Position', 'Obstacle', 'Collider']);
-      this.instance.onUpdate = dt => {
+
+      this.instance.onUpdate = (dt, dtMs) => {
         const state = world.getResource('GameState');
+
+        // Update Juice
+        if (this.juice) {
+          this.juice.update(dt / 60, dtMs);
+        }
+
         if (kernel.services?.hud) {
           kernel.services.hud.update(this.gameId, state);
         }
       };
-      this.instance.onRender = () => this.draw();
+
+      this.instance.onRender = () => {
+        if (this.juice) this.juice.renderPre();
+        this.draw();
+        if (this.juice) this.juice.renderPost();
+      };
+
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createRunnerSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
+
       this.instance.start();
 
       if (typeof activeGames !== 'undefined') {
@@ -212,7 +257,11 @@
             <div class="game-hud-stat">TOKENS: <span id="br-tokens" class="game-hud-stat-value br-stat-value--tokens">0</span></div>
             <div class="game-hud-stat">COMBO: <span id="br-combo" class="game-hud-stat-value">x0</span></div>
           </div>
-          <div class="br-hint-bar">Touch / Space / Arrow Up to jump</div>
+          <div class="game-hud-top-right br-difficulty">
+            <div class="game-hud-stat">INTENSITY: <span id="br-intensity" class="game-hud-stat-value br-stat-value--intensity">x1</span></div>
+            <div class="game-hud-stat">LEVEL: <span id="br-level" class="game-hud-stat-value br-stat-value--level">1</span></div>
+          </div>
+          <div class="br-hint-bar br-hint-bar--wide">Touch / Space / Arrow Up to jump - jump between traffic for maximum speed</div>
         </div>
       `;
     },
@@ -254,21 +303,30 @@
         state.elapsed += dt / 60;
         state.level = diff.level;
         state.intensity = diff.intensity;
-        state.distance += state.speed * 0.1 * dt;
+        state.distance += Math.max(0.2, state.speed) * 0.1 * dt;
         state.speed = Math.min(
           CONFIG.speedCap,
-          CONFIG.baseSpeed + state.distance * CONFIG.distanceScale + diff.level * 0.45
+          CONFIG.baseSpeed +
+            state.distance * CONFIG.distanceScale +
+            diff.level * 0.42 * diff.speedScale
         );
 
         const groundLine = state.groundY;
         const px = pos.x[pIdx];
         const py = pos.y[pIdx];
-        const ph = coll.height[pIdx];
+        const pW = coll.width[pIdx];
+        const pH = coll.height[pIdx];
+        const ph = pH;
         const wasGrounded = py + ph >= groundLine - 1;
         if (py + ph > groundLine) {
+          const wasFalling = vel.vy[pIdx] > 0;
           pos.y[pIdx] = groundLine - ph;
           vel.vy[pIdx] = 0;
           pProps.jumpsLeft[pIdx] = state.maxJumps;
+
+          if (wasFalling && self.juice) {
+            self.juice.emit('LAND', px + pW / 2, groundLine);
+          }
         }
 
         if (wasGrounded) state.coyoteTimer = state.coyoteFrames;
@@ -282,22 +340,53 @@
             pProps.jumpsLeft[pIdx] = Math.max(0, pProps.jumpsLeft[pIdx] - 1);
             state.jumpBuffer = 0;
             state.coyoteTimer = 0;
+
+            if (self.juice) {
+              self.juice.emit('JUMP', px + pW / 2, py + pH);
+              // Removed shake here based on user feedback
+            }
           }
         }
 
         vel.vy[pIdx] += CONFIG.physics.gravity * dt;
 
-        vel.vx[pIdx] = diff.level * 0.2 + Math.max(0, state.speed) * 0.15;
-        vel.vx[pIdx] = Math.min(vel.vx[pIdx], CONFIG.physics.maxSpeed);
+        // Fever speed boost
+        const feverMult = state.feverActive ? 1.4 : 1.0;
+
+        vel.vx[pIdx] =
+          CONFIG.physics.maxSpeed *
+          (0.42 + state.level * 0.02) *
+          Math.min(1.12, diff.speedScale) *
+          feverMult;
+        vel.vx[pIdx] = Math.min(vel.vx[pIdx], CONFIG.physics.maxSpeed * 1.5);
         state.speed = Math.min(
-          CONFIG.speedCap,
-          state.speed * (1 + CONFIG.physics.acceleration * dt)
+          CONFIG.speedCap * feverMult,
+          state.speed * (1 + CONFIG.physics.acceleration * dt * 0.22)
         );
         pos.x[pIdx] = state.playerX;
 
         const playerBottom = state.groundY;
-        const pW = coll.width[pIdx];
-        const pH = coll.height[pIdx];
+
+        // Fever meter logic
+        if (state.feverActive) {
+          state.feverMeter -= dt * 0.15;
+          if (state.feverMeter <= 0) {
+            state.feverActive = false;
+            state.feverMeter = 0;
+          }
+        } else {
+          state.feverMeter = Math.max(0, state.feverMeter - dt * 0.02);
+          if (state.feverMeter >= 100) {
+            state.feverActive = true;
+            if (self.juice) {
+              self.juice.textPop(px, py - 40, 'FEVER MODE!', {
+                color: '#ffcc00',
+                size: 32,
+                lifetime: 30,
+              });
+            }
+          }
+        }
 
         state.spawnTimer += dt;
         const activeHazards = self._collisionQuery ? self._collisionQuery.set.count : 0;
@@ -308,11 +397,15 @@
         );
         const spawnInterval = Math.max(
           CONFIG.spawn.minInterval,
-          CONFIG.spawn.baseInterval - diff.level * 3.8 - state.speed * 2
+          (CONFIG.spawn.baseInterval -
+            diff.level * 4.2 -
+            state.speed * 1.4 +
+            (state.collectiblesMissed || 0) * 2) /
+            feverMult
         );
         const spawnChance = Math.min(
-          0.94,
-          CONFIG.spawn.obstacleChanceBase + diff.level * CONFIG.spawn.obstacleChanceGrowth * 0.12
+          0.96,
+          CONFIG.spawn.obstacleChanceBase + diff.level * CONFIG.spawn.obstacleChanceGrowth
         );
 
         if (activeHazards < maxHazards && state.spawnTimer > spawnInterval) {
@@ -341,52 +434,60 @@
           const eh = coll.height[idx];
           pos.x[idx] -= state.speed * dt * (0.32 + state.intensity * 0.1);
 
-          if (ey > playerBottom + 20) {
+          if (ex < -140) {
             if (obsBit && (world.entityMasks[idx] & obsBit) === obsBit) {
-              state.collectiblesMissed = (state.collectiblesMissed || 0) + 1;
-              world.destroyEntity(world.getEntityId(idx));
-            } else if (colBit && (world.entityMasks[idx] & colBit) === colBit) {
-              world.destroyEntity(world.getEntityId(idx));
-              state.tokens += 1;
-              state.combo += 1;
-              state.bestCombo = Math.max(state.bestCombo, state.combo);
+              state.combo = 0;
             }
+            world.destroyEntity(world.getEntityId(idx));
             continue;
           }
 
           const hit = px < ex + ew && px + pW > ex && py < ey + eh && py + pH > ey;
+
           if (hit && obsBit && (world.entityMasks[idx] & obsBit) === obsBit) {
+            if (state.feverActive) {
+              // Fever mode grants invulnerability and destroys obstacles
+              world.destroyEntity(world.getEntityId(idx));
+              state.score = (state.score || 0) + 50;
+              if (self.juice) {
+                self.juice.impact(ex + ew / 2, ey + eh / 2, { intensity: 'light' });
+                self.juice.textPop(ex, ey, 'SMASHED!', { color: '#ffcc00' });
+              }
+              continue;
+            }
+
             state.gameOver = true;
             state.combo = 0;
-            if (ASDF.ParticleSystem) {
-              ASDF.ParticleSystem.emit(world, px + pW / 2, py + pH / 2, {
-                count: 30,
-                colorIdx: 2,
-                speed: 8,
-                gravity: 0.3,
-              });
+
+            if (self.juice) {
+              self.juice.impact(px + pW / 2, py + pH / 2, { intensity: 'death' }); // Just explosion, no shake
             }
-            self.instance.shake(15, 20);
+
             if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
           } else if (hit && colBit && (world.entityMasks[idx] & colBit) === colBit) {
             const collectible = world.componentRegistry.get('Collectible');
             const value = collectible.props.value[idx] || 1;
             state.tokens += value;
             state.combo++;
+            state.feverMeter = Math.min(
+              100,
+              state.feverMeter + 5 + Math.min(10, state.combo * 0.5)
+            );
             state.bestCombo = Math.max(state.bestCombo, state.combo);
             state.distance += value * Math.min(8, state.combo);
-            if (ASDF.ParticleSystem) {
-              ASDF.ParticleSystem.emit(world, ex + ew / 2, ey + eh / 2, {
-                count: 12,
-                colorIdx: 1,
-                speed: 4,
-                gravity: 0.02,
-                life: 18,
-              });
+
+            if (self.juice) {
+              self.juice.emit('COLLECT', ex + ew / 2, ey + eh / 2);
+              self.juice.textPop(ex, ey, `+${value}`, { color: '#ffcc00', size: 24, lifetime: 25 });
+              if (state.combo % 10 === 0) {
+                self.juice.textPop(px, py - 60, `${state.combo} COMBO!`, {
+                  color: '#fbbf24',
+                  size: 28,
+                  lifetime: 35,
+                });
+              }
             }
-            world.destroyEntity(world.getEntityId(idx));
-          } else if (ex < -140) {
-            if (obsBit && (world.entityMasks[idx] & obsBit) === obsBit) state.combo = 0;
+
             world.destroyEntity(world.getEntityId(idx));
           }
         }
@@ -397,8 +498,9 @@
 
     getDifficulty(state) {
       const level = 1 + Math.floor(state.distance / CONFIG.levelDistance);
-      const intensity = Math.min(1.95, 1 + level * 0.07);
-      const speedScale = 1 + level * 0.12;
+      const progression = Math.min(1, state.distance / CONFIG.maxDifficultyDistance);
+      const intensity = 1 + progression * 0.82;
+      const speedScale = 1 + Math.min(1.6, level * 0.12);
       return { level, intensity, speedScale };
     },
 
@@ -430,9 +532,9 @@
       } else {
         world.addComponent(e, 'Collectible');
         const collectible = world.componentRegistry.get('Collectible').props;
-        pos.y[idx] = state.groundY - 120 - Math.random() * 80 - CONFIG.playerLift;
+        pos.y[idx] = state.groundY - 95 - Math.random() * 88 - CONFIG.playerLift;
         rend.iconIndex[idx] = 5;
-        rend.size[idx] = 28;
+        rend.size[idx] = 27 + Math.random() * 4;
         coll.width[idx] = 24 + Math.random() * 8;
         coll.height[idx] = 24 + Math.random() * 8;
         collectible.value[idx] = Math.random() < 0.18 ? 3 : 1;
@@ -443,6 +545,8 @@
       if (this.dom.distance) this.dom.distance.textContent = `${Math.floor(state.distance)}m`;
       if (this.dom.tokens) this.dom.tokens.textContent = state.tokens;
       if (this.dom.combo) this.dom.combo.textContent = `x${state.combo}`;
+      if (this.dom.level) this.dom.level.textContent = state.level || 1;
+      if (this.dom.intensity) this.dom.intensity.textContent = `x${state.intensity.toFixed(2)}`;
     },
 
     draw() {
@@ -454,15 +558,51 @@
       const pIdx = world.getIndex(state.playerId);
       const pos = world.componentRegistry.get('Position').props;
       const rend = world.componentRegistry.get('Renderable').props;
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
 
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, state.groundY);
-      skyGrad.addColorStop(0, '#07081a');
-      skyGrad.addColorStop(1, '#1f1538');
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, w, h);
+      if (visuals) {
+        // Dynamic backdrop based on fever
+        const theme = state.feverActive ? 'racer' : 'default';
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: theme,
+          seed: state.level,
+          withNoise: true,
+          allowNoise: true,
+          distance: state.distance,
+        });
 
-      this.drawParallaxCity(ctx, w, h, state);
-      this.drawGround(ctx, w, h, state);
+        // Speed effects
+        if (state.feverActive) {
+          visuals.drawScanlines(ctx, w, h, { alpha: 0.15, density: 4 });
+        }
+
+        this.drawScrollingGround(ctx, w, h, state);
+      } else {
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, state.groundY);
+        skyGrad.addColorStop(0, '#07081a');
+        skyGrad.addColorStop(1, '#1f1538');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+        this.drawParallaxCity(ctx, w, h, state);
+        this.drawGround(ctx, w, h, state);
+      }
+
+      // Movement "Wind" lines to show speed
+      ctx.save();
+      ctx.strokeStyle = state.feverActive ? 'rgba(255, 204, 0, 0.5)' : 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      const lineCount = state.feverActive ? 25 : 8;
+      for (let i = 0; i < lineCount; i++) {
+        const seed = (i * 137.5) % w;
+        const ly = (i * 40 + state.distance * 2) % h;
+        const lx = (seed - state.distance * 5) % w;
+        const len = 30 + (i % 5) * 20;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx + len, ly);
+        ctx.stroke();
+      }
+      ctx.restore();
 
       const { dense, count } = this._entityQuery ? this._entityQuery.set : { dense: [], count: 0 };
       const obstacleComp = world.componentRegistry.get('Obstacle');
@@ -475,9 +615,22 @@
         const idx = dense[i];
         const x = pos.x[idx];
         const y = pos.y[idx];
+
+        // Get Rotation & Scale if they exist
+        const rotComp = world.componentRegistry.get('Rotation');
+        const scaleComp = world.componentRegistry.get('Scale');
+        const angle = rotComp ? rotComp.props.angle[idx] : 0;
+        const scaleX = scaleComp ? scaleComp.props.x[idx] : 1;
+        const scaleY = scaleComp ? scaleComp.props.y[idx] : 1;
+
         const isPlayer = idx === pIdx;
         if (isPlayer) {
-          this.drawPlayerCar(ctx, x, y, Math.max(0.5, 1), coll.height[pIdx]);
+          ctx.save();
+          ctx.translate(x + coll.width[pIdx] * 0.5, y + coll.height[pIdx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawBurnRunnerCharacter(ctx, 0, 0, state);
+          ctx.restore();
           continue;
         }
 
@@ -487,138 +640,432 @@
 
         if (isObstacle) {
           const typeIndex = world.componentRegistry.get('Obstacle').props.type[idx] || 0;
-          this.drawHazard(ctx, x, y, entityW, typeIndex);
+          ctx.save();
+          ctx.translate(x + coll.width[idx] * 0.5, y + coll.height[idx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawEnhancedHazard(ctx, 0, 0, entityW, typeIndex, state);
+          ctx.restore();
         } else if (isCollectible) {
           const collect = world.componentRegistry.get('Collectible');
           const v = collect.props.value[idx] || 1;
-          this.drawCollectible(ctx, x, y, entityW, v);
+          ctx.save();
+          ctx.translate(x + coll.width[idx] * 0.5, y + coll.height[idx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawCollectible(ctx, 0, 0, entityW, v);
+          ctx.restore();
         }
       }
+
+      // Draw Fever Meter HUD
+      this.drawFeverBar(ctx, w, h, state);
     },
 
-    drawParallaxCity(ctx, w, h, state) {
-      const farSpeed = state.distance * 0.05;
-      for (let i = 0; i < 7; i++) {
-        const x = (i * 300 - farSpeed) % (7 * 300);
-        const bx = x < 0 ? x + 2100 : x;
-        ctx.fillStyle = 'rgba(2,8,23,0.56)';
-        ctx.fillRect(bx, h * 0.25, 130, h * 0.76);
-        ctx.fillStyle = 'rgba(251,191,36,0.08)';
-        ctx.fillRect(bx + 24, h * 0.38, 10, 10);
-        ctx.fillRect(bx + 96, h * 0.59, 10, 10);
-      }
-
-      const midSpeed = state.distance * 0.12;
-      for (let i = 0; i < 5; i++) {
-        const x = (i * 420 - midSpeed) % (5 * 420);
-        const bx = x < 0 ? x + 2100 : x;
-        ctx.fillStyle = 'rgba(30, 15, 45, 0.28)';
-        ctx.fillRect(bx, h * 0.56, 168, h * 0.26);
-      }
-    },
-
-    drawGround(ctx, w, h, state) {
+    drawScrollingGround(ctx, w, h, state) {
       const groundY = state.groundY;
-      ctx.fillStyle = '#06050d';
+
+      // Ground base with deep purple gradient for depth
+      const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+      groundGrad.addColorStop(0, '#06050d');
+      groundGrad.addColorStop(1, '#1a0b2e');
+      ctx.fillStyle = groundGrad;
       ctx.fillRect(0, groundY, w, h - groundY);
 
-      const gridColor = 'rgba(244, 114, 182, 0.2)';
-      const gridSpeed = state.distance * 2.5;
-      ctx.strokeStyle = gridColor;
-      ctx.lineWidth = 1;
-      for (let y = groundY; y < h; y += 26) {
-        const lineY = y;
+      // FAST SIDE-SCROLLING GRID
+      ctx.save();
+      ctx.strokeStyle = state.feverActive ? 'rgba(255, 204, 0, 0.4)' : 'rgba(251, 146, 60, 0.2)';
+      ctx.lineWidth = 2;
+
+      const speedMult = state.feverActive ? 25 : 12;
+      const gridSize = 100;
+      // Scroll horizontally for a side-scroller!
+      const scrollX = (state.distance * speedMult) % gridSize;
+
+      // Vertical grid lines moving left rapidly
+      for (let x = -gridSize; x < w + gridSize; x += gridSize) {
+        ctx.beginPath();
+        // Slight slant for dynamic speed effect
+        ctx.moveTo(x - scrollX + 40, groundY);
+        ctx.lineTo(x - scrollX - 40, h);
+        ctx.stroke();
+      }
+
+      // Horizontal perspective lines (closer lines are thicker)
+      const hLines = 4;
+      for (let i = 0; i < hLines; i++) {
+        const ratio = i / (hLines - 1);
+        const lineY = groundY + ratio * ratio * (h - groundY); // Exponential spacing
+        ctx.globalAlpha = 0.3 + ratio * 0.7;
+        ctx.lineWidth = 1 + ratio * 3;
         ctx.beginPath();
         ctx.moveTo(0, lineY);
         ctx.lineTo(w, lineY);
         ctx.stroke();
       }
-      for (let x = -48; x < w; x += 56) {
-        const off = (gridSpeed + x * 0.25) % 64;
-        ctx.beginPath();
-        ctx.moveTo(x + off, groundY);
-        ctx.lineTo(x + off - 90, h);
+      ctx.restore();
+
+      // Side glow rails (The "track" edge)
+      const railGlow = Math.sin(performance.now() * 0.01) * 0.2 + 0.8;
+      ctx.fillStyle = `rgba(255, 204, 0, ${railGlow})`;
+      ctx.fillRect(0, groundY, w, 3);
+      ctx.shadowColor = '#ffcc00';
+      ctx.shadowBlur = 10;
+      ctx.fillRect(0, groundY, w, 1);
+      ctx.shadowBlur = 0;
+    },
+
+    drawBurnRunnerCharacter(ctx, x, y, state) {
+      const hover = Math.sin(performance.now() / 100) * 3;
+
+      ctx.save();
+      ctx.translate(x, y + hover);
+
+      // Engine glow / Trail (The "Burn")
+      const engineGlow = Math.abs(Math.sin(performance.now() / 50));
+      ctx.fillStyle = state.feverActive
+        ? `rgba(0, 245, 255, ${0.5 + engineGlow * 0.5})`
+        : `rgba(255, 204, 0, ${0.5 + engineGlow * 0.5})`;
+      ctx.beginPath();
+      ctx.moveTo(-20, 0);
+      ctx.lineTo(-50 - (state.feverActive ? 30 : 0), -5 + engineGlow * 10);
+      ctx.lineTo(-20, 10);
+      ctx.fill();
+
+      // Ship Chassis (Wipeout/F-Zero style sleek wedge)
+      ctx.fillStyle = '#0f172a'; // Dark chassis
+      ctx.beginPath();
+      ctx.moveTo(35, 5); // Nose
+      ctx.lineTo(-20, -10); // Top tail
+      ctx.lineTo(-20, 15); // Bottom tail
+      ctx.closePath();
+      ctx.fill();
+
+      // Cockpit / Canopy
+      ctx.fillStyle = state.feverActive ? '#00f5ff' : '#0ea5e9';
+      ctx.beginPath();
+      ctx.moveTo(15, 0);
+      ctx.lineTo(-10, -12);
+      ctx.lineTo(-10, 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Wing/Accent lines
+      ctx.strokeStyle = state.feverActive ? '#00f5ff' : '#ff2d95';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(20, 5);
+      ctx.lineTo(-25, -15);
+      ctx.lineTo(-25, 20);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Glow effects
+      if (state.feverActive) {
+        ctx.shadowColor = '#00f5ff';
+        ctx.shadowBlur = 15;
         ctx.stroke();
       }
 
-      const speedLine = Math.min(18, Math.floor(state.speed * 0.9));
-      ctx.fillStyle = 'rgba(34,197,94,0.24)';
-      for (let i = 0; i < speedLine; i++) {
-        const y = groundY + i * 5;
-        const x = (w - ((state.distance * 5 + i * 9) % 160)) % w;
-        ctx.fillRect(x, y, 22, 3);
+      ctx.restore();
+    },
+
+    drawFeverBar(ctx, w, h, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (!visuals) return;
+
+      const barW = 200;
+      const barH = 12;
+      const bx = (w - barW) / 2;
+      const by = 20;
+
+      ctx.save();
+      visuals.drawStatBar(ctx, bx, by, barW, barH, state.feverMeter / 100, {
+        theme: state.feverActive ? 'racer' : 'default',
+        track: 'rgba(0,0,0,0.5)',
+      });
+
+      const label = state.feverActive ? '🔥 FEVER ACTIVE 🔥' : 'FEVER METER';
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Orbitron';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, w / 2, by - 8);
+      ctx.restore();
+    },
+
+    drawPlayerCharacter(ctx, x, y, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      const run = Math.sin(performance.now() / 100);
+      const lift = Math.sin(performance.now() / 150) * 2;
+
+      ctx.save();
+      ctx.translate(x, y + lift);
+
+      if (state.feverActive) {
+        ctx.shadowColor = '#ffcc00';
+        ctx.shadowBlur = 15;
+      }
+
+      // Draw as a "Cyber Runner" instead of a car
+      if (visuals) {
+        // Using a variant of F1 car but styled as a character/drone
+        visuals.drawF1Car(ctx, 0, 0, {
+          length: CONFIG.playerSize * 1.5,
+          width: CONFIG.playerSize,
+          scale: 0.8,
+          active: state.feverActive,
+          lean: run * 0.1,
+          palette: state.feverActive
+            ? ['#ffcc00', '#fff', '#000', '#fb923c', '#fff']
+            : ['#dc2626', '#ffcc00', '#000', '#fb923c', '#fff'],
+        });
+      } else {
+        this.drawPlayerCar(ctx, 0, 0, 1, CONFIG.playerSize * 0.7);
+      }
+
+      ctx.restore();
+    },
+
+    drawEnhancedHazard(ctx, x, y, size, typeIndex, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      const type = BURN_TYPES[typeIndex] || BURN_TYPES[0];
+
+      if (visuals) {
+        // Using ThreatNode but with character-specific shapes
+        visuals.drawThreatNode(ctx, x, y, size, {
+          shape: typeIndex === 0 ? 'diamond' : typeIndex === 1 ? 'shield' : 'hex',
+          primary: type.body,
+          secondary: type.accent,
+          accent: type.danger,
+          icon: type.icon,
+          label: type.name,
+          intensity: state.intensity,
+          threat: typeIndex + 1,
+          spin: performance.now() * 0.005 + x * 0.01,
+        });
+      } else {
+        this.drawHazard(ctx, x, y, size, typeIndex);
+      }
+    },
+
+    drawParallaxCity(ctx, w, h, state) {
+      const baseY = h * (CONFIG.horizon + 0.18);
+      const skyline = [
+        { x: 0.08, w: 0.12, h: 0.22 },
+        { x: 0.27, w: 0.16, h: 0.3 },
+        { x: 0.58, w: 0.14, h: 0.26 },
+        { x: 0.78, w: 0.18, h: 0.34 },
+      ];
+
+      for (const building of skyline) {
+        const x = w * building.x;
+        const bw = w * building.w;
+        const bh = h * building.h;
+        ctx.fillStyle = 'rgba(20, 16, 39, 0.45)';
+        ctx.fillRect(x, baseY - bh, bw, bh);
+        ctx.fillStyle = 'rgba(251,191,36,0.12)';
+        ctx.fillRect(x + bw * 0.22, baseY - bh + 20, 8, 8);
+        ctx.fillRect(x + bw * 0.68, baseY - bh + 46, 8, 8);
+      }
+    },
+
+    drawTrack(ctx, w, h, state) {
+      const groundY = state.groundY;
+      const sidePad = Math.max(18, w * 0.06);
+      ctx.fillStyle = 'rgba(9, 5, 16, 0.82)';
+      ctx.fillRect(0, groundY, w, h - groundY);
+
+      ctx.fillStyle = 'rgba(255,204,0,0.86)';
+      ctx.fillRect(sidePad, groundY + 2, w - sidePad * 2, 3);
+    },
+
+    drawGroundMarkings(ctx, w, h, state) {
+      const groundY = state.groundY;
+      ctx.fillStyle = 'rgba(248,113,113, 0.15)';
+      for (let i = 0; i < 8; i++) {
+        const y = groundY + i * 18 + (state.distance % 18) * 0.15;
+        if (y > h) break;
+        ctx.fillRect(24, y, w - 48, 1.5);
       }
     },
 
     drawPlayerCar(ctx, x, y, widthScale = 1, _heightScale = 1) {
-      const w = 54;
-      const h = 32;
-      const lift = Math.sin(performance.now() / 120) * 1.4;
-      const stretch = Math.sin(performance.now() / 260) * 1.5;
-      const body = Math.max(1, w * widthScale);
+      const lift = Math.sin(performance.now() / 120) * 1.1;
+      const body = Math.max(30, 38 * widthScale);
+      const height = Math.max(28, _heightScale || 32);
+      const run = Math.sin(performance.now() / 130);
 
       ctx.save();
       ctx.translate(x, y + lift);
       ctx.fillStyle = 'rgba(2, 6, 23, 0.28)';
       ctx.beginPath();
-      ctx.ellipse(0, h * 0.28, body * 0.58, h * 0.18 + stretch * 0.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, height * 0.48, body * 0.58, height * 0.12, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = CONFIG.colors.player;
-      this.roundRect(ctx, -body * 0.52, -h * 0.28, body * 1.04, h * 0.74, 8);
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -body * 0.5, height * 0.26, body, height * 0.14, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffcc00';
+      this.roundRect(ctx, -body * 0.36, height * 0.18, body * 0.72, height * 0.1, 4);
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
-      this.roundRect(ctx, -body * 0.33, -h * 0.13, body * 0.66, h * 0.35, 4);
-      ctx.fillStyle = CONFIG.colors.playerTrim;
-      this.roundRect(ctx, -body * 0.6, -h * 0.33, body * 1.2, h * 0.12, 2);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
-      ctx.fillRect(-body * 0.2, -h * 0.2, 4, 10);
-      ctx.fillRect(body * 0.08, -h * 0.2, 4, 10);
+      ctx.strokeStyle = '#fff2b3';
+      ctx.lineWidth = Math.max(2, height * 0.06);
+      ctx.beginPath();
+      ctx.moveTo(-body * 0.08, height * 0.1);
+      ctx.lineTo(-body * 0.22 + run * 2, height * 0.27);
+      ctx.moveTo(body * 0.08, height * 0.1);
+      ctx.lineTo(body * 0.22 - run * 2, height * 0.27);
+      ctx.stroke();
 
-      ctx.fillStyle = 'rgba(251,191,36,0.32)';
-      this.roundRect(ctx, -body * 0.2, h * 0.06, body * 0.4, 4, 2);
+      ctx.fillStyle = '#ff6b35';
+      this.roundRect(ctx, -body * 0.18, -height * 0.2, body * 0.36, height * 0.42, 8);
+      ctx.fill();
 
-      const tireW = body * 0.16;
-      const tireH = h * 0.18;
-      ctx.fillStyle = '#0f172a';
-      for (const side of [-1, 1]) {
-        const tx = side * body * 0.22;
-        ctx.fillRect(tx - tireW * 0.5, h * 0.18, tireW, tireH);
-      }
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.arc(0, -height * 0.42, height * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -height * 0.14, -height * 0.45, height * 0.28, height * 0.1, 4);
+      ctx.fill();
+      ctx.fillStyle = '#fff7ed';
+      ctx.beginPath();
+      ctx.arc(height * 0.08, -height * 0.41, height * 0.035, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     },
 
     drawHazard(ctx, x, y, size, typeIndex) {
       const type = BURN_TYPES[typeIndex] || BURN_TYPES[0];
-      const w = size * 0.88;
-      const h = size * 0.7;
-      const body = type.body || '#ef4444';
-      const accent = type.accent || '#7f1d1d';
-      const panel = type.panel || '#fee2e2';
-      const drift = (performance.now() * 0.0018) % (Math.PI * 2);
+      const w = Math.max(28, size * 0.76);
+      const h = Math.max(24, size * 0.62);
+      const body = type.body || '#ff6b35';
+      const accent = type.accent || '#3b120b';
+
       ctx.save();
       ctx.translate(x, y);
-      ctx.shadowColor = 'rgba(0,0,0,0.28)';
-      ctx.shadowBlur = 8;
-      const grad = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
-      grad.addColorStop(0, body);
-      grad.addColorStop(1, 'rgba(2,6,23,0.95)');
-      ctx.fillStyle = grad;
-      this.roundRect(ctx, -w / 2, -h / 2, w, h, 7);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.beginPath();
+      ctx.ellipse(0, h * 0.42, w * 0.56, h * 0.16, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = panel;
-      this.roundRect(ctx, -w * 0.3, -h * 0.22, w * 0.6, h * 0.44, 4);
-      ctx.fill();
+      if (typeIndex % 4 === 0) {
+        ctx.fillStyle = body;
+        ctx.beginPath();
+        ctx.moveTo(0, -h * 0.5);
+        ctx.lineTo(w * 0.42, h * 0.28);
+        ctx.lineTo(-w * 0.42, h * 0.28);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#fff7ed';
+        ctx.fillRect(-w * 0.22, h * 0.02, w * 0.44, h * 0.08);
+      } else if (typeIndex % 4 === 1) {
+        ctx.fillStyle = body;
+        this.roundRect(ctx, -w * 0.42, -h * 0.34, w * 0.84, h * 0.68, 7);
+        ctx.fill();
+        ctx.fillStyle = accent;
+        for (let i = -1; i <= 1; i += 1) {
+          ctx.beginPath();
+          ctx.arc(i * w * 0.18, -h * 0.02, h * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (typeIndex % 4 === 2) {
+        ctx.fillStyle = body;
+        ctx.beginPath();
+        ctx.arc(0, 0, h * 0.36, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, h * 0.2, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = body;
+        this.roundRect(ctx, -w * 0.38, -h * 0.38, w * 0.76, h * 0.76, 5);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.18, -h * 0.16);
+        ctx.lineTo(w * 0.18, h * 0.16);
+        ctx.moveTo(w * 0.18, -h * 0.16);
+        ctx.lineTo(-w * 0.18, h * 0.16);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
 
-      ctx.fillStyle = accent;
-      ctx.fillRect(-w * 0.38, -h * 0.05 + Math.sin(drift) * 2, w * 0.76, h * 0.09);
-      ctx.fillStyle = 'rgba(248,250,252,0.95)';
-      ctx.font = `700 ${Math.max(12, h * 0.46)}px ${CONFIG.iconFont || 'Orbitron, sans-serif'}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(type.icon || 'X', 0, 0);
+    drawVehicleTires(ctx, w, h, color) {
+      const wheel = Math.max(2.2, w * 0.15);
+      const half = h * 0.5;
+      const spread = Math.max(w * 0.28, h * 0.56);
+      ctx.fillStyle = color;
+      for (const side of [-1, 1]) {
+        const cx = side * spread;
+        ctx.beginPath();
+        ctx.ellipse(cx, half, wheel, wheel * 0.62, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          half,
+          Math.max(1.2, wheel * 0.66),
+          Math.max(1.1, wheel * 0.46),
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.fillStyle = color;
+      }
+
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.42)';
+      const hub = Math.max(1.4, wheel * 0.27);
+      for (const side of [-1, 1]) {
+        const cx = side * spread;
+        ctx.fillRect(cx - hub * 0.5, half - hub * 0.5, hub, hub);
+      }
+    },
+
+    drawVehicleStrip(ctx, x, y, width, height) {
+      const stripeHeight = Math.max(1.1, height * 0.65);
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.72)';
+      const section = width / 7;
+      for (let i = 0; i < 8; i++) {
+        const dx = x + i * section;
+        ctx.fillRect(dx, y, Math.max(1.1, section * 0.36), stripeHeight);
+      }
+      ctx.fillStyle = `rgba(15, 23, 42, 0.55)`;
+      this.roundRect(ctx, x, y + stripeHeight * 0.18, width, Math.max(2.2, height * 0.75), 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawVehicleSign(ctx, type, size) {
+      const w = size * 1.1;
+      const h = Math.max(11, size * 0.5);
+      const glow = Math.sin(performance.now() * 0.006) * 0.12 + 0.34;
+      const x = -w * 0.5;
+      const y = -size * 0.84;
+      ctx.save();
+      this.roundRect(ctx, x, y, w, h, 3);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(248, 250, 252, ${0.55 + glow * 0.2})`;
+      ctx.stroke();
+      ctx.fillStyle = type?.danger || '#ffcc00';
+      ctx.fillRect(x + w * 0.22, y + h * 0.42, w * 0.56, h * 0.12);
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.76)';
+      ctx.beginPath();
+      ctx.arc(x + w * 0.36, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.arc(x + w * 0.5, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.arc(x + w * 0.64, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     },
 
@@ -629,43 +1076,42 @@
       ctx.translate(x, y);
       ctx.scale(pulse, pulse);
 
-      const orbit = performance.now() * 0.002;
-      for (let i = 0; i < 10; i++) {
-        const a = orbit + (Math.PI * 2 * i) / 10;
-        const px = Math.cos(a) * r * 0.28;
-        const py = Math.sin(a) * r * 0.28;
-        ctx.fillStyle = `rgba(34,197,94,${0.45 + (i % 2) * 0.1})`;
-        ctx.beginPath();
-        ctx.arc(px, py, r * 0.08, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
       const glow = Math.sin(performance.now() * 0.006) * 0.08 + 0.2;
       const core = r * 1.02;
       ctx.beginPath();
       ctx.arc(0, 0, core, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(21,128,61,${0.2 + glow})`;
+      ctx.fillStyle = `rgba(255,204,0,${0.18 + glow})`;
       ctx.fill();
 
       ctx.fillStyle = CONFIG.colors.collectible;
-      this.roundRect(ctx, -r * 0.58, -r * 0.58, r * 1.16, r * 1.16, 7);
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = CONFIG.colors.collectText;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.62, 0, Math.PI * 2);
       ctx.stroke();
 
+      ctx.fillStyle = '#12071f';
       if (value > 1) {
-        ctx.fillStyle = '#052e16';
+        ctx.beginPath();
+        ctx.arc(-r * 0.18, 0, r * 0.14, 0, Math.PI * 2);
+        ctx.arc(r * 0.18, 0, r * 0.14, 0, Math.PI * 2);
+        ctx.fill();
       } else {
-        ctx.fillStyle = '#ecfccb';
+        ctx.beginPath();
+        for (let i = 0; i < 5; i += 1) {
+          const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+          const px = Math.cos(a) * r * 0.24;
+          const py = Math.sin(a) * r * 0.24;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
       }
-      ctx.font = `700 ${Math.max(11, r * 1.3)}px ${CONFIG.iconFont || 'Orbitron, sans-serif'}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(value > 1 ? `x${value}` : 'coin', r * 1.18, 0);
       ctx.restore();
     },
 

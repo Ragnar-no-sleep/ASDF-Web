@@ -1030,7 +1030,7 @@ body.modal-open {
   flex: 1;
   min-height: 400px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .game-controls {

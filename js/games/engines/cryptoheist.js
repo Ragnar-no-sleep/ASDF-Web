@@ -46,22 +46,32 @@
 
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 1500,
-        debug: true,
+        debug: false,
       });
 
       this.instance.resize();
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
-      this._enemyQuery = world.createQuery(['Enemy', 'Position']);
-      this._bulletQuery = world.createQuery(['Bullet', 'Position']);
-      this._lootQuery = world.createQuery(['Loot', 'Position']);
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
       // Components
       world.registerComponent('Player', { angle: 'f32', lightFlicker: 'f32' });
       world.registerComponent('Enemy', { hp: 'u8', alert: 'f32', vision: 'f32' });
       world.registerComponent('Bullet', { active: 'u8' });
       world.registerComponent('Loot', { value: 'u16' });
+
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
+
+      this._enemyQuery = world.createQuery(['Enemy', 'Position']);
+      this._bulletQuery = world.createQuery(['Bullet', 'Position']);
+      this._lootQuery = world.createQuery(['Loot', 'Position']);
 
       world.setResource('GameState', {
         score: 0,
@@ -77,7 +87,7 @@
         lastShot: 0,
         playerId: -1,
         lightRange: 250,
-        ambientAlpha: 0.95, // Very dark environment
+        ambientAlpha: 0.68,
       });
 
       this.dom = {
@@ -95,6 +105,8 @@
       world.addComponent(p, 'Renderable');
       world.addComponent(p, 'Collider');
       world.addComponent(p, 'Player');
+      world.addComponent(p, 'Rotation');
+      world.addComponent(p, 'Scale');
 
       const pIdx = world.getIndex(p);
       world.componentRegistry.get('Position').props.x[pIdx] = canvas.width / 2;
@@ -111,9 +123,24 @@
         '💥',
       ];
       const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, this.icons);
-      this.instance.onRender = alpha => this.draw(alpha, defaultRender);
+
+      this.instance.onUpdate = (dt, dtMs) => {
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+        return shouldFreeze;
+      };
+
+      this.instance.onRender = alpha => {
+        if (this.juice) this.juice.renderPre();
+        this.draw(alpha, defaultRender);
+        if (this.juice) this.juice.renderPost();
+      };
 
       // Systems
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createLogicSystem());
       world.addSystem(this.createCollisionSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
@@ -127,15 +154,19 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="ch-container" style="width:100%; height:100%; position:relative; background:#000; overflow:hidden;">
-          <canvas id="ch-canvas" style="width:100%; height:100%; display:block;"></canvas>
-          <div id="ch-hud" style="position:absolute; top:15px; left:15px; color:#fff; font-family:Orbitron, sans-serif; pointer-events:none; background:rgba(0,0,0,0.6); padding:12px; border-radius:8px; border:1px solid #333;">
-            <div style="font-size:10px; color:#666; margin-bottom:4px;">RECOVERED DATA</div>
-            <div style="font-size:24px; color:#fbbf24; font-weight:bold;"><span id="ch-score">0</span> <span style="font-size:12px;">$ASDF</span></div>
-            <div style="margin-top:8px; font-size:12px; color:#ef4444;">SYSTEM PURGE: <span id="ch-kills">0</span></div>
+        <div class="ch-container">
+          <canvas id="ch-canvas" class="ch-canvas"></canvas>
+          <div id="ch-hud" class="ch-hud">
+            <div class="ch-stat">
+              <div class="ch-stat-label">ASDF SCORE</div>
+              <div class="ch-stat-value"><span id="ch-score">0</span><span class="ch-stat-unit">$ASDF</span></div>
+            </div>
+            <div class="ch-stat-killline">
+              CLEARED: <span id="ch-kills">0</span>
+            </div>
           </div>
-          <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.4); font-family:monospace; font-size:10px;">
-            WASD: PILOT | MOUSE: AIM | CLICK: FIRE
+          <div class="ch-hint-bar">
+            WASD / CLICK
           </div>
         </div>
       `;
@@ -306,7 +337,11 @@
           const idx = eDense[i];
           if (Math.hypot(px - pos.x[idx], py - pos.y[idx]) < 22) {
             state.gameOver = true;
-            self.instance.shake(20, 30);
+            if (self.juice) {
+              self.juice.impact(pos.x[idx], pos.y[idx], { intensity: 'death' });
+            } else {
+              self.instance.shake(20, 30);
+            }
             if (typeof endGame === 'function') endGame(self.gameId, state.score);
           }
         }
@@ -324,7 +359,9 @@
               state.score += 15;
               self.spawnLoot(world, pos.x[eIdx], pos.y[eIdx]);
 
-              if (ASDF.ParticleSystem) {
+              if (self.juice) {
+                self.juice.impact(pos.x[eIdx], pos.y[eIdx], { intensity: 'medium' });
+              } else if (ASDF.ParticleSystem) {
                 ASDF.ParticleSystem.emit(world, pos.x[eIdx], pos.y[eIdx], {
                   count: 8,
                   colorIdx: 2,
@@ -350,7 +387,17 @@
             continue;
           }
           if (Math.hypot(px - pos.x[idx], py - pos.y[idx]) < 25) {
-            state.score += lootProps.value[idx];
+            const gained = lootProps.value[idx];
+            state.score += gained;
+
+            if (self.juice) {
+              self.juice.impact(pos.x[idx], pos.y[idx], { intensity: 'light' });
+              self.juice.textPop(pos.x[idx], pos.y[idx], `+${gained}`, {
+                color: '#fbbf24',
+                size: 18,
+              });
+            }
+
             if (typeof ASDF !== 'undefined' && ASDF.soundSystem) ASDF.soundSystem.play('collect');
             world.destroyEntity(world.getEntityId(idx));
           }
@@ -364,6 +411,8 @@
       world.addComponent(e, 'Velocity');
       world.addComponent(e, 'Renderable');
       world.addComponent(e, 'Enemy');
+      world.addComponent(e, 'Rotation');
+      world.addComponent(e, 'Scale');
 
       const idx = world.getIndex(e);
       const pos = world.componentRegistry.get('Position').props;
@@ -526,36 +575,26 @@
     },
 
     drawVaultFloor(ctx, w, h, state) {
-      const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, '#050914');
-      bg.addColorStop(0.55, '#0b1022');
-      bg.addColorStop(1, '#10081b');
-      ctx.fillStyle = bg;
+      // Pitch black obscure floor for stealth vibe
+      ctx.fillStyle = '#020205';
       ctx.fillRect(0, 0, w, h);
 
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
+      // Subtle tactical grid
+      ctx.strokeStyle = '#0a0a14';
       ctx.lineWidth = 1;
-      const offset = (performance.now() / 80) % 48;
       ctx.beginPath();
-      for (let x = -offset; x < w; x += 48) {
+      for (let x = 0; x < w; x += 40) {
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
       }
-      for (let y = -offset; y < h; y += 48) {
+      for (let y = 0; y < h; y += 40) {
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
       }
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.12)';
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 5; i++) {
-        const y = ((state.score + i * 137) % (h + 160)) - 80;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.bezierCurveTo(w * 0.25, y + 45, w * 0.72, y - 45, w, y + 20);
-        ctx.stroke();
-      }
+      ctx.fillStyle = 'rgba(255,204,0,0.02)';
+      ctx.fillRect(0, h * 0.88, w, 2);
     },
 
     drawHeistEntities(ctx, world, state) {
@@ -587,55 +626,79 @@
 
     drawLoot(ctx, x, y, value) {
       const tier = value >= 200 ? 4 : value >= 80 ? 3 : value >= 30 ? 2 : value >= 10 ? 1 : 0;
-      const palette = ['#9ca3af', '#22c55e', '#3b82f6', '#a855f7', '#fbbf24'];
+      const palette = ['#ffcc00', '#ff6b35', '#ff2d95', '#f97316', '#fff7ed'];
       const color = palette[tier];
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(Math.PI / 4);
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 18;
-      const grad = ctx.createLinearGradient(-16, -16, 16, 16);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.38, color);
-      grad.addColorStop(1, '#020617');
-      ctx.fillStyle = grad;
-      this.roundRect(ctx, -15, -15, 30, 30, 6);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.fillStyle = color;
+      if (tier <= 1) {
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff2b3';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (tier <= 3) {
+        ctx.rotate(Math.PI / 4);
+        this.roundRect(ctx, -10, -10, 20, 20, 4);
+        ctx.fill();
+        ctx.rotate(-Math.PI / 4);
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -8);
+        ctx.lineTo(8, 0);
+        ctx.lineTo(0, 8);
+        ctx.lineTo(-8, 0);
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(-12, 7);
+        ctx.lineTo(-7, -9);
+        ctx.lineTo(0, 2);
+        ctx.lineTo(7, -9);
+        ctx.lineTo(12, 7);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
     },
 
     drawSentry(ctx, x, y, vision) {
       ctx.save();
       ctx.translate(x, y);
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
       ctx.beginPath();
-      ctx.arc(0, 0, Math.min(vision, 220), 0, Math.PI * 2);
+      ctx.ellipse(0, 13, 15, 5, 0, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = 'rgba(0,0,0,0.36)';
+      ctx.fillStyle = '#f43f5e';
       ctx.beginPath();
-      ctx.ellipse(0, 8, 23, 12, 0, 0, Math.PI * 2);
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = '#7f1d1d';
-      this.roundRect(ctx, -17, -17, 34, 34, 8);
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -10, -4, 20, 8, 5);
       ctx.fill();
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(-11, -4, 22, 8);
-      ctx.fillStyle = '#fee2e2';
-      ctx.fillRect(-9, -2, 6, 4);
-      ctx.fillRect(3, -2, 6, 4);
+      ctx.fillStyle = '#fff7ed';
+      ctx.beginPath();
+      ctx.arc(-5, 0, 2.2, 0, Math.PI * 2);
+      ctx.arc(5, 0, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,247,237,0.42)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, -0.4, 0.4);
+      ctx.stroke();
       ctx.restore();
     },
 
     drawTracer(ctx, x, y) {
       ctx.save();
       ctx.fillStyle = '#fbbf24';
-      ctx.shadowColor = '#fbbf24';
-      ctx.shadowBlur = 14;
       ctx.beginPath();
-      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     },
@@ -644,68 +707,96 @@
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(angle);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.beginPath();
-      ctx.ellipse(0, 7, 18, 11, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 10, 14, 6, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      const suit = ctx.createLinearGradient(-16, 0, 16, 0);
-      suit.addColorStop(0, '#0f172a');
-      suit.addColorStop(0.5, '#22d3ee');
-      suit.addColorStop(1, '#312e81');
-      ctx.fillStyle = suit;
-      this.roundRect(ctx, -16, -13, 32, 26, 8);
-      ctx.fill();
-      ctx.fillStyle = '#fbbf24';
+      // Body (Thief cloak - dark grey/black)
+      ctx.fillStyle = '#1f2937';
       ctx.beginPath();
-      ctx.moveTo(19, 0);
-      ctx.lineTo(6, -6);
-      ctx.lineTo(6, 6);
-      ctx.closePath();
+      ctx.arc(-2, 0, 12, 0, Math.PI * 2);
       ctx.fill();
+
+      // Head (Hooded)
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(2, 0, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Skin / Face
+      ctx.fillStyle = '#fca5a5'; // skin tone
+      ctx.beginPath();
+      ctx.arc(4, 0, 6, -Math.PI / 2.5, Math.PI / 2.5);
+      ctx.fill();
+
+      // Bandana / Mask covering mouth
+      ctx.fillStyle = '#030712';
+      ctx.fillRect(4, -5, 5, 10);
+
+      // Gun (Pistol/Silencer)
+      ctx.fillStyle = '#4b5563';
+      this.roundRect(ctx, 8, 4, 16, 4, 2);
+      ctx.fill();
+
+      // Silencer
+      ctx.fillStyle = '#1f2937';
+      this.roundRect(ctx, 22, 4.5, 10, 3, 1);
+      ctx.fill();
+
+      // Hands holding gun
+      ctx.fillStyle = '#fca5a5';
+      ctx.beginPath();
+      ctx.arc(9, 6, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.restore();
     },
 
     drawSightline(ctx, x, y, angle, range) {
       ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      const beamHalf = Math.PI / 8;
-      const grad = ctx.createRadialGradient(x, y, 0, x, y, range);
-      grad.addColorStop(0, 'rgba(251, 191, 36, 0.24)');
-      grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
-      ctx.fillStyle = grad;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = 'rgba(251,191,36,0.18)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.arc(x, y, range, angle - beamHalf, angle + beamHalf);
-      ctx.closePath();
-      ctx.fill();
+      ctx.lineTo(x + Math.cos(angle) * range, y + Math.sin(angle) * range);
+      ctx.stroke();
       ctx.restore();
     },
 
     drawLightMask(ctx, w, h, x, y, angle, range, ambientAlpha) {
       ctx.save();
-      ctx.fillStyle = `rgba(2, 6, 23, ${ambientAlpha})`;
+      // More atmospheric darkness (84% opacity)
+      ctx.fillStyle = `rgba(3, 3, 12, 0.84)`;
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'destination-out';
 
-      const radial = ctx.createRadialGradient(x, y, 16, x, y, range);
-      radial.addColorStop(0, 'rgba(0,0,0,0.9)');
-      radial.addColorStop(0.62, 'rgba(0,0,0,0.35)');
+      // Focused aura around player
+      const radial = ctx.createRadialGradient(x, y, 20, x, y, range * 0.85);
+      radial.addColorStop(0, 'rgba(0,0,0,1)');
+      radial.addColorStop(0.6, 'rgba(0,0,0,0.6)');
       radial.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = radial;
       ctx.beginPath();
-      ctx.arc(x, y, range, 0, Math.PI * 2);
+      ctx.arc(x, y, range * 0.85, 0, Math.PI * 2);
       ctx.fill();
 
-      const beamHalf = Math.PI / 5.6;
-      const beam = ctx.createRadialGradient(x, y, 0, x, y, range * 1.18);
-      beam.addColorStop(0, 'rgba(0,0,0,0.9)');
-      beam.addColorStop(0.78, 'rgba(0,0,0,0.4)');
+      // Tactical flashlight beam (100 degree cone, shorter range than before)
+      const beamHalf = Math.PI / 3.6;
+      const cx = x + Math.cos(angle) * 30;
+      const cy = y + Math.sin(angle) * 30;
+
+      const beam = ctx.createRadialGradient(cx, cy, 0, cx, cy, range * 2.0);
+      beam.addColorStop(0, 'rgba(0,0,0,1)');
+      beam.addColorStop(0.8, 'rgba(0,0,0,0.85)');
       beam.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = beam;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.arc(x, y, range * 1.18, angle - beamHalf, angle + beamHalf);
+      ctx.arc(x, y, range * 2.0, angle - beamHalf, angle + beamHalf);
       ctx.closePath();
       ctx.fill();
       ctx.restore();

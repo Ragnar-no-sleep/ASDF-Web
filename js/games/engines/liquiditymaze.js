@@ -34,7 +34,7 @@
 
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 1000,
-        debug: true,
+        debug: false,
       });
 
       // 11/10: Resize early for correct grid calculation
@@ -43,6 +43,12 @@
       const world = this.instance.world;
       const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
+
       this._positionQuery = world.createQuery(['Position', 'Renderable']);
 
       // Configure Input Hub
@@ -58,6 +64,10 @@
       world.registerComponent('Player', { frozen: 'f32', viewRadius: 'u8' });
       world.registerComponent('Enemy', { state: 'u8', moveTimer: 'f32' });
       world.registerComponent('Item', { type: 'u8', value: 'u16' });
+
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
 
       world.setResource('GameState', {
         score: 0,
@@ -79,19 +89,33 @@
       this.generateMaze(world);
 
       // Update Loop
-      this.instance.onUpdate = dt => {
+      this.instance.onUpdate = (dt, dtMs) => {
         const state = world.getResource('GameState');
-        if (kernel.services.hud) {
+
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+
+        if (kernel.services?.hud) {
           kernel.services.hud.update(this.gameId, state);
           // Custom LM HUD
           const levelEl = document.getElementById('lm-level');
           if (levelEl) levelEl.textContent = state.level;
         }
+
+        return shouldFreeze;
       };
 
       // Override Render
-      this.instance.onRender = alpha => this.draw(alpha);
+      this.instance.onRender = alpha => {
+        if (this.juice) this.juice.renderPre();
+        this.draw(alpha);
+        if (this.juice) this.juice.renderPost();
+      };
 
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createLogicSystem());
 
       this.instance.start();
@@ -103,9 +127,9 @@
 
     createArena(arena) {
       arena.innerHTML = `
-        <div class="lm-container" style="width:100%; height:100%; background:#050510; position:relative; display:flex; align-items:center; justify-content:center;">
-          <canvas id="lm-canvas" style="width:100%; height:100%; display:block;"></canvas>
-          <div class="lm-hud" style="position:absolute; top:10px; left:10px; color:#fff; font-family:monospace; background:rgba(0,0,0,0.5); padding:8px; border-radius:4px; border:1px solid #333;">
+        <div class="lm-container">
+          <canvas id="lm-canvas" class="lm-canvas"></canvas>
+          <div class="lm-hud">
             SCORE: <span id="lm-score">0</span> | LEVEL: <span id="lm-level">1</span>
           </div>
         </div>
@@ -165,6 +189,8 @@
       world.addComponent(p, 'Position');
       world.addComponent(p, 'Renderable');
       world.addComponent(p, 'Player');
+      world.addComponent(p, 'Rotation');
+      world.addComponent(p, 'Scale');
       const idx = world.getIndex(p);
       world.componentRegistry.get('Position').props.x[idx] = 1;
       world.componentRegistry.get('Position').props.y[idx] = 1;
@@ -179,6 +205,8 @@
         world.addComponent(e, 'Position');
         world.addComponent(e, 'Renderable');
         world.addComponent(e, 'Item');
+        world.addComponent(e, 'Rotation');
+        world.addComponent(e, 'Scale');
 
         const eIdx = world.getIndex(e);
         const tx = 2 + ((i * 3 + state.level) % (state.cols - 4));
@@ -256,7 +284,16 @@
           const ix = world.componentRegistry.get('Position').props.x[idx];
           const iy = world.componentRegistry.get('Position').props.y[idx];
           if (ix === px && iy === py) {
-            state.score += itemComp.props.value[idx];
+            const val = itemComp.props.value[idx];
+            state.score += val;
+
+            if (self.juice) {
+              const cx = offsetX + ix * cS + cS / 2;
+              const cy = offsetY + iy * cS + cS / 2;
+              self.juice.impact(cx, cy, { intensity: 'light' });
+              self.juice.textPop(cx, cy, `+${val}`, { color: '#fbbf24', size: 18 });
+            }
+
             world.destroyEntity(world.getEntityId(idx));
           }
         }
@@ -265,6 +302,14 @@
         if (px === state.cols - 2 && py === state.rows - 2) {
           state.score += 100;
           state.level++;
+
+          if (self.juice) {
+            const cx = offsetX + px * cS + cS / 2;
+            const cy = offsetY + py * cS + cS / 2;
+            self.juice.impact(cx, cy, { intensity: 'medium' });
+            self.juice.textPop(cx, cy, 'LEVEL UP', { color: '#22c55e', size: 28 });
+          }
+
           self.generateMaze(world);
         }
       };
@@ -358,25 +403,16 @@
       const offsetX = (w - state.cols * cS) / 2;
       const offsetY = (h - state.rows * cS) / 2;
 
-      const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, '#07111f');
-      bg.addColorStop(0.58, '#0d1428');
-      bg.addColorStop(1, '#11071c');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = 0; x < w; x += 42) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + 28, h);
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          seed: state.score || state.level || 0,
+        });
+      } else {
+        ctx.fillStyle = '#12071f';
+        ctx.fillRect(0, 0, w, h);
       }
-      for (let y = 0; y < h; y += 42) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-      }
-      ctx.stroke();
 
       for (let y = 0; y < state.rows; y++) {
         for (let x = 0; x < state.cols; x++) {
@@ -393,25 +429,18 @@
     },
 
     drawMazeFloor(ctx, x, y, size, revealed) {
-      ctx.fillStyle = revealed ? 'rgba(15, 23, 42, 0.86)' : 'rgba(15, 23, 42, 0.5)';
+      ctx.fillStyle = revealed ? 'rgba(42, 16, 38, 0.88)' : 'rgba(19, 10, 31, 0.66)';
       ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
       if (revealed) {
-        ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
+        ctx.strokeStyle = 'rgba(248,250,252,0.06)';
         ctx.strokeRect(x + 4, y + 4, size - 8, size - 8);
       }
     },
 
     drawMazeWall(ctx, x, y, size) {
-      const grad = ctx.createLinearGradient(x, y, x + size, y + size);
-      grad.addColorStop(0, '#172554');
-      grad.addColorStop(0.55, '#312e81');
-      grad.addColorStop(1, '#111827');
-      ctx.fillStyle = grad;
-      this.roundRect(ctx, x + 2, y + 2, size - 4, size - 4, 6);
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, x + 2, y + 2, size - 4, size - 4, 4);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(167, 139, 250, 0.28)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
     },
 
     drawMazeEntities(ctx, state, offsetX, offsetY, cS) {
@@ -444,30 +473,85 @@
     drawMazeRunner(ctx, x, y, cS) {
       ctx.save();
       ctx.translate(x, y);
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.22)';
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
       ctx.beginPath();
-      ctx.arc(0, 0, cS * 0.48, 0, Math.PI * 2);
+      ctx.ellipse(0, cS * 0.24, cS * 0.22, cS * 0.08, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#22d3ee';
-      this.roundRect(ctx, -cS * 0.22, -cS * 0.25, cS * 0.44, cS * 0.5, 8);
+      ctx.fillStyle = '#ff6b35';
+      this.roundRect(ctx, -cS * 0.14, -cS * 0.03, cS * 0.28, cS * 0.26, 6);
       ctx.fill();
-      ctx.fillStyle = '#020617';
-      ctx.fillRect(-cS * 0.12, -cS * 0.08, cS * 0.24, cS * 0.12);
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.arc(0, -cS * 0.2, cS * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -cS * 0.1, -cS * 0.23, cS * 0.2, cS * 0.08, 4);
+      ctx.fill();
+      ctx.strokeStyle = '#fff7ed';
+      ctx.lineWidth = Math.max(1.5, cS * 0.045);
+      ctx.beginPath();
+      ctx.moveTo(-cS * 0.08, cS * 0.08);
+      ctx.lineTo(-cS * 0.18, cS * 0.21);
+      ctx.moveTo(cS * 0.08, cS * 0.08);
+      ctx.lineTo(cS * 0.18, cS * 0.21);
+      ctx.stroke();
       ctx.restore();
     },
 
     drawTreasure(ctx, x, y, type, cS) {
-      const colors = ['#22c55e', '#3b82f6', '#a855f7', '#fbbf24'];
+      const colors = ['#ffcc00', '#ff6b35', '#ff2d95', '#f97316'];
       const color = colors[type % colors.length];
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(Math.PI / 4);
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 14;
       ctx.fillStyle = color;
-      this.roundRect(ctx, -cS * 0.22, -cS * 0.22, cS * 0.44, cS * 0.44, 5);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      if (type === 0) {
+        ctx.beginPath();
+        ctx.arc(0, 0, cS * 0.17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff2b3';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, cS * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (type === 1) {
+        ctx.rotate(Math.PI / 4);
+        this.roundRect(ctx, -cS * 0.15, -cS * 0.15, cS * 0.3, cS * 0.3, 4);
+        ctx.fill();
+        ctx.rotate(-Math.PI / 4);
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -cS * 0.11);
+        ctx.lineTo(cS * 0.1, 0);
+        ctx.lineTo(0, cS * 0.1);
+        ctx.lineTo(-cS * 0.1, 0);
+        ctx.closePath();
+        ctx.stroke();
+      } else if (type === 2) {
+        ctx.beginPath();
+        ctx.moveTo(-cS * 0.18, cS * 0.1);
+        ctx.lineTo(-cS * 0.1, -cS * 0.16);
+        ctx.lineTo(0, cS * 0.02);
+        ctx.lineTo(cS * 0.1, -cS * 0.16);
+        ctx.lineTo(cS * 0.18, cS * 0.1);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        for (let i = 0; i < 5; i += 1) {
+          const outer = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+          const inner = outer + Math.PI / 5;
+          const px = Math.cos(outer) * cS * 0.18;
+          const py = Math.sin(outer) * cS * 0.18;
+          const ix = Math.cos(inner) * cS * 0.08;
+          const iy = Math.sin(inner) * cS * 0.08;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+          ctx.lineTo(ix, iy);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
     },
 
@@ -477,16 +561,16 @@
       const y = offsetY + (state.rows - 2) * cS + cS / 2;
       ctx.save();
       ctx.translate(x, y);
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffcc00';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(0, 0, cS * 0.36, 0, Math.PI * 2);
+      ctx.arc(0, 0, cS * 0.3, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.fillStyle = '#fbbf24';
+      ctx.fillStyle = '#ffcc00';
       ctx.beginPath();
-      ctx.moveTo(-cS * 0.12, cS * 0.18);
-      ctx.lineTo(0, -cS * 0.22);
-      ctx.lineTo(cS * 0.16, cS * 0.18);
+      ctx.moveTo(-cS * 0.1, cS * 0.12);
+      ctx.lineTo(0, -cS * 0.16);
+      ctx.lineTo(cS * 0.12, cS * 0.12);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
@@ -496,7 +580,7 @@
       for (let y = 0; y < state.rows; y++) {
         for (let x = 0; x < state.cols; x++) {
           if (state.fog[y][x] === 0) continue;
-          ctx.fillStyle = 'rgba(2, 6, 23, 0.86)';
+          ctx.fillStyle = 'rgba(9, 5, 16, 0.82)';
           ctx.fillRect(offsetX + x * cS, offsetY + y * cS, cS, cS);
         }
       }

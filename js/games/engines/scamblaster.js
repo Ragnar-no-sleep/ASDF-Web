@@ -29,46 +29,46 @@
   const SCAM_LABELS = ['SCAM', 'RUG', 'BOT', 'FAKE', 'PHISH', 'DRIFT'];
   const THREAT_THEMES = [
     {
-      primary: '#ef4444',
-      secondary: '#7f1d1d',
-      glow: '#fca5a5',
-      accent: '#f87171',
+      primary: '#f43f5e',
+      secondary: '#3b120b',
+      glow: '#fff2b3',
+      accent: '#ffcc00',
       level: 'critical',
       shape: 'hex',
       pulse: 1.2,
     },
     {
-      primary: '#f97316',
-      secondary: '#7c2d12',
-      glow: '#fed7aa',
-      accent: '#fdba74',
+      primary: '#ff6b35',
+      secondary: '#3b120b',
+      glow: '#fff2b3',
+      accent: '#ffcc00',
       level: 'elevated',
       shape: 'shield',
       pulse: 1.1,
     },
     {
-      primary: '#a855f7',
-      secondary: '#581c87',
-      glow: '#ddd6fe',
-      accent: '#d8b4fe',
+      primary: '#ff2d95',
+      secondary: '#2a0718',
+      glow: '#fff2b3',
+      accent: '#ff6b35',
       level: 'high',
       shape: 'diamond',
       pulse: 1.08,
     },
     {
-      primary: '#22c55e',
-      secondary: '#14532d',
-      glow: '#bbf7d0',
-      accent: '#86efac',
+      primary: '#f97316',
+      secondary: '#311006',
+      glow: '#fff2b3',
+      accent: '#ffcc00',
       level: 'low',
       shape: 'plate',
       pulse: 1.05,
     },
     {
-      primary: '#38bdf8',
-      secondary: '#0c4a6e',
-      glow: '#bae6fd',
-      accent: '#7dd3fc',
+      primary: '#fff2b3',
+      secondary: '#3b120b',
+      glow: '#ffcc00',
+      accent: '#ff6b35',
       level: 'low',
       shape: 'plate',
       pulse: 1.06,
@@ -84,10 +84,15 @@
     },
   ];
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
   const ScamBlaster = {
     version: '2.7.0',
     gameId: 'scamblaster',
     instance: null,
+    juice: null,
     _cleanupInput: null,
     _cleanupResize: null,
     _resizeTimer: null,
@@ -96,15 +101,20 @@
     layout: null,
 
     enemyTypes: [
-      { icon: 'S', label: 'SCAM', points: 8, speed: 1.2, size: 34 },
-      { icon: 'R', label: 'RUG', points: 13, speed: 1.4, size: 40 },
-      { icon: 'B', label: 'BOT', points: 21, speed: 1.6, size: 45 },
-      { icon: 'F', label: 'FAKE', points: 34, speed: 1.8, size: 34 },
-      { icon: 'T', label: 'PHISH', points: 55, speed: 1.3, size: 55 },
+      { icon: 'A', label: 'SCAM', points: 8, speed: 1.2, size: 34, sprite: 'badge' },
+      { icon: 'S', label: 'RUG', points: 13, speed: 1.4, size: 40, sprite: 'tile' },
+      { icon: 'D', label: 'BOT', points: 21, speed: 1.6, size: 45, sprite: 'gem' },
+      { icon: 'F', label: 'FAKE', points: 34, speed: 1.8, size: 34, sprite: 'chip' },
+      { icon: 'X', label: 'PHISH', points: 55, speed: 1.3, size: 55, sprite: 'trap' },
     ],
 
     start(gameId) {
       this.stop();
+
+      console.log(
+        '%c [ScamBlaster] SVG CURSOR ENGINE LOADED ',
+        'background: #f43f5e; color: #fff; font-weight: bold;'
+      );
 
       const arena = document.getElementById(`arena-${gameId}`);
       if (!arena) return;
@@ -114,9 +124,14 @@
 
       this.instance = new window.ASDF.GameInstance(canvas, {
         maxEntities: 900,
-        debug: true,
+        debug: false,
       });
       this.instance.resize();
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
       const world = this.instance.world;
       const kernel = window.ASDF.Kernel;
@@ -148,6 +163,9 @@
         level: 1,
         elapsed: 0,
         threatCount: 0,
+        aimX: canvas.width / 2,
+        aimY: canvas.height * 0.52,
+        aimActive: false,
       });
 
       this.dom = {
@@ -167,17 +185,32 @@
       this._enemyQuery = world.createQuery(['Position', 'Enemy', 'ThreatMeta']);
       this._lifespanQuery = world.createQuery(['Lifespan', 'Enemy', 'Position']);
 
-      this.instance.onUpdate = () => {
+      this.instance.onUpdate = (dt, dtMs) => {
         const state = world.getResource('GameState');
-        if (kernel.services.hud) {
+
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+
+        if (kernel.services?.hud) {
           kernel.services.hud.update(this.gameId, state);
         }
+
+        return shouldFreeze;
       };
 
-      this.instance.onRender = () => this.draw();
+      this.instance.onRender = () => {
+        if (this.juice) this.juice.renderPre();
+        this.draw();
+        if (this.juice) this.juice.renderPost();
+      };
 
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(this.createLogicSystem());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
+
       this.instance.start();
 
       const onResize = () => {
@@ -215,37 +248,69 @@
               <button id="sb-select-pop" class="game-btn game-btn-purple sb-mode-btn">POP MODE</button>
             </div>
           </div>
-          <div id="sb-hud" class="sb-hud game-hidden">
-            SCORE: <span id="sb-score" class="sb-score-label sb-score-value">0</span> | LIVES: <span id="sb-lives" class="sb-life-value">x3</span> | WAVE: <span id="sb-wave" class="sb-wave-value">1</span>
+          <div id="sb-hud" class="sb-hud game-hidden" aria-hidden="true">
+            <span>SCORE <strong id="sb-score">0</strong></span>
+            <span>LIVES <strong id="sb-lives">x3</strong></span>
+            <span>WAVE <strong id="sb-wave">1</strong></span>
+            <span>COMBO <strong id="sb-streak">x0</strong></span>
+            <span id="sb-threat-count">THREATS 0</span>
           </div>
-          <div id="sb-streak" class="sb-streak">x0</div>
-          <div id="sb-threat-count" class="sb-threat-count">THREATS 0</div>
           <div id="sb-countdown" class="sb-countdown">3</div>
         </div>
       `;
     },
 
     setupModeSelection() {
-      document.getElementById('sb-select-fall').onclick = () => this.selectMode('fall');
-      document.getElementById('sb-select-pop').onclick = () => this.selectMode('pop');
+      const fall = document.getElementById('sb-select-fall');
+      const pop = document.getElementById('sb-select-pop');
+      if (!fall || !pop) return;
+      fall.addEventListener('click', () => this.selectMode('fall'), { once: true });
+      pop.addEventListener('click', () => this.selectMode('pop'), { once: true });
     },
 
     selectMode(mode) {
       const state = this.instance.world.getResource('GameState');
       state.gameMode = mode;
       state.phase = 'countdown';
-      this.dom.modeSelect.style.display = 'none';
+      this.dom.modeSelect.classList.add('sb-mode-select--hidden');
       this.dom.hud.classList.remove('game-hidden');
-      this.dom.countdown.style.display = 'block';
+      this.dom.hud.setAttribute('aria-hidden', 'false');
+      this.dom.countdown.classList.add('sb-countdown--visible');
     },
 
     setupInput() {
       const canvas = this.instance.canvas;
-      const onPointerDown = e => {
+
+      // OPEN SOURCE STANDARD: Zero-latency native CSS SVG cursor (Red circle with dot)
+      const cursorSvg =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%23ff0000' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23ff0000'/%3E%3C/svg%3E";
+      canvas.style.cursor = `url("${cursorSvg}") 16 16, crosshair`;
+
+      const updateAim = e => {
         const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        const state = this.instance?.world?.getResource('GameState');
+        if (state) {
+          state.aimX = x;
+          state.aimY = y;
+          state.aimActive = true;
+        }
+        return { x, y };
+      };
+
+      const onPointerDown = e => {
+        const { x, y } = updateAim(e);
         this.shoot(x, y);
+      };
+      const onPointerMove = e => updateAim(e);
+      const onPointerLeave = () => {
+        const state = this.instance?.world?.getResource('GameState');
+        if (state) state.aimActive = false;
       };
       const onKeyDown = e => {
         if (e.code === 'Space' || e.code === 'Enter') {
@@ -259,15 +324,16 @@
         }
       };
       canvas.addEventListener('pointerdown', onPointerDown);
+      canvas.addEventListener('pointermove', onPointerMove);
+      canvas.addEventListener('pointerleave', onPointerLeave);
       document.addEventListener('keydown', onKeyDown);
       this._cleanupInput = () => {
         canvas.removeEventListener('pointerdown', onPointerDown);
+        canvas.removeEventListener('pointermove', onPointerMove);
+        canvas.removeEventListener('pointerleave', onPointerLeave);
         document.removeEventListener('keydown', onKeyDown);
-        canvas.style.cursor = '';
+        canvas.style.cursor = 'crosshair'; // restore on exit
       };
-      const svgCursor =
-        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><circle cx="25" cy="25" r="18" fill="none" stroke="%23ef4444" stroke-width="2"/><path d="M 0 25 L 17 25 M 33 25 L 50 25 M 25 0 L 25 17 M 25 33 L 25 50" stroke="%23ef4444" stroke-width="2"/><circle cx="25" cy="25" r="3" fill="%23ef4444"/></svg>';
-      canvas.style.cursor = `url('${svgCursor}') 25 25, crosshair`;
     },
 
     createLogicSystem() {
@@ -280,7 +346,7 @@
           state.countdown -= dt / 60;
           if (state.countdown <= 0) {
             state.phase = 'playing';
-            self.dom.countdown.style.display = 'none';
+            self.dom.countdown.classList.remove('sb-countdown--visible');
           } else {
             self.dom.countdown.textContent = Math.ceil(state.countdown);
           }
@@ -439,12 +505,24 @@
           state.score += points;
           state.wave = 1 + Math.floor(state.score / 520);
 
-          if (ASDF?.ParticleSystem) {
-            ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], {
-              count: 12 + Math.min(18, state.streak),
-              colorIdx: state.streak >= 5 ? 5 : 1,
-              speed: 3 + Math.min(5, state.streak * 0.2),
+          if (this.juice) {
+            // Addictive Impact
+            const impactIntensity = state.streak >= 10 ? 'heavy' : 'medium';
+            this.juice.impact(pos.x[idx], pos.y[idx], { intensity: impactIntensity });
+            this.juice.textPop(pos.x[idx], pos.y[idx], `+${points}`, {
+              color: '#fbbf24',
+              size: 24 + Math.min(10, state.streak),
+              lifetime: 25,
             });
+
+            if (state.streak % 5 === 0) {
+              this.juice.textPop(
+                this.instance.canvas.width / 2,
+                this.instance.canvas.height / 2,
+                `${state.streak} STREAK!`,
+                { color: '#ffcc00', size: 40, lifetime: 35 }
+              );
+            }
           }
 
           world.destroyEntity(world.getEntityId(idx));
@@ -460,15 +538,10 @@
       const pos = world.componentRegistry.get('Position').props;
       const idx = world.getIndex(id);
 
-      if (ASDF?.ParticleSystem) {
-        ASDF.ParticleSystem.emit(world, pos.x[idx], pos.y[idx], {
-          count: 20,
-          colorIdx: 2,
-          speed: 5,
-        });
+      if (this.juice) {
+        this.juice.impact(pos.x[idx], pos.y[idx], { intensity: 'light' }); // Reduced intensity, no shake
       }
 
-      this.instance.shake(10, 15);
       state.lives -= 1;
       state.streak = 0;
       world.destroyEntity(id);
@@ -497,52 +570,130 @@
       this.drawAtmosphere(ctx, w, h, state);
       this.drawThreats(ctx);
       this.drawThreatBars(ctx, w, h, state);
+      // Reticle is now handled natively via CSS cursor for zero-latency
       this.drawPopBars();
     },
 
     drawAtmosphere(ctx, w, h, state) {
-      const pulse = 1 + Math.sin(performance.now() * 0.0015) * 0.02;
-      const bg = ctx.createRadialGradient(w / 2, h * 0.12, 0, w / 2, h * 2, Math.max(w, h));
-      bg.addColorStop(0, '#050510');
-      bg.addColorStop(1, '#0a0516');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      const groundY = h * 0.84;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          allowNoise: false,
+          seed: state.wave + Math.floor(state.elapsed || 0),
+        });
+      } else {
+        const sky = ctx.createLinearGradient(0, 0, 0, h);
+        sky.addColorStop(0, '#0a0a0f');
+        sky.addColorStop(0.48, '#2a1005');
+        sky.addColorStop(1, '#070504');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, w, h);
 
-      const strip = Math.floor((state.elapsed || 0) * 60);
-      const shift = (strip * 1.6 * pulse) % 80;
-      ctx.save();
-      for (let y = -80; y < h + 80; y += CONFIG.gridCell) {
-        const alpha = 0.24 - Math.min(0.2, y / h);
-        const gx = (strip * 0.8 + y * 0.15 + shift) % 90;
-        ctx.fillStyle = `rgba(56,189,248,${Math.max(0.03, alpha)})`;
-        ctx.fillRect(((gx + w * 0.18) % w) - 14, y, 2, 26);
-        ctx.fillRect(((w - gx) % w) - 4, y + 12, 2, 18);
-      }
-      for (let x = 0; x < w; x += CONFIG.gridCell) {
-        const gx = (x + strip * 2.5) % CONFIG.gridCell;
-        ctx.strokeStyle = `rgba(148,163,184,${0.12 + (gx / CONFIG.gridCell) * 0.08})`;
-        ctx.lineWidth = 1;
+        const sunX = w / 2;
+        const sunY = h * 0.38;
+        const sunR = Math.max(70, Math.min(150, w * 0.16));
+        ctx.save();
+        const sunGrad = ctx.createLinearGradient(0, sunY - sunR, 0, sunY + sunR);
+        sunGrad.addColorStop(0, '#fbbf24');
+        sunGrad.addColorStop(0.38, '#fb923c');
+        sunGrad.addColorStop(0.68, '#ea580c');
+        sunGrad.addColorStop(1, '#7c2d12');
+        ctx.fillStyle = sunGrad;
+        ctx.globalAlpha = 0.42;
         ctx.beginPath();
-        ctx.moveTo(x + Math.sin((x + strip) * 0.01) * 4, 0);
-        ctx.lineTo(x + Math.sin((x + strip) * 0.01) * 4, h);
-        ctx.stroke();
+        ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.26;
+        ctx.fillStyle = '#160a05';
+        for (let y = sunY - sunR * 0.42; y < sunY + sunR * 0.8; y += 18) {
+          const span = Math.sqrt(Math.max(0, sunR * sunR - (y - sunY) * (y - sunY)));
+          ctx.fillRect(sunX - span, y, span * 2, 7);
+        }
+        ctx.restore();
+
+        ctx.fillStyle = '#160b06';
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(w * 0.16, h * 0.66);
+        ctx.lineTo(w * 0.34, groundY);
+        ctx.lineTo(w * 0.54, h * 0.7);
+        ctx.lineTo(w * 0.72, groundY);
+        ctx.lineTo(w * 0.88, h * 0.68);
+        ctx.lineTo(w, groundY);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#070504';
+        ctx.fillRect(0, groundY, w, h - groundY);
+        ctx.fillStyle = '#fb923c';
+        ctx.fillRect(0, groundY, w, 4);
       }
+
+      if (state.gameMode === 'fall') {
+        const laneGap = w / CONFIG.laneCount;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(251,146,60,0.11)';
+        ctx.lineWidth = 2;
+        for (let lane = 1; lane < CONFIG.laneCount; lane += 1) {
+          const x = lane * laneGap;
+          ctx.beginPath();
+          ctx.moveTo(x, h * 0.26);
+          ctx.lineTo(x, groundY);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      ctx.fillStyle = 'rgba(251,191,36,0.88)';
+      ctx.font = `800 ${Math.max(12, Math.min(18, w * 0.022))}px ${CONFIG.iconFont}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('ASDF', 18, groundY + 26);
+    },
+
+    drawReticle(ctx, w, h, state) {
+      if (!state || state.phase !== 'playing') return;
+      const x = clamp(state.aimX || w / 2, 18, w - 18);
+      const y = clamp(state.aimY || h * 0.52, 18, h - 18);
+      const r = 16 + Math.sin(performance.now() * 0.008) * 1.5;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.strokeStyle = state.aimActive ? 'rgba(255,247,237,0.92)' : 'rgba(255,247,237,0.54)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = 'rgba(251,146,60,0.45)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(251,191,36,0.92)';
+      ctx.beginPath();
+      ctx.moveTo(-r - 9, 0);
+      ctx.lineTo(-r * 0.35, 0);
+      ctx.moveTo(r * 0.35, 0);
+      ctx.lineTo(r + 9, 0);
+      ctx.moveTo(0, -r - 9);
+      ctx.lineTo(0, -r * 0.35);
+      ctx.moveTo(0, r * 0.35);
+      ctx.lineTo(0, r + 9);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,247,237,0.9)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 2.4, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     },
 
     drawThreatBars(ctx, w, h, state) {
-      const barY = h * 0.94;
-      const alpha = 0.15 + (state.elapsed % 1) * 0.02;
-      const t = performance.now() * 0.0015;
       ctx.save();
-      ctx.fillStyle = `rgba(251,191,36,${alpha})`;
-      for (let i = 0; i < 40; i++) {
-        const x = (i * 48 + Math.sin(t + i * 0.24) * 18) % w;
-        ctx.fillRect(x, barY + Math.sin(t + i * 0.2) * 3, 12, 4);
-      }
+      const barY = h * 0.84;
       if (state.phase === 'countdown' || state.wave > 1) {
-        ctx.fillStyle = 'rgba(34, 211, 238, 0.16)';
-        ctx.fillRect(0, barY + 7, Math.min(w, (w * Math.max(0.2, state.score % 5000)) / 5000), 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.16)';
+        ctx.fillRect(16, barY + 14, Math.min(w - 32, (w - 32) * ((state.wave % 8) / 8)), 5);
       }
       ctx.restore();
     },
@@ -567,7 +718,7 @@
         const y = pos.y[idx];
         const x = pos.x[idx];
         const r = 35;
-        ctx.strokeStyle = ratio > 0.5 ? '#22c55e' : '#ef4444';
+        ctx.strokeStyle = ratio > 0.5 ? '#ffcc00' : '#f43f5e';
         ctx.lineWidth = 2.8;
         ctx.beginPath();
         ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
@@ -583,10 +734,18 @@
       const enemy = world.componentRegistry.get('Enemy').props;
       const meta = world.componentRegistry.get('ThreatMeta')?.props;
 
+      const rotComp = world.componentRegistry.get('Rotation');
+      const scaleComp = world.componentRegistry.get('Scale');
+
       for (let i = 0; i < count; i++) {
         const idx = dense[i];
         const typeIndex = enemy.typeIndex[idx] || 0;
         const theme = THREAT_THEMES[typeIndex % THREAT_THEMES.length];
+
+        const angle = rotComp ? rotComp.props.angle[idx] : 0;
+        const sx = scaleComp ? scaleComp.props.x[idx] : 1;
+        const sy = scaleComp ? scaleComp.props.y[idx] : 1;
+
         const threatData = meta
           ? {
               level: theme.level,
@@ -597,132 +756,147 @@
         const threatType = this.enemyTypes[typeIndex] || {
           label: SCAM_LABELS[typeIndex % SCAM_LABELS.length],
         };
+
+        ctx.save();
+        ctx.translate(pos.x[idx], pos.y[idx]);
+        ctx.rotate(angle);
+        ctx.scale(sx, sy);
         this.drawThreat(
           ctx,
-          pos.x[idx],
-          pos.y[idx],
+          0,
+          0,
           rend.size[idx] || 36,
           typeIndex,
           threatType.label || SCAM_LABELS[typeIndex % SCAM_LABELS.length],
           threatData
         );
+        ctx.restore();
       }
     },
 
     drawThreat(ctx, x, y, size, type, label, threatData = {}) {
       const theme = THREAT_THEMES[type % THREAT_THEMES.length];
       const enemy = this.enemyTypes[type % this.enemyTypes.length];
-      const threatPulse = 1 + Math.sin((performance.now() + x * 1.9) / 170) * 0.05;
-      const riskPulse =
-        Math.sin(performance.now() * CONFIG.entityPulseSpeed + x * 0.04) * 0.5 + 0.5;
-      const pulse =
-        threatPulse *
-        (1 + (theme.pulse - 1) * Math.min(1, threatData.intensity || 1) + riskPulse * 0.04);
       const radius = Math.max(CONFIG.minThreatRadius, size);
-      const glyph = enemy.icon;
-      const threatLevel = threatData.level || theme.level;
-      const tilt = Math.min(
-        0.14,
-        Math.abs(Math.sin(performance.now() * 0.0015 + y * 0.025)) * 0.14
-      );
-      const ring = radius * 0.2 * (threatData.intensity || 1) * (1 + (threatData.age || 0) * 0.01);
-      const speedPulse = 1 + Math.min(0.85, (threatData.intensity || 0) * 0.12);
+      const intensity = clamp(threatData.intensity || 1, 1, 4);
+      const pulse = 1 + Math.sin((performance.now() + x * 1.4) / 280) * 0.018 + intensity * 0.003;
 
       ctx.save();
       ctx.translate(x, y);
-      ctx.scale(pulse * speedPulse, pulse * speedPulse);
-      ctx.rotate(Math.sin((performance.now() + x) * 0.0008) * tilt);
+      ctx.scale(pulse, pulse);
 
-      const halo = ctx.createRadialGradient(0, 0, radius * 0.08, 0, 0, radius * 1.06);
-      halo.addColorStop(0, `${theme.glow}00`);
-      halo.addColorStop(1, `${theme.glow}66`);
-      ctx.fillStyle = halo;
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
       ctx.beginPath();
-      ctx.arc(0, 0, radius * 1.06, 0, Math.PI * 2);
+      ctx.ellipse(0, radius * 0.42, radius * 0.58, radius * 0.18, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(0,0,0,0.38)';
-      ctx.beginPath();
-      ctx.ellipse(0, radius * 0.16, radius * 0.6, radius * 0.42, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      const shell = ctx.createLinearGradient(
-        -radius * 0.56,
-        -radius * 0.56,
-        radius * 0.56,
-        radius * 0.56
-      );
-      shell.addColorStop(0, theme.primary);
-      shell.addColorStop(1, theme.secondary);
-      ctx.fillStyle = shell;
-      this.drawThreatHull(ctx, theme.shape, radius);
-      ctx.fill();
-
-      ctx.strokeStyle = `rgba(251, 191, 36, ${0.2 + (threatData.intensity || 1) * 0.08})`;
-      ctx.lineWidth = Math.max(1.4, radius * 0.025);
-      this.drawThreatHull(ctx, theme.shape, radius * 0.98);
-      ctx.stroke();
-
-      ctx.strokeStyle = `rgba(248,250,252,${0.2 + (ring / radius) * 0.22})`;
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      for (let i = 0; i < 4; i += 1) {
-        const start = (i / 4) * Math.PI * 2;
-        const end = start + Math.PI * 0.44;
-        ctx.arc(0, 0, radius * 0.72, start + (i % 2) * 0.08, end);
-      }
-      ctx.stroke();
-
-      ctx.shadowColor = theme.primary;
-      ctx.shadowBlur = Math.max(12, ring + 8);
-      ctx.fillStyle = theme.accent;
-      ctx.font = `900 ${Math.max(9, radius * 0.24)}px ${CONFIG.iconFont}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(glyph, 0, -radius * 0.03);
-
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#0b1220';
-      ctx.font = `700 ${Math.max(9, radius * 0.19)}px ${CONFIG.iconFont}`;
-      ctx.fillText(label, 0, radius * 0.32);
-
-      const barY = radius * 0.56;
-      const barW = radius * 1.24;
-      const severity =
-        threatLevel === 'critical'
-          ? 0.94
-          : threatLevel === 'high'
-            ? 0.72
-            : threatLevel === 'elevated'
-              ? 0.52
-              : 0.32;
-      ctx.fillStyle = 'rgba(255,255,255,0.13)';
-      ctx.fillRect(-barW * 0.5, barY, barW, 4.5);
-      ctx.fillStyle = theme.primary;
-      ctx.fillRect(-barW * 0.5, barY, barW * severity, 4.5);
-
-      const threatTagColor =
-        threatLevel === 'critical' ? '#f87171' : threatLevel === 'high' ? '#fb7185' : '#93c5fd';
-      ctx.fillStyle = threatTagColor;
-      ctx.font = `700 ${Math.max(8, radius * 0.14)}px ${CONFIG.iconFont}`;
-      ctx.fillText(`RISK ${Math.round((threatData.intensity || 1) * 100)}%`, 0, radius * 0.86);
-
-      ctx.strokeStyle = 'rgba(255,255,255,0.34)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      for (let i = -1; i <= 1; i++) {
-        const y = radius * (0.34 + i * 0.1);
-        ctx.fillStyle =
-          threatLevel === 'critical' && i === 0 ? 'rgba(239,68,68,0.34)' : 'rgba(255,255,255,0.26)';
-        ctx.beginPath();
-        ctx.moveTo(-radius * 0.34 + Math.abs(i) * 4, y);
-        ctx.lineTo(radius * 0.34 - Math.abs(i) * 4, y);
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
+      this.drawSimpleScamSprite(ctx, radius, enemy.sprite, theme, enemy.icon);
 
       ctx.restore();
+    },
+
+    drawSimpleScamSprite(ctx, radius, sprite, theme, _icon) {
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const palette = {
+        badge: ['#ffcc00', '#ff6b35', '#3b120b'],
+        tile: ['#ff6b35', '#ff2d95', '#2a0718'],
+        gem: ['#f97316', '#fbbf24', '#311006'],
+        chip: ['#f43f5e', '#fb7185', '#3a0714'],
+        trap: ['#a855f7', '#ff2d95', '#1f0b38'],
+      };
+      const colors = palette[sprite] || [theme.primary, theme.accent, theme.secondary];
+
+      ctx.fillStyle = colors[0];
+      ctx.strokeStyle = '#fff2b3';
+      ctx.lineWidth = Math.max(2, radius * 0.05);
+      ctx.beginPath();
+      if (sprite === 'tile') {
+        this.roundRect(ctx, -radius * 0.5, -radius * 0.38, radius, radius * 0.76, 7);
+      } else if (sprite === 'gem') {
+        ctx.moveTo(0, -radius * 0.6);
+        ctx.lineTo(radius * 0.58, 0);
+        ctx.lineTo(0, radius * 0.58);
+        ctx.lineTo(-radius * 0.58, 0);
+        ctx.closePath();
+      } else if (sprite === 'chip') {
+        this.roundRect(ctx, -radius * 0.46, -radius * 0.46, radius * 0.92, radius * 0.92, 5);
+      } else if (sprite === 'trap') {
+        for (let i = 0; i < 10; i += 1) {
+          const a = -Math.PI / 2 + (i * Math.PI * 2) / 10;
+          const r = i % 2 === 0 ? radius * 0.58 : radius * 0.31;
+          const px = Math.cos(a) * r;
+          const py = Math.sin(a) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+      } else {
+        ctx.arc(0, 0, radius * 0.58, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = colors[1];
+      ctx.globalAlpha = 0.88;
+      ctx.beginPath();
+      ctx.arc(-radius * 0.14, -radius * 0.16, radius * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = colors[2];
+      ctx.lineWidth = Math.max(2, radius * 0.06);
+      ctx.beginPath();
+      ctx.moveTo(-radius * 0.36, radius * 0.34);
+      ctx.lineTo(radius * 0.36, -radius * 0.34);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#fff7ed';
+      ctx.fillStyle = '#fff7ed';
+      ctx.lineWidth = Math.max(2, radius * 0.055);
+      if (sprite === 'badge') {
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.24, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (sprite === 'tile') {
+        this.roundRect(ctx, -radius * 0.2, -radius * 0.21, radius * 0.4, radius * 0.18, 3);
+        ctx.fill();
+        this.roundRect(ctx, -radius * 0.3, radius * 0.06, radius * 0.6, radius * 0.14, 3);
+        ctx.fill();
+      } else if (sprite === 'gem') {
+        ctx.beginPath();
+        ctx.moveTo(0, -radius * 0.29);
+        ctx.lineTo(radius * 0.26, 0);
+        ctx.lineTo(0, radius * 0.26);
+        ctx.lineTo(-radius * 0.26, 0);
+        ctx.closePath();
+        ctx.stroke();
+      } else if (sprite === 'chip') {
+        this.roundRect(ctx, -radius * 0.2, -radius * 0.2, radius * 0.4, radius * 0.4, 3);
+        ctx.stroke();
+        for (let i = -1; i <= 1; i += 2) {
+          ctx.beginPath();
+          ctx.moveTo(i * radius * 0.34, -radius * 0.18);
+          ctx.lineTo(i * radius * 0.48, -radius * 0.18);
+          ctx.moveTo(i * radius * 0.34, radius * 0.18);
+          ctx.lineTo(i * radius * 0.48, radius * 0.18);
+          ctx.stroke();
+        }
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.2, -radius * 0.18);
+        ctx.lineTo(radius * 0.2, radius * 0.18);
+        ctx.moveTo(radius * 0.2, -radius * 0.18);
+        ctx.lineTo(-radius * 0.2, radius * 0.18);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
     },
 
     drawThreatHull(ctx, shape, radius) {
@@ -751,8 +925,7 @@
       }
 
       if (shape === 'plate') {
-        ctx.beginPath();
-        ctx.roundRect(-main * 0.54, -main * 0.48, main * 1.08, main * 0.9, inset);
+        this.roundRect(ctx, -main * 0.54, -main * 0.48, main * 1.08, main * 0.9, inset);
         return;
       }
 
@@ -765,6 +938,21 @@
         if (i === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       }
+      ctx.closePath();
+    },
+
+    roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
       ctx.closePath();
     },
 

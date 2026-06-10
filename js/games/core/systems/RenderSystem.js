@@ -41,8 +41,15 @@
         const posProps = posComp.props;
         const rendProps = rendComp.props;
 
+        // Optional components for 11/10 visuals
         const velComp = world.componentRegistry.get('Velocity');
         const velProps = velComp ? velComp.props : null;
+
+        const rotComp = world.componentRegistry.get('Rotation');
+        const rotProps = rotComp ? rotComp.props : null;
+
+        const scaleComp = world.componentRegistry.get('Scale');
+        const scaleProps = scaleComp ? scaleComp.props : null;
 
         // Particle System check (Optional component)
         const partComp = world.componentRegistry.get('Particle');
@@ -57,7 +64,7 @@
           // 1. Interpolation
           let x = posProps.x[index];
           let y = posProps.y[index];
-          if (velProps) {
+          if (velProps && alpha < 1.0) {
             x += velProps.vx[index] * alpha;
             y += velProps.vy[index] * alpha;
           }
@@ -65,9 +72,9 @@
           const iconIdx = rendProps.iconIndex[index];
           const size = rendProps.size[index] || 24;
 
-          // 2. Alpha defaulting (Standard ECS 0-initialization fix)
+          // 2. Alpha & Effects
           const a = rendProps.alpha[index];
-          const entityAlpha = a === 0 ? 1.0 : a;
+          const entityAlpha = a === 0 && rendProps.alpha[index] === 0 ? 1.0 : a;
 
           if (entityAlpha !== currentAlpha) {
             ctx.globalAlpha = entityAlpha;
@@ -75,6 +82,19 @@
           }
 
           try {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Apply Rotation
+            if (rotProps) {
+              ctx.rotate(rotProps.angle[index] || 0);
+            }
+
+            // Apply Scale (Squash & Stretch)
+            if (scaleProps) {
+              ctx.scale(scaleProps.x[index] || 1, scaleProps.y[index] || 1);
+            }
+
             // 3. High-Quality Rendering
             if (iconIdx === 255 && partProps) {
               const colorIdx = partProps.colorIndex[index] || 0;
@@ -83,27 +103,38 @@
               // Use 'lighter' for glow effect
               ctx.globalCompositeOperation = 'lighter';
               ctx.fillStyle = color;
+              ctx.shadowColor = color;
+              ctx.shadowBlur = size * 0.5;
               ctx.beginPath();
-              ctx.arc(x, y, size, 0, Math.PI * 2);
+              ctx.arc(0, 0, size, 0, Math.PI * 2);
               ctx.fill();
-              ctx.globalCompositeOperation = 'source-over';
             } else {
               const iconStr = icons[iconIdx] || icons[0] || '❓';
+
+              // Personality: Subtle Glow for important entities
+              if (entityId & 0x01) {
+                // Pseudo-random check for flair
+                ctx.shadowColor = 'rgba(255,255,255,0.2)';
+                ctx.shadowBlur = 5;
+              }
+
               if (typeof SpriteCache !== 'undefined') {
-                SpriteCache.draw(ctx, iconStr, x, y, size);
+                SpriteCache.draw(ctx, iconStr, 0, 0, size);
               } else {
                 ctx.font = `${size}px serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(iconStr, x, y);
+                ctx.fillText(iconStr, 0, 0);
               }
             }
+            ctx.restore();
           } catch (e) {
-            // Silently fail per entity to keep loop alive
+            ctx.restore();
           }
         });
 
         if (currentAlpha !== 1.0) ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = 'source-over';
       };
     },
   };

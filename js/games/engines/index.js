@@ -16,6 +16,7 @@ const GameEngines = {
   config: {
     debug: false,
     enginesPath: '/js/games/engines/',
+    assetVersion: `dev-${Date.now()}`, // Force cache bypassing for dynamic scripts
   },
 
   initialized: false,
@@ -94,7 +95,7 @@ const GameEngines = {
       const basePath = this.config.enginesPath.startsWith('/')
         ? this.config.enginesPath
         : `/${this.config.enginesPath}`;
-      script.src = `${basePath}${path}`;
+      script.src = `${basePath}${path}?v=${encodeURIComponent(this.config.assetVersion)}`;
       script.defer = true;
 
       script.onload = () => {
@@ -111,7 +112,7 @@ const GameEngines = {
         // If it wasn't a modular engine but failed, try the subfolder as fallback
         if (!this._enginePaths[gameId]) {
           const fallbackScript = document.createElement('script');
-          fallbackScript.src = `${this.config.enginesPath}${gameId}/index.js`;
+          fallbackScript.src = `${this.config.enginesPath}${gameId}/index.js?v=${encodeURIComponent(this.config.assetVersion)}`;
           fallbackScript.defer = true;
           fallbackScript.onload = () => resolve(true);
           fallbackScript.onerror = () => {

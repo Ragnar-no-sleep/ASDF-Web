@@ -10,42 +10,46 @@
 (function () {
   const CONFIG = {
     lanes: 4,
-    roadWidthRatio: 0.98,
-    roadMinWidth: 520,
-    roadMaxWidth: 2700,
-    playerYRatio: 0.78,
-    playerWidth: 80,
-    playerHeight: 38,
+    roadWidthRatio: 0.78,
+    roadMinWidth: 420,
+    roadMaxWidth: 1700,
+    playerYRatio: 0.84,
+    playerWidth: 72,
+    playerHeight: 96,
     obstacleWidth: 64,
-    obstacleHeight: 70,
-    trackLookaheadPadding: 78,
-    roadCeilingHeight: 0.025,
+    obstacleHeight: 76,
+    trackLookaheadPadding: 108,
+    roadCeilingHeight: 0.014,
     boostSize: 44,
+    anticipationScaleBySpeed: 0.015,
+    horizonDistance: 0.008,
 
-    speedStart: 3.6,
-    speedCap: 18.4,
+    speedStart: 3.8,
+    speedCap: 19.6,
     acceleration: 0.02,
     worldSpeedBase: 2.18,
-    worldSpeedScale: 0.75,
+    worldSpeedScale: 0.82,
 
-    spawnBaseMs: 66,
+    spawnBaseMs: 62,
     spawnMinMs: 16,
-    spawnSlope: 2.2,
-    spawnLeadMultiplier: 6.6,
+    spawnSlope: 1.9,
+    spawnLeadHeightScale: 3.35,
+    trackSpanReserve: 2.45,
     boostChanceBase: 0.15,
     boostChanceGrowth: 0.005,
     boostChanceMax: 0.32,
 
     laneColor: '#e2e8f0',
-    laneDashLength: 52,
-    roadFade: 0.22,
-    horizonYRatio: 0.028,
+    laneDashLength: 40,
+    roadFade: 0.2,
+    horizonYRatio: 0.006,
     roadNarrowRatio: 0.16,
-    nearRoadBoost: 1.16,
-    trackSpanMultiplier: 3.2,
-    perspectivePower: 1.04,
+    nearRoadBoost: 1.02,
+    perspectivePower: 0.9,
+    spawnLeadScale: 2.2,
+    worldStretch: 1.12,
 
-    distancePerLevel: 340,
+    distancePerLevel: 300,
     collisionPenalty: 80,
   };
 
@@ -68,6 +72,23 @@
     trafficQuery: null,
     _layout: null,
 
+    getSpawnLead(canvasHeight) {
+      return Math.round(
+        Math.max(CONFIG.roadMinWidth, canvasHeight * CONFIG.spawnLeadHeightScale) *
+          CONFIG.spawnLeadScale
+      );
+    },
+
+    getTrackSpan(canvasHeight, spawnLead) {
+      return Math.round(
+        Math.max(
+          spawnLead * (0.9 + CONFIG.anticipationScaleBySpeed),
+          spawnLead + canvasHeight * CONFIG.trackSpanReserve,
+          canvasHeight * 0.9
+        )
+      );
+    },
+
     start(gameId) {
       this.stop();
       const arena = document.getElementById(`arena-${gameId}`);
@@ -78,13 +99,18 @@
 
       this.instance = new ASDF.GameInstance(this.canvas, {
         maxEntities: 900,
-        debug: true,
+        debug: false,
       });
       this.instance.resize();
 
       const world = this.instance.world;
       const kernel = window.ASDF.Kernel;
       this.instance.initStandardComponents();
+
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(this.canvas, this.instance.ctx);
+      }
 
       if (kernel.getPlugin('InputHub')) {
         const input = kernel.getPlugin('InputHub');
@@ -96,13 +122,13 @@
       world.registerComponent('Obstacle', { kind: 'u8', damage: 'f32' });
       world.registerComponent('Boost', { value: 'u16' });
 
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
+
       const canvas = this.instance.canvas;
-      const spawnLead = Math.round(
-        Math.max(CONFIG.roadMinWidth, canvas.height * CONFIG.spawnLeadMultiplier)
-      );
-      const trackSpan = Math.round(
-        spawnLead * CONFIG.trackSpanMultiplier + canvas.height * CONFIG.playerYRatio
-      );
+      const spawnLead = this.getSpawnLead(canvas.height);
+      const trackSpan = this.getTrackSpan(canvas.height, spawnLead);
 
       world.setResource('GameState', {
         score: 0,
@@ -119,6 +145,8 @@
         boostUsed: 0,
         spawnLead,
         trackSpan,
+        bounce: 0,
+        suspensionPhase: 0,
       });
 
       this.dom = {
@@ -136,6 +164,8 @@
       world.addComponent(player, 'Renderable');
       world.addComponent(player, 'Collider');
       world.addComponent(player, 'Player');
+      world.addComponent(player, 'Rotation');
+      world.addComponent(player, 'Scale');
 
       const pIdx = world.getIndex(player);
       world.componentRegistry.get('Position').props.x[pIdx] = layout.centerX;
@@ -149,13 +179,28 @@
 
       this.trafficQuery = world.createQuery(['Position', 'Renderable']);
 
-      this.instance.onUpdate = () => {
+      this.instance.onUpdate = (dt, dtMs) => {
         const state = world.getResource('GameState');
+
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
+        }
+
         if (kernel.services?.hud) kernel.services.hud.update(this.gameId, state);
         this.updateUI(state, world.componentRegistry.get('Player').props.speed[pIdx]);
+
+        return shouldFreeze;
       };
 
-      this.instance.onRender = () => this.draw();
+      this.instance.onRender = () => {
+        if (this.juice) this.juice.renderPre();
+        this.draw();
+        if (this.juice) this.juice.renderPost();
+      };
+
+      this.instance.world.addSystem(ASDF.PersonalitySystem.create());
       this.instance.world.addSystem(this.createLogicSystem());
       this.instance.world.addSystem(ASDF.PhysicsSystem.createMovement());
       this.instance.start();
@@ -165,13 +210,9 @@
         if (!state || !this.instance) return;
         this.instance.resize();
         const c = this.instance.canvas;
-        const spawnLead = Math.round(
-          Math.max(CONFIG.roadMinWidth, c.height * CONFIG.spawnLeadMultiplier)
-        );
+        const spawnLead = this.getSpawnLead(c.height);
         state.spawnLead = spawnLead;
-        state.trackSpan = Math.round(
-          spawnLead * CONFIG.trackSpanMultiplier + c.height * CONFIG.playerYRatio
-        );
+        state.trackSpan = this.getTrackSpan(c.height, spawnLead);
         this._layout = this.getRoadLayout();
       };
       const resizeHandler = () => {
@@ -240,16 +281,42 @@
       );
       const width = Math.min(targetWidth, w - 44);
       const left = (w - width) / 2;
-      const horizonY = h * CONFIG.horizonYRatio;
-      return {
+      const horizonY = h * (CONFIG.horizonYRatio + CONFIG.horizonDistance);
+      const lanes = CONFIG.lanes;
+
+      const layout = {
         left,
         right: left + width,
         width,
         centerX: w / 2,
-        laneWidth: width / CONFIG.lanes,
+        laneWidth: width / lanes,
         horizonY,
         h,
+        lanes,
+        roadWidth(depth) {
+          const eased =
+            Math.pow(clamp(depth, 0, 1), CONFIG.perspectivePower) * CONFIG.nearRoadBoost;
+          return clamp(
+            width * CONFIG.roadNarrowRatio,
+            lerp(width * CONFIG.roadNarrowRatio, width, eased),
+            width
+          );
+        },
+        roadLeft(depth) {
+          const roadW = this.roadWidth(depth);
+          return left + (width - roadW) * 0.5;
+        },
+        projectY(depth) {
+          return (
+            horizonY +
+            Math.pow(clamp(depth, 0, 1), CONFIG.perspectivePower) *
+              (h - horizonY) *
+              CONFIG.worldStretch
+          );
+        },
       };
+
+      return layout;
     },
 
     getLevelFromDistance(distance) {
@@ -283,27 +350,20 @@
     },
 
     getRoadWidth(layout, depth) {
-      const eased = Math.pow(depth, CONFIG.perspectivePower) * CONFIG.nearRoadBoost;
-      return clamp(
-        layout.width * CONFIG.roadNarrowRatio,
-        lerp(layout.width * CONFIG.roadNarrowRatio, layout.width, eased),
-        layout.width
-      );
+      return layout.roadWidth(depth);
     },
 
     getRoadLeft(layout, depth) {
-      const width = this.getRoadWidth(layout, depth);
-      return layout.left + (layout.width - width) * 0.5;
+      return layout.roadLeft(depth);
     },
 
     getTrackDepth(worldY, state) {
-      return clamp((worldY + state.spawnLead) / state.trackSpan, 0, 1);
+      const pacing = 0.78 + state.level * CONFIG.anticipationScaleBySpeed;
+      return clamp((worldY + state.spawnLead * pacing) / (state.trackSpan * 0.95), 0, 1);
     },
 
     projectY(depth, layout) {
-      return (
-        layout.horizonY + Math.pow(depth, CONFIG.perspectivePower) * (layout.h - layout.horizonY)
-      );
+      return layout.projectY(depth);
     },
 
     projectEntity(worldX, worldY, layout, state) {
@@ -347,6 +407,8 @@
 
         state.distance += player.speed[pIdx] * 0.24 * dt;
         state.roadOffset = (state.roadOffset + player.speed[pIdx] * 7.3 * dt) % 360;
+        state.suspensionPhase += dt * (0.052 + player.speed[pIdx] * 0.006);
+        state.bounce = Math.max(0, state.bounce - dt * 0.032);
 
         const left = state.keys.ArrowLeft || state.keys.KeyA;
         const right = state.keys.ArrowRight || state.keys.KeyD;
@@ -354,6 +416,9 @@
         if (right) vel.vx[pIdx] += 1.1 * difficulty.pace * dt;
         vel.vx[pIdx] *= Math.pow(0.87, dt);
         player.steer[pIdx] = clamp(vel.vx[pIdx] / 14, -1, 1);
+        if ((left || right) && Math.abs(player.steer[pIdx]) > 0.08) {
+          state.bounce = Math.min(0.5, state.bounce + 0.01 * dt);
+        }
 
         const carHalf = CONFIG.playerWidth * 0.5;
         pos.x[pIdx] = clamp(pos.x[pIdx], layout.left + carHalf + 4, layout.right - carHalf - 4);
@@ -399,7 +464,18 @@
             );
             const penalty = Math.round(Math.max(30, CONFIG.collisionPenalty / 2));
             state.score = Math.max(0, state.score - penalty);
-            self.instance.shake(10, 10);
+            state.bounce = 1.15;
+
+            if (self.juice) {
+              self.juice.impact(pos.x[idx], pos.y[idx], { intensity: 'medium' });
+              self.juice.textPop(pos.x[idx], pos.y[idx], `-${penalty}`, {
+                color: '#ef4444',
+                size: 24,
+              });
+            } else {
+              self.instance.shake(10, 10);
+            }
+
             world.destroyEntity(world.getEntityId(idx));
             continue;
           }
@@ -407,9 +483,21 @@
           if (hit && boostBit && (world.entityMasks[idx] & boostBit) === boostBit) {
             const value = boostComp.props.value[idx] || 72;
             player.speed[pIdx] = Math.min(state.maxSpeed + 1.8, player.speed[pIdx] + 1.3);
-            state.score += value * (1 + self.getDifficulty(state).level * 0.12);
+            const scoreGained = Math.round(value * (1 + self.getDifficulty(state).level * 0.12));
+            state.score += scoreGained;
             state.boostUsed += 1;
-            self.instance.shake(5, 8);
+            state.bounce = Math.max(state.bounce, 0.55);
+
+            if (self.juice) {
+              self.juice.impact(pos.x[idx], pos.y[idx], { intensity: 'light' });
+              self.juice.textPop(pos.x[idx], pos.y[idx], `+${scoreGained}`, {
+                color: '#fbbf24',
+                size: 28,
+              });
+            } else {
+              self.instance.shake(5, 8);
+            }
+
             world.destroyEntity(world.getEntityId(idx));
             continue;
           }
@@ -446,7 +534,8 @@
       const collider = world.componentRegistry.get('Collider').props;
 
       pos.x[idx] = clamp(x, layout.left + 2, layout.right - 2);
-      pos.y[idx] = -Math.round(state.spawnLead * (0.6 + Math.random() * 0.55));
+      const spawnDepth = 0.42 + Math.random() * 0.34;
+      pos.y[idx] = -Math.round(state.spawnLead * spawnDepth);
       rend.iconIndex[idx] = isBoost ? 2 : 1;
 
       if (isBoost) {
@@ -489,44 +578,124 @@
     },
 
     drawWorld(ctx, w, h, state, layout) {
-      const sky = ctx.createLinearGradient(0, 0, 0, h);
-      sky.addColorStop(0, '#07111f');
-      sky.addColorStop(0.5, '#0d1730');
-      sky.addColorStop(1, '#0a111b');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, h);
-
+      this.drawRaceBackdrop(ctx, w, h, state, layout);
       this.drawSidebars(ctx, w, h, state, layout);
       this.drawPerspectiveRoad(ctx, h, state, layout);
+    },
+
+    drawRaceBackdrop(ctx, w, h, state, layout) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          seed: state.level,
+          distance: state.distance,
+          allowNoise: true,
+          withNoise: true,
+        });
+      } else {
+        const sky = ctx.createLinearGradient(0, 0, 0, h);
+        sky.addColorStop(0, '#111827');
+        sky.addColorStop(0.46, '#1f2937');
+        sky.addColorStop(1, '#0f1519');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, w, h);
+
+        const horizon = layout.horizonY + h * 0.06;
+        ctx.fillStyle = '#17251d';
+        ctx.beginPath();
+        ctx.moveTo(0, horizon + h * 0.08);
+        ctx.lineTo(w * 0.18, horizon + h * 0.02);
+        ctx.lineTo(w * 0.36, horizon + h * 0.07);
+        ctx.lineTo(w * 0.55, horizon);
+        ctx.lineTo(w * 0.76, horizon + h * 0.06);
+        ctx.lineTo(w, horizon + h * 0.02);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fill();
+
+        const haze = ctx.createLinearGradient(0, horizon - 10, 0, horizon + h * 0.18);
+        haze.addColorStop(0, 'rgba(255,255,255,0.16)');
+        haze.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = haze;
+        ctx.fillRect(0, Math.max(0, horizon - 12), w, h * 0.18);
+      }
     },
 
     drawSidebars(ctx, w, h, state, layout) {
       const roadW = this.getRoadWidth(layout, 1);
       const left = this.getRoadLeft(layout, 1);
       const right = left + roadW;
-      const barDepth = Math.max(1, Math.round(h * 0.2));
+      const horizon = layout.horizonY;
 
-      ctx.fillStyle = '#12281d';
-      ctx.fillRect(0, 0, left, h);
-      ctx.fillRect(right, 0, w - right, h);
+      ctx.fillStyle = '#26351f';
+      ctx.fillRect(0, horizon, w, h - horizon);
 
-      for (let y = -barDepth; y < h + barDepth; y += 90) {
-        const x = (state.roadOffset + y * 0.42) % 90;
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
-        ctx.fillRect(left - 32 + x * 0.05, y, 28, 48);
-        ctx.fillStyle = 'rgba(226, 232, 240, 0.3)';
-        ctx.fillRect(left - 86, y + 14, 34, 32);
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.42)';
-        ctx.fillRect(right + 58, y + 16, 28, 44);
+      const shoulder = ctx.createLinearGradient(0, horizon, 0, h);
+      shoulder.addColorStop(0, '#3f2b1a');
+      shoulder.addColorStop(1, '#5b351d');
+      ctx.fillStyle = shoulder;
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      ctx.lineTo(left, h);
+      ctx.lineTo(layout.roadLeft(0), layout.projectY(0));
+      ctx.lineTo(0, horizon);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(w, h);
+      ctx.lineTo(right, h);
+      ctx.lineTo(layout.roadLeft(0) + layout.roadWidth(0), layout.projectY(0));
+      ctx.lineTo(w, horizon);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(226,232,240,0.45)';
+      ctx.lineWidth = 2;
+      for (let side = 0; side <= 1; side += 1) {
+        ctx.beginPath();
+        for (let i = 0; i <= 28; i += 1) {
+          const t = i / 28;
+          const x = layout.roadLeft(t) + layout.roadWidth(t) * side + (side ? 14 : -14) * t;
+          const y = layout.projectY(t);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
       }
+
+      const postGap = 90;
+      for (let y = horizon + ((state.roadOffset * 0.55) % postGap); y < h + postGap; y += postGap) {
+        const t = clamp((y - horizon) / Math.max(1, h - horizon), 0, 1);
+        const edgeLeft = layout.roadLeft(t);
+        const edgeRight = edgeLeft + layout.roadWidth(t);
+        const postH = 12 + t * 28;
+        const postW = 3 + t * 5;
+        ctx.fillStyle = 'rgba(248,250,252,0.75)';
+        ctx.fillRect(edgeLeft - 22 * t, y - postH, postW, postH);
+        ctx.fillRect(edgeRight + 18 * t, y - postH, postW, postH);
+      }
+      ctx.restore();
     },
 
     drawPerspectiveRoad(ctx, h, state, layout) {
-      const steps = 44;
-      const laneColor = CONFIG.laneColor;
-      const hBase = layout.h;
+      const steps = 64;
+      const farLeft = this.getRoadLeft(layout, 0);
+      const farRight = farLeft + this.getRoadWidth(layout, 0);
+      const nearLeft = this.getRoadLeft(layout, 1);
+      const nearRight = nearLeft + this.getRoadWidth(layout, 1);
 
-      // Road body with depth bands
+      ctx.fillStyle = '#2d3238';
+      ctx.beginPath();
+      ctx.moveTo(farLeft, this.projectY(0, layout));
+      ctx.lineTo(farRight, this.projectY(0, layout));
+      ctx.lineTo(nearRight, this.projectY(1, layout));
+      ctx.lineTo(nearLeft, this.projectY(1, layout));
+      ctx.closePath();
+      ctx.fill();
+
       for (let i = 0; i < steps; i++) {
         const tA = i / steps;
         const tB = (i + 1) / steps;
@@ -536,9 +705,9 @@
         const wB = this.getRoadWidth(layout, tB);
         const xA = this.getRoadLeft(layout, tA);
         const xB = this.getRoadLeft(layout, tB);
-        const shade = 0.04 + (i % 2) * 0.015;
+        const shade = i % 2 === 0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.035)';
 
-        ctx.fillStyle = `rgba(31, 41, 55, ${shade})`;
+        ctx.fillStyle = shade;
         ctx.beginPath();
         ctx.moveTo(xA, yA);
         ctx.lineTo(xA + wA, yA);
@@ -546,25 +715,12 @@
         ctx.lineTo(xB, yB);
         ctx.closePath();
         ctx.fill();
-
-        ctx.strokeStyle = `rgba(15, 23, 42, ${0.18 + (i / steps) * 0.12})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(xA, yA);
-        ctx.lineTo(xA + wA, yA);
-        ctx.lineTo(xB + wB, yB);
-        ctx.lineTo(xB, yB);
-        ctx.closePath();
-        ctx.stroke();
       }
 
-      // Road edges and center lane guides
       ctx.setLineDash([]);
       for (let edge = 0; edge <= 1; edge++) {
-        const color = edge === 0 ? 'rgba(34, 197, 94, 0.72)' : 'rgba(226, 232, 240, 0.7)';
-        const width = 4.4;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
+        ctx.strokeStyle = 'rgba(248,250,252,0.82)';
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
         for (let i = 0; i <= steps; i++) {
           const t = i / steps;
@@ -578,14 +734,13 @@
         ctx.stroke();
       }
 
-      for (let lane = 1; lane < CONFIG.lanes; lane++) {
-        const color = 'rgba(226, 232, 240, 0.46)';
+      for (let lane = 1; lane < CONFIG.lanes; lane += 1) {
         const dash = CONFIG.laneDashLength;
         const gap = 16;
-        ctx.strokeStyle = laneColor;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = lane === CONFIG.lanes / 2 ? '#facc15' : 'rgba(248,250,252,0.72)';
+        ctx.lineWidth = lane === CONFIG.lanes / 2 ? 2.6 : 2.1;
         ctx.setLineDash([dash, gap]);
-        ctx.lineDashOffset = state.roadOffset;
+        ctx.lineDashOffset = state.roadOffset * (lane === CONFIG.lanes / 2 ? 1.05 : 0.9);
         ctx.beginPath();
         for (let i = 0; i <= steps; i++) {
           const t = i / steps;
@@ -599,26 +754,30 @@
         ctx.stroke();
       }
 
-      // Horizon markers / lane depth reference
       ctx.setLineDash([]);
-      ctx.strokeStyle = 'rgba(34, 197, 94, 0.14)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 5; i++) {
-        const t = i / 4;
-        const y = this.projectY(t * 0.85, layout);
-        const roadWidth = this.getRoadWidth(layout, t * 0.85);
-        const leftEdge = this.getRoadLeft(layout, t * 0.85);
-        const centerY = y + i * 12;
-        ctx.beginPath();
-        ctx.moveTo(leftEdge + roadWidth * 0.25, y);
-        ctx.lineTo(leftEdge + roadWidth * 0.75, y);
-        ctx.stroke();
-        if (i === 0) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
-          ctx.fillRect(leftEdge + roadWidth * 0.42, centerY, roadWidth * 0.16, 2);
+      for (let i = 0; i < steps; i += 3) {
+        const tA = i / steps;
+        const tB = Math.min(1, (i + 1) / steps);
+        const yA = this.projectY(tA, layout);
+        const yB = this.projectY(tB, layout);
+        const wA = this.getRoadWidth(layout, tA);
+        const wB = this.getRoadWidth(layout, tB);
+        const xA = this.getRoadLeft(layout, tA);
+        const xB = this.getRoadLeft(layout, tB);
+        for (let side = 0; side <= 1; side += 1) {
+          const dir = side === 0 ? 1 : -1;
+          const edgeA = xA + (side ? wA : 0);
+          const edgeB = xB + (side ? wB : 0);
+          ctx.fillStyle = i % 6 === 0 ? '#ef4444' : '#f8fafc';
+          ctx.beginPath();
+          ctx.moveTo(edgeA, yA);
+          ctx.lineTo(edgeA + dir * wA * 0.018, yA);
+          ctx.lineTo(edgeB + dir * wB * 0.018, yB);
+          ctx.lineTo(edgeB, yB);
+          ctx.closePath();
+          ctx.fill();
         }
       }
-      ctx.setLineDash([]);
     },
 
     drawEntities(ctx, state, layout) {
@@ -649,240 +808,219 @@
       }
 
       const playerProjected = this.projectEntity(pos.x[pIdx], pos.y[pIdx], layout, state);
-      this.drawPlayerCar(ctx, playerProjected.x, playerProjected.y, player.steer[pIdx]);
+      if (playerProjected) {
+        this.drawPlayerCar(ctx, playerProjected.x, playerProjected.y, player.steer[pIdx], state);
+      }
     },
 
     drawTraffic(ctx, projected, kind) {
       const { x, y, scale } = projected;
-      const safe = scale * 90;
-      const carWidth = Math.max(20, safe * (0.58 + kind * 0.04));
-      const carHeight = Math.max(26, safe * (0.42 + kind * 0.03));
-      const palette = [
-        ['#1d4ed8', '#60a5fa'],
-        ['#581c87', '#c084fc'],
-        ['#334155', '#94a3b8'],
-        ['#f59e0b', '#fb923c'],
-        ['#16a34a', '#4ade80'],
-      ];
-      const c = palette[kind % palette.length];
-      const dark = `rgba(15, 23, 42, ${0.24 + Math.min(0.23, scale * 0.6)})`;
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(scale, scale);
-      ctx.shadowColor = 'rgba(0,0,0,0.34)';
-      ctx.shadowBlur = Math.max(6, 16 * scale);
-
-      const bodyLength = carWidth * 1.08;
-      const bodyHeight = carHeight * 0.64;
-      const nose = carWidth * 0.16;
-      const wingY = bodyHeight * 0.18;
-
-      ctx.fillStyle = '#020617';
-      this.roundRect(
-        ctx,
-        -bodyLength / 2 + 15,
-        bodyHeight * 0.4,
-        carWidth * 0.84,
-        bodyHeight * 0.18,
-        4
-      );
-
-      ctx.fillStyle = c[0];
-      this.roundRect(ctx, -bodyLength / 2, -bodyHeight * 0.06, bodyLength, bodyHeight, 6);
-
-      ctx.fillStyle = c[1];
-      this.roundRect(
-        ctx,
-        -bodyLength * 0.46,
-        -bodyHeight * 0.18,
-        bodyLength * 0.31,
-        bodyHeight * 0.58,
-        4
-      );
-      this.roundRect(
-        ctx,
-        bodyLength * 0.15,
-        -bodyHeight * 0.18,
-        bodyLength * 0.31,
-        bodyHeight * 0.58,
-        4
-      );
-
-      ctx.fillStyle = dark;
-      for (let side = -1; side <= 1; side += 2) {
-        const wx = side * bodyLength * 0.26;
-        ctx.fillRect(
-          wx - bodyHeight * 0.08,
-          bodyHeight * 0.04,
-          bodyHeight * 0.16,
-          bodyHeight * 0.86
-        );
+      const safe = Math.max(0.18, scale);
+      if (kind <= 1) {
+        const paints = [
+          ['#1d4ed8', '#f8fafc', '#0f172a'],
+          ['#b91c1c', '#fef2f2', '#111827'],
+        ];
+        this.drawRoadCar(ctx, x, y, safe, paints[kind % paints.length], kind);
+      } else if (kind === 2) {
+        this.drawTrafficCone(ctx, x, y, safe);
+      } else if (kind === 3) {
+        this.drawRoadBarrier(ctx, x, y, safe);
+      } else {
+        this.drawTireStack(ctx, x, y, safe);
       }
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.32)';
-      for (let side = -1; side <= 1; side += 2) {
-        const wx = side * bodyLength * 0.26;
-        this.roundRect(ctx, wx - bodyHeight * 0.04, bodyHeight * 0.2, bodyHeight * 0.08, 2.2, 1.2);
-      }
-
-      ctx.fillStyle = c[1];
-      ctx.beginPath();
-      ctx.moveTo(bodyLength / 2 - nose, -bodyHeight * 0.12);
-      ctx.lineTo(bodyLength / 2 + carWidth * 0.18, -bodyHeight * 0.21);
-      ctx.lineTo(bodyLength / 2 + carWidth * 0.18, bodyHeight * 0.17);
-      ctx.lineTo(bodyLength / 2 - nose, bodyHeight * 0.02);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = 'rgba(226, 232, 240, 0.9)';
-      this.roundRect(ctx, -bodyLength * 0.1, -bodyHeight * 0.42, bodyLength * 0.2, 3.6, 2);
-      this.roundRect(
-        ctx,
-        bodyLength * -0.15,
-        -bodyHeight * 0.05,
-        bodyLength * 0.3,
-        bodyHeight * 0.18,
-        2
-      );
-
-      ctx.fillStyle = dark;
-      this.roundRect(ctx, -bodyLength * 0.04, wingY, bodyLength * 0.08, 2.6, 2);
-      this.roundRect(ctx, -bodyLength * 0.44, wingY + 1.1, bodyLength * 0.88, 1.4, 1.6);
-      ctx.restore();
     },
 
     drawBoost(ctx, projected, intensity = 1) {
       const { x, y, scale } = projected;
-      const size = 26 * scale * (0.9 + Math.min(0.5, intensity));
-      const grad = ctx.createLinearGradient(-size, -size, size, size);
-      grad.addColorStop(0, '#22c55e');
-      grad.addColorStop(1, '#67e8f9');
+      const size = 28 * scale * (0.9 + Math.min(0.5, intensity));
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = grad;
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
+      ctx.beginPath();
+      ctx.ellipse(0, size * 0.42, size * 0.62, size * 0.16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
       ctx.shadowColor = '#22c55e';
-      ctx.shadowBlur = Math.max(8, size * 1.8);
-      this.roundRect(ctx, -size, -size, size * 2, size * 2, 8);
+      ctx.shadowBlur = Math.max(5, size * 0.75);
+      ctx.fillStyle = '#16a34a';
+      this.roundRect(ctx, -size * 0.38, -size * 0.56, size * 0.76, size * 1.02, size * 0.12);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#f8fafc';
+      this.roundRect(ctx, -size * 0.24, -size * 0.42, size * 0.48, size * 0.22, size * 0.06);
+      ctx.fill();
+      ctx.strokeStyle = '#064e3b';
+      ctx.lineWidth = Math.max(1.4, size * 0.08);
+      ctx.stroke();
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(-size * 0.1, size * 0.02, size * 0.2, size * 0.26);
+      ctx.restore();
+    },
+
+    drawPlayerCar(ctx, x, y, steer = 0, state = {}) {
+      const suspension =
+        Math.sin((state.suspensionPhase || 0) * 5.4) * 2.2 + Math.min(9, (state.bounce || 0) * 8);
+      this.drawRaceCar(ctx, x, y - suspension, {
+        width: 58,
+        length: 116,
+        body: '#dc2626',
+        stripe: '#f8fafc',
+        glass: '#111827',
+        accent: '#facc15',
+        steer,
+        shadowScale: 1 - Math.min(0.18, (state.bounce || 0) * 0.08),
+        active: true,
+      });
+    },
+
+    drawRoadCar(ctx, x, y, scale, palette, kind) {
+      this.drawRaceCar(ctx, x, y, {
+        width: Math.max(34, 50 * scale),
+        length: Math.max(58, 92 * scale),
+        body: palette[0],
+        stripe: palette[1],
+        glass: palette[2],
+        accent: '#facc15',
+        steer: Math.sin(performance.now() * 0.001 + kind) * 0.08,
+        shadowScale: 1,
+        active: false,
+      });
+    },
+
+    drawRaceCar(ctx, x, y, opts = {}) {
+      const {
+        width = 54,
+        length = 104,
+        body = '#dc2626',
+        stripe = '#f8fafc',
+        glass = '#111827',
+        accent = '#facc15',
+        steer = 0,
+        shadowScale = 1,
+        active = false,
+      } = opts;
+      const w = width;
+      const l = length;
+      const lean = clamp(steer, -1, 1) * 0.08;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(lean);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.34)';
+      ctx.beginPath();
+      ctx.ellipse(0, l * 0.3, w * 0.72 * shadowScale, l * 0.12 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#111827';
+      const wheelW = w * 0.18;
+      const wheelH = l * 0.17;
+      for (const side of [-1, 1]) {
+        this.roundRect(ctx, side * w * 0.42 - wheelW / 2, -l * 0.32, wheelW, wheelH, 3);
+        ctx.fill();
+        this.roundRect(ctx, side * w * 0.42 - wheelW / 2, l * 0.12, wheelW, wheelH, 3);
+        ctx.fill();
+      }
+
+      const bodyGrad = ctx.createLinearGradient(-w * 0.32, -l * 0.46, w * 0.32, l * 0.46);
+      bodyGrad.addColorStop(0, active ? '#ef4444' : body);
+      bodyGrad.addColorStop(1, body);
+      ctx.fillStyle = bodyGrad;
+      this.roundRect(ctx, -w * 0.34, -l * 0.46, w * 0.68, l * 0.92, 9);
+      ctx.fill();
+
+      ctx.fillStyle = stripe;
+      this.roundRect(ctx, -w * 0.055, -l * 0.43, w * 0.11, l * 0.7, 2);
+      ctx.fill();
+
+      ctx.fillStyle = glass;
+      this.roundRect(ctx, -w * 0.22, -l * 0.19, w * 0.44, l * 0.18, 4);
+      ctx.fill();
+      this.roundRect(ctx, -w * 0.18, l * 0.08, w * 0.36, l * 0.16, 4);
+      ctx.fill();
+
+      ctx.fillStyle = accent;
+      this.roundRect(ctx, -w * 0.26, -l * 0.49, w * 0.52, l * 0.05, 2);
+      ctx.fill();
+      if (active) {
+        ctx.fillStyle = 'rgba(248,250,252,0.88)';
+        ctx.fillRect(-w * 0.2, -l * 0.48, w * 0.14, l * 0.025);
+        ctx.fillRect(w * 0.06, -l * 0.48, w * 0.14, l * 0.025);
+      }
+
+      ctx.restore();
+    },
+
+    drawTrafficCone(ctx, x, y, scale) {
+      const s = Math.max(18, 44 * scale);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
+      ctx.beginPath();
+      ctx.ellipse(0, s * 0.42, s * 0.42, s * 0.12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.58);
+      ctx.lineTo(s * 0.44, s * 0.34);
+      ctx.lineTo(-s * 0.44, s * 0.34);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(-s * 0.23, -s * 0.02, s * 0.46, s * 0.12);
+      ctx.fillStyle = '#9a3412';
+      this.roundRect(ctx, -s * 0.5, s * 0.3, s, s * 0.18, 3);
       ctx.fill();
       ctx.restore();
     },
 
-    drawPlayerCar(ctx, x, y, steer = 0) {
-      const length = 84;
-      const width = 46;
-      const t = Math.max(-1, Math.min(1, steer));
-      const body = '#dc2626';
-      const sidewall = '#0b1220';
-      const stripe = '#fde68a';
-      const glass = '#7c3aed';
-      const glow = '#facc15';
-
-      const wheelOffset = width * 0.24;
-      const wheelW = width * 0.18;
-      const wheelH = width * 0.2;
-      const rail = width * 0.05;
-
+    drawRoadBarrier(ctx, x, y, scale) {
+      const w = Math.max(48, 88 * scale);
+      const h = Math.max(22, 34 * scale);
       ctx.save();
-      ctx.translate(x, y + width * 0.18);
-      ctx.rotate(t * 0.04);
-
-      ctx.fillStyle = 'rgba(2, 6, 23, 0.42)';
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(0,0,0,0.26)';
       ctx.beginPath();
-      ctx.ellipse(0, width * 0.24, width * 0.56, width * 0.16, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, h * 0.72, w * 0.45, h * 0.18, 0, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = sidewall;
-      this.roundRect(
-        -length * 0.34,
-        width * 0.08,
-        length * 0.08,
-        width * 0.18,
-        Math.max(2, width * 0.03)
-      );
+      ctx.fillStyle = '#f8fafc';
+      this.roundRect(ctx, -w * 0.5, -h * 0.45, w, h * 0.9, 4);
       ctx.fill();
-      this.roundRect(
-        length * 0.26,
-        width * 0.08,
-        length * 0.08,
-        width * 0.18,
-        Math.max(2, width * 0.03)
-      );
-      ctx.fill();
-
-      ctx.fillStyle = body;
-      ctx.shadowColor = 'rgba(251, 191, 36, 0.34)';
-      ctx.shadowBlur = 14;
-      this.roundRect(-length * 0.22, -width * 0.04, length * 0.52, width * 0.56, 11);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      const shell = ctx.createLinearGradient(-length * 0.22, 0, length * 0.3, 0);
-      shell.addColorStop(0, '#b91c1c');
-      shell.addColorStop(0.52, '#ef4444');
-      shell.addColorStop(1, '#dc2626');
-      ctx.fillStyle = shell;
-      this.roundRect(-length * 0.2, -width * 0.01, length * 0.5, width * 0.48, 9);
-      ctx.fill();
-
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
-      ctx.lineWidth = 1.2;
-      this.roundRect(-length * 0.18, -width * 0.05, length * 0.49, width * 0.5, 8);
+      ctx.strokeStyle = '#9ca3af';
+      ctx.lineWidth = Math.max(1.5, scale * 2);
       ctx.stroke();
+      ctx.fillStyle = '#f97316';
+      for (let i = -2; i <= 2; i += 1) {
+        ctx.save();
+        ctx.translate(i * w * 0.18, 0);
+        ctx.rotate(-0.55);
+        ctx.fillRect(-w * 0.04, -h * 0.58, w * 0.08, h * 1.16);
+        ctx.restore();
+      }
+      ctx.restore();
+    },
 
-      ctx.fillStyle = stripe;
-      this.roundRect(-length * 0.15, -width * 0.03, length * 0.38, width * 0.09, 4);
-      this.roundRect(-length * 0.2, width * 0.16, length * 0.18, width * 0.07, 4);
-
-      const frontWingW = length * 0.18;
-      const rearWingW = length * 0.14;
-      const wingY = width * 0.26;
-      ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
-      this.roundRect(-frontWingW * 0.32, wingY, frontWingW, width * 0.08, 2);
-      this.roundRect(length * 0.26, wingY + width * 0.08, rearWingW, width * 0.07, 2);
-
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.68)';
-      ctx.lineWidth = 2.2;
+    drawTireStack(ctx, x, y, scale) {
+      const s = Math.max(22, 46 * scale);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
       ctx.beginPath();
-      ctx.moveTo(length * 0.28, width * 0.22);
-      ctx.lineTo(length * 0.49, width * 0.16);
-      ctx.stroke();
-
-      for (const side of [-1, 1]) {
-        const cx = side * wheelOffset;
-        const frontY = width * 0.22;
-        const rearY = width * 0.0;
-
+      ctx.ellipse(0, s * 0.52, s * 0.54, s * 0.15, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (let i = 0; i < 3; i += 1) {
+        const offset = (i - 1) * s * 0.24;
         ctx.fillStyle = '#111827';
         ctx.beginPath();
-        ctx.ellipse(cx - wheelW * 0.55, frontY, wheelW * 0.5, wheelH * 0.5, 0, 0, Math.PI * 2);
-        ctx.ellipse(cx + wheelW * 0.55, frontY, wheelW * 0.5, wheelH * 0.5, 0, 0, Math.PI * 2);
+        ctx.arc(offset, 0, s * 0.28, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillStyle = '#4b5563';
         ctx.beginPath();
-        ctx.ellipse(cx - wheelW * 0.55, rearY, wheelW * 0.5, wheelH * 0.5, 0, 0, Math.PI * 2);
-        ctx.ellipse(cx + wheelW * 0.55, rearY, wheelW * 0.5, wheelH * 0.5, 0, 0, Math.PI * 2);
+        ctx.arc(offset, 0, s * 0.14, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(cx - wheelW * 0.24, frontY - wheelH * 0.5, wheelW * 0.48, wheelH * 0.55);
-        ctx.fillRect(cx - wheelW * 0.24, rearY - wheelH * 0.5, wheelW * 0.48, wheelH * 0.55);
-
-        ctx.fillStyle = rail;
-        ctx.fillRect(cx - rail * 0.5, width * 0.04, rail, width * 0.16);
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.85)';
-        ctx.fillRect(cx - rail * 0.5, width * 0.06, rail * 0.4, width * 0.1);
       }
-
-      ctx.fillStyle = glow;
-      this.roundRect(-length * 0.09, -width * 0.14, length * 0.11, width * 0.17, 6);
-      this.roundRect(length * 0.22, -width * 0.1, length * 0.12, width * 0.12, 6);
-
-      const cockpitW = width * 0.34;
-      const cockpitH = width * 0.14;
-      ctx.fillStyle = glass;
-      this.roundRect(-cockpitW * 0.5, -width * 0.02, cockpitW, cockpitH, 4);
-      ctx.fillStyle = 'rgba(248, 250, 252, 0.12)';
-      this.roundRect(-cockpitW * 0.42, -width * 0.01, cockpitW * 0.84, cockpitH * 0.7, 2);
       ctx.restore();
     },
 

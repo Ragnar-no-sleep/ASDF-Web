@@ -106,4 +106,19 @@ export default defineConfig(({ command }) => ({
   optimizeDeps: {
     include: ['three'],
   },
+
+  // Custom plugin to force reload on non-module JS changes
+  plugins: [
+    {
+      name: 'watch-game-scripts',
+      handleHotUpdate({ file, server }) {
+        if (file.includes('/js/games/') && file.endsWith('.js')) {
+          server.ws.send({
+            type: 'full-reload',
+            path: '*',
+          });
+        }
+      },
+    },
+  ],
 }));

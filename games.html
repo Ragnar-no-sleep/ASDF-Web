@@ -50,7 +50,7 @@
     
     <nav class="nav eco-page">
       <div class="nav-content">
-        <a href="/" class="nav-logo"> Ignition Arcade </a>
+        <a href="/" class="nav-logo"> Ignition Arcade <span style="font-size: 10px; color: #ffcc00; margin-left: 10px; border: 1px solid #ffcc00; padding: 2px 5px; border-radius: 4px;">V2.0.1-HOTFIX</span> </a>
         <div class="nav-tabs">
           <a href="#games" class="nav-tab active">Games</a>
           <a href="#shop" class="nav-tab">Shop</a>
@@ -129,6 +129,7 @@
     <script defer src="js/games/shared/juice.js"></script>
     <script defer src="js/games/shared/ticker.js"></script>
     <script defer src="js/games/shared/index.js"></script>
+    <script defer src="js/games/shared/arcade-visuals.js?v=asdf-simple-games-20260608"></script>
 
     <!-- 4. UI Framework -->
     <script defer src="js/games/ui/rotation.js"></script>
@@ -148,11 +149,29 @@
     <script defer src="js/games/core/systems/RenderSystem.js"></script>
     <script defer src="js/games/core/systems/PhysicsSystem.js"></script>
     <script defer src="js/games/core/systems/InputSystem.js"></script>
+    <script defer src="js/games/core/systems/PersonalitySystem.js"></script>
     <script defer src="js/games/framework/GameInstance.js"></script>
 
     <!-- 6. Coordinator & Main Entry -->
-    <script defer src="js/games/engines/index.js"></script>
-    <script defer src="js/games/main.js"></script>
+    <script>
+      (function() {
+        const v = Date.now();
+        const scripts = [
+          'js/games/engines/index.js',
+          'js/games/engines/burnrunner.js',
+          'js/games/engines/scamblaster.js',
+          'js/games/engines/stakestacker/index.js',
+          'js/games/engines/cryptoheist.js',
+          'js/games/main.js'
+        ];
+        scripts.forEach(src => {
+          const s = document.createElement('script');
+          s.src = src + '?v=' + v;
+          s.defer = true;
+          document.body.appendChild(s);
+        });
+      })();
+    </script>
 
     <!-- 7. Integration & Hubs -->
     <script defer src="js/games/arcade-hub.js"></script>

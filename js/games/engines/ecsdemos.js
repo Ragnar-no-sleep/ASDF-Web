@@ -19,14 +19,19 @@
 
       this.instance = new ASDF.GameInstance(canvas, {
         maxEntities: 15000,
-        debug: true,
+        debug: false,
       });
 
       const world = this.instance.world;
       this.instance.initStandardComponents();
 
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
+
       // Systems
       world.addSystem(ASDF.InputSystem.init(world));
+      world.addSystem(ASDF.PersonalitySystem.create());
       world.addSystem(ASDF.PhysicsSystem.createMovement());
       world.addSystem(ASDF.PhysicsSystem.createCollision());
 
@@ -41,6 +46,8 @@
       world.addComponent(player, 'Renderable');
       world.addComponent(player, 'Controllable');
       world.addComponent(player, 'Collider');
+      world.addComponent(player, 'Rotation');
+      world.addComponent(player, 'Scale');
 
       const pIdx = world.getIndex(player);
       world.componentRegistry.get('Position').props.x[pIdx] = canvas.width / 2;
@@ -58,6 +65,8 @@
         world.addComponent(fire, 'Velocity');
         world.addComponent(fire, 'Renderable');
         world.addComponent(fire, 'Collider');
+        world.addComponent(fire, 'Rotation');
+        world.addComponent(fire, 'Scale');
 
         const idx = world.getIndex(fire);
         world.componentRegistry.get('Position').props.x[idx] = Math.random() * canvas.width;
@@ -72,8 +81,16 @@
 
       this.instance.onRender = alpha => {
         const ctx = this.instance.ctx;
-        ctx.fillStyle = '#0a0a0f';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+        if (visuals) {
+          visuals.drawBackdrop(ctx, canvas.width, canvas.height, {
+            theme: 'default',
+            allowNoise: false,
+          });
+        } else {
+          ctx.fillStyle = '#12071f';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
         // Collision visual feedback
         const colliders = world.createQuery(['Collider', 'Renderable']);
@@ -83,9 +100,11 @@
         for (let i = 0; i < count; i++) {
           const idx = dense[i];
           const id = world.getEntityId(idx);
-          if (cProps.active[idx] === 1)
+          if (cProps.active[idx] === 1) {
             rProps.iconIndex[idx] = 2; // Skull
-          else rProps.iconIndex[idx] = id === player ? 0 : 1;
+          } else {
+            rProps.iconIndex[idx] = id === player ? 0 : 1;
+          }
         }
 
         renderSystem(world, alpha);
