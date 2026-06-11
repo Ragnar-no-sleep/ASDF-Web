@@ -150,6 +150,7 @@ async function connectWallet() {
     connectedPubkey = resp.publicKey.toString();
 
     AudioFeedback.play('success');
+    window.ASDF?.trackStake(0);
 
     const btn = $('#connect-wallet');
     if (btn) {
@@ -196,6 +197,7 @@ async function fetchLocks() {
   if (cached) {
     locks = cached;
     AudioFeedback.play('success');
+    window.ASDF?.trackStake(0);
     renderLocks();
     renderTimeline();
     updateStats();
@@ -210,6 +212,7 @@ async function fetchLocks() {
     locks = rawLocks.map(normalizeLock);
     setCachedData(locks);
     AudioFeedback.play('success');
+    window.ASDF?.trackStake(0);
     renderLocks();
     renderTimeline();
     updateStats();
@@ -410,6 +413,7 @@ function renderLocks() {
 // ============================================
 
 function showLockDetail(lock) {
+  window.ASDF?.trackTransactionView();
   const modal = $('#lock-modal');
   if (!modal) return;
 

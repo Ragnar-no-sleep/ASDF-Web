@@ -1,253 +1,315 @@
-/**
- * Space Shooter - Render Pipeline
- *
- * Draw order: clear → parallax → entities → particles → HUD → overlays
- * Colors cached from CSS vars, no emoji
- *
- * @module games/engines/spaceshooter/renderer
- */
-
 'use strict';
 
 const SpaceRenderer = {
+  shakeIntensity: 0,
+  flashIntensity: 0,
+  colors: {
+    accent: '#ea4e33',
+    gold: '#ffcc00',
+    success: '#ff6b35',
+    dark: '#0a0a0a',
+    shipColor: '#ff6b35',
+    bulletColor: '#ffcc00',
+    enemyColor: '#f43f5e',
+    bossColor: '#ff2d95',
+    shieldColor: '#fff7ed',
+  },
+
   /**
-   * Create renderer
-   * @param {HTMLCanvasElement} canvas
-   * @param {CanvasRenderingContext2D} ctx
-   * @returns {Object}
+   * Main draw call
    */
-  create(canvas, ctx) {
-    // Cache colors from CSS computed style
-    const style = getComputedStyle(document.documentElement);
-    const colors = {
-      accent: style.getPropertyValue('--asdf-orange') || '#ea4e33',
-      gold: style.getPropertyValue('--asdf-gold') || '#f59e0b',
-      success: style.getPropertyValue('--asdf-green') || '#4ade80',
-      dark: style.getPropertyValue('--asdf-dark') || '#0a0a0a',
-      shipColor: '#4ade80',
-      bulletColor: '#ffff00',
-      enemyColor: '#ea4e33',
-      bossColor: '#ff00ff',
-      shieldColor: '#00ffff',
-    };
+  draw(state, parallax, particles, canvas, ctx) {
+    if (!state || !canvas || !ctx) return;
 
-    let shakeIntensity = 0;
-    let flashIntensity = 0;
+    const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
 
-    return {
-      /**
-       * Main draw call
-       * @param {Object} state
-       * @param {Object} parallax
-       * @param {Object} particles
-       */
-      draw(state, parallax, particles) {
-        // Apply screen shake
-        ctx.save();
-        if (shakeIntensity > 0) {
-          const shakeX = (Math.random() - 0.5) * shakeIntensity * 2;
-          const shakeY = (Math.random() - 0.5) * shakeIntensity * 2;
-          ctx.translate(shakeX, shakeY);
-          shakeIntensity *= 0.9;
-        }
+    ctx.save();
+    if (this.shakeIntensity > 0) {
+      const shakeX = (Math.random() - 0.5) * this.shakeIntensity * 2;
+      const shakeY = (Math.random() - 0.5) * this.shakeIntensity * 2;
+      ctx.translate(shakeX, shakeY);
+      this.shakeIntensity *= 0.9;
+    }
 
-        // Clear
-        ctx.fillStyle = colors.dark;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (visuals) {
+      visuals.drawBackdrop(ctx, canvas.width, canvas.height, {
+        theme: 'default',
+        seed: state.score,
+      });
+    } else {
+      ctx.fillStyle = this.colors.dark;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-        // Parallax
-        parallax.draw();
+    this.drawSimpleSkyMarks(ctx, canvas);
 
-        // Power-ups
-        ctx.fillStyle = colors.gold;
-        for (const pu of state.powerUps) {
-          ctx.fillRect(pu.x - pu.width / 2, pu.y - pu.height / 2, pu.width, pu.height);
-        }
+    // Draw power-ups (Pool)
+    if (state.powerUpPool) {
+      state.powerUpPool.forEach((i, data, offset) => {
+        // x, y, vy, width, height, life, typeInt
+        this.drawPowerUp(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
+          data[offset + 3],
+          data[offset + 4]
+        );
+      });
+    } else {
+      for (const pu of state.powerUps) {
+        this.drawPowerUp(ctx, pu.x, pu.y, pu.width, pu.height);
+      }
+    }
 
-        // Bullets
-        ctx.fillStyle = colors.bulletColor;
-        for (const b of state.bullets) {
-          ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
-        }
+    // Draw bullets (Pool)
+    if (state.bulletPool) {
+      state.bulletPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, damage
+        this.drawBullet(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
+          data[offset + 4],
+          data[offset + 5],
+          false
+        );
+      });
+    } else {
+      for (const b of state.bullets) {
+        this.drawBullet(ctx, b.x, b.y, b.width, b.height, false);
+      }
+    }
 
-        // Enemies
-        ctx.fillStyle = colors.enemyColor;
-        for (const e of state.enemies) {
-          ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2, e.width, e.height);
-          // Health bar
-          if (e.hp < e.maxHp) {
-            ctx.fillStyle = '#555';
-            ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, e.width, 3);
-            ctx.fillStyle = colors.success;
-            ctx.fillRect(e.x - e.width / 2, e.y - e.height / 2 - 6, (e.width * e.hp) / e.maxHp, 3);
-          }
-        }
+    // Draw enemy bullets (Pool)
+    if (state.enemyBulletPool) {
+      state.enemyBulletPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, damage
+        this.drawBullet(
+          ctx,
+          data[offset + 0],
+          data[offset + 1],
+          data[offset + 4],
+          data[offset + 5],
+          true
+        );
+      });
+    } else {
+      for (const b of state.enemyBullets || []) {
+        this.drawBullet(ctx, b.x, b.y, b.width, b.height, true);
+      }
+    }
 
-        // Boss
-        if (state.boss) {
-          const b = state.boss;
-          ctx.fillStyle = colors.bossColor;
-          ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
-          // Boss health bar (large)
-          ctx.fillStyle = '#555';
-          ctx.fillRect(20, 30, canvas.width - 40, 10);
-          ctx.fillStyle = colors.success;
-          ctx.fillRect(20, 30, ((canvas.width - 40) * b.hp) / b.maxHp, 10);
-          ctx.fillStyle = colors.gold;
-          ctx.font = '12px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(`BOSS - Phase ${b.phase}`, canvas.width / 2, 45);
-        }
+    // Draw enemies (Pool)
+    if (state.enemyPool) {
+      state.enemyPool.forEach((i, data, offset) => {
+        // x, y, vx, vy, width, height, typeInt, hp, points, timer
+        const w = data[offset + 4];
+        const h = data[offset + 5];
+        this.drawEnemy(ctx, data[offset + 0], data[offset + 1], w, h, data[offset + 6]);
+      });
+    } else {
+      for (const e of state.enemies) {
+        this.drawEnemy(ctx, e.x, e.y, e.width, e.height, e.type || 0);
+      }
+    }
 
-        // Ship
-        const ship = state.ship;
-        ctx.fillStyle =
-          ship.invincibleTimer > 0 && Math.floor(ship.invincibleTimer * 10) % 2 === 0
-            ? 'rgba(74, 222, 128, 0.5)'
-            : colors.shipColor;
-        ctx.fillRect(ship.x - ship.width / 2, ship.y - ship.height / 2, ship.width, ship.height);
+    const ship = state.ship;
+    if (ship) {
+      const isInvincible =
+        ship.invincibleTimer > 0 && Math.floor(ship.invincibleTimer * 0.1) % 2 === 0;
+      this.drawShip(ctx, ship, isInvincible);
 
-        // Shield indicator
-        if (ship.shield > 0) {
-          ctx.strokeStyle = colors.shieldColor;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(ship.x, ship.y, ship.width * 0.6, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+      if (ship.shield > 0) {
+        ctx.strokeStyle = this.colors.shieldColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(ship.x, ship.y, ship.width * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
 
-        // Particles
-        particles.draw();
+    if (particles) particles.draw(ctx);
 
-        // Flash effect
-        if (flashIntensity > 0) {
-          ctx.fillStyle = `rgba(255,255,255,${flashIntensity})`;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          flashIntensity *= 0.8;
-        }
+    if (this.flashIntensity > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${this.flashIntensity})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      this.flashIntensity *= 0.8;
+    }
 
-        ctx.restore();
+    ctx.restore();
+    this.drawHUD(state, canvas, ctx);
+    this.drawOverlay(state, canvas, ctx);
+  },
 
-        // HUD
-        this.drawHUD(state);
+  /**
+   * Draw HUD
+   */
+  drawHUD(state, canvas, ctx) {
+    return;
+  },
 
-        // Overlays
-        this.drawOverlay(state);
-      },
+  drawSimpleSkyMarks(ctx, canvas) {
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.fillStyle = '#fff2b3';
+    for (let i = 0; i < 18; i++) {
+      const x = (i * 83 + 29) % canvas.width;
+      const y = (i * 137 + 41) % canvas.height;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.restore();
+  },
 
-      /**
-       * Draw HUD
-       * @param {Object} state
-       */
-      drawHUD(state) {
-        const ship = state.ship;
+  drawPowerUp(ctx, x, y, w, h) {
+    const size = Math.max(w, h, 18);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#ffcc00';
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#12071f';
+    ctx.font = '900 11px Orbitron, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('A', 0, 1);
+    ctx.restore();
+  },
 
-        ctx.save();
-        ctx.fillStyle = colors.gold;
-        ctx.font = 'bold 16px JetBrains Mono';
-        ctx.textAlign = 'left';
+  drawBullet(ctx, x, y, w, h, enemy) {
+    ctx.save();
+    ctx.fillStyle = enemy ? '#f43f5e' : '#ffcc00';
+    this.roundRect(ctx, x - w / 2, y - h / 2, Math.max(4, w), Math.max(8, h), 4);
+    ctx.fill();
+    ctx.restore();
+  },
 
-        // Score
-        ctx.fillText(`SCORE: ${state.score}`, 20, 30);
+  drawEnemy(ctx, x, y, w, h, type) {
+    const letters = ['S', 'D', 'F', 'X'];
+    const letter = letters[Math.abs(Math.round(type || 0)) % letters.length];
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = type > 2 ? '#ff2d95' : '#f43f5e';
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.lineTo(w / 2, 0);
+    ctx.lineTo(0, h / 2);
+    ctx.lineTo(-w / 2, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    if (w > 18 && h > 18) {
+      ctx.fillStyle = '#fff7ed';
+      ctx.font = '900 10px Orbitron, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(letter, 0, 1);
+    }
+    ctx.restore();
+  },
 
-        // Wave
-        ctx.fillText(`WAVE: ${state.wave}`, 20, 55);
+  drawShip(ctx, ship, isInvincible) {
+    const w = ship.width || 26;
+    const h = ship.height || 34;
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.globalAlpha = isInvincible ? 0.62 : 1;
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur = 5;
+    ctx.fillStyle = this.colors.shipColor;
+    ctx.beginPath();
+    ctx.moveTo(0, -h / 2);
+    ctx.lineTo(w / 2, h * 0.35);
+    ctx.lineTo(w * 0.16, h * 0.22);
+    ctx.lineTo(0, h / 2);
+    ctx.lineTo(-w * 0.16, h * 0.22);
+    ctx.lineTo(-w / 2, h * 0.35);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#fff2b3';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(-3, h * 0.08, 6, h * 0.28);
+    ctx.restore();
+  },
 
-        // HP bar (left)
-        const hpBarX = 20;
-        const hpBarY = 80;
-        const hpBarW = 150;
-        const hpBarH = 10;
+  roundRect(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  },
 
-        ctx.fillStyle = '#555';
-        ctx.fillRect(hpBarX, hpBarY, hpBarW, hpBarH);
-        ctx.fillStyle = colors.success;
-        ctx.fillRect(hpBarX, hpBarY, (hpBarW * ship.hp) / ship.maxHp, hpBarH);
-        ctx.fillStyle = colors.gold;
-        ctx.font = '11px JetBrains Mono';
-        ctx.fillText(`HP: ${Math.ceil(ship.hp)}/${ship.maxHp}`, hpBarX + 5, hpBarY + 7);
+  /**
+   * Draw overlays
+   */
+  drawOverlay(state, canvas, ctx) {
+    if (state.phase === 'upgrading' && typeof SpaceUpgrades !== 'undefined') {
+      SpaceUpgrades.renderUpgradeScreen(ctx, canvas, state);
+    }
 
-        // Shield bar (right)
-        if (ship.maxShield > 0) {
-          const shieldBarX = canvas.width - 170;
-          const shieldBarY = 80;
-          const shieldBarW = 150;
-          const shieldBarH = 10;
+    if (state.gameOver) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (visuals) {
+        visuals.drawNeonText(
+          ctx,
+          'GAME OVER',
+          canvas.width / 2,
+          canvas.height / 2 - 42,
+          '#f8fafc',
+          '#64748b',
+          46,
+          'center'
+        );
+        visuals.drawNeonText(
+          ctx,
+          `Final Score: ${state.score}`,
+          canvas.width / 2,
+          canvas.height / 2 + 18,
+          '#fde68a',
+          '#64748b',
+          21,
+          'center'
+        );
+      } else {
+        ctx.fillStyle = this.colors.accent;
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.fillStyle = this.colors.gold;
+        ctx.font = '24px Arial';
+        ctx.fillText(`Final Score: ${state.score}`, canvas.width / 2, canvas.height / 2 + 20);
+      }
+      ctx.restore();
+    }
+  },
 
-          ctx.fillStyle = '#555';
-          ctx.fillRect(shieldBarX, shieldBarY, shieldBarW, shieldBarH);
-          if (ship.shield > 0) {
-            ctx.fillStyle = colors.shieldColor;
-            ctx.fillRect(
-              shieldBarX,
-              shieldBarY,
-              (shieldBarW * ship.shield) / ship.maxShield,
-              shieldBarH
-            );
-          }
-          ctx.fillStyle = colors.gold;
-          ctx.fillText(`SHIELD: ${Math.ceil(ship.shield)}`, shieldBarX + 5, shieldBarY + 7);
-        }
-
-        // Nuke charges
-        if (ship.nukeCharges > 0) {
-          ctx.fillStyle = colors.accent;
-          ctx.font = 'bold 14px JetBrains Mono';
-          ctx.textAlign = 'right';
-          ctx.fillText(`NUKE: ${ship.nukeCharges} [N]`, canvas.width - 20, 30);
-        }
-
-        ctx.restore();
-      },
-
-      /**
-       * Draw overlays (upgrade screen, game-over, wave banner)
-       * @param {Object} state
-       */
-      drawOverlay(state) {
-        if (state.phase === 'upgrading') {
-          SpaceUpgrades.renderUpgradeScreen(ctx, canvas, state);
-        }
-
-        if (state.gameOver) {
-          ctx.save();
-          ctx.fillStyle = 'rgba(0,0,0,0.7)';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          ctx.fillStyle = colors.accent;
-          ctx.font = 'bold 48px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
-
-          ctx.fillStyle = colors.gold;
-          ctx.font = '24px Arial';
-          ctx.fillText(`Final Score: ${state.score}`, canvas.width / 2, canvas.height / 2 + 20);
-          ctx.fillText(`Wave: ${state.wave}`, canvas.width / 2, canvas.height / 2 + 50);
-
-          ctx.fillStyle = '#aaa';
-          ctx.font = '14px Arial';
-          ctx.fillText('Press START GAME to continue', canvas.width / 2, canvas.height / 2 + 90);
-
-          ctx.restore();
-        }
-      },
-
-      /**
-       * Trigger screen shake
-       * @param {number} intensity
-       */
-      shake(intensity) {
-        shakeIntensity = Math.max(shakeIntensity, intensity);
-      },
-
-      /**
-       * Trigger screen flash
-       * @param {number} intensity
-       */
-      flash(intensity) {
-        flashIntensity = Math.max(flashIntensity, intensity);
-      },
-    };
+  /**
+   * Trigger effects
+   */
+  shake(intensity) {
+    this.shakeIntensity = Math.max(this.shakeIntensity, intensity);
+  },
+  flash(intensity) {
+    this.flashIntensity = Math.max(this.flashIntensity, intensity);
   },
 };
 

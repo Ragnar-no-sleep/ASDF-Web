@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chess Personality - Blitz & Chill</title>
+    
+    <!-- Open Graph / Twitter Loop -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Chess Soul Mirror - Blitz & Chill" />
+    <meta property="og:description" content="Discover your chess archetype. Your soul revealed through the board." />
+    <meta property="og:image" content="https://blitz-and-chill-web.vercel.app/api/og/personality/guest" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://blitz-and-chill-web.vercel.app/api/og/personality/guest" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="css/design-tokens.css" />
+    <link rel="stylesheet" href="css/personality.css" />
+
+    <script>
+      // *sniff* Dynamisation des meta OG pour la boucle virale
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('u') || 'guest';
+      const ogImageUrl = 'https://blitz-and-chill-web.vercel.app/api/og/personality/' + userId;
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('meta[property="og:image"]')?.setAttribute('content', ogImageUrl);
+        document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', ogImageUrl);
+      });
+    </script>
+  </head>
+  <body class="forest-evening">
+    <div class="grain-overlay"></div>
+    
+    <nav class="top-nav">
+      <button id="audio-toggle" class="wallet-btn" style="margin-right:10px;">Sons: OFF</button>
+      <button id="wallet-connect" class="wallet-btn">Connecter</button>
+    </nav>
+    
+    <main class="personality-container">
+      <div id="game-view" class="view active">
+        <header class="hero-header">
+          <h1 class="main-title">Un endroit calme pour jouer aux échecs.</h1>
+        </header>
+
+        <div class="chess-board-preview" id="chess-board">
+          <div class="board-grid"></div>
+          <div class="board-hint">Fais le premier pas.</div>
+        </div>
+
+        <p class="manifesto">Pas de classement. Pas de pub. Pas de cookies.</p>
+        
+        <section class="revelation-section">
+          <h2 class="section-title">Joue. On t'offre un miroir.</h2>
+          <p class="section-desc">Ton archétype est révélé après 3 parties.</p>
+        </section>
+      </div>
+
+      <div id="result-view" class="view"></div>
+    </main>
+
+    <footer class="footer-simple">
+      <a href="/">← Retour au calme</a>
+    </footer>
+
+    <script type="module" src="js/personality.js"></script>
+  <script type="module" src="js/asdf-integration.js"></script></body>
+</html>
+

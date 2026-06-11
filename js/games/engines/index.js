@@ -3,36 +3,29 @@
  *
  * Central coordinator for all game engines
  * Routes game start/stop to the appropriate engine module
- *
- * Pattern: 1 factory per product
- * Each game has its own file in engines/[gamename].js
+ * Implements Lazy Loading for scalable engine architecture
  */
 
 'use strict';
 
 const GameEngines = {
-  // Module references (populated as games are loaded)
-  tokencatcher: null,
-  burnrunner: null,
-  scamblaster: null,
-  cryptoheist: null,
-  pumparena: null,
-  whalewatch: null,
-  stakestacker: null,
-  dexdash: null,
-  burnorhold: null,
-  liquiditymaze: null,
-  spaceshooter: null,
-
   // Shared modules
   shared: null,
 
   // Configuration
   config: {
     debug: false,
+    enginesPath: '/js/games/engines/',
+    assetVersion: `dev-${Date.now()}`, // Force cache bypassing for dynamic scripts
   },
 
   initialized: false,
+  _loadingPromises: new Map(),
+  _enginePaths: {
+    spaceshooter: 'spaceshooter/index.js',
+    stakestacker: 'stakestacker/index.js',
+    whalewatch: 'whalewatch/index.js',
+  },
 
   /**
    * Initialize the game engines coordinator
@@ -49,16 +42,10 @@ const GameEngines = {
       GameShared.init();
     }
 
-    // Flush GameRegistry entries into this object (single source of truth)
-    if (typeof GameRegistry !== 'undefined') {
-      GameRegistry.flush();
-      GameRegistry.lock(); // Prevent post-init registration (SOLID: O)
-    }
-
     this.initialized = true;
 
     if (this.config.debug) {
-      console.log('[GameEngines] Initialized with engines:', this.getLoadedEngines());
+      console.log('[GameEngines] Initialized');
     }
   },
 
@@ -70,10 +57,7 @@ const GameEngines = {
     if (typeof GameRegistry !== 'undefined') {
       return GameRegistry.getAll();
     }
-    // Fallback: scan own properties for engine objects
-    return Object.keys(this).filter(
-      k => this[k] !== null && typeof this[k] === 'object' && typeof this[k].start === 'function'
-    );
+    return [];
   },
 
   /**
@@ -82,20 +66,138 @@ const GameEngines = {
    * @returns {boolean} True if engine is loaded
    */
   hasEngine(gameId) {
-    return this[gameId] !== null && this[gameId] !== undefined;
+    if (typeof GameRegistry !== 'undefined') {
+      return GameRegistry.has(gameId);
+    }
+    return false;
+  },
+
+  /**
+   * Dynamically load a game engine script
+   * @param {string} gameId - The game ID
+   * @returns {Promise<boolean>} True if loaded successfully
+   */
+  async loadEngine(gameId) {
+    if (this.hasEngine(gameId)) return true;
+
+    // Prevent multiple simultaneous loads of the same engine
+    if (this._loadingPromises.has(gameId)) {
+      return this._loadingPromises.get(gameId);
+    }
+
+    const loadPromise = new Promise((resolve, reject) => {
+      console.log(`[GameEngines] Lazy loading engine: ${gameId}...`);
+
+      const script = document.createElement('script');
+      // Use specific path if mapped, else default to flat .js
+      const path = this._enginePaths[gameId] || `${gameId}.js`;
+      // Force absolute path from root
+      const basePath = this.config.enginesPath.startsWith('/')
+        ? this.config.enginesPath
+        : `/${this.config.enginesPath}`;
+      script.src = `${basePath}${path}?v=${encodeURIComponent(this.config.assetVersion)}`;
+      script.defer = true;
+
+      script.onload = () => {
+        console.log(`[GameEngines] Successfully loaded ${gameId}`);
+        resolve(true);
+      };
+
+      script.onerror = err => {
+        console.error(
+          `[GameEngines] Failed to load engine script for ${gameId} at ${script.src}`,
+          err
+        );
+
+        // If it wasn't a modular engine but failed, try the subfolder as fallback
+        if (!this._enginePaths[gameId]) {
+          const fallbackScript = document.createElement('script');
+          fallbackScript.src = `${this.config.enginesPath}${gameId}/index.js?v=${encodeURIComponent(this.config.assetVersion)}`;
+          fallbackScript.defer = true;
+          fallbackScript.onload = () => resolve(true);
+          fallbackScript.onerror = () => {
+            console.error(`[GameEngines] Fallback load failed for ${gameId}`);
+            reject(new Error(`Failed to load engine ${gameId}`));
+          };
+          document.body.appendChild(fallbackScript);
+        } else {
+          reject(new Error(`Failed to load modular engine ${gameId}`));
+        }
+      };
+
+      document.body.appendChild(script);
+    });
+
+    this._loadingPromises.set(gameId, loadPromise);
+
+    try {
+      await loadPromise;
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      this._loadingPromises.delete(gameId);
+    }
   },
 
   /**
    * Start a game
    * @param {string} gameId - The game ID to start
    */
-  start(gameId) {
+  async start(gameId) {
     if (!this.initialized) {
       console.warn('[GameEngines] Not initialized, calling init()');
       this.init();
     }
 
-    const engine = this[gameId];
+    // Security: Validate gameId using the shared validation module
+    const Validation = this.shared
+      ? this.shared.Validation
+      : typeof GameValidation !== 'undefined'
+        ? GameValidation
+        : null;
+    if (Validation && !Validation.isValidGameId(gameId)) {
+      console.error(`[GameEngines] Invalid gameId rejected: ${gameId}`);
+      return;
+    }
+
+    // Lazy load the engine if not registered
+    if (!this.hasEngine(gameId)) {
+      const loaded = await this.loadEngine(gameId);
+      if (!loaded) {
+        console.error(`[GameEngines] Cannot start ${gameId}: Engine failed to load.`);
+        return;
+      }
+    }
+
+    let engine = null;
+    if (typeof GameRegistry !== 'undefined') {
+      engine = GameRegistry.get(gameId);
+    }
+
+    // Legacy Fallback for games not yet using GameRegistry
+    if (!engine && typeof window !== 'undefined') {
+      const classMap = {
+        tokencatcher: 'TokenCatcher',
+        burnrunner: 'BurnRunner',
+        scamblaster: 'ScamBlaster',
+        cryptoheist: 'CryptoHeist',
+        dexdash: 'DexDash',
+        burnorhold: 'BurnOrHold',
+        liquiditymaze: 'LiquidityMaze',
+        pumparena: 'PumpArena',
+      };
+      const className = classMap[gameId];
+      if (className && window[className]) {
+        engine = window[className];
+        if (typeof GameRegistry !== 'undefined') {
+          const wasLocked = GameRegistry._locked;
+          GameRegistry._locked = false; // Temporarily unlock to register legacy
+          GameRegistry.register(gameId, engine);
+          if (wasLocked) GameRegistry.lock();
+        }
+      }
+    }
 
     if (engine && typeof engine.start === 'function') {
       if (this.config.debug) {
@@ -103,7 +205,7 @@ const GameEngines = {
       }
       engine.start(gameId);
     } else {
-      console.warn(`[GameEngines] No engine found for: ${gameId}`);
+      console.error(`[GameEngines] No valid engine found for: ${gameId}`);
     }
   },
 
@@ -112,7 +214,26 @@ const GameEngines = {
    * @param {string} gameId - The game ID to stop
    */
   stop(gameId) {
-    const engine = this[gameId];
+    let engine = null;
+    if (typeof GameRegistry !== 'undefined') {
+      engine = GameRegistry.get(gameId);
+    }
+
+    // Legacy fallback check on global if registry fails
+    if (!engine && typeof window !== 'undefined') {
+      const classMap = {
+        tokencatcher: 'TokenCatcher',
+        burnrunner: 'BurnRunner',
+        scamblaster: 'ScamBlaster',
+        cryptoheist: 'CryptoHeist',
+        dexdash: 'DexDash',
+        burnorhold: 'BurnOrHold',
+        liquiditymaze: 'LiquidityMaze',
+        pumparena: 'PumpArena',
+      };
+      const className = classMap[gameId];
+      if (className && window[className]) engine = window[className];
+    }
 
     if (engine && typeof engine.stop === 'function') {
       if (this.config.debug) {
@@ -124,24 +245,6 @@ const GameEngines = {
       if (typeof stopGame === 'function') {
         stopGame(gameId);
       }
-    }
-  },
-
-  /**
-   * Register a game engine
-   * @param {string} gameId - The game ID
-   * @param {Object} engine - The engine object with start/stop methods
-   */
-  register(gameId, engine) {
-    if (!engine || typeof engine.start !== 'function') {
-      console.error(`[GameEngines] Invalid engine for ${gameId}: missing start() method`);
-      return;
-    }
-
-    this[gameId] = engine;
-
-    if (this.config.debug) {
-      console.log(`[GameEngines] Registered engine: ${gameId}`);
     }
   },
 

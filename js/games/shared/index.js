@@ -16,6 +16,7 @@ const GameShared = {
   Input: null,
   Intervals: null,
   Juice: null,
+  Ticker: null,
 
   initialized: false,
 
@@ -34,6 +35,7 @@ const GameShared = {
     this.Input = typeof InputManager !== 'undefined' ? InputManager : null;
     this.Intervals = typeof IntervalManager !== 'undefined' ? IntervalManager : null;
     this.Juice = typeof GameJuice !== 'undefined' ? GameJuice : null;
+    this.Ticker = typeof GameTicker !== 'undefined' ? GameTicker : null;
 
     // Validate all modules loaded
     const missing = [];
@@ -44,12 +46,54 @@ const GameShared = {
     if (!this.Input) missing.push('input.js');
     if (!this.Intervals) missing.push('intervals.js');
     if (!this.Juice) missing.push('juice.js');
+    if (!this.Ticker) missing.push('ticker.js');
 
     if (missing.length > 0) {
       console.warn('[GameShared] Missing modules:', missing.join(', '));
     }
 
     this.initialized = true;
+  },
+
+  /**
+   * Create a modern, high-performance game context (2026 Standard)
+   * Uses centralized Ticker and optimized utilities.
+   * @param {string} gameId - The game ID
+   * @param {HTMLCanvasElement} canvas - The game canvas
+   * @returns {Object} Optimized game context
+   */
+  createModernContext(gameId, canvas) {
+    if (!this.initialized) this.init();
+
+    const baseContext = this.createContext(gameId, canvas);
+
+    return {
+      ...baseContext,
+      ticker: this.Ticker,
+
+      /**
+       * Start optimized game loop
+       * @param {Object} engine - Object with update(dt) and draw(alpha)
+       */
+      run(engine) {
+        if (!this.ticker) {
+          console.error('[GameShared] Cannot run: Ticker missing');
+          return;
+        }
+        this.ticker.start(
+          dt => engine.update(dt),
+          alpha => engine.draw(alpha)
+        );
+      },
+
+      /**
+       * Enhanced cleanup for modern context
+       */
+      destroy() {
+        if (this.ticker) this.ticker.stop();
+        baseContext.cleanup();
+      },
+    };
   },
 
   /**

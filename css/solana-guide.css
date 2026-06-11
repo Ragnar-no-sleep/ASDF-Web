@@ -1,0 +1,158 @@
+/* Solana Starter Guide Styles */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 80px 20px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.glitch-text {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--asdf-gold);
+  letter-spacing: -2px;
+  position: relative;
+}
+
+.subtitle {
+  color: var(--asdf-gray-400);
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 10px auto;
+}
+
+/* Guide Grid */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.guide-card {
+  background: var(--asdf-elevated);
+  border: 1px solid var(--asdf-gray-800);
+  padding: 40px;
+  border-radius: 4px;
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.guide-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--asdf-gold);
+}
+
+.card-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--asdf-gold);
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.guide-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.guide-card p {
+  color: var(--asdf-gray-300);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+
+.check-list li {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 12px;
+  color: var(--asdf-gray-400);
+  font-size: 0.95rem;
+}
+
+.check-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--asdf-green);
+  font-weight: bold;
+}
+
+/* Interactive Elements */
+.interactive-demo {
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.status-msg {
+  margin-top: 15px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--asdf-gold);
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--asdf-gray-500);
+  margin-top: 20px;
+}
+
+/* Cynic Wisdom */
+.cynic-wisdom {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  background: rgba(234, 78, 51, 0.05);
+  border: 1px dashed var(--asdf-orange);
+  padding: 30px;
+  border-radius: 4px;
+}
+
+.cynic-avatar {
+  font-size: 3rem;
+}
+
+.cynic-bubble h3 {
+  color: var(--asdf-orange);
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.cynic-bubble p {
+  color: var(--asdf-gray-300);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .glitch-text {
+    font-size: 2.5rem;
+  }
+
+  .guide-card {
+    padding: 30px;
+  }
+
+  .cynic-wisdom {
+    flex-direction: column;
+    text-align: center;
+  }
+}

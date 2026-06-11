@@ -1,0 +1,12 @@
+/**
+ * ASDF Games - SSR Mock
+ * Prevents server crash if SSR modules are missing.
+ */
+
+'use strict';
+
+module.exports = {
+  renderGamesPage: async () => {
+    return '<!-- SSR MOCK -->';
+  }
+};

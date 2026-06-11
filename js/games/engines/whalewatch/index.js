@@ -1,532 +1,355 @@
 /**
- * WhaleWatch Game Engine — Dual cognitive game (Symbol Match + Memory Sequence)
- * Coordinator: GameKit + framework integration
- * @module games/engines/whalewatch
+ * ASDF Games - Whale Watch Engine
+ *
+ * Dual focus game: scan liquidity signals, then replay whale movement
+ * sequences. DOM-first by design for crisp interaction and accessibility.
  */
 
 'use strict';
 
-const WhaleWatch = {
-  gameId: 'whalewatch',
-  version: '2.0.0', // Modular rewrite
+(function () {
+  const SYMBOLS = [
+    { symbol: 'A', name: 'ASDF A' },
+    { symbol: 'S', name: 'ASDF S' },
+    { symbol: 'D', name: 'ASDF D' },
+    { symbol: 'F', name: 'ASDF F' },
+    { symbol: '+', name: 'Boost' },
+    { symbol: '*', name: 'Sun' },
+    { symbol: '$', name: 'Token' },
+    { symbol: 'X', name: 'Trap' },
+    { symbol: '1', name: 'Stack' },
+    { symbol: '2', name: 'Route' },
+    { symbol: '3', name: 'Run' },
+    { symbol: '4', name: 'Score' },
+  ];
 
-  async start(gameId) {
-    // Initialize game state
-    this.state = WhaleWatchEntities.createGameState();
-    this.timerInterval = null;
-    this.memoryTimerInterval = null;
-    this.particles = [];
+  const MEMORY_COLORS = ['#ffcc00', '#ff6b35', '#ff2d95', '#fff2b3'];
+  const MEMORY_LABELS = ['A', 'S', 'D', 'F'];
 
-    const arena = document.getElementById(`arena-${gameId}`);
-    if (!arena) return;
+  const WhaleWatch = {
+    version: '3.0.0',
+    gameId: 'whalewatch',
+    instance: null,
+    dom: null,
+    _timeouts: [],
+    _handlers: [],
 
-    // Create arena HTML
-    arena.innerHTML = WhaleWatchRenderer.createArena(gameId);
+    start(gameId) {
+      this.stop();
+      this.gameId = gameId;
 
-    // Build legend
-    const legendEl = document.getElementById('symbol-legend');
-    legendEl.innerHTML = WhaleWatchRenderer.buildLegend(WhaleWatchEntities.symbolLegend);
+      const arena = document.getElementById(`arena-${gameId}`);
+      if (!arena) return;
 
-    // Setup both games
-    this.setupSymbolHunt();
-    this.setupMemoryGame();
-    this.startSymbolTimer();
+      this.createArena(arena);
+      this.instance = new ASDF.GameInstance(document.createElement('canvas'), {
+        maxEntities: 16,
+        debug: false,
+      });
 
-    // Register cleanup
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
-      };
-    }
-  },
-
-  async stop() {
-    this.state.gameOver = true;
-    if (this.timerInterval) clearInterval(this.timerInterval);
-    if (this.memoryTimerInterval) clearInterval(this.memoryTimerInterval);
-  },
-
-  /**
-   * Setup symbol hunt (left side)
-   */
-  setupSymbolHunt() {
-    const symbolGrid = document.getElementById('symbol-grid');
-    const smTimerEl = document.getElementById('sm-timer');
-    const smFoundEl = document.getElementById('sm-found');
-    const smTotalEl = document.getElementById('sm-total');
-    const smTargetNameEl = document.getElementById('sm-target-name');
-    const smMistakesEl = document.getElementById('sm-mistakes');
-    const hintsLeftEl = document.getElementById('hints-left');
-    const hintBtn = document.getElementById('hint-btn');
-
-    // Reset state
-    this.state.symbolMatch.foundCount = 0;
-    this.state.symbolMatch.completed = false;
-    this.state.symbolMatch.mistakes = 0;
-    this.state.symbolMatch.combo = 0;
-
-    // Setup hint button
-    if (hintBtn) {
-      hintBtn.onclick = () => this.useHint();
-      hintsLeftEl.textContent = this.state.symbolMatch.hintsRemaining;
-      hintBtn.style.opacity = this.state.symbolMatch.hintsRemaining > 0 ? '1' : '0.5';
-    }
-
-    // Create grid
-    const gridData = WhaleWatchEntities.createSymbolGrid(
-      this.state.level,
-      WhaleWatchEntities.symbolLegend
-    );
-    this.state.symbolMatch.grid = gridData.grid;
-    this.state.symbolMatch.totalTargets = gridData.totalTargets;
-    this.state.symbolMatch.cols = gridData.cols;
-    this.state.symbolMatch.rows = gridData.rows;
-    this.state.symbolMatch.targetIndex = gridData.targetIndex;
-    this.state.symbolMatch.timer =
-      WhaleWatchEntities.difficulty.timerPerLevel[Math.min(this.state.level - 1, 6)];
-
-    // Update UI
-    symbolGrid.style.gridTemplateColumns = `repeat(${gridData.cols}, 1fr)`;
-    smTargetNameEl.textContent = gridData.target.name;
-    smTotalEl.textContent = gridData.totalTargets;
-    smFoundEl.textContent = '0';
-    smTimerEl.textContent = this.state.symbolMatch.timer;
-    smMistakesEl.textContent = '0';
-
-    // Create cards
-    symbolGrid.innerHTML = '';
-    this.state.symbolMatch.grid.forEach((cell, idx) => {
-      const card = WhaleWatchRenderer.createFlipCard(cell.symbol, idx, () => this.clickSymbol(idx));
-      symbolGrid.appendChild(card);
-    });
-  },
-
-  /**
-   * Handle symbol click
-   */
-  clickSymbol(index) {
-    if (this.state.symbolMatch.completed || this.state.gameOver) return;
-
-    const symbolGrid = document.getElementById('symbol-grid');
-    const smFoundEl = document.getElementById('sm-found');
-    const smMistakesEl = document.getElementById('sm-mistakes');
-    const comboDisplay = document.getElementById('combo-display');
-    const comboCount = document.getElementById('combo-count');
-
-    const cell = this.state.symbolMatch.grid[index];
-    const cardContainer = symbolGrid.children[index];
-
-    if (
-      cell.found ||
-      cardContainer.querySelector('.flip-card-inner').classList.contains('flipped')
-    ) {
-      return;
-    }
-
-    // Flip card
-    WhaleWatchRenderer.flipCard(cardContainer);
-
-    if (cell.isTarget) {
-      cell.found = true;
-      this.state.symbolMatch.foundCount++;
-      smFoundEl.textContent = this.state.symbolMatch.foundCount;
-
-      // Update combo
-      const now = Date.now();
-      if (now - this.state.symbolMatch.lastFindTime < this.state.symbolMatch.comboTimeout) {
-        this.state.symbolMatch.combo++;
-      } else {
-        this.state.symbolMatch.combo = 1;
-      }
-      this.state.symbolMatch.lastFindTime = now;
-
-      // Show combo
-      if (this.state.symbolMatch.combo > 1) {
-        comboCount.textContent = this.state.symbolMatch.combo;
-        comboDisplay.style.display = 'block';
-        comboDisplay.style.animation = 'none';
-        comboDisplay.offsetHeight;
-        comboDisplay.style.animation = 'pulse 0.3s ease-out';
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(
+          this.instance.canvas,
+          this.instance.canvas.getContext('2d')
+        );
       }
 
-      // Mark card found
-      WhaleWatchRenderer.markCardFound(cardContainer);
-      cardContainer.style.transform = 'scale(1.1)';
-      setTimeout(() => (cardContainer.style.transform = ''), 200);
+      this.instance.world.setResource('GameState', {
+        score: 0,
+        level: 1,
+        gameOver: false,
+        scan: {
+          timer: 45,
+          maxTimer: 45,
+          found: 0,
+          total: 0,
+          mistakes: 0,
+          target: SYMBOLS[0],
+          cells: [],
+        },
+        memory: {
+          round: 1,
+          sequence: [],
+          input: [],
+          state: 'idle',
+        },
+      });
 
-      // Spawn particles
-      const rect = cardContainer.getBoundingClientRect();
-      this.particles.push(
-        ...WhaleWatchEntities.spawnCelebration(
-          rect.left + rect.width / 2,
-          rect.top + rect.height / 2
-        )
-      );
+      this.cacheDom();
+      this.setupScanRound();
+      this.setupMemoryBoard();
+      this.startMemoryRound();
 
-      // Score
-      const bonus = WhaleWatchEntities.calculateSymbolScore(
-        this.state.level,
-        this.state.symbolMatch.combo
-      );
-      this.state.score += bonus;
-      document.getElementById('ww-score').textContent = this.state.score;
-      if (typeof recordScoreUpdate === 'function') {
-        recordScoreUpdate(this.gameId, this.state.score, bonus);
+      this.instance.onUpdate = dt => this.update(dt);
+      this.instance.onRender = () => {};
+      this.instance.start();
+
+      if (typeof activeGames !== 'undefined') {
+        activeGames[gameId] = { cleanup: () => this.stop() };
       }
+    },
 
-      // Check completion
-      if (this.state.symbolMatch.foundCount >= this.state.symbolMatch.totalTargets) {
-        this.state.symbolMatch.completed = true;
-        const timeBonus = WhaleWatchEntities.calculateTimeBonus(this.state.symbolMatch.timer);
-        this.state.score += timeBonus;
-        document.getElementById('ww-score').textContent = this.state.score;
+    createArena(arena) {
+      arena.innerHTML = `
+        <div class="ww-container ww-arcade">
+          <section class="ww-panel ww-panel--scan">
+            <div class="ww-panel-header">
+              <span class="ww-panel-title--gold">Signal Scan</span>
+              <span class="ww-stat-timer"><span id="sm-timer">45</span>s</span>
+            </div>
+            <div class="ww-target-box">
+              <span class="ww-target-label">Find</span>
+              <strong id="sm-target-name" class="ww-target-name">...</strong>
+            </div>
+            <div id="symbol-grid" class="ww-symbol-grid"></div>
+            <div class="ww-stats-row ww-stats-row--footer">
+              <span class="ww-stat-found">FOUND <span id="sm-found">0</span>/<span id="sm-total">0</span></span>
+              <span class="ww-stat-mistakes">MISS <span id="sm-mistakes">0</span></span>
+            </div>
+          </section>
 
-        // Celebration
-        for (let i = 0; i < 5; i++) {
-          setTimeout(() => {
-            const x = 100 + Math.random() * 200;
-            const y = 100 + Math.random() * 200;
-            this.particles.push(...WhaleWatchEntities.spawnCelebration(x, y, 12));
-          }, i * 100);
-        }
+          <section class="ww-panel ww-panel--memory">
+            <div class="ww-panel-header">
+              <span class="ww-panel-title--purple">Whale Route</span>
+              <span class="ww-mem-round">ROUND <span id="mem-round">1</span></span>
+            </div>
+            <div id="mem-status" class="ww-mem-status">Watch the route</div>
+            <div class="ww-timer-bar-track"><div id="mem-timer-bar" class="ww-timer-bar-fill"></div></div>
+            <div id="memory-buttons" class="ww-memory-buttons"></div>
+          </section>
 
-        setTimeout(() => {
-          comboDisplay.style.display = 'none';
-          this.state.level++;
-          document.getElementById('ww-level').textContent = this.state.level;
-          this.setupSymbolHunt();
-          if (this.state.memoryGame.completed) {
-            this.startMemoryRound();
-          }
-        }, 1000);
-      }
-    } else {
-      // Wrong card
-      WhaleWatchRenderer.markCardWrong(cardContainer);
-
-      this.state.symbolMatch.combo = 0;
-      comboDisplay.style.display = 'none';
-
-      setTimeout(() => {
-        WhaleWatchRenderer.unflipCard(cardContainer);
-        WhaleWatchRenderer.resetCardStyle(cardContainer);
-      }, 500);
-
-      this.state.score = Math.max(0, this.state.score - 5);
-      document.getElementById('ww-score').textContent = this.state.score;
-
-      this.state.symbolMatch.mistakes++;
-      smMistakesEl.textContent = this.state.symbolMatch.mistakes;
-
-      // Reset on max mistakes
-      if (this.state.symbolMatch.mistakes >= this.state.symbolMatch.maxMistakes) {
-        this.state.symbolMatch.mistakes = 0;
-        smMistakesEl.textContent = '0';
-        symbolGrid.style.boxShadow = '0 0 20px #ef4444';
-        setTimeout(() => (symbolGrid.style.boxShadow = ''), 300);
-
-        // Unflip all found cards
-        this.state.symbolMatch.grid.forEach((cell, idx) => {
-          if (cell.found && cell.isTarget) {
-            cell.found = false;
-            WhaleWatchRenderer.unflipCard(symbolGrid.children[idx]);
-            WhaleWatchRenderer.resetCardStyle(symbolGrid.children[idx]);
-          }
-        });
-
-        this.state.symbolMatch.foundCount = 0;
-        smFoundEl.textContent = '0';
-
-        this.state.score = Math.max(0, this.state.score - 20);
-        document.getElementById('ww-score').textContent = this.state.score;
-      }
-    }
-
-    if (typeof updateScore === 'function') updateScore(this.gameId, this.state.score);
-  },
-
-  /**
-   * Use hint to reveal target
-   */
-  useHint() {
-    if (this.state.symbolMatch.hintsRemaining <= 0 || this.state.symbolMatch.hintActive) return;
-
-    const symbolGrid = document.getElementById('symbol-grid');
-    const hintsLeftEl = document.getElementById('hints-left');
-    const hintBtn = document.getElementById('hint-btn');
-
-    // Find unfound target
-    const unfoundIndex = this.state.symbolMatch.grid.findIndex(
-      (cell, idx) =>
-        cell.isTarget &&
-        !cell.found &&
-        !symbolGrid.children[idx].querySelector('.flip-card-inner').classList.contains('flipped')
-    );
-
-    if (unfoundIndex === -1) return;
-
-    this.state.symbolMatch.hintsRemaining--;
-    this.state.symbolMatch.hintActive = true;
-    hintsLeftEl.textContent = this.state.symbolMatch.hintsRemaining;
-    hintBtn.style.opacity = this.state.symbolMatch.hintsRemaining > 0 ? '1' : '0.5';
-
-    // Reveal
-    const cardInner = symbolGrid.children[unfoundIndex].querySelector('.flip-card-inner');
-    cardInner.classList.add('flipped');
-    symbolGrid.children[unfoundIndex].classList.add('ww-hint-glow');
-
-    setTimeout(() => {
-      if (!this.state.symbolMatch.grid[unfoundIndex].found) {
-        cardInner.classList.remove('flipped');
-      }
-      symbolGrid.children[unfoundIndex].classList.remove('ww-hint-glow');
-      this.state.symbolMatch.hintActive = false;
-    }, 1500);
-  },
-
-  /**
-   * Setup memory game (right side)
-   */
-  setupMemoryGame() {
-    const memButtons = document.getElementById('memory-buttons');
-    const buttonConfigs = [
-      { symbol: '&#129416;', name: 'shark', color: '#3b82f6' },
-      { symbol: '&#128011;', name: 'whale', color: '#0ea5e9' },
-      { symbol: '&#128031;', name: 'fish', color: '#22c55e' },
-      { symbol: '&#128021;', name: 'dog', color: '#f59e0b' },
-    ];
-
-    memButtons.innerHTML = '';
-    this.state.memoryGame.buttons = [];
-
-    buttonConfigs.forEach((config, idx) => {
-      const btn = document.createElement('button');
-      btn.dataset.index = idx;
-      btn.dataset.name = config.name;
-      btn.dataset.color = config.color;
-      btn.style.cssText = `
-        background: linear-gradient(135deg, ${config.color}40, ${config.color}20);
-        border: 4px solid ${config.color};
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.15s;
-        opacity: 0.7;
-        min-height: 80px;
-        font-size: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+          <div class="ww-bottom-hud">
+            <span>SCORE <strong id="ww-score" class="ww-score-text">0</strong></span>
+            <span>LEVEL <strong id="ww-level" class="ww-level-text">1</strong></span>
+          </div>
+        </div>
       `;
-      btn.innerHTML = config.symbol;
-      btn.onclick = () => this.playerPressButton(idx);
-      memButtons.appendChild(btn);
-      this.state.memoryGame.buttons.push({ el: btn, config });
-    });
+    },
 
-    this.startMemoryRound();
-  },
+    cacheDom() {
+      this.dom = {
+        score: document.getElementById('ww-score'),
+        level: document.getElementById('ww-level'),
+        scanTimer: document.getElementById('sm-timer'),
+        scanFound: document.getElementById('sm-found'),
+        scanTotal: document.getElementById('sm-total'),
+        scanMistakes: document.getElementById('sm-mistakes'),
+        targetName: document.getElementById('sm-target-name'),
+        grid: document.getElementById('symbol-grid'),
+        memoryButtons: document.getElementById('memory-buttons'),
+        memoryStatus: document.getElementById('mem-status'),
+        memoryRound: document.getElementById('mem-round'),
+        memoryBar: document.getElementById('mem-timer-bar'),
+      };
+    },
 
-  /**
-   * Start memory round
-   */
-  startMemoryRound() {
-    const memStatusEl = document.getElementById('mem-status');
-    const memTimerBarEl = document.getElementById('mem-timer-bar');
-    const memTimerDisplayEl = document.getElementById('mem-timer-display');
-    const memRoundEl = document.getElementById('mem-round');
+    setupScanRound() {
+      const state = this.getState();
+      const scan = state.scan;
+      scan.target = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      scan.total = Math.min(8, 3 + Math.floor(state.level / 2));
+      scan.found = 0;
+      scan.mistakes = 0;
+      scan.timer = Math.max(24, 45 - state.level * 1.5);
+      scan.maxTimer = scan.timer;
+      scan.cells = this.createScanCells(scan.target, scan.total);
 
-    this.state.memoryGame.completed = false;
-    this.state.memoryGame.playerSequence = [];
-    this.state.memoryGame.waitingForInput = false;
-    memStatusEl.textContent = 'Watch the sequence!';
-    memStatusEl.style.color = '#a855f7';
-    memTimerDisplayEl.style.display = 'none';
-    memTimerBarEl.style.width = '100%';
-    memTimerBarEl.style.background = 'linear-gradient(90deg,#22c55e,#fbbf24)';
+      this.dom.targetName.textContent = `${scan.target.name} (${scan.target.symbol})`;
+      this.dom.grid.innerHTML = '';
 
-    if (this.memoryTimerInterval) clearInterval(this.memoryTimerInterval);
+      scan.cells.forEach((cell, index) => {
+        const button = document.createElement('button');
+        button.className = 'ww-card';
+        button.type = 'button';
+        button.textContent = '?';
+        button.dataset.index = String(index);
+        this.track(button, 'click', () => this.revealScanCell(index, button));
+        this.dom.grid.appendChild(button);
+      });
 
-    this.state.memoryGame.sequence = WhaleWatchEntities.nextMemorySequence(
-      this.state.memoryGame.sequence
-    );
-    memRoundEl.textContent = this.state.memoryGame.round;
+      this.updateUI();
+    },
 
-    this.state.memoryGame.inputTimeLimit = Math.max(
-      4,
-      10 - Math.floor(this.state.memoryGame.round / 3)
-    );
+    createScanCells(target, total) {
+      const cells = [];
+      for (let i = 0; i < total; i++) cells.push({ ...target, target: true, revealed: false });
+      while (cells.length < 16) {
+        const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+        if (symbol.name !== target.name) cells.push({ ...symbol, target: false, revealed: false });
+      }
+      return cells.sort(() => Math.random() - 0.5);
+    },
 
-    setTimeout(() => this.showMemorySequence(), 500);
-  },
+    revealScanCell(index, button) {
+      const state = this.getState();
+      const cell = state.scan.cells[index];
+      if (!cell || cell.revealed || state.gameOver) return;
 
-  /**
-   * Show memory sequence
-   */
-  showMemorySequence() {
-    this.state.memoryGame.showingSequence = true;
-    this.state.memoryGame.currentShowIndex = 0;
+      cell.revealed = true;
+      button.textContent = cell.symbol;
+      button.classList.add('ww-card--revealed');
 
-    const showNext = () => {
-      if (this.state.memoryGame.currentShowIndex >= this.state.memoryGame.sequence.length) {
-        this.state.memoryGame.showingSequence = false;
-        this.state.memoryGame.waitingForInput = true;
-        document.getElementById('mem-status').textContent = 'Your turn!';
-        document.getElementById('mem-status').style.color = '#22c55e';
-        this.startMemoryInputTimer();
+      if (cell.target) {
+        button.classList.add('ww-card--found');
+        state.scan.found += 1;
+        state.score += 22 + state.level * 2;
+        if (state.scan.found >= state.scan.total) {
+          state.level += 1;
+          this.setLater(() => this.setupScanRound(), 420);
+        }
+      } else {
+        button.classList.add('ww-card--wrong');
+        state.scan.mistakes += 1;
+        state.score = Math.max(0, state.score - 8);
+        this.setLater(() => {
+          cell.revealed = false;
+          button.textContent = '?';
+          button.classList.remove('ww-card--revealed', 'ww-card--wrong');
+        }, 520);
+      }
+
+      this.updateUI();
+    },
+
+    setupMemoryBoard() {
+      this.dom.memoryButtons.innerHTML = '';
+      MEMORY_COLORS.forEach((color, index) => {
+        const button = document.createElement('button');
+        button.className = `ww-mem-btn ww-mem-btn--${index}`;
+        button.type = 'button';
+        button.textContent = MEMORY_LABELS[index];
+        button.dataset.color = color;
+        this.track(button, 'click', () => this.handleMemoryClick(index));
+        this.dom.memoryButtons.appendChild(button);
+      });
+    },
+
+    startMemoryRound() {
+      const state = this.getState();
+      const memory = state.memory;
+      memory.input = [];
+      memory.sequence.push(Math.floor(Math.random() * MEMORY_COLORS.length));
+      memory.state = 'showing';
+      this.dom.memoryStatus.textContent = 'Watch the route';
+      this.showSequence();
+    },
+
+    showSequence() {
+      const memory = this.getState().memory;
+      const buttons = Array.from(this.dom.memoryButtons.children);
+      let delay = 280;
+      buttons.forEach(btn => btn.setAttribute('disabled', 'true'));
+
+      memory.sequence.forEach(index => {
+        this.setLater(() => this.pulseMemoryButton(buttons[index]), delay);
+        delay += Math.max(240, 520 - memory.round * 18);
+      });
+
+      this.setLater(() => {
+        memory.state = 'waiting';
+        this.dom.memoryStatus.textContent = 'Repeat the route';
+        buttons.forEach(btn => btn.removeAttribute('disabled'));
+      }, delay + 120);
+    },
+
+    pulseMemoryButton(button) {
+      if (!button) return;
+      button.classList.add('ww-mem-btn--active');
+      this.setLater(() => button.classList.remove('ww-mem-btn--active'), 210);
+    },
+
+    handleMemoryClick(index) {
+      const state = this.getState();
+      const memory = state.memory;
+      if (memory.state !== 'waiting' || state.gameOver) return;
+
+      this.pulseMemoryButton(this.dom.memoryButtons.children[index]);
+      memory.input.push(index);
+      const inputIndex = memory.input.length - 1;
+
+      if (memory.sequence[inputIndex] !== index) {
+        state.score = Math.max(0, state.score - 15);
+        memory.sequence = [];
+        memory.round = 1;
+        memory.state = 'showing';
+        this.dom.memoryStatus.textContent = 'Route lost';
+        this.setLater(() => this.startMemoryRound(), 820);
+        this.updateUI();
         return;
       }
 
-      const btnIdx = this.state.memoryGame.sequence[this.state.memoryGame.currentShowIndex];
-      WhaleWatchRenderer.flashButton(this.state.memoryGame.buttons[btnIdx].el, true);
-
-      setTimeout(() => {
-        WhaleWatchRenderer.flashButton(this.state.memoryGame.buttons[btnIdx].el, false);
-        this.state.memoryGame.currentShowIndex++;
-        setTimeout(showNext, 300);
-      }, 500);
-    };
-
-    showNext();
-  },
-
-  /**
-   * Start input timer for memory game
-   */
-  startMemoryInputTimer() {
-    const memTimerBarEl = document.getElementById('mem-timer-bar');
-    const memTimerDisplayEl = document.getElementById('mem-timer-display');
-
-    this.state.memoryGame.inputTimer = this.state.memoryGame.inputTimeLimit;
-    memTimerDisplayEl.style.display = 'block';
-    memTimerDisplayEl.textContent = Math.ceil(this.state.memoryGame.inputTimer) + 's';
-
-    this.memoryTimerInterval = setInterval(() => {
-      if (this.state.gameOver || !this.state.memoryGame.waitingForInput) {
-        clearInterval(this.memoryTimerInterval);
-        memTimerDisplayEl.style.display = 'none';
-        return;
+      if (memory.input.length === memory.sequence.length) {
+        state.score += 38 + memory.round * 7;
+        memory.round += 1;
+        memory.state = 'showing';
+        this.dom.memoryStatus.textContent = 'Route locked';
+        this.setLater(() => this.startMemoryRound(), 650);
       }
 
-      this.state.memoryGame.inputTimer -= 0.1;
-      const timeLeft = Math.max(0, this.state.memoryGame.inputTimer);
-      const percent = (timeLeft / this.state.memoryGame.inputTimeLimit) * 100;
+      this.updateUI();
+    },
 
-      WhaleWatchRenderer.updateTimerBar(
-        memTimerBarEl,
-        percent,
-        timeLeft,
-        this.state.memoryGame.inputTimeLimit
-      );
-      memTimerDisplayEl.textContent = Math.ceil(timeLeft) + 's';
+    update(dt) {
+      const state = this.getState();
+      if (state.gameOver) return;
 
-      if (timeLeft <= 0) {
-        clearInterval(this.memoryTimerInterval);
-        this.state.memoryGame.waitingForInput = false;
-        document.getElementById('mem-status').textContent = "⏰ Time's up! Game Over";
-        document.getElementById('mem-status').style.color = '#ef4444';
-        this.state.gameOver = true;
-        setTimeout(() => {
-          if (typeof endGame === 'function') endGame(this.gameId, this.state.score);
-        }, 1500);
-      }
-    }, 100);
-  },
-
-  /**
-   * Handle player button press
-   */
-  playerPressButton(idx) {
-    if (!this.state.memoryGame.waitingForInput || this.state.gameOver) return;
-
-    const memStatusEl = document.getElementById('mem-status');
-    const memTimerDisplayEl = document.getElementById('mem-timer-display');
-
-    WhaleWatchRenderer.flashButton(this.state.memoryGame.buttons[idx].el, true);
-    setTimeout(
-      () => WhaleWatchRenderer.flashButton(this.state.memoryGame.buttons[idx].el, false),
-      200
-    );
-
-    this.state.memoryGame.playerSequence.push(idx);
-    const currentPos = this.state.memoryGame.playerSequence.length - 1;
-
-    if (this.state.memoryGame.sequence[currentPos] !== idx) {
-      memStatusEl.textContent = '❌ Wrong! Game Over';
-      memStatusEl.style.color = '#ef4444';
-      this.state.gameOver = true;
-      setTimeout(() => {
-        if (typeof endGame === 'function') endGame(this.gameId, this.state.score);
-      }, 1500);
-      return;
-    }
-
-    const bonus = 5 * this.state.memoryGame.round;
-    this.state.score += bonus;
-    document.getElementById('ww-score').textContent = this.state.score;
-    if (typeof recordScoreUpdate === 'function') {
-      recordScoreUpdate(this.gameId, this.state.score, bonus);
-    }
-
-    if (this.state.memoryGame.playerSequence.length === this.state.memoryGame.sequence.length) {
-      if (this.memoryTimerInterval) clearInterval(this.memoryTimerInterval);
-      memTimerDisplayEl.style.display = 'none';
-
-      this.state.memoryGame.completed = true;
-      this.state.memoryGame.waitingForInput = false;
-      this.state.memoryGame.round++;
-
-      const scores = WhaleWatchEntities.calculateMemoryScore(
-        this.state.memoryGame.round,
-        this.state.memoryGame.inputTimer
-      );
-      this.state.score += scores.roundBonus;
-      document.getElementById('ww-score').textContent = this.state.score;
-
-      memStatusEl.textContent = '✅ Perfect! Next round...';
-      memStatusEl.style.color = '#22c55e';
-
-      setTimeout(() => this.startMemoryRound(), 1500);
-    }
-
-    if (typeof updateScore === 'function') updateScore(this.gameId, this.state.score);
-  },
-
-  /**
-   * Start symbol hunt timer
-   */
-  startSymbolTimer() {
-    const smTimerEl = document.getElementById('sm-timer');
-
-    this.timerInterval = setInterval(() => {
-      if (this.state.gameOver || this.state.symbolMatch.completed) return;
-
-      this.state.symbolMatch.timer--;
-      smTimerEl.textContent = this.state.symbolMatch.timer;
-
-      if (this.state.symbolMatch.timer <= 10) {
-        smTimerEl.style.color = '#ef4444';
+      state.scan.timer -= dt / 60;
+      if (state.scan.timer <= 0) {
+        state.score = Math.max(0, state.score - 20);
+        this.setupScanRound();
       }
 
-      if (this.state.symbolMatch.timer <= 0) {
-        this.state.symbolMatch.timer = Math.max(20, 45 - this.state.level * 3);
-        smTimerEl.style.color = '';
-        this.setupSymbolHunt();
-      }
-    }, 1000);
-  },
-};
+      this.updateUI();
+    },
 
-// Spread GameEngineBase methods
-if (typeof GameEngineBase !== 'undefined') {
-  Object.assign(WhaleWatch, GameEngineBase);
-}
+    updateUI() {
+      const state = this.getState();
+      const scanRatio = Math.max(0, state.scan.timer / state.scan.maxTimer);
+      this.dom.score.textContent = state.score;
+      this.dom.level.textContent = state.level;
+      this.dom.scanTimer.textContent = Math.ceil(state.scan.timer);
+      this.dom.scanFound.textContent = state.scan.found;
+      this.dom.scanTotal.textContent = state.scan.total;
+      this.dom.scanMistakes.textContent = state.scan.mistakes;
+      this.dom.memoryRound.textContent = state.memory.round;
+      const bucket = Math.max(0, Math.min(10, Math.ceil(scanRatio * 10)));
+      this.dom.memoryBar.className = `ww-timer-bar-fill ww-timer-bar-fill--p${bucket}`;
+    },
 
-// Register with framework
-if (typeof GameRegistry !== 'undefined') {
-  GameRegistry.register('whalewatch', WhaleWatch);
-}
+    getState() {
+      return this.instance.world.getResource('GameState');
+    },
 
-// Export
-if (typeof window !== 'undefined') {
+    track(target, event, handler) {
+      target.addEventListener(event, handler);
+      this._handlers.push({ target, event, handler });
+    },
+
+    setLater(fn, delay) {
+      const id = setTimeout(() => {
+        this._timeouts = this._timeouts.filter(item => item !== id);
+        if (this.instance) fn();
+      }, delay);
+      this._timeouts.push(id);
+      return id;
+    },
+
+    stop() {
+      this._timeouts.forEach(id => clearTimeout(id));
+      this._timeouts = [];
+      this._handlers.forEach(({ target, event, handler }) => {
+        target.removeEventListener(event, handler);
+      });
+      this._handlers = [];
+      if (this.instance) this.instance.stop();
+      this.instance = null;
+      this.dom = null;
+    },
+  };
+
+  window.ASDF = window.ASDF || {};
+  window.ASDF.WhaleWatch = WhaleWatch;
   window.WhaleWatch = WhaleWatch;
-}
+  if (typeof GameRegistry !== 'undefined') GameRegistry.register('whalewatch', WhaleWatch);
+})();

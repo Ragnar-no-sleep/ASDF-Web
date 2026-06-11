@@ -560,30 +560,172 @@
    TOP NAV - NEO ARCADE
    ============================================ */
 .arcade-page .nav {
-  background: #050508;
-  border-bottom: 1px solid #151520;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(2, 8, 18, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.3);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .arcade-page .nav-content {
-  justify-content: flex-start;
-}
-
-.arcade-page .nav-tabs {
-  display: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .arcade-page .nav-logo {
-  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  transition: transform var(--duration-fast) ease;
+}
+
+.arcade-page .nav-logo:hover {
+  transform: scale(1.02);
+}
+
+.arcade-page .nav-logo-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px var(--neon-cyan));
 }
 
 .arcade-page .nav-logo-text {
-  font-family: var(--font-arcade);
-  color: var(--neon-cyan);
-  font-weight: var(--font-bold);
-  letter-spacing: var(--tracking-wider);
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  text-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
-  transition: all var(--duration-normal) ease;
+  background: linear-gradient(to right, #fff, var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+}
+
+.arcade-page .nav-tabs {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.arcade-page .nav-tab {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all var(--duration-fast) ease;
+}
+
+.arcade-page .nav-tab:hover, 
+.arcade-page .nav-tab.active {
+  color: var(--neon-cyan);
+  background: rgba(0, 245, 255, 0.1);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+}
+
+.arcade-page .nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.arcade-page .visitor-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.arcade-page .wallet-btn {
+  background: var(--neon-cyan);
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.arcade-page .wallet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+/* ============================================
+   MAIN LAYOUT ADJUSTMENTS
+   ============================================ */
+.arcade-page .arcade-main {
+  padding-top: 64px; /* Offset for fixed nav */
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.arcade-page .arcade-hub {
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.arcade-page .arcade-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-lg) 0;
+}
+
+.arcade-page .arcade-card {
+  padding: var(--space-xl);
+  height: 240px;
+}
+
+.arcade-page .arcade-card-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+}
+
+.arcade-page .arcade-card-title {
+  font-size: 1.4rem;
+}
+
+/* Responsive Scaling */
+@media (max-width: 768px) {
+  .arcade-page .nav-tabs {
+    display: none;
+  }
+  
+  .arcade-page .nav-content {
+    padding: 0 var(--space-md);
+  }
+  
+  .arcade-page .arcade-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .arcade-page .arcade-card {
+    height: 180px;
+    padding: var(--space-lg);
+  }
 }
 
 .arcade-page .nav-logo:hover .nav-logo-text {

@@ -17,7 +17,7 @@ const router = express.Router();
 const { sanitizeError } = require('./helpers');
 
 // CSRF Protection
-const { csrfProtection, generateToken, storeToken } = require('../../middleware/csrf');
+const { csrfProtection, generateToken, storeToken } = require('../../middleware/csrf.cjs');
 
 // Services
 const {

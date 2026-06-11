@@ -118,6 +118,7 @@ async function updateStats() {
   }
 
   AudioFeedback.play('success');
+  window.ASDF?.trackChartView();
 
   // Total burned
   const totalBurnedEl = document.querySelector('#total-burned .counter-number');

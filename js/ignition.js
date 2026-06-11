@@ -2,16 +2,16 @@
  * ASDF Ignition - Solana Airdrop Platform JavaScript
  *
  * Backend (sollama58/ignition) not yet deployed.
- * Shell ready — pending endpoints marked with [API] comments.
+ * Shell ready ÔÇö pending endpoints marked with [API] comments.
  *
  * Expected endpoints (when available):
- *   GET /ignition/pool          — { balance, usd }
- *   GET /ignition/koth          — { name, fullName, volume, mcap, holders, share, history[] }
- *   GET /ignition/leaderboard   — { tokens[{ rank, token, volume, mcap, multiplier }] }
- *   GET /ignition/robinhood     — { partners[{ name, creator, feesSol, status }] }
- *   GET /ignition/pags          — { designations[{ handle, wallet, earned }] }
- *   GET /ignition/airdrop-schedule — { nextAirdropMs }
- *   GET /ignition/holdings?wallet= — { sol, status, tokens, asdf }
+ *   GET /ignition/pool          ÔÇö { balance, usd }
+ *   GET /ignition/koth          ÔÇö { name, fullName, volume, mcap, holders, share, history[] }
+ *   GET /ignition/leaderboard   ÔÇö { tokens[{ rank, token, volume, mcap, multiplier }] }
+ *   GET /ignition/robinhood     ÔÇö { partners[{ name, creator, feesSol, status }] }
+ *   GET /ignition/pags          ÔÇö { designations[{ handle, wallet, earned }] }
+ *   GET /ignition/airdrop-schedule ÔÇö { nextAirdropMs }
+ *   GET /ignition/holdings?wallet= ÔÇö { sol, status, tokens, asdf }
  */
 
 'use strict';
@@ -21,23 +21,10 @@ import { ASDF_ENDPOINTS } from './config/endpoints.js';
 import { PageLifecycle } from './core/PageLifecycle.js';
 import { formatWallet } from './utils/format.js';
 import { ANIMATION, TIME_MS } from './config/timing.js';
-import { showNotice } from './utils/notice.js';
 
 // API_BASE ready for when backend is deployed
 // eslint-disable-next-line no-unused-vars
 const API_BASE = ASDF_ENDPOINTS.ignition;
-
-// ============================================
-// ORACLE SILENCE (one-time notice per page load)
-// ============================================
-
-let _oracleSilenceShown = false;
-
-function announceOracleSilence(message) {
-  if (_oracleSilenceShown) return;
-  _oracleSilenceShown = true;
-  showNotice(message);
-}
 
 // ============================================
 // STATE
@@ -140,7 +127,7 @@ function startCountdown(targetMs) {
 async function connectWallet() {
   try {
     if (!window.solana || !window.solana.isPhantom) {
-      window.showNotice('Wallet required — install Phantom to use Ignition');
+      window.showNotice('Wallet required ÔÇö install Phantom to use Ignition');
       window.open('https://phantom.app/', '_blank');
       return;
     }
@@ -283,14 +270,79 @@ function showPagsPending() {
 // FORM HANDLERS
 // ============================================
 
+// ============================================
+// MINTING & ANTI-SYBIL FLOW
+// ============================================
+
+async function mintPersonalityCard(archetype = 'CHESS_GRANDMASTER') {
+  if (!state.wallet) {
+    window.showNotice('Please connect your wallet first');
+    return;
+  }
+
+  try {
+    window.showNotice('Requesting authentication challenge...');
+
+    // 1. Get Nonce
+    const nonceResp = await fetch(`${API_BASE}/mint/nonce`);
+    const { nonce } = await nonceResp.json();
+
+    if (!nonce) throw new Error('Failed to get nonce from API');
+
+    // 2. Sign Message
+    window.showNotice('Please sign the permission request in your wallet');
+    const message = `ASDF_MINT_PERMIT:${nonce}:${state.wallet}:${archetype}`;
+    const encodedMessage = new TextEncoder().encode(message);
+    const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8');
+
+    // Convert signature to base58 (using simple encoding if bs58 not imported)
+    // Note: window.solana.signMessage returns { signature: Uint8Array, publicKey: PublicKey }
+    const signatureB58 = window.ASDF.utils.encodeBase58(signedMessage.signature);
+
+    window.showNotice('Verifying eligibility and generating permit...');
+
+    // 3. Request Permit
+    const permitResp = await fetch(`${API_BASE}/mint/mint-permit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        wallet: state.wallet,
+        nonce,
+        signature: signatureB58,
+        archetype,
+      }),
+    });
+
+    const result = await permitResp.json();
+
+    if (!permitResp.ok) {
+      const errorMsg = result.message || result.error || 'Eligibility check failed';
+      window.showNotice(`ÔØî ${errorMsg}`);
+      return;
+    }
+
+    // 4. Success
+    window.showNotice(`Ô£à Success! Permit issued for ${result.permit.archetype}`);
+    console.log('[Ignition] Mint Permit:', result.permit);
+
+    // Show the "Earned Card" UI or redirect to minting
+    if (result.permit.metadataUrl) {
+      window.showNotice('Metadata saved to Arweave. Ready to mint on-chain.');
+    }
+  } catch (error) {
+    console.error('[Ignition] Minting error:', error);
+    window.showNotice(`ÔØî Error: ${error.message}`);
+  }
+}
+
 function initForms() {
   const launcherForm = document.getElementById('launcher-form');
   if (launcherForm) {
     launcherForm.addEventListener('submit', e => {
       e.preventDefault();
-      // [API] TODO: POST /ignition/launch — wallet + 0.02 SOL transaction
+      // [API] TODO: POST /ignition/launch ÔÇö wallet + 0.02 SOL transaction
       window.showNotice(
-        'Token launch requires wallet connection and Solana integration — coming soon.'
+        'Token launch requires wallet connection and Solana integration ÔÇö coming soon.'
       );
     });
   }
@@ -299,8 +351,14 @@ function initForms() {
   if (registerForm) {
     registerForm.addEventListener('submit', e => {
       e.preventDefault();
-      // [API] TODO: POST /ignition/register — verify mint + register token
-      window.showNotice('Token registration requires API integration — coming soon.');
+
+      // Check if this is the personality card registration
+      const mintInput = document.getElementById('register-mint');
+      if (mintInput && mintInput.value.toLowerCase() === 'personality') {
+        mintPersonalityCard();
+      } else {
+        window.showNotice('Token registration requires API integration ÔÇö coming soon.');
+      }
     });
   }
 
@@ -308,10 +366,59 @@ function initForms() {
   if (pagsForm) {
     pagsForm.addEventListener('submit', e => {
       e.preventDefault();
-      // [API] TODO: POST /ignition/pags — designate Twitter fee beneficiary
-      window.showNotice('PAGS designation requires API integration — coming soon.');
+      // [API] TODO: POST /ignition/pags ÔÇö designate Twitter fee beneficiary
+      window.showNotice('PAGS designation requires API integration ÔÇö coming soon.');
     });
   }
+}
+
+// ============================================
+// API DATA FETCHING
+// ============================================
+
+async function fetchIgnitionData() {
+  try {
+    // 1. Fetch Pool Data
+    const poolResp = await fetch(`${API_BASE}/pool`);
+    if (poolResp.ok) {
+      const poolData = await poolResp.json();
+      const amountEl = document.querySelector('.ig-pool-amount');
+      const usdEl = document.querySelector('.ig-pool-usd');
+      if (amountEl) amountEl.textContent = poolData.balance || '0.00';
+      if (usdEl) usdEl.textContent = `$${poolData.usd || '0.00'}`;
+    }
+
+    // 2. Fetch KOTH (King of the Hill)
+    const kothResp = await fetch(`${API_BASE}/koth`);
+    if (kothResp.ok) {
+      const koth = await kothResp.json();
+      updateKothUI(koth);
+    }
+
+    // 3. Fetch Airdrop Schedule
+    const scheduleResp = await fetch(`${API_BASE}/airdrop-schedule`);
+    if (scheduleResp.ok) {
+      const { nextAirdropMs } = await scheduleResp.json();
+      startCountdown(nextAirdropMs);
+    }
+  } catch (error) {
+    console.error('[Ignition] Error fetching dashboard data:', error);
+  }
+}
+
+function updateKothUI(koth) {
+  const fields = {
+    'koth-name': koth.name || '---',
+    'koth-ticker': koth.fullName || '---',
+    'koth-volume': koth.volume || '0',
+    'koth-mcap': koth.mcap || '0',
+    'koth-holders': koth.holders || '0',
+    'koth-share': koth.share || '0%',
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
 }
 
 // ============================================
@@ -325,23 +432,10 @@ async function init() {
   initWallet();
   initForms();
 
-  // Honest pending state for all API-driven sections
-  showPoolPending();
-  showKothPending();
-  showLeaderboardPending();
-  showRobinhoodPending();
-  showPagsPending();
+  // Load live data
+  await fetchIgnitionData();
 
-  // Backend is known silent — surface CYNIC-voiced notice once
-  announceOracleSilence(
-    '*growl* — Ignition runway down. Backend silent. Verify launches elsewhere.'
-  );
-
-  // Countdown — no target until backend provides real schedule
-  // [API] TODO: startCountdown(await fetchAirdropSchedule())
-  startCountdown(null);
-
-  // Holdings default — pending wallet connection + API
+  // Holdings default ÔÇö pending wallet connection
   updateHoldings({ sol: '\u2014', status: '\u2014', tokens: '\u2014', asdf: '\u2014' });
 }
 

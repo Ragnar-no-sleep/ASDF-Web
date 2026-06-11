@@ -1,0 +1,324 @@
+:root {
+  --forest-950: #0f1410;
+  --forest-700: #2a3a30;
+  --amber-500: #c89b5e;
+  --cream-50: #f4eee2;
+}
+
+body.forest-evening {
+  background-color: var(--forest-950);
+  color: var(--cream-50);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.personality-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.view {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.view.active {
+  display: flex;
+  animation: fadeIn 1.2s ease-out;
+}
+
+.main-title {
+  font-family: 'Fraunces', serif;
+  font-size: 56px;
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 60px;
+  max-width: 800px;
+}
+
+.chess-board-preview {
+  width: 400px;
+  height: 400px;
+  background-color: var(--forest-700);
+  border: 1px solid rgba(200, 155, 94, 0.2);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.4s ease-out;
+}
+
+.chess-board-preview:hover {
+  transform: scale(1.02);
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 100%;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell.light {
+  background-color: var(--amber-500);
+  opacity: 0.1;
+}
+.cell.dark {
+  background-color: var(--forest-700);
+}
+
+.piece {
+  font-size: 40px;
+  color: var(--amber-500);
+}
+
+.board-hint {
+  position: absolute;
+  bottom: -40px;
+  width: 100%;
+  text-align: center;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  color: var(--amber-500);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.chess-board-preview:hover .board-hint {
+  opacity: 1;
+}
+
+.manifesto {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+  margin-top: 60px;
+}
+
+.revelation-section {
+  margin-top: 100px;
+  text-align: center;
+}
+
+.section-title {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.section-desc {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Card Styles */
+.personality-card {
+  width: 1000px;
+  height: 525px;
+  background-color: var(--forest-950);
+  border: 1px solid rgba(200, 155, 94, 0.1);
+  position: relative;
+  padding: 60px 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.decorative-line {
+  position: absolute;
+  top: 30px;
+  left: 80px;
+  right: 80px;
+  height: 1px;
+  background-color: var(--amber-500);
+  opacity: 0.2;
+}
+
+.archetype-name {
+  font-family: 'Fraunces', serif;
+  font-size: 84px;
+  margin: 0;
+  color: var(--amber-500);
+  line-height: 1;
+}
+
+.archetype-tagline {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 24px;
+  opacity: 0.8;
+  margin-top: 15px;
+}
+
+.stats-section {
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.stat-bar-container {
+  height: 2px;
+  background-color: var(--forest-700);
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background-color: var(--amber-500);
+  transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-family: 'Fraunces', serif;
+}
+
+.brand-signature {
+  font-size: 20px;
+  color: var(--amber-500);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.footer-simple {
+  padding: 40px;
+  text-align: center;
+}
+
+.footer-simple a {
+  color: var(--amber-500);
+  text-decoration: none;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+}
+
+.top-nav {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  z-index: 1000;
+}
+
+.wallet-btn {
+  background: transparent;
+  border: 1px solid rgba(200, 155, 94, 0.3);
+  color: var(--amber-500);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.wallet-btn:hover {
+  background: rgba(200, 155, 94, 0.1);
+  border-color: var(--amber-500);
+}
+
+.wallet-btn.connected {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+/* *sniff* Mobile Hardening (Axiome 2) */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 32px;
+    margin-bottom: 40px;
+  }
+
+  .chess-board-preview {
+    width: 280px;
+    height: 280px;
+  }
+
+  .piece {
+    font-size: 28px;
+  }
+
+  .personality-card {
+    width: 100vw;
+    height: auto;
+    min-height: 525px;
+    padding: 40px 20px;
+    transform: scale(0.9);
+  }
+
+  .archetype-name {
+    font-size: 48px;
+  }
+
+  .decorative-line {
+    left: 20px;
+    right: 20px;
+  }
+}
+
+/* *sniff* Pulse of Conviction (Axiome 5) */
+.asdf-badge {
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(200, 155, 94, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(200, 155, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 155, 94, 0);
+  }
+}

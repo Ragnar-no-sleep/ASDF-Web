@@ -29,7 +29,10 @@ function sanitizeNumberSimple(value, defaultValue = 0) {
 }
 
 // Alias for backwards compatibility within this module
-const sanitizeNumber = sanitizeNumberSimple;
+// Using a local variable if not already defined globally
+if (typeof window.sanitizeNumber === 'undefined') {
+  window.sanitizeNumber = sanitizeNumberSimple;
+}
 
 /**
  * Validate wallet address format (Solana base58)
@@ -218,8 +221,8 @@ const Profile = {
       const currencyData = localStorage.getItem('asdf_currency');
       if (currencyData) {
         const currency = JSON.parse(currencyData);
-        this.data.currency.burn = sanitizeNumber(currency.burn, 0);
-        this.data.currency.coins = sanitizeNumber(currency.coins || currency.ingame, 0);
+        this.data.currency.burn = sanitizeNumberSimple(currency.burn, 0);
+        this.data.currency.coins = sanitizeNumberSimple(currency.coins || currency.ingame, 0);
       }
 
       // Load game stats
@@ -244,10 +247,10 @@ const Profile = {
     if (pumpStats) {
       try {
         const stats = JSON.parse(pumpStats);
-        this.data.stats.gamesPlayed = sanitizeNumber(stats.gamesPlayed, 0);
-        this.data.stats.totalScore = sanitizeNumber(stats.totalProfit, 0);
-        this.data.stats.bestScore = sanitizeNumber(stats.bestProfit, 0);
-        this.data.stats.trades = sanitizeNumber(stats.totalTrades, 0);
+        this.data.stats.gamesPlayed = sanitizeNumberSimple(stats.gamesPlayed, 0);
+        this.data.stats.totalScore = sanitizeNumberSimple(stats.totalProfit, 0);
+        this.data.stats.bestScore = sanitizeNumberSimple(stats.bestProfit, 0);
+        this.data.stats.trades = sanitizeNumberSimple(stats.totalTrades, 0);
       } catch (e) {
         console.warn('[Profile] Invalid pumpArenaStats data');
       }
@@ -258,7 +261,7 @@ const Profile = {
     if (rpgState) {
       try {
         const rpg = JSON.parse(rpgState);
-        this.data.stats.wins = sanitizeNumber(rpg.wins, 0);
+        this.data.stats.wins = sanitizeNumberSimple(rpg.wins, 0);
       } catch (e) {
         console.warn('[Profile] Invalid pumpArenaRPG data');
       }
@@ -322,7 +325,7 @@ const Profile = {
       .map(h => ({
         type: ALLOWED_HISTORY_TYPES.includes(h.type) ? h.type : 'earn',
         desc: String(h.desc || '').slice(0, 100), // Limit length
-        amount: sanitizeNumber(h.amount, 0),
+        amount: sanitizeNumberSimple(h.amount, 0),
         date: this.isValidDate(h.date) ? h.date : new Date().toISOString(),
       }))
       .slice(0, 50); // Max 50 entries
@@ -487,7 +490,7 @@ const Profile = {
                 <td>${escapeHtml(h.desc)}</td>
                 <td>
                     <span class="history-amount ${h.amount >= 0 ? 'positive' : 'negative'}">
-                        ${h.amount >= 0 ? '+' : ''}${sanitizeNumber(h.amount, 0)} 🪙
+                        ${h.amount >= 0 ? '+' : ''}${sanitizeNumberSimple(h.amount, 0)} 🪙
                     </span>
                 </td>
                 <td>${escapeHtml(this.formatDate(h.date))}</td>
@@ -825,7 +828,7 @@ const Profile = {
     const entry = {
       type: safeType,
       desc: String(desc || '').slice(0, 100),
-      amount: sanitizeNumber(amount, 0),
+      amount: sanitizeNumberSimple(amount, 0),
       date: new Date().toISOString(),
     };
 

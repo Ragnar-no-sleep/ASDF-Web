@@ -3,6 +3,14 @@
            Fire-themed gaming platform
            ============================================ */
 
+html {
+  background: #020812 !important;
+}
+
+body {
+  background: transparent !important;
+}
+
 :root {
   /* Fire Palette */
   --bg-void: #0a0a0f;
@@ -1022,7 +1030,7 @@ body.modal-open {
   flex: 1;
   min-height: 400px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .game-controls {

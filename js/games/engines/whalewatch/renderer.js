@@ -150,10 +150,8 @@ const WhaleWatchRenderer = {
   flashButton(btnElement, on) {
     if (on) {
       btnElement.classList.add('ww-mem-btn--active');
-      btnElement.style.setProperty('--btn-color', btnElement.dataset.color);
     } else {
       btnElement.classList.remove('ww-mem-btn--active');
-      btnElement.style.setProperty('--btn-color', btnElement.dataset.color);
     }
   },
 
@@ -161,14 +159,8 @@ const WhaleWatchRenderer = {
    * Update timer bar width (memory game)
    */
   updateTimerBar(barElement, percent) {
-    barElement.style.setProperty('--bar-width', percent + '%');
-
-    barElement.classList.remove('ww-timer-bar-fill--low', 'ww-timer-bar-fill--mid');
-    if (percent < 30) {
-      barElement.classList.add('ww-timer-bar-fill--low');
-    } else if (percent < 60) {
-      barElement.classList.add('ww-timer-bar-fill--mid');
-    }
+    const bucket = Math.max(0, Math.min(10, Math.ceil(percent / 10)));
+    barElement.className = `ww-timer-bar-fill ww-timer-bar-fill--p${bucket}`;
   },
 
   /**

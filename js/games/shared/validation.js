@@ -51,12 +51,16 @@ const GameValidation = {
 };
 
 // Legacy function exports for backwards compatibility
-function sanitizeNumber(value, min = 0, max = Infinity, defaultValue = 0) {
-  return GameValidation.sanitizeNumber(value, min, max, defaultValue);
+if (typeof window.sanitizeNumber !== 'function') {
+  window.sanitizeNumber = function (value, min = 0, max = Infinity, defaultValue = 0) {
+    return GameValidation.sanitizeNumber(value, min, max, defaultValue);
+  };
 }
 
-function isValidGameId(gameId) {
-  return GameValidation.isValidGameId(gameId);
+if (typeof window.isValidGameId !== 'function') {
+  window.isValidGameId = function (gameId) {
+    return GameValidation.isValidGameId(gameId);
+  };
 }
 
 // Export for module systems

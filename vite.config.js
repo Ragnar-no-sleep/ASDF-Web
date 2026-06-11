@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // Local dev runs at site root; production keeps the GitHub Pages subpath.
+  base: command === 'serve' ? '/' : '/ASDF-Web/',
+
   // Root directory
   root: '.',
 
@@ -82,13 +85,11 @@ export default defineConfig({
     open: '/',
     cors: true,
     proxy: {
-      // Proxy API calls to avoid CORS in development
-      // Target updated to alonisthe.dev (Render backend burned in Phase 1, 2026-05-12)
-      // Burns endpoint is live; other /api/* routes may 404 until Phase 2 backends land
+      // Proxy API calls to local API (3001) or fallback to production
       '/api': {
-        target: 'https://alonisthe.dev',
+        target: 'http://localhost:3001',
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
   },
@@ -103,6 +104,21 @@ export default defineConfig({
 
   // Optimize deps
   optimizeDeps: {
-    include: ['three', 'gsap'],
+    include: ['three'],
   },
-});
+
+  // Custom plugin to force reload on non-module JS changes
+  plugins: [
+    {
+      name: 'watch-game-scripts',
+      handleHotUpdate({ file, server }) {
+        if (file.includes('/js/games/') && file.endsWith('.js')) {
+          server.ws.send({
+            type: 'full-reload',
+            path: '*',
+          });
+        }
+      },
+    },
+  ],
+}));

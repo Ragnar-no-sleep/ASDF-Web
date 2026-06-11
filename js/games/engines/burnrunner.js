@@ -1,1204 +1,1150 @@
 /**
  * ASDF Games - Burn Runner Engine
  *
- * Endless runner game: Run through the blockchain, collect tokens, avoid obstacles
- * Features: Double jump, dash ability, shield ability, platform physics
- *
- * Extracted from engine.js for modularity
+ * Endless modular runner with pressure curve.
+ * Visual style keeps the ASDF cyber identity while staying readable
+ * on desktop and mobile viewports.
  */
 
 'use strict';
 
-const BurnRunner = {
-  version: '1.2.0', // Parallax backgrounds + dust particles
-  gameId: 'burnrunner',
-  state: null,
-  canvas: null,
-  ctx: null,
-  timing: null,
-  juice: null, // GameJuice integration
+(function () {
+  const CONFIG = {
+    playerSize: 46,
+    playerLift: 8,
+    playerBaseX: 96,
+    playerBaseY: 0.22,
+    physics: {
+      jumpForce: -8.8,
+      gravity: 0.34,
+      maxSpeed: 14.6,
+      acceleration: 0.032,
+      maxAirJumps: 1,
+      coyoteFrames: 7,
+      jumpBufferFrames: 10,
+    },
+    baseSpeed: 5.9,
+    speedCap: 14.2,
+    levelDistance: 360,
+    distanceScale: 0.0014,
+    maxDifficultyDistance: 2_000,
+    spawn: {
+      baseInterval: 62,
+      minInterval: 25,
+      obstacleChanceBase: 0.64,
+      obstacleChanceGrowth: 0.06,
+      baseMaxHazards: 11,
+      maxHazards: 34,
+      collectibleChance: 0.38,
+    },
+    icons: ['S', 'R', 'B', 'C', 'T', 'L'],
+    colors: {
+      player: '#dc2626',
+      playerTrim: '#ffcc00',
+      ground: '#06050d',
+      groundGrid: '#ffcc00',
+      skyline: '#1f1338',
+      skylineRoof: '#0b1222',
+      hazard: ['#ff6b35', '#ff2d95', '#f97316', '#f43f5e', '#ffcc00', '#fff7ed'],
+      collectible: '#ffcc00',
+      collectText: '#fef08a',
+    },
+    horizon: 0.23,
+    citySpeed: 1.2,
+    roadPulse: 0.006,
+  };
 
-  // Deadly obstacles
-  obstacleTypes: [
-    { icon: '💀', name: 'SCAM', width: 35, height: 40, deadly: true },
-    { icon: '🚫', name: 'RUG', width: 35, height: 35, deadly: true },
-    { icon: '📉', name: 'FUD', width: 35, height: 35, deadly: true },
-    { icon: '🦠', name: 'VIRUS', width: 30, height: 35, deadly: true },
-    { icon: '🔥', name: 'BURN', width: 32, height: 38, deadly: true },
-    { icon: '⚠️', name: 'DANGER', width: 35, height: 35, deadly: true },
-    { icon: '💣', name: 'BOMB', width: 32, height: 34, deadly: true },
-    { icon: '⚡', name: 'SHOCK', width: 28, height: 40, deadly: true },
-    { icon: '🕳️', name: 'HOLE', width: 45, height: 20, deadly: true },
-    { icon: '🗡️', name: 'SPIKE', width: 30, height: 45, deadly: true },
-    { icon: '🧨', name: 'TNT', width: 35, height: 35, deadly: true },
-    { icon: '☠️', name: 'SKULL', width: 38, height: 38, deadly: true },
-    { icon: '🌋', name: 'LAVA', width: 40, height: 30, deadly: true },
-    { icon: '🐍', name: 'SNAKE', width: 40, height: 30, deadly: true },
-    { icon: '🦂', name: 'SCORPION', width: 35, height: 28, deadly: true },
-    { icon: '🕷️', name: 'SPIDER', width: 32, height: 32, deadly: true },
-  ],
+  const BURN_TYPES = [
+    {
+      name: 'SCAM',
+      width: 52,
+      height: 34,
+      reward: 0,
+      speedScale: 1.0,
+      icon: 'S',
+      body: '#ff6b35',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#ff6b35', '#ff2d95', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
+    },
+    {
+      name: 'RUG',
+      width: 48,
+      height: 36,
+      reward: 0,
+      speedScale: 1.08,
+      icon: 'R',
+      body: '#f97316',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'truck',
+      palette: ['#f97316', '#ffcc00', '#3b120b', '#fff7ed', '#ff2d95'],
+      danger: '#ffcc00',
+    },
+    {
+      name: 'BURN',
+      width: 44,
+      height: 34,
+      reward: 0,
+      speedScale: 1.14,
+      icon: 'B',
+      body: '#ff2d95',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#ff2d95', '#ff6b35', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
+    },
+    {
+      name: 'CHAIN',
+      width: 56,
+      height: 38,
+      reward: 0,
+      speedScale: 1.24,
+      icon: 'C',
+      body: '#f43f5e',
+      accent: '#3b120b',
+      panel: '#fff7ed',
+      kind: 'car',
+      palette: ['#f43f5e', '#ff6b35', '#3b120b', '#ffcc00', '#fff7ed'],
+      danger: '#ffcc00',
+    },
+  ];
 
-  // Jumpable platforms
-  platformTypes: [
-    { icon: '📦', name: 'CRATE', width: 45, height: 35, points: 15 },
-    { icon: '🧱', name: 'BLOCK', width: 50, height: 30, points: 10 },
-    { icon: '🎁', name: 'GIFT', width: 40, height: 40, points: 25, bonus: true },
-    { icon: '🏠', name: 'HOUSE', width: 50, height: 45, points: 20 },
-    { icon: '🚗', name: 'CAR', width: 55, height: 35, points: 12 },
-    { icon: '🏗️', name: 'SCAFFOLD', width: 60, height: 25, points: 18 },
-    { icon: '🛒', name: 'CART', width: 45, height: 30, points: 14 },
-    { icon: '🗄️', name: 'CABINET', width: 40, height: 50, points: 22 },
-    { icon: '📺', name: 'TV', width: 45, height: 35, points: 16 },
-    { icon: '🎰', name: 'SLOT', width: 40, height: 45, points: 20 },
-    { icon: '🛢️', name: 'BARREL', width: 35, height: 40, points: 12 },
-    { icon: '⬛', name: 'CUBE', width: 40, height: 40, points: 15 },
-  ],
+  const BurnRunner = {
+    version: '2.3.0',
+    gameId: 'burnrunner',
+    instance: null,
+    juice: null,
+    _cleanupInput: null,
+    _collisionQuery: null,
+    _entityQuery: null,
+    _layout: null,
 
-  // Brick types
-  brickTypes: [
-    { icon: '🧱', name: 'BRICK', width: 40, height: 25, points: 8, brick: true },
-    { icon: '🟫', name: 'BROWN', width: 35, height: 25, points: 8, brick: true },
-    { icon: '🟧', name: 'ORANGE', width: 35, height: 25, points: 10, brick: true },
-    { icon: '⬜', name: 'WHITE', width: 35, height: 25, points: 8, brick: true },
-    { icon: '🟨', name: 'YELLOW', width: 35, height: 25, points: 10, brick: true },
-    { icon: '🟦', name: 'BLUE', width: 35, height: 25, points: 12, brick: true },
-    { icon: '🟩', name: 'GREEN', width: 35, height: 25, points: 10, brick: true },
-    { icon: '🟥', name: 'RED', width: 35, height: 25, points: 10, brick: true },
-  ],
+    start(gameId) {
+      this.stop();
 
-  // Aerial platforms
-  aerialPlatformTypes: [
-    { icon: '☁️', name: 'CLOUD', width: 70, height: 25, points: 30, floating: true },
-    { icon: '🎈', name: 'BALLOON', width: 45, height: 35, points: 25, floating: true },
-    { icon: '🛸', name: 'UFO', width: 55, height: 25, points: 35, floating: true },
-    { icon: '🌙', name: 'MOON', width: 50, height: 30, points: 40, floating: true },
-    { icon: '⭐', name: 'STAR', width: 45, height: 30, points: 35, floating: true },
-    { icon: '🪂', name: 'PARA', width: 50, height: 30, points: 28, floating: true },
-    { icon: '🚁', name: 'HELI', width: 60, height: 30, points: 32, floating: true },
-    { icon: '🎪', name: 'TENT', width: 55, height: 35, points: 30, floating: true },
-    { icon: '💎', name: 'GEM', width: 40, height: 35, points: 45, bonus: true, floating: true },
-    { icon: '🌈', name: 'RAINBOW', width: 80, height: 20, points: 50, floating: true },
-  ],
+      const arena = document.getElementById(`arena-${gameId}`);
+      if (!arena) return;
 
-  // Bonus collectibles
-  bonusTypes: [
-    { icon: '💎', name: 'DIAMOND', width: 28, height: 28, points: 50, effect: 'score' },
-    { icon: '⚡', name: 'ENERGY', width: 25, height: 30, points: 30, effect: 'speed' },
-    { icon: '🌟', name: 'STAR', width: 28, height: 28, points: 25, effect: 'score' },
-    { icon: '🍀', name: 'LUCK', width: 26, height: 26, points: 35, effect: 'score' },
-    { icon: '🛡️', name: 'SHIELD', width: 28, height: 30, points: 20, effect: 'shield' },
-    { icon: '💰', name: 'BAG', width: 30, height: 28, points: 40, effect: 'score' },
-  ],
+      this.createArena(arena);
+      const canvas = document.getElementById('br-canvas');
+      this.instance = new ASDF.GameInstance(canvas, {
+        maxEntities: 900,
+        debug: false,
+      });
 
-  // Malus items
-  malusTypes: [
-    { icon: '🐌', name: 'SLOW', width: 30, height: 25, effect: 'slow', duration: 2000 },
-    { icon: '❄️', name: 'FREEZE', width: 28, height: 28, effect: 'freeze', duration: 500 },
-    { icon: '🌀', name: 'DIZZY', width: 26, height: 26, effect: 'dizzy', duration: 1500 },
-    { icon: '💨', name: 'WIND', width: 30, height: 25, effect: 'pushback', duration: 0 },
-  ],
+      this.instance.resize();
 
-  /**
-   * Start the game
-   */
-  start(gameId) {
-    this.gameId = gameId;
-    const arena = document.getElementById(`arena-${gameId}`);
-    if (!arena) return;
+      // Init Juice for 11/10 addictiveness
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
-    // Initialize state with Fibonacci-based values
-    this.state = {
-      score: 0,
-      distance: 0,
-      tokens: 0,
-      speed: 5, // fib[4]
-      baseSpeed: 5, // fib[4]
-      maxSpeed: 13, // fib[6]
-      gravity: 0.382, // PHI_INVERSE * 0.618
-      jumpForce: -8, // fib[5]
-      jumpsLeft: 2,
-      maxJumps: 2,
-      isJumping: false,
-      gameOver: false,
-      player: { x: 89, y: 0, vy: 0, width: 34, height: 55 }, // fib[10], fib[8], fib[9]
-      ground: 0,
-      obstacles: [],
-      platforms: [],
-      collectibles: [],
-      bonusItems: [],
-      malusItems: [],
-      particles: [],
-      dustParticles: [], // Landing dust effects
-      clouds: [],
-      buildings: [],
-      // Parallax layers (far, mid, near) with phi-based speeds
-      parallax: {
-        far: [], // 0.2x speed - distant mountains
-        mid: [], // 0.5x speed - buildings
-        near: [], // 0.8x speed - foreground elements
-      },
-      lastObstacle: 0,
-      lastPlatform: 0,
-      lastAerialPlatform: 0,
-      lastBrickStructure: 0,
-      lastCollectible: 0,
-      lastBonus: 0,
-      lastMalus: 0,
-      frameCount: 0,
-      // Phi-based difficulty
-      difficultyLevel: 0,
-      PHI: 1.618033988749895,
-      dash: {
-        active: false,
-        endTime: 0,
-        lastUsed: 0,
-        cooldown: 3400, // fib[8] * 100
-        duration: 300, // fib[3] * 100
-        speed: 13, // fib[6]
-      },
-      abilityShield: {
-        active: false,
-        endTime: 0,
-        lastUsed: 0,
-        cooldown: 8900, // fib[10] * 100 (approx)
-        duration: 1300, // fib[6] * 100
-      },
-      effects: {
-        shield: false,
-        shieldEnd: 0,
-        slow: false,
-        slowEnd: 0,
-        speedBoost: false,
-        speedBoostEnd: 0,
-        freeze: false,
-        freezeEnd: 0,
-      },
-    };
+      const world = this.instance.world;
+      const kernel = window.ASDF.Kernel;
+      this.instance.initStandardComponents();
 
-    this.createArena(arena);
-    this.canvas = document.getElementById('br-canvas');
-    this.ctx = this.canvas.getContext('2d');
+      if (kernel.getPlugin('InputHub')) {
+        const input = kernel.getPlugin('InputHub');
+        input.mapAction('JUMP', ['Space', 'ArrowUp', 'KeyW']);
+      }
 
-    // Cache DOM references for performance (avoid lookups in game loop)
-    this.dom = {
-      jumps: document.getElementById('br-jumps'),
-      distance: document.getElementById('br-distance'),
-      tokens: document.getElementById('br-tokens'),
-      dashCd: document.getElementById('br-dash-cd'),
-      shieldCd: document.getElementById('br-shield-cd'),
-      dashAbility: document.getElementById('br-dash-ability'),
-      shieldAbility: document.getElementById('br-shield-ability'),
-    };
+      world.registerComponent('Player', { jumpsLeft: 'u8', fever: 'f32' });
+      world.registerComponent('Obstacle', { type: 'u8' });
+      world.registerComponent('Collectible', { value: 'u16' });
 
-    this.timing = GameTiming.create();
+      const canvasH = this.instance.canvas.height;
+      const canvasW = this.instance.canvas.width;
+      const groundY = canvasH - Math.max(56, Math.round(canvasH * 0.12));
+      const coyoteFrames = CONFIG.physics.coyoteFrames;
+      const playerX = (canvasW * CONFIG.playerBaseX) / 1000 + 80;
 
-    // Initialize GameJuice for visual feedback
-    if (typeof GameJuice !== 'undefined') {
-      this.juice = GameJuice.create(this.canvas, this.ctx);
-    }
+      world.setResource('GameState', {
+        distance: 0,
+        elapsed: 0,
+        tokens: 0,
+        speed: CONFIG.baseSpeed,
+        groundY,
+        playerX,
+        playerId: -1,
+        jumpBuffer: 0,
+        jumpBufferFrames: CONFIG.physics.jumpBufferFrames,
+        coyoteTimer: 0,
+        coyoteFrames,
+        maxJumps: 2,
+        gameOver: false,
+        spawnTimer: 0,
+        combo: 0,
+        bestCombo: 0,
+        level: 1,
+        intensity: 1,
+        collectiblesMissed: 0,
+        feverActive: false,
+        feverMeter: 0,
+      });
 
-    this.resizeCanvas();
-    this.setupInput();
-    this.preloadSprites();
-    this.gameLoop();
-
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        cleanup: () => this.stop(),
+      this.dom = {
+        distance: document.getElementById('br-distance'),
+        tokens: document.getElementById('br-tokens'),
+        combo: document.getElementById('br-combo'),
+        level: document.getElementById('br-level'),
+        intensity: document.getElementById('br-intensity'),
       };
-    }
-  },
+      this.setupInput();
 
-  /**
-   * Create arena HTML
-   */
-  createArena(arena) {
-    arena.innerHTML = `
-            <div class="br-container">
-                <canvas id="br-canvas" class="game-canvas"></canvas>
-                <div class="game-hud-top-left game-flex-col">
-                    <div class="br-hud-row">
-                        <div class="game-hud-stat">
-                            <span class="game-hud-stat-label">DISTANCE</span>
-                            <div class="br-stat-value--distance" id="br-distance">0m</div>
-                        </div>
-                        <div class="game-hud-stat">
-                            <span class="game-hud-stat-label">TOKENS</span>
-                            <div class="br-stat-value--tokens" id="br-tokens">0 &#128293;</div>
-                        </div>
-                    </div>
-                    <div class="br-abilities-row">
-                        <div id="br-dash-ability" class="br-ability br-ability--dash">
-                            <div class="br-ability-icon">&#128168;</div>
-                            <div class="br-ability-label--dash">DASH [LMB]</div>
-                            <div id="br-dash-cd" class="br-ability-cd">READY</div>
-                        </div>
-                        <div id="br-shield-ability" class="br-ability br-ability--shield">
-                            <div class="br-ability-icon">&#128737;</div>
-                            <div class="br-ability-label--shield">SHIELD [RMB]</div>
-                            <div id="br-shield-cd" class="br-ability-cd">READY</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="br-jumps-hud">
-                    <div class="br-jumps-stat">
-                        <span class="br-jumps-label">JUMPS</span>
-                        <div id="br-jumps" class="br-jumps-value">&#11014;&#11014;</div>
-                    </div>
-                </div>
-                <div class="br-hint-bar">
-                    SPACE: Jump (x2) | Left Click: Dash | Right Click: Shield
-                </div>
-            </div>
-        `;
-  },
+      const player = world.createEntity();
+      world.addComponent(player, 'Position');
+      world.addComponent(player, 'Velocity');
+      world.addComponent(player, 'Renderable');
+      world.addComponent(player, 'Collider');
+      world.addComponent(player, 'Player');
 
-  /**
-   * Preload sprites for performance
-   */
-  preloadSprites() {
-    const sprites = [
-      // Player
-      { emoji: '🐕', size: 38 },
-      // Obstacles (from obstacleTypes)
-      ...this.obstacleTypes.map(t => ({ emoji: t.icon, size: 32 })),
-      // Platforms (from platformTypes)
-      ...this.platformTypes.map(t => ({ emoji: t.icon, size: 36 })),
-      // Aerial platforms
-      ...this.aerialPlatformTypes.map(t => ({ emoji: t.icon, size: 38 })),
-      // Bonus items
-      ...this.bonusTypes.map(t => ({ emoji: t.icon, size: 24 })),
-      // Malus items
-      ...this.malusTypes.map(t => ({ emoji: t.icon, size: 24 })),
-      // Brick types
-      ...this.brickTypes.map(t => ({ emoji: t.icon, size: 36 })),
-      // Particle emojis
-      { emoji: '✨', size: 16 },
-      { emoji: '💨', size: 16 },
-    ];
-    SpriteCache.preload(sprites);
-  },
+      const pIdx = world.getIndex(player);
+      world.componentRegistry.get('Position').props.x[pIdx] = playerX;
+      world.componentRegistry.get('Position').props.y[pIdx] =
+        groundY - CONFIG.playerSize - CONFIG.playerLift;
+      world.componentRegistry.get('Renderable').props.iconIndex[pIdx] = 0;
+      world.componentRegistry.get('Renderable').props.size[pIdx] = CONFIG.playerSize;
+      world.componentRegistry.get('Collider').props.width[pIdx] = CONFIG.playerSize * 0.74;
+      world.componentRegistry.get('Collider').props.height[pIdx] = CONFIG.playerSize * 0.62;
+      world.componentRegistry.get('Player').props.jumpsLeft[pIdx] =
+        world.getResource('GameState').maxJumps;
+      world.getResource('GameState').playerId = player;
 
-  /**
-   * Resize canvas
-   */
-  resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    this.state.ground = this.canvas.height - 80;
-    this.state.player.y = this.state.ground - this.state.player.height;
-    this.initBackground();
-  },
+      this._layout = { floorY: groundY };
+      this._entityQuery = world.createQuery(['Position', 'Collider', 'Renderable']);
+      this._collisionQuery = world.createQuery(['Position', 'Obstacle', 'Collider']);
 
-  /**
-   * Initialize background elements with 3-layer parallax
-   */
-  initBackground() {
-    const PHI = 1.618033988749895;
+      this.instance.onUpdate = (dt, dtMs) => {
+        const state = world.getResource('GameState');
 
-    // Clouds (very slow, atmospheric)
-    this.state.clouds = [];
-    for (let i = 0; i < 5; i++) {
-      this.state.clouds.push({
-        x: Math.random() * this.canvas.width,
-        y: 20 + Math.random() * 60,
-        size: 20 + Math.random() * 30,
-        speed: 0.2 + Math.random() * 0.3,
-      });
-    }
+        // Update Juice
+        if (this.juice) {
+          this.juice.update(dt / 60, dtMs);
+        }
 
-    // FAR LAYER: Distant mountains (0.2x parallax speed)
-    this.state.parallax.far = [];
-    const mountainCount = 5;
-    for (let i = 0; i < mountainCount; i++) {
-      const baseWidth = 150 + Math.random() * 100;
-      this.state.parallax.far.push({
-        x: i * (this.canvas.width / 3),
-        width: baseWidth,
-        height: 80 + Math.random() * 60,
-        color: `hsl(${265 + Math.random() * 15}, 30%, ${12 + Math.random() * 6}%)`,
-        speed: 0.2, // PHI^-3 ≈ 0.236
-      });
-    }
+        if (kernel.services?.hud) {
+          kernel.services.hud.update(this.gameId, state);
+        }
+      };
 
-    // MID LAYER: Buildings (0.5x parallax speed)
-    this.state.parallax.mid = [];
-    for (let i = 0; i < 8; i++) {
-      this.state.parallax.mid.push({
-        x: i * (this.canvas.width / 6),
-        width: 40 + Math.random() * 60,
-        height: 60 + Math.random() * 80,
-        color: `hsl(${260 + Math.random() * 20}, 40%, ${15 + Math.random() * 10}%)`,
-        windows: Math.random() > 0.3,
-        speed: 0.5, // PHI^-1 ≈ 0.618
-      });
-    }
-    // Keep buildings reference for compatibility
-    this.state.buildings = this.state.parallax.mid;
+      this.instance.onRender = () => {
+        if (this.juice) this.juice.renderPre();
+        this.draw();
+        if (this.juice) this.juice.renderPost();
+      };
 
-    // NEAR LAYER: Foreground elements (0.8x parallax speed)
-    this.state.parallax.near = [];
-    const nearElements = ['🌲', '🌵', '🪨', '🌿', '🏮'];
-    for (let i = 0; i < 6; i++) {
-      this.state.parallax.near.push({
-        x: i * (this.canvas.width / 4) + Math.random() * 50,
-        icon: nearElements[Math.floor(Math.random() * nearElements.length)],
-        size: 24 + Math.random() * 12,
-        opacity: 0.4 + Math.random() * 0.3,
-        speed: 0.8, // Close to 1 for parallax effect
-      });
-    }
-  },
+      world.addSystem(ASDF.PersonalitySystem.create());
+      world.addSystem(this.createRunnerSystem());
+      world.addSystem(ASDF.PhysicsSystem.createMovement());
 
-  /**
-   * Setup input handlers
-   */
-  setupInput() {
-    const self = this;
+      this.instance.start();
 
-    this.handleKeyDown = e => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        self.jump();
+      if (typeof activeGames !== 'undefined') {
+        activeGames[gameId] = { cleanup: () => this.stop() };
       }
-    };
+    },
 
-    this.handleClick = e => {
-      e.preventDefault();
-      self.activateDash();
-    };
+    createArena(arena) {
+      arena.innerHTML = `
+        <div class="br-container">
+          <canvas id="br-canvas" class="game-canvas"></canvas>
+          <div class="game-hud-top-left">
+            <div class="game-hud-stat">DIST: <span id="br-distance" class="game-hud-stat-value br-stat-value--distance">0m</span></div>
+            <div class="game-hud-stat">TOKENS: <span id="br-tokens" class="game-hud-stat-value br-stat-value--tokens">0</span></div>
+            <div class="game-hud-stat">COMBO: <span id="br-combo" class="game-hud-stat-value">x0</span></div>
+          </div>
+          <div class="game-hud-top-right br-difficulty">
+            <div class="game-hud-stat">INTENSITY: <span id="br-intensity" class="game-hud-stat-value br-stat-value--intensity">x1</span></div>
+            <div class="game-hud-stat">LEVEL: <span id="br-level" class="game-hud-stat-value br-stat-value--level">1</span></div>
+          </div>
+          <div class="br-hint-bar br-hint-bar--wide">Touch / Space / Arrow Up to jump - jump between traffic for maximum speed</div>
+        </div>
+      `;
+    },
 
-    this.handleContextMenu = e => {
-      e.preventDefault();
-      self.activateShield();
-    };
+    setupInput() {
+      const canvas = this.instance.canvas;
+      const queueJump = e => {
+        if (e && e.cancelable) e.preventDefault();
+        const state = this.instance.world.getResource('GameState');
+        if (state.gameOver) return;
+        state.jumpBuffer = state.jumpBufferFrames;
+      };
 
-    this.handleTouch = e => {
-      e.preventDefault();
-      self.jump();
-    };
+      const onKeyDown = e => {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') queueJump(e);
+      };
 
-    document.addEventListener('keydown', this.handleKeyDown);
-    this.canvas.addEventListener('click', this.handleClick);
-    this.canvas.addEventListener('contextmenu', this.handleContextMenu);
-    this.canvas.addEventListener('touchstart', this.handleTouch);
-  },
+      document.addEventListener('keydown', onKeyDown);
+      canvas.addEventListener('pointerdown', queueJump);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        canvas.removeEventListener('pointerdown', queueJump);
+      };
+    },
 
-  /**
-   * Jump action
-   */
-  jump() {
-    if (this.state.gameOver) return;
-    if (this.state.jumpsLeft > 0) {
-      this.state.player.vy = this.state.jumpForce;
-      this.state.isJumping = true;
-      this.state.jumpsLeft--;
-      this.updateJumpsDisplay();
-      if (this.state.jumpsLeft === 0) {
-        this.addJumpParticles(
-          this.state.player.x + this.state.player.width / 2,
-          this.state.player.y + this.state.player.height
+    createRunnerSystem() {
+      const self = this;
+      return function (world, dt) {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+
+        const diff = self.getDifficulty(state);
+        const pIdx = world.getIndex(state.playerId);
+        const pos = world.componentRegistry.get('Position').props;
+        const vel = world.componentRegistry.get('Velocity').props;
+        const pProps = world.componentRegistry.get('Player').props;
+        const coll = world.componentRegistry.get('Collider').props;
+
+        state.elapsed += dt / 60;
+        state.level = diff.level;
+        state.intensity = diff.intensity;
+        state.distance += Math.max(0.2, state.speed) * 0.1 * dt;
+        state.speed = Math.min(
+          CONFIG.speedCap,
+          CONFIG.baseSpeed +
+            state.distance * CONFIG.distanceScale +
+            diff.level * 0.42 * diff.speedScale
         );
-      }
-    }
-  },
 
-  /**
-   * Activate dash ability
-   */
-  activateDash() {
-    const now = Date.now();
-    if (now - this.state.dash.lastUsed < this.state.dash.cooldown) return false;
-
-    this.state.dash.active = true;
-    this.state.dash.endTime = now + this.state.dash.duration;
-    this.state.dash.lastUsed = now;
-
-    for (let i = 0; i < 10; i++) {
-      this.state.particles.push({
-        x: this.state.player.x,
-        y: this.state.player.y + this.state.player.height / 2,
-        vx: -3 - Math.random() * 3,
-        vy: (Math.random() - 0.5) * 2,
-        life: 25,
-        icon: '💨',
-        size: 20,
-      });
-    }
-    return true;
-  },
-
-  /**
-   * Activate shield ability
-   */
-  activateShield() {
-    const now = Date.now();
-    if (now - this.state.abilityShield.lastUsed < this.state.abilityShield.cooldown) return false;
-
-    this.state.abilityShield.active = true;
-    this.state.abilityShield.endTime = now + this.state.abilityShield.duration;
-    this.state.abilityShield.lastUsed = now;
-
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      this.state.particles.push({
-        x: this.state.player.x + this.state.player.width / 2 + Math.cos(angle) * 30,
-        y: this.state.player.y + this.state.player.height / 2 + Math.sin(angle) * 30,
-        vx: Math.cos(angle) * 2,
-        vy: Math.sin(angle) * 2,
-        life: 30,
-        icon: '✨',
-        size: 16,
-      });
-    }
-    return true;
-  },
-
-  /**
-   * Update jumps display
-   */
-  updateJumpsDisplay() {
-    const jumpsEl = this.dom.jumps;
-    if (jumpsEl) {
-      jumpsEl.innerHTML =
-        '⬆️'.repeat(this.state.jumpsLeft) + '⬛'.repeat(this.state.maxJumps - this.state.jumpsLeft);
-    }
-  },
-
-  /**
-   * Add jump particles
-   */
-  addJumpParticles(x, y) {
-    for (let i = 0; i < 5; i++) {
-      this.state.particles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 2,
-        life: 20,
-        icon: '💨',
-        size: 12,
-      });
-    }
-  },
-
-  /**
-   * Add effect particles
-   */
-  addEffectParticles(x, y, icon) {
-    for (let i = 0; i < 6; i++) {
-      this.state.particles.push({
-        x: x + this.state.player.width / 2,
-        y: y + this.state.player.height / 2,
-        vx: (Math.random() - 0.5) * 8,
-        vy: -Math.random() * 5 - 2,
-        life: 40,
-        icon: icon,
-        size: 18,
-      });
-    }
-  },
-
-  /**
-   * Add burn particles
-   */
-  addBurnParticles(x, y) {
-    for (let i = 0; i < 8; i++) {
-      this.state.particles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 6,
-        vy: -Math.random() * 4 - 2,
-        life: 30,
-        icon: ['🔥', '✨', '💫'][Math.floor(Math.random() * 3)],
-        size: 16,
-      });
-    }
-  },
-
-  /**
-   * Add dust particles on landing (Fibonacci-based count)
-   */
-  addDustParticles(x, y, intensity = 1) {
-    const count = Math.floor(5 * intensity); // fib[4] base
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.random() - 0.5) * Math.PI; // Spread upward
-      const speed = 1.5 + Math.random() * 2.5;
-      this.state.dustParticles.push({
-        x: x + (Math.random() - 0.5) * 20,
-        y: y,
-        vx: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
-        vy: -Math.random() * 2 - 0.5, // Slight upward
-        life: 21 + Math.random() * 13, // fib[7] + fib[6]
-        size: 3 + Math.random() * 4,
-        alpha: 0.6 + Math.random() * 0.3,
-      });
-    }
-  },
-
-  /**
-   * Add speed trail particles
-   */
-  addTrailParticle() {
-    if (this.state.speed < 7 && !this.state.dash.active) return;
-
-    const intensity = this.state.dash.active ? 1 : (this.state.speed - 7) / 6;
-    if (Math.random() > 0.3 * intensity) return;
-
-    this.state.particles.push({
-      x: this.state.player.x - 5,
-      y: this.state.player.y + this.state.player.height / 2 + (Math.random() - 0.5) * 20,
-      vx: -2 - Math.random() * 2,
-      vy: (Math.random() - 0.5) * 1,
-      life: 15 + Math.random() * 10,
-      icon: this.state.dash.active ? '💨' : '✦',
-      size: this.state.dash.active ? 16 : 10,
-    });
-  },
-
-  /**
-   * Spawn obstacle
-   */
-  spawnObstacle() {
-    const type = this.obstacleTypes[Math.floor(Math.random() * this.obstacleTypes.length)];
-    this.state.obstacles.push({
-      x: this.canvas.width + 50,
-      y: this.state.ground - type.height,
-      ...type,
-    });
-  },
-
-  /**
-   * Spawn platform
-   */
-  spawnPlatform() {
-    const type = this.platformTypes[Math.floor(Math.random() * this.platformTypes.length)];
-    this.state.platforms.push({
-      x: this.canvas.width + 50,
-      y: this.state.ground - type.height,
-      scored: false,
-      collected: false,
-      ...type,
-    });
-  },
-
-  /**
-   * Spawn aerial platform
-   */
-  spawnAerialPlatform() {
-    const type =
-      this.aerialPlatformTypes[Math.floor(Math.random() * this.aerialPlatformTypes.length)];
-    const minHeight = this.state.ground * 0.25;
-    const maxHeight = this.state.ground * 0.6;
-    const y = minHeight + Math.random() * (maxHeight - minHeight);
-
-    this.state.platforms.push({
-      x: this.canvas.width + 50,
-      y: y,
-      scored: false,
-      collected: false,
-      bobOffset: Math.random() * Math.PI * 2,
-      ...type,
-    });
-  },
-
-  /**
-   * Spawn collectible
-   */
-  spawnCollectible() {
-    const height = 40 + Math.random() * 70;
-    this.state.collectibles.push({
-      x: this.canvas.width + 50,
-      y: this.state.ground - height - 25,
-      width: 25,
-      height: 25,
-      icon: '🪙',
-    });
-  },
-
-  /**
-   * Check collision
-   */
-  checkCollision(a, b) {
-    const padding = 5;
-    return (
-      a.x + padding < b.x + b.width - padding &&
-      a.x + a.width - padding > b.x + padding &&
-      a.y + padding < b.y + b.height &&
-      a.y + a.height > b.y + padding
-    );
-  },
-
-  /**
-   * Apply effect
-   */
-  applyEffect(effect, duration) {
-    const now = Date.now();
-    switch (effect) {
-      case 'shield':
-        this.state.effects.shield = true;
-        this.state.effects.shieldEnd = now + 3000;
-        this.addEffectParticles(this.state.player.x, this.state.player.y, '🛡️');
-        break;
-      case 'speed':
-        this.state.effects.speedBoost = true;
-        this.state.effects.speedBoostEnd = now + 3000;
-        this.addEffectParticles(this.state.player.x, this.state.player.y, '⚡');
-        break;
-      case 'slow':
-        this.state.effects.slow = true;
-        this.state.effects.slowEnd = now + duration;
-        break;
-      case 'freeze':
-        this.state.effects.freeze = true;
-        this.state.effects.freezeEnd = now + duration;
-        break;
-      case 'pushback':
-        this.state.player.vy = -5;
-        this.addEffectParticles(this.state.player.x, this.state.player.y, '💨');
-        break;
-    }
-  },
-
-  /**
-   * Update effects
-   */
-  updateEffects() {
-    const now = Date.now();
-    if (this.state.effects.shield && now > this.state.effects.shieldEnd) {
-      this.state.effects.shield = false;
-    }
-    if (this.state.effects.speedBoost && now > this.state.effects.speedBoostEnd) {
-      this.state.effects.speedBoost = false;
-    }
-    if (this.state.effects.slow && now > this.state.effects.slowEnd) {
-      this.state.effects.slow = false;
-    }
-    if (this.state.effects.freeze && now > this.state.effects.freezeEnd) {
-      this.state.effects.freeze = false;
-    }
-  },
-
-  /**
-   * Update abilities
-   */
-  updateAbilities() {
-    const now = Date.now();
-    if (this.state.dash.active && now > this.state.dash.endTime) {
-      this.state.dash.active = false;
-    }
-    if (this.state.abilityShield.active && now > this.state.abilityShield.endTime) {
-      this.state.abilityShield.active = false;
-    }
-  },
-
-  /**
-   * Update ability cooldowns display
-   */
-  updateAbilityCooldowns() {
-    const now = Date.now();
-    const dashCdEl = this.dom.dashCd;
-    const shieldCdEl = this.dom.shieldCd;
-    const dashAbilityEl = this.dom.dashAbility;
-    const shieldAbilityEl = this.dom.shieldAbility;
-
-    if (dashCdEl && dashAbilityEl) {
-      const dashRemaining = Math.max(
-        0,
-        this.state.dash.cooldown - (now - this.state.dash.lastUsed)
-      );
-      if (dashRemaining > 0) {
-        dashCdEl.textContent = (dashRemaining / 1000).toFixed(1) + 's';
-        dashCdEl.style.color = '#ef4444';
-        dashAbilityEl.style.opacity = '0.6';
-      } else {
-        dashCdEl.textContent = this.state.dash.active ? 'ACTIVE' : 'READY';
-        dashCdEl.style.color = this.state.dash.active ? '#3b82f6' : '#22c55e';
-        dashAbilityEl.style.opacity = '1';
-      }
-    }
-
-    if (shieldCdEl && shieldAbilityEl) {
-      const shieldRemaining = Math.max(
-        0,
-        this.state.abilityShield.cooldown - (now - this.state.abilityShield.lastUsed)
-      );
-      if (shieldRemaining > 0) {
-        shieldCdEl.textContent = (shieldRemaining / 1000).toFixed(1) + 's';
-        shieldCdEl.style.color = '#ef4444';
-        shieldAbilityEl.style.opacity = '0.6';
-      } else {
-        shieldCdEl.textContent = this.state.abilityShield.active ? 'ACTIVE' : 'READY';
-        shieldCdEl.style.color = this.state.abilityShield.active ? '#a855f7' : '#22c55e';
-        shieldAbilityEl.style.opacity = '1';
-      }
-    }
-  },
-
-  /**
-   * Update game state
-   * @param {number} dt - Delta time normalized to 60fps (1.0 = 16.67ms)
-   */
-  update(dt) {
-    if (this.state.gameOver) return;
-
-    if (this.state.effects.freeze) {
-      this.updateEffects();
-      this.updateAbilityCooldowns();
-      return;
-    }
-
-    this.state.frameCount += dt;
-    this.updateEffects();
-    this.updateAbilities();
-    this.updateAbilityCooldowns();
-
-    // Calculate effective speed using phi-based difficulty curve
-    // Speed increases using inverse phi for smooth ramp: base + (maxSpeed - base) * (1 - e^(-distance/500))
-    const PHI_INV = 0.618;
-    const distanceFactor = 1 - Math.pow(PHI_INV, this.state.distance / 500);
-    let effectiveSpeed =
-      this.state.baseSpeed + (this.state.maxSpeed - this.state.baseSpeed) * distanceFactor;
-
-    // Update difficulty level at Fibonacci milestones: 89m, 144m, 233m, 377m
-    if (this.state.distance >= 377) this.state.difficultyLevel = 4;
-    else if (this.state.distance >= 233) this.state.difficultyLevel = 3;
-    else if (this.state.distance >= 144) this.state.difficultyLevel = 2;
-    else if (this.state.distance >= 89) this.state.difficultyLevel = 1;
-
-    if (this.state.effects.slow) effectiveSpeed *= PHI_INV;
-    if (this.state.effects.speedBoost) effectiveSpeed *= this.state.PHI;
-    if (this.state.dash.active) effectiveSpeed = this.state.dash.speed;
-    this.state.speed = effectiveSpeed;
-
-    this.state.distance += this.state.speed * 0.1 * dt;
-
-    // Player physics (frame-independent)
-    this.state.player.vy += this.state.gravity * dt;
-    this.state.player.y += this.state.player.vy * dt;
-
-    if (this.state.player.y >= this.state.ground - this.state.player.height) {
-      // Spawn dust on landing (intensity based on fall velocity)
-      if (this.state.isJumping && this.state.player.vy > 2) {
-        const intensity = Math.min(2, this.state.player.vy / 5);
-        this.addDustParticles(
-          this.state.player.x + this.state.player.width / 2,
-          this.state.ground,
-          intensity
-        );
-      }
-      this.state.player.y = this.state.ground - this.state.player.height;
-      this.state.player.vy = 0;
-      this.state.isJumping = false;
-      this.state.jumpsLeft = this.state.maxJumps;
-      this.updateJumpsDisplay();
-    }
-
-    // Spawn trail particles when moving fast
-    this.addTrailParticle();
-
-    // Update clouds (frame-independent)
-    this.state.clouds.forEach(cloud => {
-      cloud.x -= cloud.speed * dt;
-      if (cloud.x < -cloud.size) {
-        cloud.x = this.canvas.width + cloud.size;
-        cloud.y = 20 + Math.random() * 60;
-      }
-    });
-
-    // Spawn obstacles (Fibonacci intervals, density increases with difficulty)
-    const obstacleDensity = 89 - this.state.difficultyLevel * 13; // fib[10] - level * fib[6]
-    if (this.state.distance - this.state.lastObstacle > obstacleDensity + Math.random() * 55) {
-      this.spawnObstacle();
-      this.state.lastObstacle = this.state.distance;
-    }
-
-    // Spawn platforms (fib[9] base interval)
-    if (this.state.distance - this.state.lastPlatform > 55 + Math.random() * 34) {
-      this.spawnPlatform();
-      this.state.lastPlatform = this.state.distance;
-    }
-
-    // Spawn aerial platforms (fib[10] base interval)
-    if (this.state.distance - this.state.lastAerialPlatform > 89 + Math.random() * 55) {
-      this.spawnAerialPlatform();
-      this.state.lastAerialPlatform = this.state.distance;
-    }
-
-    // Spawn collectibles (fib[8] base interval)
-    if (this.state.distance - this.state.lastCollectible > 34 + Math.random() * 21) {
-      this.spawnCollectible();
-      this.state.lastCollectible = this.state.distance;
-    }
-
-    const self = this;
-
-    // Update platforms (frame-independent)
-    this.state.platforms = this.state.platforms.filter(plat => {
-      plat.x -= self.state.speed * dt;
-
-      if (plat.floating && plat.bobOffset !== undefined) {
-        plat.bobOffset += 0.05 * dt;
-        plat.renderY = plat.y + Math.sin(plat.bobOffset) * 8;
-      } else {
-        plat.renderY = plat.y;
-      }
-
-      const platY = plat.renderY || plat.y;
-      const playerBottom = self.state.player.y + self.state.player.height;
-      const playerCenterX = self.state.player.x + self.state.player.width / 2;
-      const platRight = plat.x + plat.width;
-
-      const onTopOf =
-        playerBottom >= platY - 5 &&
-        playerBottom <= platY + 15 &&
-        playerCenterX > plat.x &&
-        playerCenterX < platRight &&
-        self.state.player.vy >= 0;
-
-      if (onTopOf) {
-        // Spawn dust on platform landing
-        if (self.state.isJumping) {
-          self.addDustParticles(self.state.player.x + self.state.player.width / 2, platY, 0.8);
-        }
-        self.state.player.y = platY - self.state.player.height;
-        self.state.player.vy = 0;
-        self.state.isJumping = false;
-        self.state.jumpsLeft = self.state.maxJumps;
-        self.updateJumpsDisplay();
-
-        if (!plat.scored) {
-          plat.scored = true;
-          const pointMultiplier = plat.floating ? 2 : 1;
-          self.state.tokens += Math.ceil(plat.points / 10) * pointMultiplier;
-          self.addBurnParticles(plat.x + plat.width / 2, platY);
-        }
-      }
-
-      return plat.x > -60;
-    });
-
-    // Update obstacles (frame-independent)
-    this.state.obstacles = this.state.obstacles.filter(obs => {
-      obs.x -= self.state.speed * dt;
-
-      if (self.checkCollision(self.state.player, obs)) {
-        if (self.state.effects.shield || self.state.abilityShield.active) {
-          if (self.state.effects.shield) self.state.effects.shield = false;
-          self.addEffectParticles(obs.x, obs.y, '💥');
-          return false;
-        } else if (self.state.dash.active) {
-          self.addEffectParticles(obs.x, obs.y, '💨');
-          return false;
-        } else {
-          self.state.gameOver = true;
-          const finalScore = Math.floor(self.state.distance) + self.state.tokens * 10;
-          endGame(self.gameId, finalScore);
-        }
-      }
-
-      return obs.x > -50;
-    });
-
-    // Update collectibles (frame-independent)
-    this.state.collectibles = this.state.collectibles.filter(col => {
-      col.x -= self.state.speed * dt;
-
-      if (self.checkCollision(self.state.player, col)) {
-        self.state.tokens++;
-        self.addBurnParticles(col.x, col.y);
-        return false;
-      }
-
-      return col.x > -50;
-    });
-
-    // Update particles (frame-independent)
-    this.state.particles = this.state.particles.filter(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += 0.15 * dt;
-      p.life -= dt;
-      return p.life > 0;
-    });
-
-    // Update dust particles (frame-independent)
-    this.state.dustParticles = this.state.dustParticles.filter(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vx *= 0.96; // Friction
-      p.vy += 0.08 * dt; // Light gravity
-      p.life -= dt;
-      p.alpha *= 0.97; // Fade out
-      return p.life > 0 && p.alpha > 0.05;
-    });
-
-    // Update UI (using cached DOM references)
-    const distanceEl = this.dom.distance;
-    const tokensEl = this.dom.tokens;
-    if (distanceEl) distanceEl.textContent = Math.floor(this.state.distance) + 'm';
-    if (tokensEl) tokensEl.textContent = this.state.tokens + ' 🔥';
-    this.state.score = Math.floor(this.state.distance) + this.state.tokens * 10;
-    updateScore(this.gameId, this.state.score);
-  },
-
-  /**
-   * Draw game
-   */
-  draw() {
-    const ctx = this.ctx;
-
-    // Sky gradient
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    skyGrad.addColorStop(0, '#0f0a1e');
-    skyGrad.addColorStop(0.4, '#1a1030');
-    skyGrad.addColorStop(0.7, '#2d1b4e');
-    skyGrad.addColorStop(1, '#1a1a2e');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Stars
-    ctx.fillStyle = '#fff';
-    for (let i = 0; i < 30; i++) {
-      const sx = (i * 73 + this.state.frameCount * 0.1) % this.canvas.width;
-      const sy = (i * 37) % (this.canvas.height * 0.5);
-      const size = (i % 3) + 1;
-      ctx.globalAlpha = 0.3 + (Math.sin(this.state.frameCount * 0.05 + i) + 1) * 0.2;
-      ctx.fillRect(sx, sy, size, size);
-    }
-    ctx.globalAlpha = 1;
-
-    // FAR LAYER: Distant mountains (slowest parallax - 0.2x)
-    this.state.parallax.far.forEach(m => {
-      const mx = (m.x - this.state.distance * m.speed) % (this.canvas.width + m.width);
-      const adjustedX = mx < -m.width ? mx + this.canvas.width + m.width : mx;
-
-      // Draw mountain silhouette
-      ctx.fillStyle = m.color;
-      ctx.beginPath();
-      ctx.moveTo(adjustedX, this.state.ground);
-      ctx.lineTo(adjustedX + m.width / 2, this.state.ground - m.height);
-      ctx.lineTo(adjustedX + m.width, this.state.ground);
-      ctx.closePath();
-      ctx.fill();
-
-      // Mountain highlight
-      ctx.fillStyle = 'rgba(139, 92, 246, 0.1)';
-      ctx.beginPath();
-      ctx.moveTo(adjustedX + m.width / 2, this.state.ground - m.height);
-      ctx.lineTo(adjustedX + m.width / 2 + 20, this.state.ground - m.height + 30);
-      ctx.lineTo(adjustedX + m.width / 2, this.state.ground - m.height + 30);
-      ctx.closePath();
-      ctx.fill();
-    });
-
-    // Clouds
-    ctx.fillStyle = 'rgba(100, 80, 140, 0.3)';
-    this.state.clouds.forEach(cloud => {
-      ctx.beginPath();
-      ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.size * 0.6, cloud.y - 5, cloud.size * 0.7, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.size * 1.2, cloud.y, cloud.size * 0.8, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // MID LAYER: Buildings (medium parallax - 0.5x)
-    this.state.parallax.mid.forEach(b => {
-      const bx = (b.x - this.state.distance * b.speed) % (this.canvas.width + b.width);
-      const adjustedX = bx < -b.width ? bx + this.canvas.width + b.width : bx;
-      ctx.fillStyle = b.color;
-      ctx.fillRect(adjustedX, this.state.ground - b.height, b.width, b.height);
-
-      // Windows (only render some for performance)
-      if (b.windows) {
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
-        for (let wy = this.state.ground - b.height + 10; wy < this.state.ground - 20; wy += 20) {
-          for (let wx = adjustedX + 8; wx < adjustedX + b.width - 8; wx += 15) {
-            if (Math.random() > 0.4) ctx.fillRect(wx, wy, 6, 8);
+        const groundLine = state.groundY;
+        const px = pos.x[pIdx];
+        const py = pos.y[pIdx];
+        const pW = coll.width[pIdx];
+        const pH = coll.height[pIdx];
+        const ph = pH;
+        const wasGrounded = py + ph >= groundLine - 1;
+        if (py + ph > groundLine) {
+          const wasFalling = vel.vy[pIdx] > 0;
+          pos.y[pIdx] = groundLine - ph;
+          vel.vy[pIdx] = 0;
+          pProps.jumpsLeft[pIdx] = state.maxJumps;
+
+          if (wasFalling && self.juice) {
+            self.juice.emit('LAND', px + pW / 2, groundLine);
           }
         }
+
+        if (wasGrounded) state.coyoteTimer = state.coyoteFrames;
+        else if (state.coyoteTimer > 0) state.coyoteTimer -= dt;
+
+        if (state.jumpBuffer > 0) {
+          state.jumpBuffer -= dt;
+          const canCoyoteJump = state.coyoteTimer > 0 && pProps.jumpsLeft[pIdx] === state.maxJumps;
+          if (pProps.jumpsLeft[pIdx] > 0 || canCoyoteJump) {
+            vel.vy[pIdx] = CONFIG.physics.jumpForce;
+            pProps.jumpsLeft[pIdx] = Math.max(0, pProps.jumpsLeft[pIdx] - 1);
+            state.jumpBuffer = 0;
+            state.coyoteTimer = 0;
+
+            if (self.juice) {
+              self.juice.emit('JUMP', px + pW / 2, py + pH);
+              // Removed shake here based on user feedback
+            }
+          }
+        }
+
+        vel.vy[pIdx] += CONFIG.physics.gravity * dt;
+
+        // Fever speed boost
+        const feverMult = state.feverActive ? 1.4 : 1.0;
+
+        vel.vx[pIdx] =
+          CONFIG.physics.maxSpeed *
+          (0.42 + state.level * 0.02) *
+          Math.min(1.12, diff.speedScale) *
+          feverMult;
+        vel.vx[pIdx] = Math.min(vel.vx[pIdx], CONFIG.physics.maxSpeed * 1.5);
+        state.speed = Math.min(
+          CONFIG.speedCap * feverMult,
+          state.speed * (1 + CONFIG.physics.acceleration * dt * 0.22)
+        );
+        pos.x[pIdx] = state.playerX;
+
+        const playerBottom = state.groundY;
+
+        // Fever meter logic
+        if (state.feverActive) {
+          state.feverMeter -= dt * 0.15;
+          if (state.feverMeter <= 0) {
+            state.feverActive = false;
+            state.feverMeter = 0;
+          }
+        } else {
+          state.feverMeter = Math.max(0, state.feverMeter - dt * 0.02);
+          if (state.feverMeter >= 100) {
+            state.feverActive = true;
+            if (self.juice) {
+              self.juice.textPop(px, py - 40, 'FEVER MODE!', {
+                color: '#ffcc00',
+                size: 32,
+                lifetime: 30,
+              });
+            }
+          }
+        }
+
+        state.spawnTimer += dt;
+        const activeHazards = self._collisionQuery ? self._collisionQuery.set.count : 0;
+        const activeAll = self._entityQuery ? self._entityQuery.set.count - 1 : 0;
+        const maxHazards = Math.min(
+          CONFIG.spawn.maxHazards,
+          CONFIG.spawn.baseMaxHazards + diff.level * 1.5
+        );
+        const spawnInterval = Math.max(
+          CONFIG.spawn.minInterval,
+          (CONFIG.spawn.baseInterval -
+            diff.level * 4.2 -
+            state.speed * 1.4 +
+            (state.collectiblesMissed || 0) * 2) /
+            feverMult
+        );
+        const spawnChance = Math.min(
+          0.96,
+          CONFIG.spawn.obstacleChanceBase + diff.level * CONFIG.spawn.obstacleChanceGrowth
+        );
+
+        if (activeHazards < maxHazards && state.spawnTimer > spawnInterval) {
+          if (Math.random() < spawnChance && activeAll < maxHazards + 3) {
+            self.spawnEntity(world, diff, true);
+          } else if (Math.random() < CONFIG.spawn.collectibleChance) {
+            self.spawnEntity(world, diff, false);
+          }
+          state.spawnTimer = 0;
+        }
+
+        const { dense, count } = self._entityQuery
+          ? self._entityQuery.set
+          : { dense: [], count: 0 };
+        const obsComp = world.componentRegistry.get('Obstacle');
+        const colComp = world.componentRegistry.get('Collectible');
+        const obsBit = obsComp ? obsComp.bit : 0;
+        const colBit = colComp ? colComp.bit : 0;
+
+        for (let i = count - 1; i >= 0; i--) {
+          const idx = dense[i];
+          if (idx === pIdx) continue;
+          const ex = pos.x[idx];
+          const ey = pos.y[idx];
+          const ew = coll.width[idx];
+          const eh = coll.height[idx];
+          pos.x[idx] -= state.speed * dt * (0.32 + state.intensity * 0.1);
+
+          if (ex < -140) {
+            if (obsBit && (world.entityMasks[idx] & obsBit) === obsBit) {
+              state.combo = 0;
+            }
+            world.destroyEntity(world.getEntityId(idx));
+            continue;
+          }
+
+          const hit = px < ex + ew && px + pW > ex && py < ey + eh && py + pH > ey;
+
+          if (hit && obsBit && (world.entityMasks[idx] & obsBit) === obsBit) {
+            if (state.feverActive) {
+              // Fever mode grants invulnerability and destroys obstacles
+              world.destroyEntity(world.getEntityId(idx));
+              state.score = (state.score || 0) + 50;
+              if (self.juice) {
+                self.juice.impact(ex + ew / 2, ey + eh / 2, { intensity: 'light' });
+                self.juice.textPop(ex, ey, 'SMASHED!', { color: '#ffcc00' });
+              }
+              continue;
+            }
+
+            state.gameOver = true;
+            state.combo = 0;
+
+            if (self.juice) {
+              self.juice.impact(px + pW / 2, py + pH / 2, { intensity: 'death' }); // Just explosion, no shake
+            }
+
+            if (typeof endGame === 'function') endGame(self.gameId, Math.floor(state.distance));
+          } else if (hit && colBit && (world.entityMasks[idx] & colBit) === colBit) {
+            const collectible = world.componentRegistry.get('Collectible');
+            const value = collectible.props.value[idx] || 1;
+            state.tokens += value;
+            state.combo++;
+            state.feverMeter = Math.min(
+              100,
+              state.feverMeter + 5 + Math.min(10, state.combo * 0.5)
+            );
+            state.bestCombo = Math.max(state.bestCombo, state.combo);
+            state.distance += value * Math.min(8, state.combo);
+
+            if (self.juice) {
+              self.juice.emit('COLLECT', ex + ew / 2, ey + eh / 2);
+              self.juice.textPop(ex, ey, `+${value}`, { color: '#ffcc00', size: 24, lifetime: 25 });
+              if (state.combo % 10 === 0) {
+                self.juice.textPop(px, py - 60, `${state.combo} COMBO!`, {
+                  color: '#fbbf24',
+                  size: 28,
+                  lifetime: 35,
+                });
+              }
+            }
+
+            world.destroyEntity(world.getEntityId(idx));
+          }
+        }
+
+        self.updateUI(state);
+      };
+    },
+
+    getDifficulty(state) {
+      const level = 1 + Math.floor(state.distance / CONFIG.levelDistance);
+      const progression = Math.min(1, state.distance / CONFIG.maxDifficultyDistance);
+      const intensity = 1 + progression * 0.82;
+      const speedScale = 1 + Math.min(1.6, level * 0.12);
+      return { level, intensity, speedScale };
+    },
+
+    spawnEntity(world, diff, isObstacle) {
+      const state = world.getResource('GameState');
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Collider');
+
+      const idx = world.getIndex(e);
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const coll = world.componentRegistry.get('Collider').props;
+
+      pos.x[idx] = this.instance.canvas.width + 50;
+
+      if (isObstacle) {
+        world.addComponent(e, 'Obstacle');
+        const typeIdx = Math.floor(Math.random() * BURN_TYPES.length);
+        const type = BURN_TYPES[typeIdx];
+        const obstacle = world.componentRegistry.get('Obstacle').props;
+        pos.y[idx] = state.groundY - type.height - CONFIG.playerLift;
+        rend.iconIndex[idx] = typeIdx + 1;
+        rend.size[idx] = type.width;
+        coll.width[idx] = type.width * (0.92 + Math.min(0.34, diff.intensity * 0.11));
+        coll.height[idx] = type.height * (0.92 + Math.min(0.28, diff.intensity * 0.1));
+        obstacle.type[idx] = typeIdx;
+      } else {
+        world.addComponent(e, 'Collectible');
+        const collectible = world.componentRegistry.get('Collectible').props;
+        pos.y[idx] = state.groundY - 95 - Math.random() * 88 - CONFIG.playerLift;
+        rend.iconIndex[idx] = 5;
+        rend.size[idx] = 27 + Math.random() * 4;
+        coll.width[idx] = 24 + Math.random() * 8;
+        coll.height[idx] = 24 + Math.random() * 8;
+        collectible.value[idx] = Math.random() < 0.18 ? 3 : 1;
       }
-    });
+    },
 
-    // Ground
-    const groundGrad = ctx.createLinearGradient(0, this.state.ground, 0, this.canvas.height);
-    groundGrad.addColorStop(0, '#4a3070');
-    groundGrad.addColorStop(1, '#2a1a40');
-    ctx.fillStyle = groundGrad;
-    ctx.fillRect(0, this.state.ground, this.canvas.width, 50);
+    updateUI(state) {
+      if (this.dom.distance) this.dom.distance.textContent = `${Math.floor(state.distance)}m`;
+      if (this.dom.tokens) this.dom.tokens.textContent = state.tokens;
+      if (this.dom.combo) this.dom.combo.textContent = `x${state.combo}`;
+      if (this.dom.level) this.dom.level.textContent = state.level || 1;
+      if (this.dom.intensity) this.dom.intensity.textContent = `x${state.intensity.toFixed(2)}`;
+    },
 
-    // Ground lines
-    ctx.strokeStyle = '#6b4d9a';
-    ctx.lineWidth = 2;
-    const offset = (this.state.distance * 5) % 60;
-    for (let x = -offset; x < this.canvas.width + 60; x += 60) {
+    draw() {
+      const ctx = this.instance.ctx;
+      const w = this.instance.canvas.width;
+      const h = this.instance.canvas.height;
+      const state = this.instance.world.getResource('GameState');
+      const world = this.instance.world;
+      const pIdx = world.getIndex(state.playerId);
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+
+      if (visuals) {
+        // Dynamic backdrop based on fever
+        const theme = state.feverActive ? 'racer' : 'default';
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: theme,
+          seed: state.level,
+          withNoise: true,
+          allowNoise: true,
+          distance: state.distance,
+        });
+
+        // Speed effects
+        if (state.feverActive) {
+          visuals.drawScanlines(ctx, w, h, { alpha: 0.15, density: 4 });
+        }
+
+        this.drawScrollingGround(ctx, w, h, state);
+      } else {
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, state.groundY);
+        skyGrad.addColorStop(0, '#07081a');
+        skyGrad.addColorStop(1, '#1f1538');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+        this.drawParallaxCity(ctx, w, h, state);
+        this.drawGround(ctx, w, h, state);
+      }
+
+      // Movement "Wind" lines to show speed
+      ctx.save();
+      ctx.strokeStyle = state.feverActive ? 'rgba(255, 204, 0, 0.5)' : 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      const lineCount = state.feverActive ? 25 : 8;
+      for (let i = 0; i < lineCount; i++) {
+        const seed = (i * 137.5) % w;
+        const ly = (i * 40 + state.distance * 2) % h;
+        const lx = (seed - state.distance * 5) % w;
+        const len = 30 + (i % 5) * 20;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx + len, ly);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const { dense, count } = this._entityQuery ? this._entityQuery.set : { dense: [], count: 0 };
+      const obstacleComp = world.componentRegistry.get('Obstacle');
+      const collectibleComp = world.componentRegistry.get('Collectible');
+      const obsBit = obstacleComp ? obstacleComp.bit : 0;
+      const colBit = collectibleComp ? collectibleComp.bit : 0;
+      const coll = world.componentRegistry.get('Collider').props;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const x = pos.x[idx];
+        const y = pos.y[idx];
+
+        // Get Rotation & Scale if they exist
+        const rotComp = world.componentRegistry.get('Rotation');
+        const scaleComp = world.componentRegistry.get('Scale');
+        const angle = rotComp ? rotComp.props.angle[idx] : 0;
+        const scaleX = scaleComp ? scaleComp.props.x[idx] : 1;
+        const scaleY = scaleComp ? scaleComp.props.y[idx] : 1;
+
+        const isPlayer = idx === pIdx;
+        if (isPlayer) {
+          ctx.save();
+          ctx.translate(x + coll.width[pIdx] * 0.5, y + coll.height[pIdx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawBurnRunnerCharacter(ctx, 0, 0, state);
+          ctx.restore();
+          continue;
+        }
+
+        const isObstacle = obsBit && (world.entityMasks[idx] & obsBit) === obsBit;
+        const isCollectible = colBit && (world.entityMasks[idx] & colBit) === colBit;
+        const entityW = rend.size[idx] || 34;
+
+        if (isObstacle) {
+          const typeIndex = world.componentRegistry.get('Obstacle').props.type[idx] || 0;
+          ctx.save();
+          ctx.translate(x + coll.width[idx] * 0.5, y + coll.height[idx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawEnhancedHazard(ctx, 0, 0, entityW, typeIndex, state);
+          ctx.restore();
+        } else if (isCollectible) {
+          const collect = world.componentRegistry.get('Collectible');
+          const v = collect.props.value[idx] || 1;
+          ctx.save();
+          ctx.translate(x + coll.width[idx] * 0.5, y + coll.height[idx] * 0.5);
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+          this.drawCollectible(ctx, 0, 0, entityW, v);
+          ctx.restore();
+        }
+      }
+
+      // Draw Fever Meter HUD
+      this.drawFeverBar(ctx, w, h, state);
+    },
+
+    drawScrollingGround(ctx, w, h, state) {
+      const groundY = state.groundY;
+
+      // Ground base with deep purple gradient for depth
+      const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+      groundGrad.addColorStop(0, '#06050d');
+      groundGrad.addColorStop(1, '#1a0b2e');
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, groundY, w, h - groundY);
+
+      // FAST SIDE-SCROLLING GRID
+      ctx.save();
+      ctx.strokeStyle = state.feverActive ? 'rgba(255, 204, 0, 0.4)' : 'rgba(251, 146, 60, 0.2)';
+      ctx.lineWidth = 2;
+
+      const speedMult = state.feverActive ? 25 : 12;
+      const gridSize = 100;
+      // Scroll horizontally for a side-scroller!
+      const scrollX = (state.distance * speedMult) % gridSize;
+
+      // Vertical grid lines moving left rapidly
+      for (let x = -gridSize; x < w + gridSize; x += gridSize) {
+        ctx.beginPath();
+        // Slight slant for dynamic speed effect
+        ctx.moveTo(x - scrollX + 40, groundY);
+        ctx.lineTo(x - scrollX - 40, h);
+        ctx.stroke();
+      }
+
+      // Horizontal perspective lines (closer lines are thicker)
+      const hLines = 4;
+      for (let i = 0; i < hLines; i++) {
+        const ratio = i / (hLines - 1);
+        const lineY = groundY + ratio * ratio * (h - groundY); // Exponential spacing
+        ctx.globalAlpha = 0.3 + ratio * 0.7;
+        ctx.lineWidth = 1 + ratio * 3;
+        ctx.beginPath();
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(w, lineY);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Side glow rails (The "track" edge)
+      const railGlow = Math.sin(performance.now() * 0.01) * 0.2 + 0.8;
+      ctx.fillStyle = `rgba(255, 204, 0, ${railGlow})`;
+      ctx.fillRect(0, groundY, w, 3);
+      ctx.shadowColor = '#ffcc00';
+      ctx.shadowBlur = 10;
+      ctx.fillRect(0, groundY, w, 1);
+      ctx.shadowBlur = 0;
+    },
+
+    drawBurnRunnerCharacter(ctx, x, y, state) {
+      const hover = Math.sin(performance.now() / 100) * 3;
+
+      ctx.save();
+      ctx.translate(x, y + hover);
+
+      // Engine glow / Trail (The "Burn")
+      const engineGlow = Math.abs(Math.sin(performance.now() / 50));
+      ctx.fillStyle = state.feverActive
+        ? `rgba(0, 245, 255, ${0.5 + engineGlow * 0.5})`
+        : `rgba(255, 204, 0, ${0.5 + engineGlow * 0.5})`;
       ctx.beginPath();
-      ctx.moveTo(x, this.state.ground);
-      ctx.lineTo(x + 30, this.state.ground + 50);
-      ctx.stroke();
-    }
-
-    // NEAR LAYER: Foreground elements (fastest parallax - 0.8x)
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    this.state.parallax.near.forEach(e => {
-      const ex = (e.x - this.state.distance * e.speed) % (this.canvas.width + 100);
-      const adjustedX = ex < -50 ? ex + this.canvas.width + 100 : ex;
-      ctx.globalAlpha = e.opacity * 0.5; // Semi-transparent foreground
-      ctx.font = `${e.size}px Arial`;
-      ctx.fillText(e.icon, adjustedX, this.state.ground - 5);
-    });
-    ctx.globalAlpha = 1;
-
-    // Dust particles (ground level)
-    this.state.dustParticles.forEach(p => {
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = '#a78bfa'; // Purple dust
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.moveTo(-20, 0);
+      ctx.lineTo(-50 - (state.feverActive ? 30 : 0), -5 + engineGlow * 10);
+      ctx.lineTo(-20, 10);
       ctx.fill();
-    });
-    ctx.globalAlpha = 1;
 
-    // Platforms (using SpriteCache)
-    this.state.platforms.forEach(plat => {
-      const platY = plat.renderY || plat.y;
-      const size = plat.floating ? 38 : 36;
-      SpriteCache.draw(ctx, plat.icon, plat.x + plat.width / 2, platY + plat.height / 2, size);
-    });
+      // Ship Chassis (Wipeout/F-Zero style sleek wedge)
+      ctx.fillStyle = '#0f172a'; // Dark chassis
+      ctx.beginPath();
+      ctx.moveTo(35, 5); // Nose
+      ctx.lineTo(-20, -10); // Top tail
+      ctx.lineTo(-20, 15); // Bottom tail
+      ctx.closePath();
+      ctx.fill();
 
-    // Player
-    const playerCenterX = this.state.player.x + this.state.player.width / 2;
-    const playerCenterY = this.state.player.y + this.state.player.height / 2;
+      // Cockpit / Canopy
+      ctx.fillStyle = state.feverActive ? '#00f5ff' : '#0ea5e9';
+      ctx.beginPath();
+      ctx.moveTo(15, 0);
+      ctx.lineTo(-10, -12);
+      ctx.lineTo(-10, 2);
+      ctx.closePath();
+      ctx.fill();
 
-    // Player shadow
-    const shadowScale = Math.max(
-      0.3,
-      1 - (this.state.ground - this.state.player.y - this.state.player.height) / 150
-    );
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath();
-    ctx.ellipse(
-      playerCenterX,
-      this.state.ground + 5,
-      18 * shadowScale,
-      6 * shadowScale,
-      0,
-      0,
-      Math.PI * 2
-    );
-    ctx.fill();
+      // Wing/Accent lines
+      ctx.strokeStyle = state.feverActive ? '#00f5ff' : '#ff2d95';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(20, 5);
+      ctx.lineTo(-25, -15);
+      ctx.lineTo(-25, 20);
+      ctx.closePath();
+      ctx.stroke();
 
-    // Draw player (using SpriteCache)
-    const bounce = this.state.isJumping ? 0 : Math.sin(this.state.distance * 0.4) * 2;
-    const tilt = this.state.isJumping
-      ? this.state.player.vy * 0.02
-      : Math.sin(this.state.distance * 0.4) * 0.1;
-    SpriteCache.drawTransformed(ctx, '🐕', playerCenterX, playerCenterY + bounce, 38, {
-      rotation: tilt,
-      scaleX: -1,
-    });
+      // Glow effects
+      if (state.feverActive) {
+        ctx.shadowColor = '#00f5ff';
+        ctx.shadowBlur = 15;
+        ctx.stroke();
+      }
 
-    // Trail effect
-    if (this.state.speed > 7 || this.state.dash.active) {
-      SpriteCache.drawTransformed(ctx, '🐕', playerCenterX - 18, playerCenterY + bounce, 38, {
-        scaleX: -1,
-        alpha: this.state.dash.active ? 0.4 : 0.25,
+      ctx.restore();
+    },
+
+    drawFeverBar(ctx, w, h, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (!visuals) return;
+
+      const barW = 200;
+      const barH = 12;
+      const bx = (w - barW) / 2;
+      const by = 20;
+
+      ctx.save();
+      visuals.drawStatBar(ctx, bx, by, barW, barH, state.feverMeter / 100, {
+        theme: state.feverActive ? 'racer' : 'default',
+        track: 'rgba(0,0,0,0.5)',
       });
-    }
 
-    // Dash effect (no shadowBlur for performance)
-    if (this.state.dash.active) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(playerCenterX, playerCenterY, 30, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+      const label = state.feverActive ? '🔥 FEVER ACTIVE 🔥' : 'FEVER METER';
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px Orbitron';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, w / 2, by - 8);
+      ctx.restore();
+    },
 
-    // Shield effect (no shadowBlur for performance)
-    if (this.state.abilityShield.active) {
-      const shieldPulse = Math.sin(Date.now() * 0.01) * 0.15 + 0.85;
-      ctx.strokeStyle = '#a855f7';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(playerCenterX, playerCenterY, 35 * shieldPulse, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+    drawPlayerCharacter(ctx, x, y, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      const run = Math.sin(performance.now() / 100);
+      const lift = Math.sin(performance.now() / 150) * 2;
 
-    // Obstacles (using SpriteCache)
-    this.state.obstacles.forEach(obs => {
-      SpriteCache.draw(ctx, obs.icon, obs.x + obs.width / 2, obs.y + obs.height / 2, 32);
-    });
+      ctx.save();
+      ctx.translate(x, y + lift);
 
-    // Collectibles (using SpriteCache)
-    this.state.collectibles.forEach(col => {
-      const float = Math.sin(Date.now() * 0.005 + col.x) * 4;
-      SpriteCache.draw(ctx, col.icon, col.x + col.width / 2, col.y + col.height / 2 + float, 24);
-    });
-
-    // Particles (using SpriteCache)
-    this.state.particles.forEach(p => {
-      SpriteCache.drawTransformed(ctx, p.icon, p.x, p.y, p.size || 16, { alpha: p.life / 30 });
-    });
-  },
-
-  /**
-   * Game loop with frame-independent timing
-   */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  },
-
-  /**
-   * Stop the game and cleanup
-   * Protected with try/catch to ensure all cleanup runs even if one part fails
-   */
-  stop() {
-    if (this.state) this.state.gameOver = true;
-
-    // Remove event listeners (protected)
-    try {
-      document.removeEventListener('keydown', this.handleKeyDown);
-      if (this.canvas) {
-        this.canvas.removeEventListener('click', this.handleClick);
-        this.canvas.removeEventListener('contextmenu', this.handleContextMenu);
-        this.canvas.removeEventListener('touchstart', this.handleTouch);
+      if (state.feverActive) {
+        ctx.shadowColor = '#ffcc00';
+        ctx.shadowBlur = 15;
       }
-    } catch (e) {
-      console.warn('[BurnRunner] Event listener cleanup error:', e);
-    }
 
-    // Cleanup juice system
-    try {
-      if (this.juice) {
-        this.juice.cleanup();
+      // Draw as a "Cyber Runner" instead of a car
+      if (visuals) {
+        // Using a variant of F1 car but styled as a character/drone
+        visuals.drawF1Car(ctx, 0, 0, {
+          length: CONFIG.playerSize * 1.5,
+          width: CONFIG.playerSize,
+          scale: 0.8,
+          active: state.feverActive,
+          lean: run * 0.1,
+          palette: state.feverActive
+            ? ['#ffcc00', '#fff', '#000', '#fb923c', '#fff']
+            : ['#dc2626', '#ffcc00', '#000', '#fb923c', '#fff'],
+        });
+      } else {
+        this.drawPlayerCar(ctx, 0, 0, 1, CONFIG.playerSize * 0.7);
       }
-    } catch (e) {
-      console.warn('[BurnRunner] Juice cleanup error:', e);
-    }
 
-    // Clear references (always runs)
-    this.juice = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.state = null;
-    this.timing = null;
-  },
-};
+      ctx.restore();
+    },
 
-// Export
-if (typeof window !== 'undefined') {
+    drawEnhancedHazard(ctx, x, y, size, typeIndex, state) {
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      const type = BURN_TYPES[typeIndex] || BURN_TYPES[0];
+
+      if (visuals) {
+        // Using ThreatNode but with character-specific shapes
+        visuals.drawThreatNode(ctx, x, y, size, {
+          shape: typeIndex === 0 ? 'diamond' : typeIndex === 1 ? 'shield' : 'hex',
+          primary: type.body,
+          secondary: type.accent,
+          accent: type.danger,
+          icon: type.icon,
+          label: type.name,
+          intensity: state.intensity,
+          threat: typeIndex + 1,
+          spin: performance.now() * 0.005 + x * 0.01,
+        });
+      } else {
+        this.drawHazard(ctx, x, y, size, typeIndex);
+      }
+    },
+
+    drawParallaxCity(ctx, w, h, state) {
+      const baseY = h * (CONFIG.horizon + 0.18);
+      const skyline = [
+        { x: 0.08, w: 0.12, h: 0.22 },
+        { x: 0.27, w: 0.16, h: 0.3 },
+        { x: 0.58, w: 0.14, h: 0.26 },
+        { x: 0.78, w: 0.18, h: 0.34 },
+      ];
+
+      for (const building of skyline) {
+        const x = w * building.x;
+        const bw = w * building.w;
+        const bh = h * building.h;
+        ctx.fillStyle = 'rgba(20, 16, 39, 0.45)';
+        ctx.fillRect(x, baseY - bh, bw, bh);
+        ctx.fillStyle = 'rgba(251,191,36,0.12)';
+        ctx.fillRect(x + bw * 0.22, baseY - bh + 20, 8, 8);
+        ctx.fillRect(x + bw * 0.68, baseY - bh + 46, 8, 8);
+      }
+    },
+
+    drawTrack(ctx, w, h, state) {
+      const groundY = state.groundY;
+      const sidePad = Math.max(18, w * 0.06);
+      ctx.fillStyle = 'rgba(9, 5, 16, 0.82)';
+      ctx.fillRect(0, groundY, w, h - groundY);
+
+      ctx.fillStyle = 'rgba(255,204,0,0.86)';
+      ctx.fillRect(sidePad, groundY + 2, w - sidePad * 2, 3);
+    },
+
+    drawGroundMarkings(ctx, w, h, state) {
+      const groundY = state.groundY;
+      ctx.fillStyle = 'rgba(248,113,113, 0.15)';
+      for (let i = 0; i < 8; i++) {
+        const y = groundY + i * 18 + (state.distance % 18) * 0.15;
+        if (y > h) break;
+        ctx.fillRect(24, y, w - 48, 1.5);
+      }
+    },
+
+    drawPlayerCar(ctx, x, y, widthScale = 1, _heightScale = 1) {
+      const lift = Math.sin(performance.now() / 120) * 1.1;
+      const body = Math.max(30, 38 * widthScale);
+      const height = Math.max(28, _heightScale || 32);
+      const run = Math.sin(performance.now() / 130);
+
+      ctx.save();
+      ctx.translate(x, y + lift);
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.28)';
+      ctx.beginPath();
+      ctx.ellipse(0, height * 0.48, body * 0.58, height * 0.12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -body * 0.5, height * 0.26, body, height * 0.14, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffcc00';
+      this.roundRect(ctx, -body * 0.36, height * 0.18, body * 0.72, height * 0.1, 4);
+      ctx.fill();
+
+      ctx.strokeStyle = '#fff2b3';
+      ctx.lineWidth = Math.max(2, height * 0.06);
+      ctx.beginPath();
+      ctx.moveTo(-body * 0.08, height * 0.1);
+      ctx.lineTo(-body * 0.22 + run * 2, height * 0.27);
+      ctx.moveTo(body * 0.08, height * 0.1);
+      ctx.lineTo(body * 0.22 - run * 2, height * 0.27);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ff6b35';
+      this.roundRect(ctx, -body * 0.18, -height * 0.2, body * 0.36, height * 0.42, 8);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.arc(0, -height * 0.42, height * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -height * 0.14, -height * 0.45, height * 0.28, height * 0.1, 4);
+      ctx.fill();
+      ctx.fillStyle = '#fff7ed';
+      ctx.beginPath();
+      ctx.arc(height * 0.08, -height * 0.41, height * 0.035, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawHazard(ctx, x, y, size, typeIndex) {
+      const type = BURN_TYPES[typeIndex] || BURN_TYPES[0];
+      const w = Math.max(28, size * 0.76);
+      const h = Math.max(24, size * 0.62);
+      const body = type.body || '#ff6b35';
+      const accent = type.accent || '#3b120b';
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.beginPath();
+      ctx.ellipse(0, h * 0.42, w * 0.56, h * 0.16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (typeIndex % 4 === 0) {
+        ctx.fillStyle = body;
+        ctx.beginPath();
+        ctx.moveTo(0, -h * 0.5);
+        ctx.lineTo(w * 0.42, h * 0.28);
+        ctx.lineTo(-w * 0.42, h * 0.28);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#fff7ed';
+        ctx.fillRect(-w * 0.22, h * 0.02, w * 0.44, h * 0.08);
+      } else if (typeIndex % 4 === 1) {
+        ctx.fillStyle = body;
+        this.roundRect(ctx, -w * 0.42, -h * 0.34, w * 0.84, h * 0.68, 7);
+        ctx.fill();
+        ctx.fillStyle = accent;
+        for (let i = -1; i <= 1; i += 1) {
+          ctx.beginPath();
+          ctx.arc(i * w * 0.18, -h * 0.02, h * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (typeIndex % 4 === 2) {
+        ctx.fillStyle = body;
+        ctx.beginPath();
+        ctx.arc(0, 0, h * 0.36, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, h * 0.2, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = body;
+        this.roundRect(ctx, -w * 0.38, -h * 0.38, w * 0.76, h * 0.76, 5);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.18, -h * 0.16);
+        ctx.lineTo(w * 0.18, h * 0.16);
+        ctx.moveTo(w * 0.18, -h * 0.16);
+        ctx.lineTo(-w * 0.18, h * 0.16);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawVehicleTires(ctx, w, h, color) {
+      const wheel = Math.max(2.2, w * 0.15);
+      const half = h * 0.5;
+      const spread = Math.max(w * 0.28, h * 0.56);
+      ctx.fillStyle = color;
+      for (const side of [-1, 1]) {
+        const cx = side * spread;
+        ctx.beginPath();
+        ctx.ellipse(cx, half, wheel, wheel * 0.62, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          half,
+          Math.max(1.2, wheel * 0.66),
+          Math.max(1.1, wheel * 0.46),
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.fillStyle = color;
+      }
+
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.42)';
+      const hub = Math.max(1.4, wheel * 0.27);
+      for (const side of [-1, 1]) {
+        const cx = side * spread;
+        ctx.fillRect(cx - hub * 0.5, half - hub * 0.5, hub, hub);
+      }
+    },
+
+    drawVehicleStrip(ctx, x, y, width, height) {
+      const stripeHeight = Math.max(1.1, height * 0.65);
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.72)';
+      const section = width / 7;
+      for (let i = 0; i < 8; i++) {
+        const dx = x + i * section;
+        ctx.fillRect(dx, y, Math.max(1.1, section * 0.36), stripeHeight);
+      }
+      ctx.fillStyle = `rgba(15, 23, 42, 0.55)`;
+      this.roundRect(ctx, x, y + stripeHeight * 0.18, width, Math.max(2.2, height * 0.75), 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawVehicleSign(ctx, type, size) {
+      const w = size * 1.1;
+      const h = Math.max(11, size * 0.5);
+      const glow = Math.sin(performance.now() * 0.006) * 0.12 + 0.34;
+      const x = -w * 0.5;
+      const y = -size * 0.84;
+      ctx.save();
+      this.roundRect(ctx, x, y, w, h, 3);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(248, 250, 252, ${0.55 + glow * 0.2})`;
+      ctx.stroke();
+      ctx.fillStyle = type?.danger || '#ffcc00';
+      ctx.fillRect(x + w * 0.22, y + h * 0.42, w * 0.56, h * 0.12);
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.76)';
+      ctx.beginPath();
+      ctx.arc(x + w * 0.36, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.arc(x + w * 0.5, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.arc(x + w * 0.64, y + h * 0.5, h * 0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawCollectible(ctx, x, y, size, value) {
+      const r = size * 0.34;
+      const pulse = 1 + Math.sin(performance.now() / 160) * 0.11;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(pulse, pulse);
+
+      const glow = Math.sin(performance.now() * 0.006) * 0.08 + 0.2;
+      const core = r * 1.02;
+      ctx.beginPath();
+      ctx.arc(0, 0, core, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,204,0,${0.18 + glow})`;
+      ctx.fill();
+
+      ctx.fillStyle = CONFIG.colors.collectible;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = CONFIG.colors.collectText;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.62, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#12071f';
+      if (value > 1) {
+        ctx.beginPath();
+        ctx.arc(-r * 0.18, 0, r * 0.14, 0, Math.PI * 2);
+        ctx.arc(r * 0.18, 0, r * 0.14, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        for (let i = 0; i < 5; i += 1) {
+          const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+          const px = Math.cos(a) * r * 0.24;
+          const py = Math.sin(a) * r * 0.24;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    },
+
+    roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.max(1, Math.min(r, Math.min(w, h) / 2));
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    },
+
+    stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
+      this._collisionQuery = null;
+      this._entityQuery = null;
+      if (this.instance) this.instance.stop();
+      this.instance = null;
+      this._layout = null;
+    },
+  };
+
   window.ASDF = window.ASDF || {};
   window.ASDF.BurnRunner = BurnRunner;
-  window.BurnRunner = window.ASDF.BurnRunner;
-}
+  window.BurnRunner = BurnRunner;
+  if (typeof GameRegistry !== 'undefined') GameRegistry.register('burnrunner', BurnRunner);
+})();

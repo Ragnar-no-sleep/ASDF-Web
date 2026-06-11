@@ -8,9 +8,9 @@
  * <script type="importmap">
  * {
  *   "imports": {
- *     "@solana/kit": "https://esm.sh/@solana/kit@5",
- *     "@solana-program/system": "https://esm.sh/@solana-program/system@0.7",
- *     "@solana-program/token": "https://esm.sh/@solana-program/token@0.5"
+ *     "@solana/kit": "https://esm.run/@solana/kit@5",
+ *     "@solana-program/system": "https://esm.run/@solana-program/system@0.7",
+ *     "@solana-program/token": "https://esm.run/@solana-program/token@0.5"
  *   }
  * }
  * </script>

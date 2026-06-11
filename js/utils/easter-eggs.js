@@ -315,6 +315,7 @@ class InteractionEasterEggs {
     document.addEventListener(
       'mouseenter',
       e => {
+        if (!e.target || typeof e.target.closest !== 'function') return;
         const logo = e.target.closest('.logo, .hub-orbit-center, [data-logo]');
         if (!logo) return;
 
@@ -469,7 +470,17 @@ export function initEasterEggs() {
   _interactionEggs = new InteractionEasterEggs();
 }
 
-function unlockKonamiCode() {
+async function unlockKonamiCode() {
+  // *sniff* Gap G8: Konami unlocks Transcendence
+  if (window.AchievementEngine) {
+    window.AchievementEngine.unlock('THE_UNNAMEABLE');
+  }
+
+  // Gap G4 Sync: Unify with badge system
+  const { achievementSystem } = await import('./achievements.js');
+  if (achievementSystem) {
+    achievementSystem.track('konami_unlock');
+  }
   localStorage.setItem('asdf_konami_unlocked', 'true');
 
   soundSystem.play('success');

@@ -13,6 +13,7 @@
     "health": "curl -s http://localhost:3001/health | node -e \"const d=require('fs').readFileSync(0,'utf8');console.log(JSON.parse(d).status)\""
   },
   "dependencies": {
+    "@irys/sdk": "^0.2.11",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.95.0",
     "bs58": "^5.0.0",

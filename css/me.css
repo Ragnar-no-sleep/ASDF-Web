@@ -346,3 +346,97 @@ body {
 .progress-bar-fill {
   width: 0%;
 }
+
+/* Hero's Journey Widget (Gap G12) */
+.journey-card {
+  grid-column: span 2;
+}
+
+.journey-display {
+  padding: var(--space-lg);
+}
+
+.journey-stage-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.journey-icon {
+  font-size: 64px;
+  background: rgba(255, 255, 255, 0.05);
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--glass-border);
+}
+
+.journey-label {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-fire);
+  margin-bottom: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.journey-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  font-style: italic;
+}
+
+.journey-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 0 var(--space-md);
+}
+
+.journey-steps::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.journey-step {
+  width: 16px;
+  height: 16px;
+  background: var(--bg-void);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  z-index: 1;
+  transition: all 400ms var(--ease-phi);
+}
+
+.journey-step.active {
+  background: var(--color-fire);
+  border-color: var(--color-fire);
+  box-shadow: 0 0 15px var(--color-fire);
+  transform: scale(1.4);
+}
+
+.journey-step.completed {
+  background: var(--color-fire-dark);
+  border-color: var(--color-fire);
+}
+
+@media (max-width: 768px) {
+  .journey-card {
+    grid-column: span 1;
+  }
+  .journey-stage-info {
+    flex-direction: column;
+    text-align: center;
+  }
+}

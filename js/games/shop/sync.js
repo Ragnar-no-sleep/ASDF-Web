@@ -27,11 +27,18 @@ function validateApiUrl(url) {
     return url;
   }
 
-  // Allow same origin only
+  // Allow same origin OR localhost:3001 in dev
   try {
     const parsedUrl = new URL(url, window.location.origin);
+    const isLocalDev =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
     if (parsedUrl.origin === window.location.origin) {
       return parsedUrl.pathname;
+    }
+
+    if (isLocalDev && parsedUrl.port === '3001') {
+      return url;
     }
   } catch (e) {
     console.warn('[ShopSync] Invalid API URL:', url);

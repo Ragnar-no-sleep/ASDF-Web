@@ -78,7 +78,7 @@
 
   function load() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {};
+      return window.ASDF.storage.get('journey_progress') || {};
     } catch (_) {
       return {};
     }
@@ -86,7 +86,7 @@
 
   function save(state) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      window.ASDF.storage.set('journey_progress', state);
     } catch (_) {}
   }
 
@@ -214,7 +214,7 @@
    */
   function reset() {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      window.ASDF.storage.remove('journey_progress');
     } catch (_) {}
   }
 

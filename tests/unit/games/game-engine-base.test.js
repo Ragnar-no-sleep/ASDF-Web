@@ -52,7 +52,7 @@ describe('GameEngineBase', () => {
       };
 
       engine.trackHandler(target, 'click', handler);
-      expect(target.addEventListener).toHaveBeenCalledWith('click', handler);
+      expect(target.addEventListener).toHaveBeenCalledWith('click', handler, {});
       expect(engine._handlers).toHaveLength(1);
 
       engine.cleanupHandlers();
@@ -125,16 +125,21 @@ describe('GameEngineBase', () => {
   });
 
   // ============================================
-  // updateParticles
+  // updateParticles (Zero-Allocation)
   // ============================================
 
-  describe('updateParticles', () => {
-    it('updates position and filters dead particles', () => {
+  describe('updateParticles (Zero-Allocation)', () => {
+    it('updates position and removes dead particles in-place', () => {
       const particles = [
         { x: 0, y: 0, vx: 10, vy: 5, life: 1 },
         { x: 0, y: 0, vx: 10, vy: 5, life: 0.1 },
       ];
-      const result = GameEngineBase.updateParticles(particles, 0.5);
+      const engine = {
+        updateParticles: GameEngineBase.updateParticles,
+      };
+      const result = engine.updateParticles(particles, 0.5);
+
+      expect(result).toBe(particles); // MUST return the exact same array reference
       expect(result).toHaveLength(1); // second particle dies (0.1 - 0.5 < 0)
       expect(result[0].x).toBe(5); // 0 + 10 * 0.5
       expect(result[0].y).toBe(2.5); // 0 + 5 * 0.5
@@ -142,13 +147,22 @@ describe('GameEngineBase', () => {
 
     it('applies gravity to vy', () => {
       const particles = [{ x: 0, y: 0, vx: 0, vy: 0, gravity: 100, life: 2 }];
-      const result = GameEngineBase.updateParticles(particles, 1);
+      const engine = { updateParticles: GameEngineBase.updateParticles };
+      const result = engine.updateParticles(particles, 1);
       expect(result[0].vy).toBe(100); // 0 + 100 * 1
     });
 
-    it('returns empty array for all dead particles', () => {
-      const particles = [{ x: 0, y: 0, life: 0 }];
-      expect(GameEngineBase.updateParticles(particles, 1)).toEqual([]);
+    it('empties array for all dead particles and calls recycle', () => {
+      const particles = [{ type: 'particle', x: 0, y: 0, life: 0 }];
+      const recycleMock = jest.fn();
+      const engine = {
+        updateParticles: GameEngineBase.updateParticles,
+        recycle: recycleMock,
+      };
+
+      const result = engine.updateParticles(particles, 1);
+      expect(result).toEqual([]);
+      expect(recycleMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'particle' }));
     });
   });
 

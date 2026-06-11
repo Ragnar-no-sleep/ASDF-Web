@@ -316,6 +316,7 @@ async function connectWallet() {
 function selectDirection(direction) {
   state.selectedDirection = direction;
   AudioFeedback.play('click');
+  window.ASDF?.trackGamePlay('forecast', 0, { direction });
 
   document.querySelectorAll('.prediction-btn').forEach(btn => btn.classList.remove('selected'));
   const selectedBtn = document.getElementById(`btn-${direction}`);
@@ -335,6 +336,7 @@ function setAmount(amount) {
 }
 
 async function submitPrediction() {
+  window.ASDF?.trackTransactionView();
   if (!state.wallet || !state.selectedDirection) return;
 
   const amount = parseFloat(document.getElementById('bet-amount').value);

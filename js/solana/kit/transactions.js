@@ -17,16 +17,16 @@ import {
   appendTransactionMessageInstruction,
   compileTransaction,
   pipe,
-} from 'https://esm.sh/@solana/kit@5';
+} from 'https://esm.run/@solana/kit@5';
 
 // System Program for SOL transfers
-import { getTransferSolInstruction } from 'https://esm.sh/@solana-program/system@0.7';
+import { getTransferSolInstruction } from 'https://esm.run/@solana-program/system@0.7';
 
 // Compute Budget for priority fees
 import {
   getSetComputeUnitLimitInstruction,
   getSetComputeUnitPriceInstruction,
-} from 'https://esm.sh/@solana-program/compute-budget@0.7';
+} from 'https://esm.run/@solana-program/compute-budget@0.7';
 
 // Token Program for SPL transfers
 import {
@@ -34,7 +34,7 @@ import {
   findAssociatedTokenPda,
   getCreateAssociatedTokenIdempotentInstruction,
   TOKEN_PROGRAM_ADDRESS,
-} from 'https://esm.sh/@solana-program/token@0.5';
+} from 'https://esm.run/@solana-program/token@0.5';
 
 import { SolanaClient, ASDF_TOKEN_MINT, TOKEN_DECIMALS, solToLamports } from './client.js';
 import { WalletManager } from './wallet-manager.js';

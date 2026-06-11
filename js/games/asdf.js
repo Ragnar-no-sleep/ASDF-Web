@@ -13,7 +13,7 @@
 
 'use strict';
 
-const ASDF = {
+window.ASDF = Object.assign(window.ASDF || {}, {
   // ============================================
   // FIBONACCI SEQUENCE (Mathematical Constant)
   // ============================================
@@ -385,20 +385,10 @@ const ASDF = {
     };
     return colors[type]?.[tier] || colors[type]?.[0] || '#ffffff';
   },
-};
-
-// Freeze to prevent modifications
-Object.freeze(ASDF.fib);
-Object.freeze(ASDF.engageTierNames);
-Object.freeze(ASDF.shopTierNames);
-Object.freeze(ASDF.avatarLayers);
-Object.freeze(ASDF.xp);
-Object.freeze(ASDF.engage);
-Object.freeze(ASDF.shop);
-Object.freeze(ASDF.learn);
-Object.freeze(ASDF.play);
+});
 
 // Export for module systems if available
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ASDF;
 }

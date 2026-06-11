@@ -45,7 +45,7 @@
     <link rel="prefetch" href="/holdex" />
     <link rel="prefetch" href="/forecast" />
     <link rel="prefetch" href="/staking" />
-    <link rel="prefetch" href="/ignition" />
+    <link rel="prefetch" href="/ignition" />`n    <link rel="prefetch" href="/personality" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -183,6 +183,8 @@
     <!-- Footer (orbital view) -->
     <footer class="hub-footer">
       <nav class="hub-footer-nav" aria-label="Content pages">
+        <a href="/solana-guide.html" style="color: var(--asdf-gold);">Solana Starter</a>
+        <span>&#183;</span>
         <a href="/story">Learn</a>
         <span>&#183;</span>
         <a href="/deep-learn">Deep Learn</a>
@@ -222,7 +224,7 @@
       <header class="hub-grid-header">
         <span class="hub-grid-badge">
           <span class="hub-grid-badge-dot"></span>
-          5 LIVE TOOLS
+          6 LIVE TOOLS
         </span>
         <h1 class="hub-grid-title">Ecosystem Tools</h1>
         <p class="hub-grid-subtitle">Burn. Track. Predict. Stake. Play.</p>
@@ -273,7 +275,7 @@
           <span class="hub-tool-arrow">&#8594;</span>
         </a>
 
-        <a href="/ignition" class="hub-tool-card" data-tool="ignition">
+        <a href="/personality" class="hub-tool-card" data-tool="personality">`n          <div class="hub-tool-icon">&#9823;</div>`n          <div>`n            <div class="hub-tool-name">Personality <span class="hub-tool-live">LIVE</span></div>`n            <p class="hub-tool-desc">`n              Chess Soul Mirror. Discover your archetype and reveal your on-chain identity.`n            </p>`n          </div>`n          <span class="hub-tool-arrow">&#8594;</span>`n        </a>`n`n        <a href="/ignition" class="hub-tool-card" data-tool="ignition">
           <div class="hub-tool-icon">&#128640;</div>
           <div>
             <div class="hub-tool-name">Ignition <span class="hub-tool-live">LIVE</span></div>
@@ -300,10 +302,21 @@
       <span id="hubToggleLabel">Grid View</span>
     </button>
 
+    <!-- Games System (Absolute Bypass) -->
+    <script src="/games-legacy/config.js"></script>
+    <script src="/games-legacy/utils.js"></script>
+    <script src="/games-legacy/ui/grid.js"></script>
+    <script src="/games-legacy/ui/modal.js"></script>
+    <script src="/games-legacy/shared/lifecycle.js"></script>
+    <script src="/games-legacy/engines/pumparena.js"></script>
+    <script src="/games-legacy/main.js"></script>
+
     <script src="js/achievements.js" defer></script>
     <script src="js/achievement-toast.js" defer></script>
     <script src="js/hub-cosmos.js" defer></script>
     <script type="module" src="js/hub-majestic.js"></script>
     <script src="js/consent/index.js" defer></script>
-  </body>
+  <script type="module" src="js/asdf-integration.js"></script></body>
 </html>
+
+

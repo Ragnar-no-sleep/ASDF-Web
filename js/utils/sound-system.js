@@ -1,3 +1,4 @@
+import storage from './storage.js';
 /**
  * ASDF Sound System
  * Contextual audio feedback with Web Audio API
@@ -49,15 +50,14 @@ class SoundSystem {
    * Load setting from localStorage
    */
   loadSetting(key, defaultValue) {
-    const stored = localStorage.getItem(`asdf_sound_${key}`);
-    return stored !== null ? JSON.parse(stored) : defaultValue;
+    return storage.get(`sound_${key}`, defaultValue);
   }
 
   /**
    * Save setting to localStorage
    */
   saveSetting(key, value) {
-    localStorage.setItem(`asdf_sound_${key}`, JSON.stringify(value));
+    storage.set(`sound_${key}`, value);
   }
 
   /**

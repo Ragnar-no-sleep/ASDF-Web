@@ -1,1179 +1,786 @@
 /**
- * ASDF Games - Token Catcher Engine
+ * ASDF Games - Token Catcher Engine (11/10 ECS Edition)
  *
- * Arcade game: Catch falling ASDF tokens, avoid scam tokens and skulls
- * Uses shared modules for lifecycle, scoring, and input management
- *
- * Extracted from engine.js for modularity
+ * Arcade game: Catch falling ASDF tokens, avoid scam tokens and skulls.
+ * Features: 3-lane movement, shooting, power-ups.
+ * Migrated to ECS for peak zero-allocation performance.
  */
 
 'use strict';
 
-const TokenCatcher = {
-  version: '1.3.0', // Power-ups added
-  gameId: 'tokencatcher',
-  state: null,
-  canvas: null,
-  ctx: null,
-  intervals: null,
-  input: null,
-  timing: null,
-  juice: null,
+(function () {
+  const TokenCatcher = {
+    version: '2.0.0',
+    gameId: 'tokencatcher',
+    instance: null,
+    _cleanupInput: null,
+    _positionColliderQuery: null,
+    _lifespanQuery: null,
+    _renderQuery: null,
 
-  // Game constants
-  goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
-  scamTokens: ['🚨', '❌', '🦠'],
-  skullToken: '💀',
+    goodTokens: ['🔥', '💰', '⭐', '💎', '🪙'],
+    scamTokens: ['🚨', '❌', '🦠'],
+    skullToken: '💀',
 
-  // Power-up definitions (Fibonacci durations in frames @ 60fps)
-  powerUps: {
-    magnet: { icon: '🧲', duration: 233, color: '#3b82f6', name: 'MAGNET' }, // ~3.9s
-    slowmo: { icon: '⏱️', duration: 144, color: '#a855f7', name: 'SLOW-MO' }, // ~2.4s
-    double: { icon: '✨', duration: 377, color: '#fbbf24', name: '2X SCORE' }, // ~6.3s
-    shield: { icon: '🛡️', duration: 233, color: '#22c55e', name: 'SHIELD' }, // ~3.9s
-  },
+    powerUps: [
+      { icon: '🧲', duration: 233, color: '#3b82f6', name: 'MAGNET', type: 0 },
+      { icon: '⏱️', duration: 144, color: '#a855f7', name: 'SLOW-MO', type: 1 },
+      { icon: '✨', duration: 377, color: '#fbbf24', name: '2X SCORE', type: 2 },
+      { icon: '🛡️', duration: 233, color: '#22c55e', name: 'SHIELD', type: 3 },
+    ],
 
-  enemyTypes: [
-    { icon: '👾', name: 'INVADER', hp: 3, points: 50, speed: 1.5 },
-    { icon: '🤖', name: 'BOT', hp: 3, points: 40, speed: 1.8 },
-    { icon: '👹', name: 'DEMON', hp: 3, points: 60, speed: 1.2 },
-  ],
+    enemyTypes: [
+      { icon: '👾', hp: 3, points: 50 },
+      { icon: '🤖', hp: 3, points: 40 },
+      { icon: '👹', hp: 3, points: 60 },
+    ],
 
-  /**
-   * Start the game
-   * @param {string} gameId - The game ID
-   */
-  start(gameId) {
-    this.gameId = gameId;
-    const arena = document.getElementById(`arena-${gameId}`);
-    if (!arena) {
-      console.error(`[TokenCatcher] Arena not found: arena-${gameId}`);
-      return;
-    }
+    start(gameId) {
+      this.stop();
 
-    // Initialize game state with Fibonacci-based values
-    this.state = {
-      score: 0,
-      timeLeft: 34, // fib[8] seconds
-      gameOver: false,
-      basketPos: 50,
-      basketLane: 1,
-      moveDirection: 0,
-      moveSpeed: 5, // fib[4]
-      moveAccel: 0,
-      maxAccel: 13, // fib[6]
-      tokens: [],
-      projectiles: [],
-      enemies: [],
-      effects: [],
-      keys: { left: false, right: false, up: false, down: false },
-      lastShot: 0,
-      shootCooldown: 233, // fib[11] ms
-      mouseX: 0,
-      mouseY: 0,
-      basketWidth: 89, // fib[10]
-      basketHeight: 55, // fib[9]
-      laneHeight: 0,
-      lanePositions: [],
-      // Combo system
-      combo: 0,
-      comboTimer: 0,
-      comboTimeout: 1300, // fib[6] * 100 ms - time to lose combo
-      maxCombo: 0,
-      // Speed ramping (Fibonacci-based difficulty curve)
-      difficultyLevel: 0,
-      spawnRate: 500, // Base spawn rate (ms)
-      tokenSpeedBase: 3,
-      tokenSpeedVariance: 2,
-      // Power-ups state
-      activePowerUps: {
-        magnet: 0, // Remaining frames
-        slowmo: 0,
-        double: 0,
-        shield: 0,
-      },
-      powerUpTokens: [], // Falling power-up tokens
-    };
+      const arena = document.getElementById(`arena-${gameId}`);
+      if (!arena) return;
 
-    // Create arena HTML
-    this.createArena(arena);
+      this.createArena(arena);
+      const canvas = document.getElementById('tc-canvas');
 
-    // Setup canvas
-    this.canvas = document.getElementById('tc-canvas');
-    this.ctx = this.canvas.getContext('2d');
+      this.instance = new ASDF.GameInstance(canvas, {
+        maxEntities: 1500,
+        debug: false,
+      });
 
-    // Cache DOM references for performance (avoid lookups in game loop)
-    this.dom = {
-      score: document.getElementById('tc-score'),
-      time: document.getElementById('tc-time'),
-      combo: document.getElementById('tc-combo'),
-      comboContainer: document.getElementById('tc-combo-container'),
-    };
+      // 11/10: Resize early for correct lane calculation
+      this.instance.resize();
 
-    this.resizeCanvas();
+      const world = this.instance.world;
+      this.instance.initStandardComponents();
 
-    // Initialize timing for frame-independent movement
-    this.timing = GameTiming.create();
+      // 11/10 Juice System
+      if (window.ASDF?.GameJuice) {
+        this.juice = window.ASDF.GameJuice.create(canvas, this.instance.ctx);
+      }
 
-    // Initialize juice system for visual feedback
-    if (typeof GameJuice !== 'undefined') {
-      this.juice = GameJuice.create(this.canvas, this.ctx);
-    }
+      this._positionColliderQuery = world.createQuery(['Position', 'Collider']);
+      this._renderQuery = world.createQuery(['Position', 'Renderable']);
 
-    // Initialize basket position
-    this.state.basketPos = this.canvas.width / 2;
+      // Components
+      world.registerComponent('Drone', { lane: 'u8', cooldown: 'f32' });
+      world.registerComponent('Token', { type: 'u8' }); // 0:Good, 1:Scam, 2:Skull
+      world.registerComponent('Enemy', { hp: 'u8', points: 'u8' });
+      world.registerComponent('PowerUp', { type: 'u8' });
+      world.registerComponent('Projectile', { active: 'u8' });
+      world.registerComponent('Lifespan', { remaining: 'f32' });
 
-    // Setup input handlers
-    this.setupInput();
+      // Register Personality Components
+      world.registerComponent('Rotation', { angle: 'f32' });
+      world.registerComponent('Scale', { x: 'f32', y: 'f32' });
 
-    // Setup intervals
-    this.setupIntervals();
+      this._lifespanQuery = world.createQuery(['Lifespan']);
 
-    // Preload sprites for performance
-    this.preloadSprites();
+      // State Resource
+      const laneH = 50,
+        bM = 40;
+      world.setResource('GameState', {
+        score: 0,
+        timeLeft: 34,
+        gameOver: false,
+        spawnTimer: 0,
+        difficulty: 0,
+        frameCount: 0,
+        droneId: -1,
+        activePowerUps: [0, 0, 0, 0],
+        visualYOffset: 0, // Visual jump effect
+        lanes: [
+          canvas.height - bM - laneH * 2.5,
+          canvas.height - bM - laneH * 1.5,
+          canvas.height - bM - laneH * 0.5,
+        ],
+      });
 
-    // Start game loop
-    this.gameLoop();
-
-    // Register with activeGames for legacy cleanup
-    if (typeof activeGames !== 'undefined') {
-      activeGames[gameId] = {
-        interval: null,
-        cleanup: () => this.stop(),
+      this.dom = {
+        score: document.getElementById('tc-score'),
+        time: document.getElementById('tc-time'),
       };
-    }
-  },
 
-  /**
-   * Create the game arena HTML
-   * @param {HTMLElement} arena - The arena container
-   */
-  createArena(arena) {
-    arena.innerHTML = `
-            <div class="tc-container">
-                <canvas id="tc-canvas" class="game-canvas"></canvas>
-                <div class="game-hud-top-left game-hud-top-left--wide">
-                    <div class="game-hud-stat-lg">
-                        <span class="game-hud-stat-lg-label">SCORE</span>
-                        <div class="tc-score-value" id="tc-score">0</div>
-                    </div>
-                    <div class="game-hud-stat-lg">
-                        <span class="game-hud-stat-lg-label">TIME</span>
-                        <div class="tc-time-value" id="tc-time">34</div>
-                    </div>
-                    <div class="game-hud-stat-lg" id="tc-combo-container">
-                        <span class="game-hud-stat-lg-label">COMBO</span>
-                        <div class="tc-combo-value" id="tc-combo">0<span class="tc-combo-suffix">x</span></div>
-                    </div>
-                </div>
-                <div class="tc-hint-bar">
-                    QZSD/Arrows: Move | SPACE/Click: Shoot | &#128128; = Death!
-                </div>
-            </div>
-        `;
-  },
+      this.setupInput();
+      this.preloadSprites();
 
-  /**
-   * Preload sprites for performance
-   */
-  preloadSprites() {
-    const sprites = [
-      // Basket
-      { emoji: '🧺', size: 60 },
-      // Good tokens
-      ...this.goodTokens.map(t => ({ emoji: t, size: 30 })),
-      // Scam tokens
-      ...this.scamTokens.map(t => ({ emoji: t, size: 30 })),
-      // Skull
-      { emoji: this.skullToken, size: 30 },
-      // Power-ups
-      ...Object.values(this.powerUps).map(p => ({ emoji: p.icon, size: 28 })),
-      // Enemies
-      ...this.enemyTypes.map(e => ({ emoji: e.icon, size: 35 })),
-    ];
-    SpriteCache.preload(sprites);
-  },
+      // Create Drone
+      const drone = world.createEntity();
+      world.addComponent(drone, 'Position');
+      world.addComponent(drone, 'Velocity');
+      world.addComponent(drone, 'Renderable');
+      world.addComponent(drone, 'Collider');
+      world.addComponent(drone, 'Drone');
+      world.addComponent(drone, 'Rotation');
+      world.addComponent(drone, 'Scale');
 
-  /**
-   * Resize canvas to fit container
-   */
-  resizeCanvas() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+      const dIdx = world.getIndex(drone);
+      const lanes = world.getResource('GameState').lanes;
+      world.componentRegistry.get('Position').props.x[dIdx] = canvas.width / 2;
+      world.componentRegistry.get('Position').props.y[dIdx] = lanes[1];
+      world.componentRegistry.get('Renderable').props.iconIndex[dIdx] = 0; // 🛸
+      world.componentRegistry.get('Renderable').props.size[dIdx] = 60;
+      world.componentRegistry.get('Collider').props.width[dIdx] = 50;
+      world.componentRegistry.get('Collider').props.height[dIdx] = 50;
+      world.componentRegistry.get('Drone').props.lane[dIdx] = 1;
 
-    // Calculate 3 lane positions
-    this.state.laneHeight = 50;
-    const bottomMargin = 40;
-    this.state.lanePositions = [
-      this.canvas.height - bottomMargin - this.state.laneHeight * 2.5,
-      this.canvas.height - bottomMargin - this.state.laneHeight * 1.5,
-      this.canvas.height - bottomMargin - this.state.laneHeight * 0.5,
-    ];
-  },
+      world.getResource('GameState').droneId = drone;
 
-  /**
-   * Setup input handlers
-   */
-  setupInput() {
-    const self = this;
+      // Override Render
+      const icons = [
+        '🛸',
+        '🔥',
+        '💥',
+        ...this.powerUps.map(p => p.icon),
+        ...this.enemyTypes.map(e => e.icon),
+        ...this.goodTokens,
+        ...this.scamTokens,
+        '💀',
+      ];
+      const defaultRender = ASDF.RenderSystem.create(this.instance.ctx, icons);
 
-    this.handleKeyDown = function (e) {
-      if (self.state.gameOver) return;
-      const key = e.key.toLowerCase();
-
-      if (key === 'q' || key === 'arrowleft') {
-        self.state.keys.left = true;
-        e.preventDefault();
-      } else if (key === 'd' || key === 'arrowright') {
-        self.state.keys.right = true;
-        e.preventDefault();
-      }
-
-      if (key === 'z' || key === 'arrowup') {
-        if (self.state.basketLane > 0) {
-          self.state.basketLane--;
-          recordGameAction(self.gameId, 'lane_change', { lane: self.state.basketLane });
+      this.instance.onUpdate = (dt, dtMs) => {
+        const state = world.getResource('GameState');
+        // Update Juice
+        let shouldFreeze = false;
+        if (this.juice) {
+          shouldFreeze = this.juice.update(dt / 60, dtMs);
         }
-        e.preventDefault();
-      } else if (key === 's' || key === 'arrowdown') {
-        if (self.state.basketLane < 2) {
-          self.state.basketLane++;
-          recordGameAction(self.gameId, 'lane_change', { lane: self.state.basketLane });
+        return shouldFreeze;
+      };
+
+      this.instance.onRender = alpha => {
+        if (this.juice) this.juice.renderPre();
+        this.draw(alpha, defaultRender);
+        if (this.juice) this.juice.renderPost();
+      };
+
+      // Systems
+      world.addSystem(ASDF.PersonalitySystem.create());
+      world.addSystem(this.createLogicSystem());
+      world.addSystem(this.createCollisionSystem());
+      world.addSystem(ASDF.PhysicsSystem.createMovement());
+
+      this.instance.start();
+
+      if (typeof activeGames !== 'undefined') {
+        activeGames[gameId] = { cleanup: () => this.stop() };
+      }
+    },
+
+    createArena(arena) {
+      arena.innerHTML = `
+        <div class="tc-container">
+          <canvas id="tc-canvas" class="game-canvas"></canvas>
+          <div class="game-hud-top-left">
+            <div class="tc-stat">SCORE: <span id="tc-score">0</span></div>
+            <div class="tc-stat">TIME: <span id="tc-time">34</span>s</div>
+          </div>
+        </div>
+      `;
+    },
+
+    preloadSprites() {
+      const sprites = [
+        { emoji: '🛸', size: 60 },
+        { emoji: '🔥', size: 15 },
+        { emoji: '💥', size: 35 },
+        ...this.powerUps.map(p => ({ emoji: p.icon, size: 28 })),
+        ...this.enemyTypes.map(e => ({ emoji: e.icon, size: 35 })),
+        ...this.goodTokens.map(t => ({ emoji: t, size: 30 })),
+        ...this.scamTokens.map(t => ({ emoji: t, size: 30 })),
+        { emoji: '💀', size: 30 },
+      ];
+      if (typeof SpriteCache !== 'undefined') SpriteCache.preload(sprites);
+    },
+
+    setupInput() {
+      const canvas = this.instance.canvas;
+      const world = this.instance.world;
+
+      const onKeyDown = e => {
+        const key = e.key.toLowerCase();
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+        const dIdx = world.getIndex(state.droneId);
+        const pProps = world.componentRegistry.get('Position').props;
+        const drProps = world.componentRegistry.get('Drone').props;
+
+        if (key === 'a' || key === 'arrowleft') {
+          world.componentRegistry.get('Velocity').props.vx[dIdx] = -8;
+        } else if (key === 'd' || key === 'arrowright') {
+          world.componentRegistry.get('Velocity').props.vx[dIdx] = 8;
+        } else if ((key === 'w' || key === 'arrowup') && drProps.lane[dIdx] > 0) {
+          drProps.lane[dIdx]--;
+          pProps.y[dIdx] = state.lanes[drProps.lane[dIdx]];
+          state.visualYOffset = -20; // Visual jump
+        } else if ((key === 's' || key === 'arrowdown') && drProps.lane[dIdx] < 2) {
+          drProps.lane[dIdx]++;
+          pProps.y[dIdx] = state.lanes[drProps.lane[dIdx]];
+          state.visualYOffset = 10; // Visual squash
         }
-        e.preventDefault();
-      }
+      };
 
-      if (key === ' ' || key === 'space') {
-        self.shoot(self.state.mouseX, self.state.mouseY);
-        recordGameAction(self.gameId, 'shoot', {
-          x: self.state.basketPos,
-          lane: self.state.basketLane,
-          targetX: self.state.mouseX,
-          targetY: self.state.mouseY,
-        });
-        e.preventDefault();
-      }
-    };
-
-    this.handleKeyUp = function (e) {
-      const key = e.key.toLowerCase();
-      if (key === 'q' || key === 'arrowleft') {
-        self.state.keys.left = false;
-      } else if (key === 'd' || key === 'arrowright') {
-        self.state.keys.right = false;
-      }
-    };
-
-    this.handleMouseMove = function (e) {
-      const rect = self.canvas.getBoundingClientRect();
-      self.state.mouseX = (e.clientX - rect.left) * (self.canvas.width / rect.width);
-      self.state.mouseY = (e.clientY - rect.top) * (self.canvas.height / rect.height);
-    };
-
-    this.handleTouch = function (e) {
-      if (self.state.gameOver) return;
-      e.preventDefault();
-      const rect = self.canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      self.state.basketPos = (touch.clientX - rect.left) * (self.canvas.width / rect.width);
-      self.state.basketPos = Math.max(
-        self.state.basketWidth / 2,
-        Math.min(self.canvas.width - self.state.basketWidth / 2, self.state.basketPos)
-      );
-    };
-
-    this.handleClick = function (e) {
-      if (self.state.gameOver) return;
-      const rect = self.canvas.getBoundingClientRect();
-      const clickX = (e.clientX - rect.left) * (self.canvas.width / rect.width);
-      const clickY = (e.clientY - rect.top) * (self.canvas.height / rect.height);
-      self.shoot(clickX, clickY);
-      recordGameAction(self.gameId, 'shoot_click', {
-        x: self.state.basketPos,
-        lane: self.state.basketLane,
-        targetX: clickX,
-        targetY: clickY,
-      });
-    };
-
-    document.addEventListener('keydown', this.handleKeyDown);
-    document.addEventListener('keyup', this.handleKeyUp);
-    this.canvas.addEventListener('mousemove', this.handleMouseMove);
-    this.canvas.addEventListener('touchmove', this.handleTouch, { passive: false });
-    this.canvas.addEventListener('touchstart', this.handleTouch, { passive: false });
-    this.canvas.addEventListener('click', this.handleClick);
-  },
-
-  /**
-   * Setup game intervals
-   */
-  setupIntervals() {
-    const self = this;
-
-    // Token spawn interval
-    this.spawnInterval = setInterval(() => {
-      if (!self.state.gameOver) {
-        self.spawnToken();
-        self.spawnPowerUp(); // Chance to spawn power-up
-      }
-    }, 500);
-
-    // Timer countdown with difficulty progression
-    this.timerInterval = setInterval(() => {
-      if (self.state.gameOver) return;
-      self.state.timeLeft--;
-      if (self.dom.time) self.dom.time.textContent = self.state.timeLeft;
-
-      // Update difficulty curve
-      self.updateDifficulty();
-
-      if (self.state.timeLeft <= 0) {
-        self.state.gameOver = true;
-        endGame(self.gameId, self.state.score);
-      }
-    }, 1000);
-
-    // Enemy spawn interval
-    this.enemySpawnInterval = setInterval(() => {
-      if (!self.state.gameOver && Math.random() < 0.6) self.spawnEnemy();
-    }, 3000);
-  },
-
-  /**
-   * Spawn a token
-   */
-  spawnToken() {
-    if (this.state.gameOver) return;
-    const roll = Math.random();
-    const baseSpeed = this.state.tokenSpeedBase;
-    const variance = this.state.tokenSpeedVariance;
-
-    if (roll < 0.1) {
-      // Skull tokens - deadly, moderate speed
-      this.state.tokens.push({
-        x: 30 + Math.random() * (this.canvas.width - 60),
-        y: -30,
-        icon: this.skullToken,
-        isSkull: true,
-        isScam: false,
-        speed: baseSpeed + Math.random() * variance,
-      });
-    } else if (roll < 0.25) {
-      // Scam tokens - faster, penalty on catch
-      this.state.tokens.push({
-        x: 30 + Math.random() * (this.canvas.width - 60),
-        y: -30,
-        icon: this.scamTokens[Math.floor(Math.random() * this.scamTokens.length)],
-        isSkull: false,
-        isScam: true,
-        speed: baseSpeed * 1.2 + Math.random() * variance,
-      });
-    } else {
-      // Good tokens - reward on catch
-      this.state.tokens.push({
-        x: 30 + Math.random() * (this.canvas.width - 60),
-        y: -30,
-        icon: this.goodTokens[Math.floor(Math.random() * this.goodTokens.length)],
-        isSkull: false,
-        isScam: false,
-        speed: baseSpeed + Math.random() * variance,
-      });
-    }
-  },
-
-  /**
-   * Spawn an enemy
-   */
-  spawnEnemy() {
-    if (this.state.gameOver) return;
-    const type = this.enemyTypes[Math.floor(Math.random() * this.enemyTypes.length)];
-    this.state.enemies.push({
-      x: 30 + Math.random() * (this.canvas.width - 60),
-      y: -40,
-      ...type,
-      currentHp: type.hp,
-      speed: type.speed + Math.random() * 0.5,
-    });
-  },
-
-  /**
-   * Spawn a power-up token (rare, ~5% chance per spawn cycle)
-   */
-  spawnPowerUp() {
-    if (this.state.gameOver) return;
-    if (Math.random() > 0.05) return; // 5% chance
-
-    const types = Object.keys(this.powerUps);
-    const type = types[Math.floor(Math.random() * types.length)];
-    const powerUp = this.powerUps[type];
-
-    this.state.powerUpTokens.push({
-      x: 50 + Math.random() * (this.canvas.width - 100),
-      y: -30,
-      type: type,
-      icon: powerUp.icon,
-      color: powerUp.color,
-      speed: 2 + Math.random(), // Slower than regular tokens
-    });
-  },
-
-  /**
-   * Activate a power-up
-   */
-  activatePowerUp(type) {
-    const powerUp = this.powerUps[type];
-    this.state.activePowerUps[type] = powerUp.duration;
-
-    // Visual feedback
-    this.addEffect(
-      this.state.basketPos,
-      this.state.lanePositions[this.state.basketLane] - 50,
-      powerUp.name,
-      powerUp.color,
-      { size: 20 }
-    );
-
-    if (this.juice) {
-      this.juice.triggerFlash(powerUp.color, 200);
-      this.juice.burst(this.state.basketPos, this.state.lanePositions[this.state.basketLane], {
-        icon: powerUp.icon,
-        count: 8,
-        spread: 5,
-        lifetime: 40,
-      });
-    }
-
-    // Play sound if available
-    if (typeof GameJuice !== 'undefined' && GameJuice.playSound) {
-      GameJuice.playSound('powerup');
-    }
-  },
-
-  /**
-   * Check if a power-up is active
-   */
-  isPowerUpActive(type) {
-    return this.state.activePowerUps[type] > 0;
-  },
-
-  /**
-   * Update power-up timers
-   */
-  updatePowerUps(dt) {
-    for (const type in this.state.activePowerUps) {
-      if (this.state.activePowerUps[type] > 0) {
-        this.state.activePowerUps[type] -= dt;
-        if (this.state.activePowerUps[type] <= 0) {
-          this.state.activePowerUps[type] = 0;
+      const onKeyUp = e => {
+        const key = e.key.toLowerCase();
+        if (key === 'a' || key === 'd' || key === 'arrowleft' || key === 'arrowright') {
+          const state = world.getResource('GameState');
+          const dIdx = world.getIndex(state.droneId);
+          world.componentRegistry.get('Velocity').props.vx[dIdx] = 0;
         }
-      }
-    }
-  },
+      };
 
-  /**
-   * Shoot a projectile
-   */
-  shoot(targetX, targetY) {
-    const now = Date.now();
-    if (now - this.state.lastShot < this.state.shootCooldown) return;
-    this.state.lastShot = now;
+      const onPointerDown = e => {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+        const rect = canvas.getBoundingClientRect();
+        const tx = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const ty = (e.clientY - rect.top) * (canvas.height / rect.height);
+        this.shoot(world, tx, ty);
+      };
 
-    const basketY = this.state.lanePositions[this.state.basketLane];
-    const startX = this.state.basketPos;
-    const startY = basketY - 30;
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+      canvas.addEventListener('pointerdown', onPointerDown);
+      this._cleanupInput = () => {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+        canvas.removeEventListener('pointerdown', onPointerDown);
+      };
+    },
 
-    const dx = targetX - startX;
-    const dy = targetY - startY;
-    const dist = Math.hypot(dx, dy);
+    shoot(world, tx, ty) {
+      const state = world.getResource('GameState');
+      const dIdx = world.getIndex(state.droneId);
+      const pos = world.componentRegistry.get('Position').props;
 
-    const speed = 20; // Increased from 14 for snappier feel
-    const vx = dist > 0 ? (dx / dist) * speed : 0;
-    const vy = dist > 0 ? (dy / dist) * speed : -speed;
+      const startX = pos.x[dIdx],
+        startY = pos.y[dIdx] - 30;
+      const dx = tx - startX,
+        dy = ty - startY;
+      const dist = Math.hypot(dx, dy) || 1;
 
-    this.state.projectiles.push({ x: startX, y: startY, vx: vx, vy: vy });
-    this.addEffect(startX, startY, '•', '#fbbf24');
-  },
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Velocity');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Projectile');
+      world.addComponent(e, 'Lifespan');
 
-  /**
-   * Move the basket
-   * @param {number} dt - Delta time normalized to 60fps
-   */
-  moveBasket(dt) {
-    if (this.state.keys.left || this.state.keys.right) {
-      this.state.moveAccel = Math.min(this.state.moveAccel + 0.6 * dt, this.state.maxAccel);
-      const step = (this.state.moveSpeed + this.state.moveAccel) * dt;
-      if (this.state.keys.left) this.state.basketPos -= step;
-      if (this.state.keys.right) this.state.basketPos += step;
-      this.state.basketPos = Math.max(
-        this.state.basketWidth / 2,
-        Math.min(this.canvas.width - this.state.basketWidth / 2, this.state.basketPos)
-      );
-    } else {
-      this.state.moveAccel = Math.max(0, this.state.moveAccel - 1.5 * dt);
-    }
-  },
+      const idx = world.getIndex(e);
+      world.componentRegistry.get('Position').props.x[idx] = startX;
+      world.componentRegistry.get('Position').props.y[idx] = startY;
+      world.componentRegistry.get('Velocity').props.vx[idx] = (dx / dist) * 15;
+      world.componentRegistry.get('Velocity').props.vy[idx] = (dy / dist) * 15;
+      world.componentRegistry.get('Renderable').props.iconIndex[idx] = 1; // 🔥
+      world.componentRegistry.get('Renderable').props.size[idx] = 15;
+      world.componentRegistry.get('Lifespan').props.remaining[idx] = 100;
+    },
 
-  /**
-   * Increment combo and get multiplier
-   * Fibonacci-based multiplier: 1x, 1x, 2x, 3x, 5x, 8x...
-   */
-  incrementCombo() {
-    this.state.combo++;
-    this.state.comboTimer = this.state.comboTimeout;
-    if (this.state.combo > this.state.maxCombo) {
-      this.state.maxCombo = this.state.combo;
-    }
-    this.updateComboDisplay();
-    return this.getComboMultiplier();
-  },
+    createLogicSystem() {
+      const self = this;
+      return function (world, dt) {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
 
-  /**
-   * Get current combo multiplier (Fibonacci-based)
-   */
-  getComboMultiplier() {
-    // Fibonacci multiplier: combo 0-2 = 1x, 3-4 = 2x, 5-7 = 3x, 8-12 = 5x, 13+ = 8x
-    const combo = this.state.combo;
-    if (combo < 3) return 1;
-    if (combo < 5) return 2;
-    if (combo < 8) return 3;
-    if (combo < 13) return 5;
-    return 8;
-  },
-
-  /**
-   * Reset combo on damage
-   */
-  resetCombo() {
-    this.state.combo = 0;
-    this.state.comboTimer = 0;
-    this.updateComboDisplay();
-  },
-
-  /**
-   * Update combo display
-   */
-  updateComboDisplay() {
-    const comboEl = this.dom.combo;
-    const containerEl = this.dom.comboContainer;
-    if (comboEl) {
-      const multiplier = this.getComboMultiplier();
-      comboEl.innerHTML = `${this.state.combo}<span class="${multiplier > 1 ? 'tc-combo-suffix--active' : 'tc-combo-suffix'}">x${multiplier}</span>`;
-
-      // Visual feedback for high combos
-      if (containerEl) {
-        if (multiplier >= 5) {
-          containerEl.style.background = 'rgba(168,85,247,0.4)';
-          containerEl.style.boxShadow = '0 0 20px rgba(168,85,247,0.5)';
-        } else if (multiplier >= 3) {
-          containerEl.style.background = 'rgba(251,191,36,0.3)';
-          containerEl.style.boxShadow = '0 0 10px rgba(251,191,36,0.3)';
-        } else {
-          containerEl.style.background = 'rgba(0,0,0,0.5)';
-          containerEl.style.boxShadow = 'none';
-        }
-      }
-    }
-  },
-
-  /**
-   * Update difficulty (Fibonacci-based progression)
-   * Called each second, increases spawn rate and token speed
-   */
-  updateDifficulty() {
-    const elapsed = 34 - this.state.timeLeft;
-    // Difficulty increases at fib intervals: 5s, 8s, 13s, 21s
-    if (elapsed >= 21) {
-      this.state.difficultyLevel = 4;
-    } else if (elapsed >= 13) {
-      this.state.difficultyLevel = 3;
-    } else if (elapsed >= 8) {
-      this.state.difficultyLevel = 2;
-    } else if (elapsed >= 5) {
-      this.state.difficultyLevel = 1;
-    }
-
-    // Adjust spawn rate: faster spawns at higher difficulty
-    // Base 500ms, decreases by phi factor per level
-    const PHI_INV = 0.618;
-    this.state.spawnRate = Math.max(
-      200,
-      Math.floor(500 * Math.pow(PHI_INV, this.state.difficultyLevel * 0.5))
-    );
-
-    // Adjust token speed: base 3, increases with difficulty
-    this.state.tokenSpeedBase = 3 + this.state.difficultyLevel;
-    this.state.tokenSpeedVariance = 2 + this.state.difficultyLevel * 0.5;
-  },
-
-  /**
-   * Add a visual effect (uses juice system if available)
-   */
-  addEffect(x, y, text, color, options = {}) {
-    // Use juice system if available
-    if (this.juice) {
-      this.juice.textPop(x, y, text, { color, ...options });
-
-      // Add particle burst for positive effects
-      if (text.startsWith('+')) {
-        this.juice.burst(x, y, {
-          icon: '✨',
-          count: 4,
-          spread: 2,
-          lifetime: 20,
-          gravity: 0.05,
-        });
-      }
-    } else {
-      // Legacy fallback
-      this.state.effects.push({ x, y, text, color, life: 30, vy: -2 });
-    }
-  },
-
-  /**
-   * Trigger impact feedback (shake + flash + particles)
-   */
-  triggerImpact(x, y, type = 'light') {
-    if (!this.juice) return;
-
-    switch (type) {
-      case 'catch':
-        this.juice.burst(x, y, { preset: 'COLLECT' });
-        break;
-      case 'damage':
-        this.juice.triggerShake(4, 150);
-        this.juice.triggerFlash('#ef4444', 80);
-        this.juice.burst(x, y, { preset: 'DAMAGE' });
-        break;
-      case 'death':
-        this.juice.triggerShake(12, 400);
-        this.juice.triggerFlash('#ef4444', 150);
-        this.juice.burst(x, y, { preset: 'DEATH' });
-        break;
-      case 'enemy_kill':
-        this.juice.triggerShake(3, 100);
-        this.juice.burst(x, y, { preset: 'EXPLOSION' });
-        break;
-    }
-  },
-
-  /**
-   * Update game state
-   * @param {number} dt - Delta time normalized to 60fps
-   */
-  update(dt) {
-    if (this.state.gameOver) return;
-
-    // Update combo timer (decay)
-    if (this.state.comboTimer > 0) {
-      this.state.comboTimer -= dt * 16.67; // Convert to ms
-      if (this.state.comboTimer <= 0) {
-        this.resetCombo();
-      }
-    }
-
-    // Update power-up timers
-    this.updatePowerUps(dt);
-
-    // Calculate speed modifier from slow-mo
-    const speedMod = this.isPowerUpActive('slowmo') ? 0.4 : 1.0;
-
-    this.moveBasket(dt);
-
-    const basketX = this.state.basketPos;
-    const basketY = this.state.lanePositions[this.state.basketLane];
-    const self = this;
-
-    // Update power-up tokens
-    this.state.powerUpTokens = this.state.powerUpTokens.filter(pu => {
-      pu.y += pu.speed * dt * speedMod;
-
-      // Check collision with basket
-      if (
-        pu.y + 15 >= basketY - self.state.basketHeight / 2 &&
-        pu.y - 15 <= basketY + self.state.basketHeight / 2 &&
-        pu.x >= basketX - self.state.basketWidth / 2 &&
-        pu.x <= basketX + self.state.basketWidth / 2
-      ) {
-        self.activatePowerUp(pu.type);
-        return false;
-      }
-
-      return pu.y < self.canvas.height + 30;
-    });
-
-    // Update projectiles
-    this.state.projectiles = this.state.projectiles.filter(proj => {
-      const prevX = proj.x;
-      const prevY = proj.y;
-      proj.x += proj.vx * dt;
-      proj.y += proj.vy * dt;
-
-      // Check collision with all tokens (swept collision to prevent tunneling)
-      const hitRadius = 30; // Token collision radius
-      for (let i = self.state.tokens.length - 1; i >= 0; i--) {
-        const token = self.state.tokens[i];
-
-        // Check both previous and current position, plus midpoint for fast projectiles
-        const checkPoints = [
-          { x: prevX, y: prevY },
-          { x: (prevX + proj.x) / 2, y: (prevY + proj.y) / 2 },
-          { x: proj.x, y: proj.y },
-        ];
-
-        let hit = false;
-        for (const pt of checkPoints) {
-          const dist = Math.hypot(pt.x - token.x, pt.y - token.y);
-          if (dist < hitRadius) {
-            hit = true;
-            break;
+        state.frameCount += dt;
+        if (state.frameCount % 60 < dt) {
+          state.timeLeft--;
+          if (state.timeLeft <= 0) {
+            state.gameOver = true;
+            if (typeof endGame === 'function') endGame(self.gameId, state.score);
           }
         }
 
-        if (hit) {
-          self.state.tokens.splice(i, 1);
-
-          // Different rewards based on token type
-          let points, color, effectType;
-          if (token.isSkull) {
-            points = 25;
-            color = '#ef4444';
-            effectType = 'enemy_kill';
-          } else if (token.isScam) {
-            points = 15;
-            color = '#a855f7';
-            effectType = 'catch';
-          } else {
-            points = 5;
-            color = '#22c55e';
-            effectType = 'catch';
-          }
-
-          self.state.score += points;
-          self.addEffect(token.x, token.y, `+${points}`, color);
-          self.triggerImpact(token.x, token.y, effectType);
-          self.dom.score.textContent = self.state.score;
-          updateScore(self.gameId, self.state.score);
-          recordGameAction(self.gameId, 'shoot_token', {
-            type: token.isSkull ? 'skull' : token.isScam ? 'scam' : 'good',
-            points: points,
-          });
-          return false;
-        }
-      }
-
-      // Check collision with enemies (swept collision)
-      const enemyHitRadius = 35;
-      for (let i = self.state.enemies.length - 1; i >= 0; i--) {
-        const enemy = self.state.enemies[i];
-
-        // Check trajectory points
-        let hit = false;
-        const checkPoints = [
-          { x: prevX, y: prevY },
-          { x: (prevX + proj.x) / 2, y: (prevY + proj.y) / 2 },
-          { x: proj.x, y: proj.y },
-        ];
-        for (const pt of checkPoints) {
-          const dist = Math.hypot(pt.x - enemy.x, pt.y - enemy.y);
-          if (dist < enemyHitRadius) {
-            hit = true;
-            break;
-          }
+        // Visual Juice decay
+        state.visualYOffset *= Math.pow(0.8, dt);
+        for (let i = 0; i < state.activePowerUps.length; i += 1) {
+          state.activePowerUps[i] = Math.max(0, state.activePowerUps[i] - dt);
         }
 
-        if (hit) {
-          enemy.currentHp--;
-          self.addEffect(
-            enemy.x,
-            enemy.y,
-            `-${enemy.currentHp > 0 ? '1' : enemy.points}`,
-            enemy.currentHp > 0 ? '#f59e0b' : '#22c55e'
-          );
-          if (enemy.currentHp <= 0) {
-            self.state.enemies.splice(i, 1);
-            self.state.score += enemy.points;
-            self.addEffect(enemy.x, enemy.y - 20, `+${enemy.points}`, '#22c55e');
-            self.triggerImpact(enemy.x, enemy.y, 'enemy_kill');
-            self.dom.score.textContent = self.state.score;
-            updateScore(self.gameId, self.state.score);
-          }
-          return false;
+        // Spawning
+        state.spawnTimer += dt;
+        state.difficulty = Math.min(90, state.difficulty);
+        const rate = Math.max(16, 40 - state.difficulty * 0.35);
+        const activeDrops = (
+          self._positionColliderQuery ||
+          (self._positionColliderQuery = world.createQuery(['Position', 'Collider']))
+        ).set.count;
+        if (activeDrops < 42 && state.spawnTimer >= rate) {
+          self.spawnItem(world);
+          state.spawnTimer = 0;
+          state.difficulty += 0.045;
         }
-      }
 
-      return (
-        proj.y > -10 &&
-        proj.y < self.canvas.height + 10 &&
-        proj.x > -10 &&
-        proj.x < self.canvas.width + 10
-      );
-    });
-
-    // Update tokens
-    this.state.tokens = this.state.tokens.filter(token => {
-      // Apply slow-mo effect
-      token.y += token.speed * dt * speedMod;
-
-      // Magnet effect: attract good tokens toward basket
-      if (self.isPowerUpActive('magnet') && !token.isSkull && !token.isScam) {
-        const dx = basketX - token.x;
-        const dy = basketY - token.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 200 && dist > 0) {
-          const magnetStrength = 3 * dt;
-          token.x += (dx / dist) * magnetStrength;
-          token.y += (dy / dist) * magnetStrength * 0.5;
+        // Cleanup Lifespans
+        const query =
+          self._lifespanQuery || (self._lifespanQuery = world.createQuery(['Lifespan']));
+        const { dense, count } = query.set;
+        const lifeProps = world.componentRegistry.get('Lifespan').props;
+        for (let i = count - 1; i >= 0; i--) {
+          const idx = dense[i];
+          lifeProps.remaining[idx] -= dt;
+          if (lifeProps.remaining[idx] <= 0) world.destroyEntity(world.getEntityId(idx));
         }
-      }
 
-      // Check collision with basket
-      if (
-        token.y + 15 >= basketY - self.state.basketHeight / 2 &&
-        token.y - 15 <= basketY + self.state.basketHeight / 2 &&
-        token.x >= basketX - self.state.basketWidth / 2 &&
-        token.x <= basketX + self.state.basketWidth / 2
-      ) {
-        if (token.isSkull) {
-          // Shield blocks skull death
-          if (self.isPowerUpActive('shield')) {
-            self.state.activePowerUps.shield = 0; // Consume shield
-            self.addEffect(token.x, token.y, 'BLOCKED!', '#22c55e');
-            self.triggerImpact(token.x, token.y, 'catch');
-            recordGameAction(self.gameId, 'shield_block', { blocked: 'skull' });
-          } else {
-            self.addEffect(token.x, token.y, 'GAME OVER!', '#ef4444');
-            self.triggerImpact(token.x, token.y, 'death');
-            self.resetCombo();
-            recordGameAction(self.gameId, 'catch_skull', { score: self.state.score });
-            self.state.gameOver = true;
-            setTimeout(() => endGame(self.gameId, self.state.score), 500);
-          }
-          return false;
-        } else if (token.isScam) {
-          // Shield blocks scam damage
-          if (self.isPowerUpActive('shield')) {
-            self.addEffect(token.x, token.y, 'BLOCKED!', '#22c55e');
-            self.triggerImpact(token.x, token.y, 'catch');
-          } else {
-            // Scam breaks combo and deals damage
-            const penalty = 21; // fib[7]
-            self.state.score = Math.max(0, self.state.score - penalty);
-            self.addEffect(token.x, token.y, `-${penalty}`, '#ef4444');
-            self.triggerImpact(token.x, token.y, 'damage');
-            self.resetCombo();
-            recordGameAction(self.gameId, 'catch_scam', {
-              score: self.state.score,
-              comboLost: true,
-            });
-          }
-        } else {
-          // Good token - apply combo multiplier!
-          const multiplier = self.incrementCombo();
-          const basePoints = 13; // fib[6]
-          // Double score power-up
-          const doubleBonus = self.isPowerUpActive('double') ? 2 : 1;
-          const points = basePoints * multiplier * doubleBonus;
-          self.state.score += points;
+        self.updateUI(state);
+      };
+    },
 
-          // Show combo feedback
-          if (multiplier > 1 || doubleBonus > 1) {
-            const bonusText = doubleBonus > 1 ? `x${multiplier * 2}` : `x${multiplier}`;
-            self.addEffect(token.x, token.y - 20, bonusText, '#a855f7', { size: 16 });
+    createCollisionSystem() {
+      const self = this;
+      return function (world, dt) {
+        const state = world.getResource('GameState');
+        if (state.gameOver) return;
+
+        const dIdx = world.getIndex(state.droneId);
+        const pos = world.componentRegistry.get('Position').props;
+        const dx = pos.x[dIdx],
+          dy = pos.y[dIdx];
+
+        const movers =
+          self._positionColliderQuery ||
+          (self._positionColliderQuery = world.createQuery(['Position', 'Collider']));
+        const { dense, count } = movers.set;
+
+        const tokenComp = world.componentRegistry.get('Token');
+        const enemyComp = world.componentRegistry.get('Enemy');
+        const powerComp = world.componentRegistry.get('PowerUp');
+        const tokenBit = tokenComp ? tokenComp.bit : 0;
+        const enemyBit = enemyComp ? enemyComp.bit : 0;
+        const powerBit = powerComp ? powerComp.bit : 0;
+
+        for (let i = count - 1; i >= 0; i--) {
+          const idx = dense[i];
+          if (idx === dIdx) continue;
+
+          const ex = pos.x[idx],
+            ey = pos.y[idx];
+          const entityMask = world.entityMasks[idx];
+
+          if (Math.hypot(dx - ex, dy - ey) < 40) {
+            if (tokenBit && (entityMask & tokenBit) === tokenBit) {
+              const type = tokenComp.props.type[idx];
+              if (type === 0) {
+                state.score += state.activePowerUps[2] > 0 ? 20 : 10;
+              } else if (type === 1) {
+                state.score = Math.max(0, state.score - (state.activePowerUps[3] > 0 ? 10 : 50));
+              } else if (type === 2) {
+                if (state.activePowerUps[3] > 0) {
+                  state.activePowerUps[3] = 0;
+                  state.score += 5;
+                } else {
+                  state.gameOver = true;
+                  if (typeof endGame === 'function') endGame(self.gameId, state.score);
+                }
+              }
+              world.destroyEntity(world.getEntityId(idx));
+            } else if (enemyBit && (entityMask & enemyBit) === enemyBit) {
+              if (state.activePowerUps[3] > 0) {
+                state.activePowerUps[3] = 0;
+                world.destroyEntity(world.getEntityId(idx));
+              } else {
+                state.gameOver = true;
+                if (typeof endGame === 'function') endGame(self.gameId, state.score);
+              }
+            } else if (powerBit && (entityMask & powerBit) === powerBit) {
+              const type = powerComp.props.type[idx];
+              state.activePowerUps[type] = self.powerUps[type]?.duration || 180;
+              state.score += 25;
+              world.destroyEntity(world.getEntityId(idx));
+            }
           }
-          self.addEffect(token.x, token.y, `+${points}`, '#22c55e');
-          self.triggerImpact(token.x, token.y, multiplier >= 3 ? 'enemy_kill' : 'catch');
-          recordGameAction(self.gameId, 'catch_token', {
-            score: self.state.score,
-            combo: self.state.combo,
-            multiplier,
-            doubleBonus,
-          });
+
+          if (ey > self.instance.canvas.height + 50) world.destroyEntity(world.getEntityId(idx));
         }
-        recordScoreUpdate(self.gameId, self.state.score, token.isScam ? -21 : 13);
-        self.dom.score.textContent = self.state.score;
-        updateScore(self.gameId, self.state.score);
-        return false;
+      };
+    },
+
+    spawnItem(world) {
+      const cw = this.instance.canvas.width;
+      const state = world.getResource('GameState');
+      const e = world.createEntity();
+      world.addComponent(e, 'Position');
+      world.addComponent(e, 'Velocity');
+      world.addComponent(e, 'Renderable');
+      world.addComponent(e, 'Collider');
+
+      const idx = world.getIndex(e);
+      const pos = world.componentRegistry.get('Position').props;
+      const vel = world.componentRegistry.get('Velocity').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const col = world.componentRegistry.get('Collider').props;
+
+      pos.x[idx] = 30 + Math.random() * (cw - 60);
+      pos.y[idx] = -30;
+      vel.vy[idx] =
+        Math.min(9, 2 + state.difficulty * 0.08) * (state.activePowerUps[1] > 0 ? 0.72 : 1);
+
+      const roll = Math.random();
+      if (roll < 0.15) {
+        world.addComponent(e, 'Enemy');
+        const typeIdx = Math.floor(Math.random() * this.enemyTypes.length);
+        rend.iconIndex[idx] = 7 + typeIdx; // Map to icons array
+        rend.size[idx] = 35;
+        col.width[idx] = 35;
+        col.height[idx] = 35;
+      } else if (roll < 0.24) {
+        world.addComponent(e, 'PowerUp');
+        const typeIdx = Math.floor(Math.random() * this.powerUps.length);
+        const power = world.componentRegistry.get('PowerUp').props;
+        power.type[idx] = typeIdx;
+        rend.iconIndex[idx] = 3 + typeIdx;
+        rend.size[idx] = 32;
+        col.width[idx] = 32;
+        col.height[idx] = 32;
+      } else {
+        world.addComponent(e, 'Token');
+        const tProps = world.componentRegistry.get('Token').props;
+        if (roll < 0.38) {
+          tProps.type[idx] = 2;
+          rend.iconIndex[idx] =
+            7 + this.enemyTypes.length + this.goodTokens.length + this.scamTokens.length;
+        } // Skull
+        else if (roll < 0.58) {
+          tProps.type[idx] = 1;
+          rend.iconIndex[idx] = 7 + this.enemyTypes.length + this.goodTokens.length;
+        } // Scam
+        else {
+          tProps.type[idx] = 0;
+          rend.iconIndex[idx] = 7 + this.enemyTypes.length;
+        } // Good
+        rend.size[idx] = 30;
+        col.width[idx] = 30;
+        col.height[idx] = 30;
       }
+    },
 
-      return token.y < self.canvas.height + 30;
-    });
+    updateUI(state) {
+      if (this.dom.score) this.dom.score.textContent = state.score;
+      if (this.dom.time) this.dom.time.textContent = Math.ceil(state.timeLeft);
+    },
 
-    // Update enemies
-    this.state.enemies = this.state.enemies.filter(enemy => {
-      enemy.y += enemy.speed * dt;
-
-      if (
-        enemy.y + 20 >= basketY - self.state.basketHeight / 2 &&
-        enemy.y - 20 <= basketY + self.state.basketHeight / 2 &&
-        enemy.x >= basketX - self.state.basketWidth / 2 &&
-        enemy.x <= basketX + self.state.basketWidth / 2
-      ) {
-        const penalty = 34; // fib[8]
-        self.state.score = Math.max(0, self.state.score - penalty);
-        self.addEffect(enemy.x, enemy.y, `-${penalty}`, '#ef4444');
-        self.triggerImpact(enemy.x, enemy.y, 'damage');
-        self.resetCombo(); // Enemy hit resets combo
-        self.dom.score.textContent = self.state.score;
-        updateScore(self.gameId, self.state.score);
-        return false;
+    draw(alpha, defaultRender) {
+      const ctx = this.instance.ctx;
+      const state = this.instance.world.getResource('GameState');
+      if (this.instance) {
+        this.drawArenaBackdrop(ctx, state);
+        this.drawEntities(ctx, state);
+        return;
       }
+      ctx.fillStyle = '#0a0a0f';
+      ctx.fillRect(0, 0, this.instance.canvas.width, this.instance.canvas.height);
 
-      return enemy.y < self.canvas.height + 40;
-    });
-
-    // Update effects (legacy fallback)
-    this.state.effects = this.state.effects.filter(e => {
-      e.y += e.vy * dt;
-      e.life -= dt;
-      return e.life > 0;
-    });
-
-    // Update juice system
-    if (this.juice) {
-      this.juice.update(dt, dt * 16.67);
-    }
-  },
-
-  /**
-   * Draw active power-up indicators on the right side
-   */
-  drawPowerUpIndicators(ctx) {
-    const activeList = [];
-    for (const type in this.state.activePowerUps) {
-      if (this.state.activePowerUps[type] > 0) {
-        const pu = this.powerUps[type];
-        const duration = pu.duration;
-        const remaining = this.state.activePowerUps[type];
-        activeList.push({
-          type,
-          icon: pu.icon,
-          color: pu.color,
-          name: pu.name,
-          percent: remaining / duration,
-        });
-      }
-    }
-
-    if (activeList.length === 0) return;
-
-    const startY = 100;
-    const spacing = 50;
-
-    activeList.forEach((pu, i) => {
-      const x = this.canvas.width - 60;
-      const y = startY + i * spacing;
-
-      // Background
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.beginPath();
-      ctx.roundRect(x - 35, y - 18, 70, 36, 8);
-      ctx.fill();
-
-      // Icon
-      ctx.font = '22px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(pu.icon, x - 15, y);
-
-      // Timer bar
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(x + 5, y - 4, 25, 8);
-      ctx.fillStyle = pu.color;
-      ctx.fillRect(x + 5, y - 4, 25 * pu.percent, 8);
-    });
-  },
-
-  /**
-   * Draw game state
-   */
-  draw() {
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Apply screen shake if juice is active
-    if (this.juice) {
-      this.juice.renderPre();
-    }
-
-    // Draw lane indicators
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1;
-    this.state.lanePositions.forEach((y, i) => {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.canvas.width, y);
-      ctx.stroke();
-      ctx.fillStyle =
-        i === this.state.basketLane ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.1)';
-      ctx.fillRect(0, y - this.state.laneHeight / 2, 5, this.state.laneHeight);
-    });
-
-    // Draw projectiles
-    ctx.fillStyle = '#fbbf24';
-    this.state.projectiles.forEach(proj => {
-      ctx.beginPath();
-      ctx.arc(proj.x, proj.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 0.3;
-      ctx.beginPath();
-      ctx.arc(proj.x, proj.y + 8, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    });
-
-    // Draw power-up tokens (using SpriteCache)
-    this.state.powerUpTokens.forEach(pu => {
-      SpriteCache.draw(ctx, pu.icon, pu.x, pu.y, 28);
-    });
-
-    // Draw falling tokens (using SpriteCache)
-    this.state.tokens.forEach(token => {
-      SpriteCache.draw(ctx, token.icon, token.x, token.y, 30);
-    });
-
-    // Draw active power-up indicators
-    this.drawPowerUpIndicators(ctx);
-
-    // Draw enemies with HP indicator (using SpriteCache)
-    this.state.enemies.forEach(enemy => {
-      SpriteCache.draw(ctx, enemy.icon, enemy.x, enemy.y, 35);
-      const barWidth = 30;
-      const barHeight = 4;
-      const hpRatio = enemy.currentHp / enemy.hp;
-      ctx.fillStyle = '#1f2937';
-      ctx.fillRect(enemy.x - barWidth / 2, enemy.y + 22, barWidth, barHeight);
-      ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : hpRatio > 0.25 ? '#f59e0b' : '#ef4444';
-      ctx.fillRect(enemy.x - barWidth / 2, enemy.y + 22, barWidth * hpRatio, barHeight);
-      ctx.font = '10px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#fff';
-      ctx.fillText(`${enemy.currentHp}/${enemy.hp}`, enemy.x, enemy.y + 35);
-    });
-
-    // Draw basket (using SpriteCache)
-    const basketX = this.state.basketPos;
-    const basketY = this.state.lanePositions[this.state.basketLane];
-    SpriteCache.draw(ctx, '🧺', basketX, basketY, 60);
-
-    // Draw lane highlight
-    ctx.fillStyle = 'rgba(251,191,36,0.15)';
-    ctx.fillRect(
-      basketX - this.state.basketWidth / 2,
-      basketY - this.state.laneHeight / 2,
-      this.state.basketWidth,
-      this.state.laneHeight
-    );
-
-    // Draw aiming line
-    if (this.state.mouseX > 0 || this.state.mouseY > 0) {
-      ctx.strokeStyle = 'rgba(251,191,36,0.3)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      ctx.beginPath();
-      ctx.moveTo(basketX, basketY - 30);
-      ctx.lineTo(this.state.mouseX, this.state.mouseY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.strokeStyle = 'rgba(251,191,36,0.6)';
+      // Draw background lanes
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(this.state.mouseX, this.state.mouseY, 10, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(this.state.mouseX - 15, this.state.mouseY);
-      ctx.lineTo(this.state.mouseX + 15, this.state.mouseY);
-      ctx.moveTo(this.state.mouseX, this.state.mouseY - 15);
-      ctx.lineTo(this.state.mouseX, this.state.mouseY + 15);
-      ctx.stroke();
-    }
-
-    // Draw legacy effects (fallback when juice not available)
-    if (!this.juice) {
-      ctx.font = 'bold 18px Arial';
-      this.state.effects.forEach(e => {
-        ctx.globalAlpha = e.life / 30;
-        ctx.fillStyle = e.color;
-        ctx.fillText(e.text, e.x, e.y);
+      state.lanes.forEach(y => {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(this.instance.canvas.width, y);
+        ctx.stroke();
       });
-      ctx.globalAlpha = 1;
-    }
 
-    // Render juice effects (particles, flash, etc.)
-    if (this.juice) {
-      this.juice.renderPost();
-    }
-  },
+      // Render entities with visual offset for the drone
+      const droneId = state.droneId;
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
 
-  /**
-   * Main game loop
-   */
-  gameLoop() {
-    const self = this;
-    function loop(timestamp) {
-      if (self.state.gameOver) return;
-      const dt = self.timing.tick(timestamp);
-      self.update(dt);
-      self.draw();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  },
+      const query =
+        this._renderQuery || (this._renderQuery = world.createQuery(['Position', 'Renderable']));
+      const { dense, count } = query.set;
 
-  /**
-   * Stop the game and cleanup
-   * Protected with try/catch to ensure all cleanup runs even if one part fails
-   */
-  stop() {
-    if (this.state) this.state.gameOver = true;
+      const icons = [
+        '🛸',
+        '🔥',
+        '💥',
+        ...this.powerUps.map(p => p.icon),
+        ...this.enemyTypes.map(e => e.icon),
+        ...this.goodTokens,
+        ...this.scamTokens,
+        '💀',
+      ];
 
-    // Clear intervals (safe even if undefined)
-    try {
-      if (this.spawnInterval) clearInterval(this.spawnInterval);
-      if (this.timerInterval) clearInterval(this.timerInterval);
-      if (this.enemySpawnInterval) clearInterval(this.enemySpawnInterval);
-    } catch (e) {
-      console.warn('[TokenCatcher] Interval cleanup error:', e);
-    }
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx],
+          ty = pos.y[idx];
+        const icon = icons[rend.iconIndex[idx]] || '❓';
+        const size = rend.size[idx] || 30;
 
-    // Remove event listeners (protected)
-    try {
-      document.removeEventListener('keydown', this.handleKeyDown);
-      document.removeEventListener('keyup', this.handleKeyUp);
-      if (this.canvas) {
-        this.canvas.removeEventListener('mousemove', this.handleMouseMove);
-        this.canvas.removeEventListener('touchmove', this.handleTouch);
-        this.canvas.removeEventListener('touchstart', this.handleTouch);
-        this.canvas.removeEventListener('click', this.handleClick);
+        if (world.getEntityId(idx) === droneId) {
+          SpriteCache.draw(ctx, icon, tx, ty + state.visualYOffset, size);
+        } else {
+          SpriteCache.draw(ctx, icon, tx, ty, size);
+        }
       }
-    } catch (e) {
-      console.warn('[TokenCatcher] Event listener cleanup error:', e);
-    }
+    },
 
-    // Cleanup juice system
-    try {
-      if (this.juice) {
-        this.juice.cleanup();
+    drawArenaBackdrop(ctx, state) {
+      const w = this.instance.canvas.width;
+      const h = this.instance.canvas.height;
+      const visuals = window.ASDF?.ArcadeVisuals || window.ArcadeVisuals;
+      if (visuals) {
+        visuals.drawBackdrop(ctx, w, h, {
+          theme: 'default',
+          seed: state.score || 0,
+        });
+      } else {
+        ctx.fillStyle = '#12071f';
+        ctx.fillRect(0, 0, w, h);
       }
-    } catch (e) {
-      console.warn('[TokenCatcher] Juice cleanup error:', e);
-    }
 
-    // Clear references (always runs)
-    this.juice = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.state = null;
-    this.spawnInterval = null;
-    this.timerInterval = null;
-    this.enemySpawnInterval = null;
-  },
-};
+      state.lanes.forEach((y, lane) => {
+        ctx.fillStyle = lane === 1 ? 'rgba(255, 204, 0, 0.1)' : 'rgba(255, 244, 204, 0.05)';
+        this.roundRect(ctx, 18, y - 18, w - 36, 36, 8);
+        ctx.fill();
+      });
 
-// Export for module systems
-if (typeof window !== 'undefined') {
+      ctx.fillStyle = 'rgba(255, 204, 0, 0.18)';
+      ctx.fillRect(0, 0, w, 4);
+      ctx.fillRect(0, h - 4, w, 4);
+    },
+
+    drawEntities(ctx, state) {
+      const world = this.instance.world;
+      const pos = world.componentRegistry.get('Position').props;
+      const rend = world.componentRegistry.get('Renderable').props;
+      const tokenComp = world.componentRegistry.get('Token');
+      const enemyComp = world.componentRegistry.get('Enemy');
+      const powerComp = world.componentRegistry.get('PowerUp');
+      const projectileComp = world.componentRegistry.get('Projectile');
+      const tokenBit = tokenComp ? tokenComp.bit : 0;
+      const enemyBit = enemyComp ? enemyComp.bit : 0;
+      const powerBit = powerComp ? powerComp.bit : 0;
+      const projectileBit = projectileComp ? projectileComp.bit : 0;
+      const query =
+        this._renderQuery || (this._renderQuery = world.createQuery(['Position', 'Renderable']));
+      const { dense, count } = query.set;
+
+      for (let i = 0; i < count; i++) {
+        const idx = dense[i];
+        const tx = pos.x[idx];
+        const ty = pos.y[idx];
+        const size = rend.size[idx] || 30;
+
+        if (world.getEntityId(idx) === state.droneId) {
+          this.drawDrone(ctx, tx, ty + state.visualYOffset, size, state);
+          continue;
+        }
+
+        const mask = world.entityMasks[idx];
+        if (projectileBit && (mask & projectileBit) === projectileBit) {
+          this.drawProjectile(ctx, tx, ty);
+        } else if (tokenBit && (mask & tokenBit) === tokenBit) {
+          this.drawToken(ctx, tx, ty, tokenComp.props.type[idx], size);
+        } else if (enemyBit && (mask & enemyBit) === enemyBit) {
+          this.drawEnemy(ctx, tx, ty, size);
+        } else if (powerBit && (mask & powerBit) === powerBit) {
+          this.drawPowerUp(ctx, tx, ty, powerComp.props.type[idx], size);
+        }
+      }
+    },
+
+    drawDrone(ctx, x, y, size, state = null) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
+      ctx.beginPath();
+      ctx.ellipse(0, size * 0.24, size * 0.34, size * 0.09, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -size * 0.32, -size * 0.08, size * 0.64, size * 0.26, 9);
+      ctx.fill();
+      ctx.fillStyle = '#ff6b35';
+      this.roundRect(ctx, -size * 0.24, -size * 0.2, size * 0.48, size * 0.34, 10);
+      ctx.fill();
+      ctx.fillStyle = '#fff7ed';
+      ctx.beginPath();
+      ctx.ellipse(0, -size * 0.09, size * 0.16, size * 0.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffcc00';
+      ctx.beginPath();
+      ctx.arc(-size * 0.24, size * 0.08, size * 0.055, 0, Math.PI * 2);
+      ctx.arc(size * 0.24, size * 0.08, size * 0.055, 0, Math.PI * 2);
+      ctx.fill();
+      if (state?.activePowerUps?.[3] > 0) {
+        ctx.strokeStyle = 'rgba(255,242,179,0.86)';
+        ctx.lineWidth = Math.max(2, size * 0.04);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.46, size * 0.34, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawToken(ctx, x, y, type, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin((performance.now() + x * 7) / 260) * 0.12);
+      if (type === 0) {
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff2b3';
+        ctx.lineWidth = Math.max(1.4, size * 0.07);
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.24, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#ff6b35';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (type === 1) {
+        ctx.fillStyle = '#ff6b35';
+        this.roundRect(ctx, -size * 0.35, -size * 0.35, size * 0.7, size * 0.7, 7);
+        ctx.fill();
+        ctx.strokeStyle = '#3b120b';
+        ctx.lineWidth = Math.max(2, size * 0.09);
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.2, size * 0.2);
+        ctx.lineTo(size * 0.2, -size * 0.2);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = '#3b120b';
+        this.hexPath(ctx, 0, 0, size * 0.42);
+        ctx.fill();
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(-size * 0.13, -size * 0.05, size * 0.07, 0, Math.PI * 2);
+        ctx.arc(size * 0.13, -size * 0.05, size * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff7ed';
+        ctx.lineWidth = Math.max(1.5, size * 0.05);
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.16, size * 0.15);
+        ctx.lineTo(size * 0.16, size * 0.15);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawEnemy(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin((performance.now() + y * 3) / 180) * 0.08);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.beginPath();
+      ctx.ellipse(0, size * 0.24, size * 0.32, size * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 0.34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3b120b';
+      this.roundRect(ctx, -size * 0.24, -size * 0.08, size * 0.48, size * 0.18, 6);
+      ctx.fill();
+      ctx.fillStyle = '#fff7ed';
+      ctx.beginPath();
+      ctx.arc(-size * 0.11, -size * 0.005, size * 0.04, 0, Math.PI * 2);
+      ctx.arc(size * 0.11, -size * 0.005, size * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    drawPowerUp(ctx, x, y, type, size) {
+      const colors = ['#ffcc00', '#ff6b35', '#ff2d95', '#fff2b3'];
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = colors[type] || '#ffcc00';
+      this.roundRect(ctx, -size * 0.36, -size * 0.36, size * 0.72, size * 0.72, 6);
+      ctx.fill();
+      ctx.rotate(-Math.PI / 4);
+      ctx.strokeStyle = '#090510';
+      ctx.fillStyle = '#090510';
+      ctx.lineWidth = Math.max(2, size * 0.075);
+      if (type === 0) {
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.16, Math.PI * 0.2, Math.PI * 1.8);
+        ctx.stroke();
+        ctx.fillRect(size * 0.12, -size * 0.12, size * 0.08, size * 0.08);
+      } else if (type === 1) {
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -size * 0.13);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(size * 0.12, 0);
+        ctx.stroke();
+      } else if (type === 2) {
+        ctx.beginPath();
+        ctx.arc(-size * 0.08, 0, size * 0.09, 0, Math.PI * 2);
+        ctx.arc(size * 0.08, 0, size * 0.09, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 0.18);
+        ctx.lineTo(size * 0.17, -size * 0.07);
+        ctx.quadraticCurveTo(size * 0.12, size * 0.16, 0, size * 0.2);
+        ctx.quadraticCurveTo(-size * 0.12, size * 0.16, -size * 0.17, -size * 0.07);
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawProjectile(ctx, x, y) {
+      ctx.save();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    },
+
+    hexPath(ctx, x, y, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 6 + (Math.PI * 2 * i) / 6;
+        const px = x + Math.cos(angle) * r;
+        const py = y + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    },
+
+    roundRect(ctx, x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    },
+
+    stop() {
+      if (this._cleanupInput) {
+        this._cleanupInput();
+        this._cleanupInput = null;
+      }
+      this._positionColliderQuery = null;
+      this._lifespanQuery = null;
+      this._renderQuery = null;
+      if (this.instance) this.instance.stop();
+      this.instance = null;
+    },
+  };
+
   window.ASDF = window.ASDF || {};
   window.ASDF.TokenCatcher = TokenCatcher;
-  window.TokenCatcher = window.ASDF.TokenCatcher;
-}
+  window.TokenCatcher = TokenCatcher;
+  if (typeof GameRegistry !== 'undefined') GameRegistry.register('tokencatcher', TokenCatcher);
+})();

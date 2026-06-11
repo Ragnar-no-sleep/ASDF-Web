@@ -73,6 +73,25 @@ function init() {
   initSolanaWeb3();
   initEventListeners();
 
+  // 11/10 Standard: Boot Arcade Kernel 3.0
+  if (typeof ASDF !== 'undefined' && ASDF.Kernel) {
+    const kernel = ASDF.Kernel;
+
+    // Core Plugins
+    if (ASDF.AssetPipeline) kernel.use(ASDF.AssetPipeline);
+    if (ASDF.SoundPlugin) kernel.use(ASDF.SoundPlugin);
+    if (ASDF.ScoreService) kernel.use(ASDF.ScoreService);
+    if (ASDF.LeaderboardPlugin) kernel.use(ASDF.LeaderboardPlugin);
+    if (ASDF.InputHub) kernel.use(ASDF.InputHub);
+    if (ASDF.HUDManager) kernel.use(ASDF.HUDManager);
+
+    // Infrastructure Services
+    if (window.ApiClient) kernel.registerService('api', window.ApiClient);
+    if (window.GameStore) kernel.registerService('storage', window.GameStore);
+
+    console.log('[Main] Kernel 3.0 booted with services:', Object.keys(kernel.services));
+  }
+
   // Initialize game engines coordinator (enables modular engines)
   if (typeof GameEngines !== 'undefined') {
     GameEngines.init();

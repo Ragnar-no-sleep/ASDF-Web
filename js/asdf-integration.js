@@ -1,3 +1,4 @@
+import storage from './utils/storage.js';
 /**
  * ASDF Global Integration
  * Auto-loads all immersion systems on every page
@@ -12,6 +13,9 @@ import { achievementSystem } from './utils/achievements.js';
 import { disclosureSystem } from './utils/progressive-disclosure.js';
 import { initEasterEggs } from './utils/easter-eggs.js';
 import { triggerBurnAnimation } from './utils/contextual-animations.js';
+import { badgeManager } from './badge/manager.js';
+import ASDFSolana from './solana/index.js';
+import { streakManager } from './utils/streak-manager.js';
 
 // ============================================
 // AUTO-INITIALIZATION
@@ -40,12 +44,47 @@ function initASDF() {
   // 3. Easter eggs (Konami, secrets, etc.)
   initEasterEggs();
 
-  // 4. Track page visit
-  achievementSystem.track('page_visit');
+  // 4. Trackers (The Multi-Engine Sync)
+  // achievementSystem.track('page_visit'); // G6: Handled in achievementSystem.init()
   disclosureSystem.track('page_visit');
 
+  // Hero's Journey auto-start
+  if (window.AchievementEngine) {
+    window.AchievementEngine.autoArrival();
+  }
+
   // 5. Track scroll to bottom
-  trackScrollToBottom();
+  // 6. Badge Manager (Gap G11)
+  const initBadges = async addr => {
+    if (!addr) return;
+    await badgeManager.init(addr);
+    await badgeManager.checkAchievements();
+  };
+
+  if (ASDFSolana) {
+    ASDFSolana.on('connect', addr => initBadges(addr));
+    if (ASDFSolana.isConnected()) {
+      initBadges(ASDFSolana.getAddress());
+    }
+  }
+
+  // 7. Dynamic Game Hub Loader (Fix for 'Orange Screen')
+  if (
+    window.location.pathname.includes('ignition') ||
+    document.querySelector('[data-orbit-id="games"]')
+  ) {
+    /* 
+     * DISABLED: Mixing <script defer> and import() causes "Identifier has already been declared" errors.
+  ...
+     * The game page handles its own script loading.
+     * 
+    import('./games/utils.js').then(() => {
+        import('./games/shared/lifecycle.js').then(() => {
+            console.log('*tail wag* Game Lifecycle Ready.');
+        });
+    });
+    */
+  }
 }
 
 // ============================================
@@ -68,12 +107,12 @@ function trackScrollToBottom() {
         isAtBottom = true;
 
         // Mark page as scrolled
-        const scrolledPages = JSON.parse(localStorage.getItem('asdf_scrolled_pages') || '[]');
+        const scrolledPages = storage.get('scrolled_pages', []);
         const currentPage = window.location.pathname;
 
         if (!scrolledPages.includes(currentPage)) {
           scrolledPages.push(currentPage);
-          localStorage.setItem('asdf_scrolled_pages', JSON.stringify(scrolledPages));
+          storage.set('scrolled_pages', scrolledPages);
 
           disclosureSystem.track('scroll_bottom');
         }
@@ -92,9 +131,14 @@ function trackScrollToBottom() {
  * Triggers animation + achievement + disclosure tracking
  */
 export function trackBurn(amount, element = null) {
-  // Track in systems
+  // *sniff* Synchro Triple-Moteur
   achievementSystem.track('burn_tokens', { amount });
   disclosureSystem.track('burn_tokens', { amount });
+
+  if (window.AchievementEngine) {
+    // Stage update: Burn = BELIEVER potential
+    if (amount >= 1000) window.AchievementEngine.unlock('BELIEVER');
+  }
 
   // Play sound
   soundSystem.play('burn');
@@ -111,6 +155,10 @@ export function trackBurn(amount, element = null) {
 export function trackStake(amount, _element = null) {
   achievementSystem.track('stake_tokens', { amount });
   disclosureSystem.track('stake_tokens', { amount });
+
+  if (window.AchievementEngine) {
+    window.AchievementEngine.unlock('VERIFIED');
+  }
 
   soundSystem.play('stake');
 }
@@ -152,7 +200,7 @@ if (document.readyState === 'loading') {
 // EXPOSE GLOBALS (for non-module scripts)
 // ============================================
 
-window.ASDF = {
+window.ASDF = Object.assign(window.ASDF || {}, {
   trackBurn,
   trackStake,
   trackGamePlay,
@@ -161,4 +209,5 @@ window.ASDF = {
   soundSystem,
   achievementSystem,
   disclosureSystem,
-};
+  streakManager,
+});

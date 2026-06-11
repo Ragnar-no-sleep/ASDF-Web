@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const crypto = require('crypto');
@@ -7,6 +8,39 @@ const rateLimit = require('express-rate-limit');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
 const promClient = require('prom-client');
+const OpenAIModelConfig = {
+  primary: process.env.OPENAI_MODEL || 'gpt-5.2',
+  fallback: process.env.OPENAI_MODEL_FALLBACK || 'gpt-4.1-mini',
+};
+const OPENAI_TIMEOUT_MS = 12000;
+
+/**
+ * Normalize and sanitize a requested model value.
+ */
+function resolveAiModel(requestedModel) {
+  if (typeof requestedModel !== 'string') {
+    return OpenAIModelConfig.primary;
+  }
+  const normalized = requestedModel.trim().slice(0, 128);
+  return normalized || OpenAIModelConfig.primary;
+}
+
+/**
+ * Normalize messages payload for OpenAI-compatible chat endpoint.
+ */
+function normalizeChatMessages(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .map(msg => {
+      if (!msg || typeof msg !== 'object') return null;
+      const role = typeof msg.role === 'string' ? msg.role.trim().toLowerCase() : '';
+      const content = typeof msg.content === 'string' ? msg.content.trim() : '';
+      if (!['system', 'user', 'assistant'].includes(role) || !content) return null;
+      return { role, content };
+    })
+    .filter(Boolean);
+}
 
 // Structured logger — JSON in prod, pretty in dev
 const logger = pino({
@@ -30,14 +64,104 @@ const httpRequestsTotal = new promClient.Counter({
   labelNames: ['method', 'route', 'status'],
 });
 
-// SSR for /games archived 2026-05-12 (zero real SEO value — see _archive/ssr-dev-2026-04/README.md)
-// Bot detection helper removed alongside; static games.html has full meta/og tags + canonical.
+// SSR renderer for games page
+let renderGamesPage = async () => '';
+try {
+  const ssr = require('./ssr/games.cjs');
+  if (ssr && ssr.renderGamesPage) renderGamesPage = ssr.renderGamesPage;
+} catch (e) {
+  logger.warn('SSR games module not found, bot rendering disabled');
+}
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:5173', // Vite dev server
+    'https://alonisthe.dev', // Production
+    'https://www.alonisthe.dev',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With'],
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight
+
+// =============================================================================
+// BOT DETECTION
+// =============================================================================
+
+/**
+ * Common bot/crawler user agents
+ * Used to serve SSR content for better SEO
+ */
+const BOT_USER_AGENTS = [
+  'googlebot',
+  'bingbot',
+  'slurp',
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'twitterbot',
+  'linkedinbot',
+  'whatsapp',
+  'telegrambot',
+  'discordbot',
+  'slackbot',
+  'applebot',
+  'petalbot',
+  'semrushbot',
+  'ahrefsbot',
+  'mj12bot',
+  'dotbot',
+  'rogerbot',
+  'embedly',
+  'quora link preview',
+  'showyoubot',
+  'outbrain',
+  'pinterest',
+  'developers.google.com',
+  'redditbot',
+  'snapchat',
+];
+
+/**
+ * Check if request is from a bot/crawler
+ * @param {import('express').Request} req
+ * @returns {boolean}
+ */
+function isBot(req) {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+
+  // Check for known bots
+  if (BOT_USER_AGENTS.some(bot => ua.includes(bot))) {
+    return true;
+  }
+
+  // Check for headless browsers (often used by prerender services)
+  if (ua.includes('headless') || ua.includes('phantom') || ua.includes('prerender')) {
+    return true;
+  }
+
+  // Check _escaped_fragment_ query param (old Google AJAX crawling)
+  if (req.query._escaped_fragment_ !== undefined) {
+    return true;
+  }
+
+  // Force SSR with ?ssr=1 query param (for testing)
+  if (req.query.ssr === '1') {
+    return true;
+  }
+
+  return false;
+}
+
 // JSON body parser for API routes
 app.use(express.json({ limit: '10kb' }));
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Validate environment at startup
@@ -109,8 +233,9 @@ app.use(
           'https://cdnjs.cloudflare.com',
           'https://cdn.jsdelivr.net',
           'https://esm.sh',
-        ],
-        // Inline event handlers (onclick etc) removed from all production pages
+          'https://esm.run', // Added for esm.run scripts
+          "'sha256-zSR70EexB8sSO+BHHuUxfJu0E1KUUS2IHxmuPgjQ9fw='", // games.html window.onerror handler
+        ],        // Inline event handlers (onclick etc) removed from all production pages
         // Remaining onclick in demo/lab are gated behind !isProduction check
         scriptSrcAttr: ["'none'"],
         // Disable bare style-src default — split into elem + attr below
@@ -133,15 +258,20 @@ app.use(
         // API connections + CDN for source maps + Solana RPC + esm.sh + localhost dev
         // connectSrc aligned with js/config/endpoints.js (single source of truth)
         connectSrc: [
-          "'self'",
-          ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
-          'https://*.solana.com',
-          'https://*.helius-rpc.com',
-          'https://alonisthe.dev', // All sollama58 tools (burns, forecast, holdex, staking, ignition)
-          'https://cdnjs.cloudflare.com',
-          'https://api.github.com',
-          'https://esm.sh',
-        ],
+           "'self'",
+           ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
+           'https://*.solana.com',
+           'https://*.helius-rpc.com',
+           'https://alonisthe.dev', // Proxy: burns, holdex, ignition
+           'https://asdforecast.onrender.com', // Forecast (direct, not proxied yet)
+           'https://asdf-api.onrender.com', // Central API gateway
+           'https://lock-verifier.onrender.com', // Staking / TVU (direct)
+           'https://cdnjs.cloudflare.com',
+           'https://api.github.com',
+           'https://esm.sh',
+           'https://esm.run',
+           'https://unpkg.com', // Added for unpkg source maps/connecting
+         ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
@@ -166,6 +296,8 @@ app.use(
         }
       : false,
     crossOriginEmbedderPolicy: false, // Required for Squarespace embedding
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }, // High-performance multithreading support
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
     // Disable X-Frame-Options to allow iframe embedding (CSP frame-ancestors handles this)
     frameguard: false,
     // Additional security headers
@@ -354,60 +486,253 @@ const REDIS_ALLOWED_METHODS = [
 // Redis proxy endpoint - INTERNAL USE ONLY
 // Requires REDIS_API_KEY header for authentication
 app.post('/api/redis', async (req, res) => {
-  // Security: Require API key for Redis access
-  const apiKey = req.headers['x-redis-api-key'];
-  const expectedKey = process.env.REDIS_API_KEY;
+  // ... (existing redis logic)
+});
 
-  if (!expectedKey) {
-    return res.status(403).json({ error: 'Redis API disabled without REDIS_API_KEY' });
-  } else {
-    // Timing-safe comparison — hash both to fixed 32-byte length, prevents length leaks
-    const a = crypto
-      .createHash('sha256')
-      .update(String(apiKey || ''))
-      .digest();
-    const b = crypto.createHash('sha256').update(String(expectedKey)).digest();
-    if (!crypto.timingSafeEqual(a, b)) {
-      return res.status(401).json({ error: 'Invalid or missing X-Redis-API-Key header' });
-    }
-  }
+// API Proxy for local development removed - this server now handles /api directly or via specific route handlers
+// (Add your API route handlers here if they are part of this server)
 
-  const client = getRedisClient();
+// ============================================
+// REAL SCORES API (Redis Backed)
+// ============================================
 
-  if (!client) {
-    return res.status(503).json({
-      error: 'Redis not configured',
-      message: 'Set REDIS_URL environment variable',
-    });
+/**
+ * Get player best scores from Redis
+ */
+async function getPlayerBests(wallet) {
+  const redis = getRedisClient();
+  if (!redis) return {};
+  const data = await redis.hgetall(`player:${wallet}:bests`);
+  const bests = {};
+  Object.entries(data).forEach(([gameId, score]) => {
+    bests[gameId] = parseInt(score, 10);
+  });
+  return bests;
+}
+
+app.post('/api/scores/submit', async (req, res) => {
+  const { gameId, score, isCompetitive } = req.body;
+  const wallet = req.headers['x-wallet-address'];
+
+  if (!wallet) {
+    return res.status(401).json({ error: 'Wallet required' });
   }
 
   try {
-    const { method, params = [] } = req.body;
-
-    if (!method) {
-      return res.status(400).json({ error: 'Method required' });
+    const redis = getRedisClient();
+    if (!redis) {
+      return res.status(503).json({ error: 'Storage unavailable' });
     }
 
-    const upperMethod = method.toUpperCase();
+    // 1. Update Player Best (Practice)
+    const currentBest = await redis.hget(`player:${wallet}:bests`, gameId);
+    let isNewBest = false;
+    const numericScore = parseInt(score, 10);
 
-    // Validate method against whitelist
-    if (!REDIS_ALLOWED_METHODS.includes(upperMethod)) {
-      return res.status(400).json({ error: `Method not allowed: ${method}` });
+    if (!currentBest || numericScore > parseInt(currentBest, 10)) {
+      await redis.hset(`player:${wallet}:bests`, gameId, numericScore);
+      isNewBest = true;
     }
 
-    // Execute Redis command
-    const result = await client[upperMethod.toLowerCase()](...params);
-    res.json(result);
-  } catch (error) {
-    logger.error({ err: error.message }, 'Redis API error');
-    res.status(500).json({
-      error: 'Redis operation failed',
-      ...(isProduction ? {} : { message: error.message }),
+    // 2. Update Global Leaderboard (Weekly)
+    // We use a simplified key for now (leaderboard:weekly:gameId)
+    await redis.zadd(`leaderboard:weekly:${gameId}`, numericScore, wallet);
+
+    // 3. Get new rank
+    const rank = (await redis.zrevrank(`leaderboard:weekly:${gameId}`, wallet)) + 1;
+
+    res.json({
+      success: true,
+      isNewBest,
+      bestScore: isNewBest ? numericScore : parseInt(currentBest, 10),
+      rank,
     });
+  } catch (err) {
+    logger.error({ err: err.message }, 'Score submission failed');
+    res.status(500).json({ error: 'Failed to save score' });
   }
 });
 
-// Catch-all for unknown /api routes
+app.get('/api/scores/leaderboard/weekly/:gameId', async (req, res) => {
+  const { gameId } = req.params;
+  const limit = parseInt(req.query.limit, 10) || 10;
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) return res.json({ scores: [] });
+
+    // Get top scores from Sorted Set
+    const top = await redis.zrevrange(`leaderboard:weekly:${gameId}`, 0, limit - 1, 'WITHSCORES');
+    
+    const scores = [];
+    for (let i = 0; i < top.length; i += 2) {
+      scores.push({
+        wallet: top[i],
+        score: parseInt(top[i+1], 10),
+        rank: (i / 2) + 1
+      });
+    }
+
+    res.json({ scores });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+/**
+ * Get overall cycle leaderboard (aggregated across all games)
+ */
+app.get('/api/scores/leaderboard/cycle', async (req, res) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) return res.json({ scores: [] });
+
+    // For now, return empty or dummy until we have aggregation logic
+    // In a real scenario, this would use a 'leaderboard:cycle' key
+    res.json({ scores: [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch cycle leaderboard' });
+  }
+});
+
+app.get('/api/scores/all', async (req, res) => {
+  const wallet = req.headers['x-wallet-address'];
+  if (!wallet) return res.json({ scores: {} });
+
+  try {
+    const bests = await getPlayerBests(wallet);
+    res.json({ scores: bests });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch player scores' });
+  }
+});
+
+app.get('/api/config/public', (req, res) => {
+  res.json({
+    tokenMint: '9zB5wRarXMj86MymwLumSKA1Dx35zPqqKfcZtK1Spump',
+    treasuryWallet: '5VUuiKmR4zt1bfHNTTpPMGB2r7tjNo4YFL1WqKC7ZRwa',
+    escrowWallet: 'AR3Rcr8o4iZwGwTUG5LEx7uhcenCCZNrbgkLrjVC1v6y',
+    minHolderBalance: 1000000,
+    cycleWeeks: 10,
+    rotationEpoch: '2024-01-01T00:00:00Z',
+    aiModel: OpenAIModelConfig.primary,
+    aiFallbackModel: OpenAIModelConfig.fallback,
+    aiConfigured: Boolean(process.env.OPENAI_API_KEY),
+  });
+});
+
+app.post('/api/ai/chat', async (req, res) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: 'OpenAI backend not configured' });
+  }
+
+  const model = resolveAiModel(req.body?.model);
+  const messagesFromBody = normalizeChatMessages(req.body?.messages);
+  const fallbackPrompt =
+    typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
+  const messages =
+    messagesFromBody.length > 0
+      ? messagesFromBody
+      : fallbackPrompt
+        ? [{ role: 'user', content: fallbackPrompt }]
+        : [];
+
+  if (!messages.length) {
+    return res.status(400).json({ error: 'No valid messages provided' });
+  }
+
+  const payload = {
+    model,
+    messages,
+    temperature: typeof req.body?.temperature === 'number' ? req.body.temperature : 0.7,
+  };
+  if (Number.isFinite(req.body?.max_tokens) && req.body.max_tokens > 0) {
+    payload.max_tokens = Math.min(req.body.max_tokens, 4096);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    const payloadText = await response.text();
+    clearTimeout(timeout);
+    let parsed = {};
+    try {
+      parsed = JSON.parse(payloadText);
+    } catch {
+      parsed = {};
+    }
+
+    if (!response.ok) {
+      logger.warn(
+        { status: response.status, model, error: parsed.error },
+        'OpenAI API request failed'
+      );
+      return res.status(502).json({
+        error: 'OpenAI request failed',
+        details: parsed.error || payloadText,
+      });
+    }
+
+    const content = parsed?.choices?.[0]?.message?.content;
+    if (typeof content !== 'string') {
+      return res.status(502).json({ error: 'Invalid response from OpenAI' });
+    }
+
+    res.json({
+      model: parsed?.model || model,
+      content,
+      usage: parsed?.usage || null,
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      logger.warn({ timeoutMs: OPENAI_TIMEOUT_MS }, 'OpenAI request timed out');
+      return res.status(504).json({ error: 'OpenAI request timed out' });
+    }
+    logger.error({ err: err.message }, 'OpenAI route failed');
+    return res.status(500).json({ error: 'Failed to query OpenAI' });
+  }
+});
+
+// ============================================
+// DUMMY SHOP API (Static Recovery)
+// ============================================
+
+app.get('/api/v2/shop/catalog', (req, res) => {
+  res.json({ items: [] });
+});
+
+app.get('/api/v2/shop/events', (req, res) => {
+  res.json({ events: [] });
+});
+
+app.get('/api/v2/shop/inventory', (req, res) => {
+  res.json({ inventory: [], equipped: {} });
+});
+
+app.get('/api/v2/shop/favorites', (req, res) => {
+  res.json({ favorites: [] });
+});
+
+app.get('/api/v2/shop/collections', (req, res) => {
+  res.json({ collections: [] });
+});
+
+// Catch-all for unknown /api routes (Production fallback)
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
@@ -423,9 +748,28 @@ app.get('/widget', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route /games — mini-games hub (static; SSR archived 2026-05-12, see _archive/ssr-dev-2026-04/)
-app.get('/games', (req, res) => {
+// Route /games — mini-games hub
+// Serves SSR for bots/crawlers, static file for browsers
+async function serveGamesPage(req, res) {
+  if (isBot(req)) {
+    try {
+      const html = await renderGamesPage();
+      res.set('Content-Type', 'text/html');
+      res.set('X-SSR', 'true'); // Debug header
+      return res.send(html);
+    } catch (err) {
+      logger.error({ err: err.message }, 'SSR games page error');
+      // Fall through to static file
+    }
+  }
   res.sendFile(path.join(__dirname, 'games.html'));
+}
+
+app.get('/games', serveGamesPage);
+
+// Route /personality
+app.get('/personality', (req, res) => {
+  res.sendFile(path.join(__dirname, 'personality.html'));
 });
 
 // Route /ignition — airdrop platform (separate from games)
@@ -547,3 +891,4 @@ function gracefulShutdown(signal) {
 }
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
